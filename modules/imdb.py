@@ -151,7 +151,6 @@ class IMDb:
             time.sleep(2)
         logger.exorcise()
         if len(imdb_ids) > 0:
-            logger.debug(f"{len(imdb_ids)} IMDb IDs Found: {imdb_ids}")
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 

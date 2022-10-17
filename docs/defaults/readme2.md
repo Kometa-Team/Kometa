@@ -2,7 +2,7 @@
 
 There is a default set of Metadata and Overlay Files located in the [PMM Folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM) in the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository.
 
-The intention of this directory is to offer easy to use and slightly customizable (using [`template_variables`](../../config/paths.md#template-variables)) Metadata and Overlay Files for a general user who wants nice collections but doesn't want to learn all of Plex Meta Manager.
+The intention of this directory is to offer easy to use and slightly customizable (using [`template_variables`](../config/paths.md#template-variables)) Metadata and Overlay Files for a general user who wants nice collections but doesn't want to learn all of Plex Meta Manager.
 
 All posters defined in the Metadata Files are stored in the [Plex Meta Manager Images](https://github.com/meisnate12/Plex-Meta-Manager-Images) Repository and all Overlay images are in the [Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Repository at [pmm: images](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/overlays/images), which allows for changes to be made in one central location that will deploy to all users of this setup when they next run PMM.
 
@@ -29,8 +29,8 @@ The default set of overlays are a combination of Positional Overlays and Text Ov
 
 ### Example Poster Overlays
 
-![](movie-overlays1-annotated.png)
-![](movie-overlays2-annotated.png)
+![](images/movie-overlays1-annotated.png)
+![](images/movie-overlays2-annotated.png)
 <details>
   <summary>Click to expand sample config.yml Movies overlays section:</summary>
 
@@ -80,7 +80,7 @@ libraries:
 
 ### Example TV Shows - Show Overlays
 
-![](tvshow-poster-annotated.png)
+![](images/tvshow-poster-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Show Poster:</summary>
 
@@ -123,7 +123,7 @@ libraries:
 
 ### Example TV Shows - Season Overlays
 
-![](tvshow-poster-season-annotated.png)
+![](images/tvshow-poster-season-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Season Poster:</summary>
   
@@ -147,7 +147,7 @@ libraries:
 
 ### Example TV Shows - Episode Overlays
 
-![](tvshow-poster-episode-annotated.png)
+![](images/tvshow-poster-episode-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Episode Poster:</summary>
   
@@ -252,23 +252,23 @@ By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can c
 
 **Plex Meta Manager can insert up to three ratings of your choice into the three spots regardless of what you choose in the `Advanced` tab of that Plex library**
 
-![](ratings_source.png)
+![](images/ratings_source.png)
 
 Plex has three available spots in the Plex DB to store ratings and thus Plex Meta Manager can be used to insert ratings sources of your choice into those spots. They are known as the User Rating (`#1`), Critic Rating (`#2`), and Audience Rating (`#3`). 
 
 **Note that the little icons cannot be changed and that the numbers next to the little icons are reflected in the poster ratings overlay**
 
-![](ratings_spot.png)
+![](images/ratings_spot.png)
 
 To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
 
 **mass_*_rating_update** sources can be found here: [operations](../../config/operations)
 
-![](ratings_operations.png)
+![](images/ratings_operations.png)
 
 Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
 
-![](ratings_overlay_path.png)
+![](images/ratings_overlay_path.png)
 
 
 

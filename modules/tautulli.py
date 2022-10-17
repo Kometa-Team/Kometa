@@ -55,8 +55,6 @@ class Tautulli:
                         rating_keys.append((new_item[0].ratingKey, "ratingKey"))
                     else:
                         logger.error(f"Plex Error: Item not found {item}")
-        logger.debug("")
-        logger.debug(f"{len(rating_keys)} Keys Found: {rating_keys}")
         return rating_keys
 
     def _request(self, url):

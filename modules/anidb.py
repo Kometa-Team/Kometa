@@ -200,5 +200,6 @@ class AniDB:
         else:
             raise Failed(f"AniDB Error: Method {method} not supported")
         logger.debug("")
-        logger.debug(f"{len(anidb_ids)} AniDB IDs Found: {anidb_ids}")
+        logger.debug(f"{len(anidb_ids)} AniDB IDs Found")
+        logger.trace(f"IDs: {anidb_ids}")
         return anidb_ids

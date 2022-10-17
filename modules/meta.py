@@ -232,27 +232,33 @@ class DataFile:
                     variables["library_typeU"] = self.library.type if self.library else "Item"
                     variables["library_name"] = self.library.name if self.library else "playlist"
 
-                    logger.trace(f"External: {temp_vars}")
-                    logger.trace(f"Definition: {extra_variables}")
-                    logger.trace(f"Config: {self.temp_vars}")
+                    conditionals = {}
+                    if "conditionals" in template:
+                        if not template["conditionals"]:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is blank")
+                        if not isinstance(template["conditionals"], dict):
+                            raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
+                        for ck, cv in template["conditionals"].items():
+                            conditionals[ck] = cv
 
-                    for temp_key, temp_value in temp_vars.items():
-                        if temp_value is None:
-                            optional.append(str(temp_key))
-                        elif temp_key not in variables:
-                            variables[temp_key] = temp_value
-
-                    for temp_key, temp_value in extra_variables.items():
-                        if temp_value is None:
-                            optional.append(str(temp_key))
-                        elif temp_key not in variables:
-                            variables[temp_key] = temp_value
-
-                    for temp_key, temp_value in self.temp_vars.items():
-                        if temp_value is None:
-                            optional.append(str(temp_key))
-                        else:
-                            variables[temp_key] = temp_value
+                    for input_dict, input_type, ignore_check in [
+                        (temp_vars, "External", False),
+                        (extra_variables, "Definition", False),
+                        (self.temp_vars, "Config", True)
+                    ]:
+                        logger.trace(f"{input_type}: {input_dict}")
+                        for input_key, input_value in input_dict.items():
+                            if input_key == "conditionals":
+                                if not input_value:
+                                    raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute conditionals is blank")
+                                if not isinstance(input_value, dict):
+                                    raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute conditionals is not a dictionary")
+                                for ck, cv in input_value.items():
+                                    conditionals[ck] = cv
+                            elif input_value is None:
+                                optional.append(str(input_key))
+                            elif ignore_check or input_key not in variables:
+                                variables[input_key] = input_value
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
@@ -306,77 +312,72 @@ class DataFile:
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute optional is blank")
 
-                    if "conditionals" in template:
-                        if not template["conditionals"]:
-                            raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is blank")
-                        if not isinstance(template["conditionals"], dict):
+                    for con_key, con_value in conditionals.items():
+                        logger.debug("")
+                        logger.debug(f"Conditional: {con_key}")
+                        if not isinstance(con_value, dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                        for con_key, con_value in template["conditionals"].items():
-                            logger.debug("")
-                            logger.debug(f"Conditional: {con_key}")
-                            if not isinstance(con_value, dict):
-                                raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
-                            final_key = replace_var(con_key, [variables, default])
-                            if final_key != con_key:
-                                logger.debug(f"Variable: {final_key}")
-                            if final_key in variables:
-                                continue
-                            if "conditions" not in con_value:
-                                raise Failed(f"{self.data_type} Error: conditions sub-attribute required for conditionals")
-                            conditions = con_value["conditions"]
-                            if isinstance(conditions, dict):
-                                conditions = [conditions]
-                            if not isinstance(conditions, list):
-                                raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
-                            condition_found = False
-                            for i, condition in enumerate(conditions, 1):
-                                if not isinstance(condition, dict):
-                                    raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
-                                if "value" not in condition:
-                                    raise Failed(f"{self.data_type} Error: each condition must have a result value")
-                                condition_passed = True
-                                for var_key, var_value in condition.items():
-                                    if var_key == "value":
-                                        continue
-                                    var_key = replace_var(var_key, [variables, default])
-                                    var_value = replace_var(var_value, [variables, default])
-                                    if var_key in variables:
-                                        if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
-                                                (not isinstance(var_value, list) and variables[var_key] != var_value):
-                                            if isinstance(var_value, list):
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
-                                            else:
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
-                                            condition_passed = False
-                                            break
-                                    elif var_key in default:
-                                        if (isinstance(var_value, list) and default[var_key] not in var_value) or \
-                                                (not isinstance(var_value, list) and default[var_key] != var_value):
-                                            if isinstance(var_value, list):
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
-                                            else:
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
-                                            condition_passed = False
-                                            break
-                                    else:
-                                        logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                        final_key = replace_var(con_key, [variables, default])
+                        if final_key != con_key:
+                            logger.debug(f"Variable: {final_key}")
+                        if final_key in variables:
+                            continue
+                        if "conditions" not in con_value:
+                            raise Failed(f"{self.data_type} Error: conditions sub-attribute required for conditionals")
+                        conditions = con_value["conditions"]
+                        if isinstance(conditions, dict):
+                            conditions = [conditions]
+                        if not isinstance(conditions, list):
+                            raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
+                        condition_found = False
+                        for i, condition in enumerate(conditions, 1):
+                            if not isinstance(condition, dict):
+                                raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
+                            if "value" not in condition:
+                                raise Failed(f"{self.data_type} Error: each condition must have a result value")
+                            condition_passed = True
+                            for var_key, var_value in condition.items():
+                                if var_key == "value":
+                                    continue
+                                var_key = replace_var(var_key, [variables, default])
+                                var_value = replace_var(var_value, [variables, default])
+                                if var_key in variables:
+                                    if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
+                                            (not isinstance(var_value, list) and variables[var_key] != var_value):
+                                        if isinstance(var_value, list):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
+                                        else:
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
                                         condition_passed = False
                                         break
-                                if condition_passed:
-                                    logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
-                                    condition_found = True
-                                    variables[final_key] = condition["value"]
-                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
-                                    break
-                            if not condition_found:
-                                if "default" in con_value:
-                                    logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
-                                    variables[final_key] = con_value["default"]
-                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
+                                elif var_key in default:
+                                    if (isinstance(var_value, list) and default[var_key] not in var_value) or \
+                                            (not isinstance(var_value, list) and default[var_key] != var_value):
+                                        if isinstance(var_value, list):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
+                                        else:
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
+                                        condition_passed = False
+                                        break
                                 else:
-                                    logger.debug(f"Conditional Variable: {final_key} added as optional variable")
-                                    optional.append(str(final_key))
-                                    optional.append(f"{final_key}_encoded")
+                                    logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                    condition_passed = False
+                                    break
+                            if condition_passed:
+                                logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
+                                condition_found = True
+                                variables[final_key] = condition["value"]
+                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                break
+                        if not condition_found:
+                            if "default" in con_value:
+                                logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
+                                variables[final_key] = con_value["default"]
+                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
+                            else:
+                                logger.debug(f"Conditional Variable: {final_key} added as optional variable")
+                                optional.append(str(final_key))
+                                optional.append(f"{final_key}_encoded")
 
                     sort_name = None
                     if "move_prefix" in template or "move_collection_prefix" in template:
@@ -469,25 +470,25 @@ class DataFile:
             logger.debug("")
             return new_attributes
 
-    def external_templates(self, data):
+    def external_templates(self, data, overlay=False):
         if data and "external_templates" in data and data["external_templates"]:
             files = util.load_files(data["external_templates"], "external_templates")
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
             for file_type, template_file, temp_vars, _ in files:
-                temp_data = self.load_file(file_type, template_file)
+                temp_data = self.load_file(file_type, template_file, overlay=overlay)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     for temp_key, temp_value in temp_data["templates"].items():
                         if temp_key not in self.templates:
                             self.templates[temp_key] = (temp_value, temp_vars)
 
-    def translation_files(self, data):
+    def translation_files(self, data, overlay=False):
         if data and "translations" in data and data["translations"]:
             files = util.load_files(data["translations"], "translations")
             if not files:
                 logger.error("Config Error: No Paths Found for translations")
             for file_type, template_file, _, _ in files:
-                temp_data, key_data = self.load_file(file_type, template_file, translation=True)
+                temp_data, key_data = self.load_file(file_type, template_file, overlay=overlay, translation=True)
                 for k, v in temp_data.items():
                     if k not in self.translations:
                         self.translations[k] = v
@@ -1476,14 +1477,16 @@ class OverlayFile(DataFile):
         for queue_name, queue in queues.items():
             if isinstance(queue, list):
                 self.queues[queue_name] = queue
+            elif queue_name in temp_vars and temp_vars[queue_name] and isinstance(temp_vars[queue_name], list):
+                self.queues[queue_name] = temp_vars[queue_name]
             elif queue_name in temp_vars and temp_vars[queue_name] and temp_vars[queue_name] in queue:
                 self.queues[queue_name] = queue[temp_vars[queue_name]]
-            else:
+            elif isinstance(queue, dict):
                 for dq, dv in queue.items():
                     self.queues[queue_name] = dv
                     break
-        self.external_templates(data)
-        self.translation_files(data)
+        self.external_templates(data, overlay=True)
+        self.translation_files(data, overlay=True)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")
         logger.info(f"Overlay File Loaded Successfully")

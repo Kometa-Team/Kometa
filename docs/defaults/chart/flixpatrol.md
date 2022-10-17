@@ -8,14 +8,14 @@ The `flixpatrol` Default Metadata File is used to create collections based on Fl
 
 ## Collections Section 01
 
-| Collection                          |     Key     | Description                                                                   |
-|:------------------------------------|:-----------:|:------------------------------------------------------------------------------|
-| `Netflix Top 10 Moves/Shows`        |  `netflix`  | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.        |
-| `Disney Top 10 Moves/Shows`         |  `disney`   | Collection of the Top Movies/Shows on Disney Plus according to FlixPatrol.    |
-| `HBO Top 10 Moves/Shows`            |    `hbo`    | Collection of the Top Movies/Shows on HBO according to FlixPatrol.            |
-| `Hulu Top 10 Moves/Shows`           |   `hulu`    | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.           |
-| `Paramount Plus Top 10 Moves/Shows` | `paramount` | Collection of the Top Movies/Shows on Paramount Plus according to FlixPatrol. |
-| `Prime Video Top 10 Moves/Shows`    |   `prime`   | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol.    |
+| Collection                       |     Key     | Description                                                                |
+|:---------------------------------|:-----------:|:---------------------------------------------------------------------------|
+| `Netflix Top 10 Moves/Shows`     |  `netflix`  | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.     |
+| `Disney+ Top 10 Moves/Shows`     |  `disney`   | Collection of the Top Movies/Shows on Disney+ according to FlixPatrol.     |
+| `HBO Top 10 Moves/Shows`         |    `hbo`    | Collection of the Top Movies/Shows on HBO according to FlixPatrol.         |
+| `Hulu Top 10 Moves/Shows`        |   `hulu`    | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.        |
+| `Paramount+ Top 10 Moves/Shows`  | `paramount` | Collection of the Top Movies/Shows on Paramount+ according to FlixPatrol.  |
+| `Prime Video Top 10 Moves/Shows` |   `prime`   | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol. |
 
 ## Config
 
@@ -37,7 +37,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
+All [Shared Collection Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
 | Variable                   | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |:---------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -4,22 +4,22 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
 
 [Configuring MyAnimeList](../../config/myanimelist) in the config is required for any of these builders.
 
-| Attribute                                           | Description                                                                                                                                                       | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`mal_search`](#myanimelist-search)                 | Finds every anime in a MyAnimeList Search list                                                                                                                    |      &#9989;      |     &#9989;      |               &#9989;                | 
-| [`mal_all`](#myanimelist-top-all-anime)             | Finds every anime in MyAnimeList's [Top All Anime](https://myanimelist.net/topanime.php) list                                                                     |      &#9989;      |     &#9989;      |               &#9989;                | 
-| [`mal_airing`](#myanimelist-top-airing-anime)       | Finds every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list                                                      |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_upcoming`](#myanimelist-top-upcoming-anime)   | Finds every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list                                                  |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_tv`](#myanimelist-top-anime-tv-series)        | Finds every anime in MyAnimeList's [Top Anime TV Series](https://myanimelist.net/topanime.php?type=tv) list                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_movie`](#myanimelist-top-anime-movies)        | Finds every anime in MyAnimeList's [Top Anime Movies](https://myanimelist.net/topanime.php?type=movie) list                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_ova`](#myanimelist-top-anime-ova-series)      | Finds every anime in MyAnimeList's [Top Anime OVA Series](https://myanimelist.net/topanime.php?type=ova) list                                                     |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_special`](#myanimelist-top-anime-specials)    | Finds every anime in MyAnimeList's [Top Anime Specials](https://myanimelist.net/topanime.php?type=special) list                                                   |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_popular`](#myanimelist-most-popular-anime)    | Finds every anime in MyAnimeList's [Most Popular Anime](https://myanimelist.net/topanime.php?type=bypopularity) list                                              |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_favorite`](#myanimelist-most-favorited-anime) | Finds every anime in MyAnimeList's [Most Favorited Anime](https://myanimelist.net/topanime.php?type=favorite) list                                                |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_suggested`](#myanimelist-suggested-anime)     | Finds the suggested anime in by MyAnimeList for the authorized user                                                                                               |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_id`](#myanimelist-id)                         | Finds the anime specified by the MyAnimeList ID                                                                                                                   |      &#9989;      |     &#9989;      |               &#10060;               |
-| [`mal_userlist`](#myanimelist-user-anime-list)      | Finds anime in MyAnimeList User's Anime list the options are detailed below                                                                                       |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`mal_season`](#myanimelist-seasonal-anime)         | Finds anime in MyAnimeList's [Seasonal Anime](https://myanimelist.net/anime/season) list the options are detailed below                                           |      &#9989;      |     &#9989;      |               &#9989;                |
+| Attribute                                     | Description                                                                                                             | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
+|:----------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`mal_search`](#myanimelist-search)           | Finds every anime in a MyAnimeList Search list                                                                          |      &#9989;      |     &#9989;      |               &#9989;                | 
+| [`mal_all`](#myanimelist-top-all)             | Finds every anime in MyAnimeList's [Top All Anime](https://myanimelist.net/topanime.php) list                           |      &#9989;      |     &#9989;      |               &#9989;                | 
+| [`mal_airing`](#myanimelist-top-airing)       | Finds every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list            |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_upcoming`](#myanimelist-top-upcoming)   | Finds every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list        |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_tv`](#myanimelist-top-tv-series)        | Finds every anime in MyAnimeList's [Top Anime TV Series](https://myanimelist.net/topanime.php?type=tv) list             |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_movie`](#myanimelist-top-movies)        | Finds every anime in MyAnimeList's [Top Anime Movies](https://myanimelist.net/topanime.php?type=movie) list             |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_ova`](#myanimelist-top-ova-series)      | Finds every anime in MyAnimeList's [Top Anime OVA Series](https://myanimelist.net/topanime.php?type=ova) list           |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_special`](#myanimelist-top-specials)    | Finds every anime in MyAnimeList's [Top Anime Specials](https://myanimelist.net/topanime.php?type=special) list         |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_popular`](#myanimelist-most-popular)    | Finds every anime in MyAnimeList's [Most Popular Anime](https://myanimelist.net/topanime.php?type=bypopularity) list    |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_favorite`](#myanimelist-most-favorited) | Finds every anime in MyAnimeList's [Most Favorited Anime](https://myanimelist.net/topanime.php?type=favorite) list      |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_suggested`](#myanimelist-suggested)     | Finds the suggested anime in by MyAnimeList for the authorized user                                                     |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_id`](#myanimelist-id)                   | Finds the anime specified by the MyAnimeList ID                                                                         |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`mal_userlist`](#myanimelist-userlist)       | Finds anime in MyAnimeList User's Anime list the options are detailed below                                             |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`mal_season`](#myanimelist-seasonal)         | Finds anime in MyAnimeList's [Seasonal Anime](https://myanimelist.net/anime/season) list the options are detailed below |      &#9989;      |     &#9989;      |               &#9989;                |
 
 ## MyAnimeList Search
 
@@ -59,7 +59,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top All Anime
+## MyAnimeList Top All
 
 Gets every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list. (Maximum: 500)
 
@@ -75,7 +75,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Airing Anime
+## MyAnimeList Top Airing
 
 Gets every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list. (Maximum: 500)
 
@@ -91,7 +91,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Upcoming Anime
+## MyAnimeList Top Upcoming
 
 Gets every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list. (Maximum: 500)
 
@@ -107,7 +107,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Anime TV Series
+## MyAnimeList Top TV Series
 
 Gets every anime in MyAnimeList's [Top Anime TV Series](https://myanimelist.net/topanime.php?type=tv) list. (Maximum: 500)
 
@@ -123,7 +123,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Anime Movies
+## MyAnimeList Top Movies
 
 Gets every anime in MyAnimeList's [Top Anime Movies](https://myanimelist.net/topanime.php?type=movie) list. (Maximum: 500)
 
@@ -139,7 +139,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Anime OVA Series
+## MyAnimeList Top OVA Series
 
 Gets every anime in MyAnimeList's [Top Anime OVA Series](https://myanimelist.net/topanime.php?type=ova) list. (Maximum: 500)
 
@@ -155,7 +155,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Top Anime Specials
+## MyAnimeList Top Specials
 
 Gets every anime in MyAnimeList's [Top Anime Specials](https://myanimelist.net/topanime.php?type=special) list. (Maximum: 500)
 
@@ -171,7 +171,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Most Popular Anime
+## MyAnimeList Most Popular
 
 Gets every anime in MyAnimeList's [Most Popular Anime](https://myanimelist.net/topanime.php?type=bypopularity) list. (Maximum: 500)
 
@@ -187,7 +187,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Most Favorited Anime
+## MyAnimeList Most Favorited
 
 Gets every anime in MyAnimeList's [Most Favorited Anime](https://myanimelist.net/topanime.php?type=favorite) list. (Maximum: 500)
 
@@ -203,7 +203,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Suggested Anime
+## MyAnimeList Suggested
 
 Gets the suggested anime in by MyAnimeList for the authorized user. (Maximum: 100)
 
@@ -231,7 +231,7 @@ collections:
     mal_id: 23, 219
 ```
 
-## MyAnimeList User Anime List
+## MyAnimeList UserList
 
 Gets anime in MyAnimeList User's Anime list. The different sub-attributes are detailed below. The only required attribute is `username`
 
@@ -256,7 +256,7 @@ collections:
     sync_mode: sync
 ```
 
-## MyAnimeList Seasonal Anime
+## MyAnimeList Seasonal
 
 Gets anime in MyAnimeList's [Seasonal Anime](https://myanimelist.net/anime/season) list the options are detailed below. 
 

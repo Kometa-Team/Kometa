@@ -1,159 +1,137 @@
-#############################################################
-#                   Audio Codec Overlays                    #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#            Credit to Magic815 for base images             #
-#############################################################
-#  Designed for TRaSH Guides filename naming scheme         #
-#  https://trash-guides.info/                               #
-#                                                           #
-#  Call this from your config.yml (Movie or Show):          #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    overlay_path:                                          #
-#      - git: PMM/overlays/audio_codec                      #
-#        template_variables:                                #
-#          # Set episode or season to overlay               #
-#          overlay_level:                                   #
-#          # Set the horizontal offset for the overlay      #
-#          horizontal_offset: 0                             #
-#          # Set the horizontal align for the overlay       #
-#          horizontal_align: center                         #
-#          # Set the vertical offset for the overlay        #
-#          vertical_offset: 15                              #
-#          # Set the vertical align for the overlay         #
-#          vertical_align: top                              #
-#          # Set the back color for the overlay             #
-#          back_color: "#00000099"                          #
-#          # Set the back radius for the overlay            #
-#          back_radius: 30                                  #
-#          # Set the back width for the overlay             #
-#          back_width: 305                                  #
-#          # Sets the style of overlay: standard or compact #
-#          style: compact                                   #
-#                                                           #
-#          # Use the Opus overlay                           #
-#          use_opus: true                                   #
-#          # Use the MP3 overlay                            #
-#          use_mp3: true                                    #
-#          # Use the Dolby-Digital overlay                  #
-#          use_digital: true                                #
-#          # Use the AAC overlay                            #
-#          use_aac: true                                    #
-#          # Use the DTS overlay                            #
-#          use_dts: true                                    #
-#          # Use the DTS-ES overlay                         #
-#          use_es: true                                     #
-#          # Use the Dolby-Digital-Plus overlay             #
-#          use_plus: true                                   #
-#          # Use the DTS-HD-HRA overlay                     #
-#          use_hra: true                                    #
-#          # Use the PCM overlay                            #
-#          use_pcm: true                                    #
-#          # Use the FLAC overlay                           #
-#          use_flac: true                                   #
-#          # Use the DTS-HD-MA overlay                      #
-#          use_hd: true                                     #
-#          # Use the Dolby-TrueHD overlay                   #
-#          use_truehd: true                                 #
-#          # Use the DD+/E-AC3 Atmos overlay                #
-#          use_plus-atmos: true                             #
-#          # Use the Dolby-Atmos (undefined) overlay        #
-#          use_atmos: true                                  #
-#          # Use the DTS-X overlay                          #
-#          use_x: true                                      #
-#          # Use the Dolby TrueHD Atmos overlay             #
-#          use_truehd-atmos: true                           #
-#############################################################
+##############################################################################
+#                            Audio Codec Overlay                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                     Credit to Magic815 for base images                     #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/audio_codec.html    #
+##############################################################################
 
-templates:
-  AudioCodec:
-    optional:
-      - overlay_level
-      - use_<<slug>>
-    default:
-      overlay: <<overlay_name>>
-      horizontal_offset: 0
-      horizontal_align: center
-      vertical_offset: 15
-      vertical_align: top
-      style: compact
-      standard_value: 105
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 305
+external_templates:
+  pmm: templates
+  template_variables:
     conditionals:
-      height:
+      back_height:
         default: 105
         conditions:
           - style: standard
             value: <<standard_value>>
-    overlay_level: <<overlay_level>>
-    allowed_library_types: <<use_<<slug>>>>
+    standard_value: 105
+    style: compact
+    group: audio_codec
+    horizontal_offset: 0
+    horizontal_align: center
+    vertical_offset: 15
+    vertical_align: top
+    back_width: 305
+    pmm: audio_codec/<<style>>/<<key>>
+
+templates:
+  audio_codec:
+    default:
+      regex_<<key>>: <<regex>>
+    conditionals:
+      regex:
+        conditions:
+          - key: truehd_atmos
+            value: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'
+          - key: dtsx
+            value: 'dts[-. ]?x(?!\d)'
+          - key: plus_atmos
+            value: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'
+          - key: dolby_atmos
+            value: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+          - key: truehd
+            value: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'
+          - key: ma
+            value: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'
+          - key: flac
+            value: '(?i)\bFLAC(\b|\d)'
+          - key: pcm
+            value: '(?i)\b(l?)PCM(\b|\d)'
+          - key: hra
+            value: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'
+          - key: plus
+            value: '(?i)(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'
+          - key: dtses
+            value: '(?i)dts[-. ]?es\b'
+          - key: dts
+            value: '(?i)\bDTS(\b|\d)'
+          - key: digital
+            value: '(?i)\bDD[^a-z+]|(?<!e)ac3'
+          - key: aac
+            value: '(?i)\b(aac|stereo|2[ .]0)\b'
+          - key: mp3
+            value: '(?i)\bmp3(\b|\d)'
+          - key: opus
+            value: '(?i)\bOPUS(\b|\d)'
     ignore_blank_results: true
-    overlay:
-      name: <<overlay_name>>
-      pmm: audio_codec/<<style>>/<<slug>>
-      group: audio_codec
-      weight: <<weight>>
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      back_color: <<back_color>>
-      back_radius: <<back_radius>>
-      back_width: <<back_width>>
-      back_height: <<height>>
     plex_all: true
     filters:
-      - audio_track_title.regex: <<regex>>
-      - filepath.regex: <<regex>>
+      - audio_track_title.regex: <<regex_<<key>>>>
+      - filepath.regex: <<regex_<<key>>>>
 
 overlays:
 
-  Opus:
-    template: {name: AudioCodec, weight: 250, slug: opus, regex: '(?i)\bOPUS(\b|\d)'}
-
-  MP3:
-    template: {name: AudioCodec, weight: 500, slug: mp3, regex: '(?i)\bmp3(\b|\d)'}
-
-  AAC:
-    template: {name: AudioCodec, weight: 700, slug: aac, regex: '(?i)\b(aac|stereo|2[ .]0)\b'}
-
-  Dolby-Digital:
-    template: {name: AudioCodec, weight: 750, slug: digital, regex: '(?i)\bDD[^a-z+]|(?<!e)ac3'}
-
-  DTS:
-    template: {name: AudioCodec, weight: 1250, slug: dts, regex: '(?i)\bDTS(\b|\d)'}
-
-  DTS-ES:
-    template: {name: AudioCodec, weight: 1500, slug: dtses, regex: '(?i)dts[-. ]?es\b'}
-
-  Dolby-Digital-Plus:
-    template: {name: AudioCodec, weight: 1750, slug: plus, regex: '(?i)(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'}
-
-  DTS-HD-HRA:
-    template: {name: AudioCodec, weight: 2000, slug: hra, regex: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'}
-
-  PCM:
-    template: {name: AudioCodec, weight: 2200, slug: pcm, regex: '(?i)\b(l?)PCM(\b|\d)'}
-
-  FLAC:
-    template: {name: AudioCodec, weight: 2250, slug: flac, regex: '(?i)\bFLAC(\b|\d)'}
-
-  DTS-HD-MA:
-    template: {name: AudioCodec, weight: 2500, slug: ma, regex: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'}
-
-  Dolby-TrueHD:
-    template: {name: AudioCodec, weight: 2750, slug: truehd, regex: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'}
+  Dolby-TrueHD-Atmos:
+    variables: {key: truehd_atmos, weight: 160, standard_value: 189}
+    template: [name: standard, name: audio_codec]
+    
+  DTS-X:
+    variables: {key: dtsx, weight: 150}
+    template: [name: standard, name: audio_codec]
 
   Dolby-Digital-Plus-Atmos:
-    template: {name: AudioCodec, weight: 3000, slug: plus_atmos, standard_value: 189, regex: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'}
+    variables: {key: plus_atmos, weight: 140, standard_value: 189}
+    template: [name: standard, name: audio_codec]
 
   Dolby-Atmos:
-    template: {name: AudioCodec, weight: 3000, slug: dolby_atmos, regex: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'}
+    variables: {key: dolby_atmos, weight: 130}
+    template: [name: standard, name: audio_codec]
 
-  DTS-X:
-    template: {name: AudioCodec, weight: 4500, slug: dtsx, regex: 'dts[-. ]?x(?!\d)'}
+  Dolby-TrueHD:
+    variables: {key: truehd, weight: 120}
+    template: [name: standard, name: audio_codec]
 
-  Dolby-TrueHD-Atmos:
-    template: {name: AudioCodec, weight: 5000, slug: truehd_atmos, standard_value: 189, regex: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'}
+  DTS-HD-MA:
+    variables: {key: ma, weight: 110}
+    template: [name: standard, name: audio_codec]
+
+  FLAC:
+    variables: {key: flac, weight: 100}
+    template: [name: standard, name: audio_codec]
+
+  PCM:
+    variables: {key: pcm, weight: 90}
+    template: [name: standard, name: audio_codec]
+
+  DTS-HD-HRA:
+    variables: {key: hra, weight: 80}
+    template: [name: standard, name: audio_codec]
+
+  Dolby-Digital-Plus:
+    variables: {key: plus, weight: 70}
+    template: [name: standard, name: audio_codec]
+
+  DTS-ES:
+    variables: {key: dtses, weight: 60}
+    template: [name: standard, name: audio_codec]
+
+  DTS:
+    variables: {key: dts, weight: 50}
+    template: [name: standard, name: audio_codec]
+
+  Dolby-Digital:
+    variables: {key: digital, weight: 40}
+    template: [name: standard, name: audio_codec]
+
+  AAC:
+    variables: {key: aac, weight: 30}
+    template: [name: standard, name: audio_codec]
+
+  MP3:
+    variables: {key: mp3, weight: 20}
+    template: [name: standard, name: audio_codec]
+
+  Opus:
+    variables: {key: opus, weight: 10}
+    template: [name: standard, name: audio_codec]

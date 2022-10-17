@@ -32,11 +32,24 @@
                         <li class="divider"></li>
                       {% elif sublink[0] == "_menu" %}
                         <li class="dropdown-submenu">
-                          <a tabindex="-1" href="#">{{ sublink[1] }}</a>
+                          <a tabindex="-1" href="{{ sublink[2] }}">{{ sublink[1] }}</a>
                           <ul class="dropdown-menu">
-                            {%- for subsublink in sublink[2] %}
+                            {%- for subsublink in sublink[3] %}
                               {% if subsublink[0] == "_divider" %}
                                 <li class="divider"></li>
+                              {% elif subsublink[0] == "_menu" %}
+                                <li class="dropdown-submenu">
+                                  <a tabindex="-1" href="{{ subsublink[2] }}">{{ subsublink[1] }}</a>
+                                  <ul class="dropdown-menu">
+                                    {%- for subsubsublink in subsublink[3] %}
+                                      {% if subsubsublink[0] == "_divider" %}
+                                        <li class="divider"></li>
+                                      {% else %}
+                                        <li><a href="{{ pathto(*subsubsublink[1:]) }}">{{ subsubsublink[0] }}</a></li>
+                                      {% endif %}
+                                    {%- endfor %}
+                                  </ul>
+                                </li>
                               {% else %}
                                 <li><a href="{{ pathto(*subsublink[1:]) }}">{{ subsublink[0] }}</a></li>
                               {% endif %}

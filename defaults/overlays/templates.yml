@@ -1,0 +1,76 @@
+templates:
+
+  standard:
+    default:
+      horizontal_offset: 0
+      horizontal_align: left
+      vertical_offset: 0
+      vertical_align: top
+      font: fonts/Inter-Medium.ttf
+      font_size: 55
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_radius: 30
+      weight_<<key>>: <<weight>>
+      final_name: <<overlay_name>>
+    optional:
+      - overlay_level
+      - use_<<key>>
+      - use_<<alt>>
+      - allowed_libraries
+      - suppress_overlays
+      - file
+      - url
+      - git
+      - repo
+      - pmm
+      - group
+      - queue
+      - weight
+      - font_style
+      - stroke_width
+      - stroke_color
+      - back_width
+      - back_height
+      - back_align
+      - back_padding
+      - back_line_color
+      - back_line_width
+      - addon_offset
+      - addon_position
+    overlay_level: <<overlay_level>>
+    allowed_library_types:
+      - <<use_<<key>>>>
+      - <<use_<<alt>>>>
+      - <<allowed_libraries>>
+    suppress_overlays: <<suppress_overlays>>
+    overlay:
+      name: <<final_name>>
+      file: <<file>>
+      url: <<url>>
+      git: <<git>>
+      repo: <<repo>>
+      pmm: <<pmm>>
+      group: <<group>>
+      queue: <<queue>>
+      weight: <<weight_<<key>>>>
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
+      font: <<font>>
+      font_style: <<font_style>>
+      font_size: <<font_size>>
+      font_color: <<font_color>>
+      stroke_width: <<stroke_width>>
+      stroke_color: <<stroke_color>>
+      back_color: <<back_color>>
+      back_width: <<back_width>>
+      back_height: <<back_height>>
+      back_align: <<back_align>>
+      back_padding: <<back_padding>>
+      back_radius: <<back_radius>>
+      back_line_color: <<back_line_color>>
+      back_line_width: <<back_line_width>>
+      addon_offset: <<addon_offset>>
+      addon_position: <<addon_position>>

@@ -132,7 +132,7 @@ Below are some user-curated collections which have been created by Plex Meta Man
 
 ## Default and User Metadata/Overlay Files
 
-The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](home/guides/defaults). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
+The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](defaults/defaults). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
 
 To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
 

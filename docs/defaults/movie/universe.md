@@ -43,7 +43,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
+All [Shared Collection Variables](../variables) are available as well as the additional Variables below which can be used to customize the file.
 
 | Variable                   | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -99,7 +99,7 @@ data:
 
 ```yaml
 trakt_list:
-  star: https://trakt.tv/users/donxy/lists/dc-animated-movie-universe
+  star: https://trakt.tv/users/zorge88/lists/star-wars
   dca: https://trakt.tv/users/donxy/lists/dc-animated-movie-universe
   dcu: https://trakt.tv/users/donxy/lists/dc-extended-universe
   mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe

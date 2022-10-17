@@ -90,6 +90,7 @@ filters_by_type = {
     "show_artist": ["folder"],
     "show_season": ["episodes"],
     "artist_album": ["tracks"],
+    "movie": ["edition"],
     "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"],
     "artist": ["albums"],
     "album": ["record_label"]
@@ -108,7 +109,7 @@ tmdb_filters = [
     "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
 string_filters = [
-    "title", "summary", "studio", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title",
+    "title", "summary", "studio", "edition", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title",
     "audio_codec", "audio_profile", "video_codec", "video_profile"
 ]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
@@ -1585,7 +1586,8 @@ class CollectionBuilder:
         if len(ids) > 0:
             total_ids = len(ids)
             logger.debug("")
-            logger.debug(f"{total_ids} IDs Found: {ids}")
+            logger.debug(f"{total_ids} IDs Found")
+            logger.trace(f"IDs: {ids}")
             logger.debug("")
             for i, input_data in enumerate(ids, 1):
                 input_id, id_type = input_data

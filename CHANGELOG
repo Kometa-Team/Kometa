@@ -6,7 +6,7 @@ Updated pathvalidate requirement to 2.5.2
 **New Site to request and vote for Features Requests on at [features.metamanager.wiki](https://features.metamanager.wiki/)**
 
 # New Features
-Added support for editions in `plex_search`, `smart_filter`, special text overlays, and metadata editing.
+Added support for editions in `plex_search`, `smart_filter`, `filters`, special text overlays, and metadata editing.
 Added `item_edition` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the edition of items in a collection
 Added `edition` [dynamic collection type](https://metamanager.wiki/en/latest/metadata/dynamic.html#edition)
 Added `last_episode_aired_or_never` [date filter](https://metamanager.wiki/en/latest/metadata/filters.html#date-filters). thanks @axsuul#0591

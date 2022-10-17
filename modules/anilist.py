@@ -319,5 +319,6 @@ class AniList:
             logger.info(message)
             anilist_ids = self._search(**data)
         logger.debug("")
-        logger.debug(f"{len(anilist_ids)} AniList IDs Found: {anilist_ids}")
+        logger.debug(f"{len(anilist_ids)} AniList IDs Found")
+        logger.trace(f"IDs: {anilist_ids}")
         return anilist_ids

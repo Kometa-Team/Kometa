@@ -32,7 +32,7 @@ The LSIO image:
 
 2. only has `latest` version, no `develop` or `nightly`. If you want to switch to `develop` or `nightly` to try a new feature, they aren't available with LSIO image.
 
-3. doesn't support [runtime flags](../environmental.md), only ENV vars. This means that a command like:
+3. doesn't support [runtime flags](environmental.md), only ENV vars. This means that a command like:
 
    ```
    docker run -it --rm -v /opt/pmm/config:/config linuxserver/plex-meta-manager --config config/config.yml -r --run-libraries "Movies - 4K DV"
