@@ -2,7 +2,7 @@
 
 The `other_chart` Default Metadata File is used to create collections based on other Charts.
 
-**The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries but the rest of the collections work with both Movie and TV libraries.**
+**The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries but the rest of the collections work with both Movie and Show libraries.**
 
 ![](../images/chartother.png)
 

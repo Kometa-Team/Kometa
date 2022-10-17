@@ -8,7 +8,7 @@ Below are the available variables which can be used to customize the file.
 
 | Variable                  | Description & Values                                                                                                                                                                                           |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_<<key>>`<sup>1</sup><sup>1</sup> | **Description:** Turns off individual Overlays in a Defaults file.<br>**Values:** `false` to turn off the overlay                                                                                              |
+| `use_<<key>>`<sup>1</sup> | **Description:** Turns off individual Overlays in a Defaults file.<br>**Values:** `false` to turn off the overlay                                                                                              |
 | `file`                    | **Description:** Controls the image associated with the Overlay to a local file. Use `pmm: null` with this to no use the default image.<br>**Values:** Filepath to Overlay Image                               |
 | `url`                     | **Description:** Controls the image associated with the Overlay to a url. Use `pmm: null` with this to no use the default image.<br>**Values:** URL to Overlay Image                                           |
 | `git`                     | **Description:** Controls the image associated with the Overlay to the git repo. Use `pmm: null` with this to no use the default image.<br>**Values:** Git Path to Overlay Image                               |

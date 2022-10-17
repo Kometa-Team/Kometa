@@ -32,32 +32,46 @@
                         <li class="divider"></li>
                       {% elif sublink[0] == "_menu" %}
                         <li class="dropdown-submenu">
-                          <a tabindex="-1" href="{{ pathto(sublink[2]) }}">{{ sublink[1] }}</a>
+                          {% if sublink[2] == "#" %}
+                            <a tabindex="-1" href="#">{{ sublink[1] }}</a>
+                          {% else %}
+                            <a tabindex="-1" href="{{ pathto(sublink[2]) }}">{{ sublink[1] }}</a>
+                          {% endif %}
                           <ul class="dropdown-menu">
                             {%- for subsublink in sublink[3] %}
                               {% if subsublink[0] == "_divider" %}
                                 <li class="divider"></li>
                               {% elif subsublink[0] == "_menu" %}
                                 <li class="dropdown-submenu">
-                                  <a tabindex="-1" href="{{ pathto(subsublink[2]) }}">{{ subsublink[1] }}</a>
+                                  {% if subsublink[2] == "#" %}
+                                    <a tabindex="-1" href="#">{{ subsublink[1] }}</a>
+                                  {% else %}
+                                    <a tabindex="-1" href="{{ pathto(subsublink[2]) }}">{{ subsublink[1] }}</a>
+                                  {% endif %}
                                   <ul class="dropdown-menu">
                                     {%- for subsubsublink in subsublink[3] %}
                                       {% if subsubsublink[0] == "_divider" %}
                                         <li class="divider"></li>
+                                      {% elif subsubsublink|length > 2 %}
+                                        <li><a href="{{ pathto(subsubsublink[1]) }}{{ subsubsublink[2] }}">{{ subsubsublink[0] }}</a></li>
                                       {% else %}
-                                        <li><a href="{{ pathto(*subsubsublink[1:]) }}">{{ subsubsublink[0] }}</a></li>
+                                        <li><a href="{{ pathto(subsubsublink[1]) }}">{{ subsubsublink[0] }}</a></li>
                                       {% endif %}
                                     {%- endfor %}
                                   </ul>
                                 </li>
+                              {% elif subsublink|length > 2 %}
+                                <li><a href="{{ pathto(subsublink[1]) }}{{ subsublink[2] }}">{{ subsublink[0] }}</a></li>
                               {% else %}
-                                <li><a href="{{ pathto(*subsublink[1:]) }}">{{ subsublink[0] }}</a></li>
+                                <li><a href="{{ pathto(subsublink[1]) }}">{{ subsublink[0] }}</a></li>
                               {% endif %}
                             {%- endfor %}
                           </ul>
                         </li>
+                      {% elif sublink|length > 2 %}
+                        <li><a href="{{ pathto(sublink[1]) }}{{ sublink[2] }}">{{ sublink[0] }}</a></li>
                       {% else %}
-                        <li><a href="{{ pathto(*sublink[1:]) }}">{{ sublink[0] }}</a></li>
+                        <li><a href="{{ pathto(sublink[1]) }}">{{ sublink[0] }}</a></li>
                       {% endif %}
                     {%- endfor %}
                     </ul>
