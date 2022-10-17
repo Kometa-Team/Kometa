@@ -1,4 +1,4 @@
-version: 1.18.0.2
+version: 1.18.0.4
 variables:
   library_translation:
     # For Movie Libraries
@@ -23,6 +23,18 @@ variables:
     # For Playlists
     item: Article
 key_names:
+  Christmas: Noël
+  Easter: Pâques
+  Father's Day: Fête des pères
+  Halloween: Halloween
+  Independence Day: Le jour de l'indépendance
+  Labor Day: Fête du travail
+  Memorial Day: Jour du souvenir
+  Mother's Day: Fête des mères
+  New Year's Day: Le jour de l'An
+  St. Patrick's Day: Le jour de la Saint-Patrick
+  Thanksgiving: Action de grâces
+  Valentine's Day: La Saint-Valentin
 
 translations:
   #############################################################
@@ -110,7 +122,7 @@ translations:
   basic_released_summary: Une collection de <<library_translation>>s nouvellement sortis.
 
   basic_episodes_name: Nouveaux épisodes
-  basic_episodes_summary: Une collection de <<library_translation>>s nouvellement sortis.
+  basic_episodes_summary: Une collection d'épisodes nouvellement publiés.
 
   # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
   flixpatrol_name: Top <<limit>> <<key_name>>
@@ -192,6 +204,10 @@ translations:
   #                           Both                            #
   #############################################################
 
+  # possible key_names: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
+  separator_name: Collections <<key_name>>
+  separator_summary: Séparateur de section pour les collections <<key_name>>
+
   # example key_name: Robin Williams
   actor_name: <<key_name>>
   actor_summary: <<library_translationU>>s avec <<key_name>>.
@@ -207,11 +223,15 @@ translations:
   content_rating_name: <<library_translationU>>s <<key_name>>
   content_rating_summary: <<library_translationU>>s classés <<key_name>>.
 
-  content_rating_other_name: Autres évaluations
-  content_rating_other_summary: <<library_translationU>>s avec d’autres classements inhabituels.
+  # example key_name: TV-MA
+  content_rating_cs_name: <<library_translationU>>s pour les <<key_name>> ans et plus
+  content_rating_cs_summary: <<library_translationU>> qui sont notés <<key_name>> selon le Common Sense Rating System.
+
+  content_rating_other_name: <<library_translationU>>s non classés 
+  content_rating_other_summary: <<library_translationU>>s qui ne sont pas classés, non classés ou tout autre classement peu commun.
 
   # example key_name: United States
-  country_name: <<library_translationU>>s <<key_name>>
+  country_name: <<key_name>>
   country_summary: <<library_translationU>>s filmés dans <<key_name>>.
 
   country_other_name: Autres pays
@@ -245,7 +265,7 @@ translations:
   resolution_name: <<library_translationU>>s de <<key_name>>
   resolution_summary: <<library_translationU>>s ayant la résolution <<key_name>>.
 
-  resolution_other_name: Autres résolutions
+  resolution_other_name: Autres résolutions de <<library_translationU>>s
   resolution_other_summary: <<library_translationU>>s qui ont d’autres résolutions inhabituelles
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas

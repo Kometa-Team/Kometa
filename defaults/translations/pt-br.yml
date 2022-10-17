@@ -23,17 +23,18 @@ variables:
     # For Playlists
     item: Itens
 key_names:
-  New Year's Day: 1º dia do Ano
-  Valentine's Day: Dia de São Valentim
-  St. Patrick's Day: Dia de São Patrício
+  Christmas: Natal
   Easter: Páscoa
-  Mother's Day: Dia das Mães
-  memorial day: Dia da Recordação
   Father's Day: Dia dos Pais
+  Halloween: Halloween
   Independence Day: Dia da Independência
   Labor Day: Dia do Trabalho
+  Memorial Day: Dia da Recordação
+  Mother's Day: Dia das Mães
+  New Year's Day: 1º dia do Ano
+  St. Patrick's Day: Dia de São Patrício
   Thanksgiving: Ação de Graças
-  Christmas: Natal
+  Valentine's Day: Dia de São Valentim
 
 translations:
   #############################################################
