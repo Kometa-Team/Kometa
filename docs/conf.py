@@ -273,6 +273,7 @@ html_theme_options = {
                 ("Common Sense Age Ratings", "defaults/overlays/commonsense"),
                 ("Direct Play Only", "defaults/overlays/direct_play"),
                 ("Episode Info", "defaults/overlays/episode_info"),
+                ("FlixPatrol Top", "defaults/overlays/flixpatrol"),
                 ("MediaStinger", "defaults/overlays/mediastinger"),
                 ("Ratings", "defaults/overlays/ratings"),
                 ("Resolution/Edition", "defaults/overlays/resolution"),

@@ -406,9 +406,7 @@ class DataFile:
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 
-                    for k in default:
-                        if k in variables:
-                            default.pop(k)
+                    default = {k: v for k, v in default.items() if k not in variables}
                     optional = [o for o in optional if o not in variables and o not in default]
 
                     logger.debug("")
