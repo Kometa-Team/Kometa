@@ -29,6 +29,7 @@ templates:
       - font_style
       - stroke_width
       - stroke_color
+      - back_color
       - back_width
       - back_height
       - back_align

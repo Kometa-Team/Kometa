@@ -591,7 +591,7 @@ def run_collection(config, library, metadata, requested_collections):
                             raise Failed(e)
 
                 if not builder.added_items and builder.ignore_blank_results:
-                    raise NonExisting(f"Overlay Warning: No items found")
+                    raise NonExisting(f"{builder.Type} Warning: No items found")
 
                 builder.display_filters()
 
@@ -620,7 +620,7 @@ def run_collection(config, library, metadata, requested_collections):
                     or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
             ):
                 logger.info("")
-                logger.info(f"Collection Minimum: {builder.minimum} not met for {mapping_name} Collection")
+                logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
                 valid = False
                 if builder.details["delete_below_minimum"] and builder.obj:
@@ -644,7 +644,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    logger.separator("No Collection to Update", space=False, border=False)
+                    logger.separator("No {builder.Type} to Update", space=False, border=False)
                 else:
                     details_list = builder.update_details()
                     if details_list:
