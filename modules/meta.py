@@ -269,9 +269,6 @@ class DataFile:
                         elif language in var_value:
                             translation_variables[var_key] = var_value[language]
 
-                    for key, value in variables.copy().items():
-                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
-
                     def replace_var(input_item, search_dicts):
                         if not isinstance(search_dicts, list):
                             search_dicts = [search_dicts]
@@ -396,6 +393,23 @@ class DataFile:
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
                     variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
+
+                    for key, value in variables.copy().items():
+                        if "<<" in key and ">>" in key:
+                            for k, v in variables.items():
+                                if f"<<{k}>>" in key:
+                                    key = key.replace(f"<<{k}>>", v)
+                            for k, v in default.items():
+                                if f"<<{k}>>" in key:
+                                    key = key.replace(f"<<{k}>>", v)
+                            variables[key] = value
+                    for key, value in variables.copy().items():
+                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
+
+                    for k in default:
+                        if k in variables:
+                            default.pop(k)
+                    optional = [o for o in optional if o not in variables and o not in default]
 
                     logger.debug("")
                     logger.debug(f"Variables: {variables}")
