@@ -415,8 +415,8 @@ class Overlays:
                             if item.ratingKey not in properties[builder.overlay.mapping_name].keys:
                                 properties[builder.overlay.mapping_name].keys.append(item.ratingKey)
                     if added_titles:
-                        logger.debug(f"{len(added_titles)} Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
                         logger.info(f"{len(added_titles)} Items found for {builder.overlay.mapping_name} Overlay")
+                        logger.trace(f"Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
                     else:
                         logger.warning(f"No Items found for {builder.overlay.mapping_name} Overlay")
                     logger.info("")
