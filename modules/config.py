@@ -765,7 +765,10 @@ class ConfigFile:
                                 "add_blank_entries": True
                             }
                             if lib["operations"]["metadata_backup"] and isinstance(lib["operations"]["metadata_backup"], dict):
-                                params["metadata_backup"]["path"] = check_for_attribute(lib["operations"]["metadata_backup"], "path", var_type="path", default=params["metadata_backup"]["path"], save=False)
+                                try:
+                                    params["metadata_backup"]["path"] = check_for_attribute(lib["operations"]["metadata_backup"], "path", var_type="path", save=False)
+                                except Failed as e:
+                                    logger.debug(f"{e} using default {params['metadata_backup']['path']}")
                                 params["metadata_backup"]["exclude"] = check_for_attribute(lib["operations"]["metadata_backup"], "exclude", var_type="comma_list", default_is_none=True, save=False)
                                 params["metadata_backup"]["sync_tags"] = check_for_attribute(lib["operations"]["metadata_backup"], "sync_tags", var_type="bool", default=False, save=False)
                                 params["metadata_backup"]["add_blank_entries"] = check_for_attribute(lib["operations"]["metadata_backup"], "add_blank_entries", var_type="bool", default=True, save=False)
