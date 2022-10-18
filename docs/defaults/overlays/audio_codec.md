@@ -82,7 +82,7 @@ All [Shared Overlay Variables](variables) are available with the default values 
 
 1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-2. The below is an example config.yml extract with some Template Variables added in to change how the file works.
+The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:

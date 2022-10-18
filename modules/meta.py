@@ -292,7 +292,7 @@ class DataFile:
                     for dkey, dvalue in ini_default.items():
                         final_key = replace_var(dkey, ini_default)
                         final_value = replace_var(dvalue, ini_default)
-                        if final_key not in optional and final_key not in variables:
+                        if final_key not in optional and final_key not in variables and final_key not in conditionals:
                             default[final_key] = final_value
                             default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
 
@@ -300,7 +300,7 @@ class DataFile:
                         if template["optional"]:
                             for op in util.get_list(template["optional"]):
                                 op = replace_var(op, variables)
-                                if op not in default:
+                                if op not in default and op not in conditionals:
                                     optional.append(str(op))
                                     optional.append(f"{op}_encoded")
                                 else:
@@ -317,8 +317,6 @@ class DataFile:
                         final_key = replace_var(con_key, [variables, default])
                         if final_key != con_key:
                             logger.debug(f"Variable: {final_key}")
-                        if final_key in variables:
-                            continue
                         if "conditions" not in con_value:
                             raise Failed(f"{self.data_type} Error: conditions sub-attribute required for conditionals")
                         conditions = con_value["conditions"]
@@ -340,7 +338,7 @@ class DataFile:
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key in variables:
                                     if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and variables[var_key] != var_value):
+                                            (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):
                                             logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
                                         else:
@@ -349,7 +347,7 @@ class DataFile:
                                         break
                                 elif var_key in default:
                                     if (isinstance(var_value, list) and default[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and default[var_key] != var_value):
+                                            (not isinstance(var_value, list) and str(default[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):
                                             logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
                                         else:
@@ -367,11 +365,11 @@ class DataFile:
                                 variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
                                 break
                         if not condition_found:
-                            if "default" in con_value:
+                            if "default" in con_value and final_key not in variables:
                                 logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
                                 variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
-                            else:
+                            elif final_key not in variables:
                                 logger.debug(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
                                 optional.append(f"{final_key}_encoded")
@@ -567,7 +565,7 @@ class MetadataFile(DataFile):
                         include.extend(util.parse("Config", "append_include", self.temp_vars["append_include"], parent="template_variable", datatype="strlist"))
                     addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr") if "addons" in methods else {}
                     if "append_addons" in self.temp_vars:
-                        append_addons = util.parse("Config", "append_addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr")
+                        append_addons = util.parse("Config", "append_addons", self.temp_vars["append_addons"], parent=map_name, methods=methods, datatype="dictliststr")
                         for k, v in append_addons.items():
                             if k not in addons:
                                 addons[k] = []
@@ -766,7 +764,7 @@ class MetadataFile(DataFile):
                         raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
 
                     if "append_data" in self.temp_vars:
-                        for k, v in util.parse("Config", "append_data", dynamic, parent=map_name, methods=methods, datatype="strdict").items():
+                        for k, v in util.parse("Config", "append_data", self.temp_vars["append_data"], parent=map_name, methods=methods, datatype="strdict").items():
                             all_keys.append(k)
                             if k not in exclude and v not in exclude:
                                 auto_list[k] = v

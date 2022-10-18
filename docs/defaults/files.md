@@ -55,7 +55,6 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Network](show/network)                                                             |       `network`        | Disney Channel, Lifetime                               |     &#10060;      |     &#9989;      |
 | [Producer](movie/producer)                                                          |       `producer`       | James Cameron (Producer), Reese Witherspoon (Producer) |      &#9989;      |     &#10060;     |
 | [Resolution](both/resolution)                                                       |      `resolution`      | 4K Movies, 1080p Movies, 720p Movies                   |      &#9989;      |     &#9989;      |
-| [Resolution Standards](both/resolution_standards)                                   | `resolution_standards` | 4K, 1080 OR Ultra HD, Full HD                          |      &#9989;      |     &#9989;      |
 | [Seasonal](movie/seasonal)                                                          |       `seasonal`       | Easter, Christmas                                      |      &#9989;      |     &#10060;     |
 | [Streaming](both/streaming)                                                         |      `streaming`       | Disney+ Movies, HBO Max Shows                          |      &#9989;      |     &#9989;      |
 | [Studio](both/studio)                                                               |        `studio`        | DreamWorks Studios, Walt Disney Pictures               |      &#9989;      |     &#9989;      |

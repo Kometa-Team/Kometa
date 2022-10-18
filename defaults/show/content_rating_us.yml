@@ -41,7 +41,7 @@ dynamic_collections:
         default: content_rating
       image:
         default: content_rating/us/<<key_name>>
-        other: content_rating/other
+        other: content_rating/us/NR
       translation_key:
         default: content_rating
         other: content_rating_other

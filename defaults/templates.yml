@@ -20,8 +20,8 @@ templates:
       sort: <<collection_name>>
       key: <<collection_name>>
       pre: "_"
-      order_<<key>>: ""
-      image: chart/<<collection_name_encoded>>
+      order: ""
+      order_<<key>>: <<order>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
@@ -35,6 +35,7 @@ templates:
       - item_radarr_tag
       - item_sonarr_tag
       - trakt_list
+      - image
       - ignore_ids
       - ignore_imdb_ids
     allowed_library_types:

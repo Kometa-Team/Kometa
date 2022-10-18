@@ -43,6 +43,7 @@ All [Shared Collection Variables](../variables) are available as well as the add
 | `exclude`                              | **Description:** Exclude these Years from creating a Dynamic Collection.<br>**Values:** List of Years                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml

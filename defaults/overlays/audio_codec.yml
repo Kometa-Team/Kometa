@@ -34,33 +34,33 @@ templates:
       regex:
         conditions:
           - key: truehd_atmos
-            value: '(?i)(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d)))'
+            value: '(?i)^(?=.*\btrue[ ._-]?hd(\b|\d))(?=.*\batmos(\b|\d))'
           - key: dtsx
-            value: 'dts[-. ]?x(?!\d)'
+            value: '(?i)\bdts[ ._-]?x(\b|\d)'
           - key: plus_atmos
-            value: '(?i)((?=.*([^-]DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|(?=.*\b(DDPA(\b|\d)))'
+            value: '(?i)^(?=.*\b(dd[p+])|(dolby digital plus)\B)(?=.*\batmos(\b|\d))'
           - key: dolby_atmos
-            value: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+            value: '(?i)\batmos(\b|\d)'
           - key: truehd
-            value: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'
+            value: '(?i)\btrue[ ._-]?hd(\b|\d)'
           - key: ma
-            value: '(?i)dts[ .-]?(ma\b|hd[ .-]?ma|hd)(?!china|r)'
+            value: '(?i)\bdts[ ._-]?(ma|hd[ ._-]?ma|hd)'
           - key: flac
-            value: '(?i)\bFLAC(\b|\d)'
+            value: '(?i)\bflac(\b|\d)'
           - key: pcm
-            value: '(?i)\b(l?)PCM(\b|\d)'
+            value: '(?i)\bl?pcm(\b|\d)'
           - key: hra
-            value: '(?i)dts[ ._-]?(hd[. ]?)?(hr|hi)'
+            value: '(?i)\bdts[ ._-]?(hd)?[ ._-]?(hr|hi|hd|ra)'
           - key: plus
-            value: '(?i)(?!.*(atmos))(?=.*\b([^-]DD[P+](?!A)|eac3)\b).*'
+            value: '(?i)\b(dd[p+])|(dolby digital plus)|(e[ ._-]?ac3)\B'
           - key: dtses
-            value: '(?i)dts[-. ]?es\b'
+            value: '(?i)\bdts[ ._-]?es(\b|\d)'
           - key: dts
-            value: '(?i)\bDTS(\b|\d)'
+            value: '(?i)\bdts(\b|\d)'
           - key: digital
-            value: '(?i)\bDD[^a-z+]|(?<!e)ac3'
+            value: '(?i)\b(dd)|(ac3)|(dolby)'
           - key: aac
-            value: '(?i)\b(aac|stereo|2[ .]0)\b'
+            value: '(?i)\b(aac|stereo|2[ .]0)(\b|\d)'
           - key: mp3
             value: '(?i)\bmp3(\b|\d)'
           - key: opus

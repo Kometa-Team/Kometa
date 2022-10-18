@@ -41,7 +41,7 @@ dynamic_collections:
         default: content_rating
       image:
         default: content_rating/cs/<<key_name>>
-        other: content_rating/other
+        other: content_rating/cs/NR
       translation_key:
         default: content_rating_cs
         other: content_rating_other
@@ -64,8 +64,6 @@ dynamic_collections:
       - 16
       - 17
       - 18
-    key_name_override:
-      NR: Not Rated
     addons:
       1:
         - gb/U
@@ -202,14 +200,3 @@ dynamic_collections:
         - gb/X
         - X
         - NC-17
-      NR:
-        - Approved
-        - N/A
-        - NOT RATED
-        - Not Rated
-        - gb/NR
-        - Unrated
-        - gb/Not Rated
-        - gb/Rejected
-        - gb/Unrated
-        - None
