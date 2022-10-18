@@ -15,6 +15,7 @@ urls = {
     "tag": f"{base_url}/tag",
     "login": f"{base_url}/perl-bin/animedb.pl"
 }
+
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
         self._anidb = anidb
