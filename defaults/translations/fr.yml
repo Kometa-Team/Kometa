@@ -23,36 +23,88 @@ variables:
     # For Playlists
     item: Article
 key_names:
+  Action: Action
   Actors: Acteurs et actrices
+  Adventure: Aventure
+  Arabic: Arabes
   Audio Language: Langue audio
   Award: Prix
+  Brazil: Brésil
+  Canada: Canada
   Chart: Graphique
+  China: Chine
   Christmas: Noël
   Country: Pays
+  Czech: Tchèques
+  Danish: Danois
   Decade: Décennie
   Directors: Directeurs et Directrices
+  Drama: Dramatiques
+  Dutch: Néerlandais
   Easter: Pâques
+  English: Anglais
+  Fantasy: Fantaisies
   Father's Day: Fête des pères
+  Filipino: Philippins
+  Finnish: Finnois
+  French: Français
   Genre: Genre
+  German: Allemands
+  Germany: Allemagne
+  Greek: Grecs
   Halloween: Halloween
+  Hebrew: Hébreu
+  Hindi: Hindi
+  History: Historiques
+  Hungarian: Hongrois 
   Independence Day: Le jour de l'indépendance
+  India: Inde
+  Indonesian: Indonésiens
+  Italian: Italiens
+  Japanese: Japonais
+  Korean: Coréens
   Labor Day: Fête du travail
+  Malay: Malais
+  Mandarin: en Mandarin
   Memorial Day: Jour du souvenir
   Mother's Day: Fête des mères
+  Music: Musiques
+  Mystery: Mystère
   Network: Réseau
   New Year's Day: Le jour de l'An
+  New Zealand: Nouvelle-Zélande
+  Norwegian: Norvégiens
+  Norwegian Bokmål:
+  Polish: Polonais
+  Portuguese: Portugais
   Producers: Producteurs et Productrices
   Resolution: Résolution
   Ratings: Notes
+  Romance: Romantiques
+  Romanian: Roumains
+  Russian: Russes
+  Science-Fiction:
   Seasonal: Saisonnier
+  Slovak: Slovaques
   St. Patrick's Day: Le jour de la Saint-Patrick
   Streaming: Diffusion
   Studio: Studio
   Subtitle Language: Langue des sous-titres
+  Spain: Espagne
+  Spanish: Espagnols
+  Swedish: Suédois
+  Tamil: Tamouls
+  Telugu: Télougou
+  Thai: Thaïlandais
   Thanksgiving: Action de grâces
+  Thriller: Suspense
+  Turkish: Turcs
+  United Kingdom: Royaume-Uni
+  United States of America: les États-Unis d'Amérique
   Universe: Univers
   Valentine's Day: La Saint-Valentin
-  Writers: Écrivains et Écrivaines
+  War: Guerre
+  Writers: Scénaristes
   Year: de l'année
 
 translations:
@@ -307,7 +359,7 @@ translations:
   subtitle_language_other_summary: <<library_translationU>>s avec d’autres sous-titres inhabituels.
 
   # example key_name: Robin Williams
-  writer_name: <<key_name>> (scénariste)
+  writer_name: <<key_name>> (Scénariste)
   writer_summary: <<library_translationU>> écrits par <<key_name>>.
 
   # example key_name: 2015
