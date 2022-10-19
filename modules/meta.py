@@ -262,12 +262,15 @@ class DataFile:
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
+                    key_name_variables = {}
                     for var_key, var_value in self.key_names.items():
                         if var_key == "library_type" and language in var_value:
                             variables[var_key] = var_value[language].lower()
                             variables[f"{var_key}U"] = var_value[language]
                         elif language in var_value:
-                            translation_variables[var_key] = var_value[language]
+                            key_name_variables[var_key] = var_value[language]
+                    if "key_name" in variables and variables["key_name"] in key_name_variables:
+                        variables["key_name"] = key_name_variables[variables["key_name"]]
 
                     def replace_var(input_item, search_dicts):
                         if not isinstance(search_dicts, list):
