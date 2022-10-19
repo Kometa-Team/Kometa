@@ -1,17 +1,6 @@
-version: 1.18.0.3
+version: 1.18.0.4
 variables:
-  library_translation:
-    # For Movie Libraries
-    movie: film
-    # For Show Libraries
-    show: serie
-    # For Music Libraries
-    artist: künstler
-    # For Other Video Libraries
-    video: video
-    # For Playlists
-    item: element
-  library_translationU:
+  library_translationU_singular:
     # For Movie Libraries
     movie: Film
     # For Show Libraries
@@ -22,7 +11,60 @@ variables:
     video: Video
     # For Playlists
     item: Element
+  library_translationU_plural:
+    # For Movie Libraries
+    movie: Filme
+    # For Show Libraries
+    show: Serien
+    # For Music Libraries
+    artist: Künstler
+    # For Other Video Libraries
+    video: Videos
+    # For Playlists
+    item: Elemente
+  library_translationU_plural_possessive:
+    # For Movie Libraries
+    movie: Filmen
+    # For Show Libraries
+    show: Serien
+    # For Music Libraries
+    artist: Künstler
+    # For Other Video Libraries
+    video: Videos
+    # For Playlists
+    item: Elementen
 key_names:
+  Actors: Schauspieler
+  Audio Language: Audiosprache
+  Award: Auszeichnung
+  Chart: Rangliste
+  Christmas: Weihnachten
+  Country: Land
+  Decade: Jahrzehnt
+  Directors: Regisseure
+  Easter: Ostern
+  Father's Day: Vatertag
+  # Genre: Genre
+  Independence Day: Amerikanischer Unabhängigkeitstag
+  Labor Day: Tag der Arbeit
+  Memorial Day: Volkstrauertag
+  Mother's Day: Muttertag
+  Network: Netzwerk
+  New Year's Day: Neujahrstag
+  Producers: Produzenten
+  Ratings: Bewertungen
+  Resolution: Auflösung
+  Seasonal: Saisonal
+  # St. Patrick's Day: St. Patrick's Day
+  # Streaming: Streaming
+  # Studio: Studio
+  Subtitle Language: Untertitelsprache
+  Thanksgiving: Erntedankfest
+  Universe: Universum
+  Valentine's Day: Valentinstag
+  Writers: Autoren
+  Year: Jahr
+  # Halloween: Halloween
 
 translations:
   #############################################################
@@ -107,23 +149,23 @@ translations:
   anilist_season_summary: Eine Sammlung von Anime die laut AniList aus der aktuellen Anime Season stammen.
 
   basic_released_name: Neue Veröffentlichungen
-  basic_released_summary: Eine Sammlung von neu veröffentlichten <<library_translationU>>(en/n).
+  basic_released_summary: Eine Sammlung von neu veröffentlichten <<library_translationU_plural_possessive>>.
 
   basic_episodes_name: Neue Episoden
-  basic_episodes_summary: Eine Sammlung von neu veröffentlichten <<library_translationU>>n.
+  basic_episodes_summary: Eine Sammlung von neu veröffentlichten Episoden.
 
-  # Beipiel key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
+  # Möglichkeiten key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
   flixpatrol_name: <<key_name>> Top <<limit>>
-  flixpatrol_summary: Top <<limit>> <<library_translationU>>(e/n) zu <<key_name>> laut FlixPatrol.
+  flixpatrol_summary: Top <<limit>> <<library_translationU_plural>> zu <<key_name>> laut FlixPatrol.
 
   imdb_popular_name: IMDb Beliebt
-  imdb_popular_summary: Liste von IMDb Beliebt <<library_translationU>>(en/n).
+  imdb_popular_summary: Liste von IMDb Beliebt <<library_translationU_plural_possessive>>.
 
   imdb_top_name: IMDb Top 250
-  imdb_top_summary: Liste von IMDb Top 250 <<library_translationU>>(en/n).
+  imdb_top_summary: Liste von IMDb Top 250 <<library_translationU_plural_possessive>>.
 
   imdb_lowest_name: IMDb Schlecht Bewertet
-  imdb_lowest_summary: Liste von IMDb Schlecht Bewertet <<library_translationU>>(en/n).
+  imdb_lowest_summary: Liste von IMDb Schlecht Bewertet <<library_translationU_plural_possessive>>.
 
   mal_popular_name: MyAnimeList Beliebt
   mal_popular_summary: Eine Sammlung der laut MyAnimeList beliebtesten Anime.
@@ -144,7 +186,7 @@ translations:
   anidb_popular_summary: Eine Sammlung der laut AniDB beliebtesten Anime.
 
   commonsense_selection_name: Common Sense Auswahl
-  commonsense_selection_summary: Eine Sammlung von Common Sense <<library_translationU>>(en/n). Common Sense zeichnet hervorragende Unterhaltung mit einem offiziellen Siegel für Qualität und Wirkung aus. Common Sense Auswahlen beinhalten altersgerechte Medien mit Potential familiäre Unterhaltung zu entfachen, Familien aller Art zu unterhalten und einen positiven, andauernden Effekt auf die Gesellschaft zu haben.
+  commonsense_selection_summary: Eine Sammlung von Common Sense <<library_translationU_plural_possessive>>. Common Sense zeichnet hervorragende Unterhaltung mit einem offiziellen Siegel für Qualität und Wirkung aus. Common Sense Auswahlen beinhalten altersgerechte Medien mit Potential familiäre Unterhaltung zu entfachen, Familien aller Art zu unterhalten und einen positiven, andauernden Effekt auf die Gesellschaft zu haben.
 
   stevenlu_popular_name: StevenLu's Beliebte Filme
   stevenlu_popular_summary: Eine Sammlung von StevenLu's beliebtesten Filmen.
@@ -153,10 +195,10 @@ translations:
   pirated_popular_summary: TorrentFreak.com's Wöchentliche Top Zehn Raubkopierter Filme (Weekly Top Ten Pirated Movies).
 
   tautulli_popular_name: Plex Beliebt
-  tautulli_popular_summary: Eine Sammlung von beliebten <<library_translationU>>(en/n) auf Plex.
+  tautulli_popular_summary: Eine Sammlung von beliebten <<library_translationU_plural_possessive>> auf Plex.
 
   tautulli_watched_name: Plex Geschaut
-  tautulli_watched_summary: Eine Sammlung der top geschauten <<library_translationU>>(en/n) auf Plex.
+  tautulli_watched_summary: Eine Sammlung der top geschauten <<library_translationU_plural_possessive>> auf Plex.
 
   tmdb_airing_name: TMDb Heute Ausgestrahlt
   tmdb_airing_summary: Eine Sammlung von Serien mit Episoden die heute ausgestrahlt werden/wurden.
@@ -165,13 +207,13 @@ translations:
   tmdb_air_summary: Eine Sammlung von Serien die aktiv Episoden veröffentlichen.
 
   tmdb_popular_name: TMDb Beliebt
-  tmdb_popular_summary: Eine Sammlung der laut TMDb am meisten geschauten <<library_translationU>>(e/n).
+  tmdb_popular_summary: Eine Sammlung der laut TMDb am meisten geschauten <<library_translationU_plural>>.
 
   tmdb_top_name: TMDb Beste Bewertung
-  tmdb_top_summary: Eine Sammlung der laut TMDb am besten bewerteten <<library_translationU>>(en/n).
+  tmdb_top_summary: Eine Sammlung der laut TMDb am besten bewerteten <<library_translationU_plural_possessive>>.
 
   tmdb_trending_name: TMDb Aktuell Interessant
-  tmdb_trending_summary: Eine Sammlung von auf TMDb aktuell interessanten (trending) <<library_translationU>>(en/n).
+  tmdb_trending_summary: Eine Sammlung von auf TMDb aktuell interessanten (trending) <<library_translationU_plural_possessive>>.
 
   trakt_collected_name: Trakt Gesammelt
   trakt_collected_summary: Eine Sammlung der Trakt Wöchentlich Gesammelt Liste (Weekly Trakt Collected List).
@@ -192,89 +234,93 @@ translations:
   #                           Both                            #
   #############################################################
 
+  # Möglichkeiten key_name: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
+  separator_name: <<key_name>> Sammlungen
+  separator_summary: Abschnittstrenner für <<key_name>> Sammlungen
+
   # Beispiel key_name: Robin Williams
   actor_name: <<key_name>>
-  actor_summary: <<library_translationU>>s mit <<key_name>>.
+  actor_summary: <<library_translationU_plural>> mit <<key_name>>.
 
   # Beispiel key_name: Deutsch
   audio_language_name: <<key_name>> Audio
-  audio_language_summary: <<library_translationU>>(e/n) in <<key_name>> Sprache gefilmt.
+  audio_language_summary: <<library_translationU_plural>> in <<key_name>> Sprache gefilmt.
 
   audio_language_other_name: Anderes Audio
-  audio_language_other_summary: <<library_translationU>>(e/n) in anderen ungewöhnlichen Sprachen gefilmt.
+  audio_language_other_summary: <<library_translationU_plural>> in anderen ungewöhnlichen Sprachen gefilmt.
 
   # Beispiel key_name: de/16
-  content_rating_name: <<key_name>> <<library_translationU>>(e/n)
-  content_rating_summary: <<library_translationU>>(e/n) mit <<key_name>> Bewertung.
+  content_rating_name: <<key_name>> <<library_translationU_plural>>
+  content_rating_summary: <<library_translationU_plural>> mit <<key_name>> Bewertung.
 
   # Beispiel key_name: de/16
-  content_rating_cs_name: Alter <<key_name>>+ <<library_translationU>>(e/n)
-  content_rating_cs_summary: <<library_translationU>>(e/n) die durch das Common Sense Rating System als <<key_name>> bewertet wurden.
+  content_rating_cs_name: Alter <<key_name>>+ <<library_translationU_plural>>
+  content_rating_cs_summary: <<library_translationU_plural>> die durch das Common Sense Rating System als <<key_name>> bewertet wurden.
 
-  content_rating_other_name: Nicht bewertete <<library_translationU>>(e/n)
-  content_rating_other_summary: <<library_translationU>>(e/n) die nicht bewertet oder mit anderen ungewöhnlichen Bewertungen bewertet sind.
+  content_rating_other_name: Nicht bewertete <<library_translationU_plural>>
+  content_rating_other_summary: <<library_translationU_plural>> die nicht bewertet oder mit anderen ungewöhnlichen Bewertungen bewertet sind.
 
   # Beispiel key_name: Deutschland
   country_name: <<key_name>>
-  country_summary: <<library_translationU>>(e/n) in <<key_name>> gefilmt.
+  country_summary: <<library_translationU_plural>> in <<key_name>> gefilmt.
 
   country_other_name: Andere Länder
-  country_other_summary: <<library_translationU>>(e/n) anderen ungewöhnlichen Ländern gefilmt.
+  country_other_summary: <<library_translationU_plural>> anderen ungewöhnlichen Ländern gefilmt.
 
   # Beispiel key_name: 2010er
   decade_name: Best of <<key_name>>
-  decade_summary: Top <<limit>> <<library_translationU>>(e/n) der <<key_name>>.
+  decade_summary: Top <<limit>> <<library_translationU_plural>> der <<key_name>>.
 
   # Beispiel key_name: 2010
   decade_show_name: Best of <<key_name>>er
-  decade_show_summary: Top <<limit>> <<library_translationU>>(e/n) der <<key_name>>er.
+  decade_show_summary: Top <<limit>> <<library_translationU_plural>> der <<key_name>>er.
 
   # Beispiel key_name: Robin Williams
   director_name: <<key_name>> (Regisseur)
-  director_summary: <<library_translationU>>(e/n) mit Regie durch <<key_name>>.
+  director_summary: <<library_translationU_plural>> mit Regie durch <<key_name>>.
 
   # Beispiel key_name: Action
-  genre_name: <<key_name>> <<library_translationU>>(e/n)
-  genre_summary: <<library_translationU>>(e/n) aus dem Genre <<key_name>>.
+  genre_name: <<key_name>> <<library_translationU_plural>>
+  genre_summary: <<library_translationU_plural>> aus dem Genre <<key_name>>.
 
   # Beispiel key_name: NBC
   network_name: <<key_name>>
-  network_summary: <<library_translationU>>(e/n) ausgestrahlt auf <<key_name>>.
+  network_summary: <<library_translationU_plural>> ausgestrahlt auf <<key_name>>.
 
   # Beispiel key_name: Robin Williams
   producer_name: <<key_name>> (Produzent)
-  producer_summary: <<library_translationU>>(e/n) produziert durch <<key_name>>.
+  producer_summary: <<library_translationU_plural>> produziert durch <<key_name>>.
 
   # Beispiel key_name: 1080p
-  resolution_name: <<key_name>> <<library_translationU>>(e/n)
-  resolution_summary: <<library_translationU>>(e/n) mit der Auflösung <<key_name>>.
+  resolution_name: <<key_name>> <<library_translationU_plural>>
+  resolution_summary: <<library_translationU_plural>> mit der Auflösung <<key_name>>.
 
   resolution_other_name: Andere Auflösungen
-  resolution_other_summary: <<library_translationU>>(e/n) mit anderen ungewöhnlichen Auflösungen.
+  resolution_other_summary: <<library_translationU_plural>> mit anderen ungewöhnlichen Auflösungen.
 
-  # Beispiele key_name: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
-  seasonal_name: <<key_name>> <<library_translationU>>(e/n)
-  seasonal_summary: Eine Sammlung von <<key_name>> <<library_translationU>>(en/n) die zur aktuellen Jahreszeit passen könnten.
+  # Möglichkeiten key_name: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
+  seasonal_name: <<key_name>> <<library_translationU_plural>>
+  seasonal_summary: Eine Sammlung von <<key_name>> <<library_translationU_plural_possessive>> die zur aktuellen Jahreszeit passen könnten.
 
-  # Beispiele key_name: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
-  streaming_name: <<key_name>> <<library_translationU>>(e/n)
-  streaming_summary: <<library_translationU>>(e/n) die auf <<key_name>> streamen.
+  # Möglichkeiten key_name: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
+  streaming_name: <<key_name>> <<library_translationU_plural>>
+  streaming_summary: <<library_translationU_plural>> die auf <<key_name>> streamen.
 
   # Beispiel key_name: Studio Ghibli
   studio_name: <<key_name>>
-  studio_summary: <<library_translationU>>(e/n) produziert von <<key_name>>.
+  studio_summary: <<library_translationU_plural>> produziert von <<key_name>>.
 
   # Beispiel key_name: Deutsch
   subtitle_language_name: <<key_name>> Untertitel
-  subtitle_language_summary: <<library_translationU>>(e/n) mit <<key_name>> Untertitel.
+  subtitle_language_summary: <<library_translationU_plural>> mit <<key_name>> Untertitel.
 
   subtitle_language_other_name: Andere Untertitel
-  subtitle_language_other_summary: <<library_translationU>>(e/n) mit anderen ungewöhnlichen Untertiteln.
+  subtitle_language_other_summary: <<library_translationU_plural>> mit anderen ungewöhnlichen Untertiteln.
 
   # Beispiel key_name: Robin Williams
   writer_name: <<key_name>> (Autor)
-  writer_summary: <<library_translationU>>(e/n) geschrieben durch <<key_name>>.
+  writer_summary: <<library_translationU_plural>> geschrieben durch <<key_name>>.
 
   # Beispiel key_name: 2015
   year_name: Best of <<key_name>>
-  year_summary: <<library_translationU>>(e/n) veröffentlicht in <<key_name>>.
+  year_summary: <<library_translationU_plural>> veröffentlicht in <<key_name>>.
