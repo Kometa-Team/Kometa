@@ -45,6 +45,7 @@ key_names:
   Easter: Ostern
   Father's Day: Vatertag
   # Genre: Genre
+  # Halloween: Halloween
   Independence Day: Amerikanischer Unabhängigkeitstag
   Labor Day: Tag der Arbeit
   Memorial Day: Volkstrauertag
@@ -64,7 +65,6 @@ key_names:
   Valentine's Day: Valentinstag
   Writers: Autoren
   Year: Jahr
-  # Halloween: Halloween
 
 translations:
   #############################################################
