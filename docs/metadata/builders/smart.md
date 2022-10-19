@@ -156,7 +156,9 @@ Tag filter can take multiple values as a **list or a comma-separated string**.
 | `decade`             | Uses the year tag to match the decade                                       |      &#9989;       |     &#10060;      |      &#10060;      |
 | `director`           | Uses the director tags to match                                             |      &#9989;       |     &#10060;      |      &#10060;      |
 | `genre`              | Uses the genre tags to match                                                |      &#9989;       |      &#9989;      |      &#10060;      |
-| `label`              | Uses the label tags to match                                                |      &#9989;       |      &#9989;      |      &#10060;      |
+| `label`              | Uses the label tags to match for top level collections                      |      &#9989;       |      &#9989;      |      &#10060;      |
+| `season_label`       | Uses the label tags to match for season collections                         |      &#10060;      |      &#9989;      |      &#10060;      |
+| `episode_label`      | Uses the label tags to match for episode collections                        |      &#10060;      |      &#9989;      |      &#10060;      |
 | `network`            | Uses the network tags to match<br>**Only works with the New Plex TV Agent** |      &#10060;      |      &#9989;      |      &#10060;      |
 | `producer`           | Uses the actor tags to match                                                |      &#9989;       |     &#10060;      |      &#10060;      |
 | `resolution`         | Uses the resolution tags to match                                           |      &#9989;       |      &#9989;      |      &#10060;      |
@@ -169,6 +171,7 @@ Tag filter can take multiple values as a **list or a comma-separated string**.
 | `artist_country`     | Uses the Artist's Country attribute to match                                |      &#10060;      |     &#10060;      |      &#9989;       |
 | `artist_mood`        | Uses the Artist's Mood attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 | `artist_style`       | Uses the Artist's Style attribute to match                                  |      &#10060;      |     &#10060;      |      &#9989;       |
+| `artist_label`       | Uses the Artist's Label attribute to match                                  |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_genre`        | Uses the Album's Genre attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_mood`         | Uses the Album's Mood attribute to match                                    |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_style`        | Uses the Album's Style attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
@@ -179,6 +182,7 @@ Tag filter can take multiple values as a **list or a comma-separated string**.
 | `album_label`        | Uses the Album's Label attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_mood`         | Uses the Track's Mood attribute to match                                    |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_source`       | Uses the Track's Style attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
+| `track_label`        | Uses the Track's Label attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 
 ## Date Filters
 
