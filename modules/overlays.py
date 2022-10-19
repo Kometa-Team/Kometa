@@ -193,8 +193,7 @@ class Overlays:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
                     elif self.library.reapply_overlays or changed_image or overlay_change:
                         try:
-                            canvas_width = 1920 if isinstance(item, Episode) else 1000
-                            canvas_height = 1080 if isinstance(item, Episode) else 1500
+                            canvas_width, canvas_height = overlay.get_canvas_size(item)
 
                             new_poster = Image.open(poster.location if poster else has_original) \
                                 .convert("RGB").resize((canvas_width, canvas_height), Image.ANTIALIAS)
@@ -296,20 +295,18 @@ class Overlays:
                                             continue
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
                                     else:
-                                        overlay_image = current_overlay.landscape if isinstance(item, Episode) else current_overlay.portrait
-                                        addon_box = current_overlay.landscape_box if isinstance(item, Episode) else current_overlay.portrait_box
+                                        overlay_image, addon_box = current_overlay.get_canvas(item)
                                         new_poster.paste(overlay_image, (0, 0), overlay_image)
                                     if current_overlay.image:
                                         new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
                                 elif current_overlay.name == "backdrop":
-                                    overlay_image = current_overlay.landscape if isinstance(item, Episode) else current_overlay.portrait
+                                    overlay_image, _ = current_overlay.get_canvas(item)
                                     new_poster.paste(overlay_image, (0, 0), overlay_image)
                                 else:
                                     if current_overlay.has_coordinates():
+                                        overlay_image, overlay_box = current_overlay.get_canvas(item)
                                         if current_overlay.portrait is not None:
-                                            overlay_image = current_overlay.landscape if isinstance(item, Episode) else current_overlay.portrait
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                        overlay_box = current_overlay.landscape_box if isinstance(item, Episode) else current_overlay.portrait_box
                                         new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                     else:
                                         new_poster = new_poster.resize(current_overlay.image.size, Image.ANTIALIAS)

@@ -24,7 +24,7 @@ variables:
     item: Article
 key_names:
   Action: Action
-  Actors: Acteurs et actrices
+  Actors: Acteurs et Actrices
   Adventure: Aventure
   Arabic: Arabes
   Audio Language: Langue audio
@@ -38,7 +38,7 @@ key_names:
   Czech: Tchèques
   Danish: Danois
   Decade: Décennie
-  Directors: Directeurs et Directrices
+  Directors: Réalisateurs
   Drama: Dramatiques
   Dutch: Néerlandais
   Easter: Pâques
