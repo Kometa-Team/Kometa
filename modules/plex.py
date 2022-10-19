@@ -51,6 +51,8 @@ search_translation = {
     "unplayed_episodes": "show.unwatchedLeaves",
     "season_collection": "season.collection",
     "episode_collection": "episode.collection",
+    "season_label": "season.label",
+    "episode_label": "episode.label",
     "artist_title": "artist.title",
     "artist_user_rating": "artist.userRating",
     "artist_genre": "artist.genre",
@@ -61,6 +63,7 @@ search_translation = {
     "artist_added": "artist.addedAt",
     "artist_last_played": "artist.lastViewedAt",
     "artist_unmatched": "artist.unmatched",
+    "artist_label": "artist.label",
     "album_title": "album.title",
     "album_year": "album.year",
     "album_decade": "album.decade",
@@ -90,7 +93,8 @@ search_translation = {
     "track_last_rated": "track.lastRatedAt",
     "track_added": "track.addedAt",
     "track_trash": "track.trash",
-    "track_source": "track.source"
+    "track_source": "track.source",
+    "track_label": "track.label"
 }
 show_translation = {
     "title": "show.title",
@@ -254,6 +258,8 @@ show_only_searches = [
     "network", "network.not",
     "season_collection", "season_collection.not",
     "episode_collection", "episode_collection.not",
+    "season_label", "season_label.not",
+    "episode_label", "episode_label.not",
     "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
     "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
     "episode_air_date", "episode_air_date.not",
@@ -291,8 +297,8 @@ search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR"
 tag_attributes = [
     "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
     "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
-    "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_style", "album_genre", "album_mood",
-    "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source"
+    "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_label", "artist_style", "album_genre", "album_mood",
+    "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source", "track_label"
 ]
 tag_modifiers = ["", ".not", ".regex"]
 no_not_mods = ["resolution", "decade", "album_decade"]

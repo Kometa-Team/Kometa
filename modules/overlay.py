@@ -1,13 +1,16 @@
 import os, re, time
 from datetime import datetime
-from PIL import Image, ImageColor, ImageDraw, ImageFont
 from modules import util
 from modules.util import Failed
+from PIL import Image, ImageColor, ImageDraw, ImageFont
+from plexapi.audio import Album
+from plexapi.video import Episode
 
 logger = util.logger
 
 portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
+square_dim = (1000, 1000)
 old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
 float_vars = ["audience_rating", "critic_rating", "user_rating"]
 int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
@@ -106,6 +109,13 @@ def parse_cords(data, parent, required=False):
 
     return horizontal_align, horizontal_offset, vertical_align, vertical_offset
 
+def get_canvas_size(item):
+    if isinstance(item, Episode):
+        return landscape_dim
+    elif isinstance(item, Album):
+        return square_dim
+    else:
+        return portrait_dim
 
 class Overlay:
     def __init__(self, config, library, original_mapping_name, overlay_data, suppress, level):
@@ -122,6 +132,8 @@ class Overlay:
         self.landscape_box = None
         self.portrait = None
         self.portrait_box = None
+        self.square = None
+        self.square_box = None
         self.group = None
         self.queue = None
         self.weight = None
@@ -326,9 +338,11 @@ class Overlay:
             box = self.image.size if self.image else None
             self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
             self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
+            self.square, self.square_box = self.get_backdrop(square_dim, box=box, text=self.name[5:-1])
         elif self.name.startswith("backdrop"):
             self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.back_box)
             self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.back_box)
+            self.square, self.square_box = self.get_backdrop(square_dim, box=self.back_box)
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)
@@ -345,6 +359,7 @@ class Overlay:
                 if self.has_coordinates():
                     self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.image.size)
                     self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.image.size)
+                    self.square, self.square_box = self.get_backdrop(square_dim, box=self.image.size)
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
@@ -500,3 +515,11 @@ class Overlay:
         else:
             ha, ho, va, vo = new_cords
         return get_cord(ho, canvas_box[0], box[0], ha), get_cord(vo, canvas_box[1], box[1], va)
+
+    def get_canvas(self, item):
+        if isinstance(item, Episode):
+            return self.landscape, self.landscape_box
+        elif isinstance(item, Album):
+            return self.square, self.square_box
+        else:
+            return self.portrait, self.portrait_box
