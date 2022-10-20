@@ -74,6 +74,7 @@ class DataFile:
         self.templates = {}
         self.translations = {}
         self.key_names = {}
+        self.translation_variables = {}
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -147,16 +148,17 @@ class DataFile:
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
         lib_type = self.library.type.lower() if self.library else "item"
         logger.debug(f"Translations Loaded From: {dir_path}")
-        key_names = {k: {"default": v[lib_type]} for k, v in yaml.data["variables"].items()}
+        key_names = {}
+        variables = {k: {"default": v[lib_type]} for k, v in yaml.data["variables"].items()}
 
         def add_translation(yaml_path, yaml_key, data=None):
             yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
             if "variables" in yaml_content.data and yaml_content.data["variables"]:
                 for var_key, var_value in yaml_content.data["variables"].items():
                     if lib_type in var_value:
-                        if var_key not in key_names:
-                            key_names[var_key] = {}
-                        key_names[var_key][yaml_key] = var_value[lib_type]
+                        if var_key not in variables:
+                            variables[var_key] = {}
+                        variables[var_key][yaml_key] = var_value[lib_type]
 
             if "translations" in yaml_content.data and yaml_content.data["translations"]:
                 for ky, vy in yaml_content.data["translations"].items():
@@ -184,7 +186,7 @@ class DataFile:
             for file in os.listdir(dir_path):
                 if file.endswith(".yml") and file != "default.yml":
                     add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
-        return translations, key_names
+        return translations, key_names, variables
 
     def apply_template(self, call_name, mapping_name, data, template_call, extra_variables):
         if not self.templates:
@@ -262,6 +264,7 @@ class DataFile:
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
+                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items()})
                     key_name_variables = {}
                     for var_key, var_value in self.key_names.items():
                         if var_key == "library_type" and language in var_value:
@@ -491,9 +494,7 @@ class DataFile:
             for file_type, template_file, temp_vars, _ in files:
                 temp_data = self.load_file(file_type, template_file, overlay=overlay)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
-                    for temp_key, temp_value in temp_data["templates"].items():
-                        if temp_key not in self.templates:
-                            self.templates[temp_key] = (temp_value, temp_vars)
+                    self.templates.update({k: (v, temp_vars) for k, v in temp_data["templates"].items() if k not in self.templates})
 
     def translation_files(self, data, overlay=False):
         if data and "translations" in data and data["translations"]:
@@ -501,13 +502,10 @@ class DataFile:
             if not files:
                 logger.error("Config Error: No Paths Found for translations")
             for file_type, template_file, _, _ in files:
-                temp_data, key_data = self.load_file(file_type, template_file, overlay=overlay, translation=True)
-                for k, v in temp_data.items():
-                    if k not in self.translations:
-                        self.translations[k] = v
-                for k, v in key_data.items():
-                    if k not in self.key_names:
-                        self.key_names[k] = v
+                temp_data, key_data, variables = self.load_file(file_type, template_file, overlay=overlay, translation=True)
+                self.translations.update({k: v for k, v in temp_data.items() if k not in self.translations})
+                self.key_names.update({k: v for k, v in key_data.items() if k not in self.key_names})
+                self.translation_variables.update({k: v for k, v in variables.items() if k not in self.translation_variables})
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
