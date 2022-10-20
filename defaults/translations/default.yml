@@ -26,14 +26,14 @@ key_names:
   # Action: Action
   # Action & Adventure: Action & Adventure
   # Actors: Actors
-  # Adventure: Adventure
   # Adult: Adult
+  # Adventure: Adventure
   # Albanian: Albanian
   # Animation: Animation
   # Anime: Anime
-  # Audio Language: Audio Language
   # Arabic: Arabic
   # Argentina: Argentina
+  # Audio Language: Audio Language
   # Australia: Australia
   # Austria: Austria
   # Award: Award
@@ -125,11 +125,11 @@ key_names:
   # Kids: Kids
   # Korea: Korea
   # Korean: Korean
+  # LGBTQ+: LGBTQ+
   # Labor Day:  Labor Day
   # Latin: Latin
   # Latvia: Latvia
   # Latvian: Latvian
-  # LGBTQ+: LGBTQ+
   # Luxembourg: Luxembourg
   # Macedonian: Macedonian
   # Malay: Malay
@@ -152,8 +152,8 @@ key_names:
   # Network: Network
   # New Year's Day: New Year's Day
   # New Zealand: New Zealand
-  # News & Politics: News & Politics
   # News: News
+  # News & Politics: News & Politics
   # Norway: Norway
   # Norwegian: Norwegian
   # Norwegian Bokmål: Norwegian Bokmål
@@ -192,8 +192,8 @@ key_names:
   # Slasher: Slasher
   # Slovak: Slovak
   # Slovenian: Slovenian
-  # South Africa: South Africa
   # Soap: Soap
+  # South Africa: South Africa
   # Spain: Spain
   # Spanish: Spanish
   # Sport: Sport
@@ -210,17 +210,17 @@ key_names:
   # Swedish: Swedish
   # Switzerland: Switzerland
   # Sword & Sorcery: Sword & Sorcery
+  # TV Movie: TV Movie
+  # Talk Show: Talk Show
   # Tamil: Tamil
   # Telugu: Telugu
   # Thai: Thai
   # Thailand: Thailand
   # Thanksgiving: Thanksgiving
-  # Turkey: Turkey
-  # Turkish: Turkish
-  # TV Movie: TV Movie
-  # Talk Show: Talk Show
   # Thriller: Thriller
   # Travel: Travel
+  # Turkey: Turkey
+  # Turkish: Turkish
   # Ukraine: Ukraine
   # Ukrainian: Ukrainian
   # United Arab Emirates: United Arab Emirates
