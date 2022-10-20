@@ -33,7 +33,8 @@ variables:
     video: Videos
     # For Playlists
     item: Elementen
-key_names:  # Action: Action
+key_names:
+  # Action: Action
   Action & Adventure: Action & Abenteuer
   Actors: Schauspieler
   Adult: Erwachsen
