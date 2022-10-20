@@ -644,7 +644,7 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.stacktrace()
                     run_item_details = False
                     logger.info("")
-                    logger.separator("No {builder.Type} to Update", space=False, border=False)
+                    logger.separator(f"No {builder.Type} to Update", space=False, border=False)
                 else:
                     details_list = builder.update_details()
                     if details_list:

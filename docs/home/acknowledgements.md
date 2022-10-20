@@ -9,6 +9,8 @@
 | [bullmoose20](https://github.com/bullmoose20) | bullmoose20 | PMM Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer |
 | [chazlarson](https://github.com/chazlarson/)  | chazlarson  | PMM Master Discord Support and Wiki Contributor who created the [Local](guides/local) and [Docker](guides/docker) guides                                          |
 | [cpt-kuesel](https://github.com/cpt-kuesel)   | Cpt Kuesel  | PMM Master Discord Support and [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer                                                 |
+| [JohnFawkes](https://github.com/JohnFawkes)   | anon_fawkes | PMM Apprentice Discord Support                                                                                                                                    |
+| zaP                                           | zaP         | PMM Apprentice Discord Support, Reddit Moderator                                                                                                                  |
 | [mikenobbs](https://github.com/mikenobbs)     | mikenobbs   | PMM Discord Moderator                                                                                                                                             |
 
 The team at Plex Meta Manager would like to recognize and thank those who have helped the project become what it is today. 
