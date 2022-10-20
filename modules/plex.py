@@ -295,7 +295,7 @@ float_attributes = [
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
-    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network",
+    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
     "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
     "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_label", "artist_style", "album_genre", "album_mood",
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source", "track_label"
