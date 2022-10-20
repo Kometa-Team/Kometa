@@ -272,8 +272,8 @@ class DataFile:
                             variables[f"{var_key}U"] = var_value[language]
                         elif language in var_value:
                             key_name_variables[var_key] = var_value[language]
-                    if "key_name" in variables and variables["key_name"] in key_name_variables:
-                        variables["key_name"] = key_name_variables[variables["key_name"]]
+                    if "key_name" in variables:
+                        variables["translated_key_name"] = key_name_variables[variables["key_name"]] if variables["key_name"] in key_name_variables else variables["key_name"]
 
                     def replace_var(input_item, search_dicts):
                         if not isinstance(search_dicts, list):

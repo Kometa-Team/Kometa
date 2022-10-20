@@ -1,3 +1,8 @@
+1.18.0.4 -> 1.18.0.5
+
+Added list of Key Names
+changed `<<key_name>>` to `<<translated_key_name>>`
+
 1.18.0.3 -> 1.18.0.4
 
 basic_episodes_summary: Changed `A collection of newly-released <<library_translation>>s.` to `A collection of newly-released Episodes.`

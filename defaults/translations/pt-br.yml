@@ -1,4 +1,4 @@
-version: 1.18.0.3
+version: 1.18.0.4
 variables:
   library_translation:
     # For Movie Libraries
@@ -45,29 +45,29 @@ translations:
   bafta_best_summary: Vencedores do Melhor Filme da Academia Britânica de Artes Cinematográficas e Televisão.
 
   # example key_name: 2022
-  bafta_year_name: BAFTA <<key_name>>
-  bafta_year_summary: <<key_name>> Prêmio BAFTA.
+  bafta_year_name: BAFTA <<translated_key_name>>
+  bafta_year_summary: <<translated_key_name>> Prêmio BAFTA.
 
   cannes_best_name: Vencedores do Cannes Golden Palm
   cannes_best_summary: Vencedores do Cannes Golden Palm.
 
   # example key_name: 2022
-  cannes_year_name: Cannes <<key_name>>
-  cannes_year_summary: <<key_name>> Prêmios Cannes.
+  cannes_year_name: Cannes <<translated_key_name>>
+  cannes_year_summary: <<translated_key_name>> Prêmios Cannes.
 
-  choice_year_name: Prêmio Critics Choice <<key_name>>
-  choice_year_summary: <<key_name>> Prêmio Critics Choice.
+  choice_year_name: Prêmio Critics Choice <<translated_key_name>>
+  choice_year_summary: <<translated_key_name>> Prêmio Critics Choice.
 
   # example key_name: 2022
-  emmy_year_name: Emmys <<key_name>>
-  emmy_year_summary: <<key_name>> Vencedores do Emmy.
+  emmy_year_name: Emmys <<translated_key_name>>
+  emmy_year_summary: <<translated_key_name>> Vencedores do Emmy.
 
   golden_best_name: Globo de Ouro de Melhores Filmes
   golden_best_summary: Globo de Ouro de Melhores Filmes.
 
   # example key_name: 2022
-  golden_year_name: Globo de Ouro <<key_name>>
-  golden_year_summary: <<key_name>> Vencedores do Globo de Ouro.
+  golden_year_name: Globo de Ouro <<translated_key_name>>
+  golden_year_summary: <<translated_key_name>> Vencedores do Globo de Ouro.
 
   oscars_picture_name: Vencedores do Oscar de Melhor Filme
   oscars_picture_summary: O Oscar de Melhor Filme é um dos prêmios da Academia apresentados anualmente pela Academia de Artes e Ciências Cinematográficas desde que os prêmios estreou em 1929.
@@ -76,8 +76,8 @@ translations:
   oscars_director_summary: O Oscar de Melhor Diretor é um dos prêmios da Academia apresentados anualmente pela Academia de Artes e Ciências Cinematográficas desde que os prêmios estreou em 1929.
 
   # example key_name: 2022
-  oscars_year_name: Vencedores do Oscar <<key_name>>
-  oscars_year_summary: Vencedores da Academia do Oscar de <<key_name>>.
+  oscars_year_name: Vencedores do Oscar <<translated_key_name>>
+  oscars_year_summary: Vencedores da Academia do Oscar de <<translated_key_name>>.
 
   berlinale_best_name: Prêmio Berlinale Golden Bears
   berlinale_best_summary: Até 400 filmes são exibidos todos os anos como parte do programa público da Berlinale (Festival Internacional de Cinema de Berlim), a grande maioria dos quais são estreias mundiais ou europeias. Filmes de todos os gêneros, duração e formato podem ser enviados para consideração. O Urso de Ouro (Goldener Bär alemão) é o maior prêmio concedido ao melhor filme exibido durante este festival.
@@ -92,15 +92,15 @@ translations:
   venice_best_summary: O Festival de Cinema de Veneza é o festival de cinema mais antigo do mundo. Fundado em 1932, o festival acontece todos os anos em Veneza, na Itália. Faz parte da Bienal de Veneza, uma grande exposição bienal e festival de arte contemporânea. O prêmio Leone d'Oro (Leão de Ouro) do festival é concedido ao melhor filme exibido no festival.
 
   # example key_name: 2022
-  spirit_year_name: Prêmio Independent Spirit <<key_name>>
-  spirit_year_summary: <<key_name>> Prêmio Independent Spirit.
+  spirit_year_name: Prêmio Independent Spirit <<translated_key_name>>
+  spirit_year_summary: <<translated_key_name>> Prêmio Independent Spirit.
 
   sundance_best_name: Vencedores Prêmio do Sundance Grand Jury
   sundance_best_summary: O Sundance Film Festival é um festival de cinema que acontece anualmente no estado de Utah, nos Estados Unidos. É o maior festival de cinema independente dos EUA Realizado em janeiro, o festival é a principal vitrine para novos trabalhos de cineastas independentes americanos e internacionais. O festival compreende seções competitivas para filmes dramáticos e documentários americanos e internacionais, longas-metragens e curtas-metragens, e um grupo de seções de exibição não competitivas.
 
   # example key_name: 2022
-  sundance_year_name: Festival de Cinema de Sundance <<key_name>>
-  sundance_year_summary: Festival de Cinema de Sundance de <<key_name>>.
+  sundance_year_name: Festival de Cinema de Sundance <<translated_key_name>>
+  sundance_year_summary: Festival de Cinema de Sundance de <<translated_key_name>>.
 
   #############################################################
   #                           Chart                           #
@@ -125,8 +125,8 @@ translations:
   basic_episodes_summary: Uma coleção de episódios recém-lançados <<library_translation>>s.
 
   # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
-  flixpatrol_name: <<key_name>> Top <<limit>>
-  flixpatrol_summary: Top <<limit>> <<library_translation>>s da <<key_name>> de acordo com FlixPatrol.
+  flixpatrol_name: <<translated_key_name>> Top <<limit>>
+  flixpatrol_summary: Top <<limit>> <<library_translation>>s da <<translated_key_name>> de acordo com FlixPatrol.
 
   imdb_popular_name: Popular no IMDb
   imdb_popular_summary: Lista dos mais populares de acordo com IMDb <<library_translation>>s.
@@ -204,89 +204,93 @@ translations:
   #                           Both                            #
   #############################################################
 
+  # possible key_names: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
+  separator_name: <<translated_key_name>> Coleções
+  separator_summary: Separador de seção para Coleções de <<key_name>>.
+
   # example key_name: Robin Williams
-  actor_name: <<key_name>>
-  actor_summary: <<library_translationU>>s com <<key_name>>.
+  actor_name: <<translated_key_name>>
+  actor_summary: <<library_translationU>>s com <<translated_key_name>>.
 
   # example key_name: English
-  audio_language_name: <<key_name>> Áudio
-  audio_language_summary: <<library_translationU>>s filmado em <<key_name>> Language.
+  audio_language_name: <<translated_key_name>> Áudio
+  audio_language_summary: <<library_translationU>>s filmado em <<translated_key_name>> Language.
 
   audio_language_other_name: Outros Áudios
   audio_language_other_summary: <<library_translationU>>s filmado em outras línguas.
 
   # example key_name: TV-MA
-  content_rating_name: <<key_name>> <<library_translationU>>s
-  content_rating_summary: <<library_translationU>>s que são classificados <<key_name>>.
+  content_rating_name: <<translated_key_name>> <<library_translationU>>s
+  content_rating_summary: <<library_translationU>>s que são classificados <<translated_key_name>>.
 
   # example key_name: TV-MA
-  content_rating_cs_name: Idade <<key_name>>+ <<library_translationU>>s
-  content_rating_cs_summary: <<library_translationU>>s que são classificados <<key_name>> de acordo com Sistema de classificação do Common Sense .
+  content_rating_cs_name: Idade <<translated_key_name>>+ <<library_translationU>>s
+  content_rating_cs_summary: <<library_translationU>>s que são classificados <<translated_key_name>> de acordo com Sistema de classificação do Common Sense .
 
   content_rating_other_name: Não avaliado <<library_translationU>>s
   content_rating_other_summary: <<library_translationU>>s que estão sem classificação ou quaisquer outras classificações.
 
   # example key_name: United States
-  country_name: <<key_name>>
-  country_summary: <<library_translationU>>s filmado no <<key_name>>.
+  country_name: <<translated_key_name>>
+  country_summary: <<library_translationU>>s filmado no <<translated_key_name>>.
 
   country_other_name: Outros países
   country_other_summary: <<library_translationU>>s filmado em outros países.
 
   # example key_name: 2010s
-  decade_name: Melhores de <<key_name>>
-  decade_summary: Top <<limit>> <<library_translation>>s dos <<key_name>>.
+  decade_name: Melhores de <<translated_key_name>>
+  decade_summary: Top <<limit>> <<library_translation>>s dos <<translated_key_name>>.
 
   # example key_name: 2010
-  decade_show_name: Melhores de <<key_name>>s
-  decade_show_summary: Top <<limit>> <<library_translation>>s dos <<key_name>>s.
+  decade_show_name: Melhores de <<translated_key_name>>s
+  decade_show_summary: Top <<limit>> <<library_translation>>s dos <<translated_key_name>>s.
 
   # example key_name: Robin Williams
-  director_name: <<key_name>> (Diretor)
-  director_summary: <<library_translationU>>s dirigido por <<key_name>>.
+  director_name: <<translated_key_name>> (Diretor)
+  director_summary: <<library_translationU>>s dirigido por <<translated_key_name>>.
 
   # example key_name: Action
-  genre_name: <<key_name>> <<library_translationU>>s
-  genre_summary: <<library_translationU>>s que tem o gênero <<key_name>>.
+  genre_name: <<translated_key_name>> <<library_translationU>>s
+  genre_summary: <<library_translationU>>s que tem o gênero <<translated_key_name>>.
 
   # example key_name: NBC
-  network_name: <<key_name>>
-  network_summary: <<library_translationU>>s transmitido por <<key_name>>.
+  network_name: <<translated_key_name>>
+  network_summary: <<library_translationU>>s transmitido por <<translated_key_name>>.
 
   # example key_name: Robin Williams
-  producer_name: <<key_name>> (Producer)
-  producer_summary: <<library_translationU>>s produzido por <<key_name>>.
+  producer_name: <<translated_key_name>> (Producer)
+  producer_summary: <<library_translationU>>s produzido por <<translated_key_name>>.
 
   # example key_name: 1080p
-  resolution_name: <<key_name>> <<library_translationU>>s
-  resolution_summary: <<library_translationU>>s que tem a resolução <<key_name>>.
+  resolution_name: <<translated_key_name>> <<library_translationU>>s
+  resolution_summary: <<library_translationU>>s que tem a resolução <<translated_key_name>>.
 
   resolution_other_name: Outra Resolução <<library_translationU>>s
   resolution_other_summary: <<library_translationU>>s que têm outras resoluções.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
-  seasonal_name: <<key_name>> <<library_translationU>>s
-  seasonal_summary: Uma coleção de <<key_name>> <<library_translation>>s que podem estar relacionados com a temporada.
+  seasonal_name: <<translated_key_name>> <<library_translationU>>s
+  seasonal_summary: Uma coleção de <<translated_key_name>> <<library_translation>>s que podem estar relacionados com a temporada.
 
   # possible key_names: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
-  streaming_name: <<key_name>> <<library_translationU>>s
-  streaming_summary: <<library_translationU>>s transmitindo por <<key_name>>.
+  streaming_name: <<translated_key_name>> <<library_translationU>>s
+  streaming_summary: <<library_translationU>>s transmitindo por <<translated_key_name>>.
 
   # example key_name: Studio Ghibli
-  studio_name: <<key_name>>
-  studio_summary: <<library_translationU>>s produzido por <<key_name>>.
+  studio_name: <<translated_key_name>>
+  studio_summary: <<library_translationU>>s produzido por <<translated_key_name>>.
 
   # example key_name: English
-  subtitle_language_name: Legendas em <<key_name>>
-  subtitle_language_summary: <<library_translationU>>s com Legendas em <<key_name>> .
+  subtitle_language_name: Legendas em <<translated_key_name>>
+  subtitle_language_summary: <<library_translationU>>s com Legendas em <<translated_key_name>> .
 
   subtitle_language_other_name: Outras legendas
   subtitle_language_other_summary: <<library_translationU>>s com outras legendas.
 
   # example key_name: Robin Williams
-  writer_name: <<key_name>> (Escritor)
-  writer_summary: <<library_translationU>>s escrito por <<key_name>>.
+  writer_name: <<translated_key_name>> (Escritor)
+  writer_summary: <<library_translationU>>s escrito por <<translated_key_name>>.
 
   # example key_name: 2015
-  year_name: Melhores de <<key_name>>
-  year_summary: <<library_translationU>>s Lançados em <<key_name>>.
+  year_name: Melhores de <<translated_key_name>>
+  year_summary: <<library_translationU>>s Lançados em <<translated_key_name>>.
