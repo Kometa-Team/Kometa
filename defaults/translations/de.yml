@@ -33,18 +33,17 @@ variables:
     video: Videos
     # For Playlists
     item: Elementen
-key_names:
-  # Action: Action
+key_names:  # Action: Action
   Action & Adventure: Action & Abenteuer
   Actors: Schauspieler
-  Adventure: Abenteuer
   Adult: Erwachsen
+  Adventure: Abenteuer
   Albanian: Albanisch
   # Animation: Animation
   # Anime: Anime
-  Audio Language: Audiosprache
   Arabic: Arabisch
   Argentina: Argentinien
+  Audio Language: Audiosprache
   Australia: Australien
   Austria: Österreich
   Award: Auszeichnung
@@ -126,7 +125,7 @@ key_names:
   Indonesian: Indonesisch
   # Iran: Iran
   Ireland: Irland
-  Israel: Israel
+  # Israel: Israel
   Italian: Italienisch
   Italy: Italien
   # Japan: Japan
@@ -136,17 +135,17 @@ key_names:
   Kids: Kinder
   # Korea: Korea
   Korean: Koreanisch
+  # LGBTQ+: LGBTQ+
   Labor Day: Tag der Arbeit
   Latin: Lateinisch
   Latvia: Lettland
   Latvian: Lettisch
-  # LGBTQ+: LGBTQ+
   Luxembourg: Luxemburg
   Macedonian: Mazedonisch
   Malay: Malaiisch
   # Malaysia: Malaysia
   Malaysian: Malaysisch
-  Marathi: Marathi
+  # Marathi: Marathi
   Martial Arts: Kampfkünste
   Memorial Day: Volkstrauertag
   Mexico: Mexiko
@@ -163,8 +162,8 @@ key_names:
   Network: Netzwerk
   New Year's Day: Neujahrstag
   New Zealand: Neuseeland
-  News & Politics: Nachrichten & Politik
   News: Nachrichten
+  News & Politics: Nachrichten & Politik
   Norway: Norwegen
   Norwegian: Norwegisch
   Norwegian Bokmål: Bokmål
@@ -203,8 +202,8 @@ key_names:
   # Slasher: Slasher
   Slovak: Slowakisch
   Slovenian: Slowenisch
-  South Africa: Südafrika
   # Soap: Soap
+  South Africa: Südafrika
   Spain: Spanien
   Spanish: Spanisch
   # Sport: Sport
@@ -221,17 +220,17 @@ key_names:
   Swedish: Schwedisch
   Switzerland: Schweiz
   Sword & Sorcery: Schwert & Zauberei
+  TV Movie: TV Film
+  # Talk Show: Talk Show
   Tamil: Tamilisch
   # Telugu: Telugu
   # Thai: Thai
   # Thailand: Thailand
   Thanksgiving: Erntedankfest
-  Turkey: Türkei
-  Turkish: Türkisch
-  TV Movie: TV Film
-  # Talk Show: Talk Show
   # Thriller: Thriller
   Travel: Reise
+  Turkey: Türkei
+  Turkish: Türkisch
   # Ukraine: Ukraine
   Ukrainian: Ukrainisch
   United Arab Emirates: Vereinigte Arabische Emirate

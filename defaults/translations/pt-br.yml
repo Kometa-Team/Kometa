@@ -23,18 +23,219 @@ variables:
     # For Playlists
     item: Itens
 key_names:
+  # Action: Action
+  # Action & Adventure: Action & Adventure
+  # Actors: Actors
+  # Adult: Adult
+  # Adventure: Adventure
+  # Albanian: Albanian
+  # Animation: Animation
+  # Anime: Anime
+  # Arabic: Arabic
+  # Argentina: Argentina
+  # Audio Language: Audio Language
+  # Australia: Australia
+  # Austria: Austria
+  # Award: Award
+  # Bahamas: Bahamas
+  # Basque: Basque
+  # Belgium: Belgium
+  # Bengali: Bengali
+  # Biography: Biography
+  # Biopic: Biopic
+  # Bosnian: Bosnian
+  # Brazil: Brazil
+  # Bulgaria: Bulgaria
+  # Bulgarian: Bulgarian
+  # Canada: Canada
+  # Catalan: Catalan
+  # Chart: Chart
+  # Children: Children
+  # Chile: Chile
+  # China: China
+  # Chinese: Chinese
   Christmas: Natal
+  # Comedy: Comedy
+  # Competition: Competition
+  # Costa Rica: Costa Rica
+  # Country: Country
+  # Crime: Crime
+  # Croatia: Croatia
+  # Croatian: Croatian
+  # Czech: Czech
+  # Czech Republic: Czech Republic
+  # Danish: Danish
+  # Decade: Decade
+  # Denmark: Denmark
+  # Directors: Directors
+  # Documentary: Documentary
+  # Dominican Republic: Dominican Republic
+  # Drama: Drama
+  # Dutch: Dutch
   Easter: Páscoa
+  # Egypt: Egypt
+  # English: English
+  # Erotica: Erotica
+  # Estonia: Estonia
+  # Estonian: Estonian
+  # Family: Family
+  # Fantasy: Fantasy
   Father's Day: Dia dos Pais
-  Halloween: Halloween
+  # Filipino: Filipino
+  # Film Noir: Film Noir
+  # Finland: Finland
+  # Finnish: Finnish
+  # Food: Food
+  # France: France
+  # French: French
+  # Galician: Galician
+  # Game Show: Game Show
+  # Gangster: Gangster
+  # Genre: Genre
+  # Georgian: Georgian
+  # German: German
+  # Germany: Germany
+  # Greece: Greece
+  # Greek: Greek
+  # Halloween: Halloween
+  # Hebrew: Hebrew
+  # Hindi: Hindi
+  # History: History
+  # Home and Garden: Home and Garden
+  # Hong Kong: Hong Kong
+  # Horror: Horror
+  # Hungarian: Hungarian
+  # Hungary: Hungary
+  # Iceland: Iceland
+  # Icelandic: Icelandic
   Independence Day: Dia da Independência
+  # India: India
+  # Indie: Indie
+  # Indonesia: Indonesia
+  # Indonesian: Indonesian
+  # Iran: Iran
+  # Ireland: Ireland
+  # Israel: Israel
+  # Italian: Italian
+  # Italy: Italy
+  # Japan: Japan
+  # Japanese: Japanese
+  # Kannada: Kannada
+  # Kazakh: Kazakh
+  # Kids: Kids
+  # Korea: Korea
+  # Korean: Korean
+  # LGBTQ+: LGBTQ+
   Labor Day: Dia do Trabalho
+  # Latin: Latin
+  # Latvia: Latvia
+  # Latvian: Latvian
+  # Luxembourg: Luxembourg
+  # Macedonian: Macedonian
+  # Malay: Malay
+  # Malaysia: Malaysia
+  # Malaysian: Malaysian
+  # Marathi: Marathi
+  # Martial Arts: Martial Arts
   Memorial Day: Dia da Recordação
+  # Mexico: Mexico
+  # Mind-Bend: Mind-Bend
+  # Mind-Fuck: Mind-Fuck
+  # Mini-Series: Mini-Series
+  # Morocco: Morocco
   Mother's Day: Dia das Mães
+  # Music: Music
+  # Musical: Musical
+  # Mystery: Mystery
+  # Nepal: Nepal
+  # Netherlands: Netherlands
+  # Network: Network
   New Year's Day: 1º dia do Ano
+  # New Zealand: New Zealand
+  # News: News
+  # News & Politics: News & Politics
+  # Norway: Norway
+  # Norwegian: Norwegian
+  # Norwegian Bokmål: Norwegian Bokmål
+  # Norwegian Nynorsk: Norwegian Nynorsk
+  # Pakistan: Pakistan
+  # Panama: Panama
+  # Persian: Persian
+  # Peru: Peru
+  # Philippines: Philippines
+  # Poland: Poland
+  # Polish: Polish
+  # Politics: Politics
+  # Portugal: Portugal
+  # Portugese: Portugese
+  # Producers: Producers
+  # Punjabi: Punjabi
+  # Qatar: Qatar
+  # Ratings: Ratings
+  # Reality: Reality
+  # Resolution: Resolution
+  # Romance: Romance
+  # Romania: Romania
+  # Romanian: Romanian
+  # Romantic Comedy: Romantic Comedy
+  # Romantic Drama: Romantic Drama
+  # Russia: Russia
+  # Russian: Russian
+  # Saudi Arabia: Saudi Arabia
+  # Sci-Fi & Fantasy: Sci-Fi & Fantasy
+  # Science Fiction: Science Fiction
+  # Seasonal: Seasonal
+  # Serbia: Serbia
+  # Serbian: Serbian
+  # Short: Short
+  # Singapore: Singapore
+  # Slasher: Slasher
+  # Slovak: Slovak
+  # Slovenian: Slovenian
+  # Soap: Soap
+  # South Africa: South Africa
+  # Spain: Spain
+  # Spanish: Spanish
+  # Sport: Sport
+  # Sri Lanka: Sri Lanka
   St. Patrick's Day: Dia de São Patrício
+  # Stand-Up Comedy: Stand-Up Comedy
+  # Streaming: Streaming
+  # Studio: Studio
+  # Subtitle Language: Subtitle Language
+  # Superhero: Superhero
+  # Suspense: Suspense
+  # Swahili: Swahili
+  # Sweden: Sweden
+  # Swedish: Swedish
+  # Switzerland: Switzerland
+  # Sword & Sorcery: Sword & Sorcery
+  # TV Movie: TV Movie
+  # Talk Show: Talk Show
+  # Tamil: Tamil
+  # Telugu: Telugu
+  # Thai: Thai
+  # Thailand: Thailand
   Thanksgiving: Ação de Graças
+  # Thriller: Thriller
+  # Travel: Travel
+  # Turkey: Turkey
+  # Turkish: Turkish
+  # Ukraine: Ukraine
+  # Ukrainian: Ukrainian
+  # United Arab Emirates: United Arab Emirates
+  # United Kingdom: United Kingdom
+  # United States of America: United States of America
+  # Universe: Universe
+  # Urdu: Urdu
   Valentine's Day: Dia de São Valentim
+  # Vietnam: Vietnam
+  # Vietnamese: Vietnamese
+  # War & Politics: War & Politics
+  # Welsh: Welsh
+  # Western: Western
+  # Writers: Writers
+  # Year: Year
 
 translations:
   #############################################################
