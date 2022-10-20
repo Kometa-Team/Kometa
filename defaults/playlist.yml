@@ -8,6 +8,9 @@
 external_templates:
   pmm: templates
 
+translations:
+  pmm: translations
+
 templates:
   playlist:
     default:
