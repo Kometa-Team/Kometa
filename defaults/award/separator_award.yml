@@ -10,6 +10,9 @@ external_templates:
   template_variables:
     collection_section: 16
 
+translations:
+  pmm: translations
+
 collections:
   Award Collections:
     template:
