@@ -4,7 +4,7 @@ The `versions` Default Overlay File is used to create an overlay based on if the
 
 **This file works with Movie and Show Libraries.**
 
-![](images/versions.png)
+![](images/version.png)
 
 ## Config
 

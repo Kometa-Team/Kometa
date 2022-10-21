@@ -1,6 +1,6 @@
 # Installing Plex Meta Manager
 
-Generally, Plex-Meta-Manmager can be installed in one of two ways:
+Generally, Plex Meta Manager can be installed in one of two ways:
 
 1. Running on a system as a Python script [we will refer to this as a "local" install]
 2. Running as a Docker container

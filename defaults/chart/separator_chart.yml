@@ -10,6 +10,9 @@ external_templates:
   template_variables:
     collection_section: "01"
 
+translations:
+  pmm: translations
+
 collections:
   Chart Collections:
     template:
