@@ -8,7 +8,7 @@ This file only updates the overlays based on the data in Plex. Use the [Mass * R
 
 **If no template variables are set this file will do nothing.**
 
-![](images/ratings.png)
+![](images/ratings_overlay.png)
 
 ## Config
 
