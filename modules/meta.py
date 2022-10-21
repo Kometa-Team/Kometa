@@ -264,7 +264,7 @@ class DataFile:
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
-                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items()})
+                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items() if language in v or "default" in v})
                     key_name_variables = {}
                     for var_key, var_value in self.key_names.items():
                         if var_key == "library_type" and language in var_value:

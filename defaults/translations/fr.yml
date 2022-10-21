@@ -23,220 +23,220 @@ variables:
     # For Playlists
     item: Article
 key_names:
-  # Action: Action
-  # Action & Adventure: Action & Adventure
+  Action: Action
+  Action & Adventure: Action et  Aventure
   Actors: Acteurs et Actrices
-  # Adult: Adult
+  Adult: Adulte
   Adventure: Aventure
-  # Albanian: Albanian
-  # Animation: Animation
-  # Anime: Anime
+  Albanian: Albanais
+  Animation: Animation
+  Anime: Animé
   Arabic: Arabes
-  # Argentina: Argentina
+  Argentina: Argentine
   Audio Language: Langue audio
-  # Australia: Australia
-  # Austria: Austria
+  Australia: Australie
+  Austria: L'Autriche
   Award: Prix
-  # Bahamas: Bahamas
-  # Basque: Basque
-  # Belgium: Belgium
-  # Bengali: Bengali
-  # Biography: Biography
-  # Biopic: Biopic
-  # Bosnian: Bosnian
+  Bahamas: Bahamas
+  Basque: Basque
+  Belgium: Belgique
+  Bengali: Bengali
+  Biography: Biographie
+  Biopic: Biopic
+  Bosnian: Bosniaque
   Brazil: Brésil
-  # Bulgaria: Bulgaria
-  # Bulgarian: Bulgarian
-  # Canada: Canada
-  # Catalan: Catalan
+  Bulgaria: Bulgarie
+  Bulgarian: Bulgare
+  Canada: Canada
+  Catalan: Catalans
   Chart: Graphique
-  # Children: Children
-  # Chile: Chile
+  Children: Enfants
+  Chile: Chili
   China: Chine
-  # Chinese: Chinese
+  Chinese: Chinois
   Christmas: Noël
-  # Comedy: Comedy
-  # Competition: Competition
-  # Costa Rica: Costa Rica
+  Comedy: La Comédie
+  Competition: Compétition
+  Costa Rica: Costa Rica
   Country: Pays
-  # Crime: Crime
-  # Croatia: Croatia
-  # Croatian: Croatian
+  Crime: Crime
+  Croatia: Croatie
+  Croatian: Croate
   Czech: Tchèques
-  # Czech Republic: Czech Republic
+  Czech Republic: République tchèque
   Danish: Danois
   Decade: Décennie
-  # Denmark: Denmark
+  Denmark: Danemark
   Directors: Réalisateurs
-  # Documentary: Documentary
-  # Dominican Republic: Dominican Republic
+  Documentary: Documentaire
+  Dominican Republic: République Dominicaine
   Drama: Dramatiques
   Dutch: Néerlandais
   Easter: Pâques
-  # Egypt: Egypt
+  Egypt: Egypte
   English: Anglais
-  # Erotica: Erotica
-  # Estonia: Estonia
-  # Estonian: Estonian
-  # Family: Family
+  Erotica: Érotique
+  Estonia: Estonie
+  Estonian: Estoniens
+  Family: Famille
   Fantasy: Fantaisies
   Father's Day: Fête des pères
   Filipino: Philippins
-  # Film Noir: Film Noir
-  # Finland: Finland
+  Film Noir: Film Noir
+  Finland: Finlande
   Finnish: Finnois
-  # Food: Food
-  # France: France
+  Food: Aliments
+  France: France
   French: Français
-  # Galician: Galician
-  # Game Show: Game Show
-  # Gangster: Gangster
-  # Genre: Genre
-  # Georgian: Georgian
+  Galician: Galiciens
+  Game Show: Jeu télévisé
+  Gangster: Bandit
+  Genre: Genre
+  Georgian: Géorgien
   German: Allemands
   Germany: Allemagne
-  # Greece: Greece
+  Greece: Grèce
   Greek: Grecs
-  # Halloween: Halloween
+  Halloween: Halloween
   Hebrew: Hébreu
-  # Hindi: Hindi
+  Hindi: Hindi
   History: Historiques
-  # Home and Garden: Home and Garden
-  # Hong Kong: Hong Kong
-  # Horror: Horror
+  Home and Garden: Maison et jardin
+  Hong Kong: Hong Kong
+  Horror: Horreur
   Hungarian: Hongrois
-  # Hungary: Hungary
-  # Iceland: Iceland
-  # Icelandic: Icelandic
+  Hungary: Hongrie
+  Iceland: Islande
+  Icelandic: Islandais
   Independence Day: Le jour de l'indépendance
   India: Inde
-  # Indie: Indie
-  # Indonesia: Indonesia
+  Indie: Indé
+  Indonesia: Indonésie
   Indonesian: Indonésiens
-  # Iran: Iran
-  # Ireland: Ireland
-  # Israel: Israel
+  Iran: L'Iran
+  Ireland: Irlande
+  Israel: Israël
   Italian: Italiens
-  # Italy: Italy
-  # Japan: Japan
+  Italy: Italie
+  Japan: Japon
   Japanese: Japonais
-  # Kannada: Kannada
-  # Kazakh: Kazakh
-  # Kids: Kids
-  # Korea: Korea
+  Kannada: Kannada
+  Kazakh: Kazakh
+  Kids: Des gamins
+  Korea: Corée
   Korean: Coréens
-  # LGBTQ+: LGBTQ+
+  LGBTQ+: LGBTQ+
   Labor Day: Fête du travail
-  # Latin: Latin
-  # Latvia: Latvia
-  # Latvian: Latvian
-  # Luxembourg: Luxembourg
-  # Macedonian: Macedonian
+  Latin: Latin
+  Latvia: Lettonie
+  Latvian: Letton
+  Luxembourg: Luxembourg
+  Macedonian: Macédonien
   Malay: Malais
-  # Malaysia: Malaysia
-  # Malaysian: Malaysian
-  Mandarin: en Mandarin
-  # Marathi: Marathi
-  # Martial Arts: Martial Arts
+  Malaysia: Malaisie
+  Malaysian: Malaisien
+  Mandarin: Mandarin
+  Marathi: Marathe
+  Martial Arts: Arts martiaux
   Memorial Day: Jour du souvenir
-  # Mexico: Mexico
-  # Mind-Bend: Mind-Bend
-  # Mind-Fuck: Mind-Fuck
-  # Mini-Series: Mini-Series
-  # Morocco: Morocco
+  Mexico: Mexique
+  Mind-Bend: Courbure de l'esprit
+  Mind-Fuck: Baise mentale
+  Mini-Series: Mini-série
+  Morocco: Maroc
   Mother's Day: Fête des mères
   Music: Musiques
-  # Musical: Musical
+  Musical: Musicale
   Mystery: Mystère
-  # Nepal: Nepal
-  # Netherlands: Netherlands
+  Nepal: Népal
+  Netherlands: Pays-Bas
   Network: Réseau
   New Year's Day: Le jour de l'An
   New Zealand: Nouvelle-Zélande
-  # News: News
-  # News & Politics: News & Politics
-  # Norway: Norway
+  News: Nouvelles
+  News & Politics: Actualités et politique
+  Norway: Norvège
   Norwegian: Norvégiens
-  # Norwegian Bokmål: Norwegian Bokmål
-  # Norwegian Nynorsk: Norwegian Nynorsk
-  # Pakistan: Pakistan
-  # Panama: Panama
-  # Persian: Persian
-  # Peru: Peru
-  # Philippines: Philippines
-  # Poland: Poland
+  Norwegian Bokmål: Norvégien Bokmål
+  Norwegian Nynorsk: Norvégien Nynorsk
+  Pakistan: Pakistan
+  Panama: Panama
+  Persian: Persane
+  Peru: Pérou
+  Philippines: Philippines
+  Poland: Pologne
   Polish: Polonais
-  # Politics: Politics
-  # Portugal: Portugal
-  # Portugese: Portugese
+  Politics: Politique
+  Portugal: le Portugal
+  Portugese: Portugais
   Portuguese: Portugais
   Producers: Producteurs et Productrices
-  # Punjabi: Punjabi
-  # Qatar: Qatar
+  Punjabi: Pendjabi
+  Qatar: Qatar
   Ratings: Notes
-  # Reality: Reality
+  Reality: Réalité
   Resolution: Résolution
   Romance: Romantiques
-  # Romania: Romania
+  Romania: Roumanie
   Romanian: Roumains
-  # Romantic Comedy: Romantic Comedy
-  # Romantic Drama: Romantic Drama
-  # Russia: Russia
+  Romantic Comedy: Comédie romantique
+  Romantic Drama: Drame romantique
+  Russia: Russie
   Russian: Russes
-  # Saudi Arabia: Saudi Arabia
-  # Sci-Fi & Fantasy: Sci-Fi & Fantasy
-  # Science Fiction: Science Fiction
+  Saudi Arabia: Arabie Saoudite
+  Sci-Fi & Fantasy: Science-fiction et fantaisie
+  Science Fiction: La science-fiction
   Seasonal: Saisonnier
-  # Serbia: Serbia
-  # Serbian: Serbian
-  # Short: Short
-  # Singapore: Singapore
-  # Slasher: Slasher
+  Serbia: Serbie
+  Serbian: Serbe
+  Short: Court Métrage
+  Singapore: Singapour
+  Slasher: Slasher
   Slovak: Slovaques
-  # Slovenian: Slovenian
-  # Soap: Soap
-  # South Africa: South Africa
+  Slovenian: Slovène
+  Soap: Feuilleton
+  South Africa: Afrique du Sud
   Spain: Espagne
   Spanish: Espagnols
-  # Sport: Sport
-  # Sri Lanka: Sri Lanka
+  Sport: Sport
+  Sri Lanka: Sri Lanka
   St. Patrick's Day: Le jour de la Saint-Patrick
-  # Stand-Up Comedy: Stand-Up Comedy
+  Stand-Up Comedy: Comédie debout
   Streaming: Diffusion
-  # Studio: Studio
+  Studio: Studio
   Subtitle Language: Langue des sous-titres
-  # Superhero: Superhero
-  # Suspense: Suspense
-  # Swahili: Swahili
-  # Sweden: Sweden
+  Superhero: Super-héros
+  Suspense: Le Suspense
+  Swahili: Swahili
+  Sweden: Suède
   Swedish: Suédois
-  # Switzerland: Switzerland
-  # Sword & Sorcery: Sword & Sorcery
-  # TV Movie: TV Movie
-  # Talk Show: Talk Show
+  Switzerland: Suisse
+  Sword & Sorcery: Épée et sorcellerie
+  TV Movie: Téléfilm
+  Talk Show: Talk-show
   Tamil: Tamouls
   Telugu: Télougou
   Thai: Thaïlandais
-  # Thailand: Thailand
+  Thailand: Thaïlande
   Thanksgiving: Action de grâces
   Thriller: Suspense
-  # Travel: Travel
-  # Turkey: Turkey
+  Travel: Voyager
+  Turkey: Turquie
   Turkish: Turcs
-  # Ukraine: Ukraine
-  # Ukrainian: Ukrainian
-  # United Arab Emirates: United Arab Emirates
+  Ukraine: Ukraine
+  Ukrainian: Ukrainien
+  United Arab Emirates: Emirats Arabes Unis
   United Kingdom: Royaume-Uni
   United States of America: les États-Unis d'Amérique
   Universe: Univers
-  # Urdu: Urdu
+  Urdu: Ourdou
   Valentine's Day: La Saint-Valentin
-  # Vietnam: Vietnam
-  # Vietnamese: Vietnamese
+  Vietnam: Viêt Nam
+  Vietnamese: Vietnamien
   War: Guerre
-  # War & Politics: War & Politics
-  # Welsh: Welsh
-  # Western: Western
+  War & Politics: Guerre & Politique
+  Welsh: Gallois
+  Western: Le Western
   Writers: Scénaristes
   Year: de l'année
 
