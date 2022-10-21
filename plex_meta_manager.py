@@ -40,6 +40,7 @@ parser.add_argument("-ca", "--cache-library", "--cache-libraries", dest="cache_l
 parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
+parser.add_argument("-nr", "--no-report", dest="no_report", help="Run without saving a report", action="store_true", default=False)
 parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Run without writing to the config", action="store_true", default=False)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
@@ -87,6 +88,7 @@ delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
 no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
+no_report = get_arg("PMM_NO_REPORT", args.no_report, arg_bool=True)
 read_only_config = get_arg("PMM_READ_ONLY_CONFIG", args.read_only_config, arg_bool=True)
 divider = get_arg("PMM_DIVIDER", args.divider)
 screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
@@ -192,6 +194,7 @@ def start(attrs):
     attrs["read_only"] = read_only_config
     attrs["version"] = version
     attrs["no_missing"] = no_missing
+    attrs["no_report"] = no_report
     attrs["collection_only"] = collection_only
     attrs["playlist_only"] = playlist_only
     attrs["operations_only"] = operations_only
@@ -216,6 +219,7 @@ def start(attrs):
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
     logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
+    logger.debug(f"--no-report (PMM_NO_REPORT): {no_report}")
     logger.debug(f"--read-only-config (PMM_READ_ONLY_CONFIG): {read_only_config}")
     logger.debug(f"--divider (PMM_DIVIDER): {divider}")
     logger.debug(f"--width (PMM_WIDTH): {screen_width}")

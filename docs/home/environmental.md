@@ -28,6 +28,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Resume Run](#resume-run)                             | `-re` or `--resume`                | `PMM_RESUME`             |
 | [No Countdown](#no-countdown)                         | `-nc` or `--no-countdown`          | `PMM_NO_COUNTDOWN`       |
 | [No Missing](#no-missing)                             | `-nm` or `--no-missing`            | `PMM_NO_MISSING`         |
+| [No Report](#no-report)                               | `-nr` or `--no-report`             | `PMM_NO_REPORT`          |
 | [Read Only Config](#read-only-config)                 | `-ro` or `--read-only-config`      | `PMM_READ_ONLY_CONFIG`   |
 | [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                | `PMM_DIVIDER`            |
 | [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                  | `PMM_WIDTH`              |
@@ -850,6 +851,45 @@ python plex_meta_manager.py --no-missing
 
 ```shell
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --no-missing
+```
+
+</details>
+
+### No Report
+
+Run without saving report.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-nr</code> or <code>--no-report</code></td>
+    <td><code>PMM_NO_REPORT</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--no-report</code></td>
+    <td><code>PMM_NO_REPORT=true</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py --no-report
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --no-report
 ```
 
 </details>
