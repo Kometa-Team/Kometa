@@ -179,6 +179,7 @@ key_names:
   Politics: Politik
   # Portugal: Portugal
   Portugese: Portugiesisch
+  Portuguese: Portugiesisch
   Producers: Produzenten
   # Punjabi: Punjabi
   # Qatar: Qatar
@@ -425,7 +426,7 @@ translations:
   actor_summary: <<library_translationU_plural>> mit <<translated_key_name>>.
 
   # Beispiel key_name: Deutsch
-  audio_language_name: <<translated_key_name>> Audio
+  audio_language_name: <<translated_key_name>> (Audio)
   audio_language_summary: <<library_translationU_plural>> in <<translated_key_name>> Sprache gefilmt.
 
   audio_language_other_name: Anderes Audio
@@ -493,7 +494,7 @@ translations:
   studio_summary: <<library_translationU_plural>> produziert von <<translated_key_name>>.
 
   # Beispiel key_name: Deutsch
-  subtitle_language_name: <<translated_key_name>> Untertitel
+  subtitle_language_name: <<translated_key_name>> (Untertitel)
   subtitle_language_summary: <<library_translationU_plural>> mit <<translated_key_name>> Untertitel.
 
   subtitle_language_other_name: Andere Untertitel
