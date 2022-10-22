@@ -99,6 +99,7 @@ class ConfigFile:
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
+        self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.test_mode = attrs["test"] if "test" in attrs else False
         self.trace_mode = attrs["trace"] if "trace" in attrs else False
         self.delete_collections = attrs["delete"] if "delete" in attrs else False
