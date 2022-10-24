@@ -23,13 +23,13 @@ variables:
     # For Playlists
     item: Article
 key_names:
-  Action: Action
-  Action & Adventure: Action et  Aventure
+  # Action: Action
+  Action & Adventure: Action et Aventure
   Actors: Acteurs et Actrices
   Adult: Adulte
   Adventure: Aventure
   Albanian: Albanais
-  Animation: Animation
+  # Animation: Animation
   Anime: Animé
   Arabic: Arabes
   Argentina: Argentine
@@ -37,17 +37,17 @@ key_names:
   Australia: Australie
   Austria: L'Autriche
   Award: Prix
-  Bahamas: Bahamas
-  Basque: Basque
+  # Bahamas: Bahamas
+  # Basque: Basque
   Belgium: Belgique
-  Bengali: Bengali
+  # Bengali: Bengali
   Biography: Biographie
-  Biopic: Biopic
+  # Biopic: Biopic
   Bosnian: Bosniaque
   Brazil: Brésil
   Bulgaria: Bulgarie
   Bulgarian: Bulgare
-  Canada: Canada
+  # Canada: Canada
   Catalan: Catalans
   Chart: Graphique
   Children: Enfants
@@ -57,9 +57,9 @@ key_names:
   Christmas: Noël
   Comedy: La Comédie
   Competition: Compétition
-  Costa Rica: Costa Rica
+  # Costa Rica: Costa Rica
   Country: Pays
-  Crime: Crime
+  # Crime: Crime
   Croatia: Croatie
   Croatian: Croate
   Czech: Tchèques
@@ -82,27 +82,27 @@ key_names:
   Fantasy: Fantaisies
   Father's Day: Fête des pères
   Filipino: Philippins
-  Film Noir: Film Noir
+  # Film Noir: Film Noir
   Finland: Finlande
   Finnish: Finnois
   Food: Aliments
-  France: France
+  # France: France
   French: Français
   Galician: Galiciens
   Game Show: Jeu télévisé
   Gangster: Bandit
-  Genre: Genre
+  # Genre: Genre
   Georgian: Géorgien
   German: Allemands
   Germany: Allemagne
   Greece: Grèce
   Greek: Grecs
-  Halloween: Halloween
+  # Halloween: Halloween
   Hebrew: Hébreu
-  Hindi: Hindi
+  # Hindi: Hindi
   History: Historiques
   Home and Garden: Maison et jardin
-  Hong Kong: Hong Kong
+  # Hong Kong: Hong Kong
   Horror: Horreur
   Hungarian: Hongrois
   Hungary: Hongrie
@@ -120,22 +120,22 @@ key_names:
   Italy: Italie
   Japan: Japon
   Japanese: Japonais
-  Kannada: Kannada
-  Kazakh: Kazakh
+  # Kannada: Kannada
+  # Kazakh: Kazakh
   Kids: Des gamins
   Korea: Corée
   Korean: Coréens
-  LGBTQ+: LGBTQ+
+  # LGBTQ+: LGBTQ+
   Labor Day: Fête du travail
-  Latin: Latin
+  # Latin: Latin
   Latvia: Lettonie
   Latvian: Letton
-  Luxembourg: Luxembourg
+  # Luxembourg: Luxembourg
   Macedonian: Macédonien
   Malay: Malais
   Malaysia: Malaisie
   Malaysian: Malaisien
-  Mandarin: Mandarin
+  # Mandarin: Mandarin
   Marathi: Marathe
   Martial Arts: Arts martiaux
   Memorial Day: Jour du souvenir
@@ -159,11 +159,11 @@ key_names:
   Norwegian: Norvégiens
   Norwegian Bokmål: Norvégien Bokmål
   Norwegian Nynorsk: Norvégien Nynorsk
-  Pakistan: Pakistan
-  Panama: Panama
+  # Pakistan: Pakistan
+  # Panama: Panama
   Persian: Persane
   Peru: Pérou
-  Philippines: Philippines
+  # Philippines: Philippines
   Poland: Pologne
   Polish: Polonais
   Politics: Politique
@@ -172,7 +172,7 @@ key_names:
   Portuguese: Portugais
   Producers: Producteurs et Productrices
   Punjabi: Pendjabi
-  Qatar: Qatar
+  # Qatar: Qatar
   Ratings: Notes
   Reality: Réalité
   Resolution: Résolution
@@ -191,23 +191,23 @@ key_names:
   Serbian: Serbe
   Short: Court Métrage
   Singapore: Singapour
-  Slasher: Slasher
+  # Slasher: Slasher
   Slovak: Slovaques
   Slovenian: Slovène
   Soap: Feuilleton
   South Africa: Afrique du Sud
   Spain: Espagne
   Spanish: Espagnols
-  Sport: Sport
-  Sri Lanka: Sri Lanka
+  # Sport: Sport
+  # Sri Lanka: Sri Lanka
   St. Patrick's Day: Le jour de la Saint-Patrick
   Stand-Up Comedy: Comédie debout
   Streaming: Diffusion
-  Studio: Studio
+  # Studio: Studio
   Subtitle Language: Langue des sous-titres
   Superhero: Super-héros
   Suspense: Le Suspense
-  Swahili: Swahili
+  # Swahili: Swahili
   Sweden: Suède
   Swedish: Suédois
   Switzerland: Suisse
@@ -223,7 +223,7 @@ key_names:
   Travel: Voyager
   Turkey: Turquie
   Turkish: Turcs
-  Ukraine: Ukraine
+  # Ukraine: Ukraine
   Ukrainian: Ukrainien
   United Arab Emirates: Emirats Arabes Unis
   United Kingdom: Royaume-Uni
