@@ -1,3 +1,4 @@
+import re
 from modules import util
 from modules.util import Failed
 from retrying import retry
@@ -58,7 +59,14 @@ discover_movie_sort = [
 ]
 discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
 discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
-
+discover_types = {
+    "Documentary": "documentary", "News": "news", "Miniseries": "miniseries",
+    "Reality": "reality", "Scripted": "scripted", "Talk Show": "talk_show", "Video": "video"
+}
+discover_status = {
+    "Returning Series": "returning", "Planned": "planned", "In Production": "production",
+    "Ended": "ended", "Canceled": "canceled", "Pilot": "pilot"
+}
 
 class TMDbCountry:
     def __init__(self, data):
@@ -401,3 +409,60 @@ class TMDb:
         else:
             logger.info(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
         return tmdb_item
+
+    def item_filter(self, item, filter_attr, modifier, filter_final, filter_data, is_movie, current_time):
+        if filter_attr in ["tmdb_status", "tmdb_type", "original_language"]:
+            if filter_attr == "tmdb_status":
+                check_value = discover_status[item.status]
+            elif filter_attr == "tmdb_type":
+                check_value = discover_types[item.type]
+            elif filter_attr == "original_language":
+                check_value = item.language_iso
+            else:
+                raise Failed
+            if (modifier == ".not" and check_value in filter_data) or (modifier == "" and check_value not in filter_data):
+                return False
+        elif filter_attr in ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]:
+            tmdb_date = None
+            if filter_attr == "first_episode_aired":
+                tmdb_date = item.first_air_date
+            elif filter_attr in ["last_episode_aired", "last_episode_aired_or_never"]:
+                tmdb_date = item.last_air_date
+
+                # tmdb_date is empty if never aired yet
+                if tmdb_date is None and filter_attr == "last_episode_aired_or_never":
+                    return True
+            if util.is_date_filter(tmdb_date, modifier, filter_data, filter_final, current_time):
+                return False
+        elif modifier in [".gt", ".gte", ".lt", ".lte"]:
+            attr = None
+            if filter_attr == "tmdb_vote_count":
+                attr = item.vote_count
+            elif filter_attr == "tmdb_year":
+                attr = item.release_date.year if is_movie else item.first_air_date.year
+            if util.is_number_filter(attr, modifier, filter_data):
+                return False
+        elif filter_attr in ["tmdb_genre", "tmdb_keyword", "origin_country"]:
+            if filter_attr == "tmdb_genre":
+                attrs = item.genres
+            elif filter_attr == "tmdb_keyword":
+                attrs = item.keywords
+            elif filter_attr == "origin_country":
+                attrs = [c.iso_3166_1 for c in item.countries]
+            else:
+                raise Failed
+            if modifier == ".regex":
+                has_match = False
+                for reg in filter_data:
+                    for name in attrs:
+                        if re.compile(reg).search(name):
+                            has_match = True
+                if has_match is False:
+                    return False
+            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                return False
+        elif filter_attr == "tmdb_title":
+            if util.is_string_filter([item.title], modifier, filter_data):
+                return False
+        return True
