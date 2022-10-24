@@ -1,4 +1,4 @@
-import base64, os, requests
+import base64, os, re, requests
 from datetime import datetime
 from lxml import html
 from modules import util, radarr, sonarr, operations
@@ -116,8 +116,13 @@ class ConfigFile:
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         current_time = datetime.now()
 
-        loaded_yaml = YAML(self.config_path)
-        self.data = loaded_yaml.data
+        self.data = YAML(self.config_path).data
+
+        with open(self.config_path, encoding="utf-8") as fp:
+            logger.separator("Redacted Config", space=False, border=False, trace=True)
+            for line in fp.readlines():
+                logger.trace(re.sub(r"(token|client.*|url|api_*key|secret|webhooks|error|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
+            logger.trace("")
 
         def replace_attr(all_data, attr, par):
             if "settings" not in all_data:
