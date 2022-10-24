@@ -15,10 +15,6 @@ translations:
   pmm: translations
 
 collections:
-  Chart Collections:
-    template:
-      - name: separator
-        separator: chart
 
   Newly Released:
     variables:

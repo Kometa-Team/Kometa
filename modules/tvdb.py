@@ -131,11 +131,10 @@ class TVDb:
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['movies']} or {urls['series']}")
         expired = None
-        tvdb_id = None
-        if self.config.Cache and not ignore_cache:
+        if self.config.Cache and not ignore_cache and not is_movie:
             tvdb_id, expired = self.config.Cache.query_tvdb_map(tvdb_url, self.expiration)
-        if tvdb_id and not expired and not is_movie:
-            return tvdb_id, None, None
+            if tvdb_id and not expired:
+                return tvdb_id, None, None
         logger.trace(f"URL: {tvdb_url}")
         try:
             response = self.get_request(tvdb_url)
@@ -161,7 +160,7 @@ class TVDb:
                         pass
                 if tmdb_id is None and imdb_id is None:
                     raise Failed(f"TVDb Error: No TMDb ID or IMDb ID found")
-            if self.config.Cache and not ignore_cache:
+            if self.config.Cache and not ignore_cache and not is_movie:
                 self.config.Cache.update_tvdb_map(expired, tvdb_url, tvdb_id, self.expiration)
             return tvdb_id, tmdb_id, imdb_id
         elif tvdb_url.startswith(urls["movie_id"]):
