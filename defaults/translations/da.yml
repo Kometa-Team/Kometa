@@ -86,7 +86,7 @@ key_names:
   # Finland: Finland
   Finnish: Finsk
   Food: Mad
-  France: Frankring
+  France: Frankrig
   French: Fransk
   Galician: Galicisk
   # Game Show: Game Show
@@ -249,59 +249,59 @@ translations:
   bafta_year_name: BAFTA <<translated_key_name>>
   bafta_year_summary: <<translated_key_name>> BAFTA Priser.
 
-  cannes_best_name: Cannes Golden Palm Winners
-  cannes_best_summary: Cannes Golden Palm Winners.
+  cannes_best_name: Cannes Vindere Af De Gyldne Palmer
+  cannes_best_summary: Vindere af Cannes Gyldne Palmer.
 
   # example key_name: 2022
   cannes_year_name: Cannes <<translated_key_name>>
-  cannes_year_summary: <<translated_key_name>> Cannes Awards.
+  cannes_year_summary: <<translated_key_name>> Cannes Priser.
 
   choice_year_name: Critics Choice Awards <<translated_key_name>>
   choice_year_summary: <<translated_key_name>> Critics Choice Awards.
 
   # example key_name: 2022
-  emmy_year_name: Emmys <<translated_key_name>>
-  emmy_year_summary: <<translated_key_name>> Emmy Winners.
+  emmy_year_name: Emmy <<translated_key_name>>
+  emmy_year_summary: <<translated_key_name>> Emmy Vindere.
 
-  golden_best_name: Golden Globe Best Motion Pictures
-  golden_best_summary: Golden Globe Best Motion Pictures.
+  golden_best_name: Golden Globe Bedste Film
+  golden_best_summary: Golden Globe Bedste Film.
 
   # example key_name: 2022
   golden_year_name: Golden Globe <<translated_key_name>>
-  golden_year_summary: <<translated_key_name>> Golden Globe Winners.
+  golden_year_summary: <<translated_key_name>> Golden Globe Vindere.
 
-  oscars_picture_name: Oscars Best Picture Winners
-  oscars_picture_summary: The Academy Award for Best Picture is one of the Academy Awards presented annually by the Academy of Motion Picture Arts and Sciences since the awards debuted in 1929.
+  oscars_picture_name: Oscar Vindere Af Bedste Film
+  oscars_picture_summary: Akademiets Pris for Bedste Film er en af Akademiets Priser der gives årligt af Academy of Motion Picture Arts and Sciences siden debuten i 1929.
 
-  oscars_director_name: Oscars Best Director Winners
-  oscars_director_summary: The Academy Award for Best Director is one of the Academy Awards presented annually by the Academy of Motion Picture Arts and Sciences since the awards debuted in 1929.
-
-  # example key_name: 2022
-  oscars_year_name: Oscars Winners <<translated_key_name>>
-  oscars_year_summary: Academy Awards (Oscars) Winners for <<translated_key_name>>.
-
-  berlinale_best_name: Berlinale Golden Bears
-  berlinale_best_summary: Up to 400 films are shown every year as part of the Berlinale's (Berlin International Film Festival) public programme, the vast majority of which are world or European premieres. Films of every genre, length and format can be submitted for consideration. The Golden Bear (German Goldener Bär) is the highest prize awarded for the best film shown during this festival.
-
-  cesar_best_name: César Best Film Winners
-  cesar_best_summary: The César Award is the national film award of France, first given out in 1975. The nominations are selected by the members of the Académie des Arts et Techniques du Cinéma. The name of the award comes from the sculptor César Baldaccini. They are considered to be the French equivalent of the American Academy Awards.
-
-  razzie_worst_name: Razzies Golden Raspberry Winners
-  razzie_worst_summary: The Golden Raspberry Award for Worst Picture is an award given out at the annual Golden Raspberry Awards to the worst film of the past year.
-
-  venice_best_name: Venice Golden Lions
-  venice_best_summary: The Venice Film Festival is the oldest film festival in the world. Founded 1932, the festival has since taken place every year in Venice, Italy. It is part of the Venice Biennale, a major biennial exhibition and festival for contemporary art. The festival's Leone d'Oro (Golden Lion) prize is awarded to the best film screened at the festival.
+  oscars_director_name: Oscar Vindere Af Bedste Instruktør
+  oscars_director_summary: Akademiets Pris for Bedste Instruktør er en af Akademiets Priser der gives årligt af Academy of Motion Picture Arts and Sciences siden debuten i 1929.
 
   # example key_name: 2022
-  spirit_year_name: Independent Spirit Awards <<translated_key_name>>
-  spirit_year_summary: <<translated_key_name>> Independent Spirit Awards.
+  oscars_year_name: Oscar Vindere <<translated_key_name>>
+  oscars_year_summary: Vindere af Oscars i <<translated_key_name>>.
 
-  sundance_best_name: Sundance Grand Jury Winners
-  sundance_best_summary: The Sundance Film Festival is a film festival that takes place annually in the state of Utah, in the United States. It is the largest independent cinema festival in the U.S. Held in January, the festival is the premier showcase for new work from American and international independent filmmakers. The festival comprises competitive sections for American and international dramatic and documentary films, both feature-length films and short films, and a group of non-competitive showcase sections.
+  berlinale_best_name: Berlins Guldbjørn
+  berlinale_best_summary: Op mod 400 film vises hvert år som del af Berlins internationale filmfestival, de fleste premierefilm i verdenen eller europa. Film af alle genrer, længde og format kan deltage. Guldbjørnen (German Goldener Bär) er den højst tildelte pris for den bedste film under festivalen.
+
+  cesar_best_name: Césarprisen For Bedste Film
+  cesar_best_summary: Césarprisen er Frankrigs nationale filmpris, der har været uddelt siden 1975. De nominerede udvælges af medlemmerne af Académie des Arts et Techniques du Cinéma. Filmprisen anses for at være det franske modstykke til Oscaruddelingen.
+
+  razzie_worst_name: Razzies Golden Raspberry Vindere
+  razzie_worst_summary: Razzie eller The Golden Raspberry Award er en prisuddeling, der uddeles til filmbranchens værste præstationer i årets løb.
+
+  venice_best_name: Guldløven
+  venice_best_summary: Guldløven er den højeste pris der tildeles ved Filmfestivalen i Venedig. Prisen blev introduceret i 1949 af den organiserende komite og betragtes nu som en af filmindustriens mest fremtrædense priser. I 1970 blev en anden Guldløve introduceret; denne er en ærespris til personer, der har ydet et vigtigt bidrag til filmindustrien.
+
+  # example key_name: 2022
+  spirit_year_name: Independent Spirit Priser <<translated_key_name>>
+  spirit_year_summary: <<translated_key_name>> Independent Spirit Priser.
+
+  sundance_best_name: Sundance Grand Jury Vindere
+  sundance_best_summary: Sundance Film Festival (tidligere kendt som Utah/US Film Festival og senere US Film and Video Festival) er en årlig filmfestival, som afholdes af Sundance Institute hver januar-måned i Park City, Salt Lake City, Utah i USA.[1] Festivalen er den største independent-film filmfestival i USA, og amerikanske såvel som internationale film, kortfilm, dokumentarer og spillefilm deltager i adskillige kategorier om at vinde priser, samt at der gives priser til film udenfor kategorierne.
 
   # example key_name: 2022
   sundance_year_name: Sundance Film Festival <<translated_key_name>>
-  sundance_year_summary: Sundance Film Festival of <<translated_key_name>>.
+  sundance_year_summary: Sundance Film Festival fra <<translated_key_name>>.
 
   #############################################################
   #                           Chart                           #
@@ -310,92 +310,92 @@ translations:
   anilist_popular_name: AniList Populært
   anilist_popular_summary: En samling af det meste populære Anime ifølge AniList.
 
-  anilist_top_rated_name: AniList Bedst Bedømte
+  anilist_top_rated_name: AniList Bedst Bedømt
   anilist_top_rated_summary: En samling af det bedst bedømte Anime ifølge AniList.
 
-  anilist_trending_name: AniList Trender
+  anilist_trending_name: AniList Trends
   anilist_trending_summary: En samling af Anime der trender ifølge AniList.
 
   anilist_season_name: AniList Sæson
   anilist_season_summary: En samling af Anime fra nuværende sæson ifølge AniList.
 
-  basic_released_name: Udgivet fornyligt
-  basic_released_summary: En samling af fornyligt udgivet <<library_translation>>s.
+  basic_released_name: Nyligt Udgivet
+  basic_released_summary: En samling af nyligt udgivet <<library_translation>>.
 
-  basic_episodes_name: Nye episoder
-  basic_episodes_summary: En samling af fornyligt udgivne episoder.
+  basic_episodes_name: Nyligt Udgivne Episoder
+  basic_episodes_summary: En samling af nyligt udgivne episoder.
 
   # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
   flixpatrol_name: <<translated_key_name>> Top <<limit>>
-  flixpatrol_summary: Top <<limit>> <<library_translation>>s på <<translated_key_name>> ifølge FlixPatrol.
+  flixpatrol_summary: Top <<limit>> <<library_translation>> på <<translated_key_name>> ifølge FlixPatrol.
 
   imdb_popular_name: IMDb Populært
-  imdb_popular_summary: Liste af IMDB Populære <<library_translation>>s.
+  imdb_popular_summary: En samling af populære <<library_translation>> ifølge IMDB.
 
   imdb_top_name: IMDb Top 250
-  imdb_top_summary: Liste af IMDb Top 250 <<library_translation>>s.
+  imdb_top_summary: En samling af top 250 <<library_translation>> ifølge IMDB.
 
   imdb_lowest_name: IMDb Lavest Bedømt
-  imdb_lowest_summary: Liste af IMDb lavest bedømte <<library_translation>>s.
+  imdb_lowest_summary: En samling af lavest bedømte <<library_translation>> ifølge IMDB.
 
   mal_popular_name: MyAnimeList Populært
-  mal_popular_summary: En samling af det mest populære Anime ifølge MyAnimeList.
+  mal_popular_summary: En samling af mest populære Anime ifølge MyAnimeList.
 
   mal_favorited_name: MyAnimeList Favoriseret
   mal_favorited_summary: En samling af det mest favoriserede Anime ifølge MyAnimeList.
 
   mal_top_name: MyAnimeList Bedst Bedømt
-  mal_top_summary: En samling af det bedst bedømte Anime ifølge MyAnimeList.
+  mal_top_summary: En samling af bedst bedømte Anime ifølge MyAnimeList.
 
   mal_airing_name: MyAnimeList Top Aktuelle
-  mal_airing_summary: En samling af det bedste bedømte aktuelle Anime ifølge MyAnimeList.
+  mal_airing_summary: En samling af bedst bedømte aktuelle Anime ifølge MyAnimeList.
 
   mal_season_name: MyAnimeList Sæson
   mal_season_summary: En samling af Anime fra nuværende sæson ifølge MyAnimeList.
 
-  anidb_popular_name: AniDB Populær
-  anidb_popular_summary: En samling af populært Anime på AniDB.
+  anidb_popular_name: AniDB Populært
+  anidb_popular_summary: En samling af populært Anime ifølge AniDB.
 
   commonsense_selection_name: Common Sense Selection
-  commonsense_selection_summary: En samling af Common Sense <<library_translation>>s. Common Sense anerkender fremragende underholdning med et officielt stempel for kvalitet og effekt. Common Sense Selections  inkluderer alderssvarende medier med potentiale til at sætte gang i familiesamtaler, underholde familier af enhver art og have en positiv, varig effekt på samfundet.
+  commonsense_selection_summary: En samling af Common Sense <<library_translation>>. Common Sense anerkender fremragende underholdning med et officielt stempel for kvalitet og effekt. Common Sense Selections  inkluderer alderssvarende medier med potentiale til at sætte gang i familiesamtaler, underholde familier af enhver art og have en positiv, varig effekt på samfundet.
 
   stevenlu_popular_name: StevenLu's Populære Film
-  stevenlu_popular_summary: En samling af StevenLu's mest populære film.
+  stevenlu_popular_summary: En samling af populære film ifølge StevenLu.
 
-  pirated_popular_name: Top 10 Piratkopierede Film denne uge
-  pirated_popular_summary: TorrentFreak.com's Weekly Top Ten Pirated Movies.
+  pirated_popular_name: Top 10 Piratkopierede Film
+  pirated_popular_summary: Denne uges top 10 mest piratkopierede film ifølge TorrentFreak.com.
 
-  tautulli_popular_name: Plex Populær
-  tautulli_popular_summary: En samling af <<library_translation>>s populært på Plex.
+  tautulli_popular_name: Plex Populært
+  tautulli_popular_summary: En samling af populære <<library_translation>> på Plex.
 
   tautulli_watched_name: Plex Sete
-  tautulli_watched_summary: En samling af mest <<library_translation>>s sete på Plex.
+  tautulli_watched_summary: En samling af mest sete <<library_translation>> på Plex.
 
-  tmdb_airing_name: TMDb Aktuelt i dag
+  tmdb_airing_name: TMDb Aktuelt I Dag
   tmdb_airing_summary: En samling af serier med afsnit der vises i dag.
 
   tmdb_air_name: TMDb Aktuelt
   tmdb_air_summary: En samling af serier der stadig kommer nye afsnit af.
 
-  tmdb_popular_name: TMDb Populær
-  tmdb_popular_summary: En samling af de mest sete <<library_translation>>s ifølge TMDb.
+  tmdb_popular_name: TMDb Populært
+  tmdb_popular_summary: En samling af populære <<library_translation>> ifølge TMDb.
 
   tmdb_top_name: TMDb Bedst Bedømt
-  tmdb_top_summary: En samling af bedst bedømt <<library_translation>>s ifølge TMDb.
+  tmdb_top_summary: En samling af bedst bedømte <<library_translation>> ifølge TMDb.
 
-  tmdb_trending_name: TMDb Trender
-  tmdb_trending_summary: En samling af <<library_translation>>s der trender på TMDb.
+  tmdb_trending_name: TMDb Trends
+  tmdb_trending_summary: En samling af <<library_translation>> der trender på TMDb.
 
   trakt_collected_name: Trakt Samlet
   trakt_collected_summary: En samling af Trakts ugentlige samlet liste.
 
-  trakt_popular_name: Trakt Populær
+  trakt_popular_name: Trakt Populært
   trakt_popular_summary: En samling af Trakts ugentlige populære liste.
 
   trakt_recommended_name: Trakt Anbefalet
   trakt_recommended_summary: En samling af Trakts ugentligt anbefalet liste.
 
-  trakt_trending_name: Trakt Trender
+  trakt_trending_name: Trakt Trends
   trakt_trending_summary: En samling af Trakts ugentlige trender liste.
 
   trakt_watched_name: Trakt Sete
@@ -411,87 +411,87 @@ translations:
 
   # example key_name: Robin Williams
   actor_name: <<translated_key_name>>
-  actor_summary: <<library_translationU>>s med <<translated_key_name>>.
+  actor_summary: <<library_translationU>> med <<translated_key_name>>.
 
   # example key_name: English
   audio_language_name: <<translated_key_name>> Lyd
-  audio_language_summary: <<library_translationU>>s filmet med <<translated_key_name>> Sprog.
+  audio_language_summary: <<library_translationU>> med <<translated_key_name>> lydsprog.
 
-  audio_language_other_name: Andet Lydsprog
-  audio_language_other_summary: <<library_translationU>>s filmet i andet ualmindeligt lydsprog.
+  audio_language_other_name: Anden Lyd
+  audio_language_other_summary: <<library_translationU>> i andet ualmindeligt lydsprog.
 
   # example key_name: TV-MA
   content_rating_name: <<translated_key_name>> <<library_translationU>>s
-  content_rating_summary: <<library_translationU>>s som er bedømt <<translated_key_name>>.
+  content_rating_summary: <<library_translationU>> som er bedømt <<translated_key_name>>.
 
   # example key_name: TV-MA
-  content_rating_cs_name: Alder <<translated_key_name>>+ <<library_translationU>>s
-  content_rating_cs_summary: <<library_translationU>>s som er bedømt <<translated_key_name>> ifølge Common Sense Rating System.
+  content_rating_cs_name: Alder <<translated_key_name>>+ <<library_translationU>>
+  content_rating_cs_summary: <<library_translationU>> som er bedømt <<translated_key_name>> ifølge Common Sense Rating System.
 
-  content_rating_other_name: Ikke bedømt <<library_translationU>>s
-  content_rating_other_summary: <<library_translationU>>s som ikke er bedømt, ubedømt eller andet ualmindlig bedømmelse.
+  content_rating_other_name: Ikke bedømte <<library_translationU>>
+  content_rating_other_summary: <<library_translationU>> som ikke er bedømt eller anden ualmindlig bedømmelse.
 
   # example key_name: United States
   country_name: <<translated_key_name>>
-  country_summary: <<library_translationU>>s filmet i <<translated_key_name>>.
+  country_summary: <<library_translationU>> optaget i <<translated_key_name>>.
 
   country_other_name: Andet Land
-  country_other_summary: <<library_translationU>>s filmet i andet ualmindeligt land.
+  country_other_summary: <<library_translationU>> optaget i andet ualmindeligt land.
 
   # example key_name: 2010s
-  decade_name: Bedste af <<translated_key_name>>
-  decade_summary: Top <<limit>> <<library_translation>>s af <<translated_key_name>>.
+  decade_name: Bedste fra <<translated_key_name>>
+  decade_summary: Top <<limit>> <<library_translation>> fra <<translated_key_name>>.
 
   # example key_name: 2010
-  decade_show_name: Bedste af <<translated_key_name>>s
-  decade_show_summary: Top <<limit>> <<library_translation>>s af <<translated_key_name>>s.
+  decade_show_name: Bedste fra <<translated_key_name>>
+  decade_show_summary: Top <<limit>> <<library_translation>> fra <<translated_key_name>>.
 
   # example key_name: Robin Williams
   director_name: <<translated_key_name>> (Instruktør)
-  director_summary: <<library_translationU>>s instrueret af <<translated_key_name>>.
+  director_summary: <<library_translationU>> instrueret af <<translated_key_name>>.
 
   # example key_name: Action
   genre_name: <<translated_key_name>> <<library_translationU>>s
-  genre_summary: <<library_translationU>>s som har genren <<translated_key_name>>.
+  genre_summary: <<library_translationU>> som har genren <<translated_key_name>>.
 
   # example key_name: NBC
   network_name: <<translated_key_name>>
-  network_summary: <<library_translationU>>s vist på <<translated_key_name>>.
+  network_summary: <<library_translationU>> vist på <<translated_key_name>>.
 
   # example key_name: Robin Williams
   producer_name: <<translated_key_name>> (Producent)
-  producer_summary: <<library_translationU>>s produceret af <<translated_key_name>>.
+  producer_summary: <<library_translationU>> produceret af <<translated_key_name>>.
 
   # example key_name: 1080p
-  resolution_name: <<translated_key_name>> <<library_translationU>>s
-  resolution_summary: <<library_translationU>>s som har opløsningen <<translated_key_name>>.
+  resolution_name: <<translated_key_name>> <<library_translationU>>
+  resolution_summary: <<library_translationU>> som har opløsningen <<translated_key_name>>.
 
-  resolution_other_name: Anden Opløsning <<library_translationU>>s
-  resolution_other_summary: <<library_translationU>>s som har en anden ualmindelig opløsning.
+  resolution_other_name: Anden Opløsning <<library_translationU>>
+  resolution_other_summary: <<library_translationU>> som har en anden ualmindelig opløsning.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
-  seasonal_name: <<translated_key_name>> <<library_translationU>>s
-  seasonal_summary: En samling af <<translated_key_name>> <<library_translation>>s der har relation til sæsonen.
+  seasonal_name: <<translated_key_name>> <<library_translationU>>
+  seasonal_summary: En samling af <<translated_key_name>> <<library_translation>> der har relation til sæsonen.
 
   # possible key_names: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
-  streaming_name: <<translated_key_name>> <<library_translationU>>s
-  streaming_summary: <<library_translationU>>s streamer på <<translated_key_name>>.
+  streaming_name: <<translated_key_name>> <<library_translationU>>
+  streaming_summary: <<library_translationU>> der streamer på <<translated_key_name>>.
 
   # example key_name: Studio Ghibli
   studio_name: <<translated_key_name>>
-  studio_summary: <<library_translationU>>s produceret af <<translated_key_name>>.
+  studio_summary: <<library_translationU>> produceret af <<translated_key_name>>.
 
   # example key_name: English
-  subtitle_language_name: <<translated_key_name>> Undertekstsprog
-  subtitle_language_summary: <<library_translationU>>s med <<translated_key_name>> undertekstsprog.
+  subtitle_language_name: <<translated_key_name>> Undertekster
+  subtitle_language_summary: <<library_translationU>> med <<translated_key_name>> undertekster.
 
-  subtitle_language_other_name: Andre Undertekstsprog
-  subtitle_language_other_summary: <<library_translationU>>s med andre ualmindelig undertekstsprog.
+  subtitle_language_other_name: Andre Undertekster
+  subtitle_language_other_summary: <<library_translationU>> med andre ualmindelige undertekster.
 
   # example key_name: Robin Williams
   writer_name: <<translated_key_name>> (Forfatter)
-  writer_summary: <<library_translationU>>s skrevet af <<translated_key_name>>.
+  writer_summary: <<library_translationU>> skrevet af <<translated_key_name>>.
 
   # example key_name: 2015
-  year_name: Bedst af <<translated_key_name>>
-  year_summary: <<library_translationU>>s udgivet i <<translated_key_name>>.
+  year_name: Bedste i <<translated_key_name>>
+  year_summary: <<library_translationU>> udgivet i <<translated_key_name>>.
