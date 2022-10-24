@@ -1,15 +1,15 @@
 ##############################################################################
-#                           Audio Language Overlay                           #
+#                           Language Count Overlay                           #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#  https://metamanager.wiki/en/latest/defaults/overlays/audio_language.html  #
+#  https://metamanager.wiki/en/latest/defaults/overlays/language_count.html  #
 ##############################################################################
 
 external_templates:
   pmm: templates
   template_variables:
-    group: audio_language
+    group: language
     horizontal_offset: 0
     horizontal_align: center
     vertical_offset: 30
@@ -20,7 +20,7 @@ external_templates:
     pmm: <<overlay_name>>
 
 templates:
-  audio_language:
+  language:
     default:
       minimum: 2
     optional:
@@ -35,9 +35,8 @@ overlays:
 
   Dual-Audio:
     variables: {key: dual, weight: 20, lt: 3}
-    template: [name: standard, name: audio_language]
-
+    template: [name: standard, name: language]
 
   Multi-Audio:
     variables: {key: multi, weight: 10}
-    template: [name: standard, name: audio_language]
+    template: [name: standard, name: language]
