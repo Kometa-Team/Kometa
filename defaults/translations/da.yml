@@ -29,35 +29,35 @@ key_names:
   Adult: Voksen
   Adventure: Eventyr
   Albanian: Albansk
-  Animation: Animation
-  Anime: Anime
+  # Animation: Animation
+  # Anime: Anime
   Arabic: Arabisk
-  Argentina: Argentina
+  # Argentina: Argentina
   Audio Language: Lydsprog
   Australia: Australien
   Austria: Østrig
   Award: Pris
-  Bahamas: Bahamas
+  # Bahamas: Bahamas
   Basque: Baskisk
   Belgium: Belgien
   Bengali: Bengalsk
   Biography: Biografi
-  Biopic: Biopic
+  # Biopic: Biopic
   Bosnian: Bosnien
   Brazil: Brasilien
   Bulgaria: Bulgarien
   Bulgarian: Bulgarsk
-  Canada: Canada
+  # Canada: Canada
   Catalan: Catalansk
   Chart: Hitliste
   Children: Børn
-  Chile: Chile
+  # Chile: Chile
   China: Kina
   Chinese: Kinesisk
   Christmas: Jul
   Comedy: Komedie
   Competition: Konkurrence
-  Costa Rica: Costa Rica
+  # Costa Rica: Costa Rica
   Country: Land
   Crime: Krimi
   Croatia: Kroatien
@@ -70,7 +70,7 @@ key_names:
   Directors: Instruktør
   Documentary: Dokumentar
   Dominican Republic: Den Dominikanske Republik
-  Drama: Drama
+  # Drama: Drama
   Dutch: Hollandsk
   Easter: Påske
   Egypt: Egypten
@@ -82,27 +82,27 @@ key_names:
   Fantasy: Fantasi
   Father's Day: Fars dag
   Filipino: Filippinsk
-  Film Noir: Film Noir
-  Finland: Finland
+  # Film Noir: Film Noir
+  # Finland: Finland
   Finnish: Finsk
   Food: Mad
   France: Frankring
   French: Fransk
   Galician: Galicisk
   # Game Show: Game Show
-  Gangster: Gangster
-  Genre: Genre
+  # Gangster: Gangster
+  # Genre: Genre
   Georgian: Georgisk
   German: Tysk
   Germany: Tyskland
   Greece: Grækenland
   Greek: Græsk
-  Halloween: Halloween
+  # Halloween: Halloween
   Hebrew: Hebraisk
-  Hindi: Hindi
+  # Hindi: Hindi
   History: Historie
   Home and Garden: Hjem og Have
-  Hong Kong: Hong Kong
+  # Hong Kong: Hong Kong
   Horror: Gyser
   Hungarian: Ungarsk
   Hungary: Ungarn
@@ -110,35 +110,35 @@ key_names:
   Icelandic: Islandsk
   Independence Day: Uafhængighedsdagen
   India: Indien
-  Indie: Indie
+  # Indie: Indie
   Indonesia: Indonesien
   Indonesian: Indonesisk
-  Iran: Iran
+  # Iran: Iran
   Ireland: Irland
-  Israel: Israel
+  # Israel: Israel
   Italian: Italiensk
   Italy: Italien
-  Japan: Japan
+  # Japan: Japan
   Japanese: Japansk
-  Kannada: Kannada
+  # Kannada: Kannada
   Kazakh: Kasakhisk
   Kids: Børn
-  Korea: Korea
+  # Korea: Korea
   Korean: Koreansk
-  LGBTQ+: LGBTQ+
-  # Labor Day:  Labor Day
-  Latin: Latin
+  # LGBTQ+: LGBTQ+
+  Labor Day:  Labor Day
+  # Latin: Latin
   Latvia: Letland
   Latvian: Lettisk
-  Luxembourg: Luxembourg
+  # Luxembourg: Luxembourg
   Macedonian: Makedonsk
   Malay: Malaysisk
-  Malaysia: Malaysia
+  # Malaysia: Malaysia
   Malaysian: Malaysia
-  Marathi: Marathi
+  # Marathi: Marathi
   Martial Arts: Kampsport
   # Memorial Day: Memorial Day
-  Mexico: Mexico
+  # Mexico: Mexico
   # Mind-Bend: Mind-Bend
   # Mind-Fuck: Mind-Fuck
   Mini-Series: Mini-Serie
@@ -147,32 +147,32 @@ key_names:
   Music: Musik
   Musical: Musikalsk
   Mystery: Mysterie
-  Nepal: Nepal
+  # Nepal: Nepal
   Netherlands: Holland
   Network: Netværk
   New Year's Day: Nytårsdag
-  New Zealand: New Zealand
+  # New Zealand: New Zealand
   News: Nyheder
   News & Politics: Nyheder & Politik
   Norway: Norge
   Norwegian: Norsk
   Norwegian Bokmål: Norsk Bokmål
   Norwegian Nynorsk: Norsk Nynorsk
-  Pakistan: Pakistan
-  Panama: Panama
+  # Pakistan: Pakistan
+  # Panama: Panama
   Persian: Persisk
-  Peru: Peru
+  # Peru: Peru
   Philippines: Filippinerne
   Poland: Polen
   Polish: Polsk
   Politics: Politik
-  Portugal: Portugal
+  # Portugal: Portugal
   Portugese: Portugisisk
   Producers: Producenter
-  Punjabi: Punjabi
-  Qatar: Qatar
+  # Punjabi: Punjabi
+  # Qatar: Qatar
   Ratings: Bedømmelser
-  Reality: Reality
+  # Reality: Reality
   Resolution: Opløsning
   Romance: Romantik
   Romania: Rumænien
@@ -183,12 +183,12 @@ key_names:
   Russian: Russisk
   Saudi Arabia: Saudi Arabien
   Sci-Fi & Fantasy: Sci-Fi & Fantasi
-  Science Fiction: Science Fiction
+  # Science Fiction: Science Fiction
   Seasonal: Sæson
   Serbia: Serbien
   Serbian: Serbisk
   Short: Kort
-  Singapore: Singapore
+  # Singapore: Singapore
   Slasher: Splatter
   Slovak: Slovakisk
   Slovenian: Slovensk
@@ -196,44 +196,44 @@ key_names:
   South Africa: Sydafrika
   Spain: Spanien
   Spanish: Spansk
-  Sport: Sport
-  Sri Lanka: Sri Lanka
+  # Sport: Sport
+  # Sri Lanka: Sri Lanka
   # St. Patrick's Day: St. Patrick's Day
   Stand-Up Comedy: Stand-Up Komedie
-  Streaming: Streaming
+  # Streaming: Streaming
   Studio: Studie
   Subtitle Language: Undertekstsprog
   Superhero: Superhelt
   Suspense: Spænding
-  Swahili: Swahili
+  # Swahili: Swahili
   Sweden: Sverige
   Swedish: Svensk
   Switzerland: Schweiz
   Sword & Sorcery: Sværd & Magi
   TV Movie: TV Film
   Talk Show: Talkshow
-  Tamil: Tamil
-  Telugu: Telugu
-  Thai: Thai
-  Thailand: Thailand
+  # Tamil: Tamil
+  # Telugu: Telugu
+  # Thai: Thai
+  # Thailand: Thailand
   # Thanksgiving: Thanksgiving
-  Thriller: Thriller
+  # Thriller: Thriller
   Travel: Rejse
   Turkey: Tyrkiet
   Turkish: Tyrkisk
-  Ukraine: Ukraine
+  # Ukraine: Ukraine
   Ukrainian: Ukrainsk
   United Arab Emirates: Forenede Arabiske Emirater
-  United Kingdom: United Kingdom
+  # United Kingdom: United Kingdom
   United States of America: Amerikas Forenede Stater
   Universe: Univers
-  Urdu: Urdu
+  # Urdu: Urdu
   Valentine's Day: Valentinsdag
-  Vietnam: Vietnam
+  # Vietnam: Vietnam
   Vietnamese: Vietnamesisk
   War & Politics: Krig & Politik
   Welsh: Walisisk
-  Western: Western
+  # Western: Western
   Writers: Forfattere
   Year: År
 
