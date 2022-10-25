@@ -1,4 +1,4 @@
-version: 1.18.0.4
+version: 1.18.0.7
 variables:
   library_translation:
     # For Movie Libraries
@@ -423,6 +423,9 @@ translations:
 
   audio_language_other_name: Autres audio
   audio_language_other_summary: <<library_translationU>>s tournés dans d’autres langues peu communes.
+
+  collectionless_name: Sans collection
+  collectionless_summary: Collection de <<library_translationU>>s utilisées pour que Plex affiche correctement les éléments.
 
   # example key_name: TV-MA
   content_rating_name: <<library_translationU>>s <<translated_key_name>>
