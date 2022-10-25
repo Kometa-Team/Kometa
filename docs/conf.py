@@ -227,6 +227,7 @@ html_theme_options = {
                 ("_menu", "Movie", "defaults/separators", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
+                    ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),
                     ("Content Ratings (US)", "defaults/movie/content_rating_us"),
@@ -250,6 +251,7 @@ html_theme_options = {
                 ("_menu", "Show", "defaults/separators", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
+                    ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),
                     ("US Content Ratings", "defaults/show/content_rating_us"),
