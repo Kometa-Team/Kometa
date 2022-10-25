@@ -1,12 +1,12 @@
-# US Content Rating Collections
+# MAL Content Rating Collections
 
-The `content_rating_us` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_mal` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
-If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
+This file assumes that you are using the `mass_content_rating_update: mal` operation on your library, and if you do not use the MAL-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Show Libraries, but has a Movie Library [Counterpart](../movie/content_rating_us).**
+**This file works with Show Libraries only.**
 
-![](../images/moviecontent_rating_us.png)
+![](../images/content_rating_mal.png)
 
 ## Collections Section 14
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   TV Shows:
     metadata_path:
-      - pmm: content_rating_us
+      - pmm: content_rating_mal
 ```
 
 ## Template Variables
@@ -61,13 +61,13 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: content_rating_us
+      - pmm: content_rating_mal
         template_variables:
           use_other: false
           use_separator: false
           sep_style: blue
           append_addons:
-            R:
+            "R+ - Mild Nudity":
               - "de/18"
           sort_by: title.asc
 ```
@@ -76,18 +76,19 @@ libraries:
 
 ```yaml
 include:
-  - TV-G
-  - TV-Y
-  - TV-PG
-  - TV-14
-  - TV-MA
+  - "G - All Ages"
+  - "PG - Children"
+  - "PG-13 - Teens 13 or older"
+  - "R - 17+ (violence & profanity)"
+  - "R+ - Mild Nudity"
+  - "Rx - Hentai"
 ```
 
 ## Default `addons`
 
 ```yaml
 addons:
-  TV-G: 
+  "G - All Ages": 
     - gb/U
     - gb/0+
     - U
@@ -104,7 +105,7 @@ addons:
     - "04"
     - "05"
     - "06"
-  TV-Y:
+  "PG - Children":
     - TV-Y7
     - TV-Y7-FV
     - 7
@@ -113,14 +114,13 @@ addons:
     - "07"
     - "08"
     - "09"
-  TV-PG:
     - gb/PG
     - gb/9+
     - 10
     - 11
     - 12
+  "PG-13 - Teens 13 or older":
     - 13
-  TV-14:
     - gb/12A
     - 12+
     - PG-13
@@ -130,8 +130,8 @@ addons:
     - 14
     - 15
     - 16
+  "R - 17+ (violence & profanity)":
     - 17
-  TV-MA:
     - 18
     - gb/18
     - MA-17
