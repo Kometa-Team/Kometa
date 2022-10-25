@@ -18,8 +18,8 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 7:
     sys.exit(0)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-db", "--debug", dest="debug", help=argparse.SUPPRESS, action="store_true", default=False)
-parser.add_argument("-tr", "--trace", dest="trace", help=argparse.SUPPRESS, action="store_true", default=False)
+parser.add_argument("-db", "--debug", dest="debug", help="Run with Debug Logs Reporting to the Command Window", action="store_true", default=False)
+parser.add_argument("-tr", "--trace", dest="trace", help="Run with extra Trace Debug Logs", action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)", default="05:00", type=str)
 parser.add_argument("-ti", "--timeout", dest="timeout", help="PMM Global Timeout (Default: 180)", default=180, type=int)

@@ -1,0 +1,40 @@
+##############################################################################
+#                          Other Awards Collections                          #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/both/collectionless.html     #
+##############################################################################
+
+translations:
+  pmm: translations
+
+templates:
+  collectionless:
+    default:
+      exclude_prefix:
+        - "!"
+        - "~"
+      summary: <<collectionless_summary>>
+      name: <<collectionless_name>>
+      sort_title: ~_Collectionless
+      collection_order: alpha
+      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/collectionless.jpg
+    optional:
+      - collection_mode
+      - exclude
+    url_poster: <<url_poster>>
+    collection_mode: hide
+    collection_order: <<collection_order>>
+    sort_title: <<sort_title>>
+    sync_mode: sync
+    summary: <<summary>>>
+    name: <<name>>
+    plex_collectionless:
+      exclude_prefix: <<exclude_prefix>>
+      exclude: <<exclude>>
+
+collections:
+  Collectionless:
+    template:
+      - name: collectionless
+      - name: translation

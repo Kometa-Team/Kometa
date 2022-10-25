@@ -422,6 +422,9 @@ translations:
   audio_language_other_name: Other Audio
   audio_language_other_summary: <<library_translationU>>s filmed in other uncommon Languages.
 
+  collectionless_name: Collectionless
+  collectionless_summary: Collection of <<library_translationU>>s used to make Plex display items correctly.
+
   # example key_name: TV-MA
   content_rating_name: <<translated_key_name>> <<library_translationU>>s
   content_rating_summary: <<library_translationU>>s that are rated <<translated_key_name>>.
