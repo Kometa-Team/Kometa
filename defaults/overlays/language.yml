@@ -73,7 +73,7 @@ templates:
         <<search_attribute>>: <<key>>
 
 overlays:
-  
+
   german:
     variables: {key: de, weight: 240}
     template: [name: standard, name: flags]
@@ -168,4 +168,152 @@ overlays:
 
   hungarian:
     variables: {key: hu, weight: 10}
+    template: [name: standard, name: flags]
+
+  # arabic: 26 possible countries -> https://en.wikipedia.org/wiki/List_of_countries_where_Arabic_is_an_official_language
+  #   variables: {key: ar, weight: 10}
+  #   template: [name: standard, name: flags]
+
+  bulgarian:
+    variables: {key: bg, weight: 10}
+    template: [name: standard, name: flags]
+
+  bengali:
+    variables: {key: bn, weight: 10, country: bd}
+    template: [name: standard, name: flags]
+
+  bosnian:
+    variables: {key: bs, weight: 10, country: ba}
+    template: [name: standard, name: flags]
+
+  catalan:
+    variables: {key: ca, weight: 10, country: es}
+    template: [name: standard, name: flags]
+
+  welsh:
+    variables: {key: cy, weight: 10, country: uk}
+    template: [name: standard, name: flags]
+
+  greek:
+    variables: {key: el, weight: 10, country: gr}
+    template: [name: standard, name: flags]
+
+  estonian:
+    variables: {key: et, weight: 10, country: ee}
+    template: [name: standard, name: flags]
+
+  basque:
+    variables: {key: eu, weight: 10, country: es}
+    template: [name: standard, name: flags]
+
+  finnish:
+    variables: {key: fi, weight: 10}
+    template: [name: standard, name: flags]
+
+  filipino:
+    variables: {key: fil, weight: 10, country: ph}
+    template: [name: standard, name: flags]
+
+  galician:
+    variables: {key: gl, weight: 10, country: es}
+    template: [name: standard, name: flags]
+
+  hebrew:
+    variables: {key: he, weight: 10, country: il}
+    template: [name: standard, name: flags]
+
+  croatian:
+    variables: {key: hr, weight: 10}
+    template: [name: standard, name: flags]
+
+  indonesian:
+    variables: {key: id, weight: 10}
+    template: [name: standard, name: flags]
+
+  georgian:
+    variables: {key: ka, weight: 10, country: ge}
+    template: [name: standard, name: flags]
+
+  kazakh:
+    variables: {key: kk, weight: 10, country: kz}
+    template: [name: standard, name: flags]
+
+  kannada:
+    variables: {key: kn, weight: 10, country: in}
+    template: [name: standard, name: flags]
+
+  latin:
+    variables: {key: la, weight: 10, country: it}
+    template: [name: standard, name: flags]
+
+  lithuanian:
+    variables: {key: lt, weight: 10}
+    template: [name: standard, name: flags]
+
+  latvian:
+    variables: {key: lv, weight: 10}
+    template: [name: standard, name: flags]
+
+  macedonian:
+    variables: {key: mk, weight: 10}
+    template: [name: standard, name: flags]
+
+  malayalam:
+    variables: {key: ml, weight: 10, country: in}
+    template: [name: standard, name: flags]
+
+  marathi:
+    variables: {key: mr, weight: 10, country: in}
+    template: [name: standard, name: flags]
+
+  # malay: possible countries: Brunei, Malaysia, Singapore
+  #   variables: {key: ms, weight: 10}
+  #   template: [name: standard, name: flags]
+
+  norwegian bokmål:
+    variables: {key: nb, weight: 10, country: no}
+    template: [name: standard, name: flags]
+
+  norwegian nynorsk:
+    variables: {key: nn, weight: 10, country: no}
+    template: [name: standard, name: flags]
+
+  punjabi:
+    variables: {key: pa, weight: 10, country: in}
+    template: [name: standard, name: flags]
+
+  romanian:
+    variables: {key: ro, weight: 10}
+    template: [name: standard, name: flags]
+
+  slovak:
+    variables: {key: sk, weight: 10}
+    template: [name: standard, name: flags]
+
+  slovenian:
+    variables: {key: sv, weight: 10, country: sl}
+    template: [name: standard, name: flags]
+
+  albanian:
+    variables: {key: sq, weight: 10, country: al}
+    template: [name: standard, name: flags]
+
+  serbian:
+    variables: {key: sr, weight: 10, country: rs}
+    template: [name: standard, name: flags]
+
+  # swahili: possible countries: Tanzania, Kenya, Rwanda, Uganda
+  #   variables: {key: sw, weight: 10}
+  #   template: [name: standard, name: flags]
+
+  tamil:
+    variables: {key: ta, weight: 10, country: in}
+    template: [name: standard, name: flags]
+
+  urdu:
+    variables: {key: ur, weight: 10, country: pk}
+    template: [name: standard, name: flags]
+
+  vietnamese:
+    variables: {key: vi, weight: 10, country: vn}
     template: [name: standard, name: flags]
