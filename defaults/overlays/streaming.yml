@@ -42,6 +42,10 @@ overlays:
     variables: {key: hbomax, weight: 60}
     template: [name: standard, name: streaming]
 
+  Crunchyroll:
+    variables: {key: crunchyroll, weight: 55}
+    template: [name: standard, name: streaming]
+
   YouTube:
     variables: {key: youtube, weight: 50}
     template: [name: standard, name: streaming]
