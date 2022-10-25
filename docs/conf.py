@@ -260,6 +260,7 @@ html_theme_options = {
                     ("Resolutions", "defaults/both/resolution"),
                     ("Streaming", "defaults/both/streaming"),
                     ("Studios", "defaults/both/studio"),
+                    ("Studios (Anime)", "defaults/both/studio_anime"),
                     ("Subtitle Languages", "defaults/both/subtitle_language"),
                     ("Years", "defaults/both/year"),
                 ]),
