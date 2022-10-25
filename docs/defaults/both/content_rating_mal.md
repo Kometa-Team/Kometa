@@ -4,17 +4,17 @@ The `content_rating_mal` Default Metadata File is used to dynamically create col
 
 This file assumes that you are using the `mass_content_rating_update: mal` operation on your library, and if you do not use the MAL-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Show Libraries only.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/content_rating_mal.png)
 
 ## Collections Section 14
 
-| Collection                                               |                     Key                      | Description                                                                    |
-|:---------------------------------------------------------|:--------------------------------------------:|:-------------------------------------------------------------------------------|
-| `Ratings Collections`                                    |                 `separator`                  | [Separator Collection](../separators) to denote the Section of Collections.    |
-| `<<Content Rating>> Shows`<br>**Example:** `TV-14 Shows` | `<<Content Rating>>`<br>**Example:** `TV-14` | Collection of Shows that have this Content Rating.                             |
-| `Not Rated Shows`                                        |                   `other`                    | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| Collection                                                      |                     Key                      | Description                                                                    |
+|:----------------------------------------------------------------|:--------------------------------------------:|:-------------------------------------------------------------------------------|
+| `Ratings Collections`                                           |                 `separator`                  | [Separator Collection](../separators) to denote the Section of Collections.    |
+| `<<Content Rating>> Movies/Shows`<br>**Example:** `PG-13 Shows` | `<<Content Rating>>`<br>**Example:** `PG-13` | Collection of Shows that have this Content Rating.                             |
+| `Not Rated Movies/Shows`                                        |                   `other`                    | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 
@@ -22,6 +22,9 @@ The below YAML in your config.yml will create the collections:
 
 ```yaml
 libraries:
+  Movies:
+    metadata_path:
+      - pmm: content_rating_mal
   TV Shows:
     metadata_path:
       - pmm: content_rating_mal
@@ -76,66 +79,74 @@ libraries:
 
 ```yaml
 include:
-  - "G - All Ages"
-  - "PG - Children"
-  - "PG-13 - Teens 13 or older"
-  - "R - 17+ (violence & profanity)"
-  - "R+ - Mild Nudity"
-  - "Rx - Hentai"
+  - "G"
+  - "PG"
+  - "PG-13"
+  - "R"
+  - "R+"
+  - "Rx"
 ```
 
 ## Default `addons`
 
 ```yaml
-addons:
-  "G - All Ages": 
-    - gb/U
-    - gb/0+
-    - U
-    - G
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - "01"
-    - "02"
-    - "03"
-    - "04"
-    - "05"
-    - "06"
-  "PG - Children":
-    - TV-Y7
-    - TV-Y7-FV
-    - 7
-    - 8
-    - 9
-    - "07"
-    - "08"
-    - "09"
-    - gb/PG
-    - gb/9+
-    - 10
-    - 11
-    - 12
-  "PG-13 - Teens 13 or older":
-    - 13
-    - gb/12A
-    - 12+
-    - PG-13
-    - TV-13
-    - gb/14+
-    - gb/15
-    - 14
-    - 15
-    - 16
-  "R - 17+ (violence & profanity)":
-    - 17
-    - 18
-    - gb/18
-    - MA-17
-    - NC-17
-    - R
-    - TVMA
+    addons:
+      G:
+        - gb/U
+        - gb/0+
+        - U
+        - G
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
+        - G - All Ages
+      PG:
+        - TV-Y7
+        - TV-Y7-FV
+        - 7
+        - 8
+        - 9
+        - "07"
+        - "08"
+        - "09"
+        - gb/PG
+        - gb/9+
+        - 10
+        - 11
+        - 12
+        - PG - Children
+      PG-13:
+        - 13
+        - gb/12A
+        - 12+
+        - PG-13
+        - TV-13
+        - gb/14+
+        - gb/15
+        - 14
+        - 15
+        - 16
+        - PG-13 - Teens 13 or older
+      R:
+        - 17
+        - 18
+        - gb/18
+        - MA-17
+        - NC-17
+        - R
+        - TVMA
+        - R - 17+ (violence & profanity)
+      R+:
+        - R+ - Mild Nudity
+      Rx:
+        - Rx - Hentai
 ```

@@ -8,17 +8,18 @@ The `streaming` Default Overlay File is used to create an overlay based on the s
 
 ## Supported Streaming Services
 
-| Streaming Service |     Key     | Weight |
-|:------------------|:-----------:|:------:|
-| Netflix           |  `netflix`  |  `90`  |
-| Prime Video       |  `amazon`   |  `80`  |
-| Disney+           |  `disney`   |  `70`  |
-| HBO Max           |  `hbomax`   |  `60`  |
-| YouTube           |  `youtube`  |  `50`  |
-| Hulu              |   `hulu`    |  `40`  |
-| Paramount+        | `paramount` |  `30`  |
-| AppleTV           |  `appletv`  |  `20`  |
-| Peacock           |  `peacock`  |  `10`  |
+| Streaming Service |      Key      | Weight |
+|:------------------|:-------------:|:------:|
+| Netflix           |   `netflix`   | `100`  |
+| Prime Video       |   `amazon`    |  `90`  |
+| Disney+           |   `disney`    |  `80`  |
+| HBO Max           |   `hbomax`    |  `70`  |
+| Crunchyroll       | `Crunchyroll` |  `60`  |
+| YouTube           |   `youtube`   |  `50`  |
+| Hulu              |    `hulu`     |  `40`  |
+| Paramount+        |  `paramount`  |  `30`  |
+| AppleTV           |   `appletv`   |  `20`  |
+| Peacock           |   `peacock`   |  `10`  |
 
 ## Config
 

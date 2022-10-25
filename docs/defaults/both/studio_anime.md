@@ -2,7 +2,7 @@
 
 The `studio_anime` Default Metadata File is used to dynamically create collections based on the studios available in your library.
 
-**This file works with Show Libraries only.**
+**This file works with Movie and Show Libraries.**
 
 ![](../images/studio_anime.png)
 

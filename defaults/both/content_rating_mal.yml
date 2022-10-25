@@ -2,7 +2,7 @@
 #                       MAL Content Rating Collections                       #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#  https://metamanager.wiki/en/latest/defaults/both/content_rating_us.html   #
+#  https://metamanager.wiki/en/latest/defaults/both/content_rating_mal.html  #
 ##############################################################################
 
 external_templates:
@@ -46,21 +46,14 @@ dynamic_collections:
         default: content_rating
         other: content_rating_other
     include:
-      - "G - All Ages"
-      - "PG - Children"
-      - "PG-13 - Teens 13 or older"
-      - "R - 17+ (violence & profanity)"
-      - "R+ - Mild Nudity"
-      - "Rx - Hentai"
-    title_override:
-      "G - All Ages": "G"
-      "PG - Children": "PG"
-      "PG-13 - Teens 13 or older": "PG-13"
-      "R - 17+ (violence & profanity)": "R"
-      "R+ - Mild Nudity": "R+"
-      "Rx - Hentai": "Rx"
+      - "G"
+      - "PG"
+      - "PG-13"
+      - "R"
+      - "R+"
+      - "Rx"
     addons:
-      "G - All Ages": 
+      G:
         - gb/U
         - gb/0+
         - U
@@ -77,7 +70,8 @@ dynamic_collections:
         - "04"
         - "05"
         - "06"
-      "PG - Children":
+        - G - All Ages
+      PG:
         - TV-Y7
         - TV-Y7-FV
         - 7
@@ -91,7 +85,8 @@ dynamic_collections:
         - 10
         - 11
         - 12
-      "PG-13 - Teens 13 or older":
+        - PG - Children
+      PG-13:
         - 13
         - gb/12A
         - 12+
@@ -102,7 +97,8 @@ dynamic_collections:
         - 14
         - 15
         - 16
-      "R - 17+ (violence & profanity)":
+        - PG-13 - Teens 13 or older
+      R:
         - 17
         - 18
         - gb/18
@@ -110,3 +106,8 @@ dynamic_collections:
         - NC-17
         - R
         - TVMA
+        - R - 17+ (violence & profanity)
+      R+:
+        - R+ - Mild Nudity
+      Rx:
+        - Rx - Hentai

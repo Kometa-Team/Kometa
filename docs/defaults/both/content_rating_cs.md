@@ -112,6 +112,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "01"
   2:
     - gb/U
@@ -120,6 +121,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "02"
   3:
     - gb/U
@@ -128,6 +130,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "03"
   4:
     - gb/U
@@ -136,6 +139,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "04"
   5:
     - gb/U
@@ -144,6 +148,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "05"
   6:
     - gb/U
@@ -152,6 +157,7 @@ addons:
     - TV-Y
     - E
     - gb/E
+    - G - All Ages
     - "06"
   7:
     - gb/PG
@@ -159,6 +165,7 @@ addons:
     - TV-Y7
     - TV-Y7-FV
     - PG
+    - PG - Children
     - "07"
   8:
     - gb/PG
@@ -166,6 +173,7 @@ addons:
     - TV-Y7
     - TV-Y7-FV
     - PG
+    - PG - Children
     - "08"
   9:
     - gb/PG
@@ -173,6 +181,7 @@ addons:
     - TV-Y7
     - TV-Y7-FV
     - PG
+    - PG - Children
     - gb/9+
     - "09"
   10:
@@ -181,6 +190,7 @@ addons:
     - TV-Y7
     - TV-Y7-FV
     - PG
+    - PG - Children
     - gb/9+
   11:
     - gb/PG
@@ -188,17 +198,20 @@ addons:
     - TV-Y7
     - TV-Y7-FV
     - PG
+    - PG - Children
     - gb/9+
   12:
     - gb/12
     - gb/12A
     - 12+
     - PG
+    - PG - Children
   13:
     - gb/12
     - gb/12A
     - 12+
     - PG-13
+    - PG-13 - Teens 13 or older
   14:
     - gb/12
     - 12
@@ -207,12 +220,14 @@ addons:
     - PG-13
     - TV-14
     - 13
+    - PG-13 - Teens 13 or older
   15:
     - gb/15
     - gb/14+
     - TV-14
     - 13
     - 14
+    - PG-13 - Teens 13 or older
   16:
     - gb/15
     - gb/14+
@@ -220,6 +235,7 @@ addons:
     - 13
     - 14
     - 15
+    - PG-13 - Teens 13 or older
   17:
     - gb/15
     - gb/14+
@@ -228,6 +244,7 @@ addons:
     - 14
     - 15
     - 16
+    - R - 17+ (violence & profanity)
   18:
     - gb/18
     - MA-17
@@ -240,4 +257,7 @@ addons:
     - gb/X
     - X
     - NC-17
+    - R - 17+ (violence & profanity)
+    - R+ - Mild Nudity
+    - Rx - Hentai
 ```

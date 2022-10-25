@@ -32,7 +32,7 @@ dynamic_collections:
       - shared
     template_variables:
       search_term:
-        default: studio
+        default: studio.is
       image:
         default: studio/<<key_encoded>>
       translation_key:

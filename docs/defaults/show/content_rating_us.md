@@ -104,6 +104,7 @@ addons:
     - "04"
     - "05"
     - "06"
+    - G - All Ages
   TV-Y:
     - TV-Y7
     - TV-Y7-FV
@@ -120,6 +121,7 @@ addons:
     - 11
     - 12
     - 13
+    - PG - Children
   TV-14:
     - gb/12A
     - 12+
@@ -131,6 +133,7 @@ addons:
     - 15
     - 16
     - 17
+    - PG-13 - Teens 13 or older
   TV-MA:
     - 18
     - gb/18
@@ -138,4 +141,7 @@ addons:
     - NC-17
     - R
     - TVMA
+    - R - 17+ (violence & profanity)
+    - R+ - Mild Nudity
+    - Rx - Hentai
 ```
