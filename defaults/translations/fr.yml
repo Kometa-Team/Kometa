@@ -133,6 +133,7 @@ key_names:
   # Luxembourg: Luxembourg
   Macedonian: Macédonien
   Malay: Malais
+  # Malayalam: Malayalam
   Malaysia: Malaisie
   Malaysian: Malaisien
   # Mandarin: Mandarin
@@ -431,7 +432,7 @@ translations:
   content_rating_cs_name: <<library_translationU>>s pour les <<translated_key_name>> ans et plus
   content_rating_cs_summary: <<library_translationU>> qui sont notés <<translated_key_name>> selon le Common Sense Rating System.
 
-  content_rating_other_name: <<library_translationU>>s non classés 
+  content_rating_other_name: <<library_translationU>>s non classés
   content_rating_other_summary: <<library_translationU>>s qui ne sont pas classés, non classés ou tout autre classement peu commun.
 
   # example key_name: United States
