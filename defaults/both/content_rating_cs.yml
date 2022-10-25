@@ -45,6 +45,25 @@ dynamic_collections:
       translation_key:
         default: content_rating_cs
         other: content_rating_other
+      order:
+        1: "01_"
+        2: "02_"
+        3: "03_"
+        4: "04_"
+        5: "05_"
+        6: "06_"
+        7: "07_"
+        8: "08_"
+        9: "09_"
+        10: "10_"
+        11: "11_"
+        12: "12_"
+        13: "13_"
+        14: "14_"
+        15: "15_"
+        16: "16_"
+        17: "17_"
+        18: "18_"
     include:
       - 1
       - 2
