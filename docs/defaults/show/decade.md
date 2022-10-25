@@ -2,7 +2,7 @@
 
 The `decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
 
-**This file works with TV Libraries, but has a Movie Library [Counterpart](../movie/decade).**
+**This file works with Show Libraries, but has a Movie Library [Counterpart](../movie/decade).**
 
 ![](../images/decade.png)
 
