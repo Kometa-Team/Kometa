@@ -116,13 +116,13 @@ class ConfigFile:
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         current_time = datetime.now()
 
-        self.data = YAML(self.config_path).data
-
         with open(self.config_path, encoding="utf-8") as fp:
-            logger.separator("Redacted Config", space=False, border=False, trace=True)
+            logger.separator("Redacted Config", space=False, border=False, debug=True)
             for line in fp.readlines():
-                logger.trace(re.sub(r"(token|client.*|url|api_*key|secret|webhooks|error|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
-            logger.trace("")
+                logger.debug(re.sub(r"(token|client.*|url|api_*key|secret|webhooks|error|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
+            logger.debug("")
+
+        self.data = YAML(self.config_path).data
 
         def replace_attr(all_data, attr, par):
             if "settings" not in all_data:
@@ -830,8 +830,6 @@ class ConfigFile:
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
                     lib_vars = lib["template_variables"]
 
-                logger.separator("Metadata Files", space=False, border=False)
-
                 try:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
@@ -858,8 +856,6 @@ class ConfigFile:
                             util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
                         except NotScheduled:
                             params["skip_library"] = True
-
-                logger.separator("Overlay Files", space=False, border=False)
 
                 params["overlay_path"] = []
                 params["remove_overlays"] = False

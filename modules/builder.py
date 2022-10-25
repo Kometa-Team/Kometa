@@ -2219,10 +2219,8 @@ class CollectionBuilder:
         return True
 
     def check_missing_filters(self, item_id, is_movie, tmdb_item=None, check_released=False):
-        final_return = True
         if self.has_tmdb_filters or check_released:
             try:
-                final_return = False
                 if tmdb_item is None:
                     if is_movie:
                         tmdb_item = self.config.TMDb.get_movie(item_id, ignore_cache=True)
@@ -2230,10 +2228,13 @@ class CollectionBuilder:
                         tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
             except Failed:
                 return False
-            if check_released:
-                date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date
-                if not date_to_check or date_to_check > self.current_time:
-                    return False
+        if check_released:
+            date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date
+            if not date_to_check or date_to_check > self.current_time:
+                return False
+        final_return = True
+        if self.has_tmdb_filters:
+            final_return = False
             for filter_list in self.filters:
                 tmdb_f = [(k, v) for k, v in filter_list if k in tmdb_filters]
                 if not tmdb_f:

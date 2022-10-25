@@ -207,8 +207,9 @@ class DataFile:
                 elif not isinstance(self.templates[variables["name"]][0], dict):
                     raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
                 else:
-                    logger.debug(f"Template {variables['name']}")
-                    logger.debug(f"Call: {variables}")
+                    logger.separator(f"Template {variables['name']}", space=False, border=False, debug=True)
+                    logger.trace("")
+                    logger.trace(f"Call: {variables}")
 
                     remove_variables = []
                     optional = []
@@ -248,6 +249,7 @@ class DataFile:
                         (extra_variables, "Definition", False),
                         (self.temp_vars, "Config", True)
                     ]:
+                        logger.trace("")
                         logger.trace(f"{input_type}: {input_dict}")
                         for input_key, input_value in input_dict.items():
                             if input_key == "conditionals":
@@ -386,7 +388,7 @@ class DataFile:
                         if "move_prefix" in template:
                             prefix = template["move_prefix"]
                         elif "move_collection_prefix" in template:
-                            logger.debuf("")
+                            logger.debug("")
                             logger.debug(f"{self.data_type} Warning: template sub-attribute move_collection_prefix will run as move_prefix")
                             prefix = template["move_collection_prefix"]
                         if prefix:
@@ -413,14 +415,15 @@ class DataFile:
                     default = {k: v for k, v in default.items() if k not in variables}
                     optional = [o for o in optional if o not in variables and o not in default]
 
-                    logger.debug("")
-                    logger.debug(f"Variables: {variables}")
-                    logger.debug("")
-                    logger.debug(f"Defaults: {default}")
-                    logger.debug("")
-                    logger.debug(f"Optional: {optional}")
+                    logger.trace("")
+                    logger.trace(f"Variables: {variables}")
+                    logger.trace("")
+                    logger.trace(f"Defaults: {default}")
+                    logger.trace("")
+                    logger.trace(f"Optional: {optional}")
                     logger.trace("")
                     logger.trace(f"Translation: {translation_variables}")
+                    logger.debug("")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
@@ -522,6 +525,7 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
+            logger.debug("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
@@ -1464,6 +1468,7 @@ class PlaylistFile(DataFile):
         self.data_type = "Playlist"
         logger.info("")
         logger.info(f"Loading Playlist {file_type}: {path}")
+        logger.debug("")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
@@ -1480,6 +1485,7 @@ class OverlayFile(DataFile):
         self.data_type = "Overlay"
         logger.info("")
         logger.info(f"Loading Overlay {file_type}: {path}")
+        logger.debug("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
