@@ -1,0 +1,112 @@
+##############################################################################
+#                       MAL Content Rating Collections                       #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#  https://metamanager.wiki/en/latest/defaults/both/content_rating_us.html   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 14
+
+translations:
+  pmm: translations
+
+collections:
+  Ratings Collections:
+    template:
+      - name: separator
+        separator: content_rating
+      - name: translation
+        key_name: Ratings
+        translation_key: separator
+
+dynamic_collections:
+  MAL Content Ratings:
+    type: content_rating
+    title_format: <<key_name>> <<library_typeU>>s
+    other_name: Not Rated <<library_typeU>>s
+    template:
+      - smart_filter
+      - translation
+      - shared
+    other_template:
+      - other_collection
+      - smart_filter
+      - translation
+      - shared
+    template_variables:
+      search_term:
+        default: content_rating
+      image:
+        default: content_rating/mal/<<key_name_encoded>>
+        other: content_rating/mal/NR
+      translation_key:
+        default: content_rating
+        other: content_rating_other
+    include:
+      - "G - All Ages"
+      - "PG - Children"
+      - "PG-13 - Teens 13 or older"
+      - "R - 17+ (violence & profanity)"
+      - "R+ - Mild Nudity"
+      - "Rx - Hentai"
+    title_override:
+      "G - All Ages": "G"
+      "PG - Children": "PG"
+      "PG-13 - Teens 13 or older": "PG-13"
+      "R - 17+ (violence & profanity)": "R"
+      "R+ - Mild Nudity": "R+"
+      "Rx - Hentai": "Rx"
+    addons:
+      "G - All Ages": 
+        - gb/U
+        - gb/0+
+        - U
+        - G
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
+      "PG - Children":
+        - TV-Y7
+        - TV-Y7-FV
+        - 7
+        - 8
+        - 9
+        - "07"
+        - "08"
+        - "09"
+        - gb/PG
+        - gb/9+
+        - 10
+        - 11
+        - 12
+      "PG-13 - Teens 13 or older":
+        - 13
+        - gb/12A
+        - 12+
+        - PG-13
+        - TV-13
+        - gb/14+
+        - gb/15
+        - 14
+        - 15
+        - 16
+      "R - 17+ (violence & profanity)":
+        - 17
+        - 18
+        - gb/18
+        - MA-17
+        - NC-17
+        - R
+        - TVMA

@@ -1,0 +1,70 @@
+##############################################################################
+#                        Anime Studio Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#     https://metamanager.wiki/en/latest/defaults/show/studio_anime.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "04"
+
+translations:
+  pmm: translations
+
+collections:
+  Anime Collections:
+    template:
+      - name: separator
+        separator: studio
+      - name: translation
+        key_name: Studio
+        translation_key: separator
+
+dynamic_collections:
+  Studio:
+    type: studio
+    title_format: <<key_name>>
+    template:
+      - smart_filter
+      - translation
+      - shared
+    template_variables:
+      search_term:
+        default: studio
+      image:
+        default: studio/<<key_encoded>>
+      translation_key:
+        default: studio
+    include:
+      - 8bit
+      - A-1 Pictures
+      - Bones
+      - Brain`s Base
+      - Clover Works
+      - Doga Kobo
+      - Gainax
+      - J.C.Staff
+      - Kinema Citrus
+      - Kyoto Animation
+      - Madhouse
+      - MAPPA
+      - P.A. Works
+      - Production I.G
+      - Shaft
+      - Silver Link
+      - Studio DEEN
+      - Studio Ghibli
+      - Sunrise
+      - Studio Pierrot
+      - Toei Animation
+      - Trigger
+      - Ufotable
+      - White Fox
+      - Wit Studio
+    addons:
+      8bit:
+        - 8-bit
+      Studio DEEN:
+        - Studio Deen

@@ -30,6 +30,7 @@ dynamic_collections:
       appletv: Apple TV+
       bet: BET+
       britbox: BritBox
+      crunchyroll: Crunchyroll
       disney: Disney+
       hayu: hayu
       hbomax: HBO Max
@@ -52,5 +53,6 @@ dynamic_collections:
         default: streaming/<<key_name_encoded>>
       allowed_libraries:
         hayu: show
+        crunchyroll: show
       translation_key:
         default: streaming
