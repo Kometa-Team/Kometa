@@ -69,6 +69,8 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
     else:
         return default
 
+
+run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 config_file = get_arg("PMM_CONFIG", args.config)
 times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
@@ -200,6 +202,7 @@ def start(attrs):
     attrs["operations_only"] = operations_only
     attrs["overlays_only"] = overlays_only
     logger.separator(debug=True)
+    logger.debug(f"Run Command: {run_arg}")
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
     logger.debug(f"--time (PMM_TIME): {times}")
     logger.debug(f"--run (PMM_RUN): {run}")

@@ -18,7 +18,8 @@ templates:
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       trakt_url_<<key>>: <<trakt_url>>
-      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<playlist_name_encoded>>.jpg
+      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<mapping_name_encoded>>.jpg
+      name_<<key>>: <<mapping_name>>
     optional:
       - use_<<key>>
       - item_radarr_tag
