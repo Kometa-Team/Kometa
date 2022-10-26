@@ -205,11 +205,9 @@ class Overlay:
         back_height = util.parse("Overlay", "back_height", self.data["back_height"], datatype="int", parent="overlay", minimum=0) if "back_height" in self.data else -1
         if self.name == "backdrop":
             self.back_box = (back_width, back_height)
-        elif (back_width >= 0 > back_height) or (back_height >= 0 > back_width):
-            raise Failed(f"Overlay Error: overlay attributes back_width and back_height must be used together")
-        elif self.back_align != "center" and (back_width < 0 or back_height < 0):
-            raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width and back_height are used")
-        elif back_width >= 0 and back_height >= 0:
+        elif self.back_align != "center" and back_width < 0:
+            raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width is used")
+        elif back_width >= 0 or back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
         if self.name != "backdrop" and self.has_back and not self.has_coordinates() and not self.queue:
@@ -381,9 +379,9 @@ class Overlay:
         box_width, box_height = box
         back_width, back_height = self.back_box if self.back_box else (None, None)
         if back_width == -1:
-            back_width = canvas_box[0]
+            back_width = canvas_box[0] if self.name == "backdrop" else box_width
         if back_height == -1:
-            back_height = canvas_box[1]
+            back_height = canvas_box[1] if self.name == "backdrop" else box_height
         start_x, start_y = self.get_coordinates(canvas_box, box, new_cords=new_cords)
         main_x = start_x
         main_y = start_y
@@ -403,17 +401,10 @@ class Overlay:
                     drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
 
             if self.back_box:
-                if self.back_align == "left":
-                    main_y = start_y + (back_height - box_height) // 2
-                elif self.back_align == "right":
-                    main_x = start_x + back_width - (text_width if text is not None else image_width)
-                elif self.back_align == "top":
-                    main_x = start_x + (back_width - box_width) // 2
-                elif self.back_align == "bottom":
-                    main_y = start_y + back_height - (text_height if text is not None else image_height)
-                else:
-                    main_x = start_x + (back_width - box_width) // 2
-                    main_y = start_y + (back_height - box_height) // 2
+                if self.back_align in ["left", "right", "center", "bottom"]:
+                    main_y = start_y + (back_height - box_height) // (1 if self.back_align == "bottom" else 2)
+                if self.back_align in ["top", "bottom", "center", "right"]:
+                    main_x = start_x + (back_width - box_width) // (1 if self.back_align == "right" else 2)
 
             addon_x = None
             addon_y = None
@@ -421,40 +412,18 @@ class Overlay:
                 addon_x = main_x
                 addon_y = main_y
                 if self.addon_position == "left":
-                    if self.back_align == "left":
-                        main_x = start_x + self.addon_offset
-                    elif self.back_align == "right":
-                        addon_x = start_x + back_width - self.addon_offset
-                    else:
-                        main_x = addon_x + image_width + self.addon_offset
+                    main_x = main_x + image_width + self.addon_offset
                 elif self.addon_position == "right":
-                    if self.back_align == "left":
-                        addon_x = start_x + self.addon_offset
-                    elif self.back_align == "right":
-                        addon_x = start_x + back_width - image_width
-                        main_x = start_x + back_width - self.addon_offset
-                    else:
-                        addon_x = main_x + text_width + self.addon_offset
+                    addon_x = main_x + text_width + self.addon_offset
                 elif text_width < image_width:
                     main_x = main_x + ((image_width - text_width) / 2)
                 elif text_width > image_width:
                     addon_x = main_x + ((text_width - image_width) / 2)
 
                 if self.addon_position == "top":
-                    if self.back_align == "top":
-                        main_y = start_y + self.addon_offset
-                    elif self.back_align == "bottom":
-                        addon_y = start_y + back_height - self.addon_offset
-                    else:
-                        main_y = addon_y + image_height + self.addon_offset
+                    main_y = main_y + image_height + self.addon_offset
                 elif self.addon_position == "bottom":
-                    if self.back_align == "top":
-                        addon_y = start_y + self.addon_offset
-                    elif self.back_align == "bottom":
-                        addon_y = start_y + back_height - image_height
-                        main_y = start_y + back_height - self.addon_offset
-                    else:
-                        addon_y = main_y + text_height + self.addon_offset
+                    addon_y = main_y + text_height + self.addon_offset
                 elif text_height < image_height:
                     main_y = main_y + ((image_height - text_height) / 2)
                 elif text_height > image_height:
@@ -463,6 +432,10 @@ class Overlay:
             if text is not None:
                 drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color,
                              stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
+                logger.info(f"Text X: {main_x}")
+                logger.info(f"Text Y: {main_y}")
+                logger.info(f"Add X: {addon_x}")
+                logger.info(f"Add Y: {addon_y}")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
@@ -496,7 +469,9 @@ class Overlay:
         if new_cords is None and not self.has_coordinates():
             return 0, 0
         if self.back_box:
-            box = self.back_box
+            bw, bh = box
+            bbw, bbh = self.back_box
+            box = (bbw if bbw >= 0 else bw, bbh if bbh >= 0 else bh)
 
         def get_cord(value, image_value, over_value, align):
             value = int(image_value * 0.01 * int(value[:-1])) if str(value).endswith("%") else value

@@ -244,7 +244,8 @@ class DataFile:
                         for ck, cv in template["conditionals"].items():
                             conditionals[ck] = cv
 
-                    for input_dict, input_type, ignore_check in [
+                    added_vars = {}
+                    for input_dict, input_type, overwrite_call in [
                         (temp_vars, "External", False),
                         (extra_variables, "Definition", False),
                         (self.temp_vars, "Config", True)
@@ -261,8 +262,13 @@ class DataFile:
                                     conditionals[ck] = cv
                             elif input_value is None:
                                 optional.append(str(input_key))
-                            elif ignore_check or input_key not in variables:
+                            elif overwrite_call:
                                 variables[input_key] = input_value
+                            else:
+                                added_vars[input_key] = input_value
+                    for k, v in added_vars.items():
+                        if k not in variables:
+                            variables[k] = v
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
