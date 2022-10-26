@@ -390,11 +390,7 @@ class ConfigFile:
         if "notifiarr" in self.data:
             logger.info("Connecting to Notifiarr...")
             try:
-                self.NotifiarrFactory = Notifiarr(self, {
-                    "apikey": check_for_attribute(self.data, "apikey", parent="notifiarr", throw=True),
-                    "develop": check_for_attribute(self.data, "develop", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False),
-                    "test": check_for_attribute(self.data, "test", parent="notifiarr", var_type="bool", default=False, do_print=False, save=False)
-                })
+                self.NotifiarrFactory = Notifiarr(self, {"apikey": check_for_attribute(self.data, "apikey", parent="notifiarr", throw=True)})
             except Failed as e:
                 if str(e).endswith("is blank"):
                     logger.warning(e)

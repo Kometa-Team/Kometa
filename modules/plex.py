@@ -23,6 +23,7 @@ library_types = ["movie", "show", "artist"]
 search_translation = {
     "episode_title": "episode.title",
     "network": "show.network",
+    "edition": "editionTitle",
     "critic_rating": "rating",
     "audience_rating": "audienceRating",
     "episode_critic_rating": "episode.rating",
