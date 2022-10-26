@@ -167,9 +167,9 @@ class Overlays:
                                 except Failed as e:
                                     logger.error(e)
                             else:
-                                poster = next((p for p in item.posters() if p.provider == "local"), None)
-                                if poster:
-                                    new_backup = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
+                                temp_poster = next((p for p in item.posters() if p.provider == "local"), None)
+                                if temp_poster:
+                                    new_backup = f"{self.library.url}{temp_poster.key}&X-Plex-Token={self.library.token}"
                             if not new_backup:
                                 logger.error("Overlay Error: Reset Failed")
                     else:
