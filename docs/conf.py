@@ -160,6 +160,8 @@ html_theme_options = {
                 ("Mass Originally Available Update", "config/operations", "#mass-originally-available-update"),
                 ("Mass * Rating Update", "config/operations", "#mass--rating-update"),
                 ("Mass Episode * Rating Update", "config/operations", "#mass-episode--rating-update"),
+                ("Mass Poster Update", "config/operations", "#mass-poster-update"),
+                ("Mass Background Update", "config/operations", "#mass-background-update"),
                 ("Mass IMDb Parental Labels", "config/operations", "#mass-imdb-parental-labels"),
                 ("Mass Collection Mode", "config/operations", "#mass-collection-mode"),
                 ("Update Blank Track Titles", "config/operations", "#update-blank-track-titles"),

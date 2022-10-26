@@ -8,7 +8,8 @@ logger = util.logger
 meta_operations = [
     "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
     "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
-    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update"
+    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update",
+    "mass_poster_update", "mass_background_update"
 ]
 
 class Operations:
@@ -36,6 +37,8 @@ class Operations:
         logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
+        logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
+        logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
         logger.debug(f"Split Duplicates: {self.library.split_duplicates}")
         logger.debug(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
@@ -443,6 +446,63 @@ class Operations:
                 if len(batch_display) > 0:
                     item.saveEdits()
                     logger.info(f"Batch Edits{batch_display}")
+
+                if self.library.mass_poster_update or self.library.mass_background_update:
+                    try:
+                        new_poster, new_background, _, _ = self.library.find_item_assets(item)
+                    except Failed:
+                        new_poster = None
+                        new_background = None
+                    if self.library.mass_poster_update:
+                        if self.library.mass_poster_update == "lock":
+                            self.library.query(item.lockPoster)
+                            logger.infd(f"Poster | Locked")
+                        elif self.library.mass_poster_update == "unlock":
+                            self.library.query(item.unlockPoster)
+                            logger.infd(f"Poster | Unlocked")
+                        else:
+                            poster_location = "the Assets Directory" if new_poster else ""
+                            poster_url = False if new_poster else True
+                            new_poster = new_poster.location if new_poster else None
+                            if not new_poster:
+                                if self.library.mass_poster_update == "tmdb" and tmdb_item:
+                                    new_poster = tmdb_item.poster_url
+                                    poster_location = "TMDb"
+                                if not new_poster:
+                                    poster = next((p for p in item.posters() if p.provider == "local"), None)
+                                    if poster:
+                                        new_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
+                                        poster_location = "Plex"
+                            if new_poster:
+                                self.library.upload_poster(item, new_poster, url=poster_url)
+                                logger.infd(f"Poster | Reset from {poster_location}")
+                            else:
+                                logger.infd(f"Poster | No Reset Image Found")
+                    if self.library.mass_background_update:
+                        if self.library.mass_background_update == "lock":
+                            self.library.query(item.lockArt)
+                            logger.infd(f"Background | Locked")
+                        elif self.library.mass_background_update == "unlock":
+                            self.library.query(item.unlockArt)
+                            logger.infd(f"Background | Unlocked")
+                        else:
+                            background_location = "the Assets Directory" if new_background else ""
+                            background_url = False if new_background else True
+                            new_background = new_background.location if new_background else None
+                            if not new_background:
+                                if self.library.mass_background_update == "tmdb" and tmdb_item:
+                                    new_background = tmdb_item.backdrop_url
+                                    background_location = "TMDb"
+                                if not new_background:
+                                    background = next((p for p in item.arts() if p.provider == "local"), None)
+                                    if background:
+                                        new_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
+                                        background_location = "Plex"
+                            if new_background:
+                                self.library.upload_background(item, new_background, url=background_url)
+                                logger.infd(f"Background | Reset from {background_location}")
+                            else:
+                                logger.infd(f"Background | No Reset Image Found")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
 

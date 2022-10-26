@@ -16,29 +16,31 @@ libraries:
 
 The available attributes for the operations attribute are as follows
 
-| Attribute                                                             | Description                                                                                                                                  |
-|:----------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
-| [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                  |
-| [Delete Collections With Less](#delete-collections-with-less)         | Deletes every collection with less than the given number of items.                                                                           |
-| [Delete Unmanaged Collections](#delete-unmanaged-collections)         | Deletes every unmanaged collection.                                                                                                          |
-| [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                      |
-| [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                      |
-| [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                      |
-| [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                     |
-| [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                 |
-| [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating                                        |
-| [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                 |
-| [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                   |
-| [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                  |
-| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title isn not locked.                                  |
-| [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                     |
-| [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                    |
-| [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                          |
-| [Sonarr Add All](#sonarr-add-all)                                     | Adds every item in the library to Sonarr.                                                                                                    |
-| [Sonarr Remove By Tag](#sonarr-remove-by-tag)                         | Removes every item from Sonarr with the Tags given.                                                                                          |
-| [Genre Mapper](#genre-mapper)                                         | Allows genres to be changed to other genres or be removed from every item in your library.                                                   |
-| [Content Rating Mapper](#content-rating-mapper)                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.                                 |
-| [Metadata Backup](#metadata-backup)                                   | Creates/Maintains a PMM [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes. |
+| Attribute                                                             | Description                                                                                                                                                |
+|:----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                                |
+| [Delete Collections With Less](#delete-collections-with-less)         | Deletes every collection with less than the given number of items.                                                                                         |
+| [Delete Unmanaged Collections](#delete-unmanaged-collections)         | Deletes every unmanaged collection.                                                                                                                        |
+| [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    |
+| [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    |
+| [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    |
+| [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                                   |
+| [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                               |
+| [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.                                                     |
+| [Mass Poster Update](#mass-poster-update)                             | Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.         |
+| [Mass Background Update](#mass-background-update)                     | Updates every item's background to the chosen sites background. Will fallback to `plex` if the given option fails. Assets will be used over anything else. |
+| [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                               |
+| [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                                 |
+| [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                                |
+| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title isn not locked.                                                |
+| [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                                   |
+| [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                                  |
+| [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                                        |
+| [Sonarr Add All](#sonarr-add-all)                                     | Adds every item in the library to Sonarr.                                                                                                                  |
+| [Sonarr Remove By Tag](#sonarr-remove-by-tag)                         | Removes every item from Sonarr with the Tags given.                                                                                                        |
+| [Genre Mapper](#genre-mapper)                                         | Allows genres to be changed to other genres or be removed from every item in your library.                                                                 |
+| [Content Rating Mapper](#content-rating-mapper)                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.                                               |
+| [Metadata Backup](#metadata-backup)                                   | Creates/Maintains a PMM [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.               |
 
 ## Assets For All
 
@@ -179,7 +181,7 @@ Updates every item's audience/critic/user rating in the library to the chosen si
 | `remove`               | Remove Rating and Lock Field                        |
 | `reset`                | Remove Rating and Unlock Field                      |
 
-## Mass Episode * Rating Update 
+## Mass Episode * Rating Update
 
 Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.
 
@@ -195,6 +197,36 @@ Updates every item's episode's audience/critic/user rating in the library to the
 | `unlock` | Unlock Rating Field            |
 | `remove` | Remove Rating and Lock Field   |
 | `reset`  | Remove Rating and Unlock Field |
+
+## Mass Poster Update
+
+Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.
+
+**Attribute:** `mass_poster_update`
+
+**Values:**
+
+| Value    | Description     |
+|:---------|:----------------|
+| `tmdb`   | Use TMDb Poster |
+| `plex`   | Use Plex Poster |
+| `lock`   | Lock Poster     |
+| `unlock` | Unlock Poster   |
+
+## Mass Background Update
+
+Updates every item's background to the chosen sites background. Will fallback to `plex` if the given option fails. Assets will be used over anything else.
+
+**Attribute:** `mass_background_update`
+
+**Values:**
+
+| Value    | Description         |
+|:---------|:--------------------|
+| `tmdb`   | Use TMDb Background |
+| `plex`   | Use Plex Background |
+| `lock`   | Lock Background     |
+| `unlock` | Unlock Background   |
 
 ## Mass IMDb Parental Labels
 

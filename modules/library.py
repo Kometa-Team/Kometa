@@ -86,6 +86,8 @@ class Library(ABC):
         self.mass_original_title_update = params["mass_original_title_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
+        self.mass_poster_update = params["mass_poster_update"]
+        self.mass_background_update = params["mass_background_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
@@ -113,7 +115,7 @@ class Library(ABC):
                                        or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
                                        or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
                                        or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper \
-                                       or self.radarr_add_all_existing or self.sonarr_add_all_existing else False
+                                       or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
         self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
                                  or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False

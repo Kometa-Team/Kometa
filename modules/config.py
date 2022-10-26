@@ -54,6 +54,9 @@ mass_available_options = {
     "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release",
     "anidb": "Use AniDB Release", "mal": "Use MyAnimeList Release"
 }
+mass_image_options = {
+    "plex": "Use Plex Images", "tmdb": "Use TMDb Images"
+}
 mass_episode_rating_options = {
     "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"
@@ -658,6 +661,8 @@ class ConfigFile:
                     "mass_episode_audience_rating_update": None,
                     "mass_episode_critic_rating_update": None,
                     "mass_episode_user_rating_update": None,
+                    "mass_poster_update": None,
+                    "mass_background_update": None,
                 }
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -742,6 +747,10 @@ class ConfigFile:
                             params["mass_originally_available_update"] = check_for_attribute(lib["operations"], "mass_originally_available_update", test_list=mass_available_options, default_is_none=True, save=False)
                         if "mass_imdb_parental_labels" in lib["operations"]:
                             params["mass_imdb_parental_labels"] = check_for_attribute(lib["operations"], "mass_imdb_parental_labels", test_list=imdb_label_options, default_is_none=True, save=False)
+                        if "mass_poster_update" in lib["operations"]:
+                            params["mass_poster_update"] = check_for_attribute(lib["operations"], "mass_poster_update", test_list=mass_image_options, default_is_none=True, save=False)
+                        if "mass_background_update" in lib["operations"]:
+                            params["mass_background_update"] = check_for_attribute(lib["operations"], "mass_background_update", test_list=mass_image_options, default_is_none=True, save=False)
                         if "mass_trakt_rating_update" in lib["operations"]:
                             params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
                         if "split_duplicates" in lib["operations"]:
