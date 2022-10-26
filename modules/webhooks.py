@@ -23,9 +23,8 @@ class Webhooks:
             logger.trace(f"Webhook: {webhook}")
             if webhook == "notifiarr":
                 if self.notifiarr:
-                    url, params = self.notifiarr.get_url("notification/pmm/")
                     for x in range(6):
-                        response = self.config.get(url, json=json, params=params)
+                        response = self.notifiarr.notification(json)
                         if response.status_code < 500:
                             break
             else:

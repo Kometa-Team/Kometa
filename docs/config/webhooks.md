@@ -119,8 +119,8 @@ The Run End notification will be sent at the end of every run with statistics.
   "items_added": int,           // Number of Items added across all Collections/Playlists
   "items_removed": int,         // Number of Items removed across all Collections/Playlists
   "added_to_radarr": int,       // Number of Items added to Radarr
-  "added_to_sonarr": int        // Number of Items added to Sonarr
-  "names": [
+  "added_to_sonarr": int,       // Number of Items added to Sonarr
+  "names": [                    // List of Dictionaries
     "name": str,                // Name of collection or playlist in the run 
     "library": str              // Library the collection is in or PLAYLIST
   ]
@@ -145,21 +145,21 @@ The Changes Notification will be sent after each collection/playlist containing 
   "poster_url": str,            // Collection/Playlist Poster URL if avaiable
   "background": str,            // Base64 Encoded Collection/Playlist Background if no poster_url is found
   "background_url": str,        // Collection/Playlist Background URL if avaiable
-  "additions": [
+  "additions": [                // List of Dictionaries
     "title": str,               // Title of addition
-    "tmdb_id": int              // TMDb ID of addition only appears if it's a Movie
+    "tmdb_id": int,             // TMDb ID of addition only appears if it's a Movie
     "tvdb_id": int              // TVDb ID of addition only appears if it's a Show
   ],
-  "removals": [
+  "removals": [                 // List of Dictionaries
     "title": str,               // Title of removal
-    "tmdb_id": int              // TMDb ID of removal only appears if it's a Movie
+    "tmdb_id": int,             // TMDb ID of removal only appears if it's a Movie
     "tvdb_id": int              // TVDb ID of removal only appears if it's a Show
   ],
-  "radarr_adds": [
+  "radarr_adds": [              // List of Dictionaries
     "title": str,               // Title of the Radarr Add
     "id":  int                  // TMDb ID of the Radarr Add
   ],
-  "sonarr_adds": [
+  "sonarr_adds": [              // List of Dictionaries
     "title": str,               // Title of the Sonarr Add
     "id":  int                  // TVDb ID of the Sonarr Add
   ]
