@@ -432,10 +432,6 @@ class Overlay:
             if text is not None:
                 drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color,
                              stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
-                logger.info(f"Text X: {main_x}")
-                logger.info(f"Text Y: {main_y}")
-                logger.info(f"Add X: {addon_x}")
-                logger.info(f"Add Y: {addon_y}")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
