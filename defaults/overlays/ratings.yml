@@ -233,14 +233,14 @@ templates:
           - rating_alignment: horizontal
             horizontal_position: center
             rating1: none
-            value: -<<ch2_offset>>
+            value: <<ch2_offset>>
           - rating_alignment: horizontal
             horizontal_position: center
             rating3: none
             value: -<<ch2_offset>>
           - rating_alignment: horizontal
             horizontal_position: center
-            value: -<<ch3_offset>>
+            value: <<center_offset>>
           - rating_alignment: horizontal
             horizontal_position: right
             rating1: none
@@ -248,15 +248,11 @@ templates:
             value: <<standard_offset>>
           - rating_alignment: horizontal
             horizontal_position: right
-            rating1: none
-            value: <<h2_offset>>
-          - rating_alignment: horizontal
-            horizontal_position: right
             rating3: none
-            value: <<h2_offset>>
+            value: <<standard_offset>>
           - rating_alignment: horizontal
             horizontal_position: right
-            value: <<h3_offset>>
+            value: <<h2_offset>>
           - rating_alignment: horizontal
             horizontal_position: left
             rating1: none

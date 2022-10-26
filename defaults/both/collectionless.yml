@@ -1,5 +1,5 @@
 ##############################################################################
-#                          Other Awards Collections                          #
+#                         Collectionless Collection                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #   https://metamanager.wiki/en/latest/defaults/both/collectionless.html     #
@@ -23,10 +23,8 @@ templates:
       - collection_mode
       - exclude
     url_poster: <<url_poster>>
-    collection_mode: hide
     collection_order: <<collection_order>>
     sort_title: <<sort_title>>
-    sync_mode: sync
     summary: <<summary>>>
     name: <<name>>
     plex_collectionless:

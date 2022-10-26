@@ -232,7 +232,7 @@ libraries:
     report_path: /config/reports/Movies.yml
 ```
 
-### Template Variables
+### Library Template Variables
 
 Library template variables to be applied to every Metadata and Overlay file run.
 
@@ -240,7 +240,7 @@ Library template variables to be applied to every Metadata and Overlay file run.
 libraries:
   Movies:
     template_variables:
-      collection_mode: true
+      collection_mode: hide_items
 ```
 
 ## Playlist Files Attribute
