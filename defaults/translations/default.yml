@@ -1,4 +1,4 @@
-version: 1.18.0.5
+version: 1.18.0.7
 variables:
   library_translation:
     # For Movie Libraries
