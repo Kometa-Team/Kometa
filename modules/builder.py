@@ -2603,8 +2603,11 @@ class CollectionBuilder:
                     advance_update = True
 
             if "collection_filtering" in self.details:
-                self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
-                advance_update = True
+                try:
+                    self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
+                    advance_update = True
+                except NotFound:
+                    logger.error("Collection Error: collection_filtering requires a more recent version of Plex Media Server")
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys \

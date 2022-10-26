@@ -23,9 +23,15 @@ class Overlays:
         logger.info("")
         os.makedirs(self.library.overlay_backup, exist_ok=True)
 
+        key_to_overlays = {}
+        queues = {}
+        properties = None
+        if not self.library.remove_overlays:
+            key_to_overlays, properties, queues = self.compile_overlays()
+        ignore_list = [rk for rk in key_to_overlays]
+
         old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
         if old_overlays:
-            logger.info("")
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
             logger.info("")
             for old_overlay in old_overlays:
@@ -40,13 +46,7 @@ class Overlays:
                         self.remove_overlay(item, item_title, old_overlay.title, [
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
                         ])
-
-        key_to_overlays = {}
-        queues = {}
-        properties = None
-        if not self.library.remove_overlays:
-            key_to_overlays, properties, queues = self.compile_overlays()
-        ignore_list = [rk for rk in key_to_overlays]
+            logger.info("")
 
         remove_overlays = self.get_overlay_items(ignore=ignore_list)
         if self.library.is_show:
@@ -55,9 +55,8 @@ class Overlays:
         elif self.library.is_music:
             remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
 
-        logger.info("")
         if remove_overlays:
-            logger.separator(f"Removing Overlays for the {self.library.name} Library")
+            logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
             for i, item in enumerate(remove_overlays, 1):
                 item_title = self.library.get_item_sort_title(item, atr="title")
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
@@ -70,7 +69,6 @@ class Overlays:
             logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
         logger.info("")
         if not self.library.remove_overlays:
-            logger.info("")
             logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
@@ -158,19 +156,22 @@ class Overlays:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
                     elif has_overlay:
-                        if self.library.reset_overlays is not None:
-                            if self.library.reset_overlays == "tmdb":
-                                new_backup = self.find_poster_url(item)
-                            else:
-                                posters = item.posters()
-                                if posters:
-                                    new_backup = posters[0]
-                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
+                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
-                        else:
-                            new_backup = self.find_poster_url(item)
+                        if self.library.reset_overlays is not None or has_original is None:
+                            if self.library.reset_overlays == "tmdb":
+                                try:
+                                    new_backup = self.find_poster_url(item)
+                                except Failed as e:
+                                    logger.error(e)
+                            else:
+                                poster = next((p for p in item.posters() if p.provider == "local"), None)
+                                if poster:
+                                    new_backup = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
+                            if not new_backup:
+                                logger.error("Overlay Error: Reset Failed")
                     else:
                         new_backup = item.posterUrl
                     if new_backup:
@@ -424,6 +425,26 @@ class Overlays:
                     logger.error(e)
                     logger.info("")
 
+        logger.separator(f"Overlay Operation for the {self.library.name} Library")
+        logger.debug("")
+        logger.debug(f"Remove Overlays: {self.library.remove_overlays}")
+        logger.debug(f"Reapply Overlays: {self.library.reapply_overlays}")
+        logger.debug(f"Reset Overlays: {self.library.reset_overlays}")
+        logger.debug("")
+        logger.separator(f"Number of Items Per Overlay", space=False, border=False)
+        logger.debug("")
+
+        longest = 7
+        for overlay_name in properties:
+            if len(overlay_name) > longest:
+                longest = len(overlay_name)
+
+        logger.debug(f"{'Overlay':^{longest}} | Number |")
+        logger.debug(f"{logger.separating_character * longest} | {logger.separating_character * 6} |")
+        for overlay_name, over_obj in properties.items():
+            logger.debug(f"{overlay_name:<{longest}} | {len(over_obj.keys):^6} |")
+        logger.debug("")
+
         for overlay_name, over_obj in properties.items():
             if over_obj.group:
                 if over_obj.group not in overlay_groups:
@@ -460,22 +481,19 @@ class Overlays:
         return key_to_overlays, properties, queues
 
     def find_poster_url(self, item):
-        try:
-            if isinstance(item, Movie):
-                if item.ratingKey in self.library.movie_rating_key_map:
-                    return self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
-            elif isinstance(item, (Show, Season, Episode)):
-                check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
-                if check_key in self.library.show_rating_key_map:
-                    tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
-                    if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
-                        return self.config.TMDb.get_show(tmdb_id).poster_url
-                    elif isinstance(item, Season):
-                        return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
-                    elif isinstance(item, Episode):
-                        return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
-        except Failed as e:
-            logger.error(e)
+        if isinstance(item, Movie):
+            if item.ratingKey in self.library.movie_rating_key_map:
+                return self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
+        elif isinstance(item, (Show, Season, Episode)):
+            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
+            if check_key in self.library.show_rating_key_map:
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
+                if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
+                    return self.config.TMDb.get_show(tmdb_id).poster_url
+                elif isinstance(item, Season):
+                    return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
+                elif isinstance(item, Episode):
+                    return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
         items = self.library.search(label=label, libtype=libtype)
@@ -488,14 +506,18 @@ class Overlays:
             poster = None
         is_url = False
         original = None
+        poster_location = None
         if poster:
             poster_location = poster.location
         elif any([os.path.exists(loc) for loc in locations]):
             original = next((loc for loc in locations if os.path.exists(loc)))
             poster_location = original
-        else:
+        if not poster_location:
             is_url = True
-            poster_location = self.find_poster_url(item)
+            try:
+                poster_location = self.find_poster_url(item)
+            except Failed as e:
+                logger.error(e)
         if poster_location:
             self.library.upload_poster(item, poster_location, url=is_url)
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)

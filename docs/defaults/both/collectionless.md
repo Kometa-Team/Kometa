@@ -21,9 +21,13 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
+    template_variables:
+      collection_mode: hide_items
     metadata_path:
       - pmm: collectionless
   TV Shows:
+    template_variables:
+      collection_mode: hide_items
     metadata_path:
       - pmm: collectionless
 ```
@@ -52,6 +56,8 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
+    template_variables:
+      collection_mode: hide_items
     metadata_path:
       - pmm: collectionless
         template_variables:
