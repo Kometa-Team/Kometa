@@ -631,6 +631,13 @@ class Plex(Library):
         else:
             item.uploadPoster(filepath=image)
 
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def upload_background(self, item, image, url=False):
+        if url:
+            item.uploadArt(url=image)
+        else:
+            item.uploadArt(filepath=image)
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_actor_id(self, name):
         results = self.Plex.hubSearch(name)
