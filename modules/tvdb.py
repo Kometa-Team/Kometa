@@ -191,7 +191,7 @@ class TVDb:
                             logger.error(f"{e} for series {title}")
                     elif item_url.startswith("/movies/"):
                         try:
-                            _, tmdb_id, imdb_id = self.get_id_from_url(f"{base_url}{item_url}")
+                            _, tmdb_id, imdb_id = self.get_id_from_url(f"{base_url}{item_url}", is_movie=True)
                             if tmdb_id:
                                 ids.append((tmdb_id, "tmdb"))
                             elif imdb_id:
