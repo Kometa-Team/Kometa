@@ -9,6 +9,11 @@ external_templates:
   pmm: templates
   template_variables:
     conditionals:
+      final_align:
+        default: left
+        conditions:
+          - align: right
+            value: right
       final_text:
         default: <<text>>
         conditions:
@@ -27,15 +32,16 @@ external_templates:
             value:
     style: round
     country: <<key>>
+    country_<<key>>: <<country>>
     queue: position
-    pmm: flag/<<final_style>>/<<country>>
-    addon_position: left
+    pmm: flag/<<final_style>>/<<country_<<key>>>>
+    addon_position: <<final_align>>
     offset: 10
     addon_offset: <<offset>>
     back_color: "#00000099"
     back_width: 190
     back_radius: <<back_radius>>
-    back_align: left
+    back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
     font_size: 50
     final_name: text(<<final_text>>)
@@ -43,22 +49,21 @@ external_templates:
 queues:
   position:
     default:
-      horizontal_align: left
       vertical_align: top
       horizontal_offset: 15
       vertical_offset: 15
     left:
-      -
+      - horizontal_align: left
       - vertical_offset: 75
-      - vertical_offset: 135
-      - vertical_offset: 195
-      - vertical_offset: 255
+      - vertical_offset: 136
+      - vertical_offset: 197
+      - vertical_offset: 258
     right:
       - horizontal_align: right
       - vertical_offset: 75
-      - vertical_offset: 135
-      - vertical_offset: 195
-      - vertical_offset: 255
+      - vertical_offset: 136
+      - vertical_offset: 197
+      - vertical_offset: 258
 
 templates:
   flags:
@@ -75,12 +80,12 @@ templates:
 
 overlays:
 
-  german:
-    variables: {key: de, text: DE, weight: 610}
+  english:
+    variables: {key: en, text: EN, weight: 610, country: us}
     template: [name: standard, name: flags]
 
-  english:
-    variables: {key: en, text: EN, weight: 600, country: us}
+  german:
+    variables: {key: de, text: DE, weight: 600}
     template: [name: standard, name: flags]
 
   french:
@@ -212,7 +217,7 @@ overlays:
     template: [name: standard, name: flags]
 
   filipino:
-    variables: {key: fil, text: FL, weight: 270, country: ph}
+    variables: {key: fl, text: FL, weight: 270, country: ph}
     template: [name: standard, name: flags]
 
   galician:

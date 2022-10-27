@@ -10,69 +10,69 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 
 ## Supported Audio/Subtitle Language Flags
 
-| Audio/Subtitle Languages | Key  | Weight |
-|:-------------------------|:----:|:------:|
-| German                   | `de` | `610`  |
-| English                  | `en` | `600`  |
-| French                   | `fr` | `590`  |
-| Japanese                 | `ja` | `580`  |
-| Korean                   | `ko` | `570`  |
-| Chinese                  | `zh` | `560`  |
-| Danish                   | `da` | `550`  |
-| Russian                  | `ru` | `540`  |
-| Spanish                  | `es` | `530`  |
-| Italian                  | `it` | `520`  |
-| Portuguese               | `pt` | `510`  |
-| Hindi                    | `hi` | `500`  |
-| Telugu                   | `te` | `490`  |
-| Farsi                    | `fa` | `480`  |
-| Thai                     | `th` | `470`  |
-| Dutch                    | `nl` | `460`  |
-| Norwegian                | `no` | `450`  |
-| Icelandic                | `is` | `440`  |
-| Swedish                  | `sv` | `430`  |
-| Turkish                  | `tr` | `420`  |
-| Polish                   | `pl` | `410`  |
-| Czech                    | `cs` | `400`  |
-| Ukrainian                | `uk` | `390`  |
-| Hungarian                | `hu` | `380`  |
-| Arabic                   | `ar` | `370`  |
-| Bulgarian                | `bg` | `360`  |
-| Bengali                  | `bn` | `350`  |
-| Bosnian                  | `bs` | `340`  |
-| Catalan                  | `ca` | `330`  |
-| Welsh                    | `cy` | `320`  |
-| Greek                    | `el` | `310`  |
-| Estonian                 | `et` | `300`  |
-| Basque                   | `eu` | `290`  |
-| Finnish                  | `fi` | `280`  |
-| Filipino                 | `fi` | `270`  |
-| Galician                 | `gl` | `260`  |
-| Hebrew                   | `he` | `250`  |
-| Croatian                 | `hr` | `240`  |
-| Indonesian               | `id` | `230`  |
-| Georgian                 | `ka` | `220`  |
-| Kazakh                   | `kk` | `210`  |
-| Kannada                  | `kn` | `200`  |
-| Latin                    | `la` | `190`  |
-| Lithuanian               | `lt` | `180`  |
-| Latvian                  | `lv` | `170`  |
-| Macedonian               | `mk` | `160`  |
-| Malayalam                | `ml` | `150`  |
-| Marathi                  | `mr` | `140`  |
-| Malay                    | `ms` | `130`  |
-| Norwegian Nokmål         | `nb` | `120`  |
-| Norwegian Nynorsk        | `nn` | `110`  |
-| Punjabi                  | `pa` | `100`  |
-| Romanian                 | `ro` |  `90`  |
-| Slovak                   | `sk` |  `80`  |
-| Slovenian                | `sv` |  `70`  |
-| Albanian                 | `sq` |  `60`  |
-| Serbian                  | `sr` |  `50`  |
-| Swahili                  | `sw` |  `40`  |
-| Tamil                    | `ta` |  `30`  |
-| Urdu                     | `ur` |  `20`  |
-| Vietnamese               | `vi` |  `10`  |
+| Audio/Subtitle Languages | Key  | Weight | Default Flag |
+|:-------------------------|:----:|:------:|:------------:|
+| English                  | `en` | `610`  |     `us`     |
+| German                   | `de` | `600`  |     `de`     |
+| French                   | `fr` | `590`  |     `fr`     |
+| Japanese                 | `ja` | `580`  |     `jp`     |
+| Korean                   | `ko` | `570`  |     `kr`     |
+| Chinese                  | `zh` | `560`  |     `cn`     |
+| Danish                   | `da` | `550`  |     `dk`     |
+| Russian                  | `ru` | `540`  |     `ru`     |
+| Spanish                  | `es` | `530`  |     `es`     |
+| Italian                  | `it` | `520`  |     `it`     |
+| Portuguese               | `pt` | `510`  |     `pt`     |
+| Hindi                    | `hi` | `500`  |     `in`     |
+| Telugu                   | `te` | `490`  |     `in`     |
+| Farsi                    | `fa` | `480`  |     `ir`     |
+| Thai                     | `th` | `470`  |     `th`     |
+| Dutch                    | `nl` | `460`  |     `nl`     |
+| Norwegian                | `no` | `450`  |     `no`     |
+| Icelandic                | `is` | `440`  |     `is`     |
+| Swedish                  | `sv` | `430`  |     `se`     |
+| Turkish                  | `tr` | `420`  |     `tr`     |
+| Polish                   | `pl` | `410`  |     `pl`     |
+| Czech                    | `cs` | `400`  |     `cz`     |
+| Ukrainian                | `uk` | `390`  |     `ua`     |
+| Hungarian                | `hu` | `380`  |     `hu`     |
+| Arabic                   | `ar` | `370`  |     `eg`     |
+| Bulgarian                | `bg` | `360`  |     `bg`     |
+| Bengali                  | `bn` | `350`  |     `bd`     |
+| Bosnian                  | `bs` | `340`  |     `ba`     |
+| Catalan                  | `ca` | `330`  |     `es`     |
+| Welsh                    | `cy` | `320`  |     `uk`     |
+| Greek                    | `el` | `310`  |     `gr`     |
+| Estonian                 | `et` | `300`  |     `ee`     |
+| Basque                   | `eu` | `290`  |     `es`     |
+| Finnish                  | `fi` | `280`  |     `fi`     |
+| Filipino                 | `fl` | `270`  |     `ph`     |
+| Galician                 | `gl` | `260`  |     `es`     |
+| Hebrew                   | `he` | `250`  |     `il`     |
+| Croatian                 | `hr` | `240`  |     `hr`     |
+| Indonesian               | `id` | `230`  |     `id`     |
+| Georgian                 | `ka` | `220`  |     `ge`     |
+| Kazakh                   | `kk` | `210`  |     `kz`     |
+| Kannada                  | `kn` | `200`  |     `in`     |
+| Latin                    | `la` | `190`  |     `it`     |
+| Lithuanian               | `lt` | `180`  |     `lt`     |
+| Latvian                  | `lv` | `170`  |     `lv`     |
+| Macedonian               | `mk` | `160`  |     `mk`     |
+| Malayalam                | `ml` | `150`  |     `in`     |
+| Marathi                  | `mr` | `140`  |     `in`     |
+| Malay                    | `ms` | `130`  |     `my`     |
+| Norwegian Nokmål         | `nb` | `120`  |     `no`     |
+| Norwegian Nynorsk        | `nn` | `110`  |     `no`     |
+| Punjabi                  | `pa` | `100`  |     `in`     |
+| Romanian                 | `ro` |  `90`  |     `ro`     |
+| Slovak                   | `sk` |  `80`  |     `sk`     |
+| Slovenian                | `sv` |  `70`  |     `si`     |
+| Albanian                 | `sq` |  `60`  |     `al`     |
+| Serbian                  | `sr` |  `50`  |     `rs`     |
+| Swahili                  | `sw` |  `40`  |     `tz`     |
+| Tamil                    | `ta` |  `30`  |     `in`     |
+| Urdu                     | `ur` |  `20`  |     `pk`     |
+| Vietnamese               | `vi` |  `10`  |     `vn`     |
 
 #### Square Style
 
@@ -121,22 +121,24 @@ All [Shared Overlay Variables](variables) are available with the default values 
 | `vertical_offset`   | `15`/`75`/`135`/`195`/`255` |
 | `vertical_align`    |            `top`            |
 | `back_color`        |         `#00000099`         |
-| `back_radius`       |           `26`/``           |
+| `back_radius`       |          `26`/` `           |
 | `back_width`        |            `190`            |
 | `back_height`       |            `105`            |
 | `back_align`        |           `left`            |
 | `font`              |   `fonts/Inter-Bold.ttf`    |
 | `font_size`         |            `50`             |
 
-| Variable                     | Description & Values                                                                                                                                                                                                                                                                                                          |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `position`                   | **Description:** Changes the position of the Overlays.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                                                  |
-| `style`                      | **Description:** Controls the visual theme of the overlays created.<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>round</code></td><td>Round Theme</td></tr><tr><td><code>square</code></td><td>Square Theme</td></tr><tr><td><code>half</code></td><td>Square Flag with Round Background</td></tr></table> |
-| `offset`                     | **Description:** Controls the offset between the flag and the text.<br>**Default:** `10`<br>**Values:** Any Integer 0 or greater                                                                                                                                                                                              |
-| `use_lowercase`              | **Description:** Controls if the overlay display is in lowercase.<br>**Values:** `true` to use lowercase text                                                                                                                                                                                                                 |
-| `use_subtitles`              | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
-| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                  |
+| Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
+|:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `position`                    | **Description:** Changes the position of the Overlays.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                                                  |
+| `style`                       | **Description:** Controls the visual theme of the overlays created.<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>round</code></td><td>Round Theme</td></tr><tr><td><code>square</code></td><td>Square Theme</td></tr><tr><td><code>half</code></td><td>Square Flag with Round Background</td></tr></table> |
+| `offset`                      | **Description:** Controls the offset between the flag and the text.<br>**Default:** `10`<br>**Values:** Any Integer 0 or greater                                                                                                                                                                                              |
+| `align`                       | **Description:** Controls the flag alignment in the backdrop.<br>**Default:** `left`<br>**Values:** `left` or `right`                                                                                                                                                                                                         |
+| `country_<<key>>`<sup>1</sup> | **Description:** Controls the country image for the Overlay.<br>**Default:** Listed in the [Table](#supported-audio-subtitle-language-flags) above<br>**Values:** [ISO 3166-1 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) for the flag desired                                                |
+| `use_lowercase`               | **Description:** Controls if the overlay display is in lowercase.<br>**Values:** `true` to use lowercase text                                                                                                                                                                                                                 |
+| `use_subtitles`               | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
+| `overlay_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
+| `weight_<<key>>`<sup>1</sup>  | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                  |
 
 1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
