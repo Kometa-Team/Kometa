@@ -25,32 +25,19 @@ external_templates:
 
 queues:
   position:
+    default:
+      horizontal_offset: 30
+      horizontal_align: right
+      vertical_offset: 465
+      vertical_align: top
     right:
-      - horizontal_offset: 30
-        horizontal_align: right
-        vertical_offset: 465
-        vertical_align: top
-      - horizontal_offset: 30
-        horizontal_align: right
-        vertical_offset: 670
-        vertical_align: top
-      - horizontal_offset: 30
-        horizontal_align: right
-        vertical_offset: 875
-        vertical_align: top
+      -
+      - vertical_offset: 670
+      - vertical_offset: 875
     left:
-      - horizontal_offset: 30
-        horizontal_align: left
-        vertical_offset: 465
-        vertical_align: top
-      - horizontal_offset: 30
-        horizontal_align: left
-        vertical_offset: 670
-        vertical_align: top
-      - horizontal_offset: 30
-        horizontal_align: left
-        vertical_offset: 875
-        vertical_align: top
+      - horizontal_align: left
+      - vertical_offset: 670
+      - vertical_offset: 875
 
 templates:
   flixpatrol:

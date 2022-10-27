@@ -195,8 +195,8 @@ class Overlay:
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay {attr}: {self.data[attr]} invalid")
         self.back_color = color("back_color")
-        self.back_radius = util.parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay") if "back_radius" in self.data else None
-        self.back_line_width = util.parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay") if "back_line_width" in self.data else None
+        self.back_radius = util.parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay") if "back_radius" in self.data and self.data["back_radius"] else None
+        self.back_line_width = util.parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay") if "back_line_width" in self.data and self.data["back_line_width"] else None
         self.back_line_color = color("back_line_color")
         self.back_padding = util.parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=0) if "back_padding" in self.data else 0
         self.back_align = util.parse("Overlay", "back_align", self.data["back_align"], parent="overlay", default="center", options=["left", "right", "center", "top", "bottom"]) if "back_align" in self.data else "center"

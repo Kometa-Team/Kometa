@@ -1,5 +1,5 @@
 ##############################################################################
-#                           Language Count Overlay                           #
+#                   Audio/Subtitle Language Count Overlay                    #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
@@ -9,6 +9,12 @@
 external_templates:
   pmm: templates
   template_variables:
+    conditionals:
+      image_key:
+        default: audio
+        conditions:
+          - use_subtitles: true
+            value: subs
     group: language
     horizontal_offset: 0
     horizontal_align: center
@@ -17,10 +23,16 @@ external_templates:
     back_color: "#00000099"
     back_width: 188
     back_height: 105
-    pmm: <<overlay_name>>
+    pmm: <<key>>_<<image_key>>
 
 templates:
   language:
+    conditionals:
+      search_attribute:
+        default: audio_language
+        conditions:
+          - use_subtitles: true
+            value: subtitle_language
     default:
       minimum: 2
     optional:
@@ -28,15 +40,15 @@ templates:
     ignore_blank_results: true
     plex_all: true
     filters:
-      audio_language.count_gte: <<minimum>>
-      audio_language.count_lt: <<lt>>
+      <<search_attribute>>.count_gte: <<minimum>>
+      <<search_attribute>>.count_lt: <<lt>>
 
 overlays:
 
-  Dual-Audio:
+  Dual:
     variables: {key: dual, weight: 20, lt: 3}
     template: [name: standard, name: language]
 
-  Multi-Audio:
+  Multi:
     variables: {key: multi, weight: 10}
     template: [name: standard, name: language]

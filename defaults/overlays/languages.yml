@@ -1,5 +1,5 @@
 ##############################################################################
-#                             Languages Overlays                             #
+#                   Audio/Subtitle Language Flags Overlays                   #
 #           Created by Yozora, Bullmoose20, Cpt Kuesel, & Sohjiro            #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #    https://metamanager.wiki/en/latest/defaults/overlays/languages.html     #
@@ -8,64 +8,57 @@
 external_templates:
   pmm: templates
   template_variables:
+    conditionals:
+      final_text:
+        default: <<text>>
+        conditions:
+          - use_lowercase: true
+            value: <<key>>
+      final_style:
+        default: round
+        conditions:
+          - style: [square, half]
+            value: square
+      back_radius:
+        conditions:
+          - style: [round, half]
+            value: 26
+          - style: square
+            value:
     style: round
     country: <<key>>
     queue: position
-    pmm: flag/<<style>>/<<country>>
+    pmm: flag/<<final_style>>/<<country>>
     addon_position: left
-    addon_offset: 5
+    offset: 10
+    addon_offset: <<offset>>
     back_color: "#00000099"
     back_width: 190
-    back_radius: 15
+    back_radius: <<back_radius>>
     back_align: left
     font: fonts/Inter-Bold.ttf
     font_size: 50
-    final_name: text(<<text>>)
+    final_name: text(<<final_text>>)
 
 queues:
   position:
+    default:
+      horizontal_align: left
+      vertical_align: top
+      horizontal_offset: 15
+      vertical_offset: 15
     left:
-      - horizontal_align: left
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 15
-      - horizontal_align: left
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 75
-      - horizontal_align: left
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 135
-      - horizontal_align: left
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 195
-      - horizontal_align: left
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 255
+      -
+      - vertical_offset: 75
+      - vertical_offset: 135
+      - vertical_offset: 195
+      - vertical_offset: 255
     right:
       - horizontal_align: right
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 15
-      - horizontal_align: right
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 75
-      - horizontal_align: right
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 135
-      - horizontal_align: right
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 195
-      - horizontal_align: right
-        vertical_align: top
-        horizontal_offset: 15
-        vertical_offset: 255
+      - vertical_offset: 75
+      - vertical_offset: 135
+      - vertical_offset: 195
+      - vertical_offset: 255
 
 templates:
   flags:
