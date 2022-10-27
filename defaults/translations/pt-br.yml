@@ -1,4 +1,4 @@
-version: 1.18.0.4
+version: 1.18.0.7
 variables:
   library_translation:
     # For Movie Libraries
@@ -23,221 +23,221 @@ variables:
     # For Playlists
     item: Itens
 key_names:
-  # Action: Action
-  # Action & Adventure: Action & Adventure
-  # Actors: Actors
-  # Adult: Adult
-  # Adventure: Adventure
-  # Albanian: Albanian
-  # Animation: Animation
+  Action: Ação
+  Action & Adventure: Ação e Aventura
+  Actors: Atores
+  Adult: Adulto
+  Adventure: Aventura
+  Albanian: Albanês
+  Animation: Animação
   # Anime: Anime
-  # Arabic: Arabic
+  Arabic: Árabe
   # Argentina: Argentina
-  # Audio Language: Audio Language
-  # Australia: Australia
-  # Austria: Austria
-  # Award: Award
+  Audio Language: Idioma de áudio
+  Australia: Austrália
+  Austria: Áustria
+  Award: Prêmio
   # Bahamas: Bahamas
-  # Basque: Basque
-  # Belgium: Belgium
+  Basque: Basco
+  Belgium: Bélgica
   # Bengali: Bengali
-  # Biography: Biography
-  # Biopic: Biopic
-  # Bosnian: Bosnian
-  # Brazil: Brazil
-  # Bulgaria: Bulgaria
-  # Bulgarian: Bulgarian
-  # Canada: Canada
-  # Catalan: Catalan
-  # Chart: Chart
-  # Children: Children
+  Biography: Biografia
+  Biopic: Filme biográfico
+  Bosnian: Bósnia
+  Brazil: Brasil
+  Bulgaria: Bulgária
+  Bulgarian: Búlgaro
+  Canada: Canadá
+  Catalan: Catalão
+  Chart: Lista
+  Children: Crianças
   # Chile: Chile
   # China: China
-  # Chinese: Chinese
+  Chinese: chinês
   Christmas: Natal
-  # Comedy: Comedy
-  # Competition: Competition
+  Comedy: Comédia
+  Competition: Competição
   # Costa Rica: Costa Rica
-  # Country: Country
+  Country: País
   # Crime: Crime
-  # Croatia: Croatia
-  # Croatian: Croatian
-  # Czech: Czech
-  # Czech Republic: Czech Republic
-  # Danish: Danish
-  # Decade: Decade
-  # Denmark: Denmark
-  # Directors: Directors
-  # Documentary: Documentary
-  # Dominican Republic: Dominican Republic
+  Croatia: Croácia
+  Croatian: Croata
+  Czech: Tcheco
+  Czech Republic: República Checa
+  Danish: Dinamarquês
+  Decade: Década
+  Denmark: Dinamarca
+  Directors: Diretores
+  Documentary: Documentário
+  Dominican Republic: República Dominicana
   # Drama: Drama
-  # Dutch: Dutch
+  Dutch: Holandês
   Easter: Páscoa
-  # Egypt: Egypt
-  # English: English
-  # Erotica: Erotica
-  # Estonia: Estonia
-  # Estonian: Estonian
-  # Family: Family
-  # Fantasy: Fantasy
+  Egypt: Egito
+  English: Inglês
+  Erotica: Erótica
+  Estonia: Estônia
+  Estonian: Estoniano
+  Family: Família
+  Fantasy: Fantasia
   Father's Day: Dia dos Pais
   # Filipino: Filipino
   # Film Noir: Film Noir
-  # Finland: Finland
-  # Finnish: Finnish
-  # Food: Food
-  # France: France
-  # French: French
-  # Galician: Galician
-  # Game Show: Game Show
-  # Gangster: Gangster
-  # Genre: Genre
-  # Georgian: Georgian
-  # German: German
-  # Germany: Germany
-  # Greece: Greece
-  # Greek: Greek
+  Finland: Finlândia
+  Finnish: Finlandês
+  Food: Comida
+  France: França
+  French: Francês
+  Galician: Galego
+  Game Show: Show de jogos
+  Gangster: Gângster
+  Genre: Gênero
+  Georgian: Georgiano
+  German: Alemão
+  Germany: Alemanha
+  Greece: Grécia
+  Greek: Grego
   # Halloween: Halloween
-  # Hebrew: Hebrew
+  Hebrew: Hebraico
   # Hindi: Hindi
-  # History: History
-  # Home and Garden: Home and Garden
+  History: História
+  Home and Garden: Casa e Jardim
   # Hong Kong: Hong Kong
   # Horror: Horror
-  # Hungarian: Hungarian
-  # Hungary: Hungary
-  # Iceland: Iceland
-  # Icelandic: Icelandic
+  Hungarian: Húngaro
+  Hungary: Hungria
+  Iceland: Islândia
+  Icelandic: Islandês
   Independence Day: Dia da Independência
-  # India: India
+  India: Índia
   # Indie: Indie
-  # Indonesia: Indonesia
-  # Indonesian: Indonesian
-  # Iran: Iran
-  # Ireland: Ireland
+  Indonesia: Indonésia
+  Indonesian: Indonésio
+  Iran: Irã
+  Ireland: Iraniano
   # Israel: Israel
-  # Italian: Italian
-  # Italy: Italy
-  # Japan: Japan
-  # Japanese: Japanese
-  # Kannada: Kannada
-  # Kazakh: Kazakh
-  # Kids: Kids
-  # Korea: Korea
-  # Korean: Korean
+  Italian: Italiano
+  Italy: Itália
+  Japan: Japão
+  Japanese: Japonês
+  Kannada: Canarês
+  Kazakh: Cazaque
+  Kids: Crianças
+  Korea: Coréia
+  Korean: Coreano
   # LGBTQ+: LGBTQ+
   Labor Day: Dia do Trabalho
-  # Latin: Latin
-  # Latvia: Latvia
-  # Latvian: Latvian
-  # Luxembourg: Luxembourg
-  # Macedonian: Macedonian
-  # Malay: Malay
-  # Malayalam: Malayalam
-  # Malaysia: Malaysia
-  # Malaysian: Malaysian
+  Latin: latim
+  Latvia: Letônia
+  Latvian: Letão
+  Luxembourg: Luxemburgo
+  Macedonian: Macedônio
+  Malay: Malaio
+  Malayalam: Malaiala
+  Malaysia: Malásia
+  Malaysian: Malaio
   # Marathi: Marathi
-  # Martial Arts: Martial Arts
+  Martial Arts: Artes marciais
   Memorial Day: Dia da Recordação
   # Mexico: Mexico
   # Mind-Bend: Mind-Bend
   # Mind-Fuck: Mind-Fuck
   # Mini-Series: Mini-Series
-  # Morocco: Morocco
+  Morocco: Marrocos
   Mother's Day: Dia das Mães
-  # Music: Music
+  Music: Música
   # Musical: Musical
-  # Mystery: Mystery
+  Mystery: Mistério
   # Nepal: Nepal
-  # Netherlands: Netherlands
+  Netherlands: Holanda
   # Network: Network
   New Year's Day: 1º dia do Ano
-  # New Zealand: New Zealand
-  # News: News
-  # News & Politics: News & Politics
-  # Norway: Norway
-  # Norwegian: Norwegian
-  # Norwegian Bokmål: Norwegian Bokmål
-  # Norwegian Nynorsk: Norwegian Nynorsk
-  # Pakistan: Pakistan
-  # Panama: Panama
-  # Persian: Persian
+  New Zealand: Nova Zelândia
+  News: Notícia
+  News & Politics: Notícias e política
+  Norway: Noruega
+  Norwegian: Norueguês
+  Norwegian Bokmål: Bokmål norueguês
+  Norwegian Nynorsk: Norueguês Nynorsk
+  Pakistan: Paquistão
+  Panama: Panamá
+  Persian: Persa
   # Peru: Peru
-  # Philippines: Philippines
-  # Poland: Poland
-  # Polish: Polish
-  # Politics: Politics
+  Philippines: Filipinos
+  Poland: Polônia
+  Polish: Polonês
+  Politics: Político
   # Portugal: Portugal
-  # Portugese: Portugese
-  # Portuguese: Portuguese
-  # Producers: Producers
+  Portugese: Português
+  Portuguese: Português
+  Producers: Produtores
   # Punjabi: Punjabi
-  # Qatar: Qatar
-  # Ratings: Ratings
-  # Reality: Reality
-  # Resolution: Resolution
+  Qatar: Catar
+  Ratings: Classificações
+  Reality: Realidade
+  Resolution: Resolução
   # Romance: Romance
-  # Romania: Romania
-  # Romanian: Romanian
-  # Romantic Comedy: Romantic Comedy
-  # Romantic Drama: Romantic Drama
-  # Russia: Russia
-  # Russian: Russian
-  # Saudi Arabia: Saudi Arabia
-  # Sci-Fi & Fantasy: Sci-Fi & Fantasy
-  # Science Fiction: Science Fiction
-  # Seasonal: Seasonal
-  # Serbia: Serbia
-  # Serbian: Serbian
-  # Short: Short
-  # Singapore: Singapore
+  Romania: Romênia
+  Romanian: Romeno
+  Romantic Comedy: Comédia romântica
+  Romantic Drama: Drama romântico
+  Russia: Rússia
+  Russian: Russo
+  Saudi Arabia: Arábia Saudita
+  Sci-Fi & Fantasy: Ficção científica e fantasia
+  Science Fiction: Ficção científica
+  Seasonal: Sazonal
+  Serbia: sérvia
+  Serbian: Sérvio
+  Short: Curto
+  Singapore: Cingapura
   # Slasher: Slasher
-  # Slovak: Slovak
-  # Slovenian: Slovenian
-  # Soap: Soap
-  # South Africa: South Africa
-  # Spain: Spain
-  # Spanish: Spanish
-  # Sport: Sport
+  Slovak: Eslovaco
+  Slovenian: esloveno
+  Soap: Sabão
+  South Africa: África do Sul
+  Spain: Espanha
+  Spanish: Espanhol
+  Sport: Esporte
   # Sri Lanka: Sri Lanka
   St. Patrick's Day: Dia de São Patrício
-  # Stand-Up Comedy: Stand-Up Comedy
+  Stand-Up Comedy: Comédia em Pé
   # Streaming: Streaming
-  # Studio: Studio
-  # Subtitle Language: Subtitle Language
-  # Superhero: Superhero
+  Studio: Estúdio
+  Subtitle Language: Idioma das legendas
+  Superhero: Super heroi
   # Suspense: Suspense
-  # Swahili: Swahili
-  # Sweden: Sweden
-  # Swedish: Swedish
-  # Switzerland: Switzerland
-  # Sword & Sorcery: Sword & Sorcery
-  # TV Movie: TV Movie
-  # Talk Show: Talk Show
-  # Tamil: Tamil
+  Swahili: suaíli
+  Sweden: Suécia
+  Swedish: Sueco
+  Switzerland: Suíça
+  Sword & Sorcery: Espada e Feitiçaria
+  TV Movie: Filme para TV
+  Talk Show: Programa de entrevista
+  Tamil: Tâmil
   # Telugu: Telugu
-  # Thai: Thai
-  # Thailand: Thailand
+  Thai: Tailandês
+  Thailand: Tailândia
   Thanksgiving: Ação de Graças
-  # Thriller: Thriller
-  # Travel: Travel
-  # Turkey: Turkey
+  Thriller: Filme de ação
+  Travel: Viagem
+  Turkey: Turquia
   # Turkish: Turkish
-  # Ukraine: Ukraine
-  # Ukrainian: Ukrainian
-  # United Arab Emirates: United Arab Emirates
-  # United Kingdom: United Kingdom
-  # United States of America: United States of America
-  # Universe: Universe
+  Ukraine: Ucrânia
+  Ukrainian: Ucraniano
+  United Arab Emirates: Emirados Árabes Unidos
+  United Kingdom: Reino Unido
+  United States of America: Estados Unidos da América
+  Universe: Universo
   # Urdu: Urdu
   Valentine's Day: Dia de São Valentim
-  # Vietnam: Vietnam
-  # Vietnamese: Vietnamese
-  # War & Politics: War & Politics
-  # Welsh: Welsh
-  # Western: Western
-  # Writers: Writers
-  # Year: Year
+  Vietnam: Vietnã
+  Vietnamese: Vietnamita
+  War & Politics: Guerra e Política
+  Welsh: Galês
+  Western: Ocidental
+  Writers: Escritoras
+  Year: Ano
 
 translations:
   #############################################################
@@ -409,7 +409,7 @@ translations:
 
   # possible key_names: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
   separator_name: <<translated_key_name>> Coleções
-  separator_summary: Separador de seção para Coleções de <<key_name>>.
+  separator_summary: Separador de seção para Coleções de <<translated_key_name>>.
 
   # example key_name: Robin Williams
   actor_name: <<translated_key_name>>
@@ -421,6 +421,9 @@ translations:
 
   audio_language_other_name: Outros Áudios
   audio_language_other_summary: <<library_translationU>>s filmado em outras línguas.
+
+  collectionless_name: Sem coleção
+  collectionless_summary: <<library_translationU>>s usado apenas para fazer com que o Plex exiba itens corretamente.
 
   # example key_name: TV-MA
   content_rating_name: <<translated_key_name>> <<library_translationU>>s

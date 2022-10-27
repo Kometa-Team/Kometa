@@ -1527,11 +1527,13 @@ class OverlayFile(DataFile):
             for pos in initial_queue:
                 if not pos:
                     pos = {}
+                horizontal_align = pos["horizontal_align"] if "horizontal_align" in pos else horizontal_align
+                vertical_align = pos["vertical_align"] if "vertical_align" in pos else vertical_align
+                horizontal_offset = pos["horizontal_offset"] if "horizontal_offset" in pos else horizontal_offset
+                vertical_offset = pos["vertical_offset"] if "vertical_offset" in pos else vertical_offset
                 new_pos = {
-                    "horizontal_align": pos["horizontal_align"] if "horizontal_align" in pos else horizontal_align,
-                    "vertical_align": pos["vertical_align"] if "vertical_align" in pos else vertical_align,
-                    "horizontal_offset": pos["horizontal_offset"] if "horizontal_offset" in pos else horizontal_offset,
-                    "vertical_offset": pos["vertical_offset"] if "vertical_offset" in pos else vertical_offset
+                    "horizontal_align": horizontal_align, "vertical_align": vertical_align,
+                    "horizontal_offset": horizontal_offset, "vertical_offset": vertical_offset
                 }
                 for pk, pv in new_pos.items():
                     if pv is None:
