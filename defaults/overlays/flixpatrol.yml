@@ -8,11 +8,12 @@
 external_templates:
   pmm: templates
   template_variables:
+    default:
+      pre_text: TOP
+      style: round
+      limit: 10
+      limit_<<key>>: <<limit>>
     queue: position
-    limit: 10
-    limit_<<key>>: <<limit>>
-    pre_text: TOP
-    style: round
     back_color: "#00000099"
     back_width: 160
     back_height: 160

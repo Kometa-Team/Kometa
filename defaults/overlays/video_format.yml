@@ -9,7 +9,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    text_<<key>>: <<overlay_name>>
+    default:
+      text_<<key>>: <<overlay_name>>
     group: quality
     horizontal_offset: 15
     horizontal_align: left

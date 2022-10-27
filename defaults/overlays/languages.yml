@@ -30,13 +30,14 @@ external_templates:
             value: 26
           - style: square
             value:
-    style: round
-    country: <<key>>
-    country_<<key>>: <<country>>
+    default:
+      style: round
+      country: <<key>>
+      country_<<key>>: <<country>>
+      offset: 10
     queue: position
     pmm: flag/<<final_style>>/<<country_<<key>>>>
     addon_position: <<final_align>>
-    offset: 10
     addon_offset: <<offset>>
     back_color: "#00000099"
     back_width: 190
@@ -55,15 +56,15 @@ queues:
     left:
       - horizontal_align: left
       - vertical_offset: 75
-      - vertical_offset: 136
-      - vertical_offset: 197
-      - vertical_offset: 258
+      - vertical_offset: 137
+      - vertical_offset: 199
+      - vertical_offset: 261
     right:
       - horizontal_align: right
       - vertical_offset: 75
-      - vertical_offset: 136
-      - vertical_offset: 197
-      - vertical_offset: 258
+      - vertical_offset: 137
+      - vertical_offset: 199
+      - vertical_offset: 261
 
 templates:
   flags:
