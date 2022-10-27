@@ -756,9 +756,9 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                 if start and end and start < end:
                     return f"{start}{range_split}{end}"
         else:
-            value = check_int(value, datatype=datatype, minimum=minimum, maximum=maximum)
-            if value is not None:
-                return value
+            new_value = check_int(value, datatype=datatype, minimum=minimum, maximum=maximum)
+            if new_value is not None:
+                return new_value
         message = f"{display} {value} must {'each ' if range_split else ''}be {'an integer' if datatype == 'int' else 'a number'}"
         message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
         if range_split:

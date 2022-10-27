@@ -1498,16 +1498,47 @@ class OverlayFile(DataFile):
         queues = get_dict("queues", data, library.queue_names)
         self.queues = {}
         for queue_name, queue in queues.items():
+            initial_queue = None
             if isinstance(queue, list):
-                self.queues[queue_name] = queue
+                initial_queue = queue
             elif queue_name in temp_vars and temp_vars[queue_name] and isinstance(temp_vars[queue_name], list):
-                self.queues[queue_name] = temp_vars[queue_name]
+                initial_queue = temp_vars[queue_name]
             elif queue_name in temp_vars and temp_vars[queue_name] and temp_vars[queue_name] in queue:
-                self.queues[queue_name] = queue[temp_vars[queue_name]]
+                initial_queue = queue[temp_vars[queue_name]]
             elif isinstance(queue, dict):
-                for dq, dv in queue.items():
-                    self.queues[queue_name] = dv
-                    break
+                for dk, dv in queue.items():
+                    if dk != "default":
+                        initial_queue = dv
+                        break
+            if initial_queue is None:
+                raise Failed(f"Config Error: queue {queue_name} must be a list or dictionary")
+            if not isinstance(initial_queue, list):
+                raise Failed(f"Config Error: queue {queue_name} must be a list")
+
+            def attr_scanner(attr):
+                if isinstance(queue, dict) and "default" in queue and attr in queue["default"] and queue["default"][attr] is not None:
+                    return queue["default"][attr]
+
+            horizontal_align = attr_scanner("horizontal_align")
+            vertical_align = attr_scanner("vertical_align")
+            horizontal_offset = attr_scanner("horizontal_offset")
+            vertical_offset = attr_scanner("vertical_offset")
+            final_queue = []
+            for pos in initial_queue:
+                if not pos:
+                    pos = {}
+                new_pos = {
+                    "horizontal_align": pos["horizontal_align"] if "horizontal_align" in pos else horizontal_align,
+                    "vertical_align": pos["vertical_align"] if "vertical_align" in pos else vertical_align,
+                    "horizontal_offset": pos["horizontal_offset"] if "horizontal_offset" in pos else horizontal_offset,
+                    "vertical_offset": pos["vertical_offset"] if "vertical_offset" in pos else vertical_offset
+                }
+                for pk, pv in new_pos.items():
+                    if pv is None:
+                        raise Failed(f"Config Error: queue missing {pv} attribute")
+                final_queue.append(new_pos)
+
+            self.queues[queue_name] = final_queue
         self.external_templates(data, overlay=True)
         self.translation_files(data, overlay=True)
         if not self.overlays:
