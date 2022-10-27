@@ -245,6 +245,13 @@ class DataFile:
                             conditionals[ck] = cv
 
                     added_vars = {}
+                    init_defaults = {}
+                    if "default" in template:
+                        if not template["default"]:
+                            raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
+                        if not isinstance(template["default"], dict):
+                            raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
+                        init_defaults = template["default"]
                     for input_dict, input_type, overwrite_call in [
                         (temp_vars, "External", False),
                         (extra_variables, "Definition", False),
@@ -260,6 +267,13 @@ class DataFile:
                                     raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute conditionals is not a dictionary")
                                 for ck, cv in input_value.items():
                                     conditionals[ck] = cv
+                            elif input_key == "default":
+                                if not input_value:
+                                    raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute default is blank")
+                                if not isinstance(input_value, dict):
+                                    raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute default is not a dictionary")
+                                for dk, dv in input_value.items():
+                                    init_defaults[dk] = dv
                             elif input_value is None:
                                 optional.append(str(input_key))
                             elif overwrite_call:
@@ -295,20 +309,15 @@ class DataFile:
                                     return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
                         return return_item
 
-                    ini_default = {}
                     default = {}
-                    if "default" in template:
-                        if not template["default"]:
-                            raise Failed(f"{self.data_type} Error: template sub-attribute default is blank")
-                        if not isinstance(template["default"], dict):
-                            raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
-                        ini_default = {replace_var(dv, variables): replace_var(template["default"][dv], variables) for dv in template["default"] if dv not in variables}
-                    for dkey, dvalue in ini_default.items():
-                        final_key = replace_var(dkey, ini_default)
-                        final_value = replace_var(dvalue, ini_default)
-                        if final_key not in optional and final_key not in variables and final_key not in conditionals:
-                            default[final_key] = final_value
-                            default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
+                    if init_defaults:
+                        var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in init_defaults.items() if dk not in variables}
+                        for dkey, dvalue in var_default.items():
+                            final_key = replace_var(dkey, var_default)
+                            final_value = replace_var(dvalue, var_default)
+                            if final_key not in optional and final_key not in variables and final_key not in conditionals:
+                                default[final_key] = final_value
+                                default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
 
                     if "optional" in template:
                         if template["optional"]:
@@ -491,7 +500,9 @@ class DataFile:
                             except Failed:
                                 continue
             logger.debug("")
-            logger.debug(f"Final Template Attributes: {new_attributes}")
+            logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
+            logger.debug("")
+            logger.debug(new_attributes)
             logger.debug("")
             return new_attributes
 

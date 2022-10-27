@@ -99,7 +99,6 @@ external_templates:
             value: edition
           - type: [resolution, resolution_dovetail]
             value: resolution
-
     horizontal_align: left
     vertical_align: top
 

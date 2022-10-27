@@ -19,11 +19,12 @@ external_templates:
         conditions:
           - overlay_name: NR
             value: <<post_nr_text>>
-    key: <<overlay_name>>
-    pre_text: ""
-    post_text: "+"
-    pre_nr_text: ""
-    post_nr_text: ""
+    default:
+      key: <<overlay_name>>
+      pre_text: ""
+      post_text: "+"
+      pre_nr_text: ""
+      post_nr_text: ""
     horizontal_offset: 15
     horizontal_align: left
     vertical_offset: 270

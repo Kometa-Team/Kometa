@@ -15,8 +15,9 @@ external_templates:
         conditions:
           - style: standard
             value: <<standard_value>>
-    standard_value: 105
-    style: compact
+    default:
+      standard_value: 105
+      style: compact
     group: audio_codec
     horizontal_offset: 0
     horizontal_align: center
