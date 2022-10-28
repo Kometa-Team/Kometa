@@ -422,6 +422,9 @@ translations:
   audio_language_other_name: Anden Lyd
   audio_language_other_summary: <<library_translationU>> i andet ualmindeligt lydsprog.
 
+  collectionless_name: Uden Samling
+  collectionless_summary: En samling af <<library_translationU>> brugt for at få Plex til af vise artikler korrekt.
+
   # example key_name: TV-MA
   content_rating_name: <<translated_key_name>> <<library_translationU>>s
   content_rating_summary: <<library_translationU>> som er bedømt <<translated_key_name>>.
