@@ -142,6 +142,7 @@ class Library(ABC):
                     self.metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
+                    logger.info(f"Metadata File Failed To Load")
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Metadata File")
@@ -153,6 +154,7 @@ class Library(ABC):
                     self.queue_names.extend([q for q in overlay_obj.queues])
                 except Failed as e:
                     logger.error(e)
+                    logger.info(f"Overlay File Failed To Load")
 
     def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False

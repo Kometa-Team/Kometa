@@ -118,19 +118,21 @@ All [Shared Overlay Variables](variables) are available with the default values 
 |:--------------------|:---------------------------:|
 | `horizontal_offset` |            `15`             |
 | `horizontal_align`  |       `left`/`right`        |
-| `vertical_offset`   | `15`/`75`/`135`/`195`/`255` |
+| `vertical_offset`   | `15`/`76`/`137`/`198`/`259` |
 | `vertical_align`    |            `top`            |
 | `back_color`        |         `#00000099`         |
 | `back_radius`       |          `26`/` `           |
 | `back_width`        |            `190`            |
 | `back_height`       |            `105`            |
-| `back_align`        |           `left`            |
+| `back_align`        |       `left`/`right`        |
 | `font`              |   `fonts/Inter-Bold.ttf`    |
 | `font_size`         |            `50`             |
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `position`                    | **Description:** Changes the position of the Overlays.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                                                  |
+| `position`                    | **Description:** Changes the position of all Overlay Queues in this File.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                               |
+| `position_audio_flags`        | **Description:** Changes the position of the audio flags Overlays.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                                      |
+| `position_subtitle_flags`     | **Description:** Changes the position of the subtitle flags Overlays.<br>**Default:** `left`<br>**Values:** `left`, `right`, `half`, or List of Coordinates                                                                                                                                                                   |
 | `style`                       | **Description:** Controls the visual theme of the overlays created.<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>round</code></td><td>Round Theme</td></tr><tr><td><code>square</code></td><td>Square Theme</td></tr><tr><td><code>half</code></td><td>Square Flag with Round Background</td></tr></table> |
 | `offset`                      | **Description:** Controls the offset between the flag and the text.<br>**Default:** `10`<br>**Values:** Any Integer 0 or greater                                                                                                                                                                                              |
 | `align`                       | **Description:** Controls the flag alignment in the backdrop.<br>**Default:** `left`<br>**Values:** `left` or `right`                                                                                                                                                                                                         |

@@ -1506,23 +1506,22 @@ class OverlayFile(DataFile):
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
-        queues = get_dict("queues", data, library.queue_names)
+        queues = get_dict("queues", data)
         self.queues = {}
+        position = temp_vars["position"] if "position" in temp_vars and temp_vars["position"] else None
         for queue_name, queue in queues.items():
+            queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
+            if queue_name in library.queue_names and not queue_position:
+                continue
             initial_queue = None
-            if isinstance(queue, list):
+            if queue_position and isinstance(queue_position, list):
+                initial_queue = queue_position
+            elif queue_position and isinstance(queue, dict) and queue_position in queue:
+                initial_queue = queue[queue_position]
+            elif isinstance(queue, list):
                 initial_queue = queue
-            elif queue_name in temp_vars and temp_vars[queue_name] and isinstance(temp_vars[queue_name], list):
-                initial_queue = temp_vars[queue_name]
-            elif queue_name in temp_vars and temp_vars[queue_name] and temp_vars[queue_name] in queue:
-                initial_queue = queue[temp_vars[queue_name]]
             elif isinstance(queue, dict):
-                for dk, dv in queue.items():
-                    if dk != "default":
-                        initial_queue = dv
-                        break
-            if initial_queue is None:
-                raise Failed(f"Config Error: queue {queue_name} must be a list or dictionary")
+                initial_queue = next((v for k, v in queue.items() if k != "default"), None)
             if not isinstance(initial_queue, list):
                 raise Failed(f"Config Error: queue {queue_name} must be a list")
 

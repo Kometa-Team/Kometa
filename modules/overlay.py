@@ -287,15 +287,22 @@ class Overlay:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
             text = f"{match.group(1)}"
-            self.font_name = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts", "Roboto-Medium.ttf")
+            code_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            font_base = os.path.join(code_base, "fonts")
+            self.font_name = os.path.join(font_base, "Roboto-Medium.ttf")
             if "font_size" in self.data:
                 self.font_size = util.parse("Overlay", "font_size", self.data["font_size"], datatype="int", parent="overlay", default=self.font_size)
             if "font" in self.data and self.data["font"]:
                 font = str(self.data["font"])
+                if not os.path.exists(font) and os.path.exists(os.path.join(code_base, font)):
+                    font = os.path.join(code_base, font)
                 if not os.path.exists(font):
-                    fonts = util.get_system_fonts()
+                    pmm_fonts = os.listdir(font_base)
+                    fonts = util.get_system_fonts() + pmm_fonts
                     if font not in fonts:
                         raise Failed(f"Overlay Error: font: {os.path.abspath(font)} not found. Options: {', '.join(fonts)}")
+                    if font in pmm_fonts:
+                        font = os.path.join(font_base, font)
                 self.font_name = font
             self.font = ImageFont.truetype(self.font_name, self.font_size)
             if "font_style" in self.data and self.data["font_style"]:

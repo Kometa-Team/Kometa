@@ -30,41 +30,46 @@ external_templates:
             value: 26
           - style: square
             value:
+      queue:
+        default: audio_flags
+        conditions:
+          - use_subtitles: true
+            value: subtitle_flags
     default:
       style: round
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
-    queue: position
     pmm: flag/<<final_style>>/<<country_<<key>>>>
     addon_position: <<final_align>>
     addon_offset: <<offset>>
     back_color: "#00000099"
     back_width: 190
-    back_radius: <<back_radius>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
     font_size: 50
     final_name: text(<<final_text>>)
 
 queues:
-  position:
+  audio_flags: &pos_data
+
     default:
       vertical_align: top
       horizontal_offset: 15
       vertical_offset: 15
     left:
       - horizontal_align: left
-      - vertical_offset: 75
+      - vertical_offset: 76
       - vertical_offset: 137
-      - vertical_offset: 199
-      - vertical_offset: 261
+      - vertical_offset: 198
+      - vertical_offset: 259
     right:
       - horizontal_align: right
-      - vertical_offset: 75
+      - vertical_offset: 76
       - vertical_offset: 137
-      - vertical_offset: 199
-      - vertical_offset: 261
+      - vertical_offset: 198
+      - vertical_offset: 259
+  subtitle_flags: *pos_data
 
 templates:
   flags:

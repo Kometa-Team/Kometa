@@ -568,6 +568,7 @@ class ConfigFile:
                         self.playlist_names.extend([p for p in playlist_obj.playlists])
                         self.playlist_files.append(playlist_obj)
                     except Failed as e:
+                        logger.info(f"Playlist File Failed To Load")
                         logger.error(e)
             else:
                 logger.warning("playlist_files attribute not found")
