@@ -65,3 +65,7 @@ overlays:
   Peacock:
     variables: {key: peacock, weight: 10}
     template: [name: standard, name: streaming]
+
+  Showtime:
+    variables: {key: showtime, weight: 5}
+    template: [name: standard, name: streaming]

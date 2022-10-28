@@ -40,6 +40,7 @@ dynamic_collections:
       paramount: Paramount+
       peacock: Peacock
       amazon: Prime Video
+      showtime: Showtime
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - mdb_smart
