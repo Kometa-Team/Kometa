@@ -30,16 +30,12 @@ external_templates:
             value: 26
           - style: square
             value:
-      queue:
-        default: audio_flags
-        conditions:
-          - use_subtitles: true
-            value: subtitle_flags
     default:
       style: round
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
+    queue: flags
     pmm: flag/<<final_style>>/<<country_<<key>>>>
     addon_position: <<final_align>>
     addon_offset: <<offset>>
@@ -51,8 +47,7 @@ external_templates:
     final_name: text(<<final_text>>)
 
 queues:
-  audio_flags: &pos_data
-
+  flags:
     default:
       vertical_align: top
       horizontal_offset: 15
@@ -69,7 +64,6 @@ queues:
       - vertical_offset: 137
       - vertical_offset: 198
       - vertical_offset: 259
-  subtitle_flags: *pos_data
 
 templates:
   flags:

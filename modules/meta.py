@@ -1496,7 +1496,7 @@ class PlaylistFile(DataFile):
         logger.info(f"Playlist File Loaded Successfully")
 
 class OverlayFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, queue_current):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.library = library
         self.data_type = "Overlay"
@@ -1508,11 +1508,10 @@ class OverlayFile(DataFile):
         self.templates = get_dict("templates", data)
         queues = get_dict("queues", data)
         self.queues = {}
+        self.queue_names = {}
         position = temp_vars["position"] if "position" in temp_vars and temp_vars["position"] else None
         for queue_name, queue in queues.items():
             queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
-            if queue_name in library.queue_names and not queue_position:
-                continue
             initial_queue = None
             if queue_position and isinstance(queue_position, list):
                 initial_queue = queue_position
@@ -1548,9 +1547,10 @@ class OverlayFile(DataFile):
                 for pk, pv in new_pos.items():
                     if pv is None:
                         raise Failed(f"Config Error: queue missing {pv} attribute")
-                final_queue.append(new_pos)
-
-            self.queues[queue_name] = final_queue
+                final_queue.append(util.parse_cords(new_pos, f"{queue_name} queue", required=True))
+            self.queues[queue_current] = final_queue
+            self.queue_names[queue_name] = queue_current
+            queue_current += 1
         self.external_templates(data, overlay=True)
         self.translation_files(data, overlay=True)
         if not self.overlays:

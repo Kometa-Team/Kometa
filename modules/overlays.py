@@ -24,10 +24,9 @@ class Overlays:
         os.makedirs(self.library.overlay_backup, exist_ok=True)
 
         key_to_overlays = {}
-        queues = {}
         properties = None
         if not self.library.remove_overlays:
-            key_to_overlays, properties, queues = self.compile_overlays()
+            key_to_overlays, properties = self.compile_overlays()
         ignore_list = [rk for rk in key_to_overlays]
 
         old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
@@ -95,7 +94,7 @@ class Overlays:
                             blur_test = int(re.search("\\(([^)]+)\\)", current_overlay.name).group(1))
                             if blur_test > blur_num:
                                 blur_num = blur_test
-                        elif current_overlay.queue:
+                        elif current_overlay.queue_name:
                             if current_overlay.queue not in queue_overlays:
                                 queue_overlays[current_overlay.queue] = {}
                             if current_overlay.weight in queue_overlays[current_overlay.queue]:
@@ -314,10 +313,7 @@ class Overlays:
                                         new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
 
                             for queue, weights in queue_overlays.items():
-                                if queue not in queues:
-                                    logger.error(f"Overlay Error: no queue {queue} found")
-                                    continue
-                                cords = queues[queue]
+                                cords = self.library.queues[queue]
                                 sorted_weights = sorted(weights.items(), reverse=True)
                                 for o, cord in enumerate(cords):
                                     if len(sorted_weights) <= o:
@@ -369,16 +365,8 @@ class Overlays:
         properties = {}
         overlay_groups = {}
         key_to_overlays = {}
-        queues = {}
 
         for overlay_file in self.library.overlay_files:
-            for k, v in overlay_file.queues.items():
-                if not isinstance(v, list):
-                    raise Failed(f"Overlay Error: Queue: {k} must be a list")
-                try:
-                    queues[k] = [overlay.parse_cords(q, f"{k} queue", required=True) for q in v]
-                except Failed as e:
-                    logger.error(e)
             for k, v in overlay_file.overlays.items():
                 try:
                     builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
@@ -478,7 +466,7 @@ class Overlays:
                     for v in gv:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
-        return key_to_overlays, properties, queues
+        return key_to_overlays, properties
 
     def find_poster_url(self, item):
         if isinstance(item, Movie):
