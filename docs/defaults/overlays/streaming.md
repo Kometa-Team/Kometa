@@ -20,6 +20,8 @@ The `streaming` Default Overlay File is used to create an overlay based on the s
 | Paramount+        |  `paramount`  |  `30`  |
 | AppleTV           |   `appletv`   |  `20`  |
 | Peacock           |   `peacock`   |  `10`  |
+| Showtime          |  `showtime`   |  `5`   |
+
 
 ## Config
 

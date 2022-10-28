@@ -25,6 +25,7 @@ The `streaming` Default Metadata File is used to dynamically create collections 
 | `Paramount+ Movies/Shows`  |  `paramount`  | Collection of Movies/Shows Streaming on Paramount+.                         |
 | `Peacock Movies/Shows`     |   `peacock`   | Collection of Movies/Shows Streaming on Peacock.                            |
 | `Prime Video Movies/Shows` |   `amazon`    | Collection of Movies/Shows Streaming on Prime Video.                        |
+| `Showtime Movies/Shows`    |  `showtime`   | Collection of Movies/Shows Streaming on Showtime.                           |
 
 ## Config
 
