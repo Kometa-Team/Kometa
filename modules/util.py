@@ -775,6 +775,60 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         logger.warning(f"{error} Warning: {message} using {default} as default")
         return translation[default] if translation is not None else default
 
+def parse_cords(data, parent, required=False):
+    horizontal_align = parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
+                             options=["left", "center", "right"]) if "horizontal_align" in data else "left"
+    vertical_align = parse("Overlay", "vertical_align", data["vertical_align"], parent=parent,
+                           options=["top", "center", "bottom"]) if "vertical_align" in data else "top"
+
+    horizontal_offset = None
+    if "horizontal_offset" in data and data["horizontal_offset"] is not None:
+        x_off = data["horizontal_offset"]
+        per = False
+        if str(x_off).endswith("%"):
+            x_off = x_off[:-1]
+            per = True
+        x_off = check_num(x_off)
+        error = f"Overlay Error: {parent} horizontal_offset: {data['horizontal_offset']} must be a number"
+        if x_off is None:
+            raise Failed(error)
+        if horizontal_align != "center" and not per and x_off < 0:
+            raise Failed(f"{error} 0 or greater")
+        elif horizontal_align != "center" and per and (x_off > 100 or x_off < 0):
+            raise Failed(f"{error} between 0% and 100%")
+        elif horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
+            raise Failed(f"{error} between -50% and 50%")
+        horizontal_offset = f"{x_off}%" if per else x_off
+    if horizontal_offset is None and horizontal_align == "center":
+        horizontal_offset = 0
+    if required and horizontal_offset is None:
+        raise Failed(f"Overlay Error: {parent} horizontal_offset is required")
+
+    vertical_offset = None
+    if "vertical_offset" in data and data["vertical_offset"] is not None:
+        y_off = data["vertical_offset"]
+        per = False
+        if str(y_off).endswith("%"):
+            y_off = y_off[:-1]
+            per = True
+        y_off = check_num(y_off)
+        error = f"Overlay Error: {parent} vertical_offset: {data['vertical_offset']} must be a number"
+        if y_off is None:
+            raise Failed(error)
+        if vertical_align != "center" and not per and y_off < 0:
+            raise Failed(f"{error} 0 or greater")
+        elif vertical_align != "center" and per and (y_off > 100 or y_off < 0):
+            raise Failed(f"{error} between 0% and 100%")
+        elif vertical_align == "center" and per and (y_off > 50 or y_off < -50):
+            raise Failed(f"{error} between -50% and 50%")
+        vertical_offset = f"{y_off}%" if per else y_off
+    if vertical_offset is None and vertical_align == "center":
+        vertical_offset = 0
+    if required and vertical_offset is None:
+        raise Failed(f"Overlay Error: {parent} vertical_offset is required")
+
+    return horizontal_align, horizontal_offset, vertical_align, vertical_offset
+
 def replace_label(_label, _data):
     replaced = False
     if isinstance(_data, dict):
