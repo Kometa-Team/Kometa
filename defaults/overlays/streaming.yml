@@ -69,3 +69,15 @@ overlays:
   Showtime:
     variables: {key: showtime, weight: 5}
     template: [name: standard, name: streaming]
+
+  NOW:
+    variables: {key: now, weight: 4}
+    template: [name: standard, name: streaming]
+
+  All 4:
+    variables: {key: all4, weight: 3}
+    template: [name: standard, name: streaming]
+
+  britbox:
+    variables: {key: britbox, weight: 2}
+    template: [name: standard, name: streaming]
