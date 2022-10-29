@@ -99,8 +99,8 @@ html_show_sourcelink = False
 # "<source>": "<target>"
 redirects = {
     "redact": "https://regex101.com/r/DMo1DQ/latest",
-    "home/guides/alternative-docker": "home/guides/images",
-    "home/guides/defaults": "defaults/guide"
+    "home/guides/alternative-docker": "images.html",
+    "home/guides/defaults": "../../defaults/guide.html"
 }
 
 # Theme options are theme-specific and customize the look and feel of a
