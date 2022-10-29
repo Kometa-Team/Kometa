@@ -1,8 +1,8 @@
-# Configuration File
+# Config File
 
 Plex Meta Manager uses a YAML configuration file; this file contains settings that determine how Plex Meta Manager behaves, and the required connection details needed to connect to Plex Media Server, Radarr, Sonarr, and other third-party services via API.
 
-By default, and unless otherwise stated, Plex Meta Manager looks for the configuration file within `/config/config.yml`
+By default, and unless otherwise stated, Plex Meta Manager looks for the configuration file at `/config/config.yml`.
 
 A template Configuration File can be found in the [GitHub Repo](https://github.com/meisnate12/Plex-Meta-Manager/blob/master/config/config.yml.template).
 
@@ -25,7 +25,7 @@ This table outlines the third-party services that Plex Meta Manager can make use
 | [`trakt`](trakt)                                          |                &#10060;                 |
 | [`mal`](myanimelist)                                      |                &#10060;                 |
 
-# Configuration File Walkthrough
+## Configuration File Example
 
 This example outlines what a "standard" config.yml file might look like when in use.
 
@@ -34,38 +34,38 @@ This example outlines what a "standard" config.yml file might look like when in 
   <br />
 
 ```yaml
-libraries:                                      # This is called out once within the config.yml file                                       
-  Movies:                                       # Each library must match the Plex library name
+libraries:                          # This is called out once within the config.yml file                                       
+  Movies:                           # Each library must match the Plex library name
     metadata_path:
-      - file: config/Movies.yml                 # This is a local file on the system
-      - folder: config/Movies/                  # This is a local directory on the system
-      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - pmm: imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - file: config/Movies.yml     # This is a local file on the system
+      - folder: config/Movies/      # This is a local directory on the system
+      - pmm: basic                  # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
+      - pmm: imdb                   # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
     overlay_path:
-      - remove_overlays: false                  # Set this to true to remove all overlays
-      - file: config/Overlays.yml               # This is a local file on the system
-      - pmm: ribbon          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - remove_overlays: false      # Set this to true to remove all overlays
+      - file: config/Overlays.yml   # This is a local file on the system
+      - pmm: ribbon                 # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
   TV Shows:                           
     metadata_path:
       - file: config/TVShows.yml
       - folder: config/TV Shows/
-      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - pmm: imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                  # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
+      - pmm: imdb                   # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
     overlay_path:
-      - remove_overlays: false                  # Set this to true to remove all overlays
-      - file: config/Overlays.yml               # This is a local file on the system
-      - pmm: ribbon          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - remove_overlays: false      # Set this to true to remove all overlays
+      - file: config/Overlays.yml   # This is a local file on the system
+      - pmm: ribbon                 # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
   Anime:
     metadata_path:
       - file: config/Anime.yml
-      - pmm: basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - pmm: anilist                  # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+      - pmm: basic                  # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
+      - pmm: anilist                # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
   Music:
     metadata_path:
       - file: config/Music.yml
 playlist_files:
   - file: config/playlists.yml       
-  - pmm: playlist                           # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+  - pmm: playlist                   # This is a local PMM Default file. Usage Guide: https://metamanager.wiki/en/nightly/defaults/guide.html
 settings:
   cache: true
   cache_expiration: 60
@@ -178,83 +178,3 @@ mal:
 
 **Expand the above to see the full config.yml file before continuing.**
 <br/>
-
-## Library Mappings (`libraries:`)
-
-`libraries:` is used to tell PMM that the following code relates to Plex libraries. `libraries:` should only be seen once within the configuration file.
-
-In this specific example there are four Plex libraries that are being connected to: `Movies - 4K`, `TV Shows`, `Animé` and `Music`. These names **must**  match the name of the library as it appears within Plex, including any special characters such as the é within `Animé`.
-
-Using `Movies - 4K:` as an example, `metadata_path:` instructs PMM that the next piece of code is where to look for the [Metadata Files](../../metadata/metadata) which will be covered in the next section.
-<br/>
-<br/>
-
-## Metadata/YAML files (`metadata_path:` mappings)
-As can be seen in the original config.yml example, there are three metadata_paths being pointed to for the TV Shows library:
-```yaml
-  TV Shows:
-    metadata_path:
-      - file: config/TVShows.yml
-      - folder: config/TV Shows/
-      - pmm: basic
-      - pmm: imdb
-```
-
-These path types are outlined as follows:
-* `- file:` refers to a YAML file which is located within the system that PMM is being run from. 
-
-* `- folder:` refers to a directory containing YAML files which is located within the system that PMM is being run from. 
-
-* `- git:` refers to a YAML file which is hosted on the [GitHub Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) unless the user has specified a custom repository within the settings section of the config.yml file.
-
-Within the above example, PMM will:
-* First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
-
-* Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata/YAML files within that directory.
-
-* After that, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `basic.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/basic.yml).
-
-* Finally, look at the [PMM/chart folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM/chart) within the GitHub Configs Repo for a file called `imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/imdb.yml).
-
-It should be noted that whilst the user should be able to edit any metadata files which are `- file:` or `- folder:` based, they have little to no control over `- git:` metadata files **unless a copy of the YAML file is downloaded and ran locally**. In the above example, if the user downloaded the [basic.yml file](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/pmm: basic.yml) from the [GitHub Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) and placed it in the root directory of PMM (`config/`), then the metadata_path mapping would be updated to reflect this as follows:
-```yaml
-  TV Shows:
-    metadata_path:
-      - file: config/TVShows.yml
-      - folder: config/TV Shows/
-      - file: pmm: basic        # <------ HERE
-      - pmm: imdb
-```
-
-## Playlists (`playlist_files:` mappings)
-
-Playlists can be seen as an extension of Libraries in that they are both handled very similarly within PMM:
-```yaml
-playlist_files:
-  - file: config/playlists.yml
-  - pmm: playlists
-```  
-
-As with `libraries:`, YAML files are defined to create the Playlists. It should be noted that whilst in `libraries:` when working with `playlist_files:` you call out the libraries being connected to within the Metadata/YAML file as Playlists can combine media from multiple libraries. You can view an example playlists.yml file as follows:
-
-<details>
-  <summary>Example playlists.yml file</summary>
-  <br />
-
-```yaml
-playlists:
-  Marvel Cinematic Universe:
-    sync_to_users: all
-    sync_mode: sync
-    libraries: Movies, TV Shows
-    trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe?sort=rank,asc
-    summary: Marvel Cinematic Universe In Order
-  Star Wars Clone Wars Chronological Order:
-    sync_to_users: all
-    sync_mode: sync
-    libraries: Movies, TV Shows
-    trakt_list: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
-```
-</details>
-
-As can be seen in the above examples, multiple libraries are being used to combine different types of media (movies and tv shows in this case) into one playlist.

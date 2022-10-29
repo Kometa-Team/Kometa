@@ -76,7 +76,7 @@ If that doesn't work, stop here until you fix that.  Diagnoing and repairing Doc
 
 #### Important note on Docker images
 
-This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has [idiosyncracies](../docker.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
+This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
 
 The great thing about Docker is that all the setup you'd have to do to run PMM is already done inside the docker image.
 

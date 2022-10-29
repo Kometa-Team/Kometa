@@ -11,7 +11,7 @@ This is the simplest way to create Collections using Plex Meta Manager.
 
 ## Configurations
 
-To run a default pmm file you can simply add it to your `metadata_path` using `pmm` like so:
+To run a default pmm Metadata file you can simply add it to your `metadata_path` using `pmm` like so:
 
 ```yaml
 libraries:
@@ -97,31 +97,6 @@ This is the default PMM collection ordering:
 | `producer`             |        `19`        |
 | `writer`               |        `20`        |
 
-## Rating Overlays
-
-By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can come from Rotten Tomatoes (and includes Critic Ratings and Audience Ratings) or IMDb (Audience Ratings). This only changes the tiny icons displayed and where Plex will retrieve the ratings from upon initial scan and import of the media metadata.
-
-**Plex Meta Manager can insert up to three ratings of your choice into the three spots regardless of what you choose in the `Advanced` tab of that Plex library**
-
-![](images/ratings_source.png)
-
-Plex has three available spots in the Plex DB to store ratings and thus Plex Meta Manager can be used to insert ratings sources of your choice into those spots. They are known as the User Rating (`#1`), Critic Rating (`#2`), and Audience Rating (`#3`). 
-
-**Note that the little icons cannot be changed and that the numbers next to the little icons are reflected in the poster ratings overlay**
-
-![](images/ratings_spot.png)
-
-To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
-
-**mass_*_rating_update** sources can be found here: [operations](../../config/operations)
-
-![](images/ratings_operations.png)
-
-Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
-
-![](images/ratings_overlay_path.png)
-
-
 ## Customizing Configs
 
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
@@ -131,43 +106,21 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
-    - pmm: ratings
-      template_variables:
-        overlay_level: episode
+    metadata_path:
+      - pmm: imdb
+        template_variables:
+          use_popular: false
+          use_lowest: false
+          visible_library_top: true
+          visible_home_top: true
+          visible_shared_top: true
 ```
 
-Each file has a comment block at the top showing the available `template_variables` for each file. For example the [`pmm: genre`](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/genre.yml) has this:
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre).
 
-```yaml
-#############################################################
-#                 Dynamic Genre Collections                 #
-#         Created by Yozora, Bullmoose20, & Sohjiro         #
-#############################################################
-#  Call this from your config.yml (Movie or Show)           #
-#  If nothing is specified these are the defaults           #
-#                                                           #
-#    metadata_path:                                         #
-#      - pmm: genre                                     #
-#        template_variables:                                #
-#          # Turn the [Separator Collection](../separators) on/off           #
-#          use_separator: true                              #
-#          # Sets how the collection is sorted              #
-#          sort_by: release.desc                            #
-#          # Sets the collection mode of the collection     #
-#          collection_mode:                                 #
-#          # Sets the value at the start of the sort title  #
-#          collection_section: "06"                         #
-#############################################################
-```
- 
-Each of these when passed will change how the collection runs slightly. 
-* `use_separator` Turn the [Separator Collection](../separators) on/off
-* `sort_by` Sets how the collection is sorted
-* `collection_mode` Sets the collection mode of the collection 
-* `collection_section` Sets the value at the start of the sort title
+**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](variables).**
 
-**In addition to the defined `template_variables` each file in the PMM Folder has access to the `radarr_add_missing` and `sonarr_add_missing` template variables and for dynamic collections most attributes can be passed as template variables**
+### Examples
 
 For example if you want yearly oscar collections that go back 10 years instead of 5 all of which gets sent to radarr use the `data` and `radarr_add_missing` template variables.
 
@@ -175,12 +128,12 @@ For example if you want yearly oscar collections that go back 10 years instead o
 libraries:
   Movies:
     metadata_path:
-    - pmm: oscars
-      template_variables:
-        radarr_add_missing: true
-        data:
-          starting: current_year-10
-          ending: current_year
+      - pmm: oscars
+        template_variables:
+          radarr_add_missing: true
+          data:
+            starting: current_year-10
+            ending: current_year
 ```
 
 Or maybe you want to change the number of actor collections made using pmm: actor.
@@ -189,12 +142,12 @@ Or maybe you want to change the number of actor collections made using pmm: acto
 libraries:
   Movies:
     overlay_path:
-    - pmm: actor
-      template_variables:
-        collection_mode: hide
-        data:
-          depth: 5
-          limit: 50
+      - pmm: actor
+        template_variables:
+          collection_mode: hide
+          data:
+            depth: 5
+            limit: 50
 ```
 
 Or maybe you want to change the collection sort order of the genre collections using pmm: genre.
@@ -203,9 +156,9 @@ Or maybe you want to change the collection sort order of the genre collections u
 libraries:
   Movies:
     metadata_path:
-    - pmm: genre
-      template_variables:
-        collection_section: 11
+      - pmm: genre
+        template_variables:
+          collection_section: 11
 ```
 
 Or maybe you want to disable separators globally per library.
@@ -216,6 +169,7 @@ libraries:
     template_variables:
       use_separator: false
     metadata_path:
+      - ...
 ```
 
 Alternatively it can be turned off individually per git file:
@@ -232,10 +186,6 @@ libraries:
         template_variables:
           use_separator: false
 ```
-
-## Errors
-
-If there are collections being made that have configuration errors or missing posters please either bring it up in our Discord or raise an Issue on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs/issues/new/choose). 
 
 ```{include} example.md
 ```

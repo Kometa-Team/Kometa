@@ -4,7 +4,7 @@ The `language_count` Default Overlay File is used to create an overlay based on 
 
 **This file works with Movie and Show Libraries.**
 
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme**
+**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
 
 ![](images/language_count.png)
 
