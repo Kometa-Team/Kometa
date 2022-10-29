@@ -10,20 +10,20 @@ The `streaming` Default Overlay File is used to create an overlay based on the s
 
 | Streaming Service |      Key      | Weight |
 |:------------------|:-------------:|:------:|
-| Netflix           |   `netflix`   | `100`  |
-| Prime Video       |   `amazon`    |  `90`  |
-| Disney+           |   `disney`    |  `80`  |
-| HBO Max           |   `hbomax`    |  `70`  |
-| Crunchyroll       | `Crunchyroll` |  `60`  |
-| YouTube           |   `youtube`   |  `50`  |
-| Hulu              |    `hulu`     |  `40`  |
-| Paramount+        |  `paramount`  |  `30`  |
-| AppleTV           |   `appletv`   |  `20`  |
-| Peacock           |   `peacock`   |  `10`  |
-| Showtime          |  `showtime`   |  `5`   |
-| NOW               |     `now`     |  `4`   |
-| All 4             |    `all4`     |  `3`   |
-| britbox           |   `britbox`   |  `2`   |
+| Netflix           |   `netflix`   | `140`  |
+| Prime Video       |   `amazon`    | `130`  |
+| Disney+           |   `disney`    | `120`  |
+| HBO Max           |   `hbomax`    | `110`  |
+| Crunchyroll       | `Crunchyroll` | `100`  |
+| YouTube           |   `youtube`   |  `90`  |
+| Hulu              |    `hulu`     |  `80`  |
+| Paramount+        |  `paramount`  |  `70`  |
+| AppleTV           |   `appletv`   |  `60`  |
+| Peacock           |   `peacock`   |  `50`  |
+| Showtime          |  `showtime`   |  `40`  |
+| NOW               |     `now`     |  `30`  |
+| All 4             |    `all4`     |  `20`  |
+| britbox           |   `britbox`   |  `10`  |
 
 
 ## Config

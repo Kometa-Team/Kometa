@@ -27,57 +27,57 @@ templates:
 overlays:
 
   Netflix:
-    variables: {key: netflix, weight: 100}
+    variables: {key: netflix, weight: 140}
     template: [name: standard, name: streaming]
 
   Prime:
-    variables: {key: amazon, weight: 90}
+    variables: {key: amazon, weight: 130}
     template: [name: standard, name: streaming]
 
   Disney:
-    variables: {key: disney, weight: 80}
+    variables: {key: disney, weight: 120}
     template: [name: standard, name: streaming]
 
   HBO-Max:
-    variables: {key: hbomax, weight: 70}
+    variables: {key: hbomax, weight: 110}
     template: [name: standard, name: streaming]
 
   Crunchyroll:
-    variables: {key: crunchyroll, weight: 60, allowed_libraries: show}
+    variables: {key: crunchyroll, weight: 100, allowed_libraries: show}
     template: [name: standard, name: streaming]
 
   YouTube:
-    variables: {key: youtube, weight: 50}
+    variables: {key: youtube, weight: 90}
     template: [name: standard, name: streaming]
 
   Hulu:
-    variables: {key: hulu, weight: 40}
+    variables: {key: hulu, weight: 80}
     template: [name: standard, name: streaming]
 
   Paramount:
-    variables: {key: paramount, weight: 30}
+    variables: {key: paramount, weight: 70}
     template: [name: standard, name: streaming]
 
   AppleTV:
-    variables: {key: appletv, weight: 20}
+    variables: {key: appletv, weight: 60}
     template: [name: standard, name: streaming]
 
   Peacock:
-    variables: {key: peacock, weight: 10}
+    variables: {key: peacock, weight: 50}
     template: [name: standard, name: streaming]
 
   Showtime:
-    variables: {key: showtime, weight: 5}
+    variables: {key: showtime, weight: 10}
     template: [name: standard, name: streaming]
 
   NOW:
-    variables: {key: now, weight: 4}
+    variables: {key: now, weight: 30}
     template: [name: standard, name: streaming]
 
   All 4:
-    variables: {key: all4, weight: 3}
+    variables: {key: all4, weight: 20}
     template: [name: standard, name: streaming]
 
   britbox:
-    variables: {key: britbox, weight: 2}
+    variables: {key: britbox, weight: 10}
     template: [name: standard, name: streaming]
