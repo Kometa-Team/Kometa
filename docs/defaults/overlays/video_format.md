@@ -4,7 +4,7 @@ The `video_format` Default Overlay File is used to create an overlay based on th
 
 **This file works with Movie and Show Libraries.**
 
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme**
+**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
 
 ![](images/video_format.png)
 

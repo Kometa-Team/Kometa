@@ -98,7 +98,9 @@ html_show_sourcelink = False
 # Redirect URLs
 # "<source>": "<target>"
 redirects = {
-     "redact": "https://regex101.com/r/DMo1DQ/latest"
+    "redact": "https://regex101.com/r/DMo1DQ/latest",
+    "home/guides/alternative-docker": "home/guides/images",
+    "home/guides/defaults": "defaults/guide"
 }
 
 # Theme options are theme-specific and customize the look and feel of a
@@ -124,13 +126,13 @@ html_theme_options = {
                 ("_divider", ),
                 ("Local Walkthrough", "home/guides/local"),
                 ("Docker Walkthrough", "home/guides/docker"),
+                ("Docker Images", "home/guides/images"),
                 ("_divider", ),
                 ("unRAID Walkthrough", "home/guides/unraid"),
                 ("Kubernetes Walkthrough", "home/guides/kubernetes"),
                 ("QNAP Walkthrough", "home/guides/qnap"),
                 ("Synology Walkthrough", "home/guides/synology"),
             ]),
-            ("Docker Images", "home/docker"),
             ("Log Files", "home/logs"),
             ("Run Commands & Environment Variables", "home/environmental"),
             ("Knowledgebase/FAQ", "home/kb"),
@@ -141,16 +143,16 @@ html_theme_options = {
             ("_divider", ),
             ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs", True),
             ("Discord Server", "https://discord.gg/NfH6mGFuAB", True),
-            ("Sponsor", "https://github.com/sponsors/meisnate12", True),
+            ("Donate/Sponsor", "https://github.com/sponsors/meisnate12", True),
             ("Acknowledgements", "home/acknowledgements"),
         ]),
         ("_menu", "Config", [
-            ("Configuration File", "config/configuration"),
-            ("Redacting Your Config", "redact"),
+            ("Config File", "config/configuration"),
             ("_divider", ),
-            ("Libraries/Playlists", "config/libraries"),
+            ("Libraries", "config/libraries"),
+            ("Playlists", "config/playlists"),
             ("Path Types", "config/paths"),
-            ("_menu", "Operations", "config/operations", [
+            ("_menu", "Library Operations", "config/operations", [
                 ("Assets For All", "config/operations", "#assets-for-all"),
                 ("Delete Collections With Less", "config/operations", "#delete-collections-with-less"),
                 ("Delete Unmanaged Collections", "config/operations", "#delete-unmanaged-collections"),
@@ -182,6 +184,7 @@ html_theme_options = {
             ("Tautulli", "config/tautulli"),
             ("Radarr", "config/radarr"),
             ("Sonarr", "config/sonarr"),
+            ("Notifiarr", "config/notifiarr"),
             ("_divider", ),
             ("TMDb", "config/tmdb"),
             ("Trakt", "config/trakt"),
@@ -189,7 +192,6 @@ html_theme_options = {
             ("OMDb", "config/omdb"),
             ("AniDB", "config/anidb"),
             ("MyAnimeList", "config/myanimelist"),
-            ("Notifiarr", "config/notifiarr"),
         ]),
         ("_menu", "Defaults", [
             ("Defaults Usage Guide", "defaults/guide"),

@@ -4,7 +4,7 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 
 **This file works with Movie and Show Libraries.**
 
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme**
+**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
 
 ![](images/languages.png)
 
