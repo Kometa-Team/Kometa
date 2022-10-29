@@ -21,6 +21,9 @@ The `streaming` Default Overlay File is used to create an overlay based on the s
 | AppleTV           |   `appletv`   |  `20`  |
 | Peacock           |   `peacock`   |  `10`  |
 | Showtime          |  `showtime`   |  `5`   |
+| NOW               |     `now`     |  `4`   |
+| All 4             |    `all4`     |  `3`   |
+| britbox           |   `britbox`   |  `2`   |
 
 
 ## Config
