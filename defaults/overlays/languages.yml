@@ -45,25 +45,389 @@ external_templates:
     font: fonts/Inter-Bold.ttf
     font_size: 50
     final_name: text(<<final_text>>)
+    
+vars:
+  c: &c 0
+  v1: &v1 15
+  v2: &v2 76
+  v3: &v3 137
+  v4: &v4 198
+  v5: &v5 259
+  vc1: &vc1 -122
+  vc2: &vc2 -61
+  vc3: &vc3 0
+  vc4: &vc4 61
+  vc5: &vc5 122
+  vhc1: &vhc1 -95
+  vhc2: &vhc2 95
+  h1: &h1 15
+  h2: &h2 206
+  h3: &h3 397
+  h4: &h4 588
+  h5: &h5 779
+  hc1: &hc1 0
+  hc2: &hc2 191
+  hc3: &hc3 -191
+  hc4: &hc4 382
+  hc5: &hc5 -382
+  hvc1: &hvc1 -30
+  hvc2: &hvc2 30
 
 queues:
   flags:
     default:
-      vertical_align: top
-      horizontal_offset: 15
-      vertical_offset: 15
-    left:
-      - horizontal_align: left
-      - vertical_offset: 76
-      - vertical_offset: 137
-      - vertical_offset: 198
-      - vertical_offset: 259
-    right:
-      - horizontal_align: right
-      - vertical_offset: 76
-      - vertical_offset: 137
-      - vertical_offset: 198
-      - vertical_offset: 259
+      position: <<flag_alignment>>_<<vertical_position>>_<<horizontal_position>>_<<flag_position>>
+      horizontal_position: left
+      vertical_position: top
+      flag_alignment: vertical
+      flag_position: 1
+      horizontal_offset: *h1
+      vertical_offset: *v1
+
+    vertical_top_left_1:
+      - vertical_align: top
+        horizontal_align: left
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_top_left_2:
+      - vertical_align: top
+        horizontal_align: left
+        horizontal_offset: *h2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_center_left_1:
+      - vertical_align: center
+        horizontal_align: left
+        vertical_offset: *vc1
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_center_left_2:
+      - vertical_align: center
+        horizontal_align: left
+        vertical_offset: *vc1
+        horizontal_offset: *h2
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_bottom_left_1:
+      - vertical_align: bottom
+        horizontal_align: left
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_bottom_left_2:
+      - vertical_align: bottom
+        horizontal_align: left
+        horizontal_offset: *h2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+
+    vertical_top_center_0:
+      - vertical_align: top
+        horizontal_align: center
+        horizontal_offset: *c
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_top_center_1:
+      - vertical_align: top
+        horizontal_align: center
+        horizontal_offset: *vhc1
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_top_center_2:
+      - vertical_align: top
+        horizontal_align: center
+        horizontal_offset: *vhc2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_center_center_0:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *vc1
+        horizontal_offset: *c
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_center_center_1:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *vc1
+        horizontal_offset: *vhc1
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_center_center_2:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *vc1
+        horizontal_offset: *vhc2
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_bottom_center_0:
+      - vertical_align: bottom
+        horizontal_align: center
+        horizontal_offset: *c
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_bottom_center_1:
+      - vertical_align: bottom
+        horizontal_align: center
+        horizontal_offset: *vhc1
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_bottom_center_2:
+      - vertical_align: bottom
+        horizontal_align: center
+        horizontal_offset: *vhc2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+
+    vertical_top_right_1:
+      - vertical_align: top
+        horizontal_align: right
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_top_right_2:
+      - vertical_align: top
+        horizontal_align: right
+        horizontal_offset: *h2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_center_right_1:
+      - vertical_align: center
+        horizontal_align: right
+        vertical_offset: *vc1
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_center_right_2:
+      - vertical_align: center
+        horizontal_align: right
+        vertical_offset: *vc1
+        horizontal_offset: *h2
+      - vertical_offset: *vc2
+      - vertical_offset: *vc3
+      - vertical_offset: *vc4
+      - vertical_offset: *vc5
+    vertical_bottom_right_1:
+      - vertical_align: bottom
+        horizontal_align: right
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+    vertical_bottom_right_2:
+      - vertical_align: bottom
+        horizontal_align: right
+        horizontal_offset: *h2
+      - vertical_offset: *v2
+      - vertical_offset: *v3
+      - vertical_offset: *v4
+      - vertical_offset: *v5
+
+
+    horizontal_top_left_1:
+      - vertical_align: top
+        horizontal_align: left
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_top_left_2:
+      - vertical_align: top
+        horizontal_align: left
+        vertical_offset: *v2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_left_0:
+      - vertical_align: center
+        horizontal_align: left
+        vertical_offset: *c
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_left_1:
+      - vertical_align: center
+        horizontal_align: left
+        vertical_offset: *hvc1
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_left_2:
+      - vertical_align: center
+        horizontal_align: left
+        vertical_offset: *hvc2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_bottom_left_1:
+      - vertical_align: bottom
+        horizontal_align: left
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_bottom_left_2:
+      - vertical_align: bottom
+        horizontal_align: left
+        vertical_offset: *v2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+
+    horizontal_top_center_1:
+      - vertical_align: top
+        horizontal_align: center
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_top_center_2:
+      - vertical_align: top
+        horizontal_align: center
+        vertical_offset: *v2
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_center_center_0:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *c
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_center_center_1:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *hvc1
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_center_center_2:
+      - vertical_align: center
+        horizontal_align: center
+        vertical_offset: *hvc2
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_bottom_center_1:
+      - vertical_align: bottom
+        horizontal_align: center
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+    horizontal_bottom_center_2:
+      - vertical_align: bottom
+        horizontal_align: center
+        vertical_offset: *v2
+        horizontal_offset: *hc1
+      - horizontal_offset: *hc2
+      - horizontal_offset: *hc3
+      - horizontal_offset: *hc4
+      - horizontal_offset: *hc5
+
+    horizontal_top_right_1:
+      - vertical_align: top
+        horizontal_align: right
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_top_right_2:
+      - vertical_align: top
+        horizontal_align: right
+        vertical_offset: *v2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_right_0:
+      - vertical_align: center
+        horizontal_align: right
+        vertical_offset: *c
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_right_1:
+      - vertical_align: center
+        horizontal_align: right
+        vertical_offset: *hvc1
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_center_right_2:
+      - vertical_align: center
+        horizontal_align: right
+        vertical_offset: *hvc2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_bottom_right_1:
+      - vertical_align: bottom
+        horizontal_align: right
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
+    horizontal_bottom_right_2:
+      - vertical_align: bottom
+        horizontal_align: right
+        vertical_offset: *v2
+      - horizontal_offset: *h2
+      - horizontal_offset: *h3
+      - horizontal_offset: *h4
+      - horizontal_offset: *h5
 
 templates:
   flags:
