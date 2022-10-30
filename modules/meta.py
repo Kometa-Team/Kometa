@@ -1513,36 +1513,43 @@ class OverlayFile(DataFile):
         for queue_name, queue in queues.items():
             queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
             initial_queue = None
+            defaults = {"horizontal_align": None, "vertical_align": None, "horizontal_offset": None, "vertical_offset": None}
+            if isinstance(queue, dict) and "default" in queue and queue["default"] and isinstance(queue["default"], dict):
+                for k, v in queue["default"].items():
+                    if k == "position":
+                        if not queue_position:
+                            queue_position = v
+                    else:
+                        defaults[k] = v
             if queue_position and isinstance(queue_position, list):
                 initial_queue = queue_position
-            elif queue_position and isinstance(queue, dict) and queue_position in queue:
-                initial_queue = queue[queue_position]
             elif isinstance(queue, list):
                 initial_queue = queue
             elif isinstance(queue, dict):
-                initial_queue = next((v for k, v in queue.items() if k != "default"), None)
+                if queue_position:
+                    pos_str = str(queue_position)
+                    for x in range(4):
+                        dict_to_use = temp_vars if x < 2 else defaults
+                        for k, v in dict_to_use.items():
+                            if f"<<{k}>>" in pos_str:
+                                pos_str = pos_str.replace(f"<<{k}>>", str(v))
+                    if pos_str in queue:
+                        initial_queue = queue[pos_str]
+                if not initial_queue:
+                    initial_queue = next((v for k, v in queue.items() if k != "default"), None)
             if not isinstance(initial_queue, list):
                 raise Failed(f"Config Error: queue {queue_name} must be a list")
-
-            def attr_scanner(attr):
-                if isinstance(queue, dict) and "default" in queue and attr in queue["default"] and queue["default"][attr] is not None:
-                    return queue["default"][attr]
-
-            horizontal_align = attr_scanner("horizontal_align")
-            vertical_align = attr_scanner("vertical_align")
-            horizontal_offset = attr_scanner("horizontal_offset")
-            vertical_offset = attr_scanner("vertical_offset")
             final_queue = []
             for pos in initial_queue:
                 if not pos:
                     pos = {}
-                horizontal_align = pos["horizontal_align"] if "horizontal_align" in pos else horizontal_align
-                vertical_align = pos["vertical_align"] if "vertical_align" in pos else vertical_align
-                horizontal_offset = pos["horizontal_offset"] if "horizontal_offset" in pos else horizontal_offset
-                vertical_offset = pos["vertical_offset"] if "vertical_offset" in pos else vertical_offset
+                defaults["horizontal_align"] = pos["horizontal_align"] if "horizontal_align" in pos else defaults["horizontal_align"]
+                defaults["vertical_align"] = pos["vertical_align"] if "vertical_align" in pos else defaults["vertical_align"]
+                defaults["horizontal_offset"] = pos["horizontal_offset"] if "horizontal_offset" in pos else defaults["horizontal_offset"]
+                defaults["vertical_offset"] = pos["vertical_offset"] if "vertical_offset" in pos else defaults["vertical_offset"]
                 new_pos = {
-                    "horizontal_align": horizontal_align, "vertical_align": vertical_align,
-                    "horizontal_offset": horizontal_offset, "vertical_offset": vertical_offset
+                    "horizontal_align": defaults["horizontal_align"], "vertical_align": defaults["vertical_align"],
+                    "horizontal_offset": defaults["horizontal_offset"], "vertical_offset": defaults["vertical_offset"]
                 }
                 for pk, pv in new_pos.items():
                     if pv is None:
