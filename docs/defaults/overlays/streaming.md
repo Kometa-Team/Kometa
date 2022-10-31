@@ -10,20 +10,22 @@ The `streaming` Default Overlay File is used to create an overlay based on the s
 
 | Streaming Service |      Key      | Weight |
 |:------------------|:-------------:|:------:|
-| Netflix           |   `netflix`   | `140`  |
-| Prime Video       |   `amazon`    | `130`  |
-| Disney+           |   `disney`    | `120`  |
-| HBO Max           |   `hbomax`    | `110`  |
-| Crunchyroll       | `Crunchyroll` | `100`  |
-| YouTube           |   `youtube`   |  `90`  |
-| Hulu              |    `hulu`     |  `80`  |
-| Paramount+        |  `paramount`  |  `70`  |
-| AppleTV           |   `appletv`   |  `60`  |
-| Peacock           |   `peacock`   |  `50`  |
-| Showtime          |  `showtime`   |  `40`  |
-| NOW               |     `now`     |  `30`  |
-| All 4             |    `all4`     |  `20`  |
-| britbox           |   `britbox`   |  `10`  |
+| Netflix           |   `netflix`   | `160`  |
+| Prime Video       |   `amazon`    | `150`  |
+| Disney+           |   `disney`    | `140`  |
+| HBO Max           |   `hbomax`    | `130`  |
+| Crunchyroll       | `Crunchyroll` | `120`  |
+| YouTube           |   `youtube`   | `110`  |
+| Hulu              |    `hulu`     | `100`  |
+| Paramount+        |  `paramount`  |  `90`  |
+| AppleTV           |   `appletv`   |  `80`  |
+| Peacock           |   `peacock`   |  `70`  |
+| Showtime          |  `showtime`   |  `60`  |
+| NOW               |     `now`     |  `50`  |
+| All 4             |    `all4`     |  `40`  |
+| britbox           |   `britbox`   |  `30`  |
+| BET+              |     `bet`     |  `20`  |
+| hayu              |    `hayu`     |  `10`  |
 
 
 ## Config
