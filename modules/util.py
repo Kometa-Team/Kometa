@@ -777,9 +777,14 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
 
 def parse_cords(data, parent, required=False):
     horizontal_align = parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
-                             options=["left", "center", "right"]) if "horizontal_align" in data else "left"
+                             options=["left", "center", "right"]) if "horizontal_align" in data else None
+    if required and horizontal_align is None:
+        raise Failed(f"Overlay Error: {parent} horizontal_align is required")
+
     vertical_align = parse("Overlay", "vertical_align", data["vertical_align"], parent=parent,
-                           options=["top", "center", "bottom"]) if "vertical_align" in data else "top"
+                           options=["top", "center", "bottom"]) if "vertical_align" in data else None
+    if required and vertical_align is None:
+        raise Failed(f"Overlay Error: {parent} vertical_align is required")
 
     horizontal_offset = None
     if "horizontal_offset" in data and data["horizontal_offset"] is not None:
@@ -799,8 +804,6 @@ def parse_cords(data, parent, required=False):
         elif horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
             raise Failed(f"{error} between -50% and 50%")
         horizontal_offset = f"{x_off}%" if per else x_off
-    if horizontal_offset is None and horizontal_align == "center":
-        horizontal_offset = 0
     if required and horizontal_offset is None:
         raise Failed(f"Overlay Error: {parent} horizontal_offset is required")
 
@@ -822,8 +825,6 @@ def parse_cords(data, parent, required=False):
         elif vertical_align == "center" and per and (y_off > 50 or y_off < -50):
             raise Failed(f"{error} between -50% and 50%")
         vertical_offset = f"{y_off}%" if per else y_off
-    if vertical_offset is None and vertical_align == "center":
-        vertical_offset = 0
     if required and vertical_offset is None:
         raise Failed(f"Overlay Error: {parent} vertical_offset is required")
 

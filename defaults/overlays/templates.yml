@@ -27,6 +27,10 @@ templates:
       - queue
       - weight
       - font_style
+      - horizontal_offset
+      - horizontal_align
+      - vertical_offset
+      - vertical_align
       - stroke_width
       - stroke_color
       - back_color

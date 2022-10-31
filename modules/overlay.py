@@ -436,13 +436,11 @@ class Overlay:
             else:
                 return value
 
-        if new_cords is None:
-            ho = self.horizontal_offset
-            ha = self.horizontal_align
-            vo = self.vertical_offset
-            va = self.vertical_align
-        else:
-            ha, ho, va, vo = new_cords
+        ho = new_cords[0] if new_cords and self.horizontal_offset is None else self.horizontal_offset
+        ha = new_cords[1] if new_cords and self.horizontal_align is None else self.horizontal_align
+        vo = new_cords[2] if new_cords and self.vertical_offset is None else self.vertical_offset
+        va = new_cords[3] if new_cords and self.vertical_align is None else self.vertical_align
+
         return get_cord(ho, canvas_box[0], box[0], ha), get_cord(vo, canvas_box[1], box[1], va)
 
     def get_canvas(self, item):
