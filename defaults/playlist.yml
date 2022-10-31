@@ -92,7 +92,7 @@ playlists:
       key: starwars
     template:
       - name: playlist
-        trakt_url: https://trakt.tv/users/ruben_vw_/lists/star-wars-canon-timeline
+        trakt_url: https://trakt.tv/users/xrayblaster/lists/star-wars-chronological-order
         summary_starwars: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over.
       - name: arr
 
