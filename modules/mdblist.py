@@ -184,13 +184,14 @@ class Mdblist:
                 logger.info(f"Limit: {data['limit']} items")
                 params["limit"] = data["limit"]
             parsed_url = urlparse(data["url"])
-            url_base = parsed_url._replace(query=None).geturl()
+            url_base = str(parsed_url._replace(query=None).geturl())
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
             try:
                 response = self.config.get_json(url_base, headers=headers, params=params)
-                if "error" in response:
-                    if response["error"] == "empty":
+                if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
+                    err = response["error"] if isinstance(response, dict) else response[0]["error"]
+                    if "empty" in err:
                         raise Failed(f"Mdblist Error: No Items Returned. Lists can take 24 hours to update so try again later.")
                     raise Failed(f"Mdblist Error: Invalid Response {response}")
                 results = []

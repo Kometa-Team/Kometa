@@ -27,6 +27,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`          | `PMM_IGNORE_GHOST`       |
 | [Cache Libraries](#cache-libraries)                   | `-ca` or `--cache-libraries`       | `PMM_CACHE_LIBRARIES`    |
 | [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`    | `PMM_DELETE_COLLECTIONS` |
+| [Delete Labels](#delete-labels)                       | `-dl` or `--delete-labels`         | `PMM_DELETE_LABELS`      |
 | [Resume Run](#resume-run)                             | `-re` or `--resume`                | `PMM_RESUME`             |
 | [No Countdown](#no-countdown)                         | `-nc` or `--no-countdown`          | `PMM_NO_COUNTDOWN`       |
 | [No Missing](#no-missing)                             | `-nm` or `--no-missing`            | `PMM_NO_MISSING`         |
@@ -811,6 +812,45 @@ python plex_meta_manager.py --delete-collections
 
 ```shell
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --delete-collections
+```
+
+</details>
+
+### Delete Labels
+
+Delete all labels on every item in a Library prior to running collections/operations.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #222;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-dl</code> or <code>--delete-labels</code></td>
+    <td><code>PMM_DELETE_LABELS</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--delete-labels</code></td>
+    <td><code>PMM_DELETE_LABELS=true</code></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Local Environment</summary>
+
+```shell
+python plex_meta_manager.py --delete-labels
+```
+
+</details>
+<details>
+  <summary>Docker Environment</summary>
+
+```shell
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --delete-labels
 ```
 
 </details>

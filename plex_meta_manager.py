@@ -37,7 +37,8 @@ parser.add_argument("-rc", "-cl", "--collection", "--collections", "--run-collec
 parser.add_argument("-rl", "-l", "--library", "--libraries", "--run-library", "--run-libraries", dest="libraries", help="Process only specified libraries (comma-separated list)", type=str)
 parser.add_argument("-rm", "-m", "--metadata", "--metadata-files", "--run-metadata-files", dest="metadata", help="Process only specified Metadata files (comma-separated list)", type=str)
 parser.add_argument("-ca", "--cache-library", "--cache-libraries", dest="cache_libraries", help="Cache Library load for 1 day", action="store_true", default=False)
-parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
+parser.add_argument("-dc", "--delete", "--delete-collections", dest="delete_collections", help="Deletes all Collections in the Plex Library before running", action="store_true", default=False)
+parser.add_argument("-dl", "--delete-label", "--delete-labels", dest="delete_labels", help="Deletes all Labels in the Plex Library before running", action="store_true", default=False)
 parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run without displaying the countdown", action="store_true", default=False)
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
 parser.add_argument("-nr", "--no-report", dest="no_report", help="Run without saving a report", action="store_true", default=False)
@@ -86,7 +87,8 @@ collections = get_arg("PMM_COLLECTIONS", args.collections)
 libraries = get_arg("PMM_LIBRARIES", args.libraries)
 metadata_files = get_arg("PMM_METADATA_FILES", args.metadata)
 cache_libraries = get_arg("PMM_CACHE_LIBRARIES", args.cache_libraries, arg_bool=True)
-delete = get_arg("PMM_DELETE_COLLECTIONS", args.delete, arg_bool=True)
+delete_collections = get_arg("PMM_DELETE_COLLECTIONS", args.delete_collections, arg_bool=True)
+delete_labels = get_arg("PMM_DELETE_LABELS", args.delete_labels, arg_bool=True)
 resume = get_arg("PMM_RESUME", args.resume)
 no_countdown = get_arg("PMM_NO_COUNTDOWN", args.no_countdown, arg_bool=True)
 no_missing = get_arg("PMM_NO_MISSING", args.no_missing, arg_bool=True)
@@ -218,7 +220,8 @@ def start(attrs):
     logger.debug(f"--ignore-schedules (PMM_IGNORE_SCHEDULES): {ignore_schedules}")
     logger.debug(f"--ignore-ghost (PMM_IGNORE_GHOST): {ignore_ghost}")
     logger.debug(f"--cache-libraries (PMM_CACHE_LIBRARIES): {cache_libraries}")
-    logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete}")
+    logger.debug(f"--delete-collections (PMM_DELETE_COLLECTIONS): {delete_collections}")
+    logger.debug(f"--delete-labels (PMM_DELETE_LABELS): {delete_labels}")
     logger.debug(f"--resume (PMM_RESUME): {resume}")
     logger.debug(f"--no-countdown (PMM_NO_COUNTDOWN): {no_countdown}")
     logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
@@ -446,7 +449,7 @@ def run_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if config.delete_collections and not playlist_only:
+            if delete_collections and not playlist_only:
                 time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
@@ -458,6 +461,25 @@ def run_libraries(config):
                     except NotFound:
                         logger.error(f"Collection {collection.title} Failed to Delete")
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
+
+            if delete_labels and not playlist_only:
+                time_start = datetime.now()
+                logger.info("")
+                logger.separator(f"Deleting all Labels from All items in the {library.name} Library", space=False, border=False)
+                logger.info("")
+                if library.is_show:
+                    library_types = ["show", "season", "episode"]
+                elif library.is_music:
+                    library_types = ["artist", "album", "track"]
+                else:
+                    library_types = ["movie"]
+                for library_type in library_types:
+                    for item in library.get_all(builder_level=library_type):
+                        try:
+                            library.edit_tags("label", item, sync_tags=[])
+                        except NotFound:
+                            logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
+                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             time_start = datetime.now()
             temp_items = None
@@ -484,13 +506,13 @@ def run_libraries(config):
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
             def run_operations_and_overlays():
-                if not config.test_mode and not collection_only and not playlist_only and not config.requested_metadata_files:
+                if not test and not collection_only and not playlist_only and not config.requested_metadata_files:
                     if not overlays_only and library.library_operation:
                         library_status[library.name]["Library Operations"] = library.Operations.run_operations()
                     if not operations_only and (library.overlay_files or library.remove_overlays):
                         library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
 
-            if config.library_first:
+            if library_first:
                 run_operations_and_overlays()
 
             if not operations_only and not overlays_only and not playlist_only:
@@ -503,26 +525,26 @@ def run_libraries(config):
                         continue
                     logger.info("")
                     logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                    if not config.test_mode and not config.resume_from and not collection_only:
+                    if not test and not resume and not collection_only:
                         try:
                             metadata.update_metadata()
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
                     collections_to_run = metadata.get_collections(config.requested_collections)
-                    if config.resume_from and config.resume_from not in collections_to_run:
+                    if resume and resume not in collections_to_run:
                         logger.info("")
-                        logger.warning(f"Collection: {config.resume_from} not in Metadata File: {metadata.path}")
+                        logger.warning(f"Collection: {resume} not in Metadata File: {metadata.path}")
                         continue
                     if collections_to_run:
                         logger.info("")
-                        logger.separator(f"{'Test ' if config.test_mode else ''}Collections")
+                        logger.separator(f"{'Test ' if test else ''}Collections")
                         logger.remove_library_handler(library.mapping_name)
                         run_collection(config, library, metadata, collections_to_run)
                         logger.re_add_library_handler(library.mapping_name)
                 library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
 
-            if not config.library_first:
+            if not library_first:
                 run_operations_and_overlays()
 
             logger.remove_library_handler(library.mapping_name)
@@ -536,7 +558,7 @@ def run_collection(config, library, metadata, requested_collections):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
-        if config.test_mode and ("test" not in collection_attrs or collection_attrs["test"] is not True):
+        if test and ("test" not in collection_attrs or collection_attrs["test"] is not True):
             no_template_test = True
             if "template" in collection_attrs and collection_attrs["template"]:
                 for data_template in util.get_list(collection_attrs["template"], split=False):
@@ -551,10 +573,10 @@ def run_collection(config, library, metadata, requested_collections):
             if no_template_test:
                 continue
 
-        if config.resume_from and config.resume_from != mapping_name:
+        if resume and resume != mapping_name:
             continue
-        elif config.resume_from == mapping_name:
-            config.resume_from = None
+        elif resume == mapping_name:
+            resume = None
             logger.info("")
             logger.separator(f"Resuming Collections")
 
@@ -723,7 +745,7 @@ def run_playlists(config):
     for playlist_file in config.playlist_files:
         for mapping_name, playlist_attrs in playlist_file.playlists.items():
             playlist_start = datetime.now()
-            if config.test_mode and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
+            if test and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
                 no_template_test = True
                 if "template" in playlist_attrs and playlist_attrs["template"]:
                     for data_template in util.get_list(playlist_attrs["template"], split=False):
@@ -896,19 +918,12 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
+        params = {"config_file": config_file, "ignore_schedules": ignore_schedules}
         if run or test or collections or libraries or metadata_files or resume:
-            process({
-                "config_file": config_file,
-                "test": test,
-                "delete": delete,
-                "ignore_schedules": ignore_schedules,
-                "collections": collections,
-                "libraries": libraries,
-                "metadata_files": metadata_files,
-                "library_first": library_first,
-                "resume": resume,
-                "trace": trace
-            })
+            params["collections"] = collections
+            params["libraries"] = libraries
+            params["metadata_files"] = metadata_files
+            process(params)
         else:
             times_to_run = util.get_list(times)
             valid_times = []
@@ -921,7 +936,7 @@ if __name__ == "__main__":
                     else:
                         raise Failed(f"Argument Error: blank time argument")
             for time_to_run in valid_times:
-                schedule.every().day.at(time_to_run).do(process, {"config_file": config_file, "time": time_to_run, "delete": delete, "library_first": library_first, "trace": trace})
+                schedule.every().day.at(time_to_run).do(process, params)
             while True:
                 schedule.run_pending()
                 if not no_countdown:

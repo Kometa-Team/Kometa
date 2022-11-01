@@ -1,6 +1,6 @@
 # Ratings Overlays
 
-The `ratings` Default Overlay File is used to create an overlay based on if there's an after credit scene on each item within your library.
+The `ratings` Default Overlay File is used to create an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library.
 
 This file only updates the overlays based on the data in Plex. Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass--rating-update) and the [Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode--rating-update) to update Plex to the Ratings you want on the Overlay.
 

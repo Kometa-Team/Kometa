@@ -1479,7 +1479,6 @@ class Plex(Library):
                 if failures > failure_threshold:
                     return False
         elif filter_attr in builder.number_filters or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-            divider = 60000 if filter_attr == "duration" else 1
             test_number = []
             if filter_attr in ["channels", "height", "width", "aspect"]:
                 test_number = 0
@@ -1497,12 +1496,14 @@ class Plex(Library):
                 for media in item.media:
                     for part in media.parts:
                         test_number.extend([s.language for s in part.subtitleStreams()])
+            elif filter_attr == "duration":
+                test_number = getattr(item, filter_actual) / 60000
             else:
                 test_number = getattr(item, filter_actual)
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                 test_number = len(test_number) if test_number else 0
                 modifier = f".{modifier[7:]}"
-            if test_number is None or util.is_number_filter(test_number / divider, modifier, filter_data):
+            if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
                 return False
         else:
             attrs = []

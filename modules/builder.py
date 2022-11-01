@@ -415,6 +415,30 @@ class CollectionBuilder:
                 else:
                     server_check = pl_library.PlexServer.machineIdentifier
 
+        self.smart_filter_details = ""
+        self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
+        self.smart_label_collection = False
+        if "smart_label" in methods and not self.playlist and not self.overlay and not self.library.is_music:
+            logger.debug("")
+            logger.debug("Validating Method: smart_label")
+            self.smart_label_collection = True
+            if not self.data[methods["smart_label"]]:
+                logger.warning(f"{self.Type} Error: smart_label attribute is blank defaulting to random")
+            else:
+                logger.debug(f"Value: {self.data[methods['smart_label']]}")
+                if isinstance(self.data[methods["smart_label"]], dict):
+                    _data, replaced = util.replace_label(self.name, self.data[methods["smart_label"]])
+                    if not replaced:
+                        raise Failed("Config Error: <<smart_label>> not found in the smart_label attribute data")
+                    self.smart_label = _data
+                elif (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
+                        or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
+                    self.smart_label["sort_by"] = str(self.data[methods["smart_label"]]).lower()
+                else:
+                    logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+        if self.smart_label_collection and self.library.smart_label_check(self.name):
+            _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
+
         if "delete_not_scheduled" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: delete_not_scheduled")
@@ -534,30 +558,6 @@ class CollectionBuilder:
                     self.details["tmdb_person"] = valid_names
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
-
-        self.smart_filter_details = ""
-        self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
-        self.smart_label_collection = False
-        if "smart_label" in methods and not self.playlist and not self.overlay and not self.library.is_music:
-            logger.debug("")
-            logger.debug("Validating Method: smart_label")
-            self.smart_label_collection = True
-            if not self.data[methods["smart_label"]]:
-                logger.warning(f"{self.Type} Error: smart_label attribute is blank defaulting to random")
-            else:
-                logger.debug(f"Value: {self.data[methods['smart_label']]}")
-                if isinstance(self.data[methods["smart_label"]], dict):
-                    _data, replaced = util.replace_label(self.name, self.data[methods["smart_label"]])
-                    if not replaced:
-                        raise Failed("Config Error: <<smart_label>> not found in the smart_label attribute data")
-                    self.smart_label = _data
-                elif (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) \
-                        or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
-                    self.smart_label["sort_by"] = str(self.data[methods["smart_label"]]).lower()
-                else:
-                    logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
-        if self.smart_label_collection and self.library.smart_label_check(self.name):
-            _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
 
         self.smart_url = None
         self.smart_type_key = None
@@ -767,7 +767,7 @@ class CollectionBuilder:
             self.sonarr_details["add_missing"] = self.library.Sonarr.add_missing if self.library.Sonarr else False
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
-            
+
         if self.smart_url or self.collectionless or self.library.is_music:
             self.radarr_details["add_missing"] = False
             self.radarr_details["add_existing"] = False
@@ -2725,6 +2725,9 @@ class CollectionBuilder:
             output += f"\n{self.Type} {'deleted' if self.obj else 'not found'} on {self.library.account.username}"
         elif self.obj:
             output = f"{self.Type} {self.obj.title} deleted"
+            if self.smart_label_collection:
+                for item in self.library.search(label=self.name, libtype=self.builder_level):
+                    self.library.edit_tags("label", item, remove_tags=self.name)
         else:
             output = ""
         if self.obj:
