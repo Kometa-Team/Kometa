@@ -14,8 +14,8 @@ templates:
       exclude_prefix:
         - "!"
         - "~"
-      summary: <<collectionless_summary>>
-      name: <<collectionless_name>>
+      summary_collectionless: <<collectionless_summary>>
+      name_collectionless: <<collectionless_name>>
       sort_title: ~_Collectionless
       collection_order: alpha
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/collectionless.jpg
@@ -25,8 +25,8 @@ templates:
     url_poster: <<url_poster>>
     collection_order: <<collection_order>>
     sort_title: <<sort_title>>
-    summary: <<summary>>>
-    name: <<name>>
+    summary: <<summary_collectionless>>
+    name: <<name_collectionless>>
     plex_collectionless:
       exclude_prefix: <<exclude_prefix>>
       exclude: <<exclude>>

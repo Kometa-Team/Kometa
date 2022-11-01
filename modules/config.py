@@ -103,17 +103,12 @@ class ConfigFile:
         self.version = attrs["version"] if "version" in attrs else None
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
-        self.test_mode = attrs["test"] if "test" in attrs else False
-        self.trace_mode = attrs["trace"] if "trace" in attrs else False
-        self.delete_collections = attrs["delete"] if "delete" in attrs else False
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
-        self.library_first = attrs["library_first"] if "library_first" in attrs else False
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
         self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
         self.requested_metadata_files = [mf[:-4] if str(mf).endswith(".yml") else mf for mf in util.get_list(attrs["metadata_files"])] if "metadata_files" in attrs and attrs["metadata_files"] else None
-        self.resume_from = attrs["resume"] if "resume" in attrs else None
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
