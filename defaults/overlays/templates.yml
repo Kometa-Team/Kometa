@@ -2,10 +2,6 @@ templates:
 
   standard:
     default:
-      horizontal_offset: 0
-      horizontal_align: left
-      vertical_offset: 0
-      vertical_align: top
       font: fonts/Inter-Medium.ttf
       font_size: 55
       font_color: "#FFFFFF"
