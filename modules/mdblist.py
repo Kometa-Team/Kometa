@@ -191,7 +191,7 @@ class Mdblist:
                 response = self.config.get_json(url_base, headers=headers, params=params)
                 if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
                     err = response["error"] if isinstance(response, dict) else response[0]["error"]
-                    if "empty" in err:
+                    if err in ["empty", "empty or private list"]:
                         raise Failed(f"Mdblist Error: No Items Returned. Lists can take 24 hours to update so try again later.")
                     raise Failed(f"Mdblist Error: Invalid Response {response}")
                 results = []
