@@ -555,6 +555,7 @@ def run_libraries(config):
     return library_status
 
 def run_collection(config, library, metadata, requested_collections):
+    global resume
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
