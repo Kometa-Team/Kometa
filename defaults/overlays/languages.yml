@@ -53,6 +53,11 @@ vars:
   v3: &v3 137
   v4: &v4 198
   v5: &v5 259
+  vo1: &vo1 200
+  vo2: &vo2 261
+  vo3: &vo3 322
+  vo4: &vo4 383
+  vo5: &vo5 444
   vc1: &vc1 -122
   vc2: &vc2 -61
   vc3: &vc3 0
@@ -99,6 +104,23 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_top_left_3:
+      - vertical_align: top
+        horizontal_align: left
+        vertical_offset: *vo1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_top_left_4:
+      - vertical_align: top
+        horizontal_align: left
+        vertical_offset: *vo1
+        horizontal_offset: *h2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
     vertical_center_left_1:
       - vertical_align: center
         horizontal_align: left
@@ -131,6 +153,23 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_bottom_left_3:
+      - vertical_align: bottom
+        horizontal_align: left
+        vertical_offset: *vo1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_bottom_left_4:
+      - vertical_align: bottom
+        horizontal_align: left
+        vertical_offset: *vo1
+        horizontal_offset: *h2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
 
     vertical_top_center_0:
       - vertical_align: top
@@ -156,6 +195,24 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_top_center_3:
+      - vertical_align: top
+        horizontal_align: center
+        vertical_offset: *vo1
+        horizontal_offset: *vhc1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_top_center_4:
+      - vertical_align: top
+        horizontal_align: center
+        vertical_offset: *vo1
+        horizontal_offset: *vhc2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
     vertical_center_center_0:
       - vertical_align: center
         horizontal_align: center
@@ -207,6 +264,24 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_bottom_center_3:
+      - vertical_align: bottom
+        horizontal_align: center
+        vertical_offset: *vo1
+        horizontal_offset: *vhc1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_bottom_center_4:
+      - vertical_align: bottom
+        horizontal_align: center
+        vertical_offset: *vo1
+        horizontal_offset: *vhc2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
 
     vertical_top_right_1:
       - vertical_align: top
@@ -223,6 +298,23 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_top_right_3:
+      - vertical_align: top
+        horizontal_align: right
+        vertical_offset: *vo1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_top_right_4:
+      - vertical_align: top
+        horizontal_align: right
+        vertical_offset: *vo1
+        horizontal_offset: *h2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
     vertical_center_right_1:
       - vertical_align: center
         horizontal_align: right
@@ -255,6 +347,23 @@ queues:
       - vertical_offset: *v3
       - vertical_offset: *v4
       - vertical_offset: *v5
+    vertical_bottom_right_3:
+      - vertical_align: bottom
+        horizontal_align: right
+        vertical_offset: *vo1
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
+    vertical_bottom_right_4:
+      - vertical_align: bottom
+        horizontal_align: right
+        vertical_offset: *vo1
+        horizontal_offset: *h2
+      - vertical_offset: *vo2
+      - vertical_offset: *vo3
+      - vertical_offset: *vo4
+      - vertical_offset: *vo5
 
 
     horizontal_top_left_1:
