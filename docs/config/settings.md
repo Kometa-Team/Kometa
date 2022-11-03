@@ -10,7 +10,7 @@ Examples of these settings include the ability to:
 
 The settings attribute and attributes can be specified individually per library, or can be inherited from the global value if it has been set. If an attribute is specified at both the library and global level, then the library level attribute will take priority.
 
-There are some attributes which can be specified at the collection level using [Setting Details](../metadata/details/setting).
+There are some attributes which can be specified at the collection level using [Setting Details](../metadata/details/definition).
 
 Attributes set at the collection level will take priority over any library or global-level attribute.
 
@@ -320,7 +320,7 @@ If a collection is skipped due to it not being scheduled, delete the collection.
 
 ## Run Again Delay
 Set the number of minutes to delay running `run_again` collections after daily run is finished.
-* A collection is a `run_again` collection if it has the `run_again` [Setting Detail](../metadata/details/setting) attribute set to true.
+* A collection is a `run_again` collection if it has the `run_again` [Setting Detail](../metadata/details/definition) attribute set to true.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -334,7 +334,7 @@ Set the number of minutes to delay running `run_again` collections after daily r
 </table>
 
 ## Missing Only Released
-Whilst running a collection, all unreleased missing items will be filtered out from the [missing YAML file](../metadata/details/setting)
+Whilst running a collection, all unreleased missing items will be filtered out from the [missing YAML file](../metadata/details/definition)
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

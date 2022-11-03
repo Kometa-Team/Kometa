@@ -1,6 +1,6 @@
 # ICheckMovies Builders
 
-You can find items using the lists on [icheckmovies.com](https://www.icheckmovies.com/) (ICheckMovies). 
+You can find items using the lists on [ICheckMovies.com](https://www.icheckmovies.com/) (ICheckMovies). 
 
 No configuration is required for these builders.
 

@@ -32,24 +32,28 @@
                         <li class="divider"></li>
                       {% elif sublink[0] == "_menu" %}
                         <li class="dropdown-submenu">
-                          {% if sublink[2] == "#" %}
-                            <a tabindex="-1" href="#">{{ sublink[1] }}</a>
-                          {% else %}
+                          {% if sublink|length == 4 %}
                             <a tabindex="-1" href="{{ pathto(sublink[2]) }}">{{ sublink[1] }}</a>
+                          {% elif sublink|length == 5 %}
+                            <a tabindex="-1" href="{{ pathto(sublink[2]) }}{{ sublink[3] }}">{{ sublink[1] }}</a>
+                          {% else %}
+                            <a tabindex="-1" href="#">{{ sublink[1] }}</a>
                           {% endif %}
                           <ul class="dropdown-menu">
-                            {%- for subsublink in sublink[3] %}
+                            {%- for subsublink in sublink[-1] %}
                               {% if subsublink[0] == "_divider" %}
                                 <li class="divider"></li>
                               {% elif subsublink[0] == "_menu" %}
                                 <li class="dropdown-submenu">
-                                  {% if subsublink[2] == "#" %}
-                                    <a tabindex="-1" href="#">{{ subsublink[1] }}</a>
-                                  {% else %}
+                                  {% if subsublink|length == 4 %}
                                     <a tabindex="-1" href="{{ pathto(subsublink[2]) }}">{{ subsublink[1] }}</a>
+                                  {% elif subsublink|length == 5 %}
+                                    <a tabindex="-1" href="{{ pathto(subsublink[2]) }}{{ subsubsublink[3] }}">{{ subsublink[1] }}</a>
+                                  {% else %}
+                                    <a tabindex="-1" href="#">{{ subsubsublink[1] }}</a>
                                   {% endif %}
                                   <ul class="dropdown-menu">
-                                    {%- for subsubsublink in subsublink[3] %}
+                                    {%- for subsubsublink in subsublink[-1] %}
                                       {% if subsubsublink[0] == "_divider" %}
                                         <li class="divider"></li>
                                       {% elif subsubsublink|length > 2 %}

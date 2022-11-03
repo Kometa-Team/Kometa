@@ -134,7 +134,7 @@ class Overlay:
             raise Failed(f"Overlay Error: overlay attribute's queue requires the weight attribute")
         elif self.group and self.queue_name:
             raise Failed(f"Overlay Error: overlay attribute's group and queue cannot be used together")
-        self.horizontal_align, self.horizontal_offset, self.vertical_align, self.vertical_offset = util.parse_cords(self.data, "overlay")
+        self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "overlay")
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
             raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset must be used together")

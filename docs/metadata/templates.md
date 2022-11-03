@@ -1,6 +1,6 @@
 # Templates
 
-Collections often share a lot of common [or generalizable] configuration details. Templates allow you to define these details so they can be used across multiple collections.
+Collection and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
 
 For example, an actor collection might look like this:
 
@@ -166,9 +166,13 @@ Each conditional is identified by its mapping name and has one required attribut
 
 Each set of conditions must have the `value` attribute which is the value of the variable if the condition is met. 
 
-All other attribute pairs in the set of conditions will check a variable of the attribute key and see if the variable is the attribute value or in the list of attribute values.
+All other attribute pairs in the set of conditions will check some condition of the value of the attribute key:
 
-Here's an example from the [PMM default ratings file](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/overlays/ratings.yml).
+* If the attribute key ends with `.not` the value must not equal the attribute value or not be in the list of attribute values.
+* If the attribute key ends with `.exists` and the attribute value is `true` then the attribute key must be a given template variable and if the value is anything else then the attribute key must not be a given template variable.
+* Otherwise, the value must equal the attribute value or be in the list of attribute values.
+
+Here's an example from the [PMM Default ratings file](https://github.com/meisnate12/Plex-Meta-Manager/blob/master/defaults/overlays/ratings.yml).
 
 ```yaml
 templates:

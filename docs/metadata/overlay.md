@@ -36,6 +36,12 @@ overlays:
     # ... builders, details, and filters for this overlay
 ```
 
+There are multiple types of attributes that can be utilized within an overlay:
+
+* [Builders](builders)
+* [Settings/Updates](details)
+* [Filters](filters)
+
 ## Overlay
 
 Each overlay definition needs to specify what overlay to use. This can happen in 3 ways.
@@ -404,41 +410,6 @@ overlays:
         resolution: 4K
         hdr: true
 ```
-
-## Builders
-
-Builders use third-party services to source items for overlays. Multiple builders can be used in the same overlay from a variety of sources listed below.
-
-* [Plex Builders](builders/plex)
-* [TMDb Builders](builders/tmdb)
-* [TVDb Builders](builders/tvdb)
-* [IMDb Builders](builders/imdb)
-* [Trakt Builders](builders/trakt)
-* [Tautulli Builders](builders/tautulli)
-* [Radarr Builders](builders/radarr)
-* [Sonarr Builders](builders/sonarr)
-* [MdbList Builders](builders/mdblist)
-* [Letterboxd Builders](builders/letterboxd)
-* [ICheckMovies Builders](builders/icheckmovies)
-* [FlixPatrol Builders](builders/flixpatrol)
-* [Reciperr Builders](builders/reciperr)
-* [StevenLu Builders](builders/stevenlu)
-* [AniDB Builders](builders/anidb)
-* [AniList Builders](builders/anilist)
-* [MyAnimeList Builders](builders/myanimelist)
-
-## Details
-
-Only a few details can be used with overlays: `limit`, `show_missing`, `save_report`, `missing_only_released`, `minimum_items`, `cache_builders`, `tmdb_region`
-
-* [Setting Details](details/setting)
-* [Metadata Details](details/metadata)
-
-## Filters
-
-These filter media items that would have an overlay applied by any of the Builders.
-
-* [Filters](filters)
 
 ## Examples
 

@@ -1,14 +1,38 @@
 # Filters
 
-Filters allow for you to filter every item added to the collection/playlist from every builder using the `filters` attribute. 
+Filters allow for you to filter every item added to the collection/overlay/playlist from every builder using the `filters` attribute. 
 
-You can have multiple filters but an item must match at least one value from **each** filter to be added to a collection/playlist. The values for each must match what Plex has including special characters in order to match.
+## Using Filters
 
-All filter options are listed below. To display items filtered out add `show_filtered: true` to the collection.
+Filters cannot do anything alone they require the use of at least one [Builder](builders) to function.
+
+You can have multiple filters in each set but an item must match at least one value from **each** filter to not be ignored. The values for each must match what Plex has including special characters in order to match.
+
+```yaml
+filters:
+  genre: Action
+  country: Germany
+```
+
+Anything that doesn't have both the Genre `Action` and the Country `Germany` will be ignored.
+
+Multiple Filter Sets can be given as a list. With multiple sets only one of the sets must pass for the item to not be ignored. 
+
+```yaml
+filters:
+  - genre: Action
+    country: Germany
+  - genre: Comedy
+    country: France
+```
+
+Anything that doesn't have either both the Genre `Action` and the Country `Germany` or the Genre `Comedy` and the Country `France` will be ignored.
+
+All filter options are listed below. To display items filtered out add `show_filtered: true` to the definition.
 
 You can use the `plex_all: true` builder to filter from your entire library.
 
-**Filters can be very slow. Try to build or narrow your items using [Plex Search](builders/plex.md#plex-search) if possible.** 
+**Filters can be very slow. Try to build or narrow your items using [Plex Search](builders/plex.md#plex-search) or another [Builder](builders) if possible.** 
 
 ## String Filters
 
@@ -46,7 +70,7 @@ String filters can take multiple values **only as a list**.
 | `audio_codec`            | Uses the audio codec tags to match       | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
 | `audio_profile`          | Uses the audio profile tags to match     | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
 
-<sup>1</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/setting).
+<sup>1</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/definition).
 
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
@@ -90,7 +114,7 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 | `tmdb_keyword`<sup>2</sup>   | Uses the keyword from TMDb to match                                                                                                             | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
 | `origin_country`<sup>2</sup> | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us` | &#10060; |       &#9989;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
 
-<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
+<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
@@ -106,7 +130,7 @@ Boolean Filters have no modifiers.
 | `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
 | `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#10060; |
 
-<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
+<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
 ## Date Filters
 
@@ -172,7 +196,7 @@ Number filters can **NOT** take multiple values.
 | `aspect`                      | Uses the aspect attribute to match<br>minimum: `0.0`                 | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
 | `versions`                    | Uses the number of versions found to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 
-<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/setting).
+<sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr.
 

@@ -36,6 +36,12 @@ playlists:
     # ... builder, details, and filters for this playlist
 ```
 
+There are multiple types of attributes that can be utilized within a playlist:
+
+* [Builders](builders)
+* [Settings/Updates](details)
+* [Filters](filters)
+
 ### Special Playlist Attributes
 
 | Attribute         | Description                                                                                                                                                                                                                                                                                                       | Required |
@@ -45,45 +51,6 @@ playlists:
 | `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                               | &#10060; |
 
 * Any defined playlist will be always be visible by The Plex Media Server owner, so it doesn't need to be defined within `sync_to_users`.
-
-There are three types of attributes that can be utilized within a playlist:
-
-### Builders
-
-Builders use third-party services to source items to be added to the playlist. Multiple builders can be used in the same playlist from a variety of sources listed below.
-
-* [Plex Builders](builders/plex)
-* [TMDb Builders](builders/tmdb)
-* [TVDb Builders](builders/tvdb)
-* [IMDb Builders](builders/imdb)
-* [Trakt Builders](builders/trakt)
-* [Tautulli Builders](builders/tautulli)
-* [Radarr Builders](builders/radarr)
-* [Sonarr Builders](builders/sonarr)
-* [MdbList Builders](builders/mdblist)
-* [Letterboxd Builders](builders/letterboxd)
-* [ICheckMovies Builders](builders/icheckmovies)
-* [FlixPatrol Builders](builders/flixpatrol)
-* [Reciperr Builders](builders/reciperr)
-* [StevenLu Builders](builders/stevenlu)
-* [AniDB Builders](builders/anidb)
-* [AniList Builders](builders/anilist)
-* [MyAnimeList Builders](builders/myanimelist)
-
-### Details
-
-These can alter any aspect of the playlist or the media items within them.
-
-* [Setting Details](details/setting)
-* [Schedule Detail](details/schedule)
-* [Metadata Details](details/metadata)
-* [Arr Details](details/arr)
-
-### Filters
-
-These filter media items added to the playlist by any of the Builders.
-
-* [Filters](filters)
 
 ## Example
 
