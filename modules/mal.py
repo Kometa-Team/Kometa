@@ -220,8 +220,15 @@ class MyAnimeList:
         return self._parse_request(url)
 
     def _season(self, season, year, sort_by, limit):
-        url = f"{urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
-        return self._parse_request(url)
+        url = f"{urls['season']}/{year}/{season}?sort={sort_by}&limit={limit*2}&fields=start_season"
+        results_all = self._request(url)['data']
+        results = []
+        for anime_data in results_all:
+            if anime_data['node']['start_season']['year'] == year and anime_data['node']['start_season']['season'] == season:
+                results.append(anime_data['node']['id'])
+                if len(results) == limit:
+                    break
+        return results
 
     def _suggestions(self, limit):
         url = f"{urls['suggestions']}?limit={limit}"
