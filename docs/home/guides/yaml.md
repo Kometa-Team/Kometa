@@ -4,7 +4,7 @@ All of Plex Meta Manager's Config, Metadata, Overlay, and Playlist Files are wri
 
 This tutorial will help you understand the specific parts of the files.
 
-## Example YAML File We're working with
+## Example YAML File
 
 ```yaml
 libraries:
@@ -116,15 +116,15 @@ The "keys" are `cache` and `cache_expiration` and the "values" are `true` and `6
 you can represent a dictionary on a single line by using `{` and `}`
 
 ```yaml
-settings:
-  cache: true
-  cache_expiration: 60
+settings: {cache: true, cache_expiration: 60}
 ```
 
 is equivalent to
 
 ```yaml
-settings: {cache: true, cache_expiration: 60}
+settings:
+  cache: true
+  cache_expiration: 60
 ```
 
 ## Lists
@@ -141,20 +141,20 @@ The first item in the list is `config/movie assets` and the second is `config/tv
 
 ### In-Line Lists
 
-you can represent a dictionary on a single line by using `{` and `}`
+you can represent a dictionary on a single line by using `[` and `]`
 
 ```yaml
 settings:
-    asset_directory:
-      - config/movie assets
-      - config/tv assets
+    asset_directory: [config/movie assets, config/tv assets]
 ```
 
 is equivalent to
 
 ```yaml
 settings:
-    asset_directory: [config/movie assets, config/tv assets]
+    asset_directory:
+      - config/movie assets
+      - config/tv assets
 ```
 
 ## Literals
@@ -180,8 +180,8 @@ There are many occurrences of these special characters where quotes are not need
 ```yaml
 message1: YAML & JSON                 # breaks as a & is a special character
 message2: "YAML & JSON"               # Works as the string is quoted
-message3: YAML: Let's Get Started     # breaks as a : is a special character
-message4: "YAML: Let's Get Started"   # Works as the string is quoted
+message: 3: YAML                      # breaks as a : is a special character
+"message: 3": YAML                    # Works as the key string is quoted
 ```
 
 #### Multiline Strings 
@@ -208,7 +208,7 @@ libraries:                        # Value is a Dictionary with keys `Movies` and
 
 Everything after `#` on a line is ignored.
 
-## Anchors and Alias
+## Anchors and Aliases
 
 With a lot of configuration, configuration files can become quite large.
 
@@ -242,7 +242,7 @@ Anchors (`&`) are used to define a chunk of configuration, and aliases (`*`) are
 ```yaml
 libraries:
   Movies:
-    metadata_path: &metadata_path   # Anchor called metadata_path
+    metadata_path: &paths   # Anchor called `paths`
       - pmm: basic
       - pmm: imdb
     overlay_path:
@@ -251,7 +251,7 @@ libraries:
           use_metacritic: false
           use_common: false
   TV Shows:
-    metadata_path: *metadata_path   # Alias to call the above section
+    metadata_path: *paths   # Alias to call the above `paths` section
     overlay_path:
       - pmm: ribbon
 ```
