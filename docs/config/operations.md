@@ -234,7 +234,7 @@ Updates every item's labels in the library to match the IMDb Parental Guide
 
 **Attribute:** `mass_imdb_parental_labels`
 
-**Values** `with_none` or `without_none`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+**Values** `with_none` or `without_none`
 
 ## Mass Collection Mode
 
@@ -242,7 +242,7 @@ Updates every Collection in your library to the specified Collection Mode.
 
 **Attribute:** `mass_collection_mode`
 
-**Values:** `default`: Library default<br>`hide`: Hide Collection<br>`hide_items`: Hide Items in this Collection<br>`show_items`: Show this Collection and its Items<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+**Values:** `default`: Library default<br>`hide`: Hide Collection<br>`hide_items`: Hide Items in this Collection<br>`show_items`: Show this Collection and its Items<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>
 
 ## Update Blank Track Titles`
 
@@ -250,7 +250,7 @@ Search though every track in a music library and replace any blank track titles 
 
 **Attribute:** `update_blank_track_titles`
 
-**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+**Values:** `true` or `false`
 
 ## Remove Title Parentheses
 
@@ -258,7 +258,7 @@ Search through every title and remove all ending parentheses in an items title i
 
 **Attribute:** `remove_title_parentheses`
 
-**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+**Values:** `true` or `false`
 
 ## Split Duplicates
 
@@ -266,7 +266,7 @@ Splits all duplicate movies/shows found in this library.
 
 **Attribute:** `split_duplicates`
 
-**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+**Values:** `true` or `false`
 
 ## Radarr Add All
 
@@ -274,7 +274,7 @@ Adds every item in the library to Radarr. The existing paths in plex will be use
 
 **Attribute:** `radarr_add_all`
 
-**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+**Values:** `true` or `false`
 
 ## Radarr Remove By Tag`
 
@@ -282,7 +282,7 @@ Removes every item from Radarr with the Tags given.
 
 **Attribute:** `radarr_remove_by_tag`
 
-**Values:** List or comma separated string of tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+**Values:** List or comma separated string of tags
 
 ## Sonarr Add All
 
@@ -290,7 +290,7 @@ Adds every item in the library to Sonarr. The existing paths in plex will be use
 
 **Attribute:** `sonarr_add_all`
 
-**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+**Values:** `true` or `false`
 
 ## Sonarr Remove By Tag
 
@@ -298,7 +298,7 @@ Removes every item from Sonarr with the Tags given.
 
 **Attribute:** `sonarr_remove_by_tag`
 
-**Values:** List or comma separated string of tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+**Values:** List or comma separated string of tags
 
 ## Genre Mapper
 

@@ -40,44 +40,10 @@ collections:
     # ... builders, details, and filters for this collection
 ```
 
-There are three types of attributes that can be utilized within a collection:
+There are multiple types of attributes that can be utilized within a collection:
 
-### Builders
-
-Builders use third-party services to source items to be added to the collection. Multiple builders can be used in the same collection from a variety of sources listed below.
-
-* [Plex Builders](builders/plex)
-* [Smart Builders](builders/smart) (Collections Only)
-* [TMDb Builders](builders/tmdb)
-* [TVDb Builders](builders/tvdb)
-* [IMDb Builders](builders/imdb)
-* [Trakt Builders](builders/trakt)
-* [Tautulli Builders](builders/tautulli)
-* [Radarr Builders](builders/radarr)
-* [Sonarr Builders](builders/sonarr)
-* [MdbList Builders](builders/mdblist)
-* [Letterboxd Builders](builders/letterboxd)
-* [ICheckMovies Builders](builders/icheckmovies)
-* [FlixPatrol Builders](builders/flixpatrol)
-* [Reciperr Builders](builders/reciperr)
-* [StevenLu Builders](builders/stevenlu)
-* [AniDB Builders](builders/anidb)
-* [AniList Builders](builders/anilist)
-* [MyAnimeList Builders](builders/myanimelist)
-
-### Details
-
-These can alter any aspect of the collection or the media items within them.
-
-* [Setting Details](details/setting)
-* [Schedule Detail](details/schedule)
-* [Metadata Details](details/metadata)
-* [Arr Details](details/arr)
-
-### Filters
-
-These filter media items added to the collection by any of the Builders.
-
+* [Builders](builders)
+* [Settings/Updates](details)
 * [Filters](filters)
 
 ### Example

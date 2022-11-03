@@ -8,10 +8,26 @@ templates:
     optional:
       - use_separator
       - collection_mode
+      - placeholder_tmdb_movie
+      - placeholder_tvdb_show
+      - placeholder_imdb_id
+    conditionals:
+      use_blank:
+        default: true
+        conditions:
+          - placeholder_tmdb_movie.exists: true
+            value: false
+          - placeholder_tvdb_show.exists: true
+            value: false
+          - placeholder_imdb_id.exists: true
+            value: false
     allowed_library_types: <<use_separator>>
     collection_mode: <<collection_mode>>
     sort_title: "!<<collection_section>>_!<<collection_name>>"
-    blank_collection: true
+    tmdb_movie: <<placeholder_tmdb_movie>>
+    tvdb_show: <<placeholder_tvdb_show>>
+    imdb_id: <<placeholder_imdb_id>>
+    blank_collection: <<use_blank>>
     url_poster: <<url_poster_<<key>>>>
 
   shared:

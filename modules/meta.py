@@ -359,7 +359,21 @@ class DataFile:
                                     continue
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
-                                if var_key in variables:
+                                if var_key.endswith(".exists"):
+                                    var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                    if (not var_value and var_key[:-7] in variables and variables[var_key[:-7]]) or (var_value and (var_key[:-7] not in variables or not variables[var_key[:-7]])):
+                                        logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
+                                        condition_passed = False
+                                elif var_key.endswith(".not"):
+                                    if (isinstance(var_value, list) and variables[var_key] in var_value) or \
+                                            (not isinstance(var_value, list) and str(variables[var_key]) == str(var_value)):
+                                        if isinstance(var_value, list):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" in {var_value}')
+                                        else:
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
+                                        condition_passed = False
+                                        break
+                                elif var_key in variables:
                                     if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):

@@ -1,6 +1,6 @@
-# Radarr/Sonarr Details
+# Radarr/Sonarr Definition Settings
 
-## Radarr Details
+## Radarr Definition Settings
 
 All the following attributes can override the global/library [Radarr](../../config/radarr) attributes which are the default unless otherwise specified.
 
@@ -19,7 +19,7 @@ All the following attributes can override the global/library [Radarr](../../conf
 | `item_radarr_tag.remove`  | **Description:** Used to remove existing tags in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List or comma-separated string of tags            |
 | `item_radarr_tag.sync`    | **Description:** Matches the tags in Radarr for every movie found by the builders that's in Radarr with the provided tags<br>**Values:** List or comma-separated string of tags |
 
-## Sonarr Details
+## Sonarr Definition Settings
 
 All the following attributes can override the global/library [Sonarr](../../config/sonarr) attributes which are the default unless otherwise specified.
 

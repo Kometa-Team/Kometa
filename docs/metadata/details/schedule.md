@@ -1,4 +1,4 @@
-# Schedule Detail
+# Schedule Setting
 
 The script is designed to run continuously and certain attributes can be scheduled using these attributes.
 

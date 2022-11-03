@@ -5,6 +5,21 @@ Updated pathvalidate requirement to 2.5.2
 
 **New Site to request and vote for Features Requests on at [features.metamanager.wiki](https://features.metamanager.wiki/)**
 
+# New Packaged Defaults System
+All the old PMM Defaults (i.e. `- git: PMM\...` Files) are now packaged into PMM locally and can be accessed using `- pmm: ...`
+Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to [`chart/other`](https://metamanager.wiki/en/nightly/defaults/chart/other.html)
+Added [Common Sense Media Content Rating Collections](https://metamanager.wiki/en/nightly/defaults/both/content_rating_cs.html), called with `- pmm: content_rating_cs` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/nightly/config/operations.html#mass-content-rating-update).
+Added [Common Sense Media Content Rating Collections](https://metamanager.wiki/en/nightly/defaults/both/content_rating_cs.html), called with `- pmm: content_rating_cs` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/nightly/config/operations.html#mass-content-rating-update).
+Added several [visual styles for Separators](https://metamanager.wiki/en/nightly/defaults/separators.html#separator-styles) to match PLEX's Categories theming. Called using `sep_style` template variable.
+Removed special_release and incorporated it into [resolution](https://metamanager.wiki/en/nightly/defaults/overlays/resolution.html).
+Enhanced [resolution](https://metamanager.wiki/en/nightly/defaults/overlays/resolution.html) to support both dovetail overlays with resolutions and box overlays when resolutions are not being used. Regexes were enhanced to support the new TRaSH naming guides with the `{edition-` naming scheme.
+Added [Common Sense Age Rating](https://metamanager.wiki/en/nightly/defaults/overlays/commonsense.html) overlays, called with `- pmm: commonsense` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/nightly/config/operations.html#mass-content-rating-update).
+Added [mediastinger](https://metamanager.wiki/en/nightly/defaults/overlays/mediastinger.html) overlays to indicate mid-credits and post-credits scenes, called with `- pmm: mediastinger`
+Removed `imdb_top_250`, `oscars`, `mc_must_see`, `rt_cert_fresh` and `commonsense_selection` Overlays in favor of adding them all into the new combined [Ribbon Overlay](https://metamanager.wiki/en/nightly/defaults/overlays/ribbon.html).
+Added the new [Versions Overlay](https://metamanager.wiki/en/nightly/defaults/overlays/versions.html) which adds a visual indicator of multiple versions of media, called with `- pmm: versions`
+Removed the `audio_languages` Overlay and replaced it with the [Audio/Subtitle Language Count Overlay](https://metamanager.wiki/en/nightly/defaults/overlays/language_count.html), called with `- pmm: language_count`.
+Added Translations for the default collection name and summary (we're working on images). Currently we have `en`, `fr`, `de`, `da`, and `pt-br` if anyone wants to translate pmm to another language ping a team member on discord and let them know you wanna contribute.
+
 # New Features
 Added support for editions in `plex_search`, `smart_filter`, `filters`, special text overlays, and metadata editing.
 Added `item_edition` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the edition of items in a collection
@@ -21,29 +36,17 @@ Adds `mass_original_title_update` [library operation](https://metamanager.wiki/e
 Adds many new options to the various mass_update [library operations](https://metamanager.wiki/en/latest/config/operations.html)
 Added the ability to give a list of sorts with `plex_search` and `smart_filter` to create a tiered sort
 Added `edition_filter` to [Movie metadata edits](https://metamanager.wiki/en/latest/metadata/metadata/movie.html#special-attributes) to allow searching for an item to include an edition.
-
-# Default Metadata Changes
-Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to `PMM/chart/other`
-Added several [visual styles for Separators](https://github.com/meisnate12/Plex-Meta-Manager-Images/tree/master/separators) to match PLEX's Categories theming. Called using `sep_style` template variable
-
-# Default Overlay Changes
-Enhanced resolution.yml and special_release.yml to add International Cut, Ultimate Cut, Anniversary Cut, Theatrical Cut, Collectors Edition for both dovetail overlays with resolutions and box overlays
-Enhanced resolution.yml and special_release.yml to support both dovetail overlays with resolutions and box overlays when resolutions are not being used. Regexes were enhanced to support the new TRaSH naming guides with the `{edition-` naming scheme
-Added [Common Sense Age Rating](https://www.commonsensemedia.org/) overlays, called with `- git: PMM/overlays/commonsense` and to be used in combination with operation `mass_content_rating_update: mdb_commonsense`
-- See [this image](https://media.discordapp.net/attachments/1018513616653262908/1020094756329623624/unknown.png)
-Added Common Sense Selection overlays, called with `- git: PMM/overlays/commonsense_selection`
-- See [this image](https://i.ibb.co/2cyjM1c/Untitled.png)
-Added [mediastinger](http://www.mediastinger.com/) overlays to indicate mid-credits and post-credits scenes, called with `- git: PMM/overlays/mediastinger`
-- See #3 on "Jurassic World: Fallen Kingdom" in [this image](https://metamanager.wiki/en/nightly/_images/movie-overlays1-annotated.png)
-Added Oscars Ribbon overlay for [Best Picture Winners](https://www.imdb.com/search/title/?groups=best_picture_winner), called with `- git: PMM/overlays/oscars`
-- See #11 on "Schindler's List" in [this image](https://metamanager.wiki/en/nightly/_images/movie-overlays1-annotated.png)
-Added visual indicator of multiple versions of media, called with `- git: PMM/overlays/versions`
-- See "The Incredible Hulk" and "Thor" in [this image]([https://cdn.discordapp.com/attachments/927936511238869042/1021788091037519892/unknown.png)
-
-# Other Default Changes
-Changed various [template names](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/templates.yml). If you are running local copies of the PMM default files which call the git version of the templates file , it is strongly recommended you check template names on all your local file collections.
+Added `--delete-labels` Run Commands to delete all labels in any library run.
+Added `season_label`, `episode_label`, `artist_label`, and `track_label` as `plex_search` options
+Moved alot of System Message to Trace Mode only to help declutter the meta.log file.
+Added Redacted Config File to the meta.log
 
 # Bug Fixes
+Fixes #1014 Fix metadata assets
+Fixes #1067 `.yaml` can be used
+Fixes #1095 report file doesn't have to exist
+Fixes `plex_search`s with `episode_collection`
+Fixes Album Overlays
 Fixes Addon Images
 Fix Configs Repo Versioning
 Fixes codec and profile filters

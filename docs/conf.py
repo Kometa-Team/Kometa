@@ -100,7 +100,9 @@ html_show_sourcelink = False
 redirects = {
     "redact": "https://regex101.com/r/DMo1DQ/latest",
     "home/guides/alternative-docker": "images.html",
-    "home/guides/defaults": "../../defaults/guide.html"
+    "home/guides/defaults": "../../defaults/guide.html",
+    "metadata/details/setting": "definition.html",
+    "metadata/details/details": "update.html",
 }
 
 # Theme options are theme-specific and customize the look and feel of a
@@ -137,6 +139,7 @@ html_theme_options = {
             ("Run Commands & Environment Variables", "home/environmental"),
             ("Knowledgebase/FAQ", "home/kb"),
             ("_divider", ),
+            ("YAML File Guide", "home/guides/yaml"),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
@@ -202,7 +205,7 @@ html_theme_options = {
                 ("Shared Variables", "defaults/variables"),
                 ("_divider", ),
                 ("Separators", "defaults/separators"),
-                ("_menu", "Award", "defaults/award/separator", [
+                ("_menu", "Award", "defaults/defaults", "#award-collections", [
                     ("Awards Separator", "defaults/award/separator"),
                     ("_divider",),
                     ("Academy Awards (Oscars)", "defaults/award/oscars"),
@@ -215,7 +218,7 @@ html_theme_options = {
                     ("Sundance File Festival Awards", "defaults/award/sundance"),
                     ("Other Awards", "defaults/award/other"),
                 ]),
-                ("_menu", "Chart", "defaults/chart/separator", [
+                ("_menu", "Chart", "defaults/defaults", "#chart-collections", [
                     ("Chart Separator", "defaults/chart/separator"),
                     ("_divider",),
                     ("Basic Charts", "defaults/chart/basic"),
@@ -228,7 +231,7 @@ html_theme_options = {
                     ("Trakt Charts", "defaults/chart/trakt"),
                     ("Other Charts", "defaults/chart/other"),
                 ]),
-                ("_menu", "Movie", "defaults/separators", [
+                ("_menu", "Movie", "defaults/defaults", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Collectionless", "defaults/both/collectionless"),
@@ -252,7 +255,7 @@ html_theme_options = {
                     ("Writers", "defaults/movie/writer"),
                     ("Years", "defaults/both/year"),
                 ]),
-                ("_menu", "Show", "defaults/separators", [
+                ("_menu", "Show", "defaults/defaults", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Collectionless", "defaults/both/collectionless"),
@@ -344,7 +347,9 @@ html_theme_options = {
                 ("Editing TV Metadata", "metadata/metadata/show"),
                 ("Editing Music Metadata", "metadata/metadata/music"),
             ]),
-            ("_menu", "Builders", "#", [
+            ("_menu", "Builders", "metadata/builders", [
+                ("Builders", "metadata/builders"),
+                ("_divider", ),
                 ("_menu", "Plex Builders", "metadata/builders/plex", [
                     ("Plex All", "metadata/builders/plex", "#plex-all"),
                     ("Plex Watchlist", "metadata/builders/plex", "#plex-watchlist"),
@@ -462,11 +467,14 @@ html_theme_options = {
                     ("MyAnimeList Seasonal", "metadata/builders/myanimelist", "#myanimelist-seasonal"),
                 ]),
             ]),
-            ("_menu", "Details", "#", [
-                ("Setting Details", "metadata/details/setting"),
-                ("Schedule Details", "metadata/details/schedule"),
-                ("Metadata Details", "metadata/details/metadata"),
-                ("Radarr/Sonarr Details", "metadata/details/arr"),
+            ("_menu", "Settings/Updates", "metadata/update", [
+                ("Settings/Updates", "metadata/update"),
+                ("_divider",),
+                ("Definition Settings", "metadata/details/definition"),
+                ("Schedule Settings", "metadata/details/schedule"),
+                ("Radarr/Sonarr Definition Settings", "metadata/details/arr"),
+                ("Collection/Playlist Metadata Updates", "metadata/details/metadata"),
+                ("Item Metadata Updates", "metadata/details/item_metadata"),
             ])
         ]),
         ("&#10084", "https://github.com/sponsors/meisnate12", True),

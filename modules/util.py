@@ -828,7 +828,7 @@ def parse_cords(data, parent, required=False):
     if required and vertical_offset is None:
         raise Failed(f"Overlay Error: {parent} vertical_offset is required")
 
-    return horizontal_align, horizontal_offset, vertical_align, vertical_offset
+    return horizontal_offset, horizontal_align, vertical_offset, vertical_align
 
 def replace_label(_label, _data):
     replaced = False
