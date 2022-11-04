@@ -12,7 +12,7 @@ external_templates:
       final_align:
         default: left
         conditions:
-          - align: right
+          - flag_alignment: right
             value: right
       final_text:
         default: <<text>>
@@ -47,496 +47,132 @@ external_templates:
     final_name: text(<<final_text>>)
     
 vars:
-  c: &c 0
-  v1: &v1 15
-  v2: &v2 76
-  v3: &v3 137
-  v4: &v4 198
-  v5: &v5 259
-  vo1: &vo1 200
-  vo2: &vo2 261
-  vo3: &vo3 322
-  vo4: &vo4 383
-  vo5: &vo5 444
-  vc1: &vc1 -122
-  vc2: &vc2 -61
-  vc3: &vc3 0
-  vc4: &vc4 61
-  vc5: &vc5 122
-  vhc1: &vhc1 -95
-  vhc2: &vhc2 95
-  h1: &h1 15
-  h2: &h2 206
-  h3: &h3 397
-  h4: &h4 588
-  h5: &h5 779
-  hc1: &hc1 0
-  hc2: &hc2 191
-  hc3: &hc3 -191
-  hc4: &hc4 382
-  hc5: &hc5 -382
-  hvc1: &hvc1 -30
-  hvc2: &hvc2 30
+  top_left: &top_left           {vertical_align: top,     horizontal_align: left}
+  top_center: &top_center       {vertical_align: top,     horizontal_align: center}
+  top_right: &top_right         {vertical_align: top,     horizontal_align: right}
+  center_left: &center_left     {vertical_align: center,  horizontal_align: left}
+  center_center: &center_center {vertical_align: center,  horizontal_align: center}
+  center_right: &center_right   {vertical_align: center,  horizontal_align: right}
+  bottom_left: &bottom_left     {vertical_align: bottom,  horizontal_align: left}
+  bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
+  bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
+    
+  v1: &v1 {vertical_offset: 15}
+  v2: &v2 {vertical_offset: 76}
+  v3: &v3 {vertical_offset: 137}
+  v4: &v4 {vertical_offset: 198}
+  v5: &v5 {vertical_offset: 259}
+
+  vc1: &vc1 {vertical_offset: -122}
+  vc2: &vc2 {vertical_offset: -61}
+  vc3: &vc3 {vertical_offset: 0}
+  vc4: &vc4 {vertical_offset: 61}
+  vc5: &vc5 {vertical_offset: 122}
+
+  vo1: &vo1 {vertical_offset: 200}
+  vo2: &vo2 {vertical_offset: 261}
+  vo3: &vo3 {vertical_offset: 322}
+  vo4: &vo4 {vertical_offset: 383}
+  vo5: &vo5 {vertical_offset: 444}
+
+  vc: &vc   {vertical_offset: 0}
+  vct: &vct {vertical_offset: -30}
+  vcb: &vcb {vertical_offset: 30}
+
+  h1: &h1 {horizontal_offset: 15}
+  h2: &h2 {horizontal_offset: 206}
+  h3: &h3 {horizontal_offset: 397}
+  h4: &h4 {horizontal_offset: 588}
+  h5: &h5 {horizontal_offset: 779}
+
+  hc1: &hc1 {horizontal_offset: 0}
+  hc2: &hc2 {horizontal_offset: 191}
+  hc3: &hc3 {horizontal_offset: -191}
+  hc4: &hc4 {horizontal_offset: 382}
+  hc5: &hc5 {horizontal_offset: -382}
+
+  hc: &hc   {horizontal_offset: 0}
+  hcl: &hcl {horizontal_offset: -95}
+  hcr: &hcr {horizontal_offset: 95}
+
 
 queues:
   flags:
     default:
-      position: <<flag_alignment>>_<<vertical_position>>_<<horizontal_position>>_<<flag_position>>
+      position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
       horizontal_position: left
       vertical_position: top
-      flag_alignment: vertical
-      flag_position: 1
-      horizontal_offset: *h1
-      vertical_offset: *v1
+      group_alignment: vertical
+      overlay_limit: 3
 
-    vertical_top_left_1:
-      - vertical_align: top
-        horizontal_align: left
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_left_2:
-      - vertical_align: top
-        horizontal_align: left
-        horizontal_offset: *h2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_left_3:
-      - vertical_align: top
-        horizontal_align: left
-        vertical_offset: *vo1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_top_left_4:
-      - vertical_align: top
-        horizontal_align: left
-        vertical_offset: *vo1
-        horizontal_offset: *h2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_center_left_1:
-      - vertical_align: center
-        horizontal_align: left
-        vertical_offset: *vc1
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_center_left_2:
-      - vertical_align: center
-        horizontal_align: left
-        vertical_offset: *vc1
-        horizontal_offset: *h2
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_bottom_left_1:
-      - vertical_align: bottom
-        horizontal_align: left
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_left_2:
-      - vertical_align: bottom
-        horizontal_align: left
-        horizontal_offset: *h2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_left_3:
-      - vertical_align: bottom
-        horizontal_align: left
-        vertical_offset: *vo1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_bottom_left_4:
-      - vertical_align: bottom
-        horizontal_align: left
-        vertical_offset: *vo1
-        horizontal_offset: *h2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
+    vertical_top_left:                [<<: [*top_left,      *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_off_left:            [<<: [*top_left,      *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_center_left:         [<<: [*top_center,    *v1,  *hcl], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_center:              [<<: [*top_center,    *v1,  *hc ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_center_right:        [<<: [*top_center,    *v1,  *hcr], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_off_right:           [<<: [*top_right,     *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_right:               [<<: [*top_right,     *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
 
-    vertical_top_center_0:
-      - vertical_align: top
-        horizontal_align: center
-        horizontal_offset: *c
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_center_1:
-      - vertical_align: top
-        horizontal_align: center
-        horizontal_offset: *vhc1
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_center_2:
-      - vertical_align: top
-        horizontal_align: center
-        horizontal_offset: *vhc2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_center_3:
-      - vertical_align: top
-        horizontal_align: center
-        vertical_offset: *vo1
-        horizontal_offset: *vhc1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_top_center_4:
-      - vertical_align: top
-        horizontal_align: center
-        vertical_offset: *vo1
-        horizontal_offset: *vhc2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_center_center_0:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *vc1
-        horizontal_offset: *c
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_center_center_1:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *vc1
-        horizontal_offset: *vhc1
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_center_center_2:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *vc1
-        horizontal_offset: *vhc2
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_bottom_center_0:
-      - vertical_align: bottom
-        horizontal_align: center
-        horizontal_offset: *c
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_center_1:
-      - vertical_align: bottom
-        horizontal_align: center
-        horizontal_offset: *vhc1
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_center_2:
-      - vertical_align: bottom
-        horizontal_align: center
-        horizontal_offset: *vhc2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_center_3:
-      - vertical_align: bottom
-        horizontal_align: center
-        vertical_offset: *vo1
-        horizontal_offset: *vhc1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_bottom_center_4:
-      - vertical_align: bottom
-        horizontal_align: center
-        vertical_offset: *vo1
-        horizontal_offset: *vhc2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
+    vertical_off_top_left:            [<<: [*top_left,      *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_off_left:        [<<: [*top_left,      *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_center_left:     [<<: [*top_center,    *vo1, *hcl], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_center:          [<<: [*top_center,    *vo1, *hc ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_center_right:    [<<: [*top_center,    *vo1, *hcr], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_off_right:       [<<: [*top_right,     *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_top_right:           [<<: [*top_right,     *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
 
-    vertical_top_right_1:
-      - vertical_align: top
-        horizontal_align: right
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_right_2:
-      - vertical_align: top
-        horizontal_align: right
-        horizontal_offset: *h2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_top_right_3:
-      - vertical_align: top
-        horizontal_align: right
-        vertical_offset: *vo1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_top_right_4:
-      - vertical_align: top
-        horizontal_align: right
-        vertical_offset: *vo1
-        horizontal_offset: *h2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_center_right_1:
-      - vertical_align: center
-        horizontal_align: right
-        vertical_offset: *vc1
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_center_right_2:
-      - vertical_align: center
-        horizontal_align: right
-        vertical_offset: *vc1
-        horizontal_offset: *h2
-      - vertical_offset: *vc2
-      - vertical_offset: *vc3
-      - vertical_offset: *vc4
-      - vertical_offset: *vc5
-    vertical_bottom_right_1:
-      - vertical_align: bottom
-        horizontal_align: right
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_right_2:
-      - vertical_align: bottom
-        horizontal_align: right
-        horizontal_offset: *h2
-      - vertical_offset: *v2
-      - vertical_offset: *v3
-      - vertical_offset: *v4
-      - vertical_offset: *v5
-    vertical_bottom_right_3:
-      - vertical_align: bottom
-        horizontal_align: right
-        vertical_offset: *vo1
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
-    vertical_bottom_right_4:
-      - vertical_align: bottom
-        horizontal_align: right
-        vertical_offset: *vo1
-        horizontal_offset: *h2
-      - vertical_offset: *vo2
-      - vertical_offset: *vo3
-      - vertical_offset: *vo4
-      - vertical_offset: *vo5
+    vertical_center_left:             [<<: [*center_left,   *vc1, *h1 ], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_off_left:         [<<: [*center_left,   *vc1, *h2 ], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_center_left:      [<<: [*center_center, *vc1, *hcl], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_center:           [<<: [*center_center, *vc1, *hc ], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_center_right:     [<<: [*center_center, *vc1, *hcr], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_off_right:        [<<: [*center_right,  *vc1, *h2 ], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_right:            [<<: [*center_right,  *vc1, *h1 ], *vc2, *vc3, *vc4, *vc5]
+
+    vertical_off_bottom_left:         [<<: [*bottom_left,   *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_off_left:     [<<: [*bottom_left,   *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_center_left:  [<<: [*bottom_center, *vo1, *hcl], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_center:       [<<: [*bottom_center, *vo1, *hc ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_center_right: [<<: [*bottom_center, *vo1, *hcr], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_off_right:    [<<: [*bottom_right,  *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_off_bottom_right:        [<<: [*bottom_right,  *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
+
+    vertical_bottom_left:             [<<: [*bottom_left,   *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_off_left:         [<<: [*bottom_left,   *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_center_left:      [<<: [*bottom_center, *v1,  *hcl], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_center:           [<<: [*bottom_center, *v1,  *hc ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_center_right:     [<<: [*bottom_center, *v1,  *hcr], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_off_right:        [<<: [*bottom_right,  *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_bottom_right:            [<<: [*bottom_right,  *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
 
 
-    horizontal_top_left_1:
-      - vertical_align: top
-        horizontal_align: left
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_top_left_2:
-      - vertical_align: top
-        horizontal_align: left
-        vertical_offset: *v2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_left_0:
-      - vertical_align: center
-        horizontal_align: left
-        vertical_offset: *c
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_left_1:
-      - vertical_align: center
-        horizontal_align: left
-        vertical_offset: *hvc1
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_left_2:
-      - vertical_align: center
-        horizontal_align: left
-        vertical_offset: *hvc2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_bottom_left_1:
-      - vertical_align: bottom
-        horizontal_align: left
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_bottom_left_2:
-      - vertical_align: bottom
-        horizontal_align: left
-        vertical_offset: *v2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
+    horizontal_top_left:              [<<: [*top_left,      *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_top_center:            [<<: [*top_center,    *v1,  *hc ], *hc2, *hc3, *hc4, *hc5]
+    horizontal_top_right:             [<<: [*top_right,     *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
 
-    horizontal_top_center_1:
-      - vertical_align: top
-        horizontal_align: center
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_top_center_2:
-      - vertical_align: top
-        horizontal_align: center
-        vertical_offset: *v2
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_center_center_0:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *c
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_center_center_1:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *hvc1
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_center_center_2:
-      - vertical_align: center
-        horizontal_align: center
-        vertical_offset: *hvc2
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_bottom_center_1:
-      - vertical_align: bottom
-        horizontal_align: center
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
-    horizontal_bottom_center_2:
-      - vertical_align: bottom
-        horizontal_align: center
-        vertical_offset: *v2
-        horizontal_offset: *hc1
-      - horizontal_offset: *hc2
-      - horizontal_offset: *hc3
-      - horizontal_offset: *hc4
-      - horizontal_offset: *hc5
+    horizontal_off_top_left:          [<<: [*top_left,      *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_off_top_center:        [<<: [*top_center,    *vo1, *hc ], *hc2, *hc3, *hc4, *hc5]
+    horizontal_off_top_right:         [<<: [*top_right,     *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
 
-    horizontal_top_right_1:
-      - vertical_align: top
-        horizontal_align: right
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_top_right_2:
-      - vertical_align: top
-        horizontal_align: right
-        vertical_offset: *v2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_right_0:
-      - vertical_align: center
-        horizontal_align: right
-        vertical_offset: *c
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_right_1:
-      - vertical_align: center
-        horizontal_align: right
-        vertical_offset: *hvc1
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_center_right_2:
-      - vertical_align: center
-        horizontal_align: right
-        vertical_offset: *hvc2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_bottom_right_1:
-      - vertical_align: bottom
-        horizontal_align: right
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
-    horizontal_bottom_right_2:
-      - vertical_align: bottom
-        horizontal_align: right
-        vertical_offset: *v2
-      - horizontal_offset: *h2
-      - horizontal_offset: *h3
-      - horizontal_offset: *h4
-      - horizontal_offset: *h5
+    horizontal_center_top_left:       [<<: [*center_left,   *vct, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_top_center:     [<<: [*center_center, *vct, *hc1], *hc2, *hc3, *hc4, *hc5]
+    horizontal_center_top_right:      [<<: [*center_right,  *vct, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+
+    horizontal_center_left:           [<<: [*center_left,   *vc,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_center:         [<<: [*center_center, *vc,  *hc1], *hc2, *hc3, *hc4, *hc5]
+    horizontal_center_right:          [<<: [*center_right,  *vc,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+
+    horizontal_center_bottom_left:    [<<: [*center_left,   *vcb, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_bottom_center:  [<<: [*center_center, *vcb, *hc1], *hc2, *hc3, *hc4, *hc5]
+    horizontal_center_bottom_right:   [<<: [*center_right,  *vcb, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+
+    horizontal_off_bottom_left:       [<<: [*bottom_left,   *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_off_bottom_center:     [<<: [*bottom_center, *vo1, *hc ], *hc2, *hc3, *hc4, *hc5]
+    horizontal_off_bottom_right:      [<<: [*bottom_right,  *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+
+    horizontal_bottom_left:           [<<: [*bottom_left,   *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_bottom_center:         [<<: [*bottom_center, *v1,  *hc ], *hc2, *hc3, *hc4, *hc5]
+    horizontal_bottom_right:          [<<: [*bottom_right,  *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
 
 templates:
   flags:

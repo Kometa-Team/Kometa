@@ -1524,6 +1524,7 @@ class OverlayFile(DataFile):
         self.queues = {}
         self.queue_names = {}
         position = temp_vars["position"] if "position" in temp_vars and temp_vars["position"] else None
+        overlay_limit = util.parse("Config", "overlay_limit", temp_vars["overlay_limit"], datatype="int", default=0, minimum=0) if "overlay_limit" in temp_vars else None
         for queue_name, queue in queues.items():
             queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
             initial_queue = None
@@ -1533,6 +1534,9 @@ class OverlayFile(DataFile):
                     if k == "position":
                         if not queue_position:
                             queue_position = v
+                    elif k == "overlay_limit":
+                        if overlay_limit is None:
+                            overlay_limit = util.parse("Config", "overlay_limit", v, datatype="int", default=0, minimum=0)
                     else:
                         defaults[k] = v
             if queue_position and isinstance(queue_position, list):
@@ -1569,6 +1573,8 @@ class OverlayFile(DataFile):
                     if pv is None:
                         raise Failed(f"Config Error: queue missing {pv} attribute")
                 final_queue.append(util.parse_cords(new_pos, f"{queue_name} queue", required=True))
+                if overlay_limit and len(final_queue) >= overlay_limit:
+                    break
             self.queues[queue_current] = final_queue
             self.queue_names[queue_name] = queue_current
             queue_current += 1
