@@ -18,7 +18,7 @@ libraries:
         data:
           starting: 2014
           ending: current_year
-    - pmm: cannes                                   # Cannes Film Fstical Awards
+    - pmm: cannes                                   # Cannes Film Festival Awards
       template_variables:                           # based on when the award show started
         data:
           starting: 2016
