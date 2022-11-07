@@ -336,12 +336,12 @@ class DataFile:
                         logger.debug("")
                         logger.debug(f"Conditional: {con_key}")
                         if not isinstance(con_value, dict):
-                            raise Failed(f"{self.data_type} Error: template sub-attribute conditionals is not a dictionary")
+                            raise Failed(f"{self.data_type} Error: conditional {con_key} is not a dictionary")
                         final_key = replace_var(con_key, [variables, default])
                         if final_key != con_key:
                             logger.debug(f"Variable: {final_key}")
                         if "conditions" not in con_value:
-                            raise Failed(f"{self.data_type} Error: conditions sub-attribute required for conditionals")
+                            raise Failed(f"{self.data_type} Error: conditions sub-attribute required")
                         conditions = con_value["conditions"]
                         if isinstance(conditions, dict):
                             conditions = [conditions]
@@ -372,7 +372,6 @@ class DataFile:
                                         else:
                                             logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
                                         condition_passed = False
-                                        break
                                 elif var_key in variables:
                                     if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
@@ -381,7 +380,6 @@ class DataFile:
                                         else:
                                             logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
                                         condition_passed = False
-                                        break
                                 elif var_key in default:
                                     if (isinstance(var_value, list) and default[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and str(default[var_key]) != str(var_value)):
@@ -390,11 +388,9 @@ class DataFile:
                                         else:
                                             logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
                                         condition_passed = False
-                                        break
                                 else:
                                     logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
                                     condition_passed = False
-                                    break
                             if condition_passed:
                                 logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                 condition_found = True
@@ -1537,6 +1533,65 @@ class OverlayFile(DataFile):
                     elif k == "overlay_limit":
                         if overlay_limit is None:
                             overlay_limit = util.parse("Config", "overlay_limit", v, datatype="int", default=0, minimum=0)
+                    elif k == "conditionals":
+                        if not v:
+                            raise Failed(f"Queue Error: default sub-attribute conditionals is blank")
+                        if not isinstance(v, dict):
+                            raise Failed(f"Queue Error: default sub-attribute conditionals is not a dictionary")
+                        for con_key, con_value in v.items():
+                            if not isinstance(con_value, dict):
+                                raise Failed(f"Queue Error: conditional {con_key} is not a dictionary")
+                            if "default" not in con_value:
+                                raise Failed(f"Queue Error: default sub-attribute required for conditional {con_key}")
+                            if "conditions" not in con_value:
+                                raise Failed(f"Queue Error: conditions sub-attribute required for conditional {con_key}")
+                            conditions = con_value["conditions"]
+                            if isinstance(conditions, dict):
+                                conditions = [conditions]
+                            if not isinstance(conditions, list):
+                                raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
+                            condition_found = False
+                            for i, condition in enumerate(conditions, 1):
+                                if not isinstance(condition, dict):
+                                    raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
+                                if "value" not in condition:
+                                    raise Failed(f"{self.data_type} Error: each condition must have a result value")
+                                condition_passed = True
+                                for var_key, var_value in condition.items():
+                                    if var_key == "value":
+                                        continue
+                                    if var_key.endswith(".exists"):
+                                        var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                        if (not var_value and var_key[:-7] in temp_vars and temp_vars[var_key[:-7]]) or (var_value and (var_key[:-7] not in temp_vars or not temp_vars[var_key[:-7]])):
+                                            logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
+                                            condition_passed = False
+                                    elif var_key.endswith(".not"):
+                                        if (isinstance(var_value, list) and temp_vars[var_key] in var_value) or \
+                                                (not isinstance(var_value, list) and str(temp_vars[var_key]) == str(var_value)):
+                                            if isinstance(var_value, list):
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" in {var_value}')
+                                            else:
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is "{var_value}"')
+                                            condition_passed = False
+                                    elif var_key in temp_vars:
+                                        if (isinstance(var_value, list) and temp_vars[var_key] not in var_value) or \
+                                                (not isinstance(var_value, list) and str(temp_vars[var_key]) != str(var_value)):
+                                            if isinstance(var_value, list):
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" not in {var_value}')
+                                            else:
+                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is not "{var_value}"')
+                                            condition_passed = False
+                                    else:
+                                        logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                        condition_passed = False
+                                    if condition_passed is False:
+                                        break
+                                if condition_passed:
+                                    condition_found = True
+                                    defaults[con_key] = condition["value"]
+                                    break
+                            if not condition_found:
+                                defaults[con_key] = con_value["default"]
                     else:
                         defaults[k] = v
             if queue_position and isinstance(queue_position, list):

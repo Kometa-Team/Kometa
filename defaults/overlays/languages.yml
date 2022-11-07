@@ -14,6 +14,8 @@ external_templates:
         conditions:
           - flag_alignment: right
             value: right
+          - use_subtitles: true
+            value: right
       final_text:
         default: <<text>>
         conditions:
@@ -69,11 +71,17 @@ vars:
   v0-4: &v0-4 {vertical_offset: 61}
   v0-5: &v0-5 {vertical_offset: 122}
 
-  v2-1: &v2-1 {vertical_offset: 200}
-  v2-2: &v2-2 {vertical_offset: 261}
-  v2-3: &v2-3 {vertical_offset: 322}
-  v2-4: &v2-4 {vertical_offset: 383}
-  v2-5: &v2-5 {vertical_offset: 444}
+  v2-1: &v2-1 {vertical_offset: 150}
+  v2-2: &v2-2 {vertical_offset: 211}
+  v2-3: &v2-3 {vertical_offset: 272}
+  v2-4: &v2-4 {vertical_offset: 333}
+  v2-5: &v2-5 {vertical_offset: 394}
+
+  v3-1: &v3-1 {vertical_offset: 223}
+  v3-2: &v3-2 {vertical_offset: 284}
+  v3-3: &v3-3 {vertical_offset: 345}
+  v3-4: &v3-4 {vertical_offset: 406}
+  v3-5: &v3-5 {vertical_offset: 467}
 
   vc-c: &vc-c {vertical_offset: 0}
   vc-t: &vc-t {vertical_offset: -30}
@@ -99,9 +107,18 @@ vars:
 queues:
   flags:
     default:
+      conditionals:
+        horizontal_position:
+          default: left
+          conditions:
+            - use_subtitles: true
+              value: right
+        vertical_position:
+          default: top3
+          conditions:
+            - overlay_level: episode
+              value: top2
       position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
-      horizontal_position: left
-      vertical_position: top
       group_alignment: vertical
       overlay_limit: 3
 
@@ -120,6 +137,14 @@ queues:
     vertical_top2_center_right:             [<<: [*top_center,    *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
     vertical_top2_right2:                   [<<: [*top_right,     *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
     vertical_top2_right:                    [<<: [*top_right,     *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+
+    vertical_top3_left:                     [<<: [*top_left,      *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_left2:                    [<<: [*top_left,      *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center_left:              [<<: [*top_center,    *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center:                   [<<: [*top_center,    *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center_right:             [<<: [*top_center,    *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_right2:                   [<<: [*top_right,     *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_right:                    [<<: [*top_right,     *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
 
     vertical_center_top_left:               [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
     vertical_center_top_left2:              [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
@@ -144,6 +169,14 @@ queues:
     vertical_center_bottom_center_right:    [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
     vertical_center_bottom_right2:          [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
     vertical_center_bottom_right:           [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+
+    vertical_bottom3_left:                  [<<: [*bottom_left,   *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_left2:                 [<<: [*bottom_left,   *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center_left:           [<<: [*bottom_center, *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center:                [<<: [*bottom_center, *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center_right:          [<<: [*bottom_center, *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_right2:                [<<: [*bottom_right,  *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_right:                 [<<: [*bottom_right,  *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
 
     vertical_bottom2_left:                  [<<: [*bottom_left,   *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
     vertical_bottom2_left2:                 [<<: [*bottom_left,   *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
@@ -178,6 +211,14 @@ queues:
     horizontal_top2_right2:                 [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
     horizontal_top2_right:                  [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
+    horizontal_top3_left:                   [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_left2:                  [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_center_left:            [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_center:                 [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_center_right:           [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_right2:                 [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_right:                  [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
     horizontal_center_top_left:             [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
     horizontal_center_top_left2:            [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
     horizontal_center_top_center_left:      [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
@@ -201,6 +242,14 @@ queues:
     horizontal_center_bottom_center_right:  [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
     horizontal_center_bottom_right2:        [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
     horizontal_center_bottom_right:         [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_bottom3_left:                [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_left2:               [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_center_left:         [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_center:              [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_center_right:        [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_right2:              [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_right:               [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
     horizontal_bottom2_left:                [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
     horizontal_bottom2_left2:               [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]

@@ -9,9 +9,22 @@
 external_templates:
   pmm: templates
   template_variables:
-    horizontal_offset: 15
-    horizontal_align: right
-    vertical_offset: 150
+    conditionals:
+      vertical_offset:
+        default: 1050
+        conditions:
+          - overlay_level: episode
+            value: 15
+      horizontal_offset:
+        default: 15
+        conditions:
+          - overlay_level: episode
+            value: 235
+      horizontal_align:
+        default: right
+        conditions:
+          - overlay_level: episode
+            value: center
     vertical_align: top
     back_color: "#00000099"
     back_width: 105
