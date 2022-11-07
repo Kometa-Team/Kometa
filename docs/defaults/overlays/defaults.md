@@ -33,6 +33,8 @@ The default set of overlays are a combination of Positional Overlays and Text Ov
 <details>
   <summary>Click to expand sample config.yml Movies overlays section:</summary>
 
+**Note: This uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
+
 ```yaml
 libraries:
   Movies:
@@ -77,6 +79,8 @@ libraries:
 ![](../images/tvshow-poster-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Show Poster:</summary>
+
+**Note: This uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
 
 ```yaml
 libraries:
@@ -145,6 +149,8 @@ libraries:
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Episode Poster:</summary>
   
+**Note: This uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
+
 ```yaml
 libraries:
   TV Shows:

@@ -394,8 +394,8 @@ class Overlays:
                                 raise Failed(e)
 
                     added_titles = []
-                    if builder.added_items:
-                        for item in builder.added_items:
+                    if builder.found_items:
+                        for item in builder.found_items:
                             key_to_item[item.ratingKey] = item
                             added_titles.append(item)
                             if item.ratingKey not in properties[builder.overlay.mapping_name].keys:

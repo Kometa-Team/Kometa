@@ -57,43 +57,43 @@ vars:
   bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
   bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
     
-  v1: &v1 {vertical_offset: 15}
-  v2: &v2 {vertical_offset: 76}
-  v3: &v3 {vertical_offset: 137}
-  v4: &v4 {vertical_offset: 198}
-  v5: &v5 {vertical_offset: 259}
+  v1-1: &v1-1 {vertical_offset: 15}
+  v1-2: &v1-2 {vertical_offset: 76}
+  v1-3: &v1-3 {vertical_offset: 137}
+  v1-4: &v1-4 {vertical_offset: 198}
+  v1-5: &v1-5 {vertical_offset: 259}
 
-  vc1: &vc1 {vertical_offset: -122}
-  vc2: &vc2 {vertical_offset: -61}
-  vc3: &vc3 {vertical_offset: 0}
-  vc4: &vc4 {vertical_offset: 61}
-  vc5: &vc5 {vertical_offset: 122}
+  v0-1: &v0-1 {vertical_offset: -122}
+  v0-2: &v0-2 {vertical_offset: -61}
+  v0-3: &v0-3 {vertical_offset: 0}
+  v0-4: &v0-4 {vertical_offset: 61}
+  v0-5: &v0-5 {vertical_offset: 122}
 
-  vo1: &vo1 {vertical_offset: 200}
-  vo2: &vo2 {vertical_offset: 261}
-  vo3: &vo3 {vertical_offset: 322}
-  vo4: &vo4 {vertical_offset: 383}
-  vo5: &vo5 {vertical_offset: 444}
+  v2-1: &v2-1 {vertical_offset: 200}
+  v2-2: &v2-2 {vertical_offset: 261}
+  v2-3: &v2-3 {vertical_offset: 322}
+  v2-4: &v2-4 {vertical_offset: 383}
+  v2-5: &v2-5 {vertical_offset: 444}
 
-  vc: &vc   {vertical_offset: 0}
-  vct: &vct {vertical_offset: -30}
-  vcb: &vcb {vertical_offset: 30}
+  vc-c: &vc-c {vertical_offset: 0}
+  vc-t: &vc-t {vertical_offset: -30}
+  vc-b: &vc-b {vertical_offset: 30}
 
-  h1: &h1 {horizontal_offset: 15}
-  h2: &h2 {horizontal_offset: 206}
-  h3: &h3 {horizontal_offset: 397}
-  h4: &h4 {horizontal_offset: 588}
-  h5: &h5 {horizontal_offset: 779}
+  h1-1: &h1-1 {horizontal_offset: 15}
+  h1-2: &h1-2 {horizontal_offset: 206}
+  h1-3: &h1-3 {horizontal_offset: 397}
+  h1-4: &h1-4 {horizontal_offset: 588}
+  h1-5: &h1-5 {horizontal_offset: 779}
 
-  hc1: &hc1 {horizontal_offset: 0}
-  hc2: &hc2 {horizontal_offset: 191}
-  hc3: &hc3 {horizontal_offset: -191}
-  hc4: &hc4 {horizontal_offset: 382}
-  hc5: &hc5 {horizontal_offset: -382}
+  h0-1: &h0-1 {horizontal_offset: 0}
+  h0-2: &h0-2 {horizontal_offset: 191}
+  h0-3: &h0-3 {horizontal_offset: -191}
+  h0-4: &h0-4 {horizontal_offset: 382}
+  h0-5: &h0-5 {horizontal_offset: -382}
 
-  hc: &hc   {horizontal_offset: 0}
-  hcl: &hcl {horizontal_offset: -95}
-  hcr: &hcr {horizontal_offset: 95}
+  hc-c: &hc-c {horizontal_offset: 0}
+  hc-l: &hc-l {horizontal_offset: -95}
+  hc-r: &hc-r {horizontal_offset: 95}
 
 
 queues:
@@ -105,74 +105,118 @@ queues:
       group_alignment: vertical
       overlay_limit: 3
 
-    vertical_top_left:                [<<: [*top_left,      *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_off_left:            [<<: [*top_left,      *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_center_left:         [<<: [*top_center,    *v1,  *hcl], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_center:              [<<: [*top_center,    *v1,  *hc ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_center_right:        [<<: [*top_center,    *v1,  *hcr], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_off_right:           [<<: [*top_right,     *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_top_right:               [<<: [*top_right,     *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_top_left:                      [<<: [*top_left,      *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_left2:                     [<<: [*top_left,      *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center_left:               [<<: [*top_center,    *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center:                    [<<: [*top_center,    *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center_right:              [<<: [*top_center,    *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_right2:                    [<<: [*top_right,     *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_right:                     [<<: [*top_right,     *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
 
-    vertical_off_top_left:            [<<: [*top_left,      *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_off_left:        [<<: [*top_left,      *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_center_left:     [<<: [*top_center,    *vo1, *hcl], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_center:          [<<: [*top_center,    *vo1, *hc ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_center_right:    [<<: [*top_center,    *vo1, *hcr], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_off_right:       [<<: [*top_right,     *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_top_right:           [<<: [*top_right,     *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_top2_left:                     [<<: [*top_left,      *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_left2:                    [<<: [*top_left,      *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center_left:              [<<: [*top_center,    *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center:                   [<<: [*top_center,    *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center_right:             [<<: [*top_center,    *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_right2:                   [<<: [*top_right,     *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_right:                    [<<: [*top_right,     *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
 
-    vertical_center_left:             [<<: [*center_left,   *vc1, *h1 ], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_off_left:         [<<: [*center_left,   *vc1, *h2 ], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_center_left:      [<<: [*center_center, *vc1, *hcl], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_center:           [<<: [*center_center, *vc1, *hc ], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_center_right:     [<<: [*center_center, *vc1, *hcr], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_off_right:        [<<: [*center_right,  *vc1, *h2 ], *vc2, *vc3, *vc4, *vc5]
-    vertical_center_right:            [<<: [*center_right,  *vc1, *h1 ], *vc2, *vc3, *vc4, *vc5]
+    vertical_center_top_left:               [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_left2:              [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center_left:        [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center:             [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center_right:       [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_right2:             [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_right:              [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
 
-    vertical_off_bottom_left:         [<<: [*bottom_left,   *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_off_left:     [<<: [*bottom_left,   *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_center_left:  [<<: [*bottom_center, *vo1, *hcl], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_center:       [<<: [*bottom_center, *vo1, *hc ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_center_right: [<<: [*bottom_center, *vo1, *hcr], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_off_right:    [<<: [*bottom_right,  *vo1, *h2 ], *vo2, *vo3, *vo4, *vo5]
-    vertical_off_bottom_right:        [<<: [*bottom_right,  *vo1, *h1 ], *vo2, *vo3, *vo4, *vo5]
+    vertical_center_left:                   [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_left2:                  [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center_left:            [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center:                 [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center_right:           [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_right2:                 [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_right:                  [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
 
-    vertical_bottom_left:             [<<: [*bottom_left,   *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_off_left:         [<<: [*bottom_left,   *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_center_left:      [<<: [*bottom_center, *v1,  *hcl], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_center:           [<<: [*bottom_center, *v1,  *hc ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_center_right:     [<<: [*bottom_center, *v1,  *hcr], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_off_right:        [<<: [*bottom_right,  *v1,  *h2 ], *v2,  *v3,  *v4,  *v5 ]
-    vertical_bottom_right:            [<<: [*bottom_right,  *v1,  *h1 ], *v2,  *v3,  *v4,  *v5 ]
+    vertical_center_bottom_left:            [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_left2:           [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center_left:     [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center:          [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center_right:    [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_right2:          [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_right:           [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+
+    vertical_bottom2_left:                  [<<: [*bottom_left,   *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_left2:                 [<<: [*bottom_left,   *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center_left:           [<<: [*bottom_center, *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center:                [<<: [*bottom_center, *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center_right:          [<<: [*bottom_center, *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_right2:                [<<: [*bottom_right,  *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_right:                 [<<: [*bottom_right,  *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+
+    vertical_bottom_left:                   [<<: [*bottom_left,   *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_left2:                  [<<: [*bottom_left,   *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center_left:            [<<: [*bottom_center, *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center:                 [<<: [*bottom_center, *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center_right:           [<<: [*bottom_center, *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_right2:                 [<<: [*bottom_right,  *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_right:                  [<<: [*bottom_right,  *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
 
 
-    horizontal_top_left:              [<<: [*top_left,      *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_top_center:            [<<: [*top_center,    *v1,  *hc ], *hc2, *hc3, *hc4, *hc5]
-    horizontal_top_right:             [<<: [*top_right,     *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_top_left:                    [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_left2:                   [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_center_left:             [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_center:                  [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_center_right:            [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_right2:                  [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_right:                   [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_off_top_left:          [<<: [*top_left,      *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_off_top_center:        [<<: [*top_center,    *vo1, *hc ], *hc2, *hc3, *hc4, *hc5]
-    horizontal_off_top_right:         [<<: [*top_right,     *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_top2_left:                   [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_left2:                  [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_center_left:            [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_center:                 [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_center_right:           [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_right2:                 [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_right:                  [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_center_top_left:       [<<: [*center_left,   *vct, *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_center_top_center:     [<<: [*center_center, *vct, *hc1], *hc2, *hc3, *hc4, *hc5]
-    horizontal_center_top_right:      [<<: [*center_right,  *vct, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_top_left:             [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_left2:            [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_center_left:      [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_center:           [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_center_right:     [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_right2:           [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_right:            [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_center_left:           [<<: [*center_left,   *vc,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_center_center:         [<<: [*center_center, *vc,  *hc1], *hc2, *hc3, *hc4, *hc5]
-    horizontal_center_right:          [<<: [*center_right,  *vc,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_left:                 [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_left2:                [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_center_left:          [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_center:               [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_center_right:         [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_right2:               [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_right:                [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_center_bottom_left:    [<<: [*center_left,   *vcb, *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_center_bottom_center:  [<<: [*center_center, *vcb, *hc1], *hc2, *hc3, *hc4, *hc5]
-    horizontal_center_bottom_right:   [<<: [*center_right,  *vcb, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_center_bottom_left:          [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_left2:         [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_center_left:   [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_center:        [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_center_right:  [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_right2:        [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_right:         [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_off_bottom_left:       [<<: [*bottom_left,   *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_off_bottom_center:     [<<: [*bottom_center, *vo1, *hc ], *hc2, *hc3, *hc4, *hc5]
-    horizontal_off_bottom_right:      [<<: [*bottom_right,  *vo1, *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_bottom2_left:                [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_left2:               [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_center_left:         [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_center:              [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_center_right:        [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_right2:              [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_right:               [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
-    horizontal_bottom_left:           [<<: [*bottom_left,   *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
-    horizontal_bottom_center:         [<<: [*bottom_center, *v1,  *hc ], *hc2, *hc3, *hc4, *hc5]
-    horizontal_bottom_right:          [<<: [*bottom_right,  *v1,  *h1 ], *h2,  *h3,  *h4,  *h5 ]
+    horizontal_bottom_left:                 [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_left2:                [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_center_left:          [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_center:               [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_center_right:         [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_right2:               [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_right:                [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
 templates:
   flags:

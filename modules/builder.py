@@ -372,7 +372,7 @@ class CollectionBuilder:
         self.builders = []
         self.filters = []
         self.has_tmdb_filters = False
-        self.added_items = []
+        self.found_items = []
         self.filtered_items = []
         self.filtered_keys = {}
         self.run_again_movies = []
@@ -801,12 +801,9 @@ class CollectionBuilder:
 
             if self.obj:
                 self.exists = True
-                if not self.playlist:
-                    self.beginning_count = self.obj.childCount
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
-                    if self.playlist:
-                        self.beginning_count = len(self.remove_item_map)
+                self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
         else:
             self.obj = None
             self.sync = False
@@ -1766,14 +1763,14 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
-            if item not in self.added_items:
+            if item not in self.found_items:
                 if item.ratingKey in self.filtered_keys:
                     if self.details["show_filtered"] is True:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
                 else:
                     current_title = util.item_title(item)
                     if self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
-                        self.added_items.append(item)
+                        self.found_items.append(item)
                     else:
                         filtered_items.append(item)
                         self.filtered_keys[item.ratingKey] = current_title
@@ -2146,15 +2143,15 @@ class CollectionBuilder:
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
-        total = self.limit if self.limit and len(self.added_items) > self.limit else len(self.added_items)
+        total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
         amount_added = 0
         amount_unchanged = 0
         items_added = []
-        for i, item in enumerate(self.added_items, 1):
+        for i, item in enumerate(self.found_items, 1):
             if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
                 logger.info(f"{self.Type} Limit reached")
-                self.added_items = self.added_items[:i-1]
+                self.found_items = self.found_items[:i - 1]
                 break
             current_operation = "=" if item in collection_items else "+"
             number_text = f"{i}/{total}"
@@ -2394,7 +2391,7 @@ class CollectionBuilder:
             logger.info("")
             logger.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
             logger.info("")
-            self.items = self.added_items
+            self.items = self.found_items
         if not self.items:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
@@ -2674,7 +2671,7 @@ class CollectionBuilder:
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if self.custom_sort is True:
-            items = self.added_items
+            items = self.found_items
         else:
             plex_search = {"sort_by": self.custom_sort}
             if self.builder_level in ["season", "episode"]:
