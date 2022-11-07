@@ -103,6 +103,8 @@ All [Shared Overlay Variables](variables) can be appended by `rating1_`, `rating
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
+**Note: This example uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
+
 ```yaml
   Movies:
     overlay_path:

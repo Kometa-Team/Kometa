@@ -620,12 +620,12 @@ def run_collection(config, library, metadata, requested_collections):
                         else:
                             raise Failed(e)
 
-                if not builder.added_items and builder.ignore_blank_results:
+                if not builder.found_items and builder.ignore_blank_results:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
                 builder.display_filters()
 
-                if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
+                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
@@ -646,8 +646,8 @@ def run_collection(config, library, metadata, requested_collections):
 
             valid = True
             if builder.build_collection and not builder.blank_collection and (
-                    (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
-                    or (not builder.smart_url and len(builder.added_items) + builder.beginning_count < builder.minimum)
+                    (not builder.smart_url and items_added + builder.beginning_count < builder.minimum)
+                    or (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
             ):
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
@@ -817,7 +817,7 @@ def run_playlists(config):
                 builder.display_filters()
                 builder.filter_and_save_items(ids)
 
-                if len(builder.added_items) > 0 and len(builder.added_items) + builder.beginning_count >= builder.minimum:
+                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
                     stats["added"] += items_added
                     status[mapping_name]["added"] += items_added
@@ -828,7 +828,7 @@ def run_playlists(config):
                         items_removed = builder.sync_collection()
                         stats["removed"] += items_removed
                         status[mapping_name]["removed"] += items_removed
-                elif len(builder.added_items) < builder.minimum:
+                elif len(builder.found_items) < builder.minimum:
                     logger.info("")
                     logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
                     delete_status = f"Minimum {builder.minimum} Not Met"
