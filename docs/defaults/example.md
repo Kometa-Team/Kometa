@@ -6,11 +6,12 @@
 ```yaml
 libraries:
   Movies:                                           # Must match a library name in your Plex
-    report_path: config/missing/Movies_report.yml
+    report_path: config/missing/Movies_missing.yml
     template_variables:
       sep_style: gray                               # use the gray separators globally for this library
       collection_mode: hide                         # hide the collections
-      language: fr                                  # could be default, de, fr, pt-br or another language code that we have tranlsated
+      language: fr                                  # could be default, de, fr, pt-br or another lang code that we have tranlsated
+      placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators
     metadata_path:
     - pmm: separator_award                          # An "index card"
     - pmm: bafta                                    # BAFTA Awards
@@ -58,8 +59,8 @@ libraries:
     - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
     - pmm: trakt                                    # Trakt Charts (Popular, Trending, etc.)
     - pmm: flixpatrol                               # Flixpatrol Charts (Popular, Trending, etc.)
-    - pmm: basic                                    # Keep this as the last chart item so that collection_mode: hide works properly on library tab for CHART COLLECTION
-    - pmm: collectionless                           # Collectionless movies/shows (Keep this as the last chart item so that collection_mode: hide works properly on library tab for CHART COLLECTION)
+    - pmm: basic                                    # Some basic chart collections
+    - pmm: collectionless                           # Collectionless movies/shows
     - pmm: actor                                    # Actors
       template_variables:                           # bw, rainier, or orig style is used. depth and limit is set low but sometimes I boost to 10, 150
         style: bw
@@ -122,20 +123,24 @@ libraries:
     overlay_path:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     - reapply_overlay: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays
-    - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc.
+    # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb
+    - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
     - pmm: language_count                           # blank means 1 audio language track, dual means 2, multi means > 2
     - pmm: commonsense                              # Age 2+, Age 14+, etc.
     - pmm: flixpatrol                               # Top 10 flixpatrol for 'this_year', positioned on the left
       template_variables:
         position: left
         time_window: this_year
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        use_subtitles: true
     - pmm: mediastinger                             # Mediastinger overlay when the media item contains a stinger at the end of the movie/show or during the credits
     - pmm: ratings                                  # Ratings with custom fonts matched to the style of the rating, font_size, and on the right in 'square' format
       template_variables:
-	  
         rating1: user
         rating1_image: rt_tomato
-		
+
         rating2: critic
         rating2_image: imdb
 
@@ -171,6 +176,7 @@ libraries:
       sep_style: gray                               # use the gray separators globally for this library
       collection_mode: hide                         # hide the collections
       language: fr                                  # could be default, de, fr, pt-br or another lang code that we have tranlsated
+      placeholder_imdb_id: tt1190634                # The Boys (2019) placeholder id for the separators
     metadata_path:
     - pmm: separator_award                          # An "index card"
     - pmm: choice                                   # Critic's Choice Awards
@@ -197,8 +203,8 @@ libraries:
     - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
     - pmm: trakt                                    # Trakt Charts (Popular, Trending, etc.)
     - pmm: flixpatrol                               # Flixpatrol Charts (Popular, Trending, etc.)
-    - pmm: basic                                    # Keep this as the last chart item so that collection_mode: hide works properly on library tab for CHART COLLECTION
-    - pmm: collectionless                           # Collectionless movies/shows (Keep this as the last chart item so that collection_mode: hide works properly on library tab for CHART COLLECTION)
+    - pmm: basic                                    # Some basic chart collections
+    - pmm: collectionless                           # Collectionless movies/shows
     - pmm: actor                                    # Actors
       template_variables:                           # bw, rainier, or orig style is used. depth and limit is set low but sometimes I boost to 10, 150
         exclude:                                    # ever have some random person... you can exclude them if you want
@@ -228,18 +234,12 @@ libraries:
     overlay_path:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     - reapply_overlay: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays
+    # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb
     - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. and works with overlay_level show, episode, and season
     - pmm: audio_codec
       template_variables:
         overlay_level: episode
     - pmm: audio_codec
-      template_variables:
-        overlay_level: season
-    - pmm: language_count                           # blank means 1 audio language track, dual means 2, multi means > 2 and works with overlay_level show, episode, and season
-    - pmm: language_count
-      template_variables:
-        overlay_level: episode
-    - pmm: language_count
       template_variables:
         overlay_level: season
     - pmm: commonsense                              # Age 2+, Age 14+, etc. and works with overlay_level show, episode, and season
@@ -256,6 +256,31 @@ libraries:
       template_variables:
         position: left
         time_window: this_year
+    - pmm: language_count                           # blank means 1 audio language track, dual means 2, multi means > 2 and works with overlay_level show, episode, and season
+    - pmm: language_count
+      template_variables:
+        overlay_level: episode
+    - pmm: language_count
+      template_variables:
+        overlay_level: season
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        use_subtitles: true
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        overlay_level: episode
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        use_subtitles: true
+        overlay_level: episode
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        overlay_level: season
+    - pmm: languages                                # Languages spoken and subtitles with associated flags and two-digit lang codes
+      template_variables:
+        use_subtitles: true
+        overlay_level: season
     - pmm: mediastinger                             # Mediastinger overlay when the media item contains a stinger at the end of the movie/show or during the credits and works with overlay_level show
     - pmm: ratings                                  # Ratings with custom fonts matched to the style of the rating, font_size, and on the right in 'square' format. overlay_level: show has 3 ratings max
       template_variables:
@@ -291,7 +316,7 @@ libraries:
     - pmm: ribbon
       template_variables:
         overlay_level: season
-    - pmm: episode_info                             # Runtime information in bottom right and works with overlay_level episode
+    - pmm: runtimes                                 # Runtime information in bottom right and works with overlay_level episode
       template_variables:
         overlay_level: episode
     - pmm: status                                   # Airing, Returning, Ended, Canceled and works with overlay_level show
@@ -302,13 +327,13 @@ libraries:
     - pmm: streaming
       template_variables:
         overlay_level: season
-    - pmm: versions                                 # Will show duplicates for that media item in top right area and works with overlay_level show, episode, and season
+    - pmm: versions                                 # Will show duplicates for that media item and works with overlay_level show, episode, and season
       template_variables:
         overlay_level: episode
-    - pmm: versions
+    - pmm: versions                                 # Will show duplicates for that media item and works with overlay_level show, episode, and season
       template_variables:
         overlay_level: season
-    - pmm: versions
+    - pmm: versions                                 # Will show duplicates for that media item and works with overlay_level show, episode, and season
       template_variables:
         overlay_level: show
     - pmm: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left and works with overlay_level show, episode, and season
@@ -340,5 +365,4 @@ playlist_files:
   template_variables:
     libraries: Movies, TV Shows
 ```
-
 </details>
