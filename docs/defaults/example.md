@@ -365,4 +365,5 @@ playlist_files:
   template_variables:
     libraries: Movies, TV Shows
 ```
+
 </details>

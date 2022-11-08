@@ -1,63 +1,191 @@
-## Collections
+# Collection Defaults
 
-These files can generally be used on both Movie and Show library-types, or are part of a category of collection (such as Award Shows.)
+There are many Default Metadata Files built into PMM itself which offer an easy-to-use and customizable set of Collections that the user can achieve without having to worry about creating the files that makes the collections possible.
 
-These collections are applied by calling the below paths into the `metadata_path` section of your config.yml
+This is the simplest way to create Collections using Plex Meta Manager.
 
-### Chart Collections
+## Metadata Files
 
-| Default                            |       Path        | Example Collections                        | Works with Movies | Works with Shows |
-|:-----------------------------------|:-----------------:|:-------------------------------------------|:-----------------:|:----------------:|
-| [Chart Separator](chart/separator) | `separator_chart` | Chart Collections                          |      &#9989;      |     &#9989;      |
-| [AniList](chart/anilist)           |     `anilist`     | AniList Popular, AniList Season            |      &#9989;      |     &#9989;      |
-| [Basic](chart/basic)               |      `basic`      | Newly Released, New Episodes               |      &#9989;      |     &#9989;      |
-| [FlixPatrol](chart/flixpatrol)     |   `flixpatrol`    | Top Disney, Top Hbo, Top Hulu, Top Netflix |      &#9989;      |     &#9989;      |
-| [IMDb](chart/imdb)                 |      `imdb`       | IMDb Popular, IMDb Top 250                 |      &#9989;      |     &#9989;      |
-| [MyAnimeList](chart/myanimelist)   |   `myanimelist`   | MyAnimeList Popular, MyAnimeList Top Rated |      &#9989;      |     &#9989;      |
-| [Other](chart/other)               |   `other_chart`   | AniDB Popular, Common Sense Selection      |      &#9989;      |     &#9989;      |
-| [Tautulli](chart/tautulli)         |    `tautulli`     | Plex Popular, Plex Watched                 |      &#9989;      |     &#9989;      |
-| [TMDb](chart/tmdb)                 |      `tmdb`       | TMDb Popular, TMDb Airing Today            |      &#9989;      |     &#9989;      |
-| [Trakt](chart/trakt)               |      `trakt`      | Trakt Popular, Trakt Trending              |      &#9989;      |     &#9989;      |
+```{include} collection_list.md
+```
 
-### Award Collections
+## Configurations
 
-| Default                                                    |       Path        | Example Collections                         | Works with Movies | Works with Shows |
-|:-----------------------------------------------------------|:-----------------:|:--------------------------------------------|:-----------------:|:----------------:|
-| [Award Separator](award/separator)                         | `separator_award` | Award Collections                           |      &#9989;      |     &#9989;      |
-| [British Academy of Film and Television Arts](award/bafta) |      `bafta`      | BAFTA Best Films, BAFTA 2021                |      &#9989;      |     &#10060;     |
-| [Cannes](award/cannes)                                     |     `cannes`      | Cannes - Palme d'or, Cannes 2018            |      &#9989;      |     &#10060;     |
-| [Critics Choice](award/choice)                             |     `choice`      | Critics Choice Awards 2020                  |      &#9989;      |     &#9989;      |
-| [Emmys](award/emmy)                                        |      `emmy`       | Emmys 2021                                  |      &#9989;      |     &#9989;      |
-| [Golden Globes](award/golden)                              |     `golden`      | Best Motion Pictures                        |      &#9989;      |     &#9989;      |
-| [Academy Awards (Oscars)](award/oscars)                    |     `oscars`      | Best Picture Winners                        |      &#9989;      |     &#9989;      |
-| [Independent Spirit](award/spirit)                         |     `spirit`      | Independent Spirit Awards 2021              |      &#9989;      |     &#10060;     |
-| [Sundance](award/sundance)                                 |    `sundance`     | Sundance Grand Jury Winners                 |      &#9989;      |     &#9989;      |
-| [Other](award/other)                                       |   `other_award`   | Berlinale Golden Bears, Venice Golden Lions |      &#9989;      |     &#10060;     |
+To run a default pmm Metadata file you can simply add it to your `metadata_path` using `pmm` like so:
 
-### General Collections
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: actor
+      - pmm: genre
+```
 
-| Default                                                                             |         Path         | Example Collections                                    | Works with Movies | Works with Shows |
-|:------------------------------------------------------------------------------------|:--------------------:|:-------------------------------------------------------|:-----------------:|:----------------:|
-| [Actor](both/actor)                                                                 |       `actor`        | Chris Hemsworth, Margot Robbie                         |      &#9989;      |     &#9989;      |
-| [Audio Language](both/audio_language)                                               |   `audio_language`   | French Audio, Korean Audio                             |      &#9989;      |     &#9989;      |
-| [Collectionless](both/collectionless)                                               |   `collectionless`   | Collectionless                                         |      &#9989;      |     &#9989;      |
-| [Common Sense Content Rating](both/content_rating_cs)                               | `content_rating_cs`  | 1, 2, 3, 4, 5, 6, 15, 16, 17, 18                       |      &#9989;      |     &#9989;      |
-| [MyAnimeList Content Rating](both/content_rating_mal)                               | `content_rating_mal` | G, PG, PG-13, R, R+, Rx                                |      &#9989;      |     &#9989;      |
-| [Content Rating (UK)](both/content_rating_uk)                                       | `content_rating_uk`  | U, PG, 12A                                             |      &#9989;      |     &#9989;      |
-| Content Rating (US) [Movie](movie/content_rating_us)/[Show](show/content_rating_us) | `content_rating_us`  | G, PG, NC-17                                           |      &#9989;      |     &#9989;      |
-| Country [Movie](movie/country)/[Show](show/country)                                 |      `country`       | Belgium, India                                         |      &#9989;      |     &#9989;      |
-| Decade [Movie](movie/decade)/[Show](show/decade)                                    |       `decade`       | Best of 2012, Best of 2022                             |      &#9989;      |     &#9989;      |
-| [Director](movie/director)                                                          |      `director`      | Steven Spielberg (Director), Olivia Wilde (Director)   |      &#9989;      |     &#10060;     |
-| Franchise [Movie](movie/franchise)/[Show](show/franchise)                           |     `franchise`      | Star Wars: Skywalker Saga, Godzilla (Anime)            |      &#9989;      |     &#9989;      |
-| [Genre](both/genre)                                                                 |       `genre`        | Action, Drama, Science Fiction                         |      &#9989;      |     &#9989;      |
-| [Network](show/network)                                                             |      `network`       | Disney Channel, Lifetime                               |     &#10060;      |     &#9989;      |
-| [Producer](movie/producer)                                                          |      `producer`      | James Cameron (Producer), Reese Witherspoon (Producer) |      &#9989;      |     &#10060;     |
-| [Resolution](both/resolution)                                                       |     `resolution`     | 4K Movies, 1080p Movies, 720p Movies                   |      &#9989;      |     &#9989;      |
-| [Seasonal](movie/seasonal)                                                          |      `seasonal`      | Easter, Christmas                                      |      &#9989;      |     &#10060;     |
-| [Streaming](both/streaming)                                                         |     `streaming`      | Disney+ Movies, HBO Max Shows                          |      &#9989;      |     &#9989;      |
-| [Studio](both/studio)                                                               |       `studio`       | DreamWorks Studios, Walt Disney Pictures               |      &#9989;      |     &#9989;      |
-| [Anime Studio](both/studio_anime)                                                   |    `studio_anime`    | Bones, Studio Ghibli, Toei Animation                   |      &#9989;      |     &#9989;      |
-| [Subtitle Language](both/subtitle_language)                                         | `subtitle_language`  | German Subtitles, Swedish Subtitles                    |      &#9989;      |     &#9989;      |
-| [Universe](movie/universe)                                                          |      `universe`      | Marvel Cinematic Universal, Wizarding World            |      &#9989;      |     &#10060;     |
-| [Year](both/year)                                                                   |        `year`        | Best of 2010, Best of 2019                             |      &#9989;      |     &#9989;      |
-| [Writer](movie/writer)                                                              |       `writer`       | James Cameron (Writer), Lilly Wachowski (Writer)       |      &#9989;      |     &#10060;     |
+## Separators
+
+Most Metadata files use separators to denote different sections of collection like actor collections vs studio collections.
+
+**Chart Separator and Award Separator each have their own file, while the other Separators are part of their respective files.**
+
+<details>
+  <summary>Click to expand to see an example of Separators.</summary>
+
+   ![](images/separators.jpg)
+
+</details>
+
+### Library On/Off
+
+Chart Separators are turned On by default (except `seasonal`), to turn the Separators On/Off on a per Library basis.
+
+```yaml
+libraries:
+  LIBRARYNAME:
+    template_variables:
+      use_separator: false
+    metadata_path:
+      - pmm: actor
+      - pmm: genre
+```
+
+## Collection Section Order
+
+All Default Metadata Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
+
+For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
+
+This is the default PMM collection ordering:
+
+| Collection             | Collection Section |
+|:-----------------------|:------------------:|
+| `seasonal`             |        `00`        |
+| `anilist`              |        `01`        |
+| `basic`                |        `01`        |
+| `imdb`                 |        `01`        |
+| `flixpatrol`           |        `01`        |
+| `myanimelist`          |        `01`        |
+| `other_chart`          |        `01`        |
+| `tautulli`             |        `01`        |
+| `tmdb`                 |        `01`        |
+| `trakt`                |        `01`        |
+| `universe`             |        `02`        |
+| `streaming`            |        `03`        |
+| `network`              |        `04`        |
+| `genre`                |        `06`        |
+| `studio`               |        `07`        |
+| `country`              |        `09`        |
+| `audio_language`       |        `10`        |
+| `subtitle_language`    |        `11`        |
+| `decade`               |        `12`        |
+| `year`                 |        `13`        |
+| `content_rating_us`    |        `14`        |
+| `content_rating_uk`    |        `14`        |
+| `content_rating_cs`    |        `14`        |
+| `resolution`           |        `15`        |
+| `resolution_standards` |        `15`        |
+| `bafta`                |        `16`        |
+| `cannes`               |        `16`        |
+| `choice`               |        `16`        |
+| `emmy`                 |        `16`        |
+| `golden`               |        `16`        |
+| `oscars`               |        `16`        |
+| `other_award`          |        `16`        |  
+| `spirit`               |        `16`        |
+| `sundance`             |        `16`        |
+| `actor`                |        `17`        |
+| `director`             |        `18`        |
+| `producer`             |        `19`        |
+| `writer`               |        `20`        |
+
+## Customizing Configs
+
+Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
+
+This example changes the ratings overlay to work on episodes.
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_path:
+      - pmm: imdb
+        template_variables:
+          use_popular: false
+          use_lowest: false
+          visible_library_top: true
+          visible_home_top: true
+          visible_shared_top: true
+```
+
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre).
+
+**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](collection_variables).**
+
+### Examples
+
+For example if you want yearly oscar collections that go back 10 years instead of 5 all of which gets sent to radarr use the `data` and `radarr_add_missing` template variables.
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: oscars
+        template_variables:
+          radarr_add_missing: true
+          data:
+            starting: current_year-10
+            ending: current_year
+```
+
+Or maybe you want to change the number of actor collections made using pmm: actor.
+
+```yaml
+libraries:
+  Movies:
+    overlay_path:
+      - pmm: actor
+        template_variables:
+          collection_mode: hide
+          data:
+            depth: 5
+            limit: 50
+```
+
+Or maybe you want to change the collection sort order of the genre collections using pmm: genre.
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - pmm: genre
+        template_variables:
+          collection_section: 11
+```
+
+Or maybe you want to disable separators globally per library.
+
+```yaml
+libraries:
+  LIBRARYNAME:
+    template_variables:
+      use_separator: false
+    metadata_path:
+      - ...
+```
+
+Alternatively it can be turned off individually per git file:
+
+```yaml
+libraries:
+  LIBRARYNAME:
+    metadata_path:
+      - pmm: <file1>    # separator is disabled
+        template_variables:
+          use_separator: false
+      - pmm: <file2>    # separator is enabled by default
+      - pmm: <file3>    # separator is disabled
+        template_variables:
+          use_separator: false
+```
+
+```{include} example.md
+```
