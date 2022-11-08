@@ -6,7 +6,7 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 
 **Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
 
-![](images/languages.png)
+![](images/language.png)
 
 ## Supported Audio/Subtitle Language Flags
 
@@ -78,13 +78,13 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 
 Below is a screenshot of the alternative Square (`square`) style which can be set via the `style` template variable.
 
-![](../images/languages2.png)
+![](images/language2.png)
 
 #### Half Style
 
 Below is a screenshot of the alternative Half (`half`) style which can be set via the `style` template variable.
 
-![](../images/languages3.png)
+![](images/language3.png)
 
 ## Config
 
@@ -112,7 +112,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `templates_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
 | Variable            |           Default            |
 |:--------------------|:----------------------------:|

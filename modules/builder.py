@@ -466,7 +466,7 @@ class CollectionBuilder:
                     suffix = ""
                     if self.details["delete_not_scheduled"]:
                         try:
-                            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
+                            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
                             logger.info(self.delete())
                             self.deleted = True
                             suffix = f" and was deleted"
@@ -790,7 +790,7 @@ class CollectionBuilder:
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
             try:
-                self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
+                self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
                 if (self.smart and not self.obj.smart) or (not self.smart and self.obj.smart):
                     logger.info("")
                     logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
@@ -2518,7 +2518,7 @@ class CollectionBuilder:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
-        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name)
+        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
         if not self.exists:
             self.created = True
 
@@ -2791,7 +2791,7 @@ class CollectionBuilder:
                 logger.error(f"Webhooks Error: {e}")
 
     def run_collections_again(self):
-        self.obj = self.library.get_collection(self.name)
+        self.obj = self.library.get_collection(self.name, force_search=True)
         name, collection_items = self.library.get_collection_name_and_items(self.obj, self.smart_label_collection)
         self.created = False
         rating_keys = []

@@ -65,6 +65,7 @@ class Library(ABC):
         self.delete_not_scheduled = params["delete_not_scheduled"]
         self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
+        self.show_unconfigured = params["show_unconfigured"]
         self.show_filtered = params["show_filtered"]
         self.show_options = params["show_options"]
         self.show_missing = params["show_missing"]
@@ -75,7 +76,10 @@ class Library(ABC):
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
         self.delete_unmanaged_collections = params["delete_unmanaged_collections"]
+        self.delete_unconfigured_collections = params["delete_unconfigured_collections"]
+        self.delete_managed_unconfigured_collections = params["delete_managed_unconfigured_collections"]
         self.delete_collections_with_less = params["delete_collections_with_less"]
+        self.delete_collections = params["delete_collections"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -117,9 +121,9 @@ class Library(ABC):
                                        or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
                                        or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper \
                                        or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
-        self.library_operation = True if self.items_library_operation or self.delete_unmanaged_collections or self.delete_collections_with_less \
-                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.mass_collection_mode \
-                                 or self.show_unmanaged or self.metadata_backup or self.update_blank_track_titles else False
+        self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
+                                 or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
+                                 or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [i for i in [getattr(self, o) for o in operations.meta_operations] if i]
 
         if self.asset_directory:

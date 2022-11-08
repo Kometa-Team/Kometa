@@ -5,7 +5,7 @@ To install a container from docker hub, you will need community applications - a
 
 ## Basic Installation
 
-1. Head to the `Apps` tab of unRAID (Community Applications), and search `plex-meta-manager` in the upper right search box. There will be a couple of results shown, but you should ignore them ([Why?](images.md)) and use the official image, which is on DockerHub. Click `Click Here To Get More Results From DockerHub`.
+1. Head to the `Apps` tab of unRAID (Community Applications), and search `plex-meta-manager` in the upper right search box. There will be a couple of results shown, but you should ignore them ([Why?](images)) and use the official image, which is on DockerHub. Click `Click Here To Get More Results From DockerHub`.
 
 2. Click the download icon on the `plex meta manager` container by `meisnate12`.
 

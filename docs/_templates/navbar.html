@@ -50,7 +50,7 @@
                                   {% elif subsublink|length == 5 %}
                                     <a tabindex="-1" href="{{ pathto(subsublink[2]) }}{{ subsublink[3] }}">{{ subsublink[1] }}</a>
                                   {% else %}
-                                    <a tabindex="-1" href="#">{{ subsubsublink[1] }}</a>
+                                    <a tabindex="-1" href="#">{{ subsublink[1] }}</a>
                                   {% endif %}
                                   <ul class="dropdown-menu">
                                     {%- for subsubsublink in subsublink[-1] %}

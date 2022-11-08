@@ -34,7 +34,7 @@ Steps.
 
    For example: `/tini -s python3 plex_meta_manager.py -- --run`
 
-   Information on available command line argument can be found [here](../environmental.md)
+   Information on available command line argument can be found [here](../environmental)
 
    Click "Advanced Settings >>"
 
@@ -44,7 +44,7 @@ Steps.
 
 3. Environment Variables can be added here:
 
-   Information on available Environment Variables can be found [here](../environmental.md)
+   Information on available Environment Variables can be found [here](../environmental)
 
 
    ![](qnap/qnap5.png)
