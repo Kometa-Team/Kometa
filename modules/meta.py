@@ -755,12 +755,18 @@ class MetadataFile(DataFile):
                         number_methods = {nm.lower(): nm for nm in dynamic_data}
                         if "starting" in number_methods and str(dynamic_data[number_methods["starting"]]).startswith("current_year"):
                             year_values = str(dynamic_data[number_methods["starting"]]).split("-")
-                            starting = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                            try:
+                                starting = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                            except ValueError:
+                                raise Failed(f"Config Error: starting attribute modifier invalid '{year_values[1]}'")
                         else:
                             starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=0)
                         if "ending" in number_methods and str(dynamic_data[number_methods["ending"]]).startswith("current_year"):
                             year_values = str(dynamic_data[number_methods["ending"]]).split("-")
-                            ending = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                            try:
+                                ending = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                            except ValueError:
+                                raise Failed(f"Config Error: ending attribute modifier invalid '{year_values[1]}'")
                         else:
                             ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
                         increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1) if "increment" in number_methods else 1

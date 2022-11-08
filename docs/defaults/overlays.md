@@ -6,7 +6,7 @@ This is the simplest way to create Overlays using Plex Meta Manager.
 
 ## Overlay Files
 
-```{include} ../overlay_list.md
+```{include} overlay_list.md
 ```
 
 ## Configurations
@@ -239,5 +239,5 @@ Each file has a page on the wiki showing the available `template_variables` for 
 
 ### Examples
 
-```{include} ../example.md
+```{include} example.md
 ```

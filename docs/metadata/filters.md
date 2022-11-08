@@ -105,7 +105,7 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 | `genre`                      | Uses the genre tags to match                                                                                                                    | &#9989;  |       &#9989;       |      &#10060;       | &#10060; | &#9989;  | &#9989;  | &#10060; |
 | `label`                      | Uses the label tags to match                                                                                                                    | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
 | `producer`                   | Uses the actor tags to match                                                                                                                    | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `year`                       | Uses the year tag to match                                                                                                                      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| `year`<sup>3</sup>           | Uses the year tag to match                                                                                                                      | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  | &#10060; | &#9989;  | &#9989;  |
 | `writer`                     | Uses the writer tags to match                                                                                                                   | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  | &#10060; | &#10060; | &#10060; |
 | `resolution`                 | Uses the resolution tag to match                                                                                                                | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
 | `audio_language`             | Uses the audio language tags to match                                                                                                           | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
@@ -117,6 +117,8 @@ Tag filters can take multiple values as a **list or a comma-separated string**.
 <sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
+
+<sup>3</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
 
 ## Boolean Filters
 
@@ -180,25 +182,27 @@ Number filters can **NOT** take multiple values.
 
 ### Attribute
 
-| Number Filters                | Description                                                          | Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
-|:------------------------------|:---------------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
-| `year`                        | Uses the year attribute to match<br>minimum: `1`                     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |      &#10060;       |       &#9989;       | &#9989;  |
-| `tmdb_year`<sup>2</sup>       | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
-| `critic_rating`               | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |       &#9989;       | &#10060; |
-| `audience_rating`             | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
-| `user_rating`                 | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
-| `tmdb_vote_count`<sup>2</sup> | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
-| `plays`                       | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
-| `duration`                    | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  |
-| `channels`                    | Uses the audio channels attribute to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
-| `height`                      | Uses the height attribute to match<br>minimum: `0`                   | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
-| `width`                       | Uses the width attribute to match<br>minimum: `0`                    | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
-| `aspect`                      | Uses the aspect attribute to match<br>minimum: `0.0`                 | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
-| `versions`                    | Uses the number of versions found to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
+| Number Filters                      | Description                                                          | Movies  |        Shows        |       Seasons       | Episodes |       Artists       |       Albums        |  Track   |
+|:------------------------------------|:---------------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:-------------------:|:-------------------:|:--------:|
+| `year`<sup>3</sup>                  | Uses the year attribute to match<br>minimum: `1`                     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |      &#10060;       |       &#9989;       | &#9989;  |
+| `tmdb_year`<sup>2</sup><sup>3</sup> | Uses the year on TMDb to match<br>minimum: `1`                       | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `critic_rating`                     | Uses the critic rating attribute to match<br>`0.0` - `10.0`          | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |       &#9989;       | &#10060; |
+| `audience_rating`                   | Uses the audience rating attribute to match<br> `0.0` - `10.0`       | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `user_rating`                       | Uses the user rating attribute to match<br>`0.0` - `10.0`            | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `tmdb_vote_count`<sup>2</sup>       | Uses the tmdb vote count to match<br>minimum: `1`                    | &#9989; |       &#9989;       |      &#10060;       | &#10060; |      &#10060;       |      &#10060;       | &#10060; |
+| `plays`                             | Uses the plays attribute to match<br>minimum: `1`                    | &#9989; |       &#9989;       |       &#9989;       | &#9989;  |       &#9989;       |       &#9989;       | &#9989;  |
+| `duration`                          | Uses the duration attribute to match using minutes<br>minimum: `0.0` | &#9989; |       &#9989;       |      &#10060;       | &#9989;  |      &#10060;       |      &#10060;       | &#9989;  |
+| `channels`                          | Uses the audio channels attribute to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `height`                            | Uses the height attribute to match<br>minimum: `0`                   | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `width`                             | Uses the width attribute to match<br>minimum: `0`                    | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `aspect`                            | Uses the aspect attribute to match<br>minimum: `0.0`                 | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |      &#10060;       |      &#10060;       | &#10060; |
+| `versions`                          | Uses the number of versions found to match<br>minimum: `0`           | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  |
 
 <sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
 <sup>2</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr.
+
+<sup>3</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
 
 ## Special Filters
 
