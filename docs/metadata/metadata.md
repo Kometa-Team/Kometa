@@ -43,7 +43,7 @@ collections:
 There are multiple types of attributes that can be utilized within a collection:
 
 * [Builders](builders)
-* [Settings/Updates](details)
+* [Settings/Updates](update)
 * [Filters](filters)
 
 ### Example

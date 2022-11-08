@@ -39,7 +39,7 @@ overlays:
 There are multiple types of attributes that can be utilized within an overlay:
 
 * [Builders](builders)
-* [Settings/Updates](details)
+* [Settings/Updates](update)
 * [Filters](filters)
 
 ## Overlay

@@ -4,7 +4,7 @@ Playlist files are used to create and maintain playlists on the Plex Server.
 
 If utilized to their fullest, these files can be used to maintain the entire server's collections and playlists, and can be used as a backup for these in the event of a restore requirement.
 
-Playlists are defined in one or more Playlist files that are mapped in the [Playlist Files Attribute](../config/libraries.md#playlist-files-attribute) within the Configuration File.
+Playlists are defined in one or more Playlist files that are mapped in the [Playlist Files Attribute](../config/playlists) within the Configuration File.
 
 You can use the [`playlist_report` setting](../config/settings.md#playlist-report) to get a list of your playlists printed out in your log. 
 
@@ -39,7 +39,7 @@ playlists:
 There are multiple types of attributes that can be utilized within a playlist:
 
 * [Builders](builders)
-* [Settings/Updates](details)
+* [Settings/Updates](update)
 * [Filters](filters)
 
 ### Special Playlist Attributes

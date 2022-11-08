@@ -196,7 +196,7 @@ libraries:
 
 ## Rating Overlays
 
-By default for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can come from Rotten Tomatoes (and includes Critic Ratings and Audience Ratings) or IMDb (Audience Ratings). This only changes the tiny icons displayed and where Plex will retrieve the ratings from upon initial scan and import of the media metadata.
+By default, for Movies in Plex, the `Ratings Source` dropdown (`#3`) below, can come from Rotten Tomatoes (and includes Critic Ratings and Audience Ratings) or IMDb (Audience Ratings). This only changes the tiny icons displayed and where Plex will retrieve the ratings from upon initial scan and import of the media metadata.
 
 **Plex Meta Manager can insert up to three ratings of your choice into the three spots regardless of what you choose in the `Advanced` tab of that Plex library**
 
@@ -210,7 +210,7 @@ Plex has three available spots in the Plex DB to store ratings and thus Plex Met
 
 To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
 
-**mass_*_rating_update** sources can be found here: [operations](../../config/operations)
+**mass_*_rating_update** sources can be found here: [operations](../config/operations)
 
 ![](images/ratings_operations.png)
 
@@ -233,7 +233,7 @@ libraries:
           overlay_level: episode
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](ratings).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
 
 **In addition to the defined `template_variables` almost all default Overlay files have access to the [Shared Variables](collection_variables).**
 
