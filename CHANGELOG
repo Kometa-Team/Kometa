@@ -29,6 +29,7 @@ Added `versions` [number filter](https://metamanager.wiki/en/latest/metadata/fil
 Added `imdb_watchlist` [builder](https://metamanager.wiki/en/latest/metadata/builders/imdb.html#imdb-watchlist)
 Added `item_genre` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the genres of items in a collection
 Added `plex_watchlist` [Builder](https://metamanager.wiki/en/latest/metadata/builders/plex.html#plex-watchlist)
+Adds `current_year` to `plex_search`, `smart_filter`, and `filter` year/decade attributes.
 Added `stroke_width` and `stroke_color` as options for text overlays
 Added multiple new [special text variables](https://metamanager.wiki/en/latest/metadata/overlay.html#special-text-variables) and modifiers.
 Added support for the [AniDB API](https://metamanager.wiki/en/latest/config/anidb.html)

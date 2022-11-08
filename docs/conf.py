@@ -200,9 +200,9 @@ html_theme_options = {
             ("Defaults Usage Guide", "defaults/guide"),
             ("Defaults Files", "defaults/files"),
             ("_divider", ),
-            ("_menu", "Collections", "defaults/defaults", [
-                ("Collections", "defaults/defaults"),
-                ("Shared Variables", "defaults/variables"),
+            ("_menu", "Collections", "defaults/collections", [
+                ("Collections", "defaults/collections"),
+                ("Shared Variables", "defaults/collection_variables"),
                 ("_divider", ),
                 ("Separators", "defaults/separators"),
                 ("_menu", "Award", "defaults/defaults", "#award-collections", [
@@ -277,9 +277,9 @@ html_theme_options = {
                 ]),
             ]),
             ("Playlists", "defaults/playlist"),
-            ("_menu", "Overlays", "defaults/overlays/defaults", [
-                ("Overlays", "defaults/overlays/defaults"),
-                ("Shared Variables", "defaults/overlays/variables"),
+            ("_menu", "Overlays", "defaults/overlays", [
+                ("Overlays", "defaults/overlays"),
+                ("Shared Variables", "defaults/overlay_variables"),
                 ("_divider", ),
                 ("Audio Codec", "defaults/overlays/audio_codec"),
                 ("Common Sense Age Ratings", "defaults/overlays/commonsense"),

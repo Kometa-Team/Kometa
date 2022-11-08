@@ -354,6 +354,10 @@ class Overlays:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
                     logger.error(f"{e}\nOverlays Attempted on {item_title}: {', '.join(over_names)}")
+                except Exception as e:
+                    logger.stacktrace(e)
+                    logger.error("")
+                    logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
         overlay_run_time = str(datetime.now() - overlay_start).split('.')[0]
         logger.info("")
