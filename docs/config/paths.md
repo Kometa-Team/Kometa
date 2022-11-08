@@ -153,7 +153,7 @@ Within the above example, PMM will:
 
 ## Playlist Files 
 
-The [`playlist_files`](libraries.md#playlist-files-attribute) at the top level in your [Configuration File](configuration). 
+The [`playlist_files`](playlists) at the top level in your [Configuration File](configuration). 
 
 ### Example
 
