@@ -86,6 +86,18 @@ mass_rating_options = {
     "mal": "Use MyAnimeList Rating"
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
+library_operations = {
+    "assets_for_all": "bool", "split_duplicates": "bool", "update_blank_track_titles": "bool", "remove_title_parentheses": "bool",
+    "radarr_add_all_existing": "bool", "radarr_remove_by_tag": "bool", "sonarr_add_all_existing": "bool", "sonarr_remove_by_tag": "bool",
+    "mass_genre_update": mass_genre_options, "mass_content_rating_update": mass_content_options,
+    "mass_audience_rating_update": mass_rating_options, "mass_episode_audience_rating_update": mass_episode_rating_options,
+    "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
+    "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
+    "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
+    "mass_imdb_parental_labels": imdb_label_options, "mass_poster_update": mass_image_options, "mass_background_update": mass_image_options,
+    "mass_collection_mode": "mass_collection_mode", "metadata_backup": "metadata_backup", "delete_collections": "delete_collections",
+    "genre_mapper": "mapper", "content_rating_mapper": "mapper",
+}
 
 class ConfigFile:
     def __init__(self, default_dir, attrs):
@@ -342,6 +354,7 @@ class ConfigFile:
             "missing_only_released": check_for_attribute(self.data, "missing_only_released", parent="settings", var_type="bool", default=False),
             "only_filter_missing": check_for_attribute(self.data, "only_filter_missing", parent="settings", var_type="bool", default=False),
             "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
+            "show_unconfigured": check_for_attribute(self.data, "show_unconfigured", parent="settings", var_type="bool", default=True),
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
             "show_options": check_for_attribute(self.data, "show_options", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
@@ -634,28 +647,9 @@ class ConfigFile:
             for library_name, lib in libs.items():
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
-                params = {
-                    "mapping_name": str(library_name),
-                    "name": str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name),
-                    "genre_mapper": None,
-                    "content_rating_mapper": None,
-                    "radarr_remove_by_tag": None,
-                    "sonarr_remove_by_tag": None,
-                    "mass_collection_mode": None,
-                    "metadata_backup": None,
-                    "update_blank_track_titles": None,
-                    "mass_content_rating_update": None,
-                    "mass_original_title_update": None,
-                    "mass_originally_available_update": None,
-                    "mass_imdb_parental_labels": None,
-                    "remove_title_parentheses": None,
-                    "mass_user_rating_update": None,
-                    "mass_episode_audience_rating_update": None,
-                    "mass_episode_critic_rating_update": None,
-                    "mass_episode_user_rating_update": None,
-                    "mass_poster_update": None,
-                    "mass_background_update": None,
-                }
+                params = {o: None for o in library_operations}
+                params["mapping_name"] = str(library_name)
+                params["name"] = str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
                 logger.separator(f"{display_name} Configuration")
@@ -668,6 +662,7 @@ class ConfigFile:
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
                 params["default_collection_order"] = check_for_attribute(lib, "default_collection_order", parent="settings", default=self.general["default_collection_order"], default_is_none=True, do_print=False, save=False)
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
+                params["show_unconfigured"] = check_for_attribute(lib, "show_unconfigured", parent="settings", var_type="bool", default=self.general["show_unconfigured"], do_print=False, save=False)
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
                 params["show_options"] = check_for_attribute(lib, "show_options", parent="settings", var_type="bool", default=self.general["show_options"], do_print=False, save=False)
                 params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
@@ -686,130 +681,67 @@ class ConfigFile:
                 params["item_refresh_delay"] = check_for_attribute(lib, "item_refresh_delay", parent="settings", var_type="int", default=self.general["item_refresh_delay"], do_print=False, save=False)
                 params["delete_below_minimum"] = check_for_attribute(lib, "delete_below_minimum", parent="settings", var_type="bool", default=self.general["delete_below_minimum"], do_print=False, save=False)
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
-                params["delete_unmanaged_collections"] = check_for_attribute(lib, "delete_unmanaged_collections", parent="settings", var_type="bool", default=False, do_print=False, save=False)
-                params["delete_collections_with_less"] = check_for_attribute(lib, "delete_collections_with_less", parent="settings", var_type="int", default_is_none=True, do_print=False, save=False)
                 params["ignore_ids"] = check_for_attribute(lib, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
-                params["assets_for_all"] = check_for_attribute(lib, "assets_for_all", parent="settings", var_type="bool", default=self.general["assets_for_all"], do_print=False, save=False)
-                params["mass_genre_update"] = check_for_attribute(lib, "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False, do_print=False)
-                params["mass_audience_rating_update"] = check_for_attribute(lib, "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
-                params["mass_critic_rating_update"] = check_for_attribute(lib, "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False, do_print=False)
-                params["mass_trakt_rating_update"] = check_for_attribute(lib, "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
-                params["split_duplicates"] = check_for_attribute(lib, "split_duplicates", var_type="bool", default=False, save=False, do_print=False)
-                params["radarr_add_all_existing"] = check_for_attribute(lib, "radarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
-                params["sonarr_add_all_existing"] = check_for_attribute(lib, "sonarr_add_all_existing", var_type="bool", default=False, save=False, do_print=False)
                 params["report_path"] = None
                 if lib and "report_path" in lib and lib["report_path"]:
                     if os.path.exists(os.path.dirname(os.path.abspath(lib["report_path"]))):
                         params["report_path"] = lib["report_path"]
                     else:
                         logger.error(f"Config Error: Folder {os.path.dirname(os.path.abspath(lib['report_path']))} does not exist")
-
                 if lib and "operations" in lib and lib["operations"]:
                     if isinstance(lib["operations"], dict):
-                        if "assets_for_all" in lib["operations"]:
-                            params["assets_for_all"] = check_for_attribute(lib["operations"], "assets_for_all", var_type="bool", default=False, save=False)
-                        if "delete_unmanaged_collections" in lib["operations"]:
-                            params["delete_unmanaged_collections"] = check_for_attribute(lib["operations"], "delete_unmanaged_collections", var_type="bool", default=False, save=False)
-                        if "delete_collections_with_less" in lib["operations"]:
-                            params["delete_collections_with_less"] = check_for_attribute(lib["operations"], "delete_collections_with_less", var_type="int", default_is_none=True, save=False)
-                        if "mass_genre_update" in lib["operations"]:
-                            params["mass_genre_update"] = check_for_attribute(lib["operations"], "mass_genre_update", test_list=mass_genre_options, default_is_none=True, save=False)
-                        if "mass_audience_rating_update" in lib["operations"]:
-                            params["mass_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_audience_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
-                        if "mass_critic_rating_update" in lib["operations"]:
-                            params["mass_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_critic_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
-                        if "mass_user_rating_update" in lib["operations"]:
-                            params["mass_user_rating_update"] = check_for_attribute(lib["operations"], "mass_user_rating_update", test_list=mass_rating_options, default_is_none=True, save=False)
-                        if "mass_episode_audience_rating_update" in lib["operations"]:
-                            params["mass_episode_audience_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_audience_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
-                        if "mass_episode_critic_rating_update" in lib["operations"]:
-                            params["mass_episode_critic_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_critic_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
-                        if "mass_episode_user_rating_update" in lib["operations"]:
-                            params["mass_episode_user_rating_update"] = check_for_attribute(lib["operations"], "mass_episode_user_rating_update", test_list=mass_episode_rating_options, default_is_none=True, save=False)
-                        if "mass_content_rating_update" in lib["operations"]:
-                            params["mass_content_rating_update"] = check_for_attribute(lib["operations"], "mass_content_rating_update", test_list=mass_content_options, default_is_none=True, save=False)
-                        if "mass_original_title_update" in lib["operations"]:
-                            params["mass_original_title_update"] = check_for_attribute(lib["operations"], "mass_original_title_update", test_list=mass_original_title_options, default_is_none=True, save=False)
-                        if "mass_originally_available_update" in lib["operations"]:
-                            params["mass_originally_available_update"] = check_for_attribute(lib["operations"], "mass_originally_available_update", test_list=mass_available_options, default_is_none=True, save=False)
-                        if "mass_imdb_parental_labels" in lib["operations"]:
-                            params["mass_imdb_parental_labels"] = check_for_attribute(lib["operations"], "mass_imdb_parental_labels", test_list=imdb_label_options, default_is_none=True, save=False)
-                        if "mass_poster_update" in lib["operations"]:
-                            params["mass_poster_update"] = check_for_attribute(lib["operations"], "mass_poster_update", test_list=mass_image_options, default_is_none=True, save=False)
-                        if "mass_background_update" in lib["operations"]:
-                            params["mass_background_update"] = check_for_attribute(lib["operations"], "mass_background_update", test_list=mass_image_options, default_is_none=True, save=False)
-                        if "mass_trakt_rating_update" in lib["operations"]:
-                            params["mass_trakt_rating_update"] = check_for_attribute(lib["operations"], "mass_trakt_rating_update", var_type="bool", default=False, save=False, do_print=False)
-                        if "split_duplicates" in lib["operations"]:
-                            params["split_duplicates"] = check_for_attribute(lib["operations"], "split_duplicates", var_type="bool", default=False, save=False)
-                        if "radarr_add_all_existing" in lib["operations"]:
-                            params["radarr_add_all_existing"] = check_for_attribute(lib["operations"], "radarr_add_all_existing", var_type="bool", default=False, save=False)
-                        if "radarr_remove_by_tag" in lib["operations"]:
-                            params["radarr_remove_by_tag"] = check_for_attribute(lib["operations"], "radarr_remove_by_tag", var_type="comma_list", default=False, save=False)
-                        if "sonarr_add_all_existing" in lib["operations"]:
-                            params["sonarr_add_all_existing"] = check_for_attribute(lib["operations"], "sonarr_add_all_existing", var_type="bool", default=False, save=False)
-                        if "sonarr_remove_by_tag" in lib["operations"]:
-                            params["sonarr_remove_by_tag"] = check_for_attribute(lib["operations"], "sonarr_remove_by_tag", var_type="comma_list", default=False, save=False)
-                        if "update_blank_track_titles" in lib["operations"]:
-                            params["update_blank_track_titles"] = check_for_attribute(lib["operations"], "update_blank_track_titles", var_type="bool", default=False, save=False)
-                        if "remove_title_parentheses" in lib["operations"]:
-                            params["remove_title_parentheses"] = check_for_attribute(lib["operations"], "remove_title_parentheses", var_type="bool", default=False, save=False)
-                        if "mass_collection_mode" in lib["operations"]:
-                            try:
-                                params["mass_collection_mode"] = util.check_collection_mode(lib["operations"]["mass_collection_mode"])
-                            except Failed as e:
-                                logger.error(e)
-                        if "metadata_backup" in lib["operations"]:
-                            params["metadata_backup"] = {
-                                "path": os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml"),
-                                "exclude": [],
-                                "sync_tags": False,
-                                "add_blank_entries": True
-                            }
-                            if lib["operations"]["metadata_backup"] and isinstance(lib["operations"]["metadata_backup"], dict):
-                                try:
-                                    params["metadata_backup"]["path"] = check_for_attribute(lib["operations"]["metadata_backup"], "path", var_type="path", save=False)
-                                except Failed as e:
-                                    logger.debug(f"{e} using default {params['metadata_backup']['path']}")
-                                params["metadata_backup"]["exclude"] = check_for_attribute(lib["operations"]["metadata_backup"], "exclude", var_type="comma_list", default_is_none=True, save=False)
-                                params["metadata_backup"]["sync_tags"] = check_for_attribute(lib["operations"]["metadata_backup"], "sync_tags", var_type="bool", default=False, save=False)
-                                params["metadata_backup"]["add_blank_entries"] = check_for_attribute(lib["operations"]["metadata_backup"], "add_blank_entries", var_type="bool", default=True, save=False)
-                        if "genre_mapper" in lib["operations"]:
-                            if lib["operations"]["genre_mapper"] and isinstance(lib["operations"]["genre_mapper"], dict):
-                                params["genre_mapper"] = lib["operations"]["genre_mapper"]
-                                for old_genre, new_genre in lib["operations"]["genre_mapper"].items():
-                                    if old_genre == new_genre:
-                                        logger.error("Config Error: genres cannot be mapped to themselves")
-                                    else:
-                                        params["genre_mapper"][old_genre] = new_genre if new_genre else None
+                        if "delete_collections" not in lib["operations"] and ("delete_unmanaged_collections" in lib["operations"] or "delete_collections_with_less" in lib["operations"]):
+                            lib["operations"]["delete_collections"] = {}
+                            if "delete_unmanaged_collections" in lib["operations"]:
+                                lib["operations"]["delete_collections"]["unmanaged"] = check_for_attribute(lib["operations"], "delete_unmanaged_collections", var_type="bool", default=False, save=False)
+                            if "delete_collections_with_less" in lib["operations"]:
+                                lib["operations"]["delete_collections"]["less"] = check_for_attribute(lib["operations"], "delete_collections_with_less", var_type="int", default_is_none=True, save=False)
+                        for op, data_type in library_operations.items():
+                            if op not in lib["operations"]:
+                                continue
+                            elif isinstance(data_type, list):
+                                params[op] = check_for_attribute(lib["operations"], op, test_list=data_type, default_is_none=True, save=False)
+                            elif data_type == "mass_collection_mode":
+                                params[op] = util.check_collection_mode(lib["operations"][op])
+                            elif data_type in ["metadata_backup", "mapper", "delete_collections"]:
+                                if not lib["operations"][op] or not isinstance(lib["operations"][op], dict):
+                                    raise Failed(f"Config Error: {op} must be a dictionary")
+                                if data_type == "metadata_backup":
+                                    default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
+                                    try:
+                                        default_path = check_for_attribute(lib["operations"][op], "path", var_type="path", save=False)
+                                    except Failed as e:
+                                        logger.debug(f"{e} using default {default_path}")
+                                    params[op] = {
+                                        "path": default_path,
+                                        "exclude": check_for_attribute(lib["operations"][op], "exclude", var_type="comma_list", default_is_none=True, save=False),
+                                        "sync_tags": check_for_attribute(lib["operations"][op], "sync_tags", var_type="bool", default=False, save=False),
+                                        "add_blank_entries": check_for_attribute(lib["operations"][op], "add_blank_entries", var_type="bool", default=True, save=False)
+                                    }
+                                if data_type == "mapper":
+                                    params[op] = lib["operations"][op]
+                                    for old_value, new_value in lib["operations"][op].items():
+                                        if old_value == new_value:
+                                            logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
+                                        else:
+                                            params[op][old_value] = new_value if new_value else None
+                                if data_type == "delete_collections":
+                                    params[op] = {
+                                        "managed": check_for_attribute(lib["operations"][op], "managed", var_type="bool", default=False, save=False),
+                                        "unmanaged": check_for_attribute(lib["operations"][op], "unmanaged", var_type="bool", default=False, save=False),
+                                        "configured": check_for_attribute(lib["operations"][op], "configured", var_type="bool", default=False, save=False),
+                                        "unconfigured": check_for_attribute(lib["operations"][op], "unconfigured", var_type="bool", default=False, save=False),
+                                        "less": check_for_attribute(lib["operations"][op], "less", var_type="int", default_is_none=True, save=False, int_min=1),
+                                    }
                             else:
-                                logger.error("Config Error: genre_mapper is blank")
-                        if "content_rating_mapper" in lib["operations"]:
-                            if lib["operations"]["content_rating_mapper"] and isinstance(lib["operations"]["content_rating_mapper"], dict):
-                                params["content_rating_mapper"] = lib["operations"]["content_rating_mapper"]
-                                for old_content, new_content in lib["operations"]["content_rating_mapper"].items():
-                                    if old_content == new_content:
-                                        logger.error("Config Error: content rating cannot be mapped to themselves")
-                                    else:
-                                        params["content_rating_mapper"][old_content] = new_content if new_content else None
-                            else:
-                                logger.error("Config Error: content_rating_mapper is blank")
-                        for atr in ["tmdb_collections", "genre_collections"]:
-                            if atr in lib["operations"]:
-                                logger.error(f"Deprecated Error: {atr} has been replaced with dynamic collections")
+                                params[op] = check_for_attribute(lib["operations"], op, var_type=data_type, default=False, save=False)
                     else:
                         logger.error("Config Error: operations must be a dictionary")
-
-                if params["mass_trakt_rating_update"]:
-                    if params["mass_user_rating_update"]:
-                        logger.error("Config Error: User Rating is already being set by mass_user_rating_update")
-                    else:
-                        params["mass_user_rating_update"] = "trakt_user"
 
                 def error_check(attr, service):
                     logger.error(f"Config Error: Operation {attr} cannot be {params[attr]} without a successful {service} Connection")

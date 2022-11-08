@@ -380,4 +380,4 @@ docker run -d \
 
 That will create a container that will run in the background until you explicitly stop it, surviving reboots, and waking up every morning at 3AM to process collections.
 
-There are of course [other flags you can add](../environmental.md), but this is the minimal command to create this container.
+There are of course [other flags you can add](../environmental), but this is the minimal command to create this container.

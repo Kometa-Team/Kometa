@@ -61,7 +61,7 @@ This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container
    - To add an Environment Variable Click "Add".
    - To use Command line arguments put the arguments in the "Command" text field.
 
-   Information on available command line argument and Environment Variables can be found [here](../environmental.md)
+   Information on available command line argument and Environment Variables can be found [here](../environmental)
 
    ![](synology/synology-10.png)
 

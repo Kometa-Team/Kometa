@@ -19,8 +19,7 @@ The available attributes for the operations attribute are as follows
 | Attribute                                                             | Description                                                                                                                                                |
 |:----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                                |
-| [Delete Collections With Less](#delete-collections-with-less)         | Deletes every collection with less than the given number of items.                                                                                         |
-| [Delete Unmanaged Collections](#delete-unmanaged-collections)         | Deletes every unmanaged collection.                                                                                                                        |
+| [Delete Collections](#delete-collections)                             | Deletes collections based on a set of given attributes.                                                                                                    |
 | [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    |
 | [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    |
 | [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    |
@@ -50,21 +49,34 @@ Search in assets for images for every item in your library.
 
 **Values:** `true` or `false`
 
-## Delete Collections With Less
+## Delete Collections
 
-Deletes every collection with less than the given number of items.
+Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
 
-**Attribute:** `delete_collections_with_less`
+**Attribute:** `delete_collections`
 
-**Values:** number greater than 0  
+**Values:** There are a few different options to determine how the `delete_collections` works.
 
-## Delete Unmanaged Collections
+| Attribute      | Description                                                                                                                                         |
+|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `managed`      | Matches with a Collection Managed by PMM (the collection has the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false`             |
+| `unmanaged`    | Matches with a Collection Unmanaged by PMM (the collection does not have the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false` |
+| `configured`   | Matches with a Collection Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                              |
+| `unconfigured` | Matches with a Collection Not Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                          |
+| `less`         | Matches with a Collection that contains less then the given number of items.<br>**Default:** ` `<br>**Values:** Number Greater then 0               |
 
-Deletes every collection that doesn't have the PMM label.
+**Example:**
 
-**Attribute:** `delete_unmanaged_collections`
+Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
 
-**Values:** `true` or `false`
+```yaml
+library:
+  Movies:
+    operations:
+      delete_collections:
+        unconfigured: true
+        managed: true
+```
 
 ## Mass Genre Update
 

@@ -23,8 +23,7 @@ class Operations:
         logger.separator(f"{self.library.name} Library Operations")
         logger.info("")
         logger.debug(f"Assets For All: {self.library.assets_for_all}")
-        logger.debug(f"Delete Collections With Less: {self.library.delete_collections_with_less}")
-        logger.debug(f"Delete Unmanaged Collections: {self.library.delete_unmanaged_collections}")
+        logger.debug(f"Delete Collections: {self.library.delete_collections}")
         logger.debug(f"Show Unmanaged Collections: {self.library.show_unmanaged}")
         logger.debug(f"Mass Genre Update: {self.library.mass_genre_update}")
         logger.debug(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
@@ -577,30 +576,41 @@ class Operations:
         if self.library.sonarr_remove_by_tag:
             self.library.Sonarr.remove_all_with_tags(self.library.sonarr_remove_by_tag)
 
-        if self.library.delete_collections_with_less is not None or self.library.delete_unmanaged_collections:
+        less = None
+        managed = False
+        unmanaged = False
+        configured = False
+        unconfigured = False
+        if self.library.delete_collections:
             logger.info("")
-            print_suffix = ""
-            unmanaged = ""
-            if self.library.delete_collections_with_less is not None and self.library.delete_collections_with_less > 0:
-                print_suffix = f" with less then {self.library.delete_collections_with_less} item{'s' if self.library.delete_collections_with_less > 1 else ''}"
-            if self.library.delete_unmanaged_collections:
-                if self.library.delete_collections_with_less is None:
-                    unmanaged = "Unmanaged Collections "
-                elif self.library.delete_collections_with_less > 0:
-                    unmanaged = "Unmanaged Collections and "
-            logger.separator(f"Deleting All {unmanaged}Collections{print_suffix}", space=False, border=False)
+            logger.separator(f"Deleting All Collections", space=False, border=False)
             logger.info("")
+            if self.library.delete_collections["less"] is not None:
+                less = self.library.delete_collections["less"]
+            managed = self.library.delete_collections["managed"]
+            unmanaged = self.library.delete_collections["unmanaged"]
+            configured = self.library.delete_collections["configured"]
+            unconfigured = self.library.delete_collections["unconfigured"]
+
         unmanaged_collections = []
+        unconfigured_collections = []
         all_collections = self.library.get_all_collections()
         for i, col in enumerate(all_collections, 1):
             logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
             labels = [la.tag for la in self.library.item_labels(col)]
-            if (self.library.delete_collections_with_less and col.childCount < self.library.delete_collections_with_less) \
-                or (self.library.delete_unmanaged_collections and "PMM" not in labels):
+            if (less is not None or unmanaged or managed or unconfigured or configured) \
+                and (less is None or col.childCount < less) \
+                and (unmanaged is False or "PMM" not in labels) \
+                and (managed is False or "PMM" in labels) \
+                and (unconfigured is False or col.title not in self.library.collections) \
+                and (configured is False or col.title in self.library.collections):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
-            elif "PMM" not in labels:
-                unmanaged_collections.append(col)
+            else:
+                if "PMM" not in labels:
+                    unmanaged_collections.append(col)
+                if col.title not in self.library.collections:
+                    unconfigured_collections.append(col)
 
         if self.library.show_unmanaged and len(unmanaged_collections) > 0:
             logger.info("")
@@ -615,11 +625,24 @@ class Operations:
             logger.separator(f"No Unmanaged Collections in {self.library.name} Library", space=False, border=False)
             logger.info("")
 
-        if self.library.assets_for_all and len(unmanaged_collections) > 0:
+        if self.library.show_unconfigured and len(unconfigured_collections) > 0:
             logger.info("")
-            logger.separator(f"Unmanaged Collection Assets Check for {self.library.name} Library", space=False, border=False)
+            logger.separator(f"Unconfigured Collections in {self.library.name} Library", space=False, border=False)
             logger.info("")
-            for col in unmanaged_collections:
+            for col in unconfigured_collections:
+                logger.info(col.title)
+            logger.info("")
+            logger.info(f"{len(unconfigured_collections)} Unconfigured Collection{'s' if len(unconfigured_collections) > 1 else ''}")
+        elif self.library.show_unconfigured:
+            logger.info("")
+            logger.separator(f"No Unconfigured Collections in {self.library.name} Library", space=False, border=False)
+            logger.info("")
+
+        if self.library.assets_for_all and len(unconfigured_collections) > 0:
+            logger.info("")
+            logger.separator(f"Unconfigured Collection Assets Check for {self.library.name} Library", space=False, border=False)
+            logger.info("")
+            for col in unconfigured_collections:
                 try:
                     poster, background, item_dir, name = self.library.find_item_assets(col)
                     if poster or background:
@@ -631,9 +654,9 @@ class Operations:
 
         if self.library.mass_collection_mode:
             logger.info("")
-            logger.separator(f"Unmanaged Mass Collection Mode to {self.library.mass_collection_mode} for {self.library.name} Library", space=False, border=False)
+            logger.separator(f"Unconfigured Mass Collection Mode to {self.library.mass_collection_mode} for {self.library.name} Library", space=False, border=False)
             logger.info("")
-            for col in unmanaged_collections:
+            for col in unconfigured_collections:
                 if int(col.collectionMode) not in plex.collection_mode_keys \
                         or plex.collection_mode_keys[int(col.collectionMode)] != self.library.mass_collection_mode:
                     self.library.collection_mode_query(col, self.library.mass_collection_mode)

@@ -822,11 +822,11 @@ class Plex(Library):
         except NotFound:
             raise Failed(f"Plex Error: Playlist {title} not found")
 
-    def get_collection(self, data):
-        if isinstance(data, int):
-            return self.fetchItem(data)
-        elif isinstance(data, Collection):
+    def get_collection(self, data, force_search=False):
+        if isinstance(data, Collection):
             return data
+        elif isinstance(data, int) and not force_search:
+            return self.fetchItem(data)
         else:
             cols = self.search(title=str(data), libtype="collection")
             for d in cols:
@@ -841,8 +841,10 @@ class Plex(Library):
     def validate_collections(self, collections):
         valid_collections = []
         for collection in collections:
-            try:                                        valid_collections.append(self.get_collection(collection))
-            except Failed as e:                         logger.error(e)
+            try:
+                valid_collections.append(self.get_collection(collection))
+            except Failed as e:
+                logger.error(e)
         if len(valid_collections) == 0:
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
