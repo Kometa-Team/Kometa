@@ -2061,12 +2061,28 @@ class CollectionBuilder:
                 return datetime.strftime(datetime.now(), "%Y-%m-%d")
             else:
                 return util.validate_date(data, final, return_as="%Y-%m-%d")
-        elif attribute in year_attributes and modifier in ["", ".not"]:
-            final_years = []
-            values = util.get_list(data)
-            for value in values:
-                final_years.append(util.parse(self.Type, final, value, datatype="int"))
-            return smart_pair(final_years)
+        elif attribute in year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+            if modifier in ["", ".not"]:
+                final_years = []
+                values = util.get_list(data)
+                for value in values:
+                    if str(value).startswith("current_year"):
+                        year_values = str(value).split("-")
+                        try:
+                            final_years.append(datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip())))
+                        except ValueError:
+                            raise Failed(f"{self.Type} Error: {final} attribute modifier invalid '{year_values[1]}'")
+                    else:
+                        final_years.append(util.parse(self.Type, final, value, datatype="int"))
+                return smart_pair(final_years)
+            else:
+                if str(data).startswith("current_year"):
+                    year_values = str(data).split("-")
+                    try:
+                        return datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                    except ValueError:
+                        raise Failed(f"{self.Type} Error: {final} attribute modifier invalid '{year_values[1]}'")
+                return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in date_attributes and modifier in ["", ".not"]:
             search_mod = "d"
             if plex_search and data and str(data)[-1] in ["s", "m", "h", "d", "w", "o", "y"]:
@@ -2074,7 +2090,7 @@ class CollectionBuilder:
                 data = str(data)[:-1]
             search_data = util.parse(self.Type, final, data, datatype="int", minimum=0)
             return f"{search_data}{search_mod}" if plex_search else search_data
-        elif (attribute in number_attributes + year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+        elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in float_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:

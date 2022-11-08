@@ -47,7 +47,8 @@ external_templates:
     font: fonts/Inter-Bold.ttf
     font_size: 50
     final_name: text(<<final_text>>)
-    
+    use_<<key>>: false
+
 vars:
   top_left: &top_left           {vertical_align: top,     horizontal_align: left}
   top_center: &top_center       {vertical_align: top,     horizontal_align: center}
@@ -58,7 +59,7 @@ vars:
   bottom_left: &bottom_left     {vertical_align: bottom,  horizontal_align: left}
   bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
   bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
-    
+
   v1-1: &v1-1 {vertical_offset: 15}
   v1-2: &v1-2 {vertical_offset: 76}
   v1-3: &v1-3 {vertical_offset: 137}
@@ -283,47 +284,47 @@ templates:
 overlays:
 
   english:
-    variables: {key: en, text: EN, weight: 610, country: us}
+    variables: {key: en, text: EN, weight: 610, country: us, use_<<key>>: true}
     template: [name: standard, name: flags]
 
   german:
-    variables: {key: de, text: DE, weight: 600}
+    variables: {key: de, text: DE, weight: 600, use_<<key>>: true}
     template: [name: standard, name: flags]
 
   french:
-    variables: {key: fr, text: FR, weight: 590}
-    template: [name: standard, name: flags]
-
-  japanese:
-    variables: {key: ja, text: JA, weight: 580, country: jp}
-    template: [name: standard, name: flags]
-
-  korean:
-    variables: {key: ko, text: KO, weight: 570, country: kr}
-    template: [name: standard, name: flags]
-
-  chinese:
-    variables: {key: zh, text: ZH, weight: 560, country: cn}
-    template: [name: standard, name: flags]
-
-  danish:
-    variables: {key: da, text: DA, weight: 550, country: dk}
-    template: [name: standard, name: flags]
-
-  russian:
-    variables: {key: ru, text: RU, weight: 540}
+    variables: {key: fr, text: FR, weight: 590, use_<<key>>: true}
     template: [name: standard, name: flags]
 
   spanish:
-    variables: {key: es, text: ES, weight: 530}
-    template: [name: standard, name: flags]
-
-  italian:
-    variables: {key: it, text: IT, weight: 520}
+    variables: {key: es, text: ES, weight: 580, use_<<key>>: true}
     template: [name: standard, name: flags]
 
   portuguese:
-    variables: {key: pt, text: PT, weight: 510}
+    variables: {key: pt, text: PT, weight: 570, use_<<key>>: true}
+    template: [name: standard, name: flags]
+
+  japanese:
+    variables: {key: ja, text: JA, weight: 560, country: jp, use_<<key>>: true}
+    template: [name: standard, name: flags]
+
+  korean:
+    variables: {key: ko, text: KO, weight: 550, country: kr}
+    template: [name: standard, name: flags]
+
+  chinese:
+    variables: {key: zh, text: ZH, weight: 540, country: cn}
+    template: [name: standard, name: flags]
+
+  danish:
+    variables: {key: da, text: DA, weight: 530, country: dk}
+    template: [name: standard, name: flags]
+
+  russian:
+    variables: {key: ru, text: RU, weight: 520}
+    template: [name: standard, name: flags]
+
+  italian:
+    variables: {key: it, text: IT, weight: 510}
     template: [name: standard, name: flags]
 
   hindi:
