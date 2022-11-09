@@ -13,7 +13,7 @@ The `producer` Default Metadata File is used to dynamically create collections b
 | `Producer Collections`                             |                    `separator`                     | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<producer_name>>`<br>**Example:** `Frank Welker` | `<<producer_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by th Producer.                                        |
 
-#### Rainier Style
+### Rainier Style
 
 Below is a screenshot of the alternative Rainier (`rainier`) style which can be set via the `style` template variable.
 

@@ -4,8 +4,6 @@ There are many Default Overlay Files built into PMM itself which offer an easy-t
 
 This is the simplest way to create Overlays using Plex Meta Manager.
 
-## Overlay Files
-
 ```{include} overlay_list.md
 ```
 
@@ -20,10 +18,6 @@ libraries:
       - pmm: ribbon
       - pmm: ratings
 ```
-
-## Overlays
-
-The default set of overlays are a combination of Positional Overlays and Text Overlays.
 
 ### Example Poster Overlays
 

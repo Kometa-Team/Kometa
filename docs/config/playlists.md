@@ -12,7 +12,7 @@ playlist_files:
   - pmm: playlist
 ```
 
-### Example
+## Example
 
 This example is an advanced version of the playlist mappings with accompanying library mappings:
 

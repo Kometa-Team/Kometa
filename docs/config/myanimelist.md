@@ -53,7 +53,7 @@ mal:
     You will need to stop that web server while you're doing this in order to grab that localhost URL.
 18. Run PMM and the auth will be completed.
 
-### Alternative Way Letting PMM make the URL
+## Alternative Way Letting PMM make the URL
 
 You can record just your `client_id` and `client_secret` and pmm will create the url for you described below.
 

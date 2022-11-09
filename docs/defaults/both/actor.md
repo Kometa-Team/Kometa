@@ -13,7 +13,7 @@ The `actor` Default Metadata File is used to dynamically create collections base
 | `Actors Collections`                            |                   `separator`                   | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<actor_name>>`<br>**Example:** `Frank Welker` | `<<actor_name>>`<br>**Example:** `Frank Welker` | Collection of Movies/Shows the actor is top billing in.                     |
 
-#### Rainier Style
+### Rainier Style
 
 Below is a screenshot of the alternative Rainier (`rainier`) style which can be set via the `style` template variable.
 

@@ -13,7 +13,7 @@ The `director` Default Metadata File is used to dynamically create collections b
 | `Directors Collections`                            |                    `separator`                     | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<director_name>>`<br>**Example:** `Frank Welker` | `<<director_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by the Director.                                       |
 
-#### Rainier Style
+### Rainier Style
 
 Below is a screenshot of the alternative Rainier (`rainier`) style which can be set via the `style` template variable.
 

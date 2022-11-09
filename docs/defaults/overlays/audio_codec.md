@@ -29,7 +29,7 @@ The `audio_codec` Default Overlay File is used to create an overlay based on the
 | MP3                    |     `mp3`      |  `20`  |
 | Opus                   |     `opus`     |  `10`  |
 
-#### Standard Style
+### Standard Style
 
 Below is a screenshot of the alternative Standard (`standard`) style which can be set via the `style` template variable.
 
