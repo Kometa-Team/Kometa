@@ -21,6 +21,7 @@ templates:
       radarr_folder_<<key>>: <<radarr_folder>>
       radarr_tag_<<key>>: <<radarr_tag>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
+      radarr_monitor_<<key>>: <<radarr_monitor>>
       collection_order_<<key>>: <<collection_order>>
     optional:
       - summary_<<key>>
@@ -35,6 +36,7 @@ templates:
       - radarr_folder
       - radarr_tag
       - item_radarr_tag
+      - radarr_monitor
       - url_poster_<<key>>
     summary: <<summary_<<key>>>>
     name: <<name_<<key>>>>
@@ -53,6 +55,7 @@ templates:
     radarr_folder: <<radarr_folder_<<key>>>>
     radarr_tag: <<radarr_tag_<<key>>>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
+    radarr_monitor: <<radarr_monitor_<<key>>>>
 
 dynamic_collections:
   TMDb Collections:
