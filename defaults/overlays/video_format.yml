@@ -23,8 +23,10 @@ external_templates:
 
 templates:
   video_format:
+    default:
+      regex_<<key>>: <<regex>>
     conditionals:
-      filepath:
+      regex:
         conditions:
           - key: remux
             value: '(?i)\[Remux'
@@ -41,7 +43,7 @@ templates:
     ignore_blank_results: true
     plex_all: true
     filters:
-      filepath.regex: <<filepath>>
+      filepath.regex: <<regex_<<key>>>>
 
 overlays:
 
