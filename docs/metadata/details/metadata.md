@@ -24,10 +24,6 @@ All the following attributes update various details of the definition's Metadata
 
 * Here's an example of how the collections can look on the Home Page.
 
-### Pinned Collections Example
-
-![Display](display.png)
-
 ## Summary Collection/Playlist Metadata Updates
 
 All the following attributes update the summary of the collection/playlist from various sources. 

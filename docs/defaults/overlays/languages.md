@@ -74,13 +74,13 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 | Urdu                     | `ur` |  `20`  |     `pk`     |  &#10060;   |
 | Vietnamese               | `vi` |  `10`  |     `vn`     |  &#10060;   |
 
-#### Square Style
+### Square Style
 
 Below is a screenshot of the alternative Square (`square`) style which can be set via the `style` template variable.
 
 ![](images/language2.png)
 
-#### Half Style
+### Half Style
 
 Below is a screenshot of the alternative Half (`half`) style which can be set via the `style` template variable.
 

@@ -13,7 +13,7 @@ The `writer` Default Metadata File is used to dynamically create collections bas
 | `Writers Collections`                            |                   `separator`                    | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<writer_name>>`<br>**Example:** `Frank Welker` | `<<writer_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by the Writer.                                         |
 
-#### Rainier Style
+### Rainier Style
 
 Below is a screenshot of the alternative Rainier (`rainier`) style which can be set via the `style` template variable.
 
