@@ -1045,12 +1045,12 @@ class Plex(Library):
                 logger.info(final)
         return final[28:] if final else final
 
-    def item_images(self, item, group, alias, initial=False, asset_location=None, title=None, image_name=None, folder_name=None):
+    def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
         try:
-            asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location)
+            asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:

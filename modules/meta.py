@@ -252,6 +252,7 @@ class DataFile:
                         if not isinstance(template["default"], dict):
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         init_defaults = template["default"]
+                    all_init_defaults = {k: v for k, v in init_defaults.items()}
                     for input_dict, input_type, overwrite_call in [
                         (temp_vars, "External", False),
                         (extra_variables, "Definition", False),
@@ -273,7 +274,7 @@ class DataFile:
                                 if not isinstance(input_value, dict):
                                     raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute default is not a dictionary")
                                 for dk, dv in input_value.items():
-                                    init_defaults[dk] = dv
+                                    all_init_defaults[dk] = dv
                             elif input_value is None:
                                 optional.append(str(input_key))
                             elif overwrite_call:
@@ -310,8 +311,8 @@ class DataFile:
                         return return_item
 
                     default = {}
-                    if init_defaults:
-                        var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in init_defaults.items() if dk not in variables}
+                    if all_init_defaults:
+                        var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in all_init_defaults.items() if dk not in variables}
                         for dkey, dvalue in var_default.items():
                             final_key = replace_var(dkey, var_default)
                             final_value = replace_var(dvalue, var_default)
@@ -326,7 +327,7 @@ class DataFile:
                                 if op not in default and op not in conditionals:
                                     optional.append(str(op))
                                     optional.append(f"{op}_encoded")
-                                else:
+                                elif op in init_defaults:
                                     logger.debug("")
                                     logger.debug(f"Template Warning: variable {op} cannot be optional if it has a default")
                         else:
@@ -1243,7 +1244,7 @@ class MetadataFile(DataFile):
 
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        asset_location, folder_name = self.library.item_images(item, meta, methods, initial=True, asset_location=self.asset_directory if self.asset_directory else None)
+        asset_location, folder_name = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None)
 
         if "seasons" in methods and self.library.is_show:
             if not meta[methods["seasons"]]:
