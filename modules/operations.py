@@ -25,6 +25,7 @@ class Operations:
         logger.debug(f"Assets For All: {self.library.assets_for_all}")
         logger.debug(f"Delete Collections: {self.library.delete_collections}")
         logger.debug(f"Show Unmanaged Collections: {self.library.show_unmanaged}")
+        logger.debug(f"Show Unconfigured Collections: {self.library.show_unconfigured}")
         logger.debug(f"Mass Genre Update: {self.library.mass_genre_update}")
         logger.debug(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
         logger.debug(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
@@ -576,22 +577,16 @@ class Operations:
         if self.library.sonarr_remove_by_tag:
             self.library.Sonarr.remove_all_with_tags(self.library.sonarr_remove_by_tag)
 
-        less = None
-        managed = False
-        unmanaged = False
-        configured = False
-        unconfigured = False
         if self.library.delete_collections:
             logger.info("")
             logger.separator(f"Deleting All Collections", space=False, border=False)
             logger.info("")
-            if self.library.delete_collections["less"] is not None:
-                less = self.library.delete_collections["less"]
-            managed = self.library.delete_collections["managed"]
-            unmanaged = self.library.delete_collections["unmanaged"]
-            configured = self.library.delete_collections["configured"]
-            unconfigured = self.library.delete_collections["unconfigured"]
 
+        less = self.library.delete_collections["less"] if self.library.delete_collections and self.library.delete_collections["less"] is not None else None
+        managed = self.library.delete_collections["managed"] if self.library.delete_collections else False
+        unmanaged = self.library.delete_collections["unmanaged"] if self.library.delete_collections else False
+        configured = self.library.delete_collections["configured"] if self.library.delete_collections else False
+        unconfigured = self.library.delete_collections["unconfigured"] if self.library.delete_collections else False
         unmanaged_collections = []
         unconfigured_collections = []
         all_collections = self.library.get_all_collections()
@@ -599,11 +594,11 @@ class Operations:
             logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
             labels = [la.tag for la in self.library.item_labels(col)]
             if (less is not None or unmanaged or managed or unconfigured or configured) \
-                and (less is None or col.childCount < less) \
-                and (unmanaged is False or "PMM" not in labels) \
-                and (managed is False or "PMM" in labels) \
-                and (unconfigured is False or col.title not in self.library.collections) \
-                and (configured is False or col.title in self.library.collections):
+                    and (less is None or col.childCount < less) \
+                    and (unmanaged is False or "PMM" not in labels) \
+                    and (managed is False or "PMM" in labels) \
+                    and (unconfigured is False or col.title not in self.library.collections) \
+                    and (configured is False or col.title in self.library.collections):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
             else:

@@ -20,6 +20,7 @@ templates:
       sonarr_folder_<<key>>: <<sonarr_folder>>
       sonarr_tag_<<key>>: <<sonarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
+      sonarr_monitor_<<key>>: <<sonarr_monitor>>
       collection_order_<<key>>: <<collection_order>>
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/franchise/<<key_name_encoded>>.jpg
     optional:
@@ -35,6 +36,7 @@ templates:
       - sonarr_folder
       - sonarr_tag
       - item_sonarr_tag
+      - sonarr_monitor
     summary: <<summary_<<key>>>>
     name: <<name_<<key>>>>
     minimum_items: <<minimum_items>>
@@ -50,6 +52,7 @@ templates:
     sonarr_folder: <<sonarr_folder_<<key>>>>
     sonarr_tag: <<sonarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
+    sonarr_monitor: <<sonarr_monitor_<<key>>>>
 
 dynamic_collections:
   Show Franchise Collections:
