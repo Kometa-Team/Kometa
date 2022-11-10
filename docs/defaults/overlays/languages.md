@@ -130,6 +130,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `languages`                   | **Description:** Controls which Languages will be active.<br>**Default:** `["en", "de", "fr", "es", "pt", "ja"]` <br>**Values:** List of [ISO 639-1 Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the Languages desired                                                                                   |
 | `use_subtitles`               | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
 | `overlay_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
 | `horizontal_position`         | **Description:** Choose the horizontal position for the flag group.<br>**Default:** `left`<br>**Values:** `left`, `left2`, `center`, `center_left`, `center_right`, `right` or `right2`                                                                                                                                       |
@@ -154,6 +155,9 @@ libraries:
     overlay_path:
       - pmm: languages
         template_variables:
+          languages:
+            - en
+            - ja
           use_subtitles: true
           style: square
 ```
