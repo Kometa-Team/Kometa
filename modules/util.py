@@ -87,7 +87,7 @@ tags_to_edit = {
     "Show": ["genre", "label", "collection"],
     "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"]
 }
-mdb_types = ["mdb", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
+mdb_types = ["mdb", "mdv_average", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
 collection_mode_options = {
     "default": "default", "hide": "hide",
     "hide_items": "hideItems", "hideitems": "hideItems",
