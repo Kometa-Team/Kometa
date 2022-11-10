@@ -11,6 +11,7 @@ This sections aims to answer the most commonly asked questions that users have.
 [type this into your terminal]
 
 ````{tab} OS X/Linux
+
 <br/>
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -19,8 +20,11 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 ````{tab} Windows:
+
+<br/>
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git pull
@@ -28,12 +32,16 @@ git pull
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 ````{tab} Docker:
+
+<br/>
 ```
 docker pull meisnate12/plex-meta-manager
 ```
 <br/>
+
 ````
 
 ### "How do I switch to the develop branch?"
@@ -41,6 +49,7 @@ docker pull meisnate12/plex-meta-manager
 [type this into your terminal]
 
 ````{tab} OS X/Linux
+
 <br/>
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -50,8 +59,11 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 ````{tab} Windows:
+
+<br/>
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout develop
@@ -60,6 +72,7 @@ git pull
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 
 ### "How do I switch to the nightly branch"
@@ -67,6 +80,7 @@ python -m pip install -r requirements.txt
 [type this into your terminal]
 
 ````{tab} OS X/Linux
+
 <br/>
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -76,8 +90,11 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 ````{tab} Windows:
+
+<br/>
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout nightly
@@ -86,6 +103,7 @@ git pull
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 
 ### "How do I switch back to the master branch?"
@@ -93,6 +111,7 @@ python -m pip install -r requirements.txt
 [type this into your terminal]
 
 ````{tab} OS X/Linux
+
 <br/>
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -102,8 +121,11 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 ````{tab} Windows:
+
+<br/>
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout master
@@ -112,6 +134,7 @@ git pull
 python -m pip install -r requirements.txt
 ```
 <br/>
+
 ````
 
 ## Knowledgebase
@@ -135,16 +158,18 @@ In all cases, the first step is to open the [`meta.log`](#locating-log-files) wi
 2. When scanning your meta.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
 3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 
-
 ### Checking Plex Meta Manager Version
 
 Checking the version: You will find that in your [`meta.log`](#locating-log-files) around the 8th-10th line and will look something like this:
+
 ```
 |                                 |
 |     Version: 1.17.1-develop10   |
 |=================================|
 ```
+
 If you are not on the latest version of your branch, you will see Newest Version: X.X.X below this. Ensure you upgrade to the latest version of Plex Meta Manager.
+
 ```
 |                                       |
 |     Version: 1.17.1-develop10         |
@@ -170,6 +195,7 @@ There are five main event types that you need to be aware of when understanding 
 This section aims to explain some commonly seen event messages that are produced in the logs.
 
 #### CRITICAL
+
 This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
 
 |     Type      | Short Info                                          | Description                                                                   | Recommendation                                                                                              |
@@ -177,6 +203,8 @@ This table details examples of the most commonly-seen `[CRITICAL]` events and wh
 | `[CRITICAL]`  | `Failed to Connect to https://api.themoviedb.org/3` | Current step PMM was on made an API call to TMDb, but it aborted and moved on | Determine if TMDb was offline and not replying to api requests. Try again and see if it fails again or not. |                                                                                                                                                                                                                                                  |
 
 #### ERROR
+
+This table details examples of the most commonly-seen `[ERROR]` events and what they mean for the user.
 
 |    Type    | Short Info                                                        | Description                                                                      | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                               |
 |:----------:|:------------------------------------------------------------------|:---------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -191,6 +219,7 @@ This table details examples of the most commonly-seen `[CRITICAL]` events and wh
 | `[ERROR]`  | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                        | Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                                        |
 
 #### WARNING
+
 This table details examples of the most commonly-seen `[WARNING]` events and what they mean for the user.
 
 |     Type     | Short Info                                                       | Description                            | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                              |
