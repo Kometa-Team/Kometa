@@ -257,7 +257,7 @@ class Operations:
                         elif mdb_item and attribute == "mdb":
                             found_rating = mdb_item.score / 10 if mdb_item.score else None
                         elif mdb_item and attribute == "mdb_average":
-                            found_rating = mdb_item.average_score_rating / 10 if mdb_item.average_rating else None
+                            found_rating = mdb_item.average_score_rating / 10 if mdb_item.average_score_rating else None
                         elif mdb_item and attribute == "mdb_imdb":
                             found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                         elif mdb_item and attribute == "mdb_metacritic":
