@@ -173,17 +173,19 @@ class Operations:
                         anidb_id = self.config.Convert._imdb_to_anidb[imdb_id]
                     else:
                         anidb_id = None
-                        logger.info(f"No AniDB ID for Guid: {item.guid}")
-                    if anidb_id:
-                        try:
-                            anidb_item = self.config.AniDB.get_anime(anidb_id)
-                        except Failed as e:
-                            logger.error(str(e))
+                    if any([o.startswith("anidb") for o in self.library.meta_operations]):
+                        if anidb_id:
+                            try:
+                                anidb_item = self.config.AniDB.get_anime(anidb_id)
+                            except Failed as e:
+                                logger.error(str(e))
+                        else:
+                            logger.warning(f"No AniDB ID for Guid: {item.guid}")
                     if any([o.startswith("mal") for o in self.library.meta_operations]):
                         if item.ratingKey in reverse_mal:
                             mal_id = reverse_mal[item.ratingKey]
                         elif not anidb_id or anidb_id not in self.config.Convert._anidb_to_mal:
-                            logger.info(f"No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                            logger.warning(f"No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
                             mal_id = None
                         else:
                             mal_id = self.config.Convert._anidb_to_mal[anidb_id]
