@@ -175,6 +175,7 @@ Updates every item's audience/critic/user rating in the library to the chosen si
 | `trakt_user`           | Use Trakt User's Personal Rating                    |
 | `omdb`                 | Use IMDbRating through OMDb                         |
 | `mdb`                  | Use MdbList Score                                   |
+| `mdb_average`          | Use MdbList Average Score                           |
 | `mdb_imdb`             | Use IMDb Rating through MDbList                     |
 | `mdb_metacritic`       | Use Metacritic Rating through MDbList               |
 | `mdb_metacriticuser`   | Use Metacritic User Rating through MDbList          |
