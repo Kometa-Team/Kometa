@@ -62,6 +62,7 @@ dynamic_collections:
     type: tmdb_collection
     remove_suffix: "Collection"
     template: collection
+    custom_keys: false
     addons:
       8091:       # Alien
         - 135416    # Prometheus
