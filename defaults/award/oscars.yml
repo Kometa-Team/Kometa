@@ -47,8 +47,8 @@ dynamic_collections:
     type: number
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      starting: current_year-6
+      ending: current_year-1
     title_format: Oscars Winners <<key_name>>
     template:
       - use_year_collections

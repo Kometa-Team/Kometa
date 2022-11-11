@@ -24,6 +24,9 @@ class LimitReached(Exception):
 class Failed(Exception):
     pass
 
+class FilterFailed(Failed):
+    pass
+
 class Deleted(Exception):
     pass
 
