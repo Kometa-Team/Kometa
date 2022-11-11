@@ -144,9 +144,9 @@ html_theme_options = {
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
             ("_divider", ),
-            ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs", True),
-            ("Discord Server", "https://discord.gg/NfH6mGFuAB", True),
-            ("Donate/Sponsor", "https://github.com/sponsors/meisnate12", True),
+            ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs"),
+            ("Discord Server", "https://discord.gg/NfH6mGFuAB"),
+            ("Donate/Sponsor", "https://github.com/sponsors/meisnate12"),
             ("Acknowledgements", "home/acknowledgements"),
         ]),
         ("_menu", "Config", [
