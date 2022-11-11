@@ -1,7 +1,7 @@
 import os, re, time
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
-from modules.util import Failed, NonExisting, NotScheduled, NotScheduledRange, Deleted
+from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import BadRequest, NotFound
@@ -415,6 +415,13 @@ class CollectionBuilder:
                 else:
                     server_check = pl_library.PlexServer.machineIdentifier
 
+        self.ignore_blank_results = False
+        if "ignore_blank_results" in methods and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: ignore_blank_results")
+            logger.debug(f"Value: {data[methods['ignore_blank_results']]}")
+            self.ignore_blank_results = util.parse(self.Type, "ignore_blank_results", self.data, datatype="bool", methods=methods, default=True)
+
         self.smart_filter_details = ""
         self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
         self.smart_label_collection = False
@@ -437,7 +444,14 @@ class CollectionBuilder:
                 else:
                     logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
         if self.smart_label_collection and self.library.smart_label_check(self.name):
-            _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
+            try:
+                _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
+            except FilterFailed as e:
+                if self.ignore_blank_results:
+                    raise
+                else:
+                    raise Failed(str(e))
+
 
         if "delete_not_scheduled" in methods and not self.overlay:
             logger.debug("")
@@ -496,13 +510,6 @@ class CollectionBuilder:
             logger.debug("Validating Method: build_collection")
             logger.debug(f"Value: {data[methods['build_collection']]}")
             self.build_collection = util.parse(self.Type, "build_collection", self.data, datatype="bool", methods=methods, default=True)
-
-        self.ignore_blank_results = False
-        if "ignore_blank_results" in methods and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: ignore_blank_results")
-            logger.debug(f"Value: {data[methods['ignore_blank_results']]}")
-            self.ignore_blank_results = util.parse(self.Type, "ignore_blank_results", self.data, datatype="bool", methods=methods, default=True)
 
         self.blank_collection = False
         if "blank_collection" in methods and not self.playlist and not self.overlay:
@@ -574,7 +581,13 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: smart_url is incorrectly formatted")
 
         if "smart_filter" in methods and not self.playlist and not self.overlay:
-            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
+            try:
+                self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
+            except FilterFailed as e:
+                if self.ignore_blank_results:
+                    raise
+                else:
+                    raise Failed(str(e))
 
         if self.collectionless:
             for x in ["smart_label", "smart_filter", "smart_url"]:
@@ -1302,7 +1315,13 @@ class CollectionBuilder:
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "plex_search":
-                    self.builders.append((method_name, self.build_filter("plex_search", dict_data)))
+                    try:
+                        self.builders.append((method_name, self.build_filter("plex_search", dict_data)))
+                    except FilterFailed as e:
+                        if self.ignore_blank_results:
+                            raise
+                        else:
+                            raise Failed(str(e))
                 elif method_name == "plex_collectionless":
                     prefix_list = util.parse(self.Type, "exclude_prefix", dict_data, datatype="list", methods=dict_methods) if "exclude_prefix" in dict_methods else []
                     exact_list = util.parse(self.Type, "exclude", dict_data, datatype="list", methods=dict_methods) if "exclude" in dict_methods else []
@@ -1311,7 +1330,13 @@ class CollectionBuilder:
                     exact_list.append(self.name)
                     self.builders.append((method_name, {"exclude_prefix": prefix_list, "exclude": exact_list}))
         else:
-            self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
+            try:
+                self.builders.append(("plex_search", self.build_filter("plex_search", {"any": {method_name: method_data}})))
+            except FilterFailed as e:
+                if self.ignore_blank_results:
+                    raise
+                else:
+                    raise Failed(str(e))
 
     def _reciperr(self, method_name, method_data):
         if method_name == "reciperr_list":
@@ -1972,7 +1997,7 @@ class CollectionBuilder:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={'%2C'.join([sorts[s] for s in sort])}&{final_filter}"
         else:
-            raise Failed(f"{self.Type} Error: No Plex Filter Created")
+            raise FilterFailed(f"{self.Type} Error: No Plex Filter Created")
 
         if display:
             logger.debug(f"Smart URL: {filter_url}")
@@ -2053,7 +2078,7 @@ class CollectionBuilder:
                             error += f"\nOptions: {names}"
                         if validate:
                             raise Failed(error)
-                        else:
+                        elif not self.ignore_blank_results:
                             logger.error(error)
             return valid_list
         elif attribute in date_attributes and modifier in [".before", ".after"]:
@@ -2695,7 +2720,13 @@ class CollectionBuilder:
                 plex_search["any"] = {f"{self.builder_level}_collection": self.name}
             else:
                 plex_search["any"] = {"collection": self.name}
-            search_data = self.build_filter("plex_search", plex_search)
+            try:
+                search_data = self.build_filter("plex_search", plex_search)
+            except FilterFailed as e:
+                if self.ignore_blank_results:
+                    raise
+                else:
+                    raise Failed(str(e))
             items = self.library.get_filter_items(search_data[2])
         previous = None
         for i, item in enumerate(items, 0):
