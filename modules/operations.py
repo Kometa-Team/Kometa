@@ -257,7 +257,7 @@ class Operations:
                         elif mdb_item and attribute == "mdb":
                             found_rating = mdb_item.score / 10 if mdb_item.score else None
                         elif mdb_item and attribute == "mdb_average":
-                            found_rating = mdb_item.average_score_rating / 10 if mdb_item.average_score_rating else None
+                            found_rating = mdb_item.average / 10 if mdb_item.average else None
                         elif mdb_item and attribute == "mdb_imdb":
                             found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                         elif mdb_item and attribute == "mdb_metacritic":
@@ -460,10 +460,10 @@ class Operations:
                     if self.library.mass_poster_update:
                         if self.library.mass_poster_update == "lock":
                             self.library.query(item.lockPoster)
-                            logger.infd(f"Poster | Locked")
+                            logger.info(f"Poster | Locked")
                         elif self.library.mass_poster_update == "unlock":
                             self.library.query(item.unlockPoster)
-                            logger.infd(f"Poster | Unlocked")
+                            logger.info(f"Poster | Unlocked")
                         else:
                             poster_location = "the Assets Directory" if new_poster else ""
                             poster_url = False if new_poster else True
@@ -479,16 +479,16 @@ class Operations:
                                         poster_location = "Plex"
                             if new_poster:
                                 self.library.upload_poster(item, new_poster, url=poster_url)
-                                logger.infd(f"Poster | Reset from {poster_location}")
+                                logger.info(f"Poster | Reset from {poster_location}")
                             else:
-                                logger.infd(f"Poster | No Reset Image Found")
+                                logger.info(f"Poster | No Reset Image Found")
                     if self.library.mass_background_update:
                         if self.library.mass_background_update == "lock":
                             self.library.query(item.lockArt)
-                            logger.infd(f"Background | Locked")
+                            logger.info(f"Background | Locked")
                         elif self.library.mass_background_update == "unlock":
                             self.library.query(item.unlockArt)
-                            logger.infd(f"Background | Unlocked")
+                            logger.info(f"Background | Unlocked")
                         else:
                             background_location = "the Assets Directory" if new_background else ""
                             background_url = False if new_background else True
@@ -504,9 +504,9 @@ class Operations:
                                         background_location = "Plex"
                             if new_background:
                                 self.library.upload_background(item, new_background, url=background_url)
-                                logger.infd(f"Background | Reset from {background_location}")
+                                logger.info(f"Background | Reset from {background_location}")
                             else:
-                                logger.infd(f"Background | No Reset Image Found")
+                                logger.info(f"Background | No Reset Image Found")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
 

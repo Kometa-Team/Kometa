@@ -74,11 +74,9 @@ pretty_months = {
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
 seasons = ["current", "winter", "spring", "summer", "fall"]
-pretty_ids = {"anidbid": "AniDB", "imdbid": "IMDb", "mal_id": "MyAnimeList", "themoviedb_id": "TMDb", "thetvdb_id": "TVDb", "tvdbid": "TVDb"}
 advance_tags_to_edit = {
     "Movie": ["metadata_language", "use_original_title"],
-    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering",
-             "metadata_language", "use_original_title"],
+    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title"],
     "Artist": ["album_sorting"]
 }
 tags_to_edit = {
@@ -87,7 +85,6 @@ tags_to_edit = {
     "Show": ["genre", "label", "collection"],
     "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"]
 }
-mdb_types = ["mdb", "mdv_average", "mdb_imdb", "mdb_metacritic", "mdb_metacriticuser", "mdb_trakt", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_letterboxd"]
 collection_mode_options = {
     "default": "default", "hide": "hide",
     "hide_items": "hideItems", "hideitems": "hideItems",

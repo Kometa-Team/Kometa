@@ -7,7 +7,10 @@ from urllib.parse import urlparse
 logger = util.logger
 
 builders = ["mdblist_list"]
-sort_names = ["rank", "score", "score_average", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular", "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"]
+sort_names = [
+    "rank", "score", "score_average", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular",
+    "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"
+]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
 api_url = "https://mdblist.com/api/"
@@ -28,6 +31,7 @@ class MDbObj:
         self.traktid = util.check_num(data["traktid"])
         self.tmdbid = util.check_num(data["tmdbid"])
         self.score = util.check_num(data["score"])
+        self.average = util.check_num(data["score_average"])
         self.imdb_rating = None
         self.metacritic_rating = None
         self.metacriticuser_rating = None
@@ -37,7 +41,6 @@ class MDbObj:
         self.tmdb_rating = None
         self.letterboxd_rating = None
         self.myanimelist_rating = None
-        self.score_average_rating = None
         for rating in data["ratings"]:
             if rating["source"] == "imdb":
                 self.imdb_rating = util.check_num(rating["value"], is_int=False)
@@ -57,8 +60,6 @@ class MDbObj:
                 self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
             elif rating["source"] == "myanimelist":
                 self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
-            elif rating["source"] == "average":
-                self.score_average_rating = util.check_num(rating["value"], is_int=False)
         self.content_rating = data["certification"]
         self.commonsense = data["commonsense"]
 
