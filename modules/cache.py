@@ -499,8 +499,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mdb_data3(key_id) VALUES(?)", (key_id,))
-                update_sql = "UPDATE mdb_data3 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mdb_data4(key_id) VALUES(?)", (key_id,))
+                update_sql = "UPDATE mdb_data4 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
                              "tmdbid = ?, score = ?, average = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
                              "letterboxd_rating = ?, myanimelist_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
