@@ -59,7 +59,7 @@
                                       {% elif specificlink|length > 2 %}
                                         <li><a href="{{ pathto(specificlink[1]) }}{{ specificlink[2] }}">{{ specificlink[0] }}</a></li>
                                       {% else %}
-                                        <li><a href="{{ specificlink[1] if specificlink[1]|slice:':4' == 'http' else pathto(specificlink[1]) }}">{{ specificlink[0] }}</a></li>
+                                        <li><a href="{{ specificlink[1] if specificlink[1][:4] == 'http' else pathto(specificlink[1]) }}">{{ specificlink[0] }}</a></li>
                                       {% endif %}
                                     {%- endfor %}
                                   </ul>
@@ -67,7 +67,7 @@
                               {% elif sublink|length > 2 %}
                                 <li><a href="{{ pathto(sublink[1]) }}{{ sublink[2] }}">{{ sublink[0] }}</a></li>
                               {% else %}
-                                <li><a href="{{ sublink[1] if sublink[1]|slice:':4' == 'http' else pathto(sublink[1]) }}">{{ sublink[0] }}</a></li>
+                                <li><a href="{{ sublink[1] if sublink[1][:4] == 'http' else pathto(sublink[1]) }}">{{ sublink[0] }}</a></li>
                               {% endif %}
                             {%- endfor %}
                           </ul>
@@ -75,7 +75,7 @@
                       {% elif link|length > 2 %}
                         <li><a href="{{ pathto(link[1]) }}{{ link[2] }}">{{ link[0] }}</a></li>
                       {% else %}
-                        <li><a href="{{ link[1] if link[1]|slice:':4' == 'http' else pathto(link[1]) }}">{{ link[0] }}</a></li>
+                        <li><a href="{{ link[1] if link[1][:4] == 'http' else pathto(link[1]) }}">{{ link[0] }}</a></li>
                       {% endif %}
                     {%- endfor %}
                     </ul>
