@@ -817,6 +817,8 @@ class CollectionBuilder:
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
                 self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
+            elif self.smart_label_collection:
+                self.beginning_count = len(self.library.search(label=self.name))
         else:
             self.obj = None
             self.sync = False
