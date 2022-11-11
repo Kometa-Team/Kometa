@@ -85,7 +85,7 @@ templates:
         default: true
         conditions:
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdblist, tmdb, trakt, mal]
+            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdblist, tmdb, trakt, mal, average]
             value: false
           - image_level: Top
             overlay_level: episode
@@ -129,6 +129,8 @@ templates:
             value: Trakt
           - rating<<rating_num>>_image: mal
             value: MAL
+          - rating<<rating_num>>_image: average
+            value: Average
       rating<<rating_num>>_horizontal_align:
         default: left
         conditions:
