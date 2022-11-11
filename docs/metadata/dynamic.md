@@ -94,6 +94,7 @@ dynamic_collections:
 | [`title_format`](#title-format)             | This is the format for the collection titles.                                                                                  |     &#10060;      |
 | [`key_name_override`](#key-name-override)   | Defines how key names can be overridden before they are formatted into collection titles.                                      |     &#10060;      |
 | [`title_override`](#title-override)         | Defines how collection titles can be overridden ignoring title formatting.                                                     |     &#10060;      |
+| [`custom_keys`](#custom-keys)               | Defines if custom keys are allowed.                                                                                            |     &#10060;      |
 | [`test`](#test)                             | Will add `test: true` to all collections for test runs.                                                                        |     &#10060;      |
 | [`sync`](#sync)                             | Will remove dynamic collections that are no longer in the creation list.                                                       |     &#10060;      |
 | [`include`](#include)                       | Define a list of keys to be made into collections.                                                                             |     &#10060;      |
@@ -1993,6 +1994,20 @@ dynamic_collections:
     remove_suffix: "Collection"
     title_override:
       10: Star Wars Universe
+```
+
+## Custom Keys
+
+Defines if custom keys are allowed. Can be `true` or `false`. Defaults to `true`.
+
+Here's an example using `custom_keys`.
+
+```yaml
+dynamic_collections:
+  TMDb Collections:          # mapping name does not matter, just needs to be unique
+    type: tmdb_collection
+    remove_suffix: "Collection"
+    custom_keys: false
 ```
 
 ## Test
