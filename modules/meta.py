@@ -253,6 +253,8 @@ class DataFile:
                             raise Failed(f"{self.data_type} Error: template sub-attribute default is not a dictionary")
                         init_defaults = template["default"]
                     all_init_defaults = {k: v for k, v in init_defaults.items()}
+
+                    temp_conditionals = {}
                     for input_dict, input_type, overwrite_call in [
                         (temp_vars, "External", False),
                         (extra_variables, "Definition", False),
@@ -267,7 +269,7 @@ class DataFile:
                                 if not isinstance(input_value, dict):
                                     raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute conditionals is not a dictionary")
                                 for ck, cv in input_value.items():
-                                    conditionals[ck] = cv
+                                    temp_conditionals[ck] = cv
                             elif input_key == "default":
                                 if not input_value:
                                     raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute default is blank")
@@ -284,6 +286,9 @@ class DataFile:
                     for k, v in added_vars.items():
                         if k not in variables:
                             variables[k] = v
+                    for k, v in temp_conditionals.items():
+                        if k not in variables:
+                            conditionals[k] = v
 
                     language = variables["language"] if "language" in variables else "default"
                     translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
