@@ -123,7 +123,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.util import Failed, NonExisting, NotScheduled, Deleted
+from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
     if issubclass(exctype, KeyboardInterrupt):
@@ -719,6 +719,8 @@ def run_collection(config, library, metadata, requested_collections):
                 library.status[str(mapping_name)]["status"] = "Skipped Invalid Library Type"
             else:
                 library.status[str(mapping_name)]["status"] = "Not Scheduled"
+        except FilterFailed:
+            pass
         except Failed as e:
             library.notify(e, collection=mapping_name)
             logger.stacktrace()

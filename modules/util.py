@@ -56,7 +56,7 @@ def retry_if_not_failed(exception):
     return not isinstance(exception, Failed)
 
 def retry_if_not_plex(exception):
-    return not isinstance(exception, (BadRequest, NotFound, Unauthorized))
+    return not isinstance(exception, (BadRequest, NotFound, Unauthorized, Failed))
 
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,

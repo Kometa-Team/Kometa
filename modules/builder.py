@@ -452,7 +452,6 @@ class CollectionBuilder:
                 else:
                     raise Failed(str(e))
 
-
         if "delete_not_scheduled" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: delete_not_scheduled")
@@ -2732,11 +2731,14 @@ class CollectionBuilder:
             items = self.library.get_filter_items(search_data[2])
         previous = None
         for i, item in enumerate(items, 0):
-            if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
-                text = f"after {util.item_title(previous)}" if previous else "to the beginning"
-                logger.info(f"Moving {util.item_title(item)} {text}")
-                self.library.moveItem(self.obj, item, previous)
-            previous = item
+            try:
+                if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
+                    text = f"after {util.item_title(previous)}" if previous else "to the beginning"
+                    self.library.moveItem(self.obj, item, previous)
+                    logger.info(f"Moving {util.item_title(item)} {text}")
+                previous = item
+            except Failed:
+                logger.error(f"Moving {util.item_title(item)} Failed")
 
     def sync_trakt_list(self):
         logger.info("")
