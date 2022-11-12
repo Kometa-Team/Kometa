@@ -13,33 +13,39 @@ This sections aims to answer the most commonly asked questions that users have.
 ````{tab} OS X/Linux
 
 <br/>
+
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
-````{tab} Windows:
+````{tab} Windows
 
 <br/>
+
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
-````{tab} Docker:
+````{tab} Docker
 
 <br/>
+
 ```
 docker pull meisnate12/plex-meta-manager
 ```
+
 <br/>
 
 ````
@@ -51,6 +57,7 @@ docker pull meisnate12/plex-meta-manager
 ````{tab} OS X/Linux
 
 <br/>
+
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout develop
@@ -58,12 +65,14 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
-````{tab} Windows:
+````{tab} Windows
 
 <br/>
+
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout develop
@@ -71,6 +80,7 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
@@ -82,6 +92,7 @@ python -m pip install -r requirements.txt
 ````{tab} OS X/Linux
 
 <br/>
+
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout nightly
@@ -89,12 +100,14 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
-````{tab} Windows:
+````{tab} Windows
 
 <br/>
+
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout nightly
@@ -102,6 +115,7 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
@@ -113,6 +127,7 @@ python -m pip install -r requirements.txt
 ````{tab} OS X/Linux
 
 <br/>
+
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout master
@@ -120,12 +135,14 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````
-````{tab} Windows:
+````{tab} Windows
 
 <br/>
+
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout master
@@ -133,6 +150,7 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+
 <br/>
 
 ````

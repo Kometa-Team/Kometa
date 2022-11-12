@@ -188,6 +188,17 @@ a .logo-hover {
 a:hover .logo-hover {
    display: block;
 }
+.tab-content {
+  box-shadow: 0 -0.1rem #0ce3ac;
+}
+.tab-set > label {
+}
+.tab-set > input:checked + label:hover {
+}
+.tab-set > input:checked + label {
+    color: #0ce3ac !important;
+    border-color: #0ce3ac !important;
+}
 /* Responsive YT Video Embedding */
 .responsiveYT {
     position: relative;
