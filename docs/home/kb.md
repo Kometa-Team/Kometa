@@ -8,11 +8,11 @@ This sections aims to answer the most commonly asked questions that users have.
 
 ### "How do I update to the latest version of Plex Meta Manager?"
 
-[type this into your terminal]
-
 ````{tab} OS X/Linux
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -21,12 +21,12 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-<br/>
-
 ````
 ````{tab} Windows
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
@@ -34,29 +34,27 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
-<br/>
 
 ````
 ````{tab} Docker
 
 <br/>
 
+[type this into your terminal]
+
 ```
 docker pull meisnate12/plex-meta-manager
 ```
-
-<br/>
 
 ````
 
 ### "How do I switch to the develop branch?"
 
-[type this into your terminal]
-
 ````{tab} OS X/Linux
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -66,12 +64,12 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-<br/>
-
 ````
 ````{tab} Windows
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
@@ -80,18 +78,16 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
-<br/>
 
 ````
 
 ### "How do I switch to the nightly branch"
 
-[type this into your terminal]
-
 ````{tab} OS X/Linux
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -101,12 +97,12 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-<br/>
-
 ````
 ````{tab} Windows
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
@@ -115,18 +111,16 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
-<br/>
 
 ````
 
 ### "How do I switch back to the master branch?"
 
-[type this into your terminal]
-
 ````{tab} OS X/Linux
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd /Users/mroche/Plex-Meta-Manager
@@ -136,12 +130,12 @@ source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-<br/>
-
 ````
 ````{tab} Windows
 
 <br/>
+
+[type this into your terminal]
 
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
@@ -150,8 +144,6 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
-<br/>
 
 ````
 

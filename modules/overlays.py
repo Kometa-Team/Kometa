@@ -2,7 +2,7 @@ import os, re, time
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
-from modules.util import Failed, NonExisting, NotScheduled
+from modules.util import Failed, FilterFailed, NonExisting, NotScheduled
 from num2words import num2words
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show, Season, Episode
@@ -413,9 +413,15 @@ class Overlays:
                     logger.info("")
                 except NotScheduled as e:
                     logger.info(e)
+                except FilterFailed:
+                    pass
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)
+                    logger.info("")
+                except Exception as e:
+                    logger.stacktrace()
+                    logger.error(f"Unknown Error: {e}")
                     logger.info("")
 
         logger.separator(f"Overlay Operation for the {self.library.name} Library")

@@ -545,7 +545,11 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def moveItem(self, obj, item, after):
-        obj.moveItem(item, after=after)
+        try:
+            obj.moveItem(item, after=after)
+        except (BadRequest, NotFound, Unauthorized) as e:
+            logger.error(e)
+            raise Failed("Move Failed")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
