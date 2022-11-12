@@ -85,7 +85,7 @@ templates:
         default: true
         conditions:
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdblist, tmdb, trakt, mal, star]
+            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star]
             value: false
           - image_level: Top
             overlay_level: episode
@@ -115,7 +115,7 @@ templates:
             value: IMDb
           - rating<<rating_num>>_image: letterboxd
             value: Letterboxd
-          - rating<<rating_num>>_image: mdblist
+          - rating<<rating_num>>_image: mdb
             value: MDBList
           - rating<<rating_num>>_image: metacritic
             value: Metacritic
