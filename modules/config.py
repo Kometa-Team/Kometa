@@ -277,8 +277,9 @@ class ConfigFile:
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
-                if isinstance(data[attribute], int) and data[attribute] >= int_min: return data[attribute]
-                else:                                                               message = f"{text} must an integer >= 0"
+                if isinstance(data[attribute], bool):                               message = f"{text} must an integer >= {int_min}"
+                elif isinstance(data[attribute], int) and data[attribute] >= int_min: return data[attribute]
+                else:                                                               message = f"{text} must an integer >= {int_min}"
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
@@ -733,10 +734,8 @@ class ConfigFile:
                                             params[op][old_value] = new_value if new_value else None
                                 if data_type == "delete_collections":
                                     params[op] = {
-                                        "managed": check_for_attribute(lib["operations"][op], "managed", var_type="bool", default=False, save=False),
-                                        "unmanaged": check_for_attribute(lib["operations"][op], "unmanaged", var_type="bool", default=False, save=False),
-                                        "configured": check_for_attribute(lib["operations"][op], "configured", var_type="bool", default=False, save=False),
-                                        "unconfigured": check_for_attribute(lib["operations"][op], "unconfigured", var_type="bool", default=False, save=False),
+                                        "managed": check_for_attribute(lib["operations"][op], "managed", var_type="bool", default_is_none=True, save=False),
+                                        "configured": check_for_attribute(lib["operations"][op], "configured", var_type="bool", default_is_none=True, save=False),
                                         "less": check_for_attribute(lib["operations"][op], "less", var_type="int", default_is_none=True, save=False, int_min=1),
                                     }
                             else:

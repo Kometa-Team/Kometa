@@ -2738,7 +2738,7 @@ class CollectionBuilder:
                     logger.info(f"Moving {util.item_title(item)} {text}")
                 previous = item
             except Failed:
-                logger.error(f"Moving {util.item_title(item)} Failed")
+                logger.error(f"Failed to Move {util.item_title(item)}")
 
     def sync_trakt_list(self):
         logger.info("")

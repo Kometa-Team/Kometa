@@ -234,7 +234,7 @@ class Operations:
 
                 def update_rating(attribute, item_attr, display):
                     current = getattr(item, item_attr)
-                    if attribute in ["remove", "reset"] and current:
+                    if attribute in ["remove", "reset"] and current is not None:
                         item.editField(item_attr, None, locked=attribute == "remove")
                         return f"\n{display} | None"
                     elif attribute in ["unlock", "reset"] and item_attr in locked_fields:
@@ -514,7 +514,8 @@ class Operations:
                                 logger.info(f"Background | No Reset Image Found")
 
                     if self.library.is_show:
-                        tmdb_seasons = {s.season_number: s for s in tmdb_item.seasons} if tmdb_item else {}
+                        real_show = tmdb_item.load_show()  if tmdb_item else None
+                        tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
                         for season in self.library.query(item.seasons):
                             try:
                                 season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
@@ -704,26 +705,26 @@ class Operations:
 
         if self.library.delete_collections:
             logger.info("")
-            logger.separator(f"Deleting All Collections", space=False, border=False)
+            logger.separator(f"Deleting Collections", space=False, border=False)
             logger.info("")
 
         less = self.library.delete_collections["less"] if self.library.delete_collections and self.library.delete_collections["less"] is not None else None
         managed = self.library.delete_collections["managed"] if self.library.delete_collections else False
-        unmanaged = self.library.delete_collections["unmanaged"] if self.library.delete_collections else False
         configured = self.library.delete_collections["configured"] if self.library.delete_collections else False
-        unconfigured = self.library.delete_collections["unconfigured"] if self.library.delete_collections else False
         unmanaged_collections = []
         unconfigured_collections = []
         all_collections = self.library.get_all_collections()
         for i, col in enumerate(all_collections, 1):
             logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
             labels = [la.tag for la in self.library.item_labels(col)]
-            if (less is not None or unmanaged or managed or unconfigured or configured) \
+            if (less is not None or managed is not None or configured is not None) \
                     and (less is None or col.childCount < less) \
-                    and (unmanaged is False or "PMM" not in labels) \
-                    and (managed is False or "PMM" in labels) \
-                    and (unconfigured is False or col.title not in self.library.collections) \
-                    and (configured is False or col.title in self.library.collections):
+                    and (managed is None
+                         or (managed is True and "PMM" in labels)
+                         or (managed is False and "PMM" not in labels)) \
+                    and (configured is None
+                         or (configured is True and col.title in self.library.collections)
+                         or (configured is False and col.title not in self.library.collections)):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
             else:

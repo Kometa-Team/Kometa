@@ -57,13 +57,11 @@ Deletes collections based on a set of given attributes. The Collection must matc
 
 **Values:** There are a few different options to determine how the `delete_collections` works.
 
-| Attribute      | Description                                                                                                                                         |
-|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `managed`      | Matches with a Collection Managed by PMM (the collection has the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false`             |
-| `unmanaged`    | Matches with a Collection Unmanaged by PMM (the collection does not have the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false` |
-| `configured`   | Matches with a Collection Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                              |
-| `unconfigured` | Matches with a Collection Not Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                          |
-| `less`         | Matches with a Collection that contains less then the given number of items.<br>**Default:** ` `<br>**Values:** Number Greater then 0               |
+| Attribute      | Description                                                                                                                                                                                                  |
+|:---------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `managed`      | Collection must be a Managed (the collection has the `PMM` label) or Unmanaged (the collection does not have the `PMM` label) Collection.<br>**Values:** `true` (Managed) or `false` (Unmanged)              |
+| `configured`   | Collection must be a Configured (collection is in the specific PMM run) or Unconfigured (collection is not in the specific PMM run) Collection.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
+| `less`         | Collection must contain less then the given number of items.<br>**Default:** ` `<br>**Values:** Number Greater then 0                                                                                        |
 
 **Example:**
 
@@ -74,7 +72,7 @@ library:
   Movies:
     operations:
       delete_collections:
-        unconfigured: true
+        configured: false
         managed: true
 ```
 
