@@ -16,6 +16,8 @@ Plex Meta Manager is an open source Python 3 project that has been designed to e
 
 ## Getting Started
 
+These are the high-level steps you must take to get Plex Meta Manager up and running:
+
 1. Install Plex Meta Manager; this process is described [here](home/installation).
 
 2. Once installed, you have to create a [Configuration File](config/configuration), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
@@ -33,6 +35,10 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
    3. The [unRAID Walkthrough](home/guides/unraid) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](home/guides/docker) first on your computer to gain that understanding.
 
 ## Development & Nightly Builds
+
+Development and Nightly builds are deemed as "beta" builds which are updated far more frequently than the master branch. Bug fixes, new features and and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
+
+The development builds (particularly the nightly branch) is only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes.
 
 ### Development
 
@@ -75,7 +81,7 @@ If switching to the develop build, it is recommended to also use the [develop br
 
 **This branch will have squashed commits which can cause `git pull`/`git fetch` to error you can use `git reset origin/nightly --hard` to fix the branch.**
 
-There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented.
+There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented until they have progressed enough to reach the develop branch.
 
 Switching to `nightly`:
 

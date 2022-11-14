@@ -13,6 +13,9 @@ pre {
   color: #dfe1f2;
 }
 
+ul, ol {
+    font-size: 17x;
+}
 .highlight .nt {
   color: #dfe1f2;
   font-weight: bold;
