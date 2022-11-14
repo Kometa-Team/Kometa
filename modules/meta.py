@@ -825,8 +825,6 @@ class MetadataFile(DataFile):
                         if add_key not in all_keys and add_key not in og_exclude:
                             final_keys = [ck for ck in combined_keys if ck in all_keys]
                             if custom_keys and final_keys:
-                                if include:
-                                    include.append(add_key)
                                 auto_list[add_key] = add_key
                                 addons[add_key] = final_keys
                             elif custom_keys:

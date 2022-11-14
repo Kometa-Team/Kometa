@@ -122,36 +122,18 @@ addons:
     - 20th Century Fox
   Amazon Studios:
     - Amazon
-  Amblin Entertainment:
-    - Amblin Entertainment
   Blue Sky Studios:
     - Blue Sky Films
-  Blumhouse Productions:
-    - Blumhouse Productions
-  Chernin Entertainment:
-    - Chernin Entertainment
   Columbia Pictures:
     - Columbia TriStar
     - TriStar
-  Constantin Film:
-    - Constantin Film
   DreamWorks Studios:
     - DreamWorks
     - DreamWorks Animation
-  Grindstone Entertainment Group:
-    - Grindstone Entertainment Group
-  Happy Madison Productions:
-    - Happy Madison Productions
   Illumination Entertainment:
     - Illumination Films
-  Ingenious Media:
-    - Ingenious Media
-  Legendary Pictures:
-    - Legendary Pictures
   Lucasfilm Ltd:
     - Lucasfilm
-  Malevolent Films:
-    - Malevolent Films
   Marvel Studios:
     - Marvel Animation
     - Marvel Enterprises
@@ -159,33 +141,19 @@ addons:
     - Marvel
   Metro-Goldwyn-Mayer:
     - MGM
-  Millennium Films:
-    - Millennium Films
-  Miramax:
-    - Miramax
   New Line Cinema:
     - New Line
-  Original Film:
-    - Original Film
-  Orion Pictures:
-    - Orion Pictures
   Paramount Pictures:
     - Paramount
     - Paramount Animation
   Pixar:
     - Pixar Animation Studios
-  PlanB Entertainment:
-    - PlanB Entertainment
   Sony Pictures:
     - Sony
     - Sony Pictures Animation
-  Summit Entertainment:
-    - Summit Entertainment
   Universal Pictures:
     - Universal
     - Universal Animation Studios
-  Village Roadshow Pictures:
-    - Village Roadshow Pictures
   Walt Disney Pictures:
     - Disney
     - Walt Disney Animation Studios
