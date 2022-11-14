@@ -1257,9 +1257,10 @@ class MetadataFile(DataFile):
                 else:
                     logger.error(f"{mapping_name} Advanced Details Update Failed")
 
+        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None)
+        if ups:
+            updated = True
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
-
-        asset_location, folder_name = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None)
 
         if "seasons" in methods and self.library.is_show:
             if not meta[methods["seasons"]]:
@@ -1288,9 +1289,11 @@ class MetadataFile(DataFile):
                     if self.edit_tags("label", season, season_dict, season_methods):
                         updated = True
                     finish_edit(season, f"Season: {season_id}")
-                    self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
-                                             title=f"{item.title} Season {season.seasonNumber}",
-                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                    _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
+                                                         title=f"{item.title} Season {season.seasonNumber}",
+                                                         image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                    if ups:
+                        updated = True
                     logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
                     if "episodes" in season_methods and self.library.is_show:
@@ -1326,9 +1329,11 @@ class MetadataFile(DataFile):
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
                                 finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                                self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
-                                                         title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                                         image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                                _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
+                                                                     title=f"{item.title} {episode.seasonEpisode.upper()}",
+                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                                if ups:
+                                    updated = True
                                 logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
         if "episodes" in methods and self.library.is_show:
@@ -1367,9 +1372,11 @@ class MetadataFile(DataFile):
                         if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                             updated = True
                     finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                    self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
-                                             title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                             image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                    _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
+                                                         title=f"{item.title} {episode.seasonEpisode.upper()}",
+                                                         image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                    if ups:
+                        updated = True
                     logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
         if "albums" in methods and self.library.is_music:
@@ -1407,8 +1414,10 @@ class MetadataFile(DataFile):
                         if self.edit_tags(tag_edit, album, album_dict, album_methods):
                             updated = True
                     finish_edit(album, f"Album: {title}")
-                    self.library.item_images(album, album_dict, album_methods, asset_location=asset_location,
-                                             title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
+                    _, _, ups = self.library.item_images(album, album_dict, album_methods, asset_location=asset_location,
+                                                         title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
+                    if ups:
+                        updated = True
                     logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
                     if "tracks" in album_methods:
@@ -1499,6 +1508,10 @@ class MetadataFile(DataFile):
                     season.batchEdits()
                     add_edit("title", season, value=title)
                     finish_edit(season, f"Season: {title}")
+                    _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=title,
+                                                         image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                    if ups:
+                        updated = True
                     logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
                     for episode in season.episodes():
                         if len(episode.locations) > 0:
@@ -1507,6 +1520,10 @@ class MetadataFile(DataFile):
                             add_edit("title", episode, value=ep_title)
                             add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                             finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
+                            _, _, ups = self.library.item_images(episode, {}, {}, asset_location=asset_location, title=ep_title,
+                                                                 image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                            if ups:
+                                updated = True
                             logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
                 else:
                     logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
