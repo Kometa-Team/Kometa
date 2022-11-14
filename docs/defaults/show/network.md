@@ -262,7 +262,7 @@ addons:
     - ITV4
     - ITVBe
     - CITV
-    - STVW
+    - STV
   Lifetime:
     - Lifetime Movies
   MTV:
