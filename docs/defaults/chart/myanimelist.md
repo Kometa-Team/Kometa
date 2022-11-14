@@ -8,13 +8,13 @@ The `myanimelist` Default Metadata File is used to create collections based on M
 
 ## Collections Section 01
 
-| Collection               |     Key     | Description                                             |
-|:-------------------------|:-----------:|:--------------------------------------------------------|
-| `MyAnimeList Popular`    |  `popular`  | Collection of the most Popular Anime on MyAnimeList.    |
+| Collection               | Key         | Description                                             |
+|:-------------------------|:------------|:--------------------------------------------------------|
+| `MyAnimeList Popular`    | `popular`   | Collection of the most Popular Anime on MyAnimeList.    |
 | `MyAnimeList Favorited`  | `favorited` | Collection of most Favorited Anime on MyAnimeList.      |
-| `MyAnimeList Top Rated`  |    `top`    | Collection of the Top Rated Anime on MyAnimeList.       |
-| `MyAnimeList Top Airing` |  `airing`   | Collection of the Top Rated Airing on MyAnimeList.      |
-| `MyAnimeList Season`     |  `season`   | Collection of the Current Seasons Anime on MyAnimeList. |
+| `MyAnimeList Top Rated`  | `top`       | Collection of the Top Rated Anime on MyAnimeList.       |
+| `MyAnimeList Top Airing` | `airing`    | Collection of the Top Rated Airing on MyAnimeList.      |
+| `MyAnimeList Season`     | `season`    | Collection of the Current Seasons Anime on MyAnimeList. |
 
 ## Config
 

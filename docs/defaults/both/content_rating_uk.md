@@ -10,11 +10,11 @@ If you do not use the UK-based rating system within Plex, this file will attempt
 
 ## Collections Section 14
 
-| Collection                                                    |                    Key                    | Description                                                                           |
-|:--------------------------------------------------------------|:-----------------------------------------:|:--------------------------------------------------------------------------------------|
-| `Ratings Collections`                                         |                `separator`                | [Separator Collection](../separators) to denote the Section of Collections.           |
+| Collection                                                    | Key                                       | Description                                                                           |
+|:--------------------------------------------------------------|:------------------------------------------|:--------------------------------------------------------------------------------------|
+| `Ratings Collections`                                         | `separator`                               | [Separator Collection](../separators) to denote the Section of Collections.           |
 | `<<Content Rating>> Movies/Shows`<br>**Example:** `15 Movies` | `<<Content Rating>>`<br>**Example:** `15` | Collection of Movies/Shows that have this Content Rating.                             |
-| `Not Rated Movies/Shows`                                      |                  `other`                  | Collection of Movies/Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| `Not Rated Movies/Shows`                                      | `other`                                   | Collection of Movies/Shows that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 

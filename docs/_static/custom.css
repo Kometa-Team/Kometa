@@ -1,3 +1,164 @@
+body {
+  font-size: 20px;
+  color: #dfe1f2;
+  background-color: #333335;
+}
+
+div.body {
+  max-width: 1000px;
+}
+
+pre {
+  background-color: #21222c;
+  color: #dfe1f2;
+}
+
+.highlight .nt {
+  color: #dfe1f2;
+  font-weight: bold;
+}
+
+.highlight .nl {
+    color: #f57900;
+}
+
+.highlight .c1 {
+    color: #157059;
+}
+
+.highlight .l {
+  color: #0ce3ac;
+}
+
+.highlight .s {
+    color: #0ce3ac;
+}
+
+.highlight .no {
+    color: #dfe1f2;
+}
+
+.highlight .k {
+    color: #dfe1f2;
+    font-weight: bold;
+}
+
+.highlight .nl {
+    color: #0ce3ac;
+    font-weight: bold;
+}
+
+.highlight .p {
+  color: #0ce3ac;
+  font-weight: bold;
+}
+
+.highlight .n {
+  color: #dfe1f2;
+}
+
+.highlight .nv {
+  color: #dfe1f2;
+}
+
+.highlight .nb {
+    color: #dfe1f2;
+}
+
+.highlight .o {
+  color: #0ce3ac;
+  font-weight: bold;
+}
+
+.highlight .s2 {
+    color: #0ce3ac;
+}
+
+.tab-set > label {
+  font-size: 0.75em;
+}
+
+.container {
+  padding-right: 0px;
+  padding-left: 0px;
+}
+
+label {
+  margin-bottom: 0px;
+}
+
+button.copybtn {
+  opacity: 100;
+}
+
+.tab-set {
+  width: auto !important;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #00bfa5;
+  box-shadow: 0px 3px #282829
+  background-color: #293e49;
+  border-radius: 5px;
+  background-color: #293e49;
+}
+
+.tab-content {
+  box-shadow: 0 -0.1rem #0ce3ac;
+  background-color: #333335;
+  padding-top: 10px;
+  padding-right: 20px;
+  padding-left: 20px;
+  font-size: 15px;
+}
+
+details {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #00b8d4;
+  box-shadow: 0px 3px #282829;
+  border-radius: 5px;
+}
+
+summary {
+  background-color: #293e4e;
+  width: 968px;
+}
+
+.table {
+  width: auto;
+  max-width: 100%;
+  margin-bottom: 21px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #454755;
+  background: #transparent;
+}
+
+table thead tr {
+  border-color: #454755;
+  border-style: solid;
+  border-width: 1px;
+  background: #transparent;
+}
+
+:root {
+  --tabs--label-text: #FFFFFF;
+  --tabs--label-text--hover: #0ce3ac;
+  --tabs--label-text--active: #0ea5e9;
+  --tabs--label-text--active--hover: #0ea5e9;
+  --tabs--label-background: transparent;
+  --tabs--label-background--hover: transparent;
+  --tabs--label-background--active: transparent;
+  --tabs--label-background--active--hover: transparent;
+  --tabs--label-border: transparent;
+  --tabs--label-border--hover: #d1d5db;
+  --tabs--label-border--active: #0ea5e9;
+  --tabs--label-border--active--hover: #0ea5e9;
+  --tabs--padding-x: 1.25em;
+  --tabs--margin-x: 0;
+  --tabs--border: #e6e6e6;
+}
+
 .text-left {
   text-align: left !important;
   padding-left: 15px !important;
@@ -12,13 +173,21 @@
   margin: 15px 0 5px 10px;
 }
 code {
-  color: #0ce3ac;
-  background-color: #030303 !important;
+  color: #dfe1f2;
+  background-color: #21222c !important;
 }
 td hr, th hr {
     visibility: hidden;
     margin: 0;
-    border: 0;
+}
+
+table>thead>tr>th, .table>thead>tr>th, table>tbody>tr>th, .table>tbody>tr>th, table>tfoot>tr>th, .table>tfoot>tr>th, table>thead>tr>td, .table>thead>tr>td, table>tbody>tr>td, .table>tbody>tr>td, table>tfoot>tr>td, .table>tfoot>tr>td {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #454755;
+}
+table.align-default {
+    margin-left: inherit;
 }
 hr {
   border-top: 3px solid #bcbcbc;
@@ -32,18 +201,35 @@ a code {
   color: #0cafe3;
 }
 a {
-  color: #0cafe3;
+  color: #09a77e;
 }
-h1, h2, h3, .h1, .h2, .h3 {
-  margin-top: 50px;
+
+h1, .h1, {
+  margin: 0 0 1.25em;
 }
-h4, h5, h6, .h4, .h5, .h6 {
-  margin-top: 30px;
+h2, .h2, {
+  margin: 1.6em 0 .64em;
 }
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+h3, .h3, {
+  margin: 1.6em 0 .8em;
+}
+h4, .h4, {
+  margin: 1em 0;
+
+}
+
+h5., h6, .h5, .h6 {
+  margin: 1.25em 0
+}
+
+h1, .h1 {
+  color: #4aedc4;
+}
+
+h2, h3, h4, h5, h6, .h2, .h3, .h4, .h5, .h6 {
   color: #0ce3ac;
-  margin-bottom: 20px;
 }
+
 th {
   color: #0ce3ac;
 }
@@ -96,14 +282,11 @@ th {
 table {
   border-collapse: collapse;
 }
-table thead tr {
-  background: #111111;
-}
 table tbody tr:nth-child(even) {
-  background: #181818;
+  background: #transparent;
 }
 table tbody tr:nth-child(odd) {
-  background: #1D1D1D;
+  background: #transparent;
 }
 table.clearTable {
   margin-top: 5px;
@@ -123,10 +306,11 @@ table.dualTable td, table.dualTable th {
 }
 details {
   margin-bottom: 5px;
+  border-color: #7c4dff;
 }
 summary {
   padding: 6px 12px 6px 22px;
-  background: #111111;
+  background: #363352;
   position: relative;
   cursor: pointer;
 }
@@ -148,9 +332,7 @@ details[open] > summary:before {
 details summary::-webkit-details-marker {
   display:none;
 }
-strong {
-  color: #0ce3ac;
-}
+
 td br {
   margin-bottom: 15px;
 }

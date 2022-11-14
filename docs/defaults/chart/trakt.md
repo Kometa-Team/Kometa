@@ -8,13 +8,13 @@ The `trakt` Default Metadata File is used to create collections based on Trakt C
 
 ## Collections Section 01
 
-| Collection          |      Key      | Description                                             |
-|:--------------------|:-------------:|:--------------------------------------------------------|
-| `Trakt Collected`   |  `collected`  | Collection of the Most Collected Movies/Shows on Trakt. |
-| `Trakt Popular`     |   `popular`   | Collection of the Most Popular Movies/Shows on Trakt.   |
+| Collection          | Key           | Description                                             |
+|:--------------------|:--------------|:--------------------------------------------------------|
+| `Trakt Collected`   | `collected`   | Collection of the Most Collected Movies/Shows on Trakt. |
+| `Trakt Popular`     | `popular`     | Collection of the Most Popular Movies/Shows on Trakt.   |
 | `Trakt Recommended` | `recommended` | Collection of Recommended Movies/Shows on Trakt.        |
-| `Trakt Trending`    |  `trending`   | Collection of Trending Movies/Shows on Trakt.           |
-| `Trakt Watched`     |   `watched`   | Collection of the Most Watched Movies/Shows on Trakt.   |
+| `Trakt Trending`    | `trending`    | Collection of Trending Movies/Shows on Trakt.           |
+| `Trakt Watched`     | `watched`     | Collection of the Most Watched Movies/Shows on Trakt.   |
 
 ## Config
 

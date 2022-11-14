@@ -10,8 +10,8 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                                                                    |                Key                | Description                                                    |
-|:------------------------------------------------------------------------------|:---------------------------------:|:---------------------------------------------------------------|
+| Collection                                                                    | Key                               | Description                                                    |
+|:------------------------------------------------------------------------------|:----------------------------------|:---------------------------------------------------------------|
 | `Critics Choice Awards <<year>>`<br>**Example:** `Critics Choice Awards 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Critics Choice Award Winners for the given year. |
 
 ## Config

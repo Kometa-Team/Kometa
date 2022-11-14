@@ -8,8 +8,8 @@ The `emmy` Default Metadata File is used to create collections based on the Emmy
 
 ## Collections Section 16
 
-| Collection                                    |                Key                | Description                                           |
-|:----------------------------------------------|:---------------------------------:|:------------------------------------------------------|
+| Collection                                    | Key                               | Description                                           |
+|:----------------------------------------------|:----------------------------------|:------------------------------------------------------|
 | `Emmys <<year>>`<br>**Example:** `Emmys 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Emmys Award Winners for the given year. |
 
 ## Config

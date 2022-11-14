@@ -8,14 +8,14 @@ The `flixpatrol` Default Metadata File is used to create collections based on Fl
 
 ## Collections Section 01
 
-| Collection                       |     Key     | Description                                                                |
-|:---------------------------------|:-----------:|:---------------------------------------------------------------------------|
-| `Netflix Top 10 Moves/Shows`     |  `netflix`  | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.     |
-| `Disney+ Top 10 Moves/Shows`     |  `disney`   | Collection of the Top Movies/Shows on Disney+ according to FlixPatrol.     |
-| `HBO Top 10 Moves/Shows`         |    `hbo`    | Collection of the Top Movies/Shows on HBO according to FlixPatrol.         |
-| `Hulu Top 10 Moves/Shows`        |   `hulu`    | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.        |
+| Collection                       | Key         | Description                                                                |
+|:---------------------------------|:------------|:---------------------------------------------------------------------------|
+| `Netflix Top 10 Moves/Shows`     | `netflix`   | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.     |
+| `Disney+ Top 10 Moves/Shows`     | `disney`    | Collection of the Top Movies/Shows on Disney+ according to FlixPatrol.     |
+| `HBO Top 10 Moves/Shows`         | `hbo`       | Collection of the Top Movies/Shows on HBO according to FlixPatrol.         |
+| `Hulu Top 10 Moves/Shows`        | `hulu`      | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.        |
 | `Paramount+ Top 10 Moves/Shows`  | `paramount` | Collection of the Top Movies/Shows on Paramount+ according to FlixPatrol.  |
-| `Prime Video Top 10 Moves/Shows` |   `prime`   | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol. |
+| `Prime Video Top 10 Moves/Shows` | `prime`     | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol. |
 
 ## Config
 
