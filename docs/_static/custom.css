@@ -132,6 +132,8 @@ summary {
   border-width: 1px;
   border-color: #454755;
   background: #transparent;
+  border-collapse: collapse;
+  font-size: 17px
 }
 
 table thead tr {
@@ -278,9 +280,6 @@ th {
   -webkit-border-radius: 6px 0 6px 6px;
   -moz-border-radius: 6px 0 6px 6px;
   border-radius: 6px 0 6px 6px;
-}
-table {
-  border-collapse: collapse;
 }
 table tbody tr:nth-child(even) {
   background: #transparent;
