@@ -447,10 +447,6 @@ translations:
   decade_name: Bedste fra <<translated_key_name>>
   decade_summary: Top <<limit>> <<library_translation>> fra <<translated_key_name>>.
 
-  # example key_name: 2010
-  decade_show_name: Bedste fra <<translated_key_name>>
-  decade_show_summary: Top <<limit>> <<library_translation>> fra <<translated_key_name>>.
-
   # example key_name: Robin Williams
   director_name: <<translated_key_name>> (Instruktør)
   director_summary: <<library_translationU>> instrueret af <<translated_key_name>>.

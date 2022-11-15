@@ -25,7 +25,7 @@ collections:
 dynamic_collections:
   Decade:
     type: decade
-    title_format: Best of <<key_name>>s
+    title_format: Best of <<key_name>>
     template:
       - smart_filter
       - translation
@@ -40,4 +40,4 @@ dynamic_collections:
       image:
         default: decade/best/<<key>>
       translation_key:
-        default: decade_show
+        default: decade

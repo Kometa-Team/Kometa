@@ -2078,7 +2078,7 @@ class CollectionBuilder:
                         if self.details["show_options"]:
                             error += f"\nOptions: {names}"
                         if validate:
-                            raise Failed(error)
+                            raise FilterFailed(error)
                         elif not self.ignore_blank_results:
                             logger.error(error)
             return valid_list

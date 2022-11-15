@@ -449,10 +449,6 @@ translations:
   decade_name: Les meilleurs des années <<translated_key_name>>
   decade_summary: Top <<limit>> des <<library_translation>>s des années <<translated_key_name>>.
 
-  # example key_name: 2010
-  decade_show_name: Les meilleurs des années <<translated_key_name>>
-  decade_show_summary: Top <<limit>> des <<library_translation>>s des années <<translated_key_name>>.
-
   # example key_name: Robin Williams
   director_name: <<translated_key_name>> (Réalisateur)
   director_summary: <<library_translationU>>s réalisés par <<translated_key_name>>.
