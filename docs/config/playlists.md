@@ -18,7 +18,6 @@ This example is an advanced version of the playlist mappings with accompanying l
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 ```yaml
 libraries:

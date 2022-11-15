@@ -20,10 +20,10 @@ trakt:
 ```
 
 | Attribute       | Allowed Values                  | Default | Required |
-|:----------------|:--------------------------------|:-------:|:--------:|
-| `client_id`     | Trakt Application Client ID     |   N/A   | &#9989;  |
-| `client_secret` | Trakt Application Client Secret |   N/A   | &#9989;  |
-| `pin`           | Trakt Pin                       |  None   | &#10060; |
+|:----------------|:--------------------------------|:--------|:--------:|
+| `client_id`     | Trakt Application Client ID     | N/A     | &#9989;  |
+| `client_secret` | Trakt Application Client Secret | N/A     | &#9989;  |
+| `pin`           | Trakt Pin                       | None    | &#10060; |
 
 * All other attributes will be filled in by the script. 
 

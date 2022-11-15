@@ -49,28 +49,20 @@ The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) bran
 Switching to `develop`:
 
 ````{tab} if running in Docker
-<br/>
 Add ":develop" to the image name in your run command or configuration:
-
 ```
 meisnate12/plex-meta-manager:develop
 ```
-<br/>
 ````
 ````{tab} if running on the host:
-
 In the directory where you cloned PMM:
-
 ```bash
 git checkout develop
 ```
-
 To switch back:
-
 ```bash
 git checkout master
 ```
-<br/>
 ````
 
 If switching to the develop build, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master build.
@@ -86,28 +78,20 @@ There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/n
 Switching to `nightly`:
 
 ````{tab} if running in Docker
-<br/>
 Add ":nightly" to the image name in your run command or configuration:
-
 ```
 meisnate12/plex-meta-manager:nightly
 ```
-<br/>
 ````
 ````{tab} if running on the host:
-
 In the directory where you cloned PMM:
-
 ```bash
 git checkout nightly
 ```
-
 To switch back:
-
 ```bash
 git checkout master
 ```
-<br/>
 ````
 
 

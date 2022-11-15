@@ -1,7 +1,7 @@
 body {
   font-size: 20px;
   color: #dfe1f2;
-  background-color: #333335;
+  background-color: #252525;
 }
 
 div.body {
@@ -9,15 +9,28 @@ div.body {
 }
 
 pre {
-  background-color: #21222c;
-  color: #dfe1f2;
+    background-color: #1d1d1d;
+    color: #a9abba;
+    box-shadow: none;
+    display: block;
+    border-color: transparent;
 }
 
 ul, ol {
     font-size: 17x;
 }
+
+ol.arabic {
+    list-style: decimal;
+    font-size: 17px;
+}
+
+ul .simple {
+    font-size: 17px;
+}
+
 .highlight .nt {
-  color: #dfe1f2;
+  color: #a9abba;
   font-weight: bold;
 }
 
@@ -38,38 +51,68 @@ ul, ol {
 }
 
 .highlight .no {
-    color: #dfe1f2;
+    color: #a9abba;
 }
 
 .highlight .k {
-    color: #dfe1f2;
+    color: #a9abba;
     font-weight: bold;
 }
 
+.highlight .mi {
+    color: #a9abba;
+    font-weight: bold;
+}
+
+.highlight .ow {
+    color: #a9abba;
+    font-weight: bold;
+}
+
+.highlight .s1 {
+    color: #0ce3ac;
+}
+
+.highlight .kn {
+    color: #a9abba;
+    font-weight: bold;
+}
+
+.highlight .nn {
+    color: #a9abba;
+}
 .highlight .nl {
     color: #0ce3ac;
     font-weight: bold;
 }
 
 .highlight .p {
-  color: #0ce3ac;
+  color: #a9abba;
   font-weight: bold;
 }
 
 .highlight .n {
-  color: #dfe1f2;
+  color: #a9abba;
 }
 
 .highlight .nv {
-  color: #dfe1f2;
+  color: #a9abba;
 }
 
 .highlight .nb {
-    color: #dfe1f2;
+    color: #a9abba;
+}
+.highlight .kt {
+    color: #0ce3ac;
+    font-weight: bold;
+}
+
+.highlight .mf {
+    color: #a9abba;
 }
 
 .highlight .o {
-  color: #0ce3ac;
+  color: #a9abba;
   font-weight: bold;
 }
 
@@ -91,9 +134,41 @@ label {
 }
 
 button.copybtn {
-  opacity: 100;
+    position: absolute;
+    display: flex;
+    top: .3em;
+    right: .3em;
+    width: 1.7em;
+    height: 1.7em;
+	opacity: 100;
+    transition: opacity 0.3s, border .3s, background-color .3s;
+    user-select: none;
+    padding: 0;
+    border: none;
+    outline: none;
+    border-radius: 0.4em;
+    /* The colors that GitHub uses */
+    border: transparent 1px solid;
+    background-color: transparent;
+    color: #57606a;
+}
+.highlight button.copybtn:hover {
+    background-color: transparent;
 }
 
+.highlight button.copybtn:active {
+    background-color: transparent;
+}
+button.copybtn.success {
+    border-color: transparent;
+    color: #22863a;
+}
+button.copybtn svg {
+    stroke: #a9abba;
+    width: 1.5em;
+    height: 1.5em;
+    padding: 0em;
+}
 .tab-set {
   width: auto !important;
   border-style: solid;
@@ -107,10 +182,10 @@ button.copybtn {
 
 .tab-content {
   box-shadow: 0 -0.1rem #0ce3ac;
-  background-color: #333335;
-  padding-top: 10px;
-  padding-right: 20px;
-  padding-left: 20px;
+  background-color: #252525;
+  padding-top: 0px;
+  padding-right: 15px;
+  padding-left: 15px;
   font-size: 15px;
 }
 
@@ -143,7 +218,7 @@ table thead tr {
   border-color: #454755;
   border-style: solid;
   border-width: 1px;
-  background: #transparent;
+  background-color: #151515;
 }
 
 :root {
@@ -178,8 +253,8 @@ table thead tr {
   margin: 15px 0 5px 10px;
 }
 code {
-  color: #dfe1f2;
-  background-color: #21222c !important;
+  color: #a9abba;
+  background-color: #1d1d1d !important;
 }
 td hr, th hr {
     visibility: hidden;
@@ -203,6 +278,9 @@ a {
   color: #09a77e;
 }
 
+a code {
+  color: #09a77e;
+}
 h1, .h1, {
   margin: 0 0 1.25em;
 }
@@ -279,10 +357,10 @@ th {
   border-radius: 6px 0 6px 6px;
 }
 table tbody tr:nth-child(even) {
-  background: #transparent;
+  background-color: #181818;
 }
 table tbody tr:nth-child(odd) {
-  background: #transparent;
+  background-color: #1D1D1D;
 }
 table.clearTable {
   margin-top: 5px;

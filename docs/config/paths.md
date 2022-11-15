@@ -93,7 +93,6 @@ The [`metadata_path`](libraries.md#metadata-path) attribute is defined under the
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 In this example, multiple metadata file path types are defined for the `"TV Shows"` library:
 
@@ -126,7 +125,6 @@ The [`overlay_path`](libraries.md#overlay-path) attribute is defined under the [
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 In this example, multiple overlay file path types are defined for the `"TV Shows"` library:
 
@@ -159,7 +157,6 @@ The [`playlist_files`](playlists) at the top level in your [Configuration File](
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 In this example, multiple `playlist_files` attribute path types are defined:
 
@@ -190,7 +187,6 @@ The [`external_templates`](../metadata/templates.md#external-templates) attribut
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 In this example, multiple external template file path types are defined:
 
