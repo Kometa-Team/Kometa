@@ -59,8 +59,8 @@ Deletes collections based on a set of given attributes. The Collection must matc
 
 | Attribute      | Description                                                                                                                                                                                                  |
 |:---------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `managed`      | Collection must be a Managed (the collection has the `PMM` label) or Unmanaged (the collection does not have the `PMM` label) Collection.<br>**Values:** `true` (Managed) or `false` (Unmanaged)              |
-| `configured`   | Collection must be a Configured (collection is in the specific PMM run) or Unconfigured (collection is not in the specific PMM run) Collection.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
+| `managed`      | Collection must be a Managed Collection (the collection has the `PMM` label) or Unmanaged Collection (the collection does not have the `PMM` label)<br>**Values:** `true` (Managed) or `false` (Unmanaged)              |
+| `configured`   | Collection must be a Configured Collection (collection is in the config file of the specific PMM run) or Unconfigured Collection (collection is not in the config file of the specific PMM run). The collection does not need to be scheduled to be considered configured and only needs to be in the config file.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
 | `less`         | Collection must contain less then the given number of items.<br>**Default:** ``<br>**Values:** Number Greater then 0                                                                                        |
 
 **Example:**
