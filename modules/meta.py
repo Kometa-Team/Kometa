@@ -31,8 +31,8 @@ default_templates = {
     "tmdb_collection": {"tmdb_collection_details": "<<value>>", "minimum_items": 2},
     "trakt_user_lists": {"trakt_list_details": "<<value>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<value>>"},
-    "tmdb_popular_people": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
-    "trakt_people_list": {"tmdb_person": f"<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
+    "tmdb_popular_people": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
+    "trakt_people_list": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
 }
 
 def get_dict(attribute, attr_data, check_list=None, make_str=False):
@@ -649,7 +649,7 @@ class MetadataFile(DataFile):
                                     addons[decade].append(item.year)
                                     all_keys[str(item.year)] = str(item.year)
                         auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
-                        default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": f"<<value>>"}}}
+                        default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
                         default_title_format = "Best <<library_type>>s of <<key_name>>"
                     elif auto_type in ["genre", "mood", "style", "album_style", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                         search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
@@ -673,12 +673,12 @@ class MetadataFile(DataFile):
                             auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                         if library.is_music:
                             final_var = auto_type if auto_type.startswith("album") else f"artist_{auto_type}"
-                            default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: f"<<value>>"}}}
+                            default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: "<<value>>"}}}
                             if auto_type.startswith("album"):
                                 default_template["builder_level"] = "album"
                             default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startswith('album') else '<<library_type>>'}s"
                         elif auto_type == "resolution":
-                            default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: f"<<value>>"}}}
+                            default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: "<<value>>"}}}
                             default_title_format = "<<key_name>> <<library_type>>s"
                         else:
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
