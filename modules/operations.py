@@ -359,12 +359,18 @@ class Operations:
                                 new_rating = mal_item.rating
                             else:
                                 raise Failed
-                        if self.library.content_rating_mapper:
-                            if new_rating is None and self.library.mass_content_rating_update not in ["remove", "reset"]:
+                            if not new_rating:
+                                logger.info(f"No Content Rating Found")
+
+                        is_none = False
+                        if self.library.content_rating_mapper or self.library.mass_content_rating_update in ["lock", "unlock"]:
+                            if not new_rating and self.library.mass_content_rating_update not in ["remove", "reset"]:
                                 new_rating = item.contentRating
-                            if new_rating in self.library.content_rating_mapper:
+                            if self.library.content_rating_mapper and new_rating in self.library.content_rating_mapper:
                                 new_rating = self.library.content_rating_mapper[new_rating]
-                        if self.library.mass_content_rating_update in ["remove", "reset"] and item.contentRating:
+                                if not new_rating:
+                                    is_none = True
+                        if (is_none or self.library.mass_content_rating_update in ["remove", "reset"]) and item.contentRating:
                             item.editField("contentRating", None, locked=self.library.mass_content_rating_update == "remove")
                             batch_display += f"\nContent Rating | None"
                         elif not new_rating and self.library.mass_content_rating_update not in ["lock", "unlock", "remove", "reset"]:

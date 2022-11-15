@@ -37,7 +37,7 @@ templates:
           - key: truehd_atmos
             value: '(?i)^(?=.*\btrue[ ._-]?hd(\b|\d))(?=.*\batmos(\b|\d))'
           - key: dtsx
-            value: '(?i)\bdts[ ._-]?x(\b|\d)'
+            value: '(?i)\bdts[ ._-]?x\b'
           - key: plus_atmos
             value: '(?i)^(?=.*\b(dd[p+])|(dolby digital plus)\B)(?=.*\batmos(\b|\d))'
           - key: dolby_atmos
