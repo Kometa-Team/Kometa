@@ -304,6 +304,7 @@ class DataFile:
                         variables["original_key_name"] = variables["key_name"]
                         if variables["key_name"] in key_name_variables:
                             variables["key_name"] = key_name_variables[variables["key_name"]]
+                        variables["translated_key_name"] = variables["key_name"]
 
                     def replace_var(input_item, search_dicts):
                         if not isinstance(search_dicts, list):

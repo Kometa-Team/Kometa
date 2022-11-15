@@ -157,8 +157,7 @@ html_theme_options = {
             ("Path Types", "config/paths"),
             ("_menu", "Library Operations", "config/operations", [
                 ("Assets For All", "config/operations", "#assets-for-all"),
-                ("Delete Collections With Less", "config/operations", "#delete-collections-with-less"),
-                ("Delete Unmanaged Collections", "config/operations", "#delete-unmanaged-collections"),
+                ("Delete Collections", "config/operations", "#delete-collections"),
                 ("Mass Genre Update", "config/operations", "#mass-genre-update"),
                 ("Mass Content Rating Update", "config/operations", "#mass-content-rating-update"),
                 ("Mass Original Title Update", "config/operations", "#mass-original-title-update"),
