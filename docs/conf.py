@@ -47,7 +47,6 @@ extensions = [
     'sphinx_inline_tabs',
     'sphinx_copybutton',
     'sphinx_reredirects',
-    'sphinx_fontawesome'
 ]
 
 source_suffix = ['.rst', '.md']
