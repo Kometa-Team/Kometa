@@ -32,7 +32,7 @@ dynamic_collections:
       - shared
     template_variables:
       search_term:
-        default: year
+        default: decade
       sort_by:
         default: critic_rating.desc
       limit:
