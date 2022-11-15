@@ -24,7 +24,7 @@ collections:
 
 dynamic_collections:
   Decade:
-    type: decade
+    type: year
     title_format: Best of <<key_name>>
     template:
       - smart_filter
