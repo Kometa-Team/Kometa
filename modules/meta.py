@@ -301,7 +301,9 @@ class DataFile:
                         elif language in var_value:
                             key_name_variables[var_key] = var_value[language]
                     if "key_name" in variables:
-                        variables["translated_key_name"] = key_name_variables[variables["key_name"]] if variables["key_name"] in key_name_variables else variables["key_name"]
+                        variables["original_key_name"] = variables["key_name"]
+                        if variables["key_name"] in key_name_variables:
+                            variables["key_name"] = key_name_variables[variables["key_name"]]
 
                     def replace_var(input_item, search_dicts):
                         if not isinstance(search_dicts, list):
@@ -345,7 +347,10 @@ class DataFile:
                             raise Failed(f"{self.data_type} Error: conditional {con_key} is not a dictionary")
                         final_key = replace_var(con_key, [variables, default])
                         if final_key != con_key:
-                            logger.debug(f"Variable: {final_key}")
+                            logger.trace(f"Variable: {final_key}")
+                        if final_key in variables:
+                            logger.debug(f'Conditional Variable: {final_key} overwritten to "{variables[final_key]}"')
+                            continue
                         if "conditions" not in con_value:
                             raise Failed(f"{self.data_type} Error: conditions sub-attribute required")
                         conditions = con_value["conditions"]
@@ -368,34 +373,34 @@ class DataFile:
                                 if var_key.endswith(".exists"):
                                     var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if (not var_value and var_key[:-7] in variables and variables[var_key[:-7]]) or (var_value and (var_key[:-7] not in variables or not variables[var_key[:-7]])):
-                                        logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
+                                        logger.trace(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
                                         condition_passed = False
                                 elif var_key.endswith(".not"):
                                     if (isinstance(var_value, list) and variables[var_key] in var_value) or \
                                             (not isinstance(var_value, list) and str(variables[var_key]) == str(var_value)):
                                         if isinstance(var_value, list):
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" in {var_value}')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" in {var_value}')
                                         else:
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
                                         condition_passed = False
                                 elif var_key in variables:
                                     if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
                                         else:
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
                                         condition_passed = False
                                 elif var_key in default:
                                     if (isinstance(var_value, list) and default[var_key] not in var_value) or \
                                             (not isinstance(var_value, list) and str(default[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
                                         else:
-                                            logger.debug(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
+                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
                                         condition_passed = False
                                 else:
-                                    logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                    logger.trace(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
                                     condition_passed = False
                             if condition_passed:
                                 logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
@@ -404,11 +409,11 @@ class DataFile:
                                 variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
                                 break
                         if not condition_found:
-                            if "default" in con_value and final_key not in variables:
+                            if "default" in con_value:
                                 logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
                                 variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
-                            elif final_key not in variables:
+                            else:
                                 logger.debug(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
                                 optional.append(f"{final_key}_encoded")

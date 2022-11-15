@@ -1,5 +1,6 @@
-import glob, logging, os, re, requests, ruamel.yaml, signal, sys, time
+import glob, os, re, requests, ruamel.yaml, signal, sys, time
 from datetime import datetime, timedelta
+from modules.logs import MyLogger
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
@@ -13,7 +14,7 @@ except ModuleNotFoundError:
     windows = False
 
 
-logger = logging.getLogger("Plex Meta Manager")
+logger: MyLogger = None
 
 class TimeoutExpired(Exception):
     pass
@@ -526,6 +527,8 @@ def is_boolean_filter(value, data):
 
 def is_string_filter(values, modifier, data):
     jailbreak = False
+    if modifier == ".regex":
+        logger.trace(f"Regex Values: {values}")
     for value in values:
         for check_value in data:
             if (modifier in ["", ".not"] and check_value.lower() in value.lower()) \
