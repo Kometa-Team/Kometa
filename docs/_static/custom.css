@@ -206,12 +206,16 @@ summary {
   width: auto;
   max-width: 100%;
   margin-bottom: 21px;
+  border-style: solid;
+  border-width: 0px;
+  border-color: #454755;
   background: #transparent;
   border-collapse: collapse;
   font-size: 17px
 }
 
 table thead tr {
+  border-width: 0px;
   background-color: #151515;
 }
 
