@@ -52,7 +52,7 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   TV Shows:
     metadata_path:
-      - pmm: decade
+      - pmm: show/decade
         template_variables:
           use_other: false
           use_separator: false
