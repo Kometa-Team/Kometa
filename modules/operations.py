@@ -715,8 +715,8 @@ class Operations:
             logger.info("")
 
         less = self.library.delete_collections["less"] if self.library.delete_collections and self.library.delete_collections["less"] is not None else None
-        managed = self.library.delete_collections["managed"] if self.library.delete_collections else False
-        configured = self.library.delete_collections["configured"] if self.library.delete_collections else False
+        managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
+        configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
         unmanaged_collections = []
         unconfigured_collections = []
         all_collections = self.library.get_all_collections()
