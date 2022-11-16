@@ -1,6 +1,7 @@
 ##############################################################################
 #                           Franchise Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                 Additional contributions by the PMM Community              #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #      https://metamanager.wiki/en/latest/defaults/show/franchise.html       #
 ##############################################################################
@@ -58,34 +59,38 @@ dynamic_collections:
   Show Franchise Collections:
     type: custom
     data:
+      "121": Doctor Who
+      "253": Star Trek
+      "549": Law & Order
+      "951": Archie Comics
+      "1402": The Walking Dead
+      "1412": Arrowverse
+      "1431": CSI
+      "4614": NCIS
+      "4629": Stargate
+      "6357": The Twilight Zone
+      "31917": Pretty Little Liars
       "44006": One Chicago
       "75219": 9-1-1
-      "253": Star Trek
-      "1412": Arrowverse
+      "79744": The Rookie
+      "80748": FBI
       "85536": Star Wars
-      "121": Doctor Who
-      "1402": The Walking Dead
-      "4629": Stargate
-      "549": Law & Order
-      "4614": NCIS
-      "1431": CSI
-      "951": Archie Comics
-      "31917": Pretty Little Liars
-      "6357": The Twilight Zone
     template:
       - tmdbshow
     addons:
+      121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
+      253: [655, 1855, 314, 67198, 85949] # Star Trek, The Next Generation, Voyager, Enterprise, Discovery, Picard
+      549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
+      951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
+      1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
+      1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
+      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
+      4614: [17610, 124271, 61387, 4376]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG
+      4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
+      6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
+      31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
       44006: [58841, 62650, 67993] # Chicago Fire: Med, PD, Justice
       75219: 89393 # 9-1-1: 9-1-1 Lone Star
-      253: [655, 1855, 314, 67198, 85949] # Star Trek, The Next Generation, Voyager, Enterprise, Discovery, Picard
-      1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
+      79744: 201992 # The Rookie: Feds
+      80748: [94372, 121658] # FBI: Most Wanted, International
       85536: [71412, 3478, 105971, 92830, 83867, 60554, 82856, 115036, 114461, 202879, 114462, 114476, 114478, 79093] # Star Wars Galaxy of Adventures: Forces of Destiny, The Clone Wars, The Bad Batch, Obi-Wan Kenobi, Andor, Rebels, The Mandalorian, The Book of Boba Fett, Ahsoka, Skeleton Crew, Rangers of the New Republic, Lando, Visions, Resistance
-      121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
-      1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
-      4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
-      549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
-      4614: [17610, 124271, 61387, 4376]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG
-      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
-      951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
-      31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
-      6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
