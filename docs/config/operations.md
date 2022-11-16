@@ -59,9 +59,9 @@ Deletes collections based on a set of given attributes. The Collection must matc
 
 | Attribute      | Description                                                                                                                                                                                                  |
 |:---------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `managed`      | Collection must be a Managed (the collection has the `PMM` label) or Unmanaged (the collection does not have the `PMM` label) Collection.<br>**Values:** `true` (Managed) or `false` (Unmanged)              |
-| `configured`   | Collection must be a Configured (collection is in the specific PMM run) or Unconfigured (collection is not in the specific PMM run) Collection.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
-| `less`         | Collection must contain less then the given number of items.<br>**Default:** ` `<br>**Values:** Number Greater then 0                                                                                        |
+| `managed`      | Collection must be a Managed Collection (the collection has the `PMM` label) or Unmanaged Collection (the collection does not have the `PMM` label)<br>**Values:** `true` (Managed) or `false` (Unmanaged)              |
+| `configured`   | Collection must be a Configured Collection (collection is in the config file of the specific PMM run) or Unconfigured Collection (collection is not in the config file of the specific PMM run). The collection does not need to be scheduled to be considered configured and only needs to be in the config file.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
+| `less`         | Collection must contain less then the given number of items.<br>**Default:** ``<br>**Values:** Number Greater then 0                                                                                        |
 
 **Example:**
 
@@ -117,7 +117,7 @@ Updates every item's content rating in the library to the chosen site's content 
 | `remove`           | Remove Content Rating and Lock Field                                         |
 | `reset`            | Remove Content Rating and Unlock Field                                       |
 
-## Mass Original Title Update 
+## Mass Original Title Update
 
 Updates every item's original title in the library to the chosen site's original title.
 
@@ -137,7 +137,7 @@ Updates every item's original title in the library to the chosen site's original
 | `remove`         | Remove Original Title and Lock Field                                                            |
 | `reset`          | Remove Original Title and Unlock Field                                                          |
 
-## Mass Originally Available Update 
+## Mass Originally Available Update
 
 Updates every item's originally available date in the library to the chosen site's date.
 
@@ -158,7 +158,7 @@ Updates every item's originally available date in the library to the chosen site
 | `remove` | Remove Originally Available and Lock Field   |
 | `reset`  | Remove Originally Available and Unlock Field |
 
-## Mass * Rating Update 
+## Mass * Rating Update
 
 Updates every item's audience/critic/user rating in the library to the chosen site's rating.
 
@@ -318,6 +318,7 @@ Maps genres in your library to be changed to other genres.
 **Attribute:** `genre_mapper`
 
 **Values:** Each attribute under `genre_mapper` is a separate mapping and has two parts.
+
 * The key (`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the value.
 * The value (`Action` in the example below) is what the genres will end up as.
 
@@ -354,6 +355,7 @@ Maps content ratings in your library to be changed to other content ratings.
 **Attribute:** `content_rating_mapper`
 
 **Values:** Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
+
 * The key (`PG`, `PG-13` in the example below) is what content ratings you want mapped to the value.
 * The value (`Y-10` in the example below) is what the content ratings will end up as.
 
@@ -383,7 +385,7 @@ library:
 
 This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
 
-## Metadata Backup 
+## Metadata Backup
 
 Creates/Maintains a Plex Meta Manager [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.
 
