@@ -14,10 +14,10 @@ tmdb:
 ```
 
 | Attribute          | Allowed Values                                                                                                                                                                    | Default | Required |
-|:-------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------:|:--------:|
-| `apikey`           | User TMDb V3 API Key                                                                                                                                                              |   N/A   | &#9989;  |
-| `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language                                                                                      |   en    | &#10060; |
-| `region`           | [ISO 3166-1 Code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes) of the User Region for use with [Other TMDb Builders](../metadata/builders/tmdb.md#other-tmdb-builders) |  None   | &#10060; |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                                                                                                         |   60    | &#10060; |
+|:-------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------|:--------:|
+| `apikey`           | User TMDb V3 API Key                                                                                                                                                              | N/A     | &#9989;  |
+| `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language                                                                                      | en      | &#10060; |
+| `region`           | [ISO 3166-1 Code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes) of the User Region for use with [Other TMDb Builders](../metadata/builders/tmdb.md#other-tmdb-builders) | None    | &#10060; |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                                                                                                         | 60      | &#10060; |
 
 If you do not have a TMDb V3 API key please refer to this [guide](https://developers.themoviedb.org/3/getting-started/introduction).

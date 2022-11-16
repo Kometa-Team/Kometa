@@ -10,9 +10,9 @@ This file also merges similarly named studios (such as "20th Century Fox" and "2
 
 ## Collections Section 07
 
-| Collection                                           |                         Key                          | Description                                                                 |
-|:-----------------------------------------------------|:----------------------------------------------------:|:----------------------------------------------------------------------------|
-| `Studio Collections`                                 |                     `separator`                      | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                           | Key                                                  | Description                                                                 |
+|:-----------------------------------------------------|:-----------------------------------------------------|:----------------------------------------------------------------------------|
+| `Studio Collections`                                 | `separator`                                          | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<Studio>>`<br>**Example:** `Blumhouse Productions` | `<<Studio>>`<br>**Example:** `Blumhouse Productions` | Collection of Movies/Shows that have this Studio.                           |
 
 ## Config

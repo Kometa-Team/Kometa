@@ -10,11 +10,11 @@ This file assumes that you are using the `mass_content_rating_update: mal` opera
 
 ## Collections Section 14
 
-| Collection                                                      |                     Key                      | Description                                                                    |
-|:----------------------------------------------------------------|:--------------------------------------------:|:-------------------------------------------------------------------------------|
-| `Ratings Collections`                                           |                 `separator`                  | [Separator Collection](../separators) to denote the Section of Collections.    |
+| Collection                                                      | Key                                          | Description                                                                    |
+|:----------------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|
+| `Ratings Collections`                                           | `separator`                                  | [Separator Collection](../separators) to denote the Section of Collections.    |
 | `<<Content Rating>> Movies/Shows`<br>**Example:** `PG-13 Shows` | `<<Content Rating>>`<br>**Example:** `PG-13` | Collection of Shows that have this Content Rating.                             |
-| `Not Rated Movies/Shows`                                        |                   `other`                    | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| `Not Rated Movies/Shows`                                        | `other`                                      | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 

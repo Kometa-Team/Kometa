@@ -253,9 +253,16 @@ Updates every Collection in your library to the specified Collection Mode.
 
 **Attribute:** `mass_collection_mode`
 
-**Values:** `default`: Library default<br>`hide`: Hide Collection<br>`hide_items`: Hide Items in this Collection<br>`show_items`: Show this Collection and its Items<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>
+**Values:**
 
-## Update Blank Track Titles`
+| Value        | Description                        |
+|:-------------|:-----------------------------------|
+| `default`    | Library default                    |
+| `hide`       | Hide Collection                    |
+| `hide_items` | Hide Items in this Collection      |
+| `show_items` | Show this Collection and its Items |
+
+## Update Blank Track Titles
 
 Search though every track in a music library and replace any blank track titles with the tracks sort title.
 
@@ -287,7 +294,7 @@ Adds every item in the library to Radarr. The existing paths in plex will be use
 
 **Values:** `true` or `false`
 
-## Radarr Remove By Tag`
+## Radarr Remove By Tag
 
 Removes every item from Radarr with the Tags given.
 

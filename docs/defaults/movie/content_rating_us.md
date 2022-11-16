@@ -10,11 +10,11 @@ If you do not use the US-based rating system within Plex, this file will attempt
 
 ## Collections Section 14
 
-| Collection                                             |                   Key                    | Description                                                                     |
-|:-------------------------------------------------------|:----------------------------------------:|:--------------------------------------------------------------------------------|
-| `Country Collections`                                  |               `separator`                | [Separator Collection](../separators) to denote the Section of Collections.     |
+| Collection                                             | Key                                      | Description                                                                     |
+|:-------------------------------------------------------|:-----------------------------------------|:--------------------------------------------------------------------------------|
+| `Country Collections`                                  | `separator`                              | [Separator Collection](../separators) to denote the Section of Collections.     |
 | `<<Content Rating>> Movies`<br>**Example:** `R Movies` | `<<Content Rating>>`<br>**Example:** `R` | Collection of Movies that have this Content Rating.                             |
-| `Not Rated Movies`                                     |                 `other`                  | Collection of Movies that are Unrated, Not Rated or any other uncommon Ratings. |
+| `Not Rated Movies`                                     | `other`                                  | Collection of Movies that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 

@@ -8,9 +8,9 @@ The `writer` Default Metadata File is used to dynamically create collections bas
 
 ## Collections Section 20
 
-| Collection                                       |                       Key                        | Description                                                                 |
-|:-------------------------------------------------|:------------------------------------------------:|:----------------------------------------------------------------------------|
-| `Writers Collections`                            |                   `separator`                    | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                       | Key                                              | Description                                                                 |
+|:-------------------------------------------------|:-------------------------------------------------|:----------------------------------------------------------------------------|
+| `Writers Collections`                            | `separator`                                      | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<writer_name>>`<br>**Example:** `Frank Welker` | `<<writer_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by the Writer.                                         |
 
 ### Rainier Style

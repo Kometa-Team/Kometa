@@ -10,21 +10,21 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 02
 
-| Collection                  |     Key     | Description                                                                 |
-|:----------------------------|:-----------:|:----------------------------------------------------------------------------|
+| Collection                  | Key         | Description                                                                 |
+|:----------------------------|:------------|:----------------------------------------------------------------------------|
 | `Universe Collections`      | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
-| `Star Wars Universe`        |   `star`    | Collection of Movies in the Star Wars Universe                              |
-| `DC Animated Universe`      |    `dca`    | Collection of Movies in the DC Animated Universe                            |
-| `DC Extended Universe`      |    `dcu`    | Collection of Movies in the DC Extended Universe                            |
-| `Marvel Cinematic Universe` |    `mcu`    | Collection of Movies in the Marvel Cinematic Universe                       |
-| `Wizarding World`           |  `wizard`   | Collection of Movies in the Wizarding World Universe                        |
-| `Alien / Predator`          |    `avp`    | Collection of Movies in the Alien / Predator Universe                       |
-| `X-Men Universe`            |   `xmen`    | Collection of Movies in the X-Men Universe                                  |
-| `Middle Earth`              |  `middle`   | Collection of Movies in the Middle Earth Universe                           |
-| `Fast & Furious`            |   `fast`    | Collection of Movies in the Fast & Furious Universe                         |
-| `Star Trek`                 |   `trek`    | Collection of Movies in the Star Trek Universe                              |
-| `Rocky / Creed`             |   `rocky`   | Collection of Movies in the Rocky / Creed Universe                          |
-| `The Mummy Universe`        |   `mummy`   | Collection of Movies in the The Mummy Universe                              |
+| `Star Wars Universe`        | `star`      | Collection of Movies in the Star Wars Universe                              |
+| `DC Animated Universe`      | `dca`       | Collection of Movies in the DC Animated Universe                            |
+| `DC Extended Universe`      | `dcu`       | Collection of Movies in the DC Extended Universe                            |
+| `Marvel Cinematic Universe` | `mcu`       | Collection of Movies in the Marvel Cinematic Universe                       |
+| `Wizarding World`           | `wizard`    | Collection of Movies in the Wizarding World Universe                        |
+| `Alien / Predator`          | `avp`       | Collection of Movies in the Alien / Predator Universe                       |
+| `X-Men Universe`            | `xmen`      | Collection of Movies in the X-Men Universe                                  |
+| `Middle Earth`              | `middle`    | Collection of Movies in the Middle Earth Universe                           |
+| `Fast & Furious`            | `fast`      | Collection of Movies in the Fast & Furious Universe                         |
+| `Star Trek`                 | `trek`      | Collection of Movies in the Star Trek Universe                              |
+| `Rocky / Creed`             | `rocky`     | Collection of Movies in the Rocky / Creed Universe                          |
+| `The Mummy Universe`        | `mummy`     | Collection of Movies in the The Mummy Universe                              |
 
 ## Config
 

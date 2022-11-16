@@ -11,68 +11,68 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 ## Supported Audio/Subtitle Language Flags
 
 | Audio/Subtitle Languages | Key  | Weight | Default Flag | Default Use |
-|:-------------------------|:----:|:------:|:------------:|:-----------:|
-| English                  | `en` | `610`  |     `us`     |   &#9989;   |
-| German                   | `de` | `600`  |     `de`     |   &#9989;   |
-| French                   | `fr` | `590`  |     `fr`     |   &#9989;   |
-| Spanish                  | `es` | `580`  |     `es`     |   &#9989;   |
-| Portuguese               | `pt` | `570`  |     `pt`     |   &#9989;   |
-| Japanese                 | `ja` | `560`  |     `jp`     |   &#9989;   |
-| Korean                   | `ko` | `550`  |     `kr`     |  &#10060;   |
-| Chinese                  | `zh` | `540`  |     `cn`     |  &#10060;   |
-| Danish                   | `da` | `530`  |     `dk`     |  &#10060;   |
-| Russian                  | `ru` | `520`  |     `ru`     |  &#10060;   |
-| Italian                  | `it` | `510`  |     `it`     |  &#10060;   |
-| Hindi                    | `hi` | `500`  |     `in`     |  &#10060;   |
-| Telugu                   | `te` | `490`  |     `in`     |  &#10060;   |
-| Farsi                    | `fa` | `480`  |     `ir`     |  &#10060;   |
-| Thai                     | `th` | `470`  |     `th`     |  &#10060;   |
-| Dutch                    | `nl` | `460`  |     `nl`     |  &#10060;   |
-| Norwegian                | `no` | `450`  |     `no`     |  &#10060;   |
-| Icelandic                | `is` | `440`  |     `is`     |  &#10060;   |
-| Swedish                  | `sv` | `430`  |     `se`     |  &#10060;   |
-| Turkish                  | `tr` | `420`  |     `tr`     |  &#10060;   |
-| Polish                   | `pl` | `410`  |     `pl`     |  &#10060;   |
-| Czech                    | `cs` | `400`  |     `cz`     |  &#10060;   |
-| Ukrainian                | `uk` | `390`  |     `ua`     |  &#10060;   |
-| Hungarian                | `hu` | `380`  |     `hu`     |  &#10060;   |
-| Arabic                   | `ar` | `370`  |     `eg`     |  &#10060;   |
-| Bulgarian                | `bg` | `360`  |     `bg`     |  &#10060;   |
-| Bengali                  | `bn` | `350`  |     `bd`     |  &#10060;   |
-| Bosnian                  | `bs` | `340`  |     `ba`     |  &#10060;   |
-| Catalan                  | `ca` | `330`  |     `es`     |  &#10060;   |
-| Welsh                    | `cy` | `320`  |     `uk`     |  &#10060;   |
-| Greek                    | `el` | `310`  |     `gr`     |  &#10060;   |
-| Estonian                 | `et` | `300`  |     `ee`     |  &#10060;   |
-| Basque                   | `eu` | `290`  |     `es`     |  &#10060;   |
-| Finnish                  | `fi` | `280`  |     `fi`     |  &#10060;   |
-| Filipino                 | `fl` | `270`  |     `ph`     |  &#10060;   |
-| Galician                 | `gl` | `260`  |     `es`     |  &#10060;   |
-| Hebrew                   | `he` | `250`  |     `il`     |  &#10060;   |
-| Croatian                 | `hr` | `240`  |     `hr`     |  &#10060;   |
-| Indonesian               | `id` | `230`  |     `id`     |  &#10060;   |
-| Georgian                 | `ka` | `220`  |     `ge`     |  &#10060;   |
-| Kazakh                   | `kk` | `210`  |     `kz`     |  &#10060;   |
-| Kannada                  | `kn` | `200`  |     `in`     |  &#10060;   |
-| Latin                    | `la` | `190`  |     `it`     |  &#10060;   |
-| Lithuanian               | `lt` | `180`  |     `lt`     |  &#10060;   |
-| Latvian                  | `lv` | `170`  |     `lv`     |  &#10060;   |
-| Macedonian               | `mk` | `160`  |     `mk`     |  &#10060;   |
-| Malayalam                | `ml` | `150`  |     `in`     |  &#10060;   |
-| Marathi                  | `mr` | `140`  |     `in`     |  &#10060;   |
-| Malay                    | `ms` | `130`  |     `my`     |  &#10060;   |
-| Norwegian Nokmål         | `nb` | `120`  |     `no`     |  &#10060;   |
-| Norwegian Nynorsk        | `nn` | `110`  |     `no`     |  &#10060;   |
-| Punjabi                  | `pa` | `100`  |     `in`     |  &#10060;   |
-| Romanian                 | `ro` |  `90`  |     `ro`     |  &#10060;   |
-| Slovak                   | `sk` |  `80`  |     `sk`     |  &#10060;   |
-| Slovenian                | `sv` |  `70`  |     `si`     |  &#10060;   |
-| Albanian                 | `sq` |  `60`  |     `al`     |  &#10060;   |
-| Serbian                  | `sr` |  `50`  |     `rs`     |  &#10060;   |
-| Swahili                  | `sw` |  `40`  |     `tz`     |  &#10060;   |
-| Tamil                    | `ta` |  `30`  |     `in`     |  &#10060;   |
-| Urdu                     | `ur` |  `20`  |     `pk`     |  &#10060;   |
-| Vietnamese               | `vi` |  `10`  |     `vn`     |  &#10060;   |
+|:-------------------------|:-----|:-------|:-------------|:-----------:|
+| English                  | `en` | `610`  | `us`         |   &#9989;   |
+| German                   | `de` | `600`  | `de`         |   &#9989;   |
+| French                   | `fr` | `590`  | `fr`         |   &#9989;   |
+| Spanish                  | `es` | `580`  | `es`         |   &#9989;   |
+| Portuguese               | `pt` | `570`  | `pt`         |   &#9989;   |
+| Japanese                 | `ja` | `560`  | `jp`         |   &#9989;   |
+| Korean                   | `ko` | `550`  | `kr`         |  &#10060;   |
+| Chinese                  | `zh` | `540`  | `cn`         |  &#10060;   |
+| Danish                   | `da` | `530`  | `dk`         |  &#10060;   |
+| Russian                  | `ru` | `520`  | `ru`         |  &#10060;   |
+| Italian                  | `it` | `510`  | `it`         |  &#10060;   |
+| Hindi                    | `hi` | `500`  | `in`         |  &#10060;   |
+| Telugu                   | `te` | `490`  | `in`         |  &#10060;   |
+| Farsi                    | `fa` | `480`  | `ir`         |  &#10060;   |
+| Thai                     | `th` | `470`  | `th`         |  &#10060;   |
+| Dutch                    | `nl` | `460`  | `nl`         |  &#10060;   |
+| Norwegian                | `no` | `450`  | `no`         |  &#10060;   |
+| Icelandic                | `is` | `440`  | `is`         |  &#10060;   |
+| Swedish                  | `sv` | `430`  | `se`         |  &#10060;   |
+| Turkish                  | `tr` | `420`  | `tr`         |  &#10060;   |
+| Polish                   | `pl` | `410`  | `pl`         |  &#10060;   |
+| Czech                    | `cs` | `400`  | `cz`         |  &#10060;   |
+| Ukrainian                | `uk` | `390`  | `ua`         |  &#10060;   |
+| Hungarian                | `hu` | `380`  | `hu`         |  &#10060;   |
+| Arabic                   | `ar` | `370`  | `eg`         |  &#10060;   |
+| Bulgarian                | `bg` | `360`  | `bg`         |  &#10060;   |
+| Bengali                  | `bn` | `350`  | `bd`         |  &#10060;   |
+| Bosnian                  | `bs` | `340`  | `ba`         |  &#10060;   |
+| Catalan                  | `ca` | `330`  | `es`         |  &#10060;   |
+| Welsh                    | `cy` | `320`  | `uk`         |  &#10060;   |
+| Greek                    | `el` | `310`  | `gr`         |  &#10060;   |
+| Estonian                 | `et` | `300`  | `ee`         |  &#10060;   |
+| Basque                   | `eu` | `290`  | `es`         |  &#10060;   |
+| Finnish                  | `fi` | `280`  | `fi`         |  &#10060;   |
+| Filipino                 | `fl` | `270`  | `ph`         |  &#10060;   |
+| Galician                 | `gl` | `260`  | `es`         |  &#10060;   |
+| Hebrew                   | `he` | `250`  | `il`         |  &#10060;   |
+| Croatian                 | `hr` | `240`  | `hr`         |  &#10060;   |
+| Indonesian               | `id` | `230`  | `id`         |  &#10060;   |
+| Georgian                 | `ka` | `220`  | `ge`         |  &#10060;   |
+| Kazakh                   | `kk` | `210`  | `kz`         |  &#10060;   |
+| Kannada                  | `kn` | `200`  | `in`         |  &#10060;   |
+| Latin                    | `la` | `190`  | `it`         |  &#10060;   |
+| Lithuanian               | `lt` | `180`  | `lt`         |  &#10060;   |
+| Latvian                  | `lv` | `170`  | `lv`         |  &#10060;   |
+| Macedonian               | `mk` | `160`  | `mk`         |  &#10060;   |
+| Malayalam                | `ml` | `150`  | `in`         |  &#10060;   |
+| Marathi                  | `mr` | `140`  | `in`         |  &#10060;   |
+| Malay                    | `ms` | `130`  | `my`         |  &#10060;   |
+| Norwegian Nokmål         | `nb` | `120`  | `no`         |  &#10060;   |
+| Norwegian Nynorsk        | `nn` | `110`  | `no`         |  &#10060;   |
+| Punjabi                  | `pa` | `100`  | `in`         |  &#10060;   |
+| Romanian                 | `ro` | `90`   | `ro`         |  &#10060;   |
+| Slovak                   | `sk` | `80`   | `sk`         |  &#10060;   |
+| Slovenian                | `sv` | `70`   | `si`         |  &#10060;   |
+| Albanian                 | `sq` | `60`   | `al`         |  &#10060;   |
+| Serbian                  | `sr` | `50`   | `rs`         |  &#10060;   |
+| Swahili                  | `sw` | `40`   | `tz`         |  &#10060;   |
+| Tamil                    | `ta` | `30`   | `in`         |  &#10060;   |
+| Urdu                     | `ur` | `20`   | `pk`         |  &#10060;   |
+| Vietnamese               | `vi` | `10`   | `vn`         |  &#10060;   |
 
 ### Square Style
 
@@ -114,19 +114,19 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            |           Default            |
-|:--------------------|:----------------------------:|
+| Variable            | Default                      |
+|:--------------------|:-----------------------------|
 | `horizontal_offset` | `15`/`206`/`397`/`588`/`779` |
-| `horizontal_align`  |   `left`/`right`/`center`    |
+| `horizontal_align`  | `left`/`right`/`center`      |
 | `vertical_offset`   | `15`/`76`/`137`/`198`/`259`  |
-| `vertical_align`    |   `top`/`bottom`/`center`    |
-| `back_color`        |         `#00000099`          |
-| `back_radius`       |           `26`/` `           |
-| `back_width`        |            `190`             |
-| `back_height`       |            `105`             |
-| `back_align`        |        `left`/`right`        |
-| `font`              |    `fonts/Inter-Bold.ttf`    |
-| `font_size`         |             `50`             |
+| `vertical_align`    | `top`/`bottom`/`center`      |
+| `back_color`        | `#00000099`                  |
+| `back_radius`       | `26`/` `                     |
+| `back_width`        | `190`                        |
+| `back_height`       | `105`                        |
+| `back_align`        | `left`/`right`               |
+| `font`              | `fonts/Inter-Bold.ttf`       |
+| `font_size`         | `50`                         |
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -8,8 +8,8 @@ The `basic` Default Metadata File is used to create collections based on recentl
 
 ## Collections Section 01
 
-| Collection       |    Key     | Description                                                    |
-|:-----------------|:----------:|:---------------------------------------------------------------|
+| Collection       | Key        | Description                                                    |
+|:-----------------|:-----------|:---------------------------------------------------------------|
 | `Newly Released` | `released` | Collection of Movies or TV Shows released in the last 90 days. |
 | `New Episodes`   | `episodes` | Collection of Episodes released in the last 7 days.            |
 

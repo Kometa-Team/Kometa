@@ -8,8 +8,8 @@ The `separator_chart` Default Metadata File is used to create a seperator collec
 
 ## Collections Section 01
 
-| Collection          |     Key     | Description                                                                 |
-|:--------------------|:-----------:|:----------------------------------------------------------------------------|
+| Collection          | Key         | Description                                                                 |
+|:--------------------|:------------|:----------------------------------------------------------------------------|
 | `Chart Collections` | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
 
 ## Config

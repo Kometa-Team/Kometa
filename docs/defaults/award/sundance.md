@@ -10,9 +10,9 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                                                                      |                Key                | Description                                                            |
-|:--------------------------------------------------------------------------------|:---------------------------------:|:-----------------------------------------------------------------------|
-| `Sundance Grand Jury Winners`                                                   |              `grand`              | Collection of Sundance Film Festival Grand Jury Award Winners.         |
+| Collection                                                                      | Key                               | Description                                                            |
+|:--------------------------------------------------------------------------------|:----------------------------------|:-----------------------------------------------------------------------|
+| `Sundance Grand Jury Winners`                                                   | `grand`                           | Collection of Sundance Film Festival Grand Jury Award Winners.         |
 | `Sundance Film Festival <<year>>`<br>**Example:** `Sundance Film Festival 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Sundance Film Festival Award Winners for the given year. |
 
 ## Config

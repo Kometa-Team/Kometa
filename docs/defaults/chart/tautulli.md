@@ -10,8 +10,8 @@ This Default file requires [Tautulli Authentication](../../config/tautulli)
 
 ## Collections Section 01
 
-| Collection     |    Key    | Description                                          |
-|:---------------|:---------:|:-----------------------------------------------------|
+| Collection     | Key       | Description                                          |
+|:---------------|:----------|:-----------------------------------------------------|
 | `Plex Popular` | `popular` | Collection of the most Popular Movies/Shows on Plex. |
 | `Plex Watched` | `watched` | Collection of the most Watched Movies/Shows on Plex. |
 

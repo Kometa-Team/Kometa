@@ -64,19 +64,19 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 All [Shared Overlay Variables](../overlay_variables) can be appended by `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
-| Variable            |   Default   |
-|:--------------------|:-----------:|
-| `horizontal_offset` |    `200`    |
-| `horizontal_align`  |   `right`   |
-| `vertical_offset`   |    `15`     |
-| `vertical_align`    |    `top`    |
+| Variable            | Default     |
+|:--------------------|:------------|
+| `horizontal_offset` | `200`       |
+| `horizontal_align`  | `right`     |
+| `vertical_offset`   | `15`        |
+| `vertical_align`    | `top`       |
 | `back_color`        | `#00000099` |
-| `back_radius`       |    `30`     |
-| `back_width`        |    `105`    |
-| `back_height`       |    `105`    |
-| `back_padding`      |    `15`     |
-| `back_radius`       |    `30`     |
-| `back_height`       |    `105`    |
+| `back_radius`       | `30`        |
+| `back_width`        | `105`       |
+| `back_height`       | `105`       |
+| `back_padding`      | `15`        |
+| `back_radius`       | `30`        |
+| `back_height`       | `105`       |
 
 | Variable                     | Description & Values                                                                                                                                                                             |
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -8,10 +8,10 @@ The `imdb` Default Metadata File is used to create collections based on IMDb Cha
 
 ## Collections Section 01
 
-| Collection          |    Key    | Description                                          |
-|:--------------------|:---------:|:-----------------------------------------------------|
+| Collection          | Key       | Description                                          |
+|:--------------------|:----------|:-----------------------------------------------------|
 | `IMDb Popular`      | `popular` | Collection of the most Popular Movies/Shows on IMDb. |
-| `IMDb Top 250`      |   `top`   | Collection of Top 250 Movies/Shows on IMDb.          |
+| `IMDb Top 250`      | `top`     | Collection of Top 250 Movies/Shows on IMDb.          |
 | `IMDb Lowest Rated` | `lowest`  | Collection of the lowest Rated Movies on IMDb.       |
 
 ## Config
