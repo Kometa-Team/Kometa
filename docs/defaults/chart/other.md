@@ -8,12 +8,12 @@ The `other_chart` Default Metadata File is used to create collections based on o
 
 ## Collections Section 01
 
-| Collection                          |      Key      | Description                                          |
-|:------------------------------------|:-------------:|:-----------------------------------------------------|
-| `AniDB Popular`                     |    `anidb`    | Collection of the most Popular Anime on AniDB.       |
+| Collection                          | Key           | Description                                          |
+|:------------------------------------|:--------------|:-----------------------------------------------------|
+| `AniDB Popular`                     | `anidb`       | Collection of the most Popular Anime on AniDB.       |
 | `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
-| `StevenLu's Popular Movies`         |  `stevenlu`   | Collection of StevenLu's Popular Movies.             |
-| `Top 10 Pirated Movies of the Week` |   `pirated`   | Collection of the Top 10 Pirated Movies of the Week. |
+| `StevenLu's Popular Movies`         | `stevenlu`    | Collection of StevenLu's Popular Movies.             |
+| `Top 10 Pirated Movies of the Week` | `pirated`     | Collection of the Top 10 Pirated Movies of the Week. |
 
 ## Config
 

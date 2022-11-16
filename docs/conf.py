@@ -144,9 +144,9 @@ html_theme_options = {
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
             ("_divider", ),
-            ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs", True),
-            ("Discord Server", "https://discord.gg/NfH6mGFuAB", True),
-            ("Donate/Sponsor", "https://github.com/sponsors/meisnate12", True),
+            ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs"),
+            ("Discord Server", "https://discord.gg/NfH6mGFuAB"),
+            ("Donate/Sponsor", "https://github.com/sponsors/meisnate12"),
             ("Acknowledgements", "home/acknowledgements"),
         ]),
         ("_menu", "Config", [
@@ -157,8 +157,7 @@ html_theme_options = {
             ("Path Types", "config/paths"),
             ("_menu", "Library Operations", "config/operations", [
                 ("Assets For All", "config/operations", "#assets-for-all"),
-                ("Delete Collections With Less", "config/operations", "#delete-collections-with-less"),
-                ("Delete Unmanaged Collections", "config/operations", "#delete-unmanaged-collections"),
+                ("Delete Collections", "config/operations", "#delete-collections"),
                 ("Mass Genre Update", "config/operations", "#mass-genre-update"),
                 ("Mass Content Rating Update", "config/operations", "#mass-content-rating-update"),
                 ("Mass Original Title Update", "config/operations", "#mass-original-title-update"),

@@ -10,9 +10,9 @@ This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci
 
 ## Collections Section 06
 
-| Collection                                               |               Key                | Description                                                                 |
-|:---------------------------------------------------------|:--------------------------------:|:----------------------------------------------------------------------------|
-| `Genre Collections`                                      |           `separator`            | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                               | Key                              | Description                                                                 |
+|:---------------------------------------------------------|:---------------------------------|:----------------------------------------------------------------------------|
+| `Genre Collections`                                      | `separator`                      | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Number>>`<br>**Example:** `5` | Collection of Movies/Shows that have this Genre.                            |
 
 ## Config

@@ -10,8 +10,8 @@ Unlike most Default Metadata Files, Franchise works by placing collections inlin
 
 ## Collections
 
-| Collection                                       |                        Key                        | Description                                            |
-|:-------------------------------------------------|:-------------------------------------------------:|:-------------------------------------------------------|
+| Collection                                       | Key                                               | Description                                            |
+|:-------------------------------------------------|:--------------------------------------------------|:-------------------------------------------------------|
 | `<<Collection Name>>`<br>**Example:** `Iron Man` | `<<TMDb Collection ID>>`<br>**Example:** `131292` | Collection of Movies found in this Collection on TMDb. |
 
 ## Config

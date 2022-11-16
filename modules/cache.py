@@ -24,6 +24,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS imdb_map")
                 cursor.execute("DROP TABLE IF EXISTS mdb_data")
                 cursor.execute("DROP TABLE IF EXISTS mdb_data2")
+                cursor.execute("DROP TABLE IF EXISTS mdb_data3")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data")
                 cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
@@ -94,7 +95,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mdb_data3 (
+                    """CREATE TABLE IF NOT EXISTS mdb_data4 (
                     key INTEGER PRIMARY KEY,
                     key_id TEXT UNIQUE,
                     title TEXT,
@@ -105,6 +106,7 @@ class Cache:
                     traktid INTEGER,
                     tmdbid INTEGER,
                     score INTEGER,
+                    average INTEGER,
                     imdb_rating REAL,
                     metacritic_rating INTEGER,
                     metacriticuser_rating REAL,
@@ -462,7 +464,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mdb_data3 WHERE key_id = ?", (key_id,))
+                cursor.execute("SELECT * FROM mdb_data4 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
                     mdb_dict["title"] = row["title"] if row["title"] else None
@@ -473,6 +475,7 @@ class Cache:
                     mdb_dict["traktid"] = row["traktid"] if row["traktid"] else None
                     mdb_dict["tmdbid"] = row["tmdbid"] if row["tmdbid"] else None
                     mdb_dict["score"] = row["score"] if row["score"] else None
+                    mdb_dict["score_average"] = row["average"] if row["average"] else None
                     mdb_dict["commonsense"] = row["commonsense"] if row["commonsense"] else None
                     mdb_dict["certification"] = row["certification"] if row["certification"] else None
                     mdb_dict["ratings"] = [
@@ -496,14 +499,14 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mdb_data3(key_id) VALUES(?)", (key_id,))
-                update_sql = "UPDATE mdb_data3 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
-                             "tmdbid = ?, score = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mdb_data4(key_id) VALUES(?)", (key_id,))
+                update_sql = "UPDATE mdb_data4 SET title = ?, year = ?, released = ?, type = ?, imdbid = ?, traktid = ?, " \
+                             "tmdbid = ?, score = ?, average = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, " \
                              "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, " \
                              "letterboxd_rating = ?, myanimelist_rating = ?, certification = ?, commonsense = ?, expiration_date = ? WHERE key_id = ?"
                 cursor.execute(update_sql, (
                     mdb.title, mdb.year, mdb.released.strftime("%Y-%m-%d") if mdb.released else None, mdb.type,
-                    mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.imdb_rating, mdb.metacritic_rating,
+                    mdb.imdbid, mdb.traktid, mdb.tmdbid, mdb.score, mdb.average, mdb.imdb_rating, mdb.metacritic_rating,
                     mdb.metacriticuser_rating, mdb.trakt_rating, mdb.tomatoes_rating, mdb.tomatoesaudience_rating,
                     mdb.tmdb_rating, mdb.letterboxd_rating, mdb.myanimelist_rating, mdb.content_rating, mdb.commonsense,
                     expiration_date.strftime("%Y-%m-%d"), key_id

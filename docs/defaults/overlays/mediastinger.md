@@ -25,16 +25,16 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            |   Default   |
-|:--------------------|:-----------:|
-| `horizontal_offset` |    `200`    |
-| `horizontal_align`  |   `right`   |
-| `vertical_offset`   |    `15`     |
-| `vertical_align`    |    `top`    |
+| Variable            | Default     |
+|:--------------------|:------------|
+| `horizontal_offset` | `200`       |
+| `horizontal_align`  | `right`     |
+| `vertical_offset`   | `15`        |
+| `vertical_align`    | `top`       |
 | `back_color`        | `#00000099` |
-| `back_radius`       |    `30`     |
-| `back_width`        |    `105`    |
-| `back_height`       |    `105`    |
+| `back_radius`       | `30`        |
+| `back_width`        | `105`       |
+| `back_height`       | `105`       |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

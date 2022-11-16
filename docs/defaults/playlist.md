@@ -8,16 +8,16 @@ This Default file requires [Trakt Authentication](../config/trakt)
 
 ## Playlists
 
-| Playlist                                     |     Key     | Description                                                                       |
-|:---------------------------------------------|:-----------:|:----------------------------------------------------------------------------------|
-| `Arrowverse (Timeline Order)`                |   `arrow`   | Playlist of Movies and Episodes in the Arrowverse (Timeline Order)                |
-| `Marvel Cinematic Universe (Timeline Order)` |    `mcu`    | Playlist of Movies and Episodes in the Marvel Cinematic Universe (Timeline Order) |
-| `DC Animated Universe (Timeline Order)`      |   `dcau`    | Playlist of Movies and Episodes in the DC Animated Universe (Timeline Order)      |
-| `Pokémon (Timeline Order)`                   |  `pokemon`  | Playlist of Movies and Episodes in the Pokémon (Timeline Order)                   |
+| Playlist                                     | Key         | Description                                                                       |
+|:---------------------------------------------|:------------|:----------------------------------------------------------------------------------|
+| `Arrowverse (Timeline Order)`                | `arrow`     | Playlist of Movies and Episodes in the Arrowverse (Timeline Order)                |
+| `Marvel Cinematic Universe (Timeline Order)` | `mcu`       | Playlist of Movies and Episodes in the Marvel Cinematic Universe (Timeline Order) |
+| `DC Animated Universe (Timeline Order)`      | `dcau`      | Playlist of Movies and Episodes in the DC Animated Universe (Timeline Order)      |
+| `Pokémon (Timeline Order)`                   | `pokemon`   | Playlist of Movies and Episodes in the Pokémon (Timeline Order)                   |
 | `Star Trek (Timeline Order)`                 | `startrek`  | Playlist of Movies and Episodes in the Star Trek (Timeline Order)                 |
 | `Star Wars (Timeline Order)`                 | `starwars`  | Playlist of Movies and Episodes in the Star Wars (Timeline Order)                 |
 | `Star Wars The Clone Wars (Timeline Order)`  | `clonewars` | Playlist of Movies and Episodes in the Star Wars The Clone Wars (Timeline Order)  |
-| `X-Men (Timeline Order)`                     |   `xmen`    | Playlist of Movies and Episodes in the X-Men (Timeline Order)                     |
+| `X-Men (Timeline Order)`                     | `xmen`      | Playlist of Movies and Episodes in the X-Men (Timeline Order)                     |
 
 ## Config
 

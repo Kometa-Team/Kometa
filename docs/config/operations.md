@@ -57,13 +57,11 @@ Deletes collections based on a set of given attributes. The Collection must matc
 
 **Values:** There are a few different options to determine how the `delete_collections` works.
 
-| Attribute      | Description                                                                                                                                         |
-|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `managed`      | Matches with a Collection Managed by PMM (the collection has the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false`             |
-| `unmanaged`    | Matches with a Collection Unmanaged by PMM (the collection does not have the `PMM` label).<br>**Default:** `false`<br>**Values:** `true` or `false` |
-| `configured`   | Matches with a Collection Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                              |
-| `unconfigured` | Matches with a Collection Not Configured in the specific PMM run.<br>**Default:** `false`<br>**Values:** `true` or `false`                          |
-| `less`         | Matches with a Collection that contains less then the given number of items.<br>**Default:** ` `<br>**Values:** Number Greater then 0               |
+| Attribute      | Description                                                                                                                                                                                                  |
+|:---------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `managed`      | Collection must be a Managed Collection (the collection has the `PMM` label) or Unmanaged Collection (the collection does not have the `PMM` label)<br>**Values:** `true` (Managed) or `false` (Unmanaged)              |
+| `configured`   | Collection must be a Configured Collection (collection is in the config file of the specific PMM run) or Unconfigured Collection (collection is not in the config file of the specific PMM run). The collection does not need to be scheduled to be considered configured and only needs to be in the config file.<br>**Values:** `true` (Configured) or `false` (Unconfigured) |
+| `less`         | Collection must contain less then the given number of items.<br>**Default:** ``<br>**Values:** Number Greater then 0                                                                                        |
 
 **Example:**
 
@@ -74,7 +72,7 @@ library:
   Movies:
     operations:
       delete_collections:
-        unconfigured: true
+        configured: false
         managed: true
 ```
 
@@ -119,7 +117,7 @@ Updates every item's content rating in the library to the chosen site's content 
 | `remove`           | Remove Content Rating and Lock Field                                         |
 | `reset`            | Remove Content Rating and Unlock Field                                       |
 
-## Mass Original Title Update 
+## Mass Original Title Update
 
 Updates every item's original title in the library to the chosen site's original title.
 
@@ -139,7 +137,7 @@ Updates every item's original title in the library to the chosen site's original
 | `remove`         | Remove Original Title and Lock Field                                                            |
 | `reset`          | Remove Original Title and Unlock Field                                                          |
 
-## Mass Originally Available Update 
+## Mass Originally Available Update
 
 Updates every item's originally available date in the library to the chosen site's date.
 
@@ -160,7 +158,7 @@ Updates every item's originally available date in the library to the chosen site
 | `remove` | Remove Originally Available and Lock Field   |
 | `reset`  | Remove Originally Available and Unlock Field |
 
-## Mass * Rating Update 
+## Mass * Rating Update
 
 Updates every item's audience/critic/user rating in the library to the chosen site's rating.
 
@@ -175,6 +173,7 @@ Updates every item's audience/critic/user rating in the library to the chosen si
 | `trakt_user`           | Use Trakt User's Personal Rating                    |
 | `omdb`                 | Use IMDbRating through OMDb                         |
 | `mdb`                  | Use MdbList Score                                   |
+| `mdb_average`          | Use MdbList Average Score                           |
 | `mdb_imdb`             | Use IMDb Rating through MDbList                     |
 | `mdb_metacritic`       | Use Metacritic Rating through MDbList               |
 | `mdb_metacriticuser`   | Use Metacritic User Rating through MDbList          |
@@ -254,9 +253,16 @@ Updates every Collection in your library to the specified Collection Mode.
 
 **Attribute:** `mass_collection_mode`
 
-**Values:** `default`: Library default<br>`hide`: Hide Collection<br>`hide_items`: Hide Items in this Collection<br>`show_items`: Show this Collection and its Items<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>
+**Values:**
 
-## Update Blank Track Titles`
+| Value        | Description                        |
+|:-------------|:-----------------------------------|
+| `default`    | Library default                    |
+| `hide`       | Hide Collection                    |
+| `hide_items` | Hide Items in this Collection      |
+| `show_items` | Show this Collection and its Items |
+
+## Update Blank Track Titles
 
 Search though every track in a music library and replace any blank track titles with the tracks sort title.
 
@@ -288,7 +294,7 @@ Adds every item in the library to Radarr. The existing paths in plex will be use
 
 **Values:** `true` or `false`
 
-## Radarr Remove By Tag`
+## Radarr Remove By Tag
 
 Removes every item from Radarr with the Tags given.
 
@@ -319,6 +325,7 @@ Maps genres in your library to be changed to other genres.
 **Attribute:** `genre_mapper`
 
 **Values:** Each attribute under `genre_mapper` is a separate mapping and has two parts.
+
 * The key (`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the value.
 * The value (`Action` in the example below) is what the genres will end up as.
 
@@ -355,6 +362,7 @@ Maps content ratings in your library to be changed to other content ratings.
 **Attribute:** `content_rating_mapper`
 
 **Values:** Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
+
 * The key (`PG`, `PG-13` in the example below) is what content ratings you want mapped to the value.
 * The value (`Y-10` in the example below) is what the content ratings will end up as.
 
@@ -384,7 +392,7 @@ library:
 
 This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
 
-## Metadata Backup 
+## Metadata Backup
 
 Creates/Maintains a Plex Meta Manager [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.
 

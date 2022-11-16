@@ -1,5 +1,6 @@
 FROM python:3.10-slim-buster
 ENV TINI_VERSION v0.19.0
+ENV PMM_DOCKER True
 COPY . /
 RUN echo "**** install system packages ****" \
  && apt-get update \

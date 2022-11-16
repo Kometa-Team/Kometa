@@ -8,9 +8,9 @@ The `network` Default Metadata File is used to dynamically create collections ba
 
 ## Collections Section 04
 
-| Collection                          |                 Key                 | Description                                                                 |
-|:------------------------------------|:-----------------------------------:|:----------------------------------------------------------------------------|
-| `Network Collections`               |             `separator`             | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                          | Key                                 | Description                                                                 |
+|:------------------------------------|:------------------------------------|:----------------------------------------------------------------------------|
+| `Network Collections`               | `separator`                         | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<network>>`<br>**Example:** `NBC` | `<<network>>`<br>**Example:** `NBC` | Collection of Shows the aired on the network.                               |
 
 ## Config

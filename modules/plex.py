@@ -545,7 +545,11 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def moveItem(self, obj, item, after):
-        obj.moveItem(item, after=after)
+        try:
+            obj.moveItem(item, after=after)
+        except (BadRequest, NotFound, Unauthorized) as e:
+            logger.error(e)
+            raise Failed("Move Failed")
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query(self, method):
@@ -1062,9 +1066,12 @@ class Plex(Library):
         poster = util.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
         background = util.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
                                      is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
+        updated = False
         if poster or background:
-            self.upload_images(item, poster=poster, background=background, overlay=True)
-        return asset_location, folder_name
+            pu, bu = self.upload_images(item, poster=poster, background=background, overlay=True)
+            if pu or bu:
+                updated = True
+        return asset_location, folder_name, updated
 
     def find_and_upload_assets(self, item, current_labels):
         item_dir = None

@@ -85,7 +85,7 @@ templates:
         default: true
         conditions:
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdblist, tmdb, trakt, mal]
+            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star]
             value: false
           - image_level: Top
             overlay_level: episode
@@ -97,7 +97,7 @@ templates:
         conditions:
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato, tmdb]
             value: "%"
-          - rating<<rating_num>>_image: metacritic
+          - rating<<rating_num>>_image: [metacritic, mdb]
             value: "0"
       image_extra:
         default: ""
@@ -115,7 +115,7 @@ templates:
             value: IMDb
           - rating<<rating_num>>_image: letterboxd
             value: Letterboxd
-          - rating<<rating_num>>_image: mdblist
+          - rating<<rating_num>>_image: mdb
             value: MDBList
           - rating<<rating_num>>_image: metacritic
             value: Metacritic
@@ -129,6 +129,8 @@ templates:
             value: Trakt
           - rating<<rating_num>>_image: mal
             value: MAL
+          - rating<<rating_num>>_image: star
+            value: Star
       rating<<rating_num>>_horizontal_align:
         default: left
         conditions:

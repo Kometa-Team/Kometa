@@ -234,7 +234,7 @@ class Operations:
 
                 def update_rating(attribute, item_attr, display):
                     current = getattr(item, item_attr)
-                    if attribute in ["remove", "reset"] and current:
+                    if attribute in ["remove", "reset"] and current is not None:
                         item.editField(item_attr, None, locked=attribute == "remove")
                         return f"\n{display} | None"
                     elif attribute in ["unlock", "reset"] and item_attr in locked_fields:
@@ -256,6 +256,8 @@ class Operations:
                             found_rating = omdb_item.imdb_rating
                         elif mdb_item and attribute == "mdb":
                             found_rating = mdb_item.score / 10 if mdb_item.score else None
+                        elif mdb_item and attribute == "mdb_average":
+                            found_rating = mdb_item.average / 10 if mdb_item.average else None
                         elif mdb_item and attribute == "mdb_imdb":
                             found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                         elif mdb_item and attribute == "mdb_metacritic":
@@ -357,12 +359,18 @@ class Operations:
                                 new_rating = mal_item.rating
                             else:
                                 raise Failed
-                        if self.library.content_rating_mapper:
-                            if new_rating is None and self.library.mass_content_rating_update not in ["remove", "reset"]:
+                            if not new_rating:
+                                logger.info(f"No Content Rating Found")
+
+                        is_none = False
+                        if self.library.content_rating_mapper or self.library.mass_content_rating_update in ["lock", "unlock"]:
+                            if not new_rating and self.library.mass_content_rating_update not in ["remove", "reset"]:
                                 new_rating = item.contentRating
-                            if new_rating in self.library.content_rating_mapper:
+                            if self.library.content_rating_mapper and new_rating in self.library.content_rating_mapper:
                                 new_rating = self.library.content_rating_mapper[new_rating]
-                        if self.library.mass_content_rating_update in ["remove", "reset"] and item.contentRating:
+                                if not new_rating:
+                                    is_none = True
+                        if (is_none or self.library.mass_content_rating_update in ["remove", "reset"]) and item.contentRating:
                             item.editField("contentRating", None, locked=self.library.mass_content_rating_update == "remove")
                             batch_display += f"\nContent Rating | None"
                         elif not new_rating and self.library.mass_content_rating_update not in ["lock", "unlock", "remove", "reset"]:
@@ -451,17 +459,19 @@ class Operations:
 
                 if self.library.mass_poster_update or self.library.mass_background_update:
                     try:
-                        new_poster, new_background, _, _ = self.library.find_item_assets(item)
+                        new_poster, new_background, item_dir, name = self.library.find_item_assets(item)
                     except Failed:
+                        item_dir = None
+                        name = None
                         new_poster = None
                         new_background = None
                     if self.library.mass_poster_update:
                         if self.library.mass_poster_update == "lock":
                             self.library.query(item.lockPoster)
-                            logger.infd(f"Poster | Locked")
+                            logger.info("Poster | Locked")
                         elif self.library.mass_poster_update == "unlock":
                             self.library.query(item.unlockPoster)
-                            logger.infd(f"Poster | Unlocked")
+                            logger.info("Poster | Unlocked")
                         else:
                             poster_location = "the Assets Directory" if new_poster else ""
                             poster_url = False if new_poster else True
@@ -477,16 +487,19 @@ class Operations:
                                         poster_location = "Plex"
                             if new_poster:
                                 self.library.upload_poster(item, new_poster, url=poster_url)
-                                logger.infd(f"Poster | Reset from {poster_location}")
+                                logger.info(f"Poster | Reset from {poster_location}")
+                                if "Overlay" in [la.tag for la in self.library.item_labels(item)]:
+                                    logger.info(self.library.edit_tags("label", item, remove_tags="Ovelray", do_print=False))
                             else:
-                                logger.infd(f"Poster | No Reset Image Found")
+                                logger.info("Poster | No Reset Image Found")
+
                     if self.library.mass_background_update:
                         if self.library.mass_background_update == "lock":
                             self.library.query(item.lockArt)
-                            logger.infd(f"Background | Locked")
+                            logger.info(f"Background | Locked")
                         elif self.library.mass_background_update == "unlock":
                             self.library.query(item.unlockArt)
-                            logger.infd(f"Background | Unlocked")
+                            logger.info(f"Background | Unlocked")
                         else:
                             background_location = "the Assets Directory" if new_background else ""
                             background_url = False if new_background else True
@@ -502,9 +515,126 @@ class Operations:
                                         background_location = "Plex"
                             if new_background:
                                 self.library.upload_background(item, new_background, url=background_url)
-                                logger.infd(f"Background | Reset from {background_location}")
+                                logger.info(f"Background | Reset from {background_location}")
                             else:
-                                logger.infd(f"Background | No Reset Image Found")
+                                logger.info(f"Background | No Reset Image Found")
+
+                    if self.library.is_show:
+                        real_show = tmdb_item.load_show()  if tmdb_item else None
+                        tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
+                        for season in self.library.query(item.seasons):
+                            try:
+                                season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                            except Failed:
+                                season_poster = None
+                                season_background = None
+
+                            if self.library.mass_poster_update:
+                                if self.library.mass_poster_update == "lock":
+                                    self.library.query(season.lockPoster)
+                                    logger.info(f"{season.title} Poster | Locked")
+                                elif self.library.mass_poster_update == "unlock":
+                                    self.library.query(season.unlockPoster)
+                                    logger.info(f"{season.title} Poster | Unlocked")
+                                else:
+                                    poster_location = "the Assets Directory" if season_poster else ""
+                                    poster_url = False if season_poster else True
+                                    season_poster = season_poster.location if season_poster else None
+                                    if not season_poster:
+                                        if self.library.mass_poster_update == "tmdb" and season.seasonNumber in tmdb_seasons:
+                                            season_poster = tmdb_seasons[season.seasonNumber].poster_url
+                                            poster_location = "TMDb"
+                                        if not season_poster:
+                                            poster = next((p for p in season.posters() if p.provider == "local"), None)
+                                            if poster:
+                                                season_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
+                                                poster_location = "Plex"
+                                    if season_poster:
+                                        self.library.upload_poster(season, season_poster, url=poster_url)
+                                        logger.info(f"{season.title} Poster | Reset from {poster_location}")
+                                        if "Overlay" in [la.tag for la in self.library.item_labels(season)]:
+                                            logger.info(self.library.edit_tags("label", season, remove_tags="Ovelray", do_print=False))
+                                    else:
+                                        logger.info(f"{season.title} Poster | No Reset Image Found")
+                            if self.library.mass_background_update:
+                                if self.library.mass_background_update == "lock":
+                                    self.library.query(season.lockArt)
+                                    logger.info(f"{season.title} Background | Locked")
+                                elif self.library.mass_background_update == "unlock":
+                                    self.library.query(season.unlockArt)
+                                    logger.info(f"{season.title} Background | Unlocked")
+                                else:
+                                    background_location = "the Assets Directory" if season_background else ""
+                                    background_url = False if season_background else True
+                                    season_background = season_background.location if season_background else None
+                                    if not season_background:
+                                        background = next((p for p in item.arts() if p.provider == "local"), None)
+                                        if background:
+                                            season_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
+                                            background_location = "Plex"
+                                    if season_background:
+                                        self.library.upload_background(item, season_background, url=background_url)
+                                        logger.info(f"{season.title} Background | Reset from {background_location}")
+                                    else:
+                                        logger.info(f"{season.title} Background | No Reset Image Found")
+
+                            tmdb_episodes = {e.episode_number: e for e in tmdb_seasons[season.seasonNumber].episodes} if season.seasonNumber in tmdb_seasons else {}
+
+                            for episode in self.library.query(season.episodes):
+                                try:
+                                    episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                                except Failed:
+                                    episode_poster = None
+                                    episode_background = None
+
+                                if self.library.mass_poster_update:
+                                    if self.library.mass_poster_update == "lock":
+                                        self.library.query(episode.lockPoster)
+                                        logger.info(f"{episode.title} Poster | Locked")
+                                    elif self.library.mass_poster_update == "unlock":
+                                        self.library.query(episode.unlockPoster)
+                                        logger.info(f"{episode.title} Poster | Unlocked")
+                                    else:
+                                        poster_location = "the Assets Directory" if episode_poster else ""
+                                        poster_url = False if episode_poster else True
+                                        episode_poster = episode_poster.location if episode_poster else None
+                                        if not episode_poster:
+                                            if self.library.mass_poster_update == "tmdb" and episode.episodeNumber in tmdb_episodes:
+                                                episode_poster = tmdb_episodes[episode.episodeNumber].still_url
+                                                poster_location = "TMDb"
+                                            if not episode_poster:
+                                                poster = next((p for p in episode.posters() if p.provider == "local"), None)
+                                                if poster:
+                                                    episode_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
+                                                    poster_location = "Plex"
+                                        if episode_poster:
+                                            self.library.upload_poster(episode, episode_poster, url=poster_url)
+                                            logger.info(f"{episode.title} Poster | Reset from {poster_location}")
+                                            if "Overlay" in [la.tag for la in self.library.item_labels(episode)]:
+                                                logger.info(self.library.edit_tags("label", episode, remove_tags="Ovelray", do_print=False))
+                                        else:
+                                            logger.info(f"{episode.title} Poster | No Reset Image Found")
+                                if self.library.mass_background_update:
+                                    if self.library.mass_background_update == "lock":
+                                        self.library.query(episode.lockArt)
+                                        logger.info(f"{episode.title} Background | Locked")
+                                    elif self.library.mass_background_update == "unlock":
+                                        self.library.query(episode.unlockArt)
+                                        logger.info(f"{episode.title} Background | Unlocked")
+                                    else:
+                                        background_location = "the Assets Directory" if episode_background else ""
+                                        background_url = False if episode_background else True
+                                        episode_background = episode_background.location if episode_background else None
+                                        if not episode_background:
+                                            background = next((p for p in item.arts() if p.provider == "local"), None)
+                                            if background:
+                                                episode_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
+                                                background_location = "Plex"
+                                        if episode_background:
+                                            self.library.upload_background(item, episode_background, url=background_url)
+                                            logger.info(f"{episode.title} Background | Reset from {background_location}")
+                                        else:
+                                            logger.info(f"{episode.title} Background | No Reset Image Found")
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
 
@@ -581,26 +711,26 @@ class Operations:
 
         if self.library.delete_collections:
             logger.info("")
-            logger.separator(f"Deleting All Collections", space=False, border=False)
+            logger.separator(f"Deleting Collections", space=False, border=False)
             logger.info("")
 
         less = self.library.delete_collections["less"] if self.library.delete_collections and self.library.delete_collections["less"] is not None else None
-        managed = self.library.delete_collections["managed"] if self.library.delete_collections else False
-        unmanaged = self.library.delete_collections["unmanaged"] if self.library.delete_collections else False
-        configured = self.library.delete_collections["configured"] if self.library.delete_collections else False
-        unconfigured = self.library.delete_collections["unconfigured"] if self.library.delete_collections else False
+        managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
+        configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
         unmanaged_collections = []
         unconfigured_collections = []
         all_collections = self.library.get_all_collections()
         for i, col in enumerate(all_collections, 1):
             logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
             labels = [la.tag for la in self.library.item_labels(col)]
-            if (less is not None or unmanaged or managed or unconfigured or configured) \
+            if (less is not None or managed is not None or configured is not None) \
                     and (less is None or col.childCount < less) \
-                    and (unmanaged is False or "PMM" not in labels) \
-                    and (managed is False or "PMM" in labels) \
-                    and (unconfigured is False or col.title not in self.library.collections) \
-                    and (configured is False or col.title in self.library.collections):
+                    and (managed is None
+                         or (managed is True and "PMM" in labels)
+                         or (managed is False and "PMM" not in labels)) \
+                    and (configured is None
+                         or (configured is True and col.title in self.library.collections)
+                         or (configured is False and col.title not in self.library.collections)):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
             else:
