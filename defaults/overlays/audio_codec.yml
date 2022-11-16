@@ -35,15 +35,15 @@ templates:
       regex:
         conditions:
           - key: truehd_atmos
-            value: '(?i)^(?=.*\b(true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+            value: '(?i)^(?=.*\b(true[-_. ]?hd))(?=.*\b(atmos(\b|\d))).*'
           - key: dtsx
             value: '(?i)^(?=.*(\b(dts[-_. ]?x)\b(?!\d))).*'
           - key: plus_atmos
             value: '(?i)^((?=.*(DD[P+](?!A)|eac3))(?=.*\b(atmos(\b|\d))))|^(?=.*\b(DDPA(\b|\d))).*'
           - key: dolby_atmos
-            value: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[ .-]?hd))(?=.*\b(atmos(\b|\d))).*'
+            value: '(?i)^(?!.*([^-]DD[P+](?!A)|eac3|true[-_. ]?hd))(?=.*\b(atmos(\b|\d))).*'
           - key: truehd
-            value: '(?i)^(?!.*(atmos))(?=.*\b(true[ .-]?hd)\b).*'
+            value: '(?i)^(?!.*(atmos))(?=.*\b(true[-_. ]?hd)\b).*'
           - key: ma
             value: '(?i)^(?=.*(\b(dts[-_. ]?(ma|hd([-_. ]?ma)?(?![-_. ]?(hr|hi))|xll))\b)).*'
           - key: flac
@@ -51,13 +51,13 @@ templates:
           - key: pcm
             value: '(?i)^(?=.*(\b(l?)PCM(\b|\d))).*'
           - key: hra
-            value: '(?i)^(?=.*(dts[-. ]?(hd[. ]?)?(hra?|hi\b))).*'
+            value: '(?i)^(?=.*(dts[-_. ]?(hd[. ]?)?(hra?|hi\b))).*'
           - key: plus
             value: '(?i)^(?!.*(atmos))(?=.*\b(DD[P+](?!A)|e[-_. ]?ac3\b)).*'
           - key: dtses
-            value: '(?i)^(?=.*(dts[-. ]?es\b)).*'
+            value: '(?i)^(?=.*(dts[-_. ]?es\b)).*'
           - key: dts
-            value: '(?i)^(?!.*(\b(dts[-_. ]?(ma|hd([-_. ]?ma)?|xll))\b|dts[-. ]?(es|(hd[. ]?)?(hr|hi))|\b(dts[-_. ]?x)\b(?!\d)))(?=.*(\bDTS(\b|\d))).*'
+            value: '(?i)^(?!.*(\b(dts[-_. ]?(ma|hd([-_. ]?ma)?|xll))\b|dts[-_. ]?(es|(hd[. ]?)?(hr|hi))|\b(dts[-_. ]?x)\b(?!\d)))(?=.*(\bDTS(\b|\d))).*'
           - key: digital
             value: '(?i)^(?=.*(\bDD[^a-z+]|(?<!e)ac3)).*'
           - key: aac
