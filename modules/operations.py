@@ -726,11 +726,11 @@ class Operations:
             if (less is not None or managed is not None or configured is not None) \
                     and (less is None or col.childCount < less) \
                     and (managed is None
-                         or (managed is True and "PMM" in labels)
-                         or (managed is False and "PMM" not in labels)) \
+                         or (managed is False and "PMM" in labels)
+                         or (managed is True and "PMM" not in labels)) \
                     and (configured is None
-                         or (configured is True and col.title in self.library.collections)
-                         or (configured is False and col.title not in self.library.collections)):
+                         or (configured is False and col.title in self.library.collections)
+                         or (configured is True and col.title not in self.library.collections)):
                 self.library.query(col.delete)
                 logger.info(f"{col.title} Deleted")
             else:
