@@ -8,9 +8,9 @@ The `producer` Default Metadata File is used to dynamically create collections b
 
 ## Collections Section 19
 
-| Collection                                         |                        Key                         | Description                                                                 |
-|:---------------------------------------------------|:--------------------------------------------------:|:----------------------------------------------------------------------------|
-| `Producer Collections`                             |                    `separator`                     | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                         | Key                                                | Description                                                                 |
+|:---------------------------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|
+| `Producer Collections`                             | `separator`                                        | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<producer_name>>`<br>**Example:** `Frank Welker` | `<<producer_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by th Producer.                                        |
 
 ### Rainier Style

@@ -10,8 +10,8 @@ Unlike most Default Metadata Files, Franchise works by placing collections inlin
 
 ## Collections
 
-| Collection                                                  |                         Key                         | Description                                        |
-|:------------------------------------------------------------|:---------------------------------------------------:|:---------------------------------------------------|
+| Collection                                                  | Key                                                 | Description                                        |
+|:------------------------------------------------------------|:----------------------------------------------------|:---------------------------------------------------|
 | `<<Collection Name>>`<br>**Example:** `Pretty Little Liars` | `<<Starting TMDb Show ID>>`<br>**Example:** `31917` | Collection of Shows specified for this Collection. |
 
 ## Config

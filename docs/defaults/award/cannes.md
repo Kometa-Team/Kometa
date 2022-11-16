@@ -10,9 +10,9 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                                      |                Key                | Description                                                 |
-|:------------------------------------------------|:---------------------------------:|:------------------------------------------------------------|
-| `Cannes Golden Palm Winners`                    |              `palm`               | Collection of Cannes Golden Palm Award Winners.             |
+| Collection                                      | Key                               | Description                                                 |
+|:------------------------------------------------|:----------------------------------|:------------------------------------------------------------|
+| `Cannes Golden Palm Winners`                    | `palm`                            | Collection of Cannes Golden Palm Award Winners.             |
 | `Cannes <<year>>`<br>**Example:** `Cannes 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Cannes Film Award Winners for the given year. |
 
 ## Config

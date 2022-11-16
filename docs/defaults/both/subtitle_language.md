@@ -8,11 +8,11 @@ The `subtitle_language` Default Metadata File is used to dynamically create coll
 
 ## Collections Section 11
 
-| Collection                                               |                    Key                    | Description                                                                 |
-|:---------------------------------------------------------|:-----------------------------------------:|:----------------------------------------------------------------------------|
-| `Subtitle Language Collections`                          |                `separator`                | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                               | Key                                       | Description                                                                 |
+|:---------------------------------------------------------|:------------------------------------------|:----------------------------------------------------------------------------|
+| `Subtitle Language Collections`                          | `separator`                               | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` | Collection of Movies/Shows that have this Subtitle Language.                |
-| `Other Subtitles`                                        |                  `other`                  | Collection of Movies/Shows that are less common Languages.                  |
+| `Other Subtitles`                                        | `other`                                   | Collection of Movies/Shows that are less common Languages.                  |
 
 ## Config
 

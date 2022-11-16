@@ -8,13 +8,13 @@ The `tmdb` Default Metadata File is used to create collections based on TMDb Cha
 
 ## Collections Section 01
 
-| Collection          |    Key     | Description                                          |
-|:--------------------|:----------:|:-----------------------------------------------------|
+| Collection          | Key        | Description                                          |
+|:--------------------|:-----------|:-----------------------------------------------------|
 | `TMDb Popular`      | `popular`  | Collection of the Most Popular Movies/Shows on TMDb. |
-| `TMDb Top Rated`    |   `top`    | Collection of the Top Rated Movies/Shows on TMDb.    |
+| `TMDb Top Rated`    | `top`      | Collection of the Top Rated Movies/Shows on TMDb.    |
 | `TMDb Trending`     | `trending` | Collection of Trending Movies/Shows on TMDb.         |
-| `TMDb Airing Today` |  `airing`  | Collection of Shows Airing Today on TMDb.            |
-| `TMDb On The Air`   |   `air`    | Collection of Shows currently On The Air on TMDb.    |
+| `TMDb Airing Today` | `airing`   | Collection of Shows Airing Today on TMDb.            |
+| `TMDb On The Air`   | `air`      | Collection of Shows currently On The Air on TMDb.    |
 
 ## Config
 

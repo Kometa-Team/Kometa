@@ -10,12 +10,12 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                         |     Key     | Description                                                   |
-|:-----------------------------------|:-----------:|:--------------------------------------------------------------|
+| Collection                         | Key         | Description                                                   |
+|:-----------------------------------|:------------|:--------------------------------------------------------------|
 | `Berlinale Golden Bears`           | `berlinale` | Collection of Berlinale Golden Bears Award Winners.           |
-| `César Best Film Winners`          |   `cesar`   | Collection of César Best Film Winners Award Winners.          |
-| `Razzies Golden Raspberry Winners` |  `razzie`   | Collection of Razzies Golden Raspberry Winners Award Winners. |
-| `Venice Golden Lions`              |  `venice`   | Collection of Venice Golden Lions Award Winners.              |
+| `César Best Film Winners`          | `cesar`     | Collection of César Best Film Winners Award Winners.          |
+| `Razzies Golden Raspberry Winners` | `razzie`    | Collection of Razzies Golden Raspberry Winners Award Winners. |
+| `Venice Golden Lions`              | `venice`    | Collection of Venice Golden Lions Award Winners.              |
 
 ## Config
 

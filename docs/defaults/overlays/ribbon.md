@@ -8,13 +8,13 @@ The `ribbon` Default Overlay File is used to create a ribbon overlay based on th
 
 ## Supported Ribbon
 
-| Ribbon                          |     Key      | Weight |
-|:--------------------------------|:------------:|:------:|
-| Oscars Best Picture             |   `oscars`   |  `50`  |
-| IMDb Top 250                    |    `imdb`    |  `40`  |
-| Rotten Tomatoes Certified Fresh |   `rotten`   |  `30`  |
-| Metacritic Must See             | `metacritic` |  `20`  |
-| Commonsense Selection           |   `common`   |  `10`  |
+| Ribbon                          | Key          | Weight |
+|:--------------------------------|:-------------|:-------|
+| Oscars Best Picture             | `oscars`     | `50`   |
+| IMDb Top 250                    | `imdb`       | `40`   |
+| Rotten Tomatoes Certified Fresh | `rotten`     | `30`   |
+| Metacritic Must See             | `metacritic` | `20`   |
+| Commonsense Selection           | `common`     | `10`   |
 
 ## Config
 
@@ -39,10 +39,10 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
 | Variable            | Default  |
-|:--------------------|:--------:|
-| `horizontal_offset` |   `0`    |
+|:--------------------|:---------|
+| `horizontal_offset` | `0`      |
 | `horizontal_align`  | `right`  |
-| `vertical_offset`   |   `0`    |
+| `vertical_offset`   | `0`      |
 | `vertical_align`    | `bottom` |
 
 | Variable                       | Description & Values                                                                                         |

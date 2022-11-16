@@ -101,3 +101,11 @@ To authenticate MyAnimeList the first time, you need run the container with the 
 <h4>OAuth Flow using unRAID Docker</h4>
 
 Directions on how to authenticate MyAnimeList on unRAID can be found on the [unRAID Walkthrough](../home/guides/unraid.md#advanced-installation-authenticating-trakt-or-myanimelist) page.
+
+## Online Authorization Script
+
+Plex Meta Manager requires interactive mode to be able to enter the Client ID and Client Secret. Some systems (namely NAS) make this difficult to accomplish. Chazlarson has developed an online script that can be run to generate the MAL and Trakt authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration file.
+
+The Online Auth tool can be found [here](https://replit.com/@chazlarson/MALAuth).
+
+Simply press the play button, wait a little bit, and then follow the on-screen prompts.

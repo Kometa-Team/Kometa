@@ -8,9 +8,9 @@ The `director` Default Metadata File is used to dynamically create collections b
 
 ## Collections Section 18
 
-| Collection                                         |                        Key                         | Description                                                                 |
-|:---------------------------------------------------|:--------------------------------------------------:|:----------------------------------------------------------------------------|
-| `Directors Collections`                            |                    `separator`                     | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                         | Key                                                | Description                                                                 |
+|:---------------------------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|
+| `Directors Collections`                            | `separator`                                        | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<director_name>>`<br>**Example:** `Frank Welker` | `<<director_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by the Director.                                       |
 
 ### Rainier Style

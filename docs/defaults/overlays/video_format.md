@@ -10,14 +10,14 @@ The `video_format` Default Overlay File is used to create an overlay based on th
 
 ## Supported Video Formats
 
-| Video Format |   Key    | Weight |
-|:-------------|:--------:|:------:|
-| REMUX        | `remux`  |  `60`  |
-| BLU-RAY      | `bluray` |  `50`  |
-| WEB          |  `web`   |  `40`  |
-| HDTV         |  `hdtv`  |  `30`  |
-| DVD          |  `dvd`   |  `20`  |
-| SDTV         |  `sdtv`  |  `10`  |
+| Video Format | Key      | Weight |
+|:-------------|:---------|:-------|
+| REMUX        | `remux`  | `60`   |
+| BLU-RAY      | `bluray` | `50`   |
+| WEB          | `web`    | `40`   |
+| HDTV         | `hdtv`   | `30`   |
+| DVD          | `dvd`    | `20`   |
+| SDTV         | `sdtv`   | `10`   |
 
 ## Config
 
@@ -47,16 +47,16 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            |   Default   |
-|:--------------------|:-----------:|
-| `horizontal_offset` |    `15`     |
-| `horizontal_align`  |   `left`    |
-| `vertical_offset`   |    `30`     |
-| `vertical_align`    |  `bottom`   |
+| Variable            | Default     |
+|:--------------------|:------------|
+| `horizontal_offset` | `15`        |
+| `horizontal_align`  | `left`      |
+| `vertical_offset`   | `30`        |
+| `vertical_align`    | `bottom`    |
 | `back_color`        | `#00000099` |
-| `back_radius`       |    `30`     |
-| `back_width`        |    `305`    |
-| `back_height`       |    `105`    |
+| `back_radius`       | `30`        |
+| `back_width`        | `305`       |
+| `back_height`       | `105`       |
 
 | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                         |
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -8,10 +8,10 @@ The `oscars` Default Metadata File is used to create collections based on the Ac
 
 ## Collections Section 16
 
-| Collection                                                      |                Key                | Description                                            |
-|:----------------------------------------------------------------|:---------------------------------:|:-------------------------------------------------------|
-| `Oscars Best Picture Winners`                                   |          `best_picture`           | Collection of Oscars Best Picture Award Winners.       |
-| `Oscars Best Director Winners`                                  |          `best_director`          | Collection of Oscars Best Director Award Winners.      |
+| Collection                                                      | Key                               | Description                                            |
+|:----------------------------------------------------------------|:----------------------------------|:-------------------------------------------------------|
+| `Oscars Best Picture Winners`                                   | `best_picture`                    | Collection of Oscars Best Picture Award Winners.       |
+| `Oscars Best Director Winners`                                  | `best_director`                   | Collection of Oscars Best Director Award Winners.      |
 | `Oscars Winners <<year>>`<br>**Example:** `Oscars Winners 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Oscars Award Winners for the given year. |
 
 ## Config

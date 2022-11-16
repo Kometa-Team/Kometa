@@ -8,9 +8,9 @@ The `studio_anime` Default Metadata File is used to dynamically create collectio
 
 ## Collections Section 07
 
-| Collection                                           |                         Key                          | Description                                                                 |
-|:-----------------------------------------------------|:----------------------------------------------------:|:----------------------------------------------------------------------------|
-| `Studio Collections`                                 |                     `separator`                      | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                           | Key                                                  | Description                                                                 |
+|:-----------------------------------------------------|:-----------------------------------------------------|:----------------------------------------------------------------------------|
+| `Studio Collections`                                 | `separator`                                          | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<Studio>>`<br>**Example:** `Blumhouse Productions` | `<<Studio>>`<br>**Example:** `Blumhouse Productions` | Collection of Movies/Shows that have this Studio.                           |
 
 ## Config

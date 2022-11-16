@@ -8,9 +8,9 @@ The `decade` Default Metadata File is used to dynamically create collections bas
 
 ## Collections Section 12
 
-| Collection                                           |                Key                | Description                                                                 |
-|:-----------------------------------------------------|:---------------------------------:|:----------------------------------------------------------------------------|
-| `Decade Collections`                                 |            `separator`            | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                           | Key                               | Description                                                                 |
+|:-----------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|
+| `Decade Collections`                                 | `separator`                       | [Separator Collection](../separators) to denote the Section of Collections. |
 | `Best of <<Decade>>`<br>**Example:** `Best of 2020s` | `<<Year>>`<br>**Example:** `2020` | Collection of Movies released in this Decade.                               |
 
 ## Config

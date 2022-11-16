@@ -8,8 +8,8 @@ The `separator_award` Default Metadata File is used to create a seperator collec
 
 ## Collections Section 16
 
-| Collection          |     Key     | Description                                                                 |
-|:--------------------|:-----------:|:----------------------------------------------------------------------------|
+| Collection          | Key         | Description                                                                 |
+|:--------------------|:------------|:----------------------------------------------------------------------------|
 | `Award Collections` | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
 
 ## Config

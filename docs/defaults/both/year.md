@@ -8,9 +8,9 @@ The `year` Default Metadata File is used to dynamically create collections based
 
 ## Collections Section 13
 
-| Collection                                        |                Key                | Description                                                                 |
-|:--------------------------------------------------|:---------------------------------:|:----------------------------------------------------------------------------|
-| `Year Collections`                                |            `separator`            | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                                        | Key                               | Description                                                                 |
+|:--------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|
+| `Year Collections`                                | `separator`                       | [Separator Collection](../separators) to denote the Section of Collections. |
 | `Best of <<Year>>`<br>**Example:** `Best of 2022` | `<<Year>>`<br>**Example:** `2022` | Collection of Movies/Shows that have this Year.                             |
 
 ## Config

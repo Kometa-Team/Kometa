@@ -10,9 +10,9 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                                    |                Key                | Description                                                                                 |
-|:----------------------------------------------|:---------------------------------:|:--------------------------------------------------------------------------------------------|
-| `BAFTA Best Films`                            |              `best`               | Collection of British Academy of Film and Television Arts Best Film Award Winners.          |
+| Collection                                    | Key                               | Description                                                                                 |
+|:----------------------------------------------|:----------------------------------|:--------------------------------------------------------------------------------------------|
+| `BAFTA Best Films`                            | `best`                            | Collection of British Academy of Film and Television Arts Best Film Award Winners.          |
 | `BAFTA <<year>>`<br>**Example:** `BAFTA 2022` | `<<year>>`<br>**Example:** `2022` | Collection of British Academy of Film and Television Arts Award Winners for the given year. |
 
 ## Config

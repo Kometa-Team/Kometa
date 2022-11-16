@@ -8,21 +8,21 @@ The `seasonal` Default Metadata File is used to dynamically create seasonal coll
 
 ## Collections Section 00
 
-| Collection                   |      Key       | Description                                                                 |
-|:-----------------------------|:--------------:|:----------------------------------------------------------------------------|
-| `Seasonal Collections`       |  `separator`   | [Separator Collection](../separators) to denote the Section of Collections. |
-| `🎊 New Year's Day Movies`   |    `years`     | Collection of Movies related to New Year's Day.                             |
-| `💘 Valentine's Day Movies`  |  `valentine`   | Collection of Movies related to Valentine's Day.                            |
-| `☘ St. Patrick's Day Movies` |   `patrick`    | Collection of Movies related to St. Patrick's Day.                          |
-| `🐰 Easter Movies`           |    `easter`    | Collection of Movies related to Easter.                                     |
-| `🤱 Mother's Day Movies`     |    `mother`    | Collection of Movies related to Mother's Day.                               |
-| `🪖 Memorial Day Movies`     |   `memorial`   | Collection of Movies related to Memorial Day.                               |
-| `👨 Father's Day Movies`     |    `father`    | Collection of Movies related to Father's Day.                               |
+| Collection                   | Key            | Description                                                                 |
+|:-----------------------------|:---------------|:----------------------------------------------------------------------------|
+| `Seasonal Collections`       | `separator`    | [Separator Collection](../separators) to denote the Section of Collections. |
+| `🎊 New Year's Day Movies`   | `years`        | Collection of Movies related to New Year's Day.                             |
+| `💘 Valentine's Day Movies`  | `valentine`    | Collection of Movies related to Valentine's Day.                            |
+| `☘ St. Patrick's Day Movies` | `patrick`      | Collection of Movies related to St. Patrick's Day.                          |
+| `🐰 Easter Movies`           | `easter`       | Collection of Movies related to Easter.                                     |
+| `🤱 Mother's Day Movies`     | `mother`       | Collection of Movies related to Mother's Day.                               |
+| `🪖 Memorial Day Movies`     | `memorial`     | Collection of Movies related to Memorial Day.                               |
+| `👨 Father's Day Movies`     | `father`       | Collection of Movies related to Father's Day.                               |
 | `🎆 Independence Day Movies` | `independence` | Collection of Movies related to Independence Day.                           |
-| `⚒ Labor Day Movies`         |    `labor`     | Collection of Movies related to Labor Day.                                  |
-| `🎃 Halloween Movies`        |  `halloween`   | Collection of Movies related to Halloween.                                  |
+| `⚒ Labor Day Movies`         | `labor`        | Collection of Movies related to Labor Day.                                  |
+| `🎃 Halloween Movies`        | `halloween`    | Collection of Movies related to Halloween.                                  |
 | `🦃 Thanksgiving Movies`     | `thanksgiving` | Collection of Movies related to Thanksgiving.                               |
-| `🎅 Christmas Movies`        |  `christmas`   | Collection of Movies related to Christmas.                                  |
+| `🎅 Christmas Movies`        | `christmas`    | Collection of Movies related to Christmas.                                  |
 
 ## Config
 

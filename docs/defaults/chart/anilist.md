@@ -8,12 +8,12 @@ The `anilist` Default Metadata File is used to create collections based on Anili
 
 ## Collections Section 01
 
-| Collection          |    Key     | Description                                          |
-|:--------------------|:----------:|:-----------------------------------------------------|
+| Collection          | Key        | Description                                          |
+|:--------------------|:-----------|:-----------------------------------------------------|
 | `AniList Popular`   | `popular`  | Collection of the most Popular Anime on AniList.     |
-| `AniList Top Rated` |   `top`    | Collection of the Top Rated Anime on AniList.        |
+| `AniList Top Rated` | `top`      | Collection of the Top Rated Anime on AniList.        |
 | `AniList Trending`  | `trending` | Collection of the Trending Anime on AniList.         |
-| `AniList Season`    |  `season`  | Collection of the Current Season's Anime on AniList. |
+| `AniList Season`    | `season`   | Collection of the Current Season's Anime on AniList. |
 
 ## Config
 

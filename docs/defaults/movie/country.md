@@ -8,11 +8,11 @@ The `country` Default Metadata File is used to dynamically create collections ba
 
 ## Collections Section 09
 
-| Collection                              |                   Key                   | Description                                                                 |
-|:----------------------------------------|:---------------------------------------:|:----------------------------------------------------------------------------|
-| `Country Collections`                   |               `separator`               | [Separator Collection](../separators) to denote the Section of Collections. |
+| Collection                              | Key                                     | Description                                                                 |
+|:----------------------------------------|:----------------------------------------|:----------------------------------------------------------------------------|
+| `Country Collections`                   | `separator`                             | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<Country>>`<br>**Example:** `Germany` | `<<Country>>`<br>**Example:** `Germany` | Collection of Movies that have this Country.                                |
-| `Other Countries`                       |                 `other`                 | Collection of Movies that are in other uncommon Countries.                  |
+| `Other Countries`                       | `other`                                 | Collection of Movies that are in other uncommon Countries.                  |
 
 ## Config
 

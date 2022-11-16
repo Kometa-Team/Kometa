@@ -55,45 +55,45 @@ For example: `collection_section: 01` translates to `sort_title: "!<<collection_
 This is the default PMM collection ordering:
 
 | Collection             | Collection Section |
-|:-----------------------|:------------------:|
-| `seasonal`             |        `00`        |
-| `anilist`              |        `01`        |
-| `basic`                |        `01`        |
-| `imdb`                 |        `01`        |
-| `flixpatrol`           |        `01`        |
-| `myanimelist`          |        `01`        |
-| `other_chart`          |        `01`        |
-| `tautulli`             |        `01`        |
-| `tmdb`                 |        `01`        |
-| `trakt`                |        `01`        |
-| `universe`             |        `02`        |
-| `streaming`            |        `03`        |
-| `network`              |        `04`        |
-| `genre`                |        `06`        |
-| `studio`               |        `07`        |
-| `country`              |        `09`        |
-| `audio_language`       |        `10`        |
-| `subtitle_language`    |        `11`        |
-| `decade`               |        `12`        |
-| `year`                 |        `13`        |
-| `content_rating_us`    |        `14`        |
-| `content_rating_uk`    |        `14`        |
-| `content_rating_cs`    |        `14`        |
-| `resolution`           |        `15`        |
-| `resolution_standards` |        `15`        |
-| `bafta`                |        `16`        |
-| `cannes`               |        `16`        |
-| `choice`               |        `16`        |
-| `emmy`                 |        `16`        |
-| `golden`               |        `16`        |
-| `oscars`               |        `16`        |
-| `other_award`          |        `16`        |  
-| `spirit`               |        `16`        |
-| `sundance`             |        `16`        |
-| `actor`                |        `17`        |
-| `director`             |        `18`        |
-| `producer`             |        `19`        |
-| `writer`               |        `20`        |
+|:-----------------------|:-------------------|
+| `seasonal`             | `00`               |
+| `anilist`              | `01`               |
+| `basic`                | `01`               |
+| `imdb`                 | `01`               |
+| `flixpatrol`           | `01`               |
+| `myanimelist`          | `01`               |
+| `other_chart`          | `01`               |
+| `tautulli`             | `01`               |
+| `tmdb`                 | `01`               |
+| `trakt`                | `01`               |
+| `universe`             | `02`               |
+| `streaming`            | `03`               |
+| `network`              | `04`               |
+| `genre`                | `06`               |
+| `studio`               | `07`               |
+| `country`              | `09`               |
+| `audio_language`       | `10`               |
+| `subtitle_language`    | `11`               |
+| `decade`               | `12`               |
+| `year`                 | `13`               |
+| `content_rating_us`    | `14`               |
+| `content_rating_uk`    | `14`               |
+| `content_rating_cs`    | `14`               |
+| `resolution`           | `15`               |
+| `resolution_standards` | `15`               |
+| `bafta`                | `16`               |
+| `cannes`               | `16`               |
+| `choice`               | `16`               |
+| `emmy`                 | `16`               |
+| `golden`               | `16`               |
+| `oscars`               | `16`               |
+| `other_award`          | `16`               |  
+| `spirit`               | `16`               |
+| `sundance`             | `16`               |
+| `actor`                | `17`               |
+| `director`             | `18`               |
+| `producer`             | `19`               |
+| `writer`               | `20`               |
 
 ## Customizing Configs
 

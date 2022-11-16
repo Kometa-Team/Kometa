@@ -14,6 +14,6 @@ These files apply playlists to the "Playlists" section of Plex and are applied b
 
 ### Playlist Files
 
-| Default              |    path    | Example Overlays                                       |
-|:---------------------|:----------:|:-------------------------------------------------------|
+| Default              | path       | Example Overlays                                       |
+|:---------------------|:-----------|:-------------------------------------------------------|
 | [Playlist](playlist) | `playlist` | Arrowverse (Timeline Order), Pokémon (Timeline Order)  |

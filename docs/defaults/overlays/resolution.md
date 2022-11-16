@@ -10,35 +10,35 @@ The `resolution` Default Overlay File is used to create an overlay based on the 
 
 ## Supported Resolutions
 
-| Resolution     |    Key    |
-|:---------------|:---------:|
-| 4K             |   `4k`    |
-| 1080P          |  `1080p`  |
-| 720P           |  `720p`   |
-| 576P           |  `576p`   |
-| 480P           |  `480p`   |
-| DV             |   `dv`    |
-| HDR            |   `hdr`   |
+| Resolution     | Key       |
+|:---------------|:----------|
+| 4K             | `4k`      |
+| 1080P          | `1080p`   |
+| 720P           | `720p`    |
+| 576P           | `576p`    |
+| 480P           | `480p`    |
+| DV             | `dv`      |
+| HDR            | `hdr`     |
 
 ## Supported Editions
 
-| Edition             |       Key       | Weight |
-|:--------------------|:---------------:|:------:|
+| Edition             | Key             | Weight |
+|:--------------------|:----------------|:-------|
 | Director's Cut      | `directorscut`  | `150`  |
-| Extended Edition    |   `extended`    | `140`  |
-| Uncut Edition       |     `uncut`     | `130`  |
-| Unrated Edition     |    `unrated`    | `120`  |
-| Special Edition     |    `special`    | `110`  |
-| Final Cut           |   `finalcut`    | `100`  |
-| Anniversary Edition |  `anniversary`  |  `90`  |
-| Collector's Edition |   `collector`   |  `80`  |
-| International Cut   | `international` |  `70`  |
-| Theatrical Cut      |  `theatrical`   |  `60`  |
-| Ultimate Cut        |   `ultimate`    |  `50`  |
-| IMAX Enhanced       |   `enhanced`    |  `40`  |
-| IMAX                |     `imax`      |  `30`  |
-| Remastered          |  `remastered`   |  `20`  |
-| Criterion           |   `criterion`   |  `10`  |
+| Extended Edition    | `extended`      | `140`  |
+| Uncut Edition       | `uncut`         | `130`  |
+| Unrated Edition     | `unrated`       | `120`  |
+| Special Edition     | `special`       | `110`  |
+| Final Cut           | `finalcut`      | `100`  |
+| Anniversary Edition | `anniversary`   | `90`   |
+| Collector's Edition | `collector`     | `80`   |
+| International Cut   | `international` | `70`   |
+| Theatrical Cut      | `theatrical`    | `60`   |
+| Ultimate Cut        | `ultimate`      | `50`   |
+| IMAX Enhanced       | `enhanced`      | `40`   |
+| IMAX                | `imax`          | `30`   |
+| Remastered          | `remastered`    | `20`   |
+| Criterion           | `criterion`     | `10`   |
 
 ## Config
 
@@ -68,15 +68,15 @@ Note that the `templates_variables:` section only needs to be used if you do wan
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            |   Default   |
-|:--------------------|:-----------:|
-| `horizontal_offset` |    `15`     |
-| `horizontal_align`  |   `left`    |
-| `vertical_offset`   |    `15`     |
-| `vertical_align`    |    `top`    |
+| Variable            | Default     |
+|:--------------------|:------------|
+| `horizontal_offset` | `15`        |
+| `horizontal_align`  | `left`      |
+| `vertical_offset`   | `15`        |
+| `vertical_align`    | `top`       |
 | `back_color`        | `#00000099` |
-| `back_radius`       |    `30`     |
-| `back_width`        |    `305`    |
+| `back_radius`       | `30`        |
+| `back_width`        | `305`       |
 | `back_height`       | `105`/`189` |
 
 | Variable                     | Description & Values                                                                                                                           |

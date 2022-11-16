@@ -10,8 +10,8 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 
-| Collection                                                                            |                Key                | Description                                                        |
-|:--------------------------------------------------------------------------------------|:---------------------------------:|:-------------------------------------------------------------------|
+| Collection                                                                            | Key                               | Description                                                        |
+|:--------------------------------------------------------------------------------------|:----------------------------------|:-------------------------------------------------------------------|
 | `Independent Spirit Awards <<year>>`<br>**Example:** `Independent Spirit Awards 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Independent Spirit Award Winners for the given year. |
 
 ## Config
