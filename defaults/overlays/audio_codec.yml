@@ -65,7 +65,7 @@ templates:
           - key: mp3
             value: '(?i)^(?=.*(\bmp3(\b|\d))).*'
           - key: opus
-            value: '(?i)\^(?=.*(\b[^-]OPUS(\b|\d))).*'
+            value: '(?i)^(?=.*(\b(?<!-)OPUS(\b|\d))).*'
     ignore_blank_results: true
     plex_all: true
     filters:
