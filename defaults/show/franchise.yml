@@ -66,8 +66,8 @@ dynamic_collections:
       "121": Doctor Who
       "1402": The Walking Dead
       "4629": Stargate
-      "519": Law & Order
-      "5614": NCIS
+      "549": Law & Order
+      "4614": NCIS
       "1431": CSI
       "951": Archie Comics
       "31917": Pretty Little Liars
@@ -83,9 +83,9 @@ dynamic_collections:
       121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
       1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
       4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
-      549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  #Law & Order, Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Hate Crimes, Organized Crime
-      5614: [17610, 124271, 61387, 4376]  # NCIS, Los Angeles, New Orleans, Hawaii, JAG
-      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Cyber, Vegas
+      549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
+      4614: [17610, 124271, 61387, 4376]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG
+      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
       951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
       31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
       6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
