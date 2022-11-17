@@ -809,7 +809,7 @@ class Operations:
                     logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
             if not yaml:
                 yaml = YAML(path=self.library.metadata_backup["path"], create=True)
-            if "metadata" not in yaml.data:
+            if "metadata" not in yaml.data or not isinstance(yaml.data["metadata"], dict):
                 yaml.data["metadata"] = {}
             special_names = {}
             for mk, mv in yaml.data["metadata"].items():
