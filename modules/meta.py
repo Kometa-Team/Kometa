@@ -645,8 +645,8 @@ class MetadataFile(DataFile):
                                 decade = str(int(math.floor(item.year / 10) * 10))
                                 if decade not in addons:
                                     addons[decade] = []
-                                if item.year not in addons[decade]:
-                                    addons[decade].append(item.year)
+                                if str(item.year) not in addons[decade]:
+                                    addons[decade].append(str(item.year))
                                     all_keys[str(item.year)] = str(item.year)
                         auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                         default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
