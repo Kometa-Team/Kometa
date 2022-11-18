@@ -279,6 +279,10 @@ class DataFile:
                                     all_init_defaults[dk] = dv
                             elif input_value is None:
                                 optional.append(str(input_key))
+                                if input_key in variables:
+                                    variables.pop(input_key)
+                                if input_key in added_vars:
+                                    added_vars.pop(input_key)
                             elif overwrite_call:
                                 variables[input_key] = input_value
                             else:
