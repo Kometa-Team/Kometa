@@ -306,6 +306,8 @@ class DataFile:
                             key_name_variables[var_key] = var_value[language]
                     if "key_name" in variables:
                         variables["original_key_name"] = variables["key_name"]
+                        first_letter = str(variables["key_name"]).upper()[0]
+                        variables["key_name_first_letter"] = first_letter if first_letter.isalpha() else "#"
                         if variables["key_name"] in key_name_variables:
                             variables["key_name"] = key_name_variables[variables["key_name"]]
                         variables["translated_key_name"] = variables["key_name"]

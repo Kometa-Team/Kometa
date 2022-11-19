@@ -40,7 +40,8 @@ templates:
       order_<<key>>: <<order>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
-      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+      url_poster_<<key>>: <<url_poster>>
     optional:
       - use_<<key>>
       - allowed_libraries
