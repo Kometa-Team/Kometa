@@ -226,7 +226,7 @@ class MyLogger:
             self.spacing = 0
 
     def secret(self, text):
-        if str(text) not in self.secrets:
+        if text and str(text) not in self.secrets:
             self.secrets.append(str(text))
 
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):

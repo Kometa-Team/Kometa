@@ -183,12 +183,12 @@ def start(attrs):
     logger.info_center("                                                                     |___/           ")
     system_ver = "Docker" if is_docker else f"Python {platform.python_version()}"
     logger.info(f"    Version: {version[0]} ({system_ver})")
-    logger.info(f"    Platform: {platform.platform()}")
-    logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     latest_version = util.current_version(version)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
+    logger.info(f"    Platform: {platform.platform()}")
+    logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif "test" in attrs and attrs["test"]:                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -604,6 +604,8 @@ def run_collection(config, library, metadata, requested_collections):
             if len(builder.smart_filter_details) > 0:
                 logger.info("")
                 logger.info(builder.smart_filter_details)
+                logger.info("")
+                logger.info(f"Items Found: {builder.beginning_count}")
 
             items_added = 0
             items_removed = 0
@@ -648,10 +650,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
             valid = True
-            if builder.build_collection and not builder.blank_collection and (
-                    (not builder.smart_url and items_added + builder.beginning_count < builder.minimum)
-                    or (builder.smart_url and len(library.get_filter_items(builder.smart_url)) < builder.minimum)
-            ):
+            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
