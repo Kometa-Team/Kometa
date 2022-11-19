@@ -423,6 +423,7 @@ class CollectionBuilder:
             self.ignore_blank_results = util.parse(self.Type, "ignore_blank_results", self.data, datatype="bool", methods=methods, default=True)
 
         self.smart_filter_details = ""
+        self.smart_label_url = None
         self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
         self.smart_label_collection = False
         if "smart_label" in methods and not self.playlist and not self.overlay and not self.library.is_music:
@@ -445,7 +446,7 @@ class CollectionBuilder:
                     logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
         if self.smart_label_collection and self.library.smart_label_check(self.name):
             try:
-                _, self.smart_filter_details, _ = self.build_filter("smart_label", self.smart_label, default_sort="random")
+                _, self.smart_filter_details, self.smart_label_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
             except FilterFailed as e:
                 if self.ignore_blank_results:
                     raise
@@ -649,7 +650,7 @@ class CollectionBuilder:
             if isinstance(self.custom_sort, list) and not self.custom_sort:
                 raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
-        if self.smart_url or self.smart_label_collection:
+        if self.smart:
             self.custom_sort = False
 
         for method_key, method_data in self.data.items():
@@ -810,14 +811,18 @@ class CollectionBuilder:
                     self.obj = None
             except Failed:
                 self.obj = None
-
+            if self.smart:
+                check_url = self.smart_url if self.smart_url else self.smart_label_url
+                if self.obj and check_url != self.library.smart_filter(self.obj):
+                    self.library.update_smart_collection(self.obj, check_url)
+                    logger.info(f"Detail: Smart Collection updated to {check_url}")
+                self.beginning_count = len(self.library.get_filter_items(check_url))
             if self.obj:
                 self.exists = True
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
-                self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
-            elif self.smart_label_collection:
-                self.beginning_count = len(self.library.search(label=self.name))
+                if not self.smart:
+                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
         else:
             self.obj = None
             self.sync = False
@@ -2553,10 +2558,6 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        if self.smart_url and self.smart_url != self.library.smart_filter(self.obj):
-            self.library.update_smart_collection(self.obj, self.smart_url)
-            logger.info(f"Detail: Smart Filter updated to {self.smart_url}")
-            updated_details.append("Smart Filter")
         if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
         elif "tmdb_description" in self.summaries:          summary = ("tmdb_description", self.summaries["tmdb_description"])
         elif "letterboxd_description" in self.summaries:    summary = ("letterboxd_description", self.summaries["letterboxd_description"])
