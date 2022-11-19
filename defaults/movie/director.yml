@@ -42,8 +42,7 @@ dynamic_collections:
         default: tmdb
       translation_key:
         default: director
-      image:
-        default: people/<<style>>/<<key_encoded>>
       style:
         default: bw
-      
+      url_poster:
+        default: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>>.jpg
