@@ -102,7 +102,7 @@ For Windows 10, you will need to enable scripts in PowerShell.  Follow the instr
 
 ### Installing git
 
-To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably isn't in Windows.
+To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably is not in Windows.
 
 First let's check if it's installed already [type this into your terminal]:
 
