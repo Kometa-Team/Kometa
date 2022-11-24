@@ -88,7 +88,7 @@ The scheduling options are:
 | Non Existing | Updates if it doesn't exist                                                                      | non_existing          | `non_existing`                    |
 | All          | Requires that all comma separated scheduling options inside its brackets be meet in order to run | all[Options]          | `all[weekly(sunday), hourly(17)]` |
 
-* `daily` is the default when `schedule` isn't specified.
+* `daily` is the default when `schedule` is not specified.
 * You can run the script multiple times per day but using the `--time` command line argument detailed on the [Run Commands & Environmental Variables Page](../../home/environmental.md#time-to-run).
 * You can have multiple scheduling options as a list.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
