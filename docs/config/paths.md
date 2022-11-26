@@ -112,7 +112,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/imdb.yml).
+* Then, look at the [PMM folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/defaults) within the GitHub PMM Repo for a file called `tmdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/master/defaults/chart/tmdb.yml).
 * Then, look at the within the Custom Defined Repo for a file called `charts.yml`.
 * Finally, load the metadata file located at `https://somewhere.com/PopularTV.yml`
 
@@ -145,7 +145,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `overlays.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `overlay configs`, and then load any metadata files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `pmm: imdb.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/overlays/imdb.yml).
+* Then, look at the [PMM folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/defaults/overlays) within the GitHub PMM Repo for a file called `imdb.yml`.
 * Then, look at the within the Custom Defined Repo for a file called `overlays.yml`.
 * Finally, load the metadata file located at `https://somewhere.com/Overlays.yml`
 
@@ -176,7 +176,7 @@ Within the above example, PMM will:
 
 * First, look within the root of the PMM directory (also known as `config/`) for a playlist file named `Playlists.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `Playlists`, and then load any playlist files within that directory.
-* Then, look at the [meisnate12 folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12) within the GitHub Configs Repo for a file called `MovieCharts.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/meisnate12/Playlists.yml).
+* Then, look at the [PMM folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/defaults) within the GitHub PMM Repo for a file called `playlist.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/master/defaults/playlist.yml).
 * Then, look at the within the Custom Defined Repo for a file called `playlists.yml`.
 * Finally, load the playlist file located at `https://somewhere.com/Playlists.yml`
 
@@ -208,7 +208,7 @@ Within the above example, PMM will:
 * First, look within the root of the PMM directory (also known as `config/`) for a metadata file named `templates.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
 * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `templates`, and then load any metadata files within that directory.
 * Then, load the metadata file located at `https://somewhere.com/templates.yml`.
-* Then, look at the [PMM folder](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM) within the GitHub Configs Repo for a file called `templates.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/PMM/templates.yml).
+* Then, look at the [PMM folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/defaults) within the GitHub PMM Repo for a file called `templates.yml` which it finds [here](https://github.com/meisnate12/Plex-Meta-Manager/blob/master/defaults/templates.yml).
 * Finally, look at the within the Custom Defined Repo for a file called `templates.yml`.
 
 </details>
