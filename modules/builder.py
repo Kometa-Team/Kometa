@@ -804,13 +804,15 @@ class CollectionBuilder:
         if self.build_collection:
             try:
                 self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+            except Failed:
+                self.obj = None
+            else:
                 if (self.smart and not self.obj.smart) or (not self.smart and self.obj.smart):
                     logger.info("")
                     logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
-                    self.library.query(self.obj.delete)
+                    self.library.delete(self.obj)
                     self.obj = None
-            except Failed:
-                self.obj = None
+
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
                 if self.obj and check_url != self.library.smart_filter(self.obj):
@@ -2780,14 +2782,14 @@ class CollectionBuilder:
         else:
             output = ""
         if self.obj:
-            self.library.query(self.obj.delete)
+            self.library.delete(self.obj)
 
         if self.playlist and self.valid_users:
             for user in self.valid_users:
                 try:
                     self.library.delete_user_playlist(self.obj.title, user)
                     output += f"\nPlaylist deleted on User {user}"
-                except NotFound:
+                except Failed:
                     output += f"\nPlaylist not found on User {user}"
         return output
 
@@ -2799,7 +2801,7 @@ class CollectionBuilder:
             for user in self.valid_users:
                 try:
                     self.library.delete_user_playlist(self.obj.title, user)
-                except NotFound:
+                except Failed:
                     pass
                 self.obj.copyToUser(user)
                 logger.info(f"Playlist: {self.name} synced to {user}")

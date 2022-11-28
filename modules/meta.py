@@ -1005,8 +1005,11 @@ class MetadataFile(DataFile):
                             sync.pop(other_name)
                         self.collections[other_name] = col
                     for col_title, col in sync.items():
-                        col.delete()
-                        logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
+                        try:
+                            self.library.delete(col)
+                            logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
+                        except Failed as e:
+                            logger.error(e)
                 except Failed as e:
                     logger.error(e)
                     logger.error(f"{map_name} Dynamic Collection Failed")

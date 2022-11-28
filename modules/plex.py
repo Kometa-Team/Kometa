@@ -555,6 +555,13 @@ class Plex(Library):
     def query(self, method):
         return method()
 
+    def delete(self, obj):
+        try:
+            return self.query(obj.delete)
+        except Exception:
+            logger.stacktrace()
+            raise Failed(f"Plex Error: Failed to delete {obj.title}")
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def query_data(self, method, data):
         return method(data)
@@ -708,7 +715,7 @@ class Plex(Library):
         return self._users
 
     def delete_user_playlist(self, title, user):
-        self.PlexServer.switchUser(user).playlist(title).delete()
+        self.delete(self.PlexServer.switchUser(user).playlist(title))
 
     @property
     def account(self):
