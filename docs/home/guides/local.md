@@ -76,9 +76,10 @@ First let's check if it's installed already [type this into your terminal]:
 
 ```
 python3 --version
+python --version
 ```
 
-If this doesn't return `3.7.0` or higher, you'll need to get Python 3 installed.
+If one of these doesn't return `3.7.0` or higher, you'll need to get Python 3 installed.
 
 ````{tab} Linux
 <br/>
@@ -90,13 +91,22 @@ Follow the instructions here: [Installing Python 3 on Mac OS X](https://docs.pyt
 <br/>
 ````
 ````{tab} Windows:
-Go to http://www.python.org/download and download the latest version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10.4.
+Go to http://www.python.org/download and download one less than the latest version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10.  The latest version of Python is 3.11, and there is one piece of PMM that is not ready for 3.11.  It will be some time soon, but that isn't under PMM control, so to be safe, grab one back from the latest.
 
 Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
 
 For Windows 10, you will need to enable scripts in PowerShell.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10) to do so.  If you skip this step you're going to hit a hard stop in a little bit.
 <br/>
 ````
+
+Once you've completed the install, verify that will will work on the command line.  Close the terminal or Powershell window and open a new one, then type this into your terminal:
+
+```
+python3 --version
+python --version
+```
+
+If one of these doesn't return the version you just downloaded and installed, back up and check your work above.
 
 ---
 
@@ -133,6 +143,14 @@ Run the install; you can probably just accept the defaults and click through exc
 This install comes with its own command line interface.  **Do not use this interface in this walkthrough**.  Continue to do everything here in Powershell.
 <br/>
 ````
+
+Once you've completed the install, verify that will will work on the command line.  Close the terminal or Powershell window and open a new one, then type this into your terminal:
+
+```
+git --version
+```
+
+If that doesn't return the version you just downloaded and installed, back up and check your work above.
 
 ---
 
