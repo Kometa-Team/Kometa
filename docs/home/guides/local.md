@@ -112,7 +112,7 @@ If one of these doesn't return the version you just downloaded and installed, ba
 
 ### Installing git
 
-To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably isn't in Windows.
+To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably is not in Windows.
 
 First let's check if it's installed already [type this into your terminal]:
 

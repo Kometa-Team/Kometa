@@ -103,7 +103,7 @@ collections:   <<< THIS LINE WAS MISSING
       - https://trakt.tv/users/kesleyalfa/lists/year-2011
 ```
 
-File isn't where PMM expects it:
+File is not where PMM expects it:
 ```
 | Loading Metadata File: config/Movies.yml                                                           |
 | YAML Error: File Error: File does not exist /Users/Lucky/Plex-Meta-Manager/config/Movies.yml       |
