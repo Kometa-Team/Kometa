@@ -31,7 +31,7 @@ The available attributes for the operations attribute are as follows
 | [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                               |
 | [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                                 |
 | [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                                |
-| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title isn not locked.                                                |
+| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title is not locked.                                                |
 | [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                                   |
 | [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                                  |
 | [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                                        |
@@ -272,7 +272,7 @@ Search though every track in a music library and replace any blank track titles 
 
 ## Remove Title Parentheses
 
-Search through every title and remove all ending parentheses in an items title if the title isn not locked.
+Search through every title and remove all ending parentheses in an items title if the title is not locked.
 
 **Attribute:** `remove_title_parentheses`
 
