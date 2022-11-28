@@ -459,10 +459,10 @@ def run_libraries(config):
                 logger.info("")
                 for collection in library.get_all_collections():
                     try:
-                        library.query(collection.delete)
+                        library.delete(collection)
                         logger.info(f"Collection {collection.title} Deleted")
-                    except NotFound:
-                        logger.error(f"Collection {collection.title} Failed to Delete")
+                    except Failed as e:
+                        logger.error(e)
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             if delete_labels and not playlist_only:

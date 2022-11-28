@@ -731,8 +731,11 @@ class Operations:
                     and (configured is None
                          or (configured is True and col.title in self.library.collections)
                          or (configured is False and col.title not in self.library.collections)):
-                self.library.query(col.delete)
-                logger.info(f"{col.title} Deleted")
+                try:
+                    self.library.delete(col)
+                    logger.info(f"{col.title} Deleted")
+                except Failed as e:
+                    logger.error(e)
             else:
                 if "PMM" not in labels:
                     unmanaged_collections.append(col)
