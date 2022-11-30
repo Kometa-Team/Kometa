@@ -16,7 +16,7 @@ radarr:
   add_missing: false
   add_existing: false
   root_folder_path: S:/Movies
-  monitor: true
+  monitor: movie
   availability: announced
   quality_profile: HD-1080p
   tag: pmm
@@ -33,7 +33,7 @@ radarr:
 | `add_existing`     | Adds all existing movies in collections to Radarr.<br>Use the `radarr_add_existing` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to add existing per collection.<br>**boolean:** true or false                                                             | false       | &#10060; |
 | `upgrade_existing` | Upgrades all existing movies in collections to match the Quality Profile of the collection.<br>Use the `radarr_upgrade_existing` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to upgrade the Quality Profile per collection.<br>**boolean:** true or false | false       | &#10060; |
 | `root_folder_path` | Default Root Folder Path to use when adding new movies.<br>Use the `radarr_folder` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Root Folder per collection.                                                                                     | N/A         | &#9989;  |
-| `monitor`          | Monitor the movie when adding new movies.<br>Use the `radarr_monitor` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Monitor value per collection.                                                                                                | true        | &#10060; |
+| `monitor`          | Monitor the movie when adding new movies.<br>Use the `radarr_monitor` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Monitor value per collection.<br>**Options:** `movie`, `collection`, `none`                                                  | true        | &#10060; |
 | `availability`     | Default Minimum Availability to use when adding new movies.<br>Use the `radarr_availability` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Availability per collection.<br>**Options:** `announced`, `cinemas`, `released`, `db`                 | `announced` | &#9989;  |
 | `quality_profile`  | Default Quality Profile to use when adding new movies.<br>Use the `radarr_quality` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Quality Profile per collection.                                                                                 | N/A         | &#10060; |
 | `tag`              | Default this list or comma-separated string of tags to use when adding new movies.<br>Use the `radarr_tag` [Radarr Details](../metadata/details/arr.md#radarr-definition-settings) in the collection definition to set the Tags per collection.                                                                    | ` `         | &#10060; |
@@ -76,7 +76,7 @@ radarr:
   add_existing: false
   upgrade_existing: false
   root_folder_path: /movies
-  monitor: true
+  monitor: movie
   availability: released
   quality_profile: Any
   tag:

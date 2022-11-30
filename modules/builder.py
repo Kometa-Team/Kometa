@@ -1013,6 +1013,8 @@ class CollectionBuilder:
         elif method_name == "radarr_monitor":
             if str(method_data).lower() in radarr.monitor_translation:
                 self.radarr_details["monitor"] = str(method_data).lower()
+            elif isinstance(method_data, bool):
+                self.radarr_details["monitor"] = "movie" if method_data else "none"
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either movie, collection, or none")
         elif method_name == "radarr_folder":

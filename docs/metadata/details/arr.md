@@ -10,7 +10,7 @@ All the following attributes can override the global/library [Radarr](../../conf
 | `radarr_add_existing`     | **Description:** Override Radarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                      |
 | `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                  |
 | `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                        |
-| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `true` or `false`                                                                                           |
+| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `movie`, `collection`, or `none`                                                                            |
 | `radarr_availability`     | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                               |
 | `radarr_quality`          | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                              |
 | `radarr_tag`              | **Description:** Override Radarr `tag` attribute<br>**Values:** List or comma-separated string of tags                                                                          |
