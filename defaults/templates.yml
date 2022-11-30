@@ -161,9 +161,10 @@ templates:
     default:
       collection_order: custom
       collection_order_<<key>>: <<collection_order>>
+      cache_builders: 1
     collection_order: <<collection_order_<<key>>>>
     sync_mode: sync
-    cache_builders: 1
+    cache_builders: <<cache_builders>>
 
   other_collection:
     default:
