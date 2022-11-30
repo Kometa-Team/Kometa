@@ -932,7 +932,9 @@ class MetadataFile(DataFile):
                     logger.debug(f"Sync: {sync}")
                     logger.debug(f"Include: {include}")
                     logger.debug(f"Other Name: {other_name}")
-                    logger.debug(f"Keys (Title)")
+                    if not auto_list:
+                        raise Failed("No Keys found to create a set of Dynamic Collections")
+                    logger.debug(f"Keys (Title):")
                     for key, value in auto_list.items():
                         logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 

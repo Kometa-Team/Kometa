@@ -41,7 +41,7 @@ dynamic_collections:
       search_term:
         default: country
       image:
-        default: country/<<style>>/<<key_name_encoded>>
+        default: country/<<style>>/<<original_key_name_encoded>>
       style:
         default: white
       translation_key:

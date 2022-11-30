@@ -1008,8 +1008,13 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower()
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor", "radarr_search"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
+        elif method_name == "radarr_monitor":
+            if str(method_data).lower() in radarr.monitor_translation:
+                self.radarr_details["monitor"] = str(method_data).lower()
+            else:
+                raise Failed(f"{self.Type} Error: {method_name} attribute must be either movie, collection, or none")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
         elif method_name == "radarr_availability":
@@ -2733,15 +2738,20 @@ class CollectionBuilder:
                     raise Failed(str(e))
             items = self.library.get_filter_items(search_data[2])
         previous = None
+        sort_edit = False
         for i, item in enumerate(items, 0):
             try:
                 if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
                     text = f"after {util.item_title(previous)}" if previous else "to the beginning"
                     self.library.moveItem(self.obj, item, previous)
                     logger.info(f"Moving {util.item_title(item)} {text}")
+                    sort_edit = True
                 previous = item
             except Failed:
                 logger.error(f"Failed to Move {util.item_title(item)}")
+                sort_edit = True
+        if not sort_edit:
+            logger.info("No Sorting Required")
 
     def sync_trakt_list(self):
         logger.info("")
