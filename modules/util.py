@@ -28,6 +28,9 @@ class Failed(Exception):
 class FilterFailed(Failed):
     pass
 
+class Continue(Exception):
+    pass
+
 class Deleted(Exception):
     pass
 

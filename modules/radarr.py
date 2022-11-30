@@ -1,5 +1,5 @@
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, Continue
 from arrapi import RadarrAPI
 from arrapi.exceptions import ArrException
 
@@ -7,8 +7,10 @@ logger = util.logger
 
 builders = ["radarr_all", "radarr_taglist"]
 availability_translation = {"announced": "announced", "cinemas": "inCinemas", "released": "released", "db": "preDB"}
+monitor_translation = {"movie": "movieOnly", "collection": "movieAndCollection", "none": "none"}
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
+monitor_descriptions = {"movie": "Monitor Only the Movie", "collection": "Monitor the Movie and Collection", "none": "Do not Monitor"}
 
 class Radarr:
     def __init__(self, config, library, params):
@@ -53,7 +55,9 @@ class Radarr:
             logger.debug(tmdb_id)
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
         folder = options["folder"] if "folder" in options else self.root_folder_path
-        monitor = options["monitor"] if "monitor" in options else self.monitor
+        monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
+        if not self.api._raw.v4:
+            monitor = monitor != "none"
         availability = availability_translation[options["availability"] if "availability" in options else self.availability]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         tags = options["tag"] if "tag" in options else self.tag
@@ -72,33 +76,23 @@ class Radarr:
         exists = []
         skipped = []
         invalid = []
+        excluded = []
         invalid_root = []
         movies = []
         path_lookup = {}
         mismatched = {}
         path_in_use = {}
 
-        def mass_add():
-            try:
-                _a, _e, _i = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
-                                                          availability, tags, per_request=100)
-                added.extend(_a)
-                exists.extend(_e)
-                invalid.extend(_i)
-            except ArrException as e:
-                logger.stacktrace()
-                raise Failed(f"Radarr Error: {e}")
-
         for i, item in enumerate(tmdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tmdb_id = item[0] if isinstance(item, tuple) else item
             logger.ghost(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
-            if self.config.Cache:
-                _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
-                if _id:
-                    skipped.append(item)
-                    continue
             try:
+                if self.config.Cache:
+                    _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
+                    if _id:
+                        skipped.append(item)
+                        continue
                 if tmdb_id in arr_ids:
                     exists.append(arr_ids[tmdb_id])
                     continue
@@ -107,12 +101,12 @@ class Radarr:
                     continue
                 if path and not path.startswith(folder):
                     invalid_root.append(item)
-                    continue
+                    raise Continue
                 movie = self.api.get_movie(tmdb_id=tmdb_id)
                 logger.trace(f"Folder to Check: {folder}/{movie.folder}")
                 if f"{folder}/{movie.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{movie.folder}"] = tmdb_id
-                    continue
+                    raise Continue
                 if path:
                     movies.append((movie, path))
                     path_lookup[path] = tmdb_id
@@ -120,12 +114,20 @@ class Radarr:
                     movies.append(movie)
             except ArrException:
                 invalid.append(item)
-            if len(movies) == 100 or len(tmdb_ids) == i:
-                mass_add()
-                movies = []
-        if movies:
-            mass_add()
-            movies = []
+            except Continue:
+                pass
+            if movies and (len(movies) == 100 or len(tmdb_ids) == i):
+                try:
+                    _a, _e, _i, _x = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
+                                                                  availability, tags, per_request=100)
+                    added.extend(_a)
+                    exists.extend(_e)
+                    invalid.extend(_i)
+                    excluded.extend(_x)
+                    movies = []
+                except ArrException as e:
+                    logger.stacktrace()
+                    raise Failed(f"Radarr Error: {e}")
 
         qp = None
         for profile in self.profiles:
@@ -156,8 +158,8 @@ class Radarr:
                     for movie in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {movie.tmdbId:<7} | {movie.title}")
             if len(skipped) > 0:
-                for movie in skipped:
-                    logger.info(f"Skipped: In Cache | {movie}")
+                logger.info(f"Skipped In Cache: {skipped}")
+            logger.info("")
             logger.info(f"{len(exists) + len(skipped)} Movie{'s' if len(skipped) > 1 else ''} already exist in Radarr")
 
         if len(mismatched) > 0:
@@ -165,6 +167,7 @@ class Radarr:
             logger.info("Items in Plex that have already been added to Radarr but under a different TMDb ID then in Plex")
             for path, tmdb_id in mismatched.items():
                 logger.info(f"Plex TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
+            logger.info("")
             logger.info(f"{len(mismatched)} Movie{'s' if len(mismatched) > 1 else ''} with mismatched TMDb IDs")
 
         if len(path_in_use) > 0:
@@ -172,18 +175,26 @@ class Radarr:
             logger.info("TMDb IDs that cannot be added to Radarr because the path they will use is already in use by a different TMDb ID")
             for path, tmdb_id in path_in_use.items():
                 logger.info(f"TMDb ID: {tmdb_id:<7} | Radarr TMDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
+            logger.info("")
             logger.info(f"{len(path_in_use)} Movie{'s' if len(path_in_use) > 1 else ''} with paths already in use by other TMDb IDs")
 
         if len(invalid) > 0:
             logger.info("")
-            for tmdb_id in invalid:
-                logger.info(f"Invalid TMDb ID | {tmdb_id}")
+            logger.info(f"Invalid TMDb IDs: {invalid}")
+            logger.info("")
             logger.info(f"{len(invalid)} Movie{'s' if len(invalid) > 1 else ''} with Invalid IDs")
+
+        if len(excluded) > 0:
+            logger.info("")
+            logger.info(f"Excluded TMDb IDs: {excluded}")
+            logger.info("")
+            logger.info(f"{len(excluded)} Movie{'s' if len(excluded) > 1 else ''} ignored by Radarr's Exclusion List")
 
         if len(invalid_root) > 0:
             logger.info("")
             for tmdb_id, path in invalid_root:
                 logger.info(f"Invalid Root Folder for TMDb ID | {tmdb_id:<7} | {path}")
+            logger.info("")
             logger.info(f"{len(invalid_root)} Movie{'s' if len(invalid_root) > 1 else ''} with Invalid Paths")
 
         return added

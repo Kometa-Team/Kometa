@@ -34,7 +34,7 @@ dynamic_collections:
       search_term:
         default: genre
       image:
-        default: genre/<<key_name_encoded>>
+        default: genre/<<original_key_name_encoded>>
       translation_key:
         default: genre
     addons:

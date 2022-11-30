@@ -1,5 +1,5 @@
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, Continue
 from arrapi import SonarrAPI
 from arrapi.exceptions import ArrException
 
@@ -98,47 +98,37 @@ class Sonarr:
         exists = []
         skipped = []
         invalid = []
+        excluded = []
         invalid_root = []
         shows = []
         path_lookup = {}
         mismatched = {}
         path_in_use = {}
 
-        def mass_add():
-            try:
-                _a, _e, _i = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
-                                                          season, search, cutoff_search, series_type, tags, per_request=100)
-                added.extend(_a)
-                exists.extend(_e)
-                invalid.extend(_i)
-            except ArrException as e:
-                logger.stacktrace()
-                raise Failed(f"Sonarr Error: {e}")
-
         for i, item in enumerate(tvdb_ids, 1):
             path = item[1] if isinstance(item, tuple) else None
             tvdb_id = item[0] if isinstance(item, tuple) else item
             logger.ghost(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
-            if self.config.Cache:
-                _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
-                if _id:
-                    skipped.append(item)
-                    continue
             try:
+                if self.config.Cache:
+                    _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
+                    if _id:
+                        skipped.append(item)
+                        raise Continue
                 if tvdb_id in arr_ids:
                     exists.append(arr_ids[tvdb_id])
-                    continue
+                    raise Continue
                 if path and path.lower() in arr_paths:
                     mismatched[path] = tvdb_id
-                    continue
+                    raise Continue
                 if path and not path.startswith(folder):
                     invalid_root.append(item)
-                    continue
+                    raise Continue
                 show = self.api.get_series(tvdb_id=tvdb_id)
                 logger.trace(f"Folder to Check: {folder}/{show.folder}")
                 if f"{folder}/{show.folder}".lower() in arr_paths:
                     path_in_use[f"{folder}/{show.folder}"] = tvdb_id
-                    continue
+                    raise Continue
                 if path:
                     shows.append((show, path))
                     path_lookup[path] = tvdb_id
@@ -146,12 +136,20 @@ class Sonarr:
                     shows.append(show)
             except ArrException:
                 invalid.append(item)
-            if len(shows) == 100 or len(tvdb_ids) == i:
-                mass_add()
-                shows = []
-        if shows:
-            mass_add()
-            shows = []
+            except Continue:
+                pass
+            if shows and (len(shows) == 100 or len(tvdb_ids) == i):
+                try:
+                    _a, _e, _i, _x = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor,
+                                                                  season, search, cutoff_search, series_type, tags, per_request=100)
+                    added.extend(_a)
+                    exists.extend(_e)
+                    invalid.extend(_i)
+                    excluded.extend(_x)
+                    shows = []
+                except ArrException as e:
+                    logger.stacktrace()
+                    raise Failed(f"Sonarr Error: {e}")
 
         qp = None
         for profile in self.profiles:
@@ -182,8 +180,8 @@ class Sonarr:
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:
-                for series in skipped:
-                    logger.info(f"Skipped: In Cache | {series}")
+                logger.info(f"Skipped In Cache: {skipped}")
+            logger.info("")
             logger.info(f"{len(exists) + len(skipped)} Series already exist in Sonarr")
 
         if len(mismatched) > 0:
@@ -191,6 +189,7 @@ class Sonarr:
             logger.info("Items in Plex that have already been added to Sonarr but under a different TVDb ID then in Plex")
             for path, tmdb_id in mismatched.items():
                 logger.info(f"Plex TVDb ID: {tmdb_id:<7} | Sonarr TVDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
+            logger.info("")
             logger.info(f"{len(mismatched)} Series with mismatched TVDb IDs")
 
         if len(path_in_use) > 0:
@@ -198,18 +197,26 @@ class Sonarr:
             logger.info("TVDb IDs that cannot be added to Sonarr because the path they will use is already in use by a different TVDb ID")
             for path, tvdb_id in path_in_use.items():
                 logger.info(f"TVDb ID: {tvdb_id:<7} | Sonarr TVDb ID: {arr_paths[path.lower()]:<7} | Path: {path}")
+            logger.info("")
             logger.info(f"{len(path_in_use)} Series with paths already in use by other TVDb IDs")
 
         if len(invalid) > 0:
-            for tvdb_id in invalid:
-                logger.info("")
-                logger.info(f"Invalid TVDb ID | {tvdb_id}")
+            logger.info("")
+            logger.info(f"Invalid TVDb IDs: {invalid}")
+            logger.info("")
             logger.info(f"{len(invalid)} Series with Invalid IDs")
+
+        if len(excluded) > 0:
+            logger.info("")
+            logger.info(f"Excluded TVDb IDs: {excluded}")
+            logger.info("")
+            logger.info(f"{len(excluded)} Series ignored by Sonarr's Exclusion List")
 
         if len(invalid_root) > 0:
             logger.info("")
             for tvdb_id, path in invalid_root:
                 logger.info(f"Invalid Root Folder for TVDb ID | {tvdb_id:<7} | {path}")
+            logger.info("")
             logger.info(f"{len(invalid_root)} Series with Invalid Paths")
 
         return added
