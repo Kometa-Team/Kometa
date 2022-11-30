@@ -178,6 +178,8 @@ class ConfigFile:
                     if "save_missing" in self.data["libraries"][library]["settings"]:
                         self.data["libraries"][library]["settings"]["save_report"] = self.data["libraries"][library]["settings"].pop("save_missing")
                 if "radarr" in self.data["libraries"][library] and self.data["libraries"][library]["radarr"]:
+                    if "monitor" in self.data["libraries"][library]["radarr"] and isinstance(self.data["libraries"][library]["radarr"]["monitor"], bool):
+                        self.data["libraries"][library]["radarr"]["monitor"] = "movie" if self.data["libraries"][library]["radarr"]["monitor"] else "none"
                     if "add" in self.data["libraries"][library]["radarr"]:
                         self.data["libraries"][library]["radarr"]["add_missing"] = self.data["libraries"][library]["radarr"].pop("add")
                 if "sonarr" in self.data["libraries"][library] and self.data["libraries"][library]["sonarr"]:
@@ -232,6 +234,8 @@ class ConfigFile:
         if "notifiarr" in self.data:                   self.data["notifiarr"] = self.data.pop("notifiarr")
         if "anidb" in self.data:                       self.data["anidb"] = self.data.pop("anidb")
         if "radarr" in self.data:
+            if "monitor" in self.data["radarr"] and isinstance(self.data["radarr"]["monitor"], bool):
+                self.data["radarr"]["monitor"] = "movie" if self.data["radarr"]["monitor"] else "none"
             temp = self.data.pop("radarr")
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
