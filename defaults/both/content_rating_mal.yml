@@ -71,6 +71,8 @@ dynamic_collections:
         - "05"
         - "06"
         - G - All Ages
+        - A
+        - no/A
       PG:
         - TV-Y7
         - TV-Y7-FV
@@ -86,6 +88,12 @@ dynamic_collections:
         - 11
         - 12
         - PG - Children
+        - no/5
+        - no/05
+        - no/6
+        - no/06
+        - no/7
+        - no/07
       PG-13:
         - 13
         - gb/12A
@@ -98,6 +106,11 @@ dynamic_collections:
         - 15
         - 16
         - PG-13 - Teens 13 or older
+        - no/9
+        - no/09
+        - no/10
+        - no/11
+        - no/12
       R:
         - 17
         - 18
@@ -107,6 +120,9 @@ dynamic_collections:
         - R
         - TVMA
         - R - 17+ (violence & profanity)
+        - no/15
+        - no/16
+        - no/18
       R+:
         - R+ - Mild Nudity
       Rx:

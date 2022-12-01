@@ -92,6 +92,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - A
+        - no/A
+        - no/5
+        - no/05
         - "01"
       2:
         - gb/U
@@ -101,6 +105,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - A
+        - no/A
+        - no/5
+        - no/05
         - "02"
       3:
         - gb/U
@@ -110,6 +118,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - A
+        - no/A
+        - no/5
+        - no/05
         - "03"
       4:
         - gb/U
@@ -119,6 +131,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - A
+        - no/A
+        - no/5
+        - no/05
         - "04"
       5:
         - gb/U
@@ -128,6 +144,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - A
+        - no/A
+        - no/5
+        - no/05
         - "05"
       6:
         - gb/U
@@ -137,6 +157,10 @@ dynamic_collections:
         - E
         - gb/E
         - G - All Ages
+        - no/6
+        - no/06
+        - no/7
+        - no/07
         - "06"
       7:
         - gb/PG
@@ -145,6 +169,10 @@ dynamic_collections:
         - TV-Y7-FV
         - PG
         - PG - Children
+        - no/6
+        - no/06
+        - no/7
+        - no/07
         - "07"
       8:
         - gb/PG
@@ -153,6 +181,10 @@ dynamic_collections:
         - TV-Y7-FV
         - PG
         - PG - Children
+        - no/6
+        - no/06
+        - no/7
+        - no/07
         - "08"
       9:
         - gb/PG
@@ -162,6 +194,9 @@ dynamic_collections:
         - PG
         - PG - Children
         - gb/9+
+        - no/9
+        - no/09
+        - no/10
         - "09"
       10:
         - gb/PG
@@ -171,6 +206,9 @@ dynamic_collections:
         - PG
         - PG - Children
         - gb/9+
+        - no/9
+        - no/09
+        - no/10
       11:
         - gb/PG
         - TV-PG
@@ -179,18 +217,26 @@ dynamic_collections:
         - PG
         - PG - Children
         - gb/9+
+        - no/9
+        - no/09
+        - no/10
+        - no/11
       12:
         - gb/12
         - gb/12A
         - 12+
         - PG
         - PG - Children
+        - no/11
+        - no/12
       13:
         - gb/12
         - gb/12A
         - 12+
         - PG-13
         - PG-13 - Teens 13 or older
+        - no/11
+        - no/12
       14:
         - gb/12
         - 12
@@ -200,6 +246,8 @@ dynamic_collections:
         - TV-14
         - 13
         - PG-13 - Teens 13 or older
+        - no/11
+        - no/12
       15:
         - gb/15
         - gb/14+
@@ -207,6 +255,8 @@ dynamic_collections:
         - 13
         - 14
         - PG-13 - Teens 13 or older
+        - no/15
+        - no/16
       16:
         - gb/15
         - gb/14+
@@ -215,6 +265,8 @@ dynamic_collections:
         - 14
         - 15
         - PG-13 - Teens 13 or older
+        - no/15
+        - no/16
       17:
         - gb/15
         - gb/14+
@@ -224,6 +276,8 @@ dynamic_collections:
         - 15
         - 16
         - R - 17+ (violence & profanity)
+        - no/15
+        - no/16
       18:
         - gb/18
         - MA-17
@@ -239,3 +293,4 @@ dynamic_collections:
         - R - 17+ (violence & profanity)
         - R+ - Mild Nudity
         - Rx - Hentai
+        - no/18
