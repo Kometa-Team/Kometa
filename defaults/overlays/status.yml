@@ -35,6 +35,7 @@ templates:
           - key: [ended, returning, canceled]
             value: <<key>>
     ignore_blank_results: true
+    only_filter_missing: false
     plex_search:
       any:
         episode_air_date: <<last>>

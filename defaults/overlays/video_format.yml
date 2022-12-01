@@ -41,6 +41,7 @@ templates:
           - key: sdtv
             value: '(?i)SD[ ._-]?TV'
     ignore_blank_results: true
+    only_filter_missing: false
     plex_all: true
     filters:
       filepath.regex: <<regex_<<key>>>>
