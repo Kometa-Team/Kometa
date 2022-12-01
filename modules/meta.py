@@ -195,31 +195,31 @@ class DataFile:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
             new_attributes = {}
-            for variables in util.get_list(template_call, split=False):
-                if not isinstance(variables, dict):
+            for original_variables in util.get_list(template_call, split=False):
+                if not isinstance(original_variables, dict):
                     raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
-                elif "name" not in variables:
+                elif "name" not in original_variables:
                     raise Failed(f"{self.data_type} Error: template sub-attribute name is required")
-                elif not variables["name"]:
+                elif not original_variables["name"]:
                     raise Failed(f"{self.data_type} Error: template sub-attribute name is blank")
-                elif variables["name"] not in self.templates:
-                    raise Failed(f"{self.data_type} Error: template {variables['name']} not found")
-                elif not isinstance(self.templates[variables["name"]][0], dict):
-                    raise Failed(f"{self.data_type} Error: template {variables['name']} is not a dictionary")
+                elif original_variables["name"] not in self.templates:
+                    raise Failed(f"{self.data_type} Error: template {original_variables['name']} not found")
+                elif not isinstance(self.templates[original_variables["name"]][0], dict):
+                    raise Failed(f"{self.data_type} Error: template {original_variables['name']} is not a dictionary")
                 else:
-                    logger.separator(f"Template {variables['name']}", space=False, border=False, debug=True)
+                    logger.separator(f"Template {original_variables['name']}", space=False, border=False, debug=True)
                     logger.trace("")
-                    logger.trace(f"Call: {variables}")
+                    logger.trace(f"Original: {original_variables}")
 
                     remove_variables = []
                     optional = []
-                    for tm in variables:
-                        if variables[tm] is None:
+                    for tm in original_variables:
+                        if original_variables[tm] is None:
                             remove_variables.append(tm)
-                            variables.pop(tm)
+                            original_variables.pop(tm)
                             optional.append(str(tm))
 
-                    template, temp_vars = self.templates[variables["name"]]
+                    template, temp_vars = self.templates[original_variables["name"]]
 
                     if call_name:
                         name = call_name
@@ -229,11 +229,23 @@ class DataFile:
                         name = mapping_name
 
                     name_var = f"{self.data_type.lower()}_name"
-                    variables[name_var] = str(name)
-                    variables["mapping_name"] = mapping_name
-                    variables["library_type"] = self.library.type.lower() if self.library else "item"
-                    variables["library_typeU"] = self.library.type if self.library else "Item"
-                    variables["library_name"] = self.library.name if self.library else "playlist"
+                    original_variables[name_var] = str(name)
+                    original_variables["mapping_name"] = mapping_name
+                    original_variables["library_type"] = self.library.type.lower() if self.library else "item"
+                    original_variables["library_typeU"] = self.library.type if self.library else "Item"
+                    original_variables["library_name"] = self.library.name if self.library else "playlist"
+
+                    def replace_var(input_item, search_dicts):
+                        if not isinstance(search_dicts, list):
+                            search_dicts = [search_dicts]
+                        return_item = input_item
+                        for search_dict in search_dicts:
+                            for rk, rv in search_dict.items():
+                                if f"<<{rk}>>" == str(return_item):
+                                    return_item = rv
+                                if f"<<{rk}>>" in str(return_item):
+                                    return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
+                        return return_item
 
                     conditionals = {}
                     if "conditionals" in template:
@@ -254,8 +266,10 @@ class DataFile:
                         init_defaults = template["default"]
                     all_init_defaults = {k: v for k, v in init_defaults.items()}
 
+                    variables = {}
                     temp_conditionals = {}
                     for input_dict, input_type, overwrite_call in [
+                        (original_variables, "Call", False),
                         (temp_vars, "External", False),
                         (extra_variables, "Definition", False),
                         (self.temp_vars, "Config", True)
@@ -277,16 +291,18 @@ class DataFile:
                                     raise Failed(f"{self.data_type} Error: {input_type} template sub-attribute default is not a dictionary")
                                 for dk, dv in input_value.items():
                                     all_init_defaults[dk] = dv
-                            elif input_value is None:
-                                optional.append(str(input_key))
-                                if input_key in variables:
-                                    variables.pop(input_key)
-                                if input_key in added_vars:
-                                    added_vars.pop(input_key)
-                            elif overwrite_call:
-                                variables[input_key] = input_value
                             else:
-                                added_vars[input_key] = input_value
+                                input_key = replace_var(input_key, original_variables)
+                                if input_value is None:
+                                    optional.append(str(input_key))
+                                    if input_key in variables:
+                                        variables.pop(input_key)
+                                    if input_key in added_vars:
+                                        added_vars.pop(input_key)
+                                elif overwrite_call:
+                                    variables[input_key] = input_value
+                                else:
+                                    added_vars[input_key] = input_value
                     for k, v in added_vars.items():
                         if k not in variables:
                             variables[k] = v
@@ -311,18 +327,6 @@ class DataFile:
                         if variables["key_name"] in key_name_variables:
                             variables["key_name"] = key_name_variables[variables["key_name"]]
                         variables["translated_key_name"] = variables["key_name"]
-
-                    def replace_var(input_item, search_dicts):
-                        if not isinstance(search_dicts, list):
-                            search_dicts = [search_dicts]
-                        return_item = input_item
-                        for search_dict in search_dicts:
-                            for rk, rv in search_dict.items():
-                                if f"<<{rk}>>" == str(return_item):
-                                    return_item = rv
-                                if f"<<{rk}>>" in str(return_item):
-                                    return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
-                        return return_item
 
                     default = {}
                     if all_init_defaults:

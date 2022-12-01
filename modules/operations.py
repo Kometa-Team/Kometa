@@ -520,7 +520,7 @@ class Operations:
                                 logger.info(f"Background | No Reset Image Found")
 
                     if self.library.is_show:
-                        real_show = tmdb_item.load_show()  if tmdb_item else None
+                        real_show = tmdb_item.load_show() if tmdb_item else None
                         tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
                         for season in self.library.query(item.seasons):
                             try:
