@@ -144,9 +144,9 @@ dynamic_collections:
       tmdb_movie:
         halloween:
           - 23437    # A Nightmare on Elm Street (2010)
-      visible_home_<<key>>:
+      visible_home:
         default: true
-      visible_shared_<<key>>:
+      visible_shared:
         default: true
       image:
         default: seasonal/<<key>>

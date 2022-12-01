@@ -70,6 +70,8 @@ dynamic_collections:
         - "05"
         - "06"
         - G - All Ages
+        - A
+        - no/A
       TV-Y:
         - TV-Y7
         - TV-Y7-FV
@@ -79,6 +81,12 @@ dynamic_collections:
         - "07"
         - "08"
         - "09"
+        - no/5
+        - no/05
+        - no/6
+        - no/06
+        - no/7
+        - no/07
       TV-PG:
         - gb/PG
         - gb/9+
@@ -87,6 +95,11 @@ dynamic_collections:
         - 12
         - 13
         - PG - Children
+        - no/9
+        - no/09
+        - no/10
+        - no/11
+        - no/12
       TV-14:
         - gb/12A
         - 12+
@@ -99,6 +112,8 @@ dynamic_collections:
         - 16
         - 17
         - PG-13 - Teens 13 or older
+        - no/15
+        - no/16
       TV-MA:
         - 18
         - gb/18
@@ -109,3 +124,4 @@ dynamic_collections:
         - R - 17+ (violence & profanity)
         - R+ - Mild Nudity
         - Rx - Hentai
+        - no/18

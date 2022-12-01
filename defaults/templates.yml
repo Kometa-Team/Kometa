@@ -42,13 +42,16 @@ templates:
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
       url_poster_<<key>>: <<url_poster>>
+      visible_library_<<key>>: <<visible_library>>
+      visible_home_<<key>>: <<visible_home>>
+      visible_shared_<<key>>: <<visible_shared>>
     optional:
       - use_<<key>>
       - allowed_libraries
       - collection_mode
-      - visible_library_<<key>>
-      - visible_home_<<key>>
-      - visible_shared_<<key>>
+      - visible_library
+      - visible_home
+      - visible_shared
       - item_radarr_tag
       - item_sonarr_tag
       - trakt_list
