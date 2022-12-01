@@ -23,5 +23,6 @@ overlays:
     template:
       name: standard
     plex_all: true
+    only_filter_missing: false
     filters:
       tmdb_keyword: aftercreditsstinger, duringcreditsstinger

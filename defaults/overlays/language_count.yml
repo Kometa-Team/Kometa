@@ -38,6 +38,7 @@ templates:
     optional:
       - lt
     ignore_blank_results: true
+    only_filter_missing: false
     plex_all: true
     filters:
       <<search_attribute>>.count_gte: <<minimum>>
