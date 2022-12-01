@@ -509,7 +509,7 @@ overlays:
     template: [name: flags, name: standard]
 
   slovenian:
-    variables: {key: sv, text: SV, weight: 70, country: si}
+    variables: {key: sl, text: SL, weight: 70, country: si}
     template: [name: flags, name: standard]
 
   albanian:

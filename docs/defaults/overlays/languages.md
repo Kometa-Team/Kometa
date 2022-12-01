@@ -66,7 +66,7 @@ The `languages` Default Overlay File is used to create an overlay of a flag and 
 | Punjabi                  | `pa` | `100`  | `in`         |  &#10060;   |
 | Romanian                 | `ro` | `90`   | `ro`         |  &#10060;   |
 | Slovak                   | `sk` | `80`   | `sk`         |  &#10060;   |
-| Slovenian                | `sv` | `70`   | `si`         |  &#10060;   |
+| Slovenian                | `sl` | `70`   | `si`         |  &#10060;   |
 | Albanian                 | `sq` | `60`   | `al`         |  &#10060;   |
 | Serbian                  | `sr` | `50`   | `rs`         |  &#10060;   |
 | Swahili                  | `sw` | `40`   | `tz`         |  &#10060;   |
