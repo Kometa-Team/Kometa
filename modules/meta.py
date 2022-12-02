@@ -196,18 +196,12 @@ class DataFile:
         else:
             new_attributes = {}
             for original_variables in util.get_list(template_call, split=False):
-                if not isinstance(original_variables, dict):
-                    raise Failed(f"{self.data_type} Error: template attribute is not a dictionary")
-                elif "name" not in original_variables:
-                    raise Failed(f"{self.data_type} Error: template sub-attribute name is required")
-                elif not original_variables["name"]:
-                    raise Failed(f"{self.data_type} Error: template sub-attribute name is blank")
-                elif original_variables["name"] not in self.templates:
+                if original_variables["name"] not in self.templates:
                     raise Failed(f"{self.data_type} Error: template {original_variables['name']} not found")
                 elif not isinstance(self.templates[original_variables["name"]][0], dict):
                     raise Failed(f"{self.data_type} Error: template {original_variables['name']} is not a dictionary")
                 else:
-                    logger.separator(f"Template {original_variables['name']}", space=False, border=False, debug=True)
+                    logger.separator(f"Template {original_variables['name']}", space=False, border=False, trace=True)
                     logger.trace("")
                     logger.trace(f"Original: {original_variables}")
 
@@ -470,7 +464,7 @@ class DataFile:
                     logger.trace(f"Optional: {optional}")
                     logger.trace("")
                     logger.trace(f"Translation: {translation_variables}")
-                    logger.debug("")
+                    logger.trace("")
 
                     def check_for_var(_method, _data):
                         def scan_text(og_txt, var, actual_value):
@@ -531,7 +525,6 @@ class DataFile:
                                     new_attributes[new_name] = check_data(new_name, attr_data)
                             except Failed:
                                 continue
-            logger.debug("")
             logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)
