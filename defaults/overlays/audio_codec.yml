@@ -68,7 +68,6 @@ templates:
             value: '(?i)\bOPUS(\b|\d)'
     ignore_blank_results: true
     plex_all: true
-    only_filter_missing: false
     filters:
       - audio_track_title.regex: <<regex_<<key>>>>
       - filepath.regex: <<regex_<<key>>>>
