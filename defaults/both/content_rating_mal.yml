@@ -58,12 +58,14 @@ dynamic_collections:
         - gb/0+
         - U
         - G
+        - 0
         - 1
         - 2
         - 3
         - 4
         - 5
         - 6
+        - "0"
         - "01"
         - "02"
         - "03"
@@ -71,6 +73,7 @@ dynamic_collections:
         - "05"
         - "06"
         - G - All Ages
+        - TV-G
         - A
         - no/A
       PG:

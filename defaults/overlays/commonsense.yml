@@ -49,7 +49,7 @@ overlays:
   1:
     template:
       - name: standard
-      - {name: commonsense, rating: "1, 0, 01, 00, G, TV-G, TV-Y"}
+      - {name: commonsense, rating: "1, 01, G, TV-G, TV-Y, G - All Ages, gb/U, gb/0+, E, gb/E, A, no/A, no/5, no/05"}
   2:
     template:
       - name: standard
@@ -69,11 +69,11 @@ overlays:
   6:
     template:
       - name: standard
-      - {name: commonsense, rating: "6, 06, GP, PG, M/PG, TV-PG"}
+      - {name: commonsense, rating: "6, 06, GP, PG, PG - Children, M/PG, gb/PG, TV-PG, no/6, no/06"}
   7:
     template:
       - name: standard
-      - {name: commonsense, rating: "7, 07, TV-Y7, TV-Y7-FV"}
+      - {name: commonsense, rating: "7, 07, TV-Y7, TV-Y7-FV, no/7, no/07"}
   8:
     template:
       - name: standard
@@ -81,43 +81,43 @@ overlays:
   9:
     template:
       - name: standard
-      - {name: commonsense, rating: "9, 09"}
+      - {name: commonsense, rating: "9, 09, gb/9+, no/9, no/09"}
   10:
     template:
       - name: standard
-      - {name: commonsense, rating: "10"}
+      - {name: commonsense, rating: "10, no/10"}
   11:
     template:
       - name: standard
-      - {name: commonsense, rating: "11"}
+      - {name: commonsense, rating: "11, no/11"}
   12:
     template:
       - name: standard
-      - {name: commonsense, rating: "12"}
+      - {name: commonsense, rating: "12, 12+, gb/12, gb/12A, no/12"}
   13:
     template:
       - name: standard
-      - {name: commonsense, rating: "13, PG-13"}
+      - {name: commonsense, rating: "13, PG-13, PG-13 - Teens 13 or older"}
   14:
     template:
       - name: standard
-      - {name: commonsense, rating: "14, TV-14"}
+      - {name: commonsense, rating: "14, TV-14, gb/14+"}
   15:
     template:
       - name: standard
-      - {name: commonsense, rating: "15"}
+      - {name: commonsense, rating: "15, gb/15, no/15"}
   16:
     template:
       - name: standard
-      - {name: commonsense, rating: "16, Passed, Approved, Open"}
+      - {name: commonsense, rating: "16, no/16, Passed, Approved, Open"}
   17:
     template:
       - name: standard
-      - {name: commonsense, rating: "17"}
+      - {name: commonsense, rating: "17, R, R - 17+ (violence & profanity), TVMA, TV-MA, MA-17"}
   18:
     template:
       - name: standard
-      - {name: commonsense, rating: "18, NC-17, M, TV-MA, R, X"}
+      - {name: commonsense, rating: "18, gb/18, gb/R18, gb/X, no/18, NC-17, X, R+ - Mild Nudity, Rx - Hentai"}
   NR:
     template:
       - {name: standard, key: nr}

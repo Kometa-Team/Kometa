@@ -88,6 +88,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -101,6 +102,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -114,6 +116,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -127,6 +130,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -140,6 +144,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -153,6 +158,7 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - G
+        - TV-G
         - TV-Y
         - E
         - gb/E
@@ -244,7 +250,6 @@ dynamic_collections:
         - 12+
         - PG-13
         - TV-14
-        - 13
         - PG-13 - Teens 13 or older
         - no/11
         - no/12
@@ -252,8 +257,6 @@ dynamic_collections:
         - gb/15
         - gb/14+
         - TV-14
-        - 13
-        - 14
         - PG-13 - Teens 13 or older
         - no/15
         - no/16
@@ -261,21 +264,20 @@ dynamic_collections:
         - gb/15
         - gb/14+
         - TV-14
-        - 13
-        - 14
-        - 15
         - PG-13 - Teens 13 or older
         - no/15
         - no/16
       17:
+        - gb/18
         - gb/15
         - gb/14+
         - TV-14
-        - 13
-        - 14
-        - 15
-        - 16
+        - R
         - R - 17+ (violence & profanity)
+        - TVMA
+        - TV-MA
+        - MA-17
+        - no/18
         - no/15
         - no/16
       18:
@@ -284,8 +286,6 @@ dynamic_collections:
         - TVMA
         - TV-MA
         - R
-        - 16
-        - 17
         - gb/R18
         - gb/X
         - X

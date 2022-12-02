@@ -351,7 +351,7 @@ class CollectionBuilder:
             "show_missing": self.library.show_missing,
             "save_report": self.library.save_report,
             "missing_only_released": self.library.missing_only_released,
-            "only_filter_missing": self.library.only_filter_missing,
+            "only_filter_missing": False if self.overlay else self.library.only_filter_missing,
             "asset_folders": self.library.asset_folders,
             "create_asset_folders": self.library.create_asset_folders,
             "delete_below_minimum": self.library.delete_below_minimum,
