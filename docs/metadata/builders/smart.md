@@ -181,7 +181,7 @@ Tag filter can take multiple values as a **list or a comma-separated string**.
 | `album_source`             | Uses the Album's Source attribute to match                                  |      &#10060;      |     &#10060;      |      &#9989;       |
 | `album_label`              | Uses the Album's Label attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_mood`               | Uses the Track's Mood attribute to match                                    |      &#10060;      |     &#10060;      |      &#9989;       |
-| `track_source`             | Uses the Track's Style attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
+| `track_source`             | Uses the Track's Source attribute to match                                  |      &#10060;      |     &#10060;      |      &#9989;       |
 | `track_label`              | Uses the Track's Label attribute to match                                   |      &#10060;      |     &#10060;      |      &#9989;       |
 
 <sup>1</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`

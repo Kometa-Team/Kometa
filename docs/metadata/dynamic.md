@@ -120,6 +120,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`writer`](#writer)                           | Create a collection for each writer found in the library                                                    |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`producer`](#producer)                       | Create a collection for each producer found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`genre`](#genre)                             | Create a collection for each genre found in the library                                                     |    &#10060;    | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| [`album_genre`](#album-genre)                 | Create a collection for each album genre found in the library                                               |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
@@ -130,7 +131,9 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`studio`](#studio)                           | Create a collection for each studio found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`edition`](#edition)                         | Create a collection for each edition found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`network`](#network)                         | Create a collection for each network found in the library                                                   |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
-| [`mood`](#mood)                               | Create a collection for each mood found in the library                                                      |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`mood`](#mood)                               | Create a collection for each artist mood found in the library                                               |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`album_mood`](#album-mood)                   | Create a collection for each album mood found in the library                                                |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
+| [`track_mood`](#track-mood)                   | Create a collection for each track mood found in the library                                                |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`style`](#style)                             | Create a collection for each artist style found in the library                                              |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`album_style`](#album-style)                 | Create a collection for each album style found in the library                                               |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`number`](#number)                           | Creates a collection for each number defined                                                                |    &#9989;     | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
@@ -920,6 +923,72 @@ dynamic_collections:
     template: genre collection
 ```
 
+### Album Genre
+
+Create a collection for each album genre found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>album_genre</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Genre</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Genre</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Top &lt;&lt;key_name&gt;&gt; Albums</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: plays.desc
+    any:
+      album_genre: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create dynamic collections based on each Album genre found in the library
+* Amend the template to increase the limit from 10 to 20 
+* Exclude the "Pop" genre
+* Name the collection "Top 20 [Genre] Albums"
+
+```yaml
+templates:
+  genre collection:
+    smart_filter:
+      limit: 100
+      sort_by: plays.desc
+      all:
+        album_genre: <<value>>
+dynamic_collections:
+  Genres:         # mapping name does not matter just needs to be unique
+    type: album_genre
+    exclude:
+      - Pop
+    title_format: Top 20 <<key_name>> <<library_type>>s
+    template: genre collection
+```
+
 ### Content Rating
 
 Create a collection for each content rating found in the library.
@@ -1504,7 +1573,7 @@ dynamic_collections:
 
 ### Mood
 
-Create a collection for each mood found in the library.
+Create a collection for each artist mood found in the library.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -1534,7 +1603,7 @@ Create a collection for each mood found in the library.
 ```yaml
 default_template:
   smart_filter:
-    limit: 50
+    limit: 10
     sort_by: plays.desc
     any:
       artist_mood: <<value>>
@@ -1546,8 +1615,135 @@ default_template:
 
 #### Example:
 
-* Create a collection for the top 100 items for each mood found in the Music library
-* Name the collection "Top [Mood] Tracks"
+* Create a collection for the top 20 artists for each mood found in the Music library
+* Amend the template to increase the limit from 10 to 20 
+* Name the collection "Top 20 [Mood] Artists"
+
+```yaml
+templates:
+  mood collection:
+    smart_filter:
+      limit: 20
+      sort_by: plays.desc
+      all:
+        artist_mood: <<value>>
+dynamic_collections:
+  Moods:         # mapping name does not matter just needs to be unique
+    type: mood
+    title_format: Top 20 <<key_name>> Artists
+    template: mood collection
+```
+
+### Album Mood
+
+Create a collection for each album mood found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>album_mood</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Mood</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Mood</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Most Played &lt;&lt;value&gt;&gt; Albums</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 10
+    sort_by: plays.desc
+    any:
+      album_mood: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for the top 20 albums for each mood found in the Music library
+* Amend the template to increase the limit from 10 to 20 
+* Name the collection "Top 20 [Mood] Albums"
+
+```yaml
+templates:
+  mood collection:
+    smart_filter:
+      limit: 20
+      sort_by: plays.desc
+      all:
+        album_mood: <<value>>
+dynamic_collections:
+  Moods:         # mapping name does not matter just needs to be unique
+    type: album_mood
+    title_format: Top 20 <<key_name>> Albums
+    template: mood collection
+```
+
+### Track Mood
+
+Create a collection for each track mood found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>track_mood</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Mood</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Mood</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Most Played &lt;&lt;value&gt;&gt; Tracks</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: plays.desc
+    any:
+      track_mood: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example:
+
+* Create a collection for the top 100 tracks for each mood found in the Music library
+* Amend the template to increase the limit from 50 to 100 
+* Name the collection "Top 100 [Mood] Tracks"
 
 ```yaml
 templates:
@@ -1555,13 +1751,12 @@ templates:
     smart_filter:
       limit: 100
       sort_by: plays.desc
-      type: tracks
       all:
         track_mood: <<value>>
 dynamic_collections:
   Moods:         # mapping name does not matter just needs to be unique
-    type: mood
-    title_format: Top <<key_name>> Tracks
+    type: track_mood
+    title_format: Top 100 <<key_name>> Tracks
     template: mood collection
 ```
 
@@ -1597,7 +1792,7 @@ Create a collection for each artist style found in the library.
 ```yaml
 default_template:
   smart_filter:
-    limit: 50
+    limit: 10
     sort_by: plays.desc
     any:
       artist_style: <<value>>
@@ -1659,7 +1854,7 @@ Create a collection for each album style found in the library.
 ```yaml
 default_template:
   smart_filter:
-    limit: 50
+    limit: 10
     sort_by: plays.desc
     any:
       album_style: <<value>>

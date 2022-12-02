@@ -307,6 +307,8 @@ html_theme_options = {
             ("Templates", "metadata/templates"),
             ("Filters", "metadata/filters"),
             ("_menu", "Dynamic Collections", "metadata/dynamic", [
+                ("Dynamic Collections", "metadata/dynamic"),
+                ("_divider", ),
                 ("_menu", "TMDb Dynamic Collections", "metadata/dynamic", [
                     ("TMDb Collection", "metadata/dynamic", "#tmdb-collection"),
                     ("TMDb Popular People", "metadata/dynamic", "#tmdb-popular-people"),
@@ -324,6 +326,7 @@ html_theme_options = {
                     ("Writer", "metadata/dynamic", "#writer"),
                     ("Producer", "metadata/dynamic", "#producer"),
                     ("Genre", "metadata/dynamic", "#genre"),
+                    ("Album Genre", "metadata/dynamic", "#album-genre"),
                     ("Content Rating", "metadata/dynamic", "#content-rating"),
                     ("Year", "metadata/dynamic", "#year"),
                     ("Decade", "metadata/dynamic", "#decade"),
@@ -335,13 +338,15 @@ html_theme_options = {
                     ("Edition", "metadata/dynamic", "#edition"),
                     ("Network", "metadata/dynamic", "#network"),
                     ("Mood", "metadata/dynamic", "#mood"),
+                    ("Album Mood", "metadata/dynamic", "#album-mood"),
+                    ("Track Mood", "metadata/dynamic", "#track-mood"),
                     ("Style", "metadata/dynamic", "#style"),
                     ("Album Style", "metadata/dynamic", "#album-style"),
                 ]),
                 ("Number", "metadata/dynamic", "#number"),
                 ("Custom", "metadata/dynamic", "#custom"),
             ]),
-            ("_menu", "Editing Media Metadata", "#", [
+            ("_menu", "Editing Media Metadata", "", [
                 ("Editing Movie Metadata", "metadata/metadata/movie"),
                 ("Editing TV Metadata", "metadata/metadata/show"),
                 ("Editing Music Metadata", "metadata/metadata/music"),
