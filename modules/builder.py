@@ -196,14 +196,25 @@ class CollectionBuilder:
             logger.info(extra)
             logger.info("")
 
-        logger.separator(f"Building Definition From Templates", space=False, border=False)
-
         if f"{self.type}_name" in methods:
             logger.warning(f"Config Warning: Running {self.type}_name as name")
             self.data["name"] = self.data[methods[f"{self.type}_name"]]
             methods["name"] = "name"
 
         if "template" in methods:
+            logger.separator(f"Building Definition From Templates", space=False, border=False)
+            logger.debug("")
+            named_templates = []
+            for original_variables in util.get_list(self.data[methods["template"]], split=False):
+                if not isinstance(original_variables, dict):
+                    raise Failed(f"{self.Type} Error: template attribute is not a dictionary")
+                elif "name" not in original_variables:
+                    raise Failed(f"{self.Type} Error: template sub-attribute name is required")
+                elif not original_variables["name"]:
+                    raise Failed(f"{self.Type} Error: template sub-attribute name cannot be blank")
+                named_templates.append(original_variables["name"])
+            logger.debug(f"Templates Called: {','.join(named_templates)}")
+            logger.debug("")
             new_variables = {}
             if "variables" in methods:
                 logger.debug("")
@@ -212,7 +223,6 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: variables must be a dictionary (key: value pairs)")
                 logger.trace(self.data[methods["variables"]])
                 new_variables = self.data[methods["variables"]]
-            logger.debug("")
             name = self.data[methods["name"]] if "name" in methods else None
             new_attributes = self.metadata.apply_template(name, self.mapping_name, self.data, self.data[methods["template"]], new_variables)
             for attr in new_attributes:
