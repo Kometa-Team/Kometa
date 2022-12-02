@@ -14,7 +14,7 @@ ms_auto = [
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
     "Show": ["network", "origin_country"] + all_auto + ms_auto,
-    "Artist": ["mood", "style", "country"] + all_auto,
+    "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
 }
 dynamic_attributes = [
@@ -23,7 +23,7 @@ dynamic_attributes = [
 ]
 auto_type_translation = {
     "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
-    "album_style": "album.style", "edition": "editionTitle"
+    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood", "edition": "editionTitle"
 }
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -661,7 +661,7 @@ class MetadataFile(DataFile):
                         auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                         default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
                         default_title_format = "Best <<library_type>>s of <<key_name>>"
-                    elif auto_type in ["genre", "mood", "style", "album_style", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                    elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                         search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                         if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                             tags = library.get_tags(f"episode.{search_tag}")
@@ -682,11 +682,13 @@ class MetadataFile(DataFile):
                             all_keys = {str(i.title): i.title for i in tags}
                             auto_list = {str(i.title): i.title for i in tags if str(i.title) not in exclude}
                         if library.is_music:
-                            final_var = auto_type if auto_type.startswith("album") else f"artist_{auto_type}"
-                            default_template = {"smart_filter": {"limit": 50, "sort_by": "plays.desc", "any": {final_var: "<<value>>"}}}
-                            if auto_type.startswith("album"):
-                                default_template["builder_level"] = "album"
-                            default_title_format = f"Most Played <<key_name>> {'Albums' if auto_type.startswith('album') else '<<library_type>>'}s"
+                            final_var = auto_type if auto_type.startswith(("album", "track")) else f"artist_{auto_type}"
+                            default_template = {"smart_filter": {"limit": 50 if auto_type.startswith("track") else 10, "sort_by": "plays.desc", "any": {final_var: "<<value>>"}}}
+                            music_type = "<<library_type>>"
+                            if auto_type.startswith(("album", "track")):
+                                default_template["builder_level"] = "album" if auto_type.startswith("album") else "track"
+                                music_type = "Album" if auto_type.startswith("album") else "Track"
+                            default_title_format = f"Most Played <<key_name>> {music_type}s"
                         elif auto_type == "resolution":
                             default_template = {"smart_filter": {"sort_by": "title.asc", "any": {auto_type: "<<value>>"}}}
                             default_title_format = "<<key_name>> <<library_type>>s"

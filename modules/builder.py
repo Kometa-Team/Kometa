@@ -849,7 +849,7 @@ class CollectionBuilder:
         elif method_name == "tvdb_description":
             self.summaries[method_name] = self.config.TVDb.get_list_description(method_data)
         elif method_name == "trakt_description":
-            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data, self.library.is_movie)[0])
+            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
