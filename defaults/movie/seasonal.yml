@@ -22,6 +22,7 @@ templates:
       tmdb_movie_<<key>>: <<tmdb_movie>>
       imdb_list_<<key>>: <<imdb_list>>
       trakt_list_<<key>>: <<trakt_list>>
+      mdblist_list_<<key>>: <<mdblist_list>>
       summary_<<key>>: <<seasonal_summary>>
       name_<<key>>: <<seasonal_name>>
       emoji_<<key>>: <<emoji>>
@@ -32,6 +33,7 @@ templates:
       - limit
       - imdb_list
       - trakt_list
+      - mdblist_list
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -43,6 +45,7 @@ templates:
     tmdb_movie: <<tmdb_movie_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
     cache_builders: 1
     summary: <<summary_<<key>>>>
     name: <<emoji_<<key>>>><<name_<<key>>>>
