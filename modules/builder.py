@@ -213,7 +213,7 @@ class CollectionBuilder:
                 elif not original_variables["name"]:
                     raise Failed(f"{self.Type} Error: template sub-attribute name cannot be blank")
                 named_templates.append(original_variables["name"])
-            logger.debug(f"Templates Called: {','.join(named_templates)}")
+            logger.debug(f"Templates Called: {', '.join(named_templates)}")
             logger.debug("")
             new_variables = {}
             if "variables" in methods:

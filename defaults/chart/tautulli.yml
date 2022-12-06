@@ -35,8 +35,7 @@ collections:
         type: popular
       - name: shared
       - name: custom
-        template_variables:
-          cache_builders: 0
+        cache_builders: 0
       - name: translation
         translation_key: tautulli_popular
 
@@ -48,7 +47,6 @@ collections:
         type: watched
       - name: shared
       - name: custom
-        template_variables:
-          cache_builders: 0
+        cache_builders: 0
       - name: translation
         translation_key: tautulli_watched
