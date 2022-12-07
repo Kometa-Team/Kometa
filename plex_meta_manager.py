@@ -71,6 +71,7 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
         return default
 
 is_docker = get_arg("PMM_DOCKER", False, arg_bool=True)
+is_linuxserver = get_arg("PMM_LINUXSERVER", False, arg_bool=True)
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 config_file = get_arg("PMM_CONFIG", args.config)
 times = get_arg("PMM_TIME", args.times)
@@ -181,7 +182,7 @@ def start(attrs):
     logger.info_center("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
-    system_ver = "Docker" if is_docker else f"Python {platform.python_version()}"
+    system_ver = "Docker" if is_docker else "Linuxserver" if is_linuxserver else f"Python {platform.python_version()}"
     logger.info(f"    Version: {version[0]} ({system_ver})")
     latest_version = util.current_version(version)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
