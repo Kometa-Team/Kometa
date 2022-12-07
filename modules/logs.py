@@ -145,26 +145,29 @@ class MyLogger:
         for handler in self._logger.handlers:
             self._formatter(handler, border=False)
         border_text = f"|{self.separating_character * self.screen_width}|"
-        if border and debug:
-            self.debug(border_text)
-        elif border:
-            self.info(border_text)
+        if border:
+            self.print(border_text, debug=debug)
         if text:
             text_list = text.split("\n")
             for t in text_list:
                 msg = f"|{sep}{self._centered(t, sep=sep, side_space=side_space, left=left)}{sep}|"
-                if trace:
-                    self.trace(msg)
-                elif debug:
-                    self.debug(msg)
-                else:
-                    self.info(msg)
-            if border and debug:
-                self.debug(border_text)
-            elif border:
-                self.info(border_text)
+                self.print(msg, debug=debug, trace=trace)
+            if border:
+                self.print(border_text, debug=debug)
         for handler in self._logger.handlers:
             self._formatter(handler)
+
+    def print(self, msg, error=False, warning=False, debug=False, trace=False):
+        if error:
+            self.error(msg)
+        elif warning:
+            self.warning(msg)
+        elif debug:
+            self.debug(msg)
+        elif trace:
+            self.trace(msg)
+        else:
+            self.info(msg)
 
     def debug(self, msg, *args, **kwargs):
         if self._logger.isEnabledFor(DEBUG):
@@ -198,10 +201,7 @@ class MyLogger:
             self._log(CRITICAL, str(msg), args, **kwargs)
 
     def stacktrace(self, trace=False):
-        if trace:
-            self.trace(traceback.format_exc())
-        else:
-            self.debug(traceback.format_exc())
+        self.print(traceback.format_exc(), debug=not trace, trace=trace)
 
     def _space(self, display_title):
         display_title = str(display_title)
