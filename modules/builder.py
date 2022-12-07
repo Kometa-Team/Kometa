@@ -1318,16 +1318,12 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: no mal_search attributes found")
                     self.builders.append((method_name, (final_attributes, final_text, limit)))
         elif method_name in ["mal_genre", "mal_studio"]:
-            id_name = f"{method_name[4:]}_id"
-            final_data = []
-            for data in util.get_list(method_data):
-                final_data.append(data if isinstance(data, dict) else {id_name: data, "limit": 0})
-            for dict_data in final_data:
-                dict_methods = {dm.lower(): dm for dm in dict_data}
-                self.builders.append((method_name, {
-                    id_name: util.parse(self.Type, id_name, dict_data, datatype="int", methods=dict_methods, parent=method_name, maximum=999999),
-                    "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
-                }))
+            logger.warning(f"Config Warning: {method_name} will run as a mal_search")
+            item_list = util.parse(self.Type, method_name[4:], method_data, datatype="commalist")
+            all_items = self.config.MyAnimeList.genres if method_name == "mal_genre" else self.config.MyAnimeList.studios
+            final_items = [str(all_items[i]) for i in item_list if i in all_items]
+            final_text = f"MyAnimeList Search\n{method_name[4:].capitalize()}: {' or '.join([str(all_items[i]) for i in final_items])}"
+            self.builders.append(("mal_search", ({"genres" if method_name == "mal_genre" else "producers": ",".join(final_items)}, final_text, 0)))
 
     def _plex(self, method_name, method_data):
         if method_name in ["plex_all", "plex_pilots"]:

@@ -10,7 +10,6 @@ external_templates:
   template_variables:
     collection_section: "01"
     pre: "_#"
-    image: chart/<<collection_name_encoded>>
 
 translations:
   pmm: translations

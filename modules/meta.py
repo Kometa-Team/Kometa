@@ -598,21 +598,21 @@ class MetadataFile(DataFile):
                     auto_type = dynamic[methods["type"]].lower()
                     og_exclude = []
                     if "exclude" in self.temp_vars:
-                        og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variable", datatype="strlist")
+                        og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variables", datatype="strlist")
                     elif "exclude" in methods:
                         og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist")
                     if "append_exclude" in self.temp_vars:
-                        og_exclude.extend(util.parse("Config", "append_exclude", self.temp_vars["append_exclude"], parent="template_variable", datatype="strlist"))
+                        og_exclude.extend(util.parse("Config", "append_exclude", self.temp_vars["append_exclude"], parent="template_variables", datatype="strlist"))
                     include = []
                     if "include" in self.temp_vars:
-                        include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variable", datatype="strlist")
+                        include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variables", datatype="strlist")
                     elif "include" in methods:
                         include = [i for i in util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if i not in og_exclude]
                     if "append_include" in self.temp_vars:
-                        include.extend(util.parse("Config", "append_include", self.temp_vars["append_include"], parent="template_variable", datatype="strlist"))
+                        include.extend(util.parse("Config", "append_include", self.temp_vars["append_include"], parent="template_variables", datatype="strlist"))
                     addons = {}
                     if "addons" in self.temp_vars:
-                        addons = util.parse("Config", "addons", self.temp_vars["addons"], parent="template_variable", datatype="dictliststr")
+                        addons = util.parse("Config", "addons", self.temp_vars["addons"], parent="template_variables", datatype="dictliststr")
                     elif "addons" in methods:
                         addons = util.parse("Config", "addons", dynamic, parent=map_name, methods=methods, datatype="dictliststr")
                     if "append_addons" in self.temp_vars:
@@ -829,7 +829,7 @@ class MetadataFile(DataFile):
                                 auto_list[k] = v
                     custom_keys = True
                     if "custom_keys" in self.temp_vars:
-                        custom_keys = util.parse("Config", "custom_keys", self.temp_vars["custom_keys"], parent="template_variable", default=custom_keys)
+                        custom_keys = util.parse("Config", "custom_keys", self.temp_vars["custom_keys"], parent="template_variables", default=custom_keys)
                     elif "custom_keys" in methods:
                         custom_keys = util.parse("Config", "custom_keys", dynamic, parent=map_name, methods=methods, default=custom_keys)
                     for add_key, combined_keys in addons.items():
@@ -845,7 +845,7 @@ class MetadataFile(DataFile):
                                     auto_list[final_key] = all_keys[final_key]
                     title_format = default_title_format
                     if "title_format" in self.temp_vars:
-                        title_format = util.parse("Config", "title_format", self.temp_vars["title_format"], parent="template_variable", default=default_title_format)
+                        title_format = util.parse("Config", "title_format", self.temp_vars["title_format"], parent="template_variables", default=default_title_format)
                     elif "title_format" in methods:
                         title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
                     if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
@@ -890,18 +890,18 @@ class MetadataFile(DataFile):
                         template_names = [map_name]
                     remove_prefix = []
                     if "remove_prefix" in self.temp_vars:
-                        remove_prefix = util.parse("Config", "remove_prefix", self.temp_vars["remove_prefix"], parent="template_variable", datatype="commalist")
+                        remove_prefix = util.parse("Config", "remove_prefix", self.temp_vars["remove_prefix"], parent="template_variables", datatype="commalist")
                     elif "remove_prefix" in methods:
                         remove_prefix = util.parse("Config", "remove_prefix", dynamic, parent=map_name, methods=methods, datatype="commalist")
                     remove_suffix = []
                     if "remove_suffix" in self.temp_vars:
-                        remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variable", datatype="commalist")
+                        remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variables", datatype="commalist")
                     elif "remove_suffix" in methods:
                         remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
                     sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync else {}
                     other_name = None
                     if "other_name" in self.temp_vars and include:
-                        other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variable")
+                        other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variables")
                     elif "other_name" in methods and include:
                         other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods)
                     other_templates = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods, datatype="strlist") if "other_template" in methods and include else None
