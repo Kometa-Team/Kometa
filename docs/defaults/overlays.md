@@ -35,10 +35,9 @@ libraries:
     overlay_path:
       - remove_overlays: false
       - reapply_overlay: true
-      - pmm: resolution                                                    # 1
+      - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
-      - pmm: special_release                                               # 4
       - pmm: ratings                                                       # 5, 6, 7
         template_variables:
           rating1: user                                                    # 5 as this is user and mass_user_rating_update: mdb_tomatoes
@@ -59,7 +58,7 @@ libraries:
           horizontal_position: right                                       # the set of ratings is on the right of the poster
       - pmm: streaming                                                     # 8
       - pmm: video_format                                                  # 9
-      - pmm: audio_language                                                # 10
+      - pmm: language_count                                                # 10
       - pmm: ribbon                                                        # 11, 12 Bottom right sash is used by more than one overlay so a weight for priority can be applied 
     operations:
       mass_user_rating_update: mdb_tomatoes                              # 5 This operation will update the user rating in plex with Rotten Tomatoes ratings information
