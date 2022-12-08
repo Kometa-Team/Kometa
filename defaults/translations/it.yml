@@ -54,7 +54,7 @@ key_names:
   # Chile: Chile
   # China: China
   # Chinese: Chinese
-  # Christmas: Christmas
+  # Christmas: Natale
   # Comedy: Comedy
   # Competition: Competition
   # Costa Rica: Costa Rica
@@ -72,7 +72,7 @@ key_names:
   # Dominican Republic: Dominican Republic
   # Drama: Drama
   # Dutch: Dutch
-  # Easter: Easter
+  # Easter: Pasqua
   # Egypt: Egypt
   # English: English
   # Erotica: Erotica
@@ -151,7 +151,7 @@ key_names:
   # Nepal: Nepal
   # Netherlands: Netherlands
   # Network: Network
-  # New Year's Day: New Year's Day
+  # New Year's Day: Capodanno
   # New Zealand: New Zealand
   # News: News
   # News & Politics: News & Politics
@@ -230,7 +230,7 @@ key_names:
   # United States of America: United States of America
   # Universe: Universe
   # Urdu: Urdu
-  # Valentine's Day: Valentine's Day
+  # Valentine's Day: San Valentino
   # Vietnam: Vietnam
   # Vietnamese: Vietnamese
   # War & Politics: War & Politics
@@ -475,8 +475,8 @@ translations:
   resolution_other_summary: <<library_translationU>>s that have other uncommon resolutions.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
-  seasonal_name: <<translated_key_name>> <<library_translationU>>s
-  seasonal_summary: A collection of <<translated_key_name>> <<library_translation>>s that may relate to the season.
+  seasonal_name: Film di <<translated_key_name>>
+  seasonal_summary: Collezione di film di <<translated_key_name>>.
 
   # possible key_names: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
   streaming_name: <<translated_key_name>> <<library_translationU>>s
