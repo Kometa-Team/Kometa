@@ -84,6 +84,16 @@ class Sonarr:
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
+        logger.trace(f"Upgrade Existing: {upgrade_existing}")
+        logger.trace(f"Folder: {folder}")
+        logger.trace(f"Monitor: {monitor}")
+        logger.trace(f"Quality Profile: {quality_profile}")
+        logger.trace(f"Language Profile: {language_profile}")
+        logger.trace(f"Series Type: {series_type}")
+        logger.trace(f"Season: {season}")
+        logger.trace(f"Tags: {tags}")
+        logger.trace(f"Search: {search}")
+        logger.trace(f"Cutoff Search: {cutoff_search}")
 
         arr_paths = {}
         arr_ids = {}
