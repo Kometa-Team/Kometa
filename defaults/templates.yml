@@ -107,6 +107,8 @@ templates:
 
   filter:
     default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
       limit_<<key>>: <<limit>>
@@ -117,18 +119,20 @@ templates:
       limit: <<limit_<<key>>>>
       all:
         label: <<smart_label>>
-    sync_mode: sync
+    sync_mode: <<sync_mode_<<key>>>>
     plex_all: true
     filters:
       <<filter_term>>: <<value>>
 
   mdb_smart:
     default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     cache_builders: 1
     smart_label: <<sort_by_<<key>>>>
-    sync_mode: sync
+    sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: <<mdblist_list>>
 
   arr:
@@ -162,11 +166,13 @@ templates:
 
   custom:
     default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
       collection_order: custom
       collection_order_<<key>>: <<collection_order>>
       cache_builders: 1
     collection_order: <<collection_order_<<key>>>>
-    sync_mode: sync
+    sync_mode: <<sync_mode_<<key>>>>
     cache_builders: <<cache_builders>>
 
   other_collection:
