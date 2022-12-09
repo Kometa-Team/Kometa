@@ -56,7 +56,7 @@ collections:
 Gets the first episode of every show in your library. This only works with `builder_level: episode`
 
 ```yaml
-collection:
+collections:
   Pilots:
     builder_level: episode
     plex_pilots: true
