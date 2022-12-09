@@ -60,6 +60,13 @@ class Radarr:
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
+        logger.trace(f"Upgrade Existing: {upgrade_existing}")
+        logger.trace(f"Folder: {folder}")
+        logger.trace(f"Monitor: {monitor}")
+        logger.trace(f"Availability: {availability}")
+        logger.trace(f"Quality Profile: {quality_profile}")
+        logger.trace(f"Tags: {tags}")
+        logger.trace(f"Search: {search}")
 
         arr_paths = {}
         arr_ids = {}

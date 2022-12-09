@@ -15,6 +15,7 @@ radarr:
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
   root_folder_path: S:/Movies
   monitor: movie
   availability: announced
