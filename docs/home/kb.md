@@ -6,56 +6,40 @@ This page aims to provide knowledge based on combined user experience, and to an
 
 This sections aims to answer the most commonly asked questions that users have.
 
-### "How do I update to the latest version of Plex Meta Manager?"
+<details class="details-tabs">
+  <summary>How do I update to the latest version of Plex Meta Manager?</summary>
 
 ````{tab} OS X/Linux
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
-
 ````
 ````{tab} Windows
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
 ````
 ````{tab} Docker
-
-<br/>
-
 [type this into your terminal]
-
 ```
 docker pull meisnate12/plex-meta-manager
 ```
-
 ````
+</details>
 
-### "How do I switch to the develop branch?"
+<details class="details-tabs">
+  <summary>How do I switch to the develop branch?</summary>
 
 ````{tab} OS X/Linux
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout develop
@@ -63,14 +47,9 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
-
 ````
 ````{tab} Windows
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout develop
@@ -78,17 +57,14 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
 ````
+</details>
 
-### "How do I switch to the nightly branch"
+<details class="details-tabs">
+  <summary>How do I switch to the nightly branch</summary>
 
 ````{tab} OS X/Linux
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout nightly
@@ -96,14 +72,9 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
-
 ````
 ````{tab} Windows
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout nightly
@@ -111,17 +82,14 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
 ````
+</details>
 
-### "How do I switch back to the master branch?"
+<details class="details-tabs">
+  <summary>How do I switch back to the master branch?</summary>
 
 ````{tab} OS X/Linux
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd /Users/mroche/Plex-Meta-Manager
 git checkout master
@@ -129,14 +97,9 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
-
 ````
 ````{tab} Windows
-
-<br/>
-
 [type this into your terminal]
-
 ```
 cd C:\Users\mroche\Plex-Meta-Manager
 git checkout master
@@ -144,8 +107,8 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
-
 ````
+</details>
 
 ## Knowledgebase
 
@@ -246,11 +209,3 @@ This table details examples of the most commonly-seen `[INFO]` events and what t
 |   Type    | Short Info                                    | Description                           | Recommendation                                                                                                                |
 |:---------:|:----------------------------------------------|:--------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
 | `[INFO]`  | `Detail: TMDb_person updated poster to [URL]` | Person image was downloaded from TMDb | May require you to update the people poster image to your style or request it in the style of the PMM defaults people posters |
-
-#### DEBUG
-
-This table details examples of the most commonly-seen `[DEBUG]` events and what they mean for the user.
-
-|    Type    | Short Info | Description | Recommendation |
-|:----------:|:-----------|:------------|:---------------|
-| `[DEBUG]`  |            |             |                |

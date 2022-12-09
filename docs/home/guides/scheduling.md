@@ -8,12 +8,8 @@ Instead, it is recommended to set an automated scheduling service so that Plex M
 
 **To control how individual parts of PMM are scheduled see the [Schedule detail](../../metadata/details/schedule)**
 
-## Docker Run
 
-<details>
-  <summary>Click to Expand</summary>
-  <br />
-
+````{tab} Docker
 Using docker is the simplest and most robust solution to automating Plex Meta Manager scheduling.
 
 When running Plex Meta Manager within docker, the session will resume after a system reboot (assuming Docker is set to start at system startup, which is the default) and Plex Meta Manager will run in the background at all times.
@@ -30,16 +26,8 @@ docker run -d \
 This will run Plex Meta Manager in the background persistently until it is stopped by the user. While the docker container will be persistently running, Plex Meta Manager will not begin the run until the scheduled time.
 
 Further customizations of the docker run command can be used to specify set times to run Plex Meta Manager, further information on this and other Run Commands can be found [here](../environmental.md#time-to-run)
-</details>
-
-## Windows
-
-<details>
-  <summary>Click to Expand</summary>
-  <br />
-
-### Task Scheduler
-
+````
+````{tab} Windows Task Scheduler
 Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](local) and/or do not want to run Plex Meta Manager within docker.
 
 Windows Task Scheduler allows the user to run commands and services at scheduled times and intervals.
@@ -60,7 +48,6 @@ This is the recommended approach as it allows the user additional control over h
 
 <details>
   <summary>Background Run Scheduled Task</summary>
-  <br />
 
 1. Create a `waiter.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
 
@@ -114,7 +101,6 @@ This method will start Plex Meta Manager at the desired time, immediately begin 
 
 <details>
   <summary>Single Run Scheduled Task</summary>
-  <br />
 
 1. Create a `runner.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
 
@@ -171,20 +157,9 @@ This method will start Plex Meta Manager at the desired time, immediately begin 
 
 Plex Meta Manager will now run at the set date/time you selected in Step 6, and will run each subsequent day at the same time.
 
-</details><br />
 </details>
-
-## MacOS
-
-<details>
-  <summary>Click to Expand</summary>
-  <br />
-
-<br />
-<details>
-  <summary>Launchd Service</summary>
-  <br />
-
+````
+````{tab} MacOS Launchd Service
 1. Create launchd service:
 
    A couple examples; you'll want to edit the THINGS IN ALL CAPS to reflect your system.
@@ -278,59 +253,8 @@ Plex Meta Manager will now run at the set date/time you selected in Step 6, and 
    Note that this command uses the *label*, not the plist filename. The -k options means that the service will first be killed, if running.
 
    The agent should now be active and starting the program according to the schedule you set.
-</details><br />
-
-
-<details>
-  <summary>cron Schedule</summary>
-  <br />
-
-See the cron section below.
-</details><br />
-
-</details>
-
-## Linux
-
-<details>
-  <summary>Click to Expand</summary>
-  <br />
-
-<br />
-<details>
-  <summary>cron Schedule</summary>
-  <br />
-
-1. Decide when you want to run Plex Meta Manager
-
-   `cron` needs a specific syntax to express schedules.  A cron schedule is something like "Every Tuesday at 4" or "5 minutes past every other hour".
-
-   You can generate the required line by checking boxes using something like [crontab-generator](https://crontab-generator.org/).
-
-   The command you use in crontab will probably be the command you use to run it on the command line.
-
-   A command you could use for this:
-
-   ```
-   cd /path/to/plex-meta-manager && pmm-venv/bin/python plex_meta_manager.py --config config/config.yml --run
-   ```
-
-   NOTE: This is assuming you created the `pmm-venv` virtual environment as described in the [Local Walkthrough](local)
-
-2. Open the system crontab for editing:
-
-   ```bash
-   sudo crontab -e
-   ```
-
-3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own.
-
-4. Save and close the file.
-</details><br />
-
-<details>
-  <summary>Systemctl Service</summary>
-  <br />
+````
+````{tab} Linux Systemctl Service
 
 1. Create the service file:
 
@@ -381,5 +305,33 @@ See the cron section below.
    ```shell
    sudo systemctl status plex-meta-manager.service
    ```
-</details><br />
-</details>
+````
+````{tab} cron
+The cron utility is used for running scripts and commands at regular intervals, and at specific times and dates. It’s built into most Operating Systems (namely Linux and Mac), and provides a very useful way to schedule tasks on your server. It also works for running Docker commands on a schedule.
+
+1. Decide when you want to run Plex Meta Manager
+
+   `cron` needs a specific syntax to express schedules.  A cron schedule is something like "Every Tuesday at 4" or "5 minutes past every other hour".
+
+   You can generate the required line by checking boxes using something like [crontab-generator](https://crontab-generator.org/).
+
+   The command you use in crontab will probably be the command you use to run it on the command line.
+
+   A command you could use for this:
+
+   ```
+   cd /path/to/plex-meta-manager && pmm-venv/bin/python plex_meta_manager.py --config config/config.yml --run
+   ```
+
+   NOTE: This is assuming you created the `pmm-venv` virtual environment as described in the [Local Walkthrough](local)
+
+2. Open the system crontab for editing:
+
+   ```bash
+   sudo crontab -e
+   ```
+
+3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own.
+
+4. Save and close the file.
+````

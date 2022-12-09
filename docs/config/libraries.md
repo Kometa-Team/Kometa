@@ -12,7 +12,6 @@ This example is an advanced version of the library mappings which highlights som
 
 <details>
   <summary>Click to Expand</summary>
-  <br />
 
 In this example, the `"TV Shows On Second Plex"` library has a library-level `plex` configuration, which takes priority over the `plex` configuration set at the global level. <br>
 
@@ -97,8 +96,7 @@ The available attributes for each library are as follows:
 
 Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the `library_name` attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder. This is showcased below:
 <details>
-  <summary>Click to Expand</summary>
-  <br />
+  <summary>Example</summary>
 
 ```yaml
 libraries:
@@ -152,7 +150,10 @@ libraries:
       - file: config/Overlays.yml
 ```
 
-#### Remove Overlays
+#### Special Overlay Path Calls
+
+<details>
+  <summary>Remove Overlays</summary>
 
 You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`. This will remove all overlays when run and not generate new ones.
 
@@ -165,8 +166,10 @@ libraries:
       - remove_overlays: true
       - file: config/Overlays.yml
 ```
+</details>
 
-#### Reapply Overlays
+<details>
+  <summary>Reapply Overlays</summary>
 
 You can reapply overlays from a library by adding `reapply_overlays: true` to `overlay_path`. This will reapply overlays to every item in your library.
 
@@ -179,8 +182,10 @@ libraries:
       - reapply_overlays: true
       - file: config/Overlays.yml
 ```
+</details>
 
-#### Reset Overlays
+<details>
+  <summary>Reset Overlays</summary>
 
 You can reset overlays from a library by adding `reset_overlays` to `overlay_path` and setting it to either `tmdb` or `plex` depending on where you want to source the images from. This will use the reset image when overlaying items in your library.
 
@@ -193,8 +198,10 @@ libraries:
       - reset_overlays: plex
       - file: config/Overlays.yml
 ```
+</details>
 
-#### Schedule Overlays
+<details>
+  <summary>Schedule Overlays</summary>
 
 You can schedule all overlays from a library by adding `schedule` to `overlay_path` and setting it to [Any Schedule Option](../metadata/details/schedule).
 
@@ -209,6 +216,7 @@ libraries:
       - schedule: weekly(sunday)
       - file: config/Overlays.yml
 ```
+</details>
 
 ### Report Path
 

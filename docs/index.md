@@ -16,6 +16,8 @@ Plex Meta Manager is an open source Python 3 project that has been designed to e
 
 ## Getting Started
 
+These are the high-level steps you must take to get Plex Meta Manager up and running:
+
 1. Install Plex Meta Manager; this process is described [here](home/installation).
 
 2. Once installed, you have to create a [Configuration File](config/configuration), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
@@ -34,6 +36,10 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
 
 ## Development & Nightly Builds
 
+Development and Nightly builds are deemed as "beta" builds which are updated far more frequently than the master branch. Bug fixes, new features and and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
+
+The development builds (particularly the nightly branch) is only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes.
+
 ### Development
 
 [![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
@@ -42,29 +48,21 @@ The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) bran
 
 Switching to `develop`:
 
-````{tab} if running in Docker
-<br/>
+````{tab} Running in Docker
 Add ":develop" to the image name in your run command or configuration:
-
 ```
 meisnate12/plex-meta-manager:develop
 ```
-<br/>
 ````
-````{tab} if running on the host:
-
+````{tab} Running on the Host
 In the directory where you cloned PMM:
-
 ```bash
 git checkout develop
 ```
-
 To switch back:
-
 ```bash
 git checkout master
 ```
-<br/>
 ````
 
 If switching to the develop build, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master build.
@@ -75,33 +73,25 @@ If switching to the develop build, it is recommended to also use the [develop br
 
 **This branch will have squashed commits which can cause `git pull`/`git fetch` to error you can use `git reset origin/nightly --hard` to fix the branch.**
 
-There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented.
+There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented until they have progressed enough to reach the develop branch.
 
 Switching to `nightly`:
 
-````{tab} if running in Docker
-<br/>
+````{tab} Running in Docker
 Add ":nightly" to the image name in your run command or configuration:
-
 ```
 meisnate12/plex-meta-manager:nightly
 ```
-<br/>
 ````
-````{tab} if running on the host:
-
+````{tab} Running on the Host
 In the directory where you cloned PMM:
-
 ```bash
 git checkout nightly
 ```
-
 To switch back:
-
 ```bash
 git checkout master
 ```
-<br/>
 ````
 
 

@@ -16,6 +16,8 @@ Plex Meta Manager is an open source Python 3 project that has been designed to e
 
 ## Getting Started
 
+These are the high-level steps you must take to get Plex Meta Manager up and running:
+
 1. Install Plex Meta Manager; this process is described [here](https://metamanager.wiki/en/latest/home/installation.html).
 
 2. Once installed, you have to create a [Configuration File](https://metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
@@ -33,6 +35,10 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
    3. The [unRAID Walkthrough](https://metamanager.wiki/en/latest/home/guides/unraid.html) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) first on your computer to gain that understanding.
 
 ## Development & Nightly Builds
+
+Development and Nightly builds are deemed as "beta" builds which are updated far more frequently than the master branch. Bug fixes, new features and and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
+
+The development builds (particularly the nightly branch) is only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes.
 
 ### Development
 

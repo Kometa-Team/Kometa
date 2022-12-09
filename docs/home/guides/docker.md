@@ -36,16 +36,17 @@ something like this
 
 That’s a command you’re going to type or paste into your terminal (OSX or Linux) or Powershell (Windows).
 
-IMPORTANT NOTE:
-This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Docker container going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
+**IMPORTANT NOTES:**
 
-I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
+1. This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Docker container going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
 
-I'm also assuming you are doing this on a computer, not through a NAS interface or the like.  You can do all this through something like the Synology NAS UI or Portainer or the like, but those aren't documented here.  This uses the docker command line because it works the same on all platforms.
+2. I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
 
-You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
+3. I'm also assuming you are doing this on a computer, not through a NAS interface or the like.  You can do all this through something like the Synology NAS UI or Portainer or the like, but those aren't documented here.  This uses the docker command line because it works the same on all platforms.
 
-DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
+4. You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
+
+5. DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
 
 ### Installing Docker.
 
@@ -56,17 +57,13 @@ The Docker install is discussed here: [Installing Docker](https://docs.docker.co
 Once you have Docker installed, test it at the command line with:
 
 [type this into your terminal]
-
 ```
 docker run --rm hello-world
 ```
-
 You should see something that starts with:
-
 ```
 Hello from Docker!
 This message shows that your installation appears to be working correctly.
-
 ...
 ```
 
@@ -143,82 +140,55 @@ pwd
 This will display a full path:
 
 ````{tab} Linux
-<br/>
-
 ```
 /home/YOURUSERNAME/plex-meta-manager
 ```
-<br/>
 ````
-````{tab} OS X:
-<br/>
-
+````{tab} OS X
 ```
 /Users/YOURUSERNAME/plex-meta-manager
 ```
-<br/>
 ````
-````{tab} Windows:
-<br/>
-
+````{tab} Windows
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager
 ```
-<br/>
 ````
 
 Add "config" onto the end of that to get the host path to your config directory, for example:
 
 ````{tab} Linux
-<br/>
-
 ```
 /home/YOURUSERNAME/plex-meta-manager/config
 ```
-<br/>
 ````
-````{tab} OS X:
-<br/>
-
+````{tab} OS X
 ```
 /Users/YOURUSERNAME/plex-meta-manager/config
 ```
-<br/>
 ````
-````{tab} Windows:
-<br/>
-
+````{tab} Windows
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager\config
 ```
-<br/>
 ````
 
 You'll need to add this to the docker command every time you run it, like this:
 
 ````{tab} Linux
-<br/>
-
 ```
 docker run --rm -it -v "/home/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
-<br/>
 ````
-````{tab} OS X:
-<br/>
-
+````{tab} OS X
 ```
 docker run --rm -it -v "/Users/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
-<br/>
 ````
-````{tab} Windows:
-<br/>
-
+````{tab} Windows
 ```
 docker run --rm -it -v "C:\Users\YOURUSERNAME\plex-meta-manager\config:/config:rw" meisnate12/plex-meta-manager
 ```
-<br/>
 ````
 
 If you run that command now it will display a similar error to before, but without all the image loading:
@@ -232,7 +202,6 @@ Note that I show the example path there.
 
 <details>
   <summary>Why did we create that `config' directory?</summary>
-  <br />
 
   This was done so that from here on in the instructions match between this walkthrough and the [Local walkthrough](local) are the same.
 
@@ -246,31 +215,22 @@ The default config file contains a reference to a directory that will show an er
 We'll create it here so the error doesn't show up later.
 
 ````{tab} Linux
-<br/>
 [type this into your terminal]
-
 ```
 mkdir config/assets
 ```
-<br/>
 ````
-````{tab} OS X:
-<br/>
+````{tab} OS X
 [type this into your terminal]
-
 ```
 mkdir config/assets
 ```
-<br/>
 ````
-````{tab} Windows:
-<br/>
+````{tab} Windows
 [type this into your terminal]
-
 ```
 mkdir config\assets
 ```
-<br/>
 ````
 
 ### Setting up the initial config file
@@ -283,30 +243,22 @@ mkdir config\assets
 First, make a copy of the template:
 
 ````{tab} Linux
-<br/>
 Get a copy of the template to edit [type this into your terminal]:
-
-```
-curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
-```
-<br/>
-````
-````{tab} OS X:
-<br/>
-Get a copy of the template to edit [type this into your terminal]:
-
 ```
 curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
 ```
 ````
-````{tab} Windows:
-<br/>
+````{tab} OS X
+Get a copy of the template to edit [type this into your terminal]:
+```
+curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
+```
+````
+````{tab} Windows
 Go to [this URL](https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
-
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager\config\config.yml
 ```
-<br/>
 ````
 
 Now open the copy in an editor:

@@ -31,7 +31,6 @@ This example outlines what a "standard" config.yml file might look like when in 
 
 <details>
   <summary>Example config.yml file</summary>
-  <br />
 
 ```yaml
 libraries:                          # This is called out once within the config.yml file                                       

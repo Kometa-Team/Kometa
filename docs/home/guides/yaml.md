@@ -173,7 +173,7 @@ The string literals do not require to be quoted. It is only important to quote t
 
 Here is an example where the string has to be quoted as `&` and `:` are special characters.
 
-YAML Special Characters: `{`, `}`, `[`, `]`, `,`, `&`, `:`, `*`, `#`, `?`, `|`. `-`, `<`. `>`, `=`, `!`, `%`, `@`, `\`
+YAML Special Characters: `{`, `}`, `[`, `]`, `,`, `&`, `:`, `*`, `#`, `?`, `|`, `-`, `<`. `>`, `=`, `!`, `%`, `@`, `\`
 
 There are many occurrences of these special characters where quotes are not needed but if the YAML fails to load it could easily be because one of these are unquoted.
 

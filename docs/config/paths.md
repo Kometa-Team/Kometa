@@ -89,11 +89,8 @@ playlist_files:
 
 The [`metadata_path`](libraries.md#metadata-path) attribute is defined under the [`libraries`](libraries) attribute in your [Configuration File](configuration). 
 
-### Example
-
 <details>
-  <summary>Click to Expand</summary>
-  <br />
+  <summary>Example</summary>
 
 In this example, multiple metadata file path types are defined for the `"TV Shows"` library:
 
@@ -122,11 +119,8 @@ Within the above example, PMM will:
 
 The [`overlay_path`](libraries.md#overlay-path) attribute is defined under the [`libraries`](libraries) attribute in your [Configuration File](configuration). 
 
-### Example
-
 <details>
-  <summary>Click to Expand</summary>
-  <br />
+  <summary>Example</summary>
 
 In this example, multiple overlay file path types are defined for the `"TV Shows"` library:
 
@@ -155,11 +149,8 @@ Within the above example, PMM will:
 
 The [`playlist_files`](playlists) at the top level in your [Configuration File](configuration). 
 
-### Example
-
 <details>
-  <summary>Click to Expand</summary>
-  <br />
+  <summary>Example</summary>
 
 In this example, multiple `playlist_files` attribute path types are defined:
 
@@ -186,11 +177,8 @@ Within the above example, PMM will:
 
 The [`external_templates`](../metadata/templates.md#external-templates) attribute is defined at the top level in your [Metadata File](../metadata/metadata). 
 
-### Example
-
 <details>
-  <summary>Click to Expand</summary>
-  <br />
+  <summary>Example</summary>
 
 In this example, multiple external template file path types are defined:
 
