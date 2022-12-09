@@ -11,12 +11,12 @@ To install a container from docker hub, you will need community applications - a
 
 3. Create your [Docker values](../../home/environmental) using `Add another Path, Port, Variable, Label or Device`. Example config:
 
-| Config Type | Name                | Key           | Value  | Container Path | Host Path                             | Access Mode | Description                                         |
-|:------------|:--------------------|:--------------|:-------|:---------------|:--------------------------------------|:------------|:----------------------------------------------------|
-| Variable    | Time to Run         | `PMM_TIME`    | `6:00` | N/A            | N/A                                   | N/A         | Time to update each day. Format: HH:MM              |
-| Variable    | Divider Character   | `PMM_DIVIDER` | `=`    | N/A            | N/A                                   | N/A         | The character that divides the sections             |
-| Variable    | Screen Width        | `PMM_WIDTH`   | `100`  | N/A            | N/A                                   | N/A         | An integer between 90 and 300                       |
-| Path        | Config Storage Path | N/A           | N/A    | `/config`      | `/mnt/user/appdata/plex-meta-manager` | Read/Write  | Translation from docker container path to host path |
+| Config Type | Name                | Key           | Description                                         | Value  | Container Path | Host Path                             | Access Mode |
+|:------------|:--------------------|:--------------|:----------------------------------------------------|:-------|:---------------|:--------------------------------------|:------------|
+| Variable    | Time to Run         | `PMM_TIME`    | Time to update each day. Format: HH:MM              | `6:00` | N/A            | N/A                                   | N/A         |
+| Variable    | Divider Character   | `PMM_DIVIDER` | The character that divides the sections             | `=`    | N/A            | N/A                                   | N/A         |
+| Variable    | Screen Width        | `PMM_WIDTH`   | An integer between 90 and 300                       | `100`  | N/A            | N/A                                   | N/A         |
+| Path        | Config Storage Path | N/A           | Translation from docker container path to host path | N/A    | `/config`      | `/mnt/user/appdata/plex-meta-manager` | Read/Write  |
 
   * Full list of docker values can be found on the [Run Commands & Environmental Variables Page](../../home/environmental).
   * If you wish to enable one-time [Run]([Run Commands & Environmental Variables Page](../environmental.md#run)), add `-r` to `Post Arguments` by enabling Advanced View in the top right of unRAID.

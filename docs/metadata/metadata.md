@@ -123,7 +123,7 @@ metadata:
   Godzilla3:
     title: Godzilla
     year: 1954
-    edition: Extended
+    edition_filter: Extended
     content_rating: R
 ```
 
