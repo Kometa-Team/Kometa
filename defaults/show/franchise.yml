@@ -9,6 +9,8 @@
 templates:
   tmdbshow:
     default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
       collection_order: release
       minimum_items: 2
       name_mapping_<<key>>: <<name_mapping>>
@@ -46,7 +48,7 @@ templates:
     name_mapping: <<name_mapping_<<key>>>>
     sort_title: <<sort_title_<<key>>>>
     build_collection: <<build_collection>>
-    sync_mode: sync
+    sync_mode: <<sync_mode_<<key>>>>
     collection_mode: <<collection_mode>>
     collection_order: <<collection_order_<<key>>>>
     sonarr_add_missing: <<sonarr_add_missing_<<key>>>>

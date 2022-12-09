@@ -14,6 +14,8 @@ translations:
 templates:
   holiday:
     default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
       sort_by: title.asc
       sort_by_<<key>>: <<sort_by>>
       schedule_<<key>>: <<schedule>>
@@ -41,6 +43,7 @@ templates:
         label: <<smart_label>>
     schedule: <<schedule_<<key>>>>
     delete_not_scheduled: true
+    sync_mode: <<sync_mode_<<key>>>>
     tmdb_collection: <<tmdb_collection_<<key>>>>
     tmdb_movie: <<tmdb_movie_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>

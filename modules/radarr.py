@@ -56,8 +56,6 @@ class Radarr:
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
-        if not self.api._raw.v4:
-            monitor = monitor != "none"
         availability = availability_translation[options["availability"] if "availability" in options else self.availability]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         tags = options["tag"] if "tag" in options else self.tag
