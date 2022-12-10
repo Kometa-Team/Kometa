@@ -36,34 +36,34 @@ This example outlines what a "standard" config.yml file might look like when in 
 ## This file is a template remove the .template to use the file
 
 libraries:                       # This is called out once within the config.yml file
-  Movies:                        # Each library must match the Plex library name
+  Movies:                        # These are names of libraries in your Plex
     metadata_path:
-      - pmm: basic               # This is a file within the defaults folder in the Repository
-      - pmm: imdb                # This is a file within the defaults folder in the Repository
+      - pmm: basic               # This is a file within PMM's defaults folder
+      - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_path:
       - remove_overlays: false   # Set this to true to remove all overlays
-      - pmm: ribbon              # This is a file within the defaults folder in the Repository
+      - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
     metadata_path:
-      - pmm: basic               # This is a file within the defaults folder in the Repository
-      - pmm: imdb                # This is a file within the defaults folder in the Repository
+      - pmm: basic               # This is a file within PMM's defaults folder
+      - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_path:
       - remove_overlays: false   # Set this to true to remove all overlays
-      - pmm: ribbon              # This is a file within the defaults folder in the Repository
+      - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
     metadata_path:
-      - pmm: basic               # This is a file within the defaults folder in the Repository
-      - pmm: anilist             # This is a file within the defaults folder in the Repository
+      - pmm: basic               # This is a file within PMM's defaults folder
+      - pmm: anilist             # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Music:
     metadata_path:
       - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
 playlist_files:
-  - pmm: playlist                # This is a file within the defaults folder in the Repository
+  - pmm: playlist                # This is a file within PMM's defaults folder
   # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
   cache: true
@@ -101,23 +101,23 @@ settings:
   verify_ssl: true
   custom_repo:
   check_nightly: false
-webhooks:                                       # Can be individually specified per library as well
+webhooks:                        # Can be individually specified per library as well
   error:
   version:
   run_start:
   run_end:
   changes:
-plex:                                           # Can be individually specified per library as well; REQUIRED for the script to run
+plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
   clean_bundles: false
   empty_trash: false
   optimize: false
-tmdb:                                           # REQUIRED for the script to run
+tmdb:                            # REQUIRED for the script to run
   apikey: ################################
   language: en
-tautulli:                                       # Can be individually specified per library as well
+tautulli:                        # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
 omdb:
@@ -128,10 +128,10 @@ mdblist:
   cache_expiration: 60
 notifiarr:
   apikey: ####################################
-anidb:                                          # Not required for AniDB builders unless you want mature content
+anidb:                           # Not required for AniDB builders unless you want mature content
   username: ######
   password: ######
-radarr:                                         # Can be individually specified per library as well
+radarr:                          # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
   add_missing: false
@@ -144,7 +144,7 @@ radarr:                                         # Can be individually specified 
   search: false
   radarr_path:
   plex_path:
-sonarr:                                         # Can be individually specified per library as well
+sonarr:                          # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
   add_missing: false
@@ -161,8 +161,8 @@ sonarr:                                         # Can be individually specified 
   sonarr_path:
   plex_path:
 trakt:
-  client_id: ################################################################
-  client_secret: ################################################################
+  client_id: ####################
+  client_secret: ####################
   pin:
   authorization:
     # everything below is autofilled by the script
@@ -173,8 +173,8 @@ trakt:
     scope: public
     created_at:
 mal:
-  client_id: ################################
-  client_secret: ################################################################
+  client_id: ####################
+  client_secret: ####################
   authorization:
     # everything below is autofilled by the script
     access_token:
