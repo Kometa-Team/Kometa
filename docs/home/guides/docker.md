@@ -36,17 +36,16 @@ something like this
 
 That’s a command you’re going to type or paste into your terminal (OSX or Linux) or Powershell (Windows).
 
-**IMPORTANT NOTES:**
+IMPORTANT NOTE:
+This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Docker container going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
 
-1. This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Docker container going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
+I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
 
-2. I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
+I'm also assuming you are doing this on a computer, not through a NAS interface or the like.  You can do all this through something like the Synology NAS UI or Portainer or the like, but those aren't documented here.  This uses the docker command line because it works the same on all platforms.
 
-3. I'm also assuming you are doing this on a computer, not through a NAS interface or the like.  You can do all this through something like the Synology NAS UI or Portainer or the like, but those aren't documented here.  This uses the docker command line because it works the same on all platforms.
+You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
 
-4. You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
-
-5. DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
+DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
 
 ### Installing Docker.
 
@@ -57,13 +56,17 @@ The Docker install is discussed here: [Installing Docker](https://docs.docker.co
 Once you have Docker installed, test it at the command line with:
 
 [type this into your terminal]
+
 ```
 docker run --rm hello-world
 ```
+
 You should see something that starts with:
+
 ```
 Hello from Docker!
 This message shows that your installation appears to be working correctly.
+
 ...
 ```
 
@@ -73,7 +76,7 @@ If that doesn't work, stop here until you fix that.  Diagnoing and repairing Doc
 
 #### Important note on Docker images
 
-This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; the lsio image specifically has [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
+This tutorial uses the official image, and you should, too.  Don't change `meisnate12/plex-meta-manager` to the `linuxserver.io` image or any other; other images may have [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
 
 The great thing about Docker is that all the setup you'd have to do to run PMM is already done inside the docker image.
 
@@ -140,55 +143,82 @@ pwd
 This will display a full path:
 
 ````{tab} Linux
+<br/>
+
 ```
 /home/YOURUSERNAME/plex-meta-manager
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
+
 ```
 /Users/YOURUSERNAME/plex-meta-manager
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
+
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager
 ```
+<br/>
 ````
 
 Add "config" onto the end of that to get the host path to your config directory, for example:
 
 ````{tab} Linux
+<br/>
+
 ```
 /home/YOURUSERNAME/plex-meta-manager/config
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
+
 ```
 /Users/YOURUSERNAME/plex-meta-manager/config
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
+
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager\config
 ```
+<br/>
 ````
 
 You'll need to add this to the docker command every time you run it, like this:
 
 ````{tab} Linux
+<br/>
+
 ```
 docker run --rm -it -v "/home/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
+
 ```
 docker run --rm -it -v "/Users/YOURUSERNAME/plex-meta-manager/config:/config:rw" meisnate12/plex-meta-manager
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
+
 ```
 docker run --rm -it -v "C:\Users\YOURUSERNAME\plex-meta-manager\config:/config:rw" meisnate12/plex-meta-manager
 ```
+<br/>
 ````
 
 If you run that command now it will display a similar error to before, but without all the image loading:
@@ -202,6 +232,7 @@ Note that I show the example path there.
 
 <details>
   <summary>Why did we create that `config' directory?</summary>
+  <br />
 
   This was done so that from here on in the instructions match between this walkthrough and the [Local walkthrough](local) are the same.
 
@@ -215,27 +246,36 @@ The default config file contains a reference to a directory that will show an er
 We'll create it here so the error doesn't show up later.
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config/assets
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config/assets
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config\assets
 ```
+<br/>
 ````
 
 ### Setting up the initial config file
 
-```{include} wt/wt-01.md
+```{include} wt/wt-01-basic-config.md
 ```
 
 #### Editing the config template
@@ -243,22 +283,30 @@ mkdir config\assets
 First, make a copy of the template:
 
 ````{tab} Linux
+<br/>
 Get a copy of the template to edit [type this into your terminal]:
+
+```
+curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
+```
+<br/>
+````
+````{tab} OS X:
+<br/>
+Get a copy of the template to edit [type this into your terminal]:
+
 ```
 curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
 ```
 ````
-````{tab} OS X
-Get a copy of the template to edit [type this into your terminal]:
-```
-curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
-```
-````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 Go to [this URL](https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
+
 ```
 C:\Users\YOURUSERNAME\plex-meta-manager\config\config.yml
 ```
+<br/>
 ````
 
 Now open the copy in an editor:
@@ -266,7 +314,7 @@ Now open the copy in an editor:
 ```{include} wt/wt-editor.md
 ```
 
-```{include} wt/wt-02.md
+```{include} wt/wt-02-config-bad-library.md
 ```
 
 #### Testing the config file
@@ -281,25 +329,27 @@ Then run the script again:
 ```{include} wt/wt-run-docker.md
 ```
 
-```{include} wt/wt-03.md
+```{include} wt/wt-03-lib-err-and-fix.md
 ```
 
-Save the file:
 
-```{include} wt/wt-save.md
+### Creating a few sample collections.
+
+```{include} wt/wt-04-default-intro.md
 ```
 
-Then run the script again:
+So let's run the script and see this happen:
+
 
 ```{include} wt/wt-run-docker.md
 ```
 
-```{include} wt/wt-04.md
+```{include} wt/wt-04b-default-after.md
 ```
 
 ### Setting up a metadata file and creating a few sample collections.
 
-```{include} wt/wt-05.md
+```{include} wt/wt-05-local-file.md
 ```
 
 Save the file:
@@ -312,8 +362,30 @@ Then run the script again:
 ```{include} wt/wt-run-docker.md
 ```
 
-```{include} wt/wt-06.md
+```{include} wt/wt-06-local-after.md
 ```
+
+### Adding Overlays to movies.
+
+```{include} wt/wt-07-overlay-add.md
+```
+
+Save the file:
+
+```{include} wt/wt-save.md
+```
+
+Then run the script again:
+
+```{include} wt/wt-run-shell.md
+```
+
+```{include} wt/wt-08-overlay-after.md
+```
+
+```{include} wt/wt-09-next-steps.md
+```
+
 
 ### Running the container in the background:
 
@@ -333,3 +405,41 @@ docker run -d \
 That will create a container that will run in the background until you explicitly stop it, surviving reboots, and waking up every morning at 5AM to process collections.
 
 There are of course [other flags you can add](../environmental), but this is the minimal command to create this container.
+
+There are [other ways you could schedule](scheduling.md) the `docker run` command used here if you don't want to use PMM's built-in scheduler and leave the container running all the time.
+
+## Other Topics
+
+### I want to use the develop branch
+
+Add the `develop` tag to the image name in your run command [or wherever you specify the image in your environment]
+
+```
+docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager:develop --run
+                                                                                    ^^^^^^^
+```
+
+This may not work if you are not using the official image; for example, it does not work with the lsio image.
+
+### I want to use the nightly branch
+
+Add the `nightly` tag to the image name in your run command [or wherever you specify the image in your environment]
+
+```
+docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager:nightly --run
+                                                                                    ^^^^^^^
+```
+
+This may not work if you are not using the official image; for example, it does not work with the lsio image.
+
+### I want to ensure IO amy using the master branch
+
+Add the `latest` tag to the image name in your run command [or wherever you specify the image in your environment]
+
+```
+docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-manager:latest --run
+                                                                                    ^^^^^^
+```
+
+This is the only version tag supplied by the lsio image.
+
