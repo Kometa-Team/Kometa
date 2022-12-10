@@ -45,23 +45,45 @@ This walkthrough involves typing commands into a command window.  On Mac OS X or
 IMPORTANT:
 This walkthrough is assuming you are doing the entire process on the same platform; i.e. you're installing PMM and editing its config files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing the config files on your Windows box.
 
+### Prepare a small test library
+
+While going through this process, Plex-Meta-Manager is going to load the movies in your library, create some collections, and apply some overlays.  If you have a large library, this will be very time-consuming.
+
+For learning and testing, you would be well-advised to create a small test library of a reasonable size, where reasonable it probably below a thousand.
+
+The author has a small library of 10 movies that is used for fast tests.
+
+For best results, your test library will contain:
+
+At least two comedy movies released since 2012.
+At least two movies from the IMDB top 250.
+At least two movies from IMDB's Popular list.
+At least two movies from IMDB's Lowest Rated.
+A couple different resolutions among the movies.
+
+That will ensure there's something to go into each of the example collections that will be created.
+
 ### Starting up your terminal.
 
 Since most of this is typing commands into a terminal, you'll need to have a terminal open.
 
 
 ````{tab} Linux
+<br/>
 If your Linux system is remote to your computer, connect to it via SSH.  That SSH session is the terminal you will be using, so leave it open.
 
 If you are running this on a desktop Linux machine, start up the Terminal application.  That window will be the terminal you will type commands into throughout this walkthrough, so leave it open.
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
 Open the Terminal app; this window will be the place you type commands throughout this walkthrough, so leave it open.  The Terminal app is in Applications -> Utilities.
 
 You can also use iTerm or some other terminal app if you wish.  If you don't know what that means, use Terminal.
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
 Use the Start menu to open PowerShell.  This will be the window into which you type commands throughout this walkthrough, so leave it open.
+<br/>
 ````
 
 ### Installing Python.
@@ -72,39 +94,33 @@ First let's check if it's installed already [type this into your terminal]:
 
 ```
 python3 --version
-python --version
 ```
 
-If one of these doesn't return `3.7.0` or higher, you'll need to get Python 3 installed.
+If this doesn't return `3.7.0` or higher, you'll need to get Python 3 installed.
 
 ````{tab} Linux
+<br/>
 Describing a python install for any arbitrary linux is out of scope here, but if you're using Ubuntu, [this](https://techviewleo.com/how-to-install-python-on-ubuntu-linux/) might be useful.
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
 Follow the instructions here: [Installing Python 3 on Mac OS X](https://docs.python-guide.org/starting/install3/osx/)
+<br/>
 ````
-````{tab} Windows
-Go to http://www.python.org/download and download one less than the latest version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10.  The latest version of Python is 3.11, and there is one piece of PMM that is not ready for 3.11.  It will be some time soon, but that isn't under PMM control, so to be safe, grab one back from the latest.
+````{tab} Windows:
+Go to http://www.python.org/download and download the latest version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10.4.
 
 Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
 
 For Windows 10, you will need to enable scripts in PowerShell.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10) to do so.  If you skip this step you're going to hit a hard stop in a little bit.
+<br/>
 ````
-
-Once you've completed the install, verify that will will work on the command line.  Close the terminal or Powershell window and open a new one, then type this into your terminal:
-
-```
-python3 --version
-python --version
-```
-
-If one of these doesn't return the version you just downloaded and installed, back up and check your work above.
 
 ---
 
 ### Installing git
 
-To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably is not in Windows.
+To copy the Plex-Meta-Manager code to your machine, we'll be using git.  This may be installed on Mac or Linux, and probably isn't in Windows.
 
 First let's check if it's installed already [type this into your terminal]:
 
@@ -115,12 +131,17 @@ git --version
 If this doesn't return a version number, you'll need to get git installed.
 
 ````{tab} Linux
+<br/>
 The git install is discussed here: [Download for Linux and Unix](https://git-scm.com/download/linux)
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 The git install is discussed here: [Git - Downloading Package](https://git-scm.com/download/mac)
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 Download the installer from [here](https://git-scm.com/download/windows)
 
 Run the install; you can probably just accept the defaults and click through except for the step that asks you to choose an editor; you probably want to choose something other than the default there:
@@ -128,15 +149,8 @@ Run the install; you can probably just accept the defaults and click through exc
 ![Git Install](git-install.png)
 
 This install comes with its own command line interface.  **Do not use this interface in this walkthrough**.  Continue to do everything here in Powershell.
+<br/>
 ````
-
-Once you've completed the install, verify that will will work on the command line.  Close the terminal or Powershell window and open a new one, then type this into your terminal:
-
-```
-git --version
-```
-
-If that doesn't return the version you just downloaded and installed, back up and check your work above.
 
 ---
 
@@ -167,38 +181,53 @@ There are parts of the code that are assuming and expecting that you will be in 
 
 <details>
   <summary>What did that do?</summary>
+  <br />
 
   ```
   cd ~
   ```
+
   This changes to your home directory, which will be something like `/home/yourname` or `/Users/yourname` or `C:\Users\YourName` depending on the platform.
+
   ```
   git clone https://github.com/meisnate12/Plex-Meta-Manager
   ```
+
   This uses `git` to make a copy of (`clone`) the PMM code from where it is stored on `github`.
+
   ```
   cd Plex-Meta-Manager
   ```
+
   This moves into the directory that was created by the `clone` command.
+
+
 </details>
 
 Later on you can move it elsewhere if you want, but for now put it there.  This will ensure that everything to follow works just like it says here.  Presumably you’re reading this because the other docs are unclear to you.  Don’t make unilateral changes to my assumptions while doing this.
 
 <details>
   <summary>Why use git instead of downloading the release ZIP?</summary>
+  <br />
 
   Retrieving the code with `git` makes updating simpler.  When you want to update to the newest version, you can go into this directory and type:
+
   ```
   git pull
   ```
+
   No need to download a new ZIP, uncompress it, etc.
+
   Also, if you are asked to [or want to] switch to the latest develop or nightly code, you can do so with:
+
   ```
   git checkout develop
   ```
+
   ```
   git checkout nightly
   ```
+
 </details>
 
 ---
@@ -208,46 +237,67 @@ Later on you can move it elsewhere if you want, but for now put it there.  This 
 This walkthrough is going to use a "virtual environment", since that provides a simple way to keep the requirements for a given thing self-contained; think of it as a "sandbox" for this script.  It also provides a clean way to recover from mistakes, and keeps the host system clean.
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 python3 -m venv pmm-venv
 ```
+
 If you see an error like:
+
 ```
 Error: Command '['/home/mroche/Plex-Meta-Manager/pmm-venv/bin/python3', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1.
 ```
 You probably need to make sure the Python 3.9-specific virtualenv support library is installed:
+
 [type this into your terminal]
+
 ```
 sudo apt-get install python3.9-venv
 ```
+
 Then try the original venv command above again.
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 python3 -m venv pmm-venv
 ```
+
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 python -m venv pmm-venv
 ```
+
 If you see:
+
 ```
 Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases.
 ```
+
 You apparently didn't check the “Add to path” checkbox above under [installing Python](#installing-python).  "Repair" your Python install and check "add python to environment variables".
+<br/>
 ````
 
 <details>
   <summary>What did that do?</summary>
+  <br />
 
   ```
   python3 -m venv pmm-venv
   ```
+
   This tells Python3 to use the `venv` module to create a virtual environment called `pmm-venv`.  The only visible effect will be the creation of a `pmm-venv` directory.
+
 </details>
 
 That command will not produce any output if it works; it will display an error if a problem occurs.  If everything is fine, you will be looking at something like this:
@@ -262,23 +312,32 @@ If you aren't looking at an error, you're ready to move on.
 That will create the virtual environment, and then you need to activate it:
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 source pmm-venv/bin/activate
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 source pmm-venv/bin/activate
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 .\pmm-venv\Scripts\activate
 ```
 If you see something like this:
+
 ```powershell
 .\pmm-venv\Scripts\activate : File C:\Users\mroche\Plex-Meta-Manager\pmm-venv\Scripts\Activate.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https:/go.microsoft.com/fwlink LinkID=135170.
 At line:1 char:1
@@ -287,11 +346,13 @@ At line:1 char:1
     + CategoryInfo          : SecurityError: (:) [], PSSecurityException
     + FullyQualifiedErrorId : UnauthorizedAccess
 ```
+
 You apparently skipped the "enable scripts in Powershell" step above under [installing Python](#installing-python) for Windows.
 
 You will need to take care of that before moving on.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10).
 
 Once you have done that, try the activation step again.
+<br/>
 ````
 
 That command will not produce any output if it works; it will display an error if a problem occurs.
@@ -307,8 +368,10 @@ Note that the prompt now shows the name of the virtual environment.  You may not
 
 <details>
   <summary>What did that do?</summary>
+  <br />
 
   This tells Python to make the virtual environment "active", which means to use the copy of python that is available there, install all support libraries there, etc.  This keeps the PMM code and its runtime environment totally separate from your host machine's environment.
+
 </details>
 
 An advantage of doing this in a virtual environment is that in the event something goes wrong with this part of the setup, you can delete that pmm-venv directory and do the setup again.
@@ -316,22 +379,31 @@ An advantage of doing this in a virtual environment is that in the event somethi
 **IMPORTANT: In the future, when you want to run the script, you will need to do this "activation" step every time.  Not the venv creation, just the activation**:
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 source pmm-venv/bin/activate
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 source pmm-venv/bin/activate
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 .\pmm-venv\Scripts\activate
 ```
+<br/>
 ````
 
 ### Installing requirements
@@ -365,8 +437,10 @@ Don't worry about the WARNING about `pip version thus-and-such` if it comes up.
 
 <details>
   <summary>What did that do?</summary>
+  <br />
 
   This told Python to use the `pip` module to install some libraries that PMM needs.
+
 </details>
 
 Let’s make sure it’s working so far.
@@ -391,27 +465,36 @@ The default config file contains a reference to a directory that will show an er
 We'll create it here so the error doesn't show up later.
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config/assets
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config/assets
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 mkdir config\assets
 ```
+<br/>
 ````
 
 ### Setting up the initial config file
 
-```{include} wt/wt-01.md
+```{include} wt/wt-01-basic-config.md
 ```
 
 #### Editing the config template
@@ -419,22 +502,31 @@ mkdir config\assets
 First, make a copy of the template.  This is going to create a copy of the base template that you can then edit.  You only need to do this once.
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 cp config/config.yml.template config/config.yml
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 cp config/config.yml.template config/config.yml
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 copy .\config\config.yml.template .\config\config.yml
 ```
+<br/>
 ````
 
 Now open the copy in an editor:
@@ -442,7 +534,7 @@ Now open the copy in an editor:
 ```{include} wt/wt-editor.md
 ```
 
-```{include} wt/wt-02.md
+```{include} wt/wt-02-config-bad-library.md
 ```
 
 #### Testing the config file
@@ -457,7 +549,27 @@ Then run the script again:
 ```{include} wt/wt-run-shell.md
 ```
 
-```{include} wt/wt-03.md
+```{include} wt/wt-03-lib-err-and-fix.md
+```
+
+
+### Creating a few sample collections.
+
+```{include} wt/wt-04-default-intro.md
+```
+
+So let's run the script and see this happen:
+
+
+```{include} wt/wt-run-shell.md
+```
+
+```{include} wt/wt-04b-default-after.md
+```
+
+### Setting up a metadata file and creating a sample collection.
+
+```{include} wt/wt-05-local-file.md
 ```
 
 Save the file:
@@ -470,12 +582,12 @@ Then run the script again:
 ```{include} wt/wt-run-shell.md
 ```
 
-```{include} wt/wt-04.md
+```{include} wt/wt-06-local-after.md
 ```
 
-### Setting up a metadata file and creating a few sample collections.
+### Adding Overlays to movies.
 
-```{include} wt/wt-05.md
+```{include} wt/wt-07-overlay-add.md
 ```
 
 Save the file:
@@ -488,7 +600,10 @@ Then run the script again:
 ```{include} wt/wt-run-shell.md
 ```
 
-```{include} wt/wt-06.md
+```{include} wt/wt-08-overlay-after.md
+```
+
+```{include} wt/wt-09-next-steps.md
 ```
 
 When you are done, deactivate the virtual environment:
@@ -499,42 +614,54 @@ When you are done, deactivate the virtual environment:
 deactivate
 ```
 
+
 ## Other Topics
 
 ### I want to update to the latest version of PMM
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 cd ~/Plex-Meta-Manager
 git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 cd ~/Plex-Meta-Manager
 git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 cd ~\Plex-Meta-Manager
 git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
 
 ### I want to use the develop branch
 
 ````{tab} Linux
+<br/>
 [type this into your terminal]
+
 ```
 cd ~/Plex-Meta-Manager
 git checkout develop
@@ -542,9 +669,12 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
+
 ```
 cd ~/Plex-Meta-Manager
 git checkout develop
@@ -552,9 +682,12 @@ git pull
 source pmm-venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
+
 ```
 cd ~/Plex-Meta-Manager
 git checkout develop
@@ -562,6 +695,7 @@ git pull
 .\pmm-venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
+<br/>
 ````
 
 ### I want to use the nightly branch
