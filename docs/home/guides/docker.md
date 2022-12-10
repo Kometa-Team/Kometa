@@ -386,29 +386,12 @@ Then run the script again:
 ```{include} wt/wt-09-next-steps.md
 ```
 
-
-### Running the container in the background:
-
-The docker commands in this article are creating and deleting containers.
-
-However, you probably ultimately want a container that runs all the time, even after reboots, and wakes up to do its thing.
-
-This would be the minimal case:
-
-```
-docker run -d \
-  --restart=unless-stopped \
-  -v PMM_PATH_GOES_HERE:/config:rw \
-  meisnate12/plex-meta-manager
-```
-
-That will create a container that will run in the background until you explicitly stop it, surviving reboots, and waking up every morning at 5AM to process collections.
-
-There are of course [other flags you can add](../environmental), but this is the minimal command to create this container.
-
-There are [other ways you could schedule](scheduling.md) the `docker run` command used here if you don't want to use PMM's built-in scheduler and leave the container running all the time.
-
 ## Other Topics
+
+### Scheduling
+
+```{include} wt/wt-10-scheduling.md
+```
 
 ### I want to use the develop branch
 
@@ -432,7 +415,7 @@ docker run --rm -it -v "PMM_PATH_GOES_HERE:/config:rw" meisnate12/plex-meta-mana
 
 This may not work if you are not using the official image; for example, it does not work with the lsio image.
 
-### I want to ensure IO amy using the master branch
+### I want to ensure I am using the master branch
 
 Add the `latest` tag to the image name in your run command [or wherever you specify the image in your environment]
 

@@ -9,6 +9,6 @@ If you're using `nano`, type control-`x`, then `y`, then the enter key.<br/>
 ````
 ````{tab} Windows:
 <br/>
-If you're using `notepad`, type alt-`s` or choose `Save` from the `File` menu.
+If you're using `notepad`, type control-`s` or choose `Save` from the `File` menu.
 <br/>
 ````

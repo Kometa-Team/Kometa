@@ -614,8 +614,12 @@ When you are done, deactivate the virtual environment:
 deactivate
 ```
 
-
 ## Other Topics
+
+### Scheduling
+
+```{include} wt/wt-10-scheduling.md
+```
 
 ### I want to update to the latest version of PMM
 
