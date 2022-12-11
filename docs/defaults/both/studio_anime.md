@@ -70,7 +70,11 @@ libraries:
           sep_style: gray
 ```
 
-## Default `include`
+## Default values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+### Default `include`
 
 ```yaml
 include:
@@ -101,7 +105,7 @@ include:
   - Wit Studio
 ```
 
-## Default `addons`
+### Default `addons`
 
 ```yaml
 addons:

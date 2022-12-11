@@ -67,7 +67,7 @@ libraries:
   Movies:
     metadata_path:
       - pmm: content_rating_cs
-        template_variables: 
+        template_variables:
           use_separator: false
           sep_style: blue
           use_other: false
@@ -77,7 +77,12 @@ libraries:
           sort_by: title.asc
 ```
 
-## Default `include`
+## Default values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+
+### Default `include`
 
 ```yaml
 include:
@@ -101,7 +106,7 @@ include:
   - 18
 ```
 
-## Default `addons`
+### Default `addons`
 
 ```yaml
 addons:

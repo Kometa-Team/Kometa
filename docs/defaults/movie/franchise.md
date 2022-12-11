@@ -79,8 +79,11 @@ libraries:
           movie_105995: 336560
           radarr_add_missing: true
 ```
+## Default values
 
-## Default `addons`
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+### Default `addons`
 
 ```yaml
 addons:
@@ -114,7 +117,7 @@ addons:
     - 453993    # The Wolverine
 ```
 
-## Default `title_override`
+### Default `title_override`
 
 ```yaml
 title_override:
@@ -123,7 +126,7 @@ title_override:
   535790: Godzilla (Anime)
 ```
 
-## Default `movie`
+### Default `movie`
 
 ```yaml
 105995: 336560    # Anaconda: Lake Placid vs. Anaconda
@@ -154,7 +157,7 @@ title_override:
 748: 567604 # X-Men: Once Upon a Deadpool
 ```
 
-## Default `name_mapping`
+### Default `name_mapping`
 
 ```yaml
 1565: 28 Days-Weeks Later
