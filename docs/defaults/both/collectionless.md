@@ -66,7 +66,11 @@ libraries:
           collection_order: release
 ```
 
-## Default `exclude_prefix`
+## Default values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+### Default `exclude_prefix`
 
 ```yaml
 exclude_prefix:
