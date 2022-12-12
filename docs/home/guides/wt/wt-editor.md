@@ -1,4 +1,5 @@
 ````{tab} Linux
+<br/>
 [type this into your terminal]
 
 ```
@@ -22,8 +23,10 @@ sudo apt install nano
 ```
 
 You can use any other text editor you wish, provided it saves files as PLAIN TEXT.  `vi`, `emacs`, etc.
+<br/>
 ````
-````{tab} OS X
+````{tab} OS X:
+<br/>
 [type this into your terminal]
 
 ```
@@ -33,14 +36,17 @@ nano config/config.yml
 I’m using `nano` here simply because it’s built into OSX.  You can use any other text editor you wish, provided it saves files as PLAIN TEXT.  BBedit, TextMate, VSCode, etc.
 
 A common mistake is using TextEdit.app, which saves files as RTF by default.
+<br/>
 ````
-````{tab} Windows
+````{tab} Windows:
+<br/>
 [type this into your terminal]
 
 ```
 notepad .\config\config.yml
 ```
 I’m using `notepad` here simply because it’s built into Windows.  You can use any other text editor you wish, provided it saves files as PLAIN TEXT.
+<br/>
 ````
 
 From here on in, when this walkthrough says "open the config file", I mean this `nano` or `notepad` command.  **Don't copy the template again**.

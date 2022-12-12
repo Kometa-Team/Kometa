@@ -72,7 +72,11 @@ libraries:
           sort_by: title.asc
 ```
 
-## Default `include`
+## Default values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+### Default `include`
 
 ```yaml
 include:
@@ -83,11 +87,11 @@ include:
   - TV-MA
 ```
 
-## Default `addons`
+### Default `addons`
 
 ```yaml
 addons:
-  TV-G: 
+  TV-G:
     - gb/U
     - gb/0+
     - U
