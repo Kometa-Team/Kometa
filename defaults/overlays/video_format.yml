@@ -29,17 +29,17 @@ templates:
       regex:
         conditions:
           - key: remux
-            value: '(?i)\[Remux'
+            value: '(?i)\bremux\b'
           - key: bluray
-            value: '(?i)\[Blu[ ._-]?ray|\[BD|\[BR|\[HD[ ._-]?DVD'
+            value: '(?i)\b(blu[ ._-]?ray|bd|br|hd[ ._-]?dvd)\b'
           - key: web
-            value: '(?i)Web[ ._-]?(dl|rip)'
+            value: '(?i)web[ ._-]?(dl|rip)'
           - key: hdtv
-            value: '(?i)HD[ ._-]?TV'
+            value: '(?i)\bhd[ ._-]?tv\b'
           - key: dvd
-            value: '(?i)\[DVD'
+            value: '(?i)\bdbvd\b'
           - key: sdtv
-            value: '(?i)SD[ ._-]?TV'
+            value: '(?i)\bsd[ ._-]?tv\b'
     ignore_blank_results: true
     plex_all: true
     filters:
