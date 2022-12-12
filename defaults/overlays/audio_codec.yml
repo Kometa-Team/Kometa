@@ -39,33 +39,33 @@ templates:
           - key: dtsx
             value: '(?i)\bdts[ ._-]?x\b'
           - key: plus_atmos
-            value: '(?i)^(?=.*\b(dd[p+])|(dolby digital plus)\B)(?=.*\batmos(\b|\d))'
+            value: '(?i)^(?=.*\b(dd[p+])|(dolby digital plus)\b)(?=.*\batmos(\b|\d))'
           - key: dolby_atmos
             value: '(?i)\batmos(\b|\d)'
           - key: truehd
             value: '(?i)\btrue[ ._-]?hd(\b|\d)'
           - key: ma
-            value: '(?i)\bdts[ ._-]?(ma|hd[ ._-]?ma|hd)'
+            value: '(?i)\bdts[ ._-]?(hd[ ._-])?(ma|xll|hd)(\b|\d)(?![ ._-]hra)'
           - key: flac
             value: '(?i)\bflac(\b|\d)'
           - key: pcm
             value: '(?i)\bl?pcm(\b|\d)'
           - key: hra
-            value: '(?i)\bdts[ ._-]?(hd)?[ ._-]?(hr|hi|hd|ra)'
+            value: '(?i)\bdts[ ._-]?(hd[ ._-])?(hr|hra|hi|ra)(\b|\d)'
           - key: plus
-            value: '(?i)\b(dd[p+])|(dolby digital plus)|(e[ ._-]?ac3)\B'
+            value: '(?i)\b(dd[p+])|(dolby digital plus)|(e[ ._-]?ac3)\b'
           - key: dtses
             value: '(?i)\bdts[ ._-]?es(\b|\d)'
           - key: dts
             value: '(?i)\bdts(\b|\d)'
           - key: digital
-            value: '(?i)\b(dd)|(ac3)|(dolby)'
+            value: '(?i)\b(dd)|(ac3)|(dolby)(\b|\d)'
           - key: aac
-            value: '(?i)\b(aac|stereo|2[ .]0)(\b|\d)'
+            value: '(?i)\b(aac|stereo|2\.0)\b'
           - key: mp3
             value: '(?i)\bmp3(\b|\d)'
           - key: opus
-            value: '(?i)\bOPUS(\b|\d)'
+            value: '(?i)\b(?<!-)OPUS(\b|\d)'
     ignore_blank_results: true
     plex_all: true
     filters:
