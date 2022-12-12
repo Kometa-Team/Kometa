@@ -108,8 +108,8 @@ class MyAnimeList:
     def studios(self):
         if not self._studios:
             for data in self._pagination("producers"):
-                self._studios[data["name"]] = int(data["mal_id"])
-                self._studios[data["name"].lower()] = int(data["mal_id"])
+                self._studios[data["titles"][0]["title"]] = int(data["mal_id"])
+                self._studios[data["titles"][0]["title"].lower()] = int(data["mal_id"])
                 self._studios[str(data["mal_id"])] = int(data["mal_id"])
                 self._studios[int(data["mal_id"])] = data["titles"][0]["title"]
         return self._studios
