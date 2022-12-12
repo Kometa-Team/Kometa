@@ -803,8 +803,6 @@ class ConfigFile:
                         if not lib["overlay_path"]:
                             raise Failed("Config Error: overlay_path attribute is blank")
                         files = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
-                        if not files:
-                            raise Failed("Config Error: No Paths Found for overlay_path")
                         for file in util.get_list(lib["overlay_path"], split=False):
                             if isinstance(file, dict):
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
@@ -835,6 +833,8 @@ class ConfigFile:
                                             err = e
                                     if err:
                                         raise NotScheduled(f"Overlay Schedule:{err}\n\nOverlays not scheduled to run")
+                        if not files and params["remove_overlays"] is False and params["reset_overlays"] is False:
+                            raise Failed("Config Error: No Paths Found for overlay_path")
                         params["overlay_path"] = files
                     except NotScheduled as e:
                         logger.info("")
