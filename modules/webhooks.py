@@ -136,9 +136,9 @@ class Webhooks:
                 [("*Start Time*", json["start_time"]), ("*End Time*", json["end_time"]), ("*Run Time*", json["run_time"])],
                 [],
                 [
-                    (":heavy_plus_sign: *Collections Created*", json["collections_created"]),
-                    (":infinity: *Collections Modified*", json["collections_modified"]),
-                    (":heavy_minus_sign: *Collections Deleted*", json["collections_deleted"])
+                    (":heavy_plus_sign: *Collections Created*", str(json["collections_created"])),
+                    (":infinity: *Collections Modified*", str(json["collections_modified"])),
+                    (":heavy_minus_sign: *Collections Deleted*", str(json["collections_deleted"]))
                 ]
             ]
             if json["added_to_radarr"] or json["added_to_sonarr"]:
@@ -215,7 +215,8 @@ class Webhooks:
             for row in rows:
                 if row:
                     if len(row[0]) == 1:
-                        new_json["blocks"].append({"type": "section", "text": row[0][0]})
+                        section = {"type": "section", "text": {"type": "plain_text", "text": row[0][0]}}
+                        new_json["blocks"].append(section)
                     else:
                         section = {"type": "section", "fields": []}
                         for col in row:
