@@ -24,7 +24,7 @@ I’ve removed some of the lines for space, but have left the important bits:
 
 You can see there that PMM found its config file, was able to connect to TMDb, was able to connect to Plex, and then failed trying to read the “Movies-NOSUCHLIBRARY" library, which of course doesn’t exist.
 
-Open the config file again and change "Movies-NOSUCHLIBRARY" to reflect *your own* Movie library in Plex.  Then delete all but the first line under the "metadata_path” heading.  A few of them will create sets of collections, and we just want to create a few as examples.
+Open the config file again and change "Movies-NOSUCHLIBRARY" to reflect *your own* Movie library in Plex.
 
 My Movies library is called “Main Movies", so mine looks like this:
 
@@ -32,5 +32,7 @@ My Movies library is called “Main Movies", so mine looks like this:
 libraries:
   Main Movies:                            ## <<< CHANGE THIS LINE
     metadata_path:
-      - file: config/Movies.yml
+      - pmm: basic               # This is a file within the defaults folder in the Repository
+      - pmm: imdb                # This is a file within the defaults folder in the Repository
+      # see the wiki for how to use local files, folders, URLs, or files from git
 ```

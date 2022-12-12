@@ -91,7 +91,11 @@ libraries:
           emoji_veteran: "🪖 "
 ```
 
-## Default `data`
+## Default values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+
+### Default `data`
 
 ```yaml
 data:
@@ -109,7 +113,7 @@ data:
   christmas: Christmas
 ```
 
-## Default `tmdb_collection`
+### Default `tmdb_collection`
 
 ```yaml
 tmdb_collection:
@@ -126,7 +130,7 @@ tmdb_collection:
     - 751156    # Hocus Pocus
 ```
 
-## Default `tmdb_movie`
+### Default `tmdb_movie`
 
 ```yaml
 tmdb_movie:
@@ -134,7 +138,7 @@ tmdb_movie:
     - 23437    # A Nightmare on Elm Street (2010)
 ```
 
-## Default `imdb_list`
+### Default `imdb_list`
 
 ```yaml
 imdb_list:
@@ -163,7 +167,7 @@ imdb_list:
   christmas: https://www.imdb.com/list/ls000096828/
 ```
 
-## Default `schedule`
+### Default `schedule`
 
 ```yaml
 schedule:
