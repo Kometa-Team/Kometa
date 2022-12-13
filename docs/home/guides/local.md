@@ -45,23 +45,10 @@ This walkthrough involves typing commands into a command window.  On Mac OS X or
 IMPORTANT:
 This walkthrough is assuming you are doing the entire process on the same platform; i.e. you're installing PMM and editing its config files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing the config files on your Windows box.
 
-### Prepare a small test library
+### Prepare a small test library [optional]
 
-While going through this process, Plex-Meta-Manager is going to load the movies in your library, create some collections, and apply some overlays.  If you have a large library, this will be very time-consuming.
-
-For learning and testing, you would be well-advised to create a small test library of a reasonable size, where reasonable it probably below a thousand.
-
-The author has a small library of 10 movies that is used for fast tests.
-
-For best results, your test library will contain:
-
-At least two comedy movies released since 2012.
-At least two movies from the IMDB top 250.
-At least two movies from IMDB's Popular list.
-At least two movies from IMDB's Lowest Rated.
-A couple different resolutions among the movies.
-
-That will ensure there's something to go into each of the example collections that will be created.
+```{include} wt/wt-test-library.md
+```
 
 ### Starting up your terminal.
 
@@ -108,11 +95,15 @@ Follow the instructions here: [Installing Python 3 on Mac OS X](https://docs.pyt
 <br/>
 ````
 ````{tab} Windows:
-Go to http://www.python.org/download and download the latest version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10.4.
+Go to http://www.python.org/download and download the next-to-latest minor version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10, while the latest is 3.11.
+
+#### Why the next-to-latest?
+
+There is one dependency [`lxml`] that lags behind new Python releases; this will cause a failure when installing requirements in a moment if the newest Python version is too new [at time of writing the current is 3.11, and the requirements install fails on the lxml library].  You can avoid this by using the next-to-latest release.  At some point this will no longer be a problem, but that is outside the control of PMM.
 
 Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
 
-For Windows 10, you will need to enable scripts in PowerShell.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10) to do so.  If you skip this step you're going to hit a hard stop in a little bit.
+For Windows 10, you will need to enable scripts in PowerShell.  Follow the instructions [here](https://windowsloop.com/enable-powershell-scripts-execution-windows-10) to do so.  If you skip this step you're going to hit a hard stop in a moment.
 <br/>
 ````
 
@@ -434,6 +425,28 @@ You should consider upgrading via the '/Users/mroche/Plex-Meta-Manager/pmm-venv/
 ```
 
 Don't worry about the WARNING about `pip version thus-and-such` if it comes up.
+
+<details>
+  <summary>`Encountered error while trying to install package.`</summary>
+  <br />
+
+  If you see an error that ends in something like this:
+
+```
+   ...
+   building 'lxml.etree' extension
+   error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   [end of output]
+
+   note: This error originates from a subprocess, and is likely not a problem with pip.
+   error: legacy-install-failure
+
+   × Encountered error while trying to install package.
+   ╰─> lxml
+```
+  You've hit the error we were referring to above with the Python version being too recent.  Probably you are running Python 3.11 in late 2022 or Python 3.12 shortly after its release.  Deactivate and delete the virtual environment and create one based on the previous Python release [which may involve removing Python and reinstalling the older version depending on platform], then try this step again.
+
+</details>
 
 <details>
   <summary>What did that do?</summary>

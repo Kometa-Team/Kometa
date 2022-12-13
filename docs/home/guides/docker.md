@@ -47,6 +47,33 @@ You may want to take an hour to get familiar with Docker fundamentals with the [
 
 DO NOT MAKE ANY CHANGES BELOW if you want this to just work.  Don't change the docker image [`linuxserver.io` will not work for this, for example]; don't change the paths, etc.
 
+### Prepare a small test library [optional]
+
+```{include} wt/wt-test-library.md
+```
+
+### Starting up your terminal.
+
+Since most of this is typing commands into a terminal, you'll need to have a terminal open.
+
+````{tab} Linux
+<br/>
+If your Linux system is remote to your computer, connect to it via SSH.  That SSH session is the terminal you will be using, so leave it open.
+
+If you are running this on a desktop Linux machine, start up the Terminal application.  That window will be the terminal you will type commands into throughout this walkthrough, so leave it open.
+<br/>
+````
+````{tab} OS X:
+Open the Terminal app; this window will be the place you type commands throughout this walkthrough, so leave it open.  The Terminal app is in Applications -> Utilities.
+
+You can also use iTerm or some other terminal app if you wish.  If you don't know what that means, use Terminal.
+<br/>
+````
+````{tab} Windows:
+Use the Start menu to open PowerShell.  This will be the window into which you type commands throughout this walkthrough, so leave it open.
+<br/>
+````
+
 ### Installing Docker.
 
 To run Docker images, you need to have Docker installed.  It is not typically installed on new Mac, Linux, or Windows machines.
