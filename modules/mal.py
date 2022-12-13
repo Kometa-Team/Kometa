@@ -210,9 +210,9 @@ class MyAnimeList:
         self._delay = time.time()
         return data
 
-    def _parse_request(self, url):
+    def _parse_request(self, url, node=False):
         data = self._request(url)
-        return [d["node"]["id"] for d in data["data"]] if "data" in data else []
+        return [d["node"] if node else d["node"]["id"] for d in data["data"]] if "data" in data else []
 
     def _username(self):
         return self._request(f"{urls['user']}/@me")["name"]
@@ -221,9 +221,18 @@ class MyAnimeList:
         url = f"{urls['ranking']}?ranking_type={ranking_type}&limit={limit}"
         return self._parse_request(url)
 
-    def _season(self, season, year, sort_by, limit):
-        url = f"{urls['season']}/{year}/{season}?sort={sort_by}&limit={limit}"
-        return self._parse_request(url)
+    def _season(self, data):
+        url = f"{urls['season']}/{data['year']}/{data['season']}?sort={data['sort_by']}&limit=500"
+        if data["starting_only"]:
+            url += "&fields=start_season"
+        results = []
+        for anime in self._parse_request(url, node=True):
+            if data["starting_only"] and (anime["start_season"]["year"] != data["year"] or anime["start_season"]["season"] != data["season"]):
+                continue
+            results.append(anime["id"])
+            if len(results) == data["limit"]:
+                break
+        return results
 
     def _suggestions(self, limit):
         url = f"{urls['suggestions']}?limit={limit}"
@@ -299,7 +308,7 @@ class MyAnimeList:
             mal_ids = [mal_data["mal_id"] for mal_data in self._pagination("anime", params=data[0], limit=data[2])]
         elif method == "mal_season":
             logger.info(f"Processing MyAnimeList Season: {data['limit']} Anime from {data['season'].title()} {data['year']} sorted by {pretty_names[data['sort_by']]}")
-            mal_ids = self._season(data["season"], data["year"], data["sort_by"], data["limit"])
+            mal_ids = self._season(data)
         elif method == "mal_suggested":
             logger.info(f"Processing MyAnimeList Suggested: {data} Anime")
             mal_ids = self._suggestions(data)
