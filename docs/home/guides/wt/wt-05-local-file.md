@@ -3,31 +3,25 @@ If the default metadata files do not allow you to create the collections you wan
 First, open the metadata file [this will create the file if it doesn't already exist]:
 
 ````{tab} Linux
-<br/>
 [type this into your terminal]
 
 ```
 nano "config/Movies.yml"
 ```
-<br/>
 ````
-````{tab} OS X:
-<br/>
+````{tab} OS X
 [type this into your terminal]
 
 ```
 nano "config/Movies.yml"
 ```
-<br/>
 ````
-````{tab} Windows:
-<br/>
+````{tab} Windows
 [type this into your terminal]
 
 ```
 notepad "config\Movies.yml"
 ```
-<br/>
 ````
 
 In this file, add the following, exactly as it is shown here:
