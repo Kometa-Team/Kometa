@@ -200,6 +200,8 @@ class MyAnimeList:
             raise Failed(f"MyAnimeList Error: Connection Failed")
 
     def _jikan_request(self, url, params=None):
+        logger.trace(f"URL: {jikan_base_url}{url}")
+        logger.trace(f"Params: {params}")
         time_check = time.time()
         if self._delay is not None:
             while time_check - self._delay < 1:

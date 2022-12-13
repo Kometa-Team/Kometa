@@ -1416,8 +1416,6 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"Metadata Error: Album: {album_name} not found")
                         continue
-                    if not title:
-                        title = album.title
                     album.batchEdits()
                     add_edit("title", album, album_dict, album_methods, value=title)
                     add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
@@ -1461,8 +1459,6 @@ class MetadataFile(DataFile):
                                     logger.error(f"Metadata Error: Track: {track_num} not found")
                                     continue
 
-                                if not title:
-                                    title = track.title
                                 track.batchEdits()
                                 add_edit("title", track, track_dict, track_methods, value=title)
                                 add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")

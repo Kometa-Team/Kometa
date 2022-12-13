@@ -1269,20 +1269,17 @@ class CollectionBuilder:
                         final_attributes["status"] = util.parse(self.Type, "status", dict_data, methods=dict_methods, parent=method_name, options=mal.search_status)
                         final_text += f"\nStatus: {final_attributes['status']}"
                     if "genre" in dict_methods:
-                        genre_list = util.parse(self.Type, "genre", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_genres = [str(self.config.MyAnimeList.genres[g]) for g in genre_list if g in self.config.MyAnimeList.genres]
-                        final_attributes["genres"] = ",".join(final_genres)
-                        final_text += f"\nGenre: {' or '.join([str(self.config.MyAnimeList.genres[g]) for g in final_genres])}"
+                        genre_str = str(util.parse(self.Type, "genre", dict_data, methods=dict_methods, parent=method_name))
+                        final_text += f"\nGenre: {util.parse_and_or(self.Type, 'Genre', genre_str, test_list=self.config.MyAnimeList.genres)}"
+                        final_attributes["genres"] = genre_str
                     if "genre.not" in dict_methods:
-                        genre_list = util.parse(self.Type, "genre.not", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_genres = [str(self.config.MyAnimeList.genres[g]) for g in genre_list if g in self.config.MyAnimeList.genres]
-                        final_attributes["genres_exclude"] = ",".join(final_genres)
-                        final_text += f"\nNot Genre: {' or '.join([str(self.config.MyAnimeList.genres[g]) for g in final_genres])}"
+                        genre_str = str(util.parse(self.Type, "genre.not", dict_data, methods=dict_methods, parent=method_name))
+                        final_text += f"\nNot Genre: {util.parse_and_or(self.Type, 'Genre', genre_str, test_list=self.config.MyAnimeList.genres)}"
+                        final_attributes["genres_exclude"] = genre_str
                     if "studio" in dict_methods:
-                        studio_list = util.parse(self.Type, "studio", dict_data, datatype="commalist", methods=dict_methods, parent=method_name)
-                        final_studios = [str(self.config.MyAnimeList.studios[s]) for s in studio_list if s in self.config.MyAnimeList.studios]
-                        final_attributes["producers"] = ",".join(final_studios)
-                        final_text += f"\nStudio: {' or '.join([str(self.config.MyAnimeList.studios[s]) for s in final_studios])}"
+                        studio_str = str(util.parse(self.Type, "studio", dict_data, methods=dict_methods, parent=method_name))
+                        final_text += f"\nStudio: {util.parse_and_or(self.Type, 'Studio', studio_str, test_list=self.config.MyAnimeList.studios)}"
+                        final_attributes["producers"] = studio_str
                     if "content_rating" in dict_methods:
                         final_attributes["rating"] = util.parse(self.Type, "content_rating", dict_data, methods=dict_methods, parent=method_name, options=mal.search_ratings)
                         final_text += f"\nContent Rating: {final_attributes['rating']}"
