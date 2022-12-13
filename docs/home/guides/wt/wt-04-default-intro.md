@@ -11,11 +11,11 @@ The default config links to two of them:
 
 The first will create:
 
-  Newly Released
-  New Episodes
+  - Newly Released
+  - New Episodes [TV libraries only]
 
 The second will create:
 
-  IMDb Popular
-  IMDb Top 250
-  IMDb Lowest Rated
+  - IMDb Popular
+  - IMDb Top 250
+  - IMDb Lowest Rated
