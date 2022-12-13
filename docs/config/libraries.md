@@ -55,8 +55,7 @@ libraries:
       token: ################################
       root_folder_path: S:/Anime
     settings:
-      asset_directory:
-        config/assets/anime
+      asset_directory: config/assets/anime
 plex:
   url: http://192.168.1.12:32400
   token: ####################

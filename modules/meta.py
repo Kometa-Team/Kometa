@@ -1427,6 +1427,8 @@ class MetadataFile(DataFile):
                     for tag_edit in ["genre", "style", "mood", "collection", "label"]:
                         if self.edit_tags(tag_edit, album, album_dict, album_methods):
                             updated = True
+                    if not title:
+                        title = album.title
                     finish_edit(album, f"Album: {title}")
                     _, _, ups = self.library.item_images(album, album_dict, album_methods, asset_location=asset_location,
                                                          title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
@@ -1468,6 +1470,8 @@ class MetadataFile(DataFile):
                                 for tag_edit in ["mood", "collection", "label"]:
                                     if self.edit_tags(tag_edit, track, track_dict, track_methods):
                                         updated = True
+                                if not title:
+                                    title = track.title
                                 finish_edit(track, f"Track: {title}")
                                 logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
