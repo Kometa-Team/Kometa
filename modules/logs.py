@@ -66,7 +66,9 @@ class MyLogger:
         _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
         self._formatter(_handler)
         if os.path.isfile(log_file):
+            self._logger.removeHandler(_handler)
             _handler.doRollover()
+            self._logger.addHandler(_handler)
         return _handler
 
     def _formatter(self, handler, border=True):
