@@ -53,6 +53,7 @@ class Radarr:
         logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
         for tmdb_id in _paths:
             logger.debug(tmdb_id)
+        logger.trace("")
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
@@ -67,6 +68,7 @@ class Radarr:
         logger.trace(f"Quality Profile: {quality_profile}")
         logger.trace(f"Tags: {tags}")
         logger.trace(f"Search: {search}")
+        logger.trace("")
 
         arr_paths = {}
         arr_ids = {}
@@ -76,6 +78,7 @@ class Radarr:
             arr_ids[movie.tmdbId] = movie
         logger.trace(arr_paths)
         logger.trace(arr_ids)
+        logger.trace("")
 
         added = []
         exists = []
@@ -97,13 +100,13 @@ class Radarr:
                     _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
                     if _id:
                         skipped.append(item)
-                        continue
+                        raise Continue
                 if tmdb_id in arr_ids:
                     exists.append(arr_ids[tmdb_id])
-                    continue
+                    raise Continue
                 if path and path.lower() in arr_paths:
                     mismatched[path] = tmdb_id
-                    continue
+                    raise Continue
                 if path and not path.startswith(folder):
                     invalid_root.append(item)
                     raise Continue

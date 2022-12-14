@@ -52,6 +52,7 @@ class FlixPatrol:
 
     def _parse_list(self, list_url, language, is_movie, limit=0):
         flixpatrol_urls = []
+        logger.trace(f"URL: {list_url}")
         if list_url.startswith(urls["top10"]):
             platform = list_url[len(urls["top10"]):].split("/")[0]
             flixpatrol_urls = self._request(
@@ -70,7 +71,7 @@ class FlixPatrol:
                 list_url, language,
                 f"//a[contains(@class, 'flex group') and .//span[.='{'Movie' if is_movie else 'TV Show'}']]/@href"
             )
-        return flixpatrol_urls if limit == 0  else flixpatrol_urls[:limit]
+        return flixpatrol_urls if limit == 0 else flixpatrol_urls[:limit]
 
     def validate_flixpatrol_lists(self, flixpatrol_lists, language, is_movie):
         valid_lists = []
