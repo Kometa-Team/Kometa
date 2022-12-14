@@ -1,12 +1,10 @@
-### Prepare a small test library [optional]
-
 While going through this process, Plex-Meta-Manager is going to load the movies in your library, create some collections, and apply some overlays.  If you have a large library, this will be very time-consuming.
 
 For learning and testing, you would be well-advised to create a small test library of a reasonable size, where reasonable it probably below a thousand.
 
 The author has a small library of 10 movies that is used for fast tests.
 
-For best results with this walkthrough, your test library will contain:
+For best results *with this walkthrough*, your test library will contain:
 
  - At least two comedy movies released since 2012.
  - At least two movies from the [IMDB top 250](https://www.imdb.com/chart/top/).
