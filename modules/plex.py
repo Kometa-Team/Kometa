@@ -761,7 +761,11 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_check(self, label):
-        return label in [la.title for la in self.get_tags("label")]
+        labels = [la.title for la in self.get_tags("label")]
+        if label in labels:
+            return True
+        logger.trace(f"Label not found in Plex. Options: {labels}")
+        return False
 
     def test_smart_filter(self, uri_args):
         logger.debug(f"Smart Collection Test: {uri_args}")

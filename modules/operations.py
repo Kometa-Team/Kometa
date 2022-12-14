@@ -2,6 +2,7 @@ import os, re
 from datetime import datetime
 from modules import plex, util
 from modules.util import Failed, LimitReached, YAML
+from plexapi.exceptions import BadRequest, NotFound
 
 logger = util.logger
 
@@ -454,8 +455,12 @@ class Operations:
                             pass
 
                 if len(batch_display) > 0:
-                    item.saveEdits()
-                    logger.info(f"Batch Edits{batch_display}")
+                    try:
+                        item.saveEdits()
+                        logger.info(f"Batch Edits{batch_display}")
+                    except (NotFound, BadRequest):
+                        logger.stacktrace()
+                        logger.error("Batch Edits Failed")
 
                 if self.library.mass_poster_update or self.library.mass_background_update:
                     try:
