@@ -133,7 +133,7 @@ templates:
       - filepath.regex:
         - <<regex1>>
         - <<regex2>>
-        - 'edition-(?i)\b(4k )?<<search>>(s|ed)?\b'           # New TRaSH naming
+        - '(?i)edition-\b(4k )?<<search>>(s|ed)?\b'           # New TRaSH naming
         - '(?<=[0-9]{4}[)}>\]]\s)\b(4k )?<<search>>(s|ed)?\b' # Original TRaSH naming
 
   resolution:
