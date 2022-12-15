@@ -84,9 +84,12 @@ class IMDb:
         return valid_users
 
     def _watchlist(self, user, language):
-        response = self.config.get_html(f"{base_url}/user/{user}/watchlist", headers=util.header(language))
+        imdb_url = f"{base_url}/user/{user}/watchlist"
+        response = self.config.get_html(imdb_url, headers=util.header(language))
         group = response.xpath("//span[@class='ab_widget']/script[@type='text/javascript']/text()")
-        return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
+        if group:
+            return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
+        raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
 
     def _total(self, imdb_url, language):
         if imdb_url.startswith(urls["lists"]):
