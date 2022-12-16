@@ -1084,11 +1084,11 @@ class Plex(Library):
                 updated = True
         return asset_location, folder_name, updated
 
-    def find_and_upload_assets(self, item, current_labels):
+    def find_and_upload_assets(self, item, current_labels, asset_directory=None):
         item_dir = None
         name = None
         try:
-            poster, background, item_dir, name = self.find_item_assets(item)
+            poster, background, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             if "Overlay" not in current_labels:
                 if poster or background:
                     self.upload_images(item, poster=poster, background=background)
@@ -1106,7 +1106,7 @@ class Plex(Library):
             found_episode = False
             for season in self.query(item.seasons):
                 try:
-                    season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                    season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if season_poster:
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber > 0:
@@ -1119,7 +1119,7 @@ class Plex(Library):
                 for episode in self.query(season.episodes):
                     try:
                         if episode.seasonEpisode:
-                            episode_poster, episode_background, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                            episode_poster, episode_background, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background:
                                 found_episode = True
                                 if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
@@ -1136,7 +1136,7 @@ class Plex(Library):
             found_album = False
             for album in self.query(item.albums):
                 try:
-                    album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, folder_name=name)
+                    album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
                     elif self.show_missing_season_assets:
