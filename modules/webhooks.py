@@ -15,6 +15,7 @@ class Webhooks:
         self.notifiarr = notifiarr
 
     def _request(self, webhooks, json):
+        logger.trace("")
         logger.separator("Webhooks", space=False, border=False, trace=True)
         logger.trace("")
         logger.trace(f"JSON: {json}")
