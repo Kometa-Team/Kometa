@@ -118,7 +118,7 @@ i.e. `assets/Star Wars/poster.png` instead of `assets/Star Wars.png`
 
 ## Asset Depth
 Specify how many folder levels to scan for an item within the asset directory<br>
-At each asset level, PMM will look for either `(filename).ext` or a dedicated folder containing `poster.ext`
+At each asset level, PMM will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder containing `poster.ext`<br>
 i.e. `assets/Star Wars/poster.png` and `assets/Star Wars.png` are both asset depth 0
 and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are both asset level 1
 * `asset_folders` must be set to `true` for this to take effect.
