@@ -87,7 +87,7 @@ Set the number of days before each cache mapping expires and has to be re-cached
 </table>
 
 ## Image Asset Directory
-Specify the directory where assets are located.
+Specify the directory where assets (posters, backgrounds, etc) are located.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -118,9 +118,11 @@ i.e. `assets/Star Wars/poster.png` instead of `assets/Star Wars.png`
 
 ## Asset Depth
 Specify how many folder levels to scan for an item within the asset directory<br>
+At each asset level, PMM will look for either `(filename).ext` or a dedicated folder containing `poster.ext`
+i.e. `assets/Star Wars/poster.png` and `assets/Star Wars.png` are both asset depth 0
+and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are both asset level 1
 * `asset_folders` must be set to `true` for this to take effect.
 * increasing the amount of levels to scan will reduce performance
-
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -135,6 +137,7 @@ Specify how many folder levels to scan for an item within the asset directory<br
 
 ## Create Asset Folders
 Whilst searching for assets, if an asset folder cannot be found within the `asset_directory`, create one. This only applies to library items utilized in a Metadata/Playlist file (i.e. Star Wars Collection)
+* This may create hundreds/thousands of folders if `plex_all` is used, which can cause performance issues when loading the directory. 
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -241,6 +244,8 @@ Whilst searching for assets, show or hide the `update not needed` messages.
 
 ## Sync Mode
 Set the default `sync_mode` for collections.
+* `sync` will add and remove any items that are added/removed from the source builder
+* `append` will only add items that are added from the source builder, but will not remove anything even if it is removed from the source builder.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -256,6 +261,7 @@ Set the default `sync_mode` for collections.
 
 ## Default Collection Order
 Set the default `collection_order` for every collection run by PMM.
+* `custom` cannot be used if more than one builder is being used for the collection (such as `imdb_list` and `trakt_list` within the same collection)
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -275,7 +281,7 @@ Set the default `collection_order` for every collection run by PMM.
 <sup>1</sup> `plex_search` sort options can be found [here](../metadata/builders/plex.md#sort-options)
 
 ## Minimum Items
-Set the minimum number of items that must be found in order to update a collection/playlist.
+Set the minimum number of items that must be found in order to build or update a collection/playlist.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -291,6 +297,7 @@ Set the minimum number of items that must be found in order to update a collecti
 ## Delete Below Minimum
 When a collection is run, delete the collection if it is below the minimum number specified by `minimum_items`.
 * Relies on `minimum_items` being set to the desired integer.
+
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th>Default Value</th>
@@ -320,6 +327,7 @@ If a collection is skipped due to it not being scheduled, delete the collection.
 
 ## Run Again Delay
 Set the number of minutes to delay running `run_again` collections after daily run is finished.
+For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run "X" amount of time later so that any downloaded items are processed.
 * A collection is a `run_again` collection if it has the `run_again` [Setting Detail](../metadata/details/definition) attribute set to true.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -380,6 +388,7 @@ List all items which have been filtered out of a collection (i.e. if it doesn't 
 
 ## Show Options
 While `show_options` is true the available options for an attribute when using `plex_search`, `smart_filter` or `filters` will be shown.
+i.e. a `smart_filter` on the `genre` attribute will return all of the attributes within the specified library.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -474,6 +483,7 @@ Specify the language to query TVDb in.
 
 ## Ignore IDs
 Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collections.
+* this does not apply to `smart_filter` Collections
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -488,6 +498,7 @@ Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collectio
 
 ## Ignore IMDb IDs
 Set a list or comma-separated string of IMDb IDs to ignore in all collections.
+* this does not apply to `smart_filter` Collections
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -517,7 +528,7 @@ Specify the amount of time to wait between each `item_refresh` of every movie/sh
 
 ## Playlist Sync to Users
 Set the default playlist `sync_to_users`. To Sync a playlist to only yourself leave `playlist_sync_to_users` blank.
-
+* sharing playlists with other users will not share any posters associated with the playlist, this is a Plex limitation.
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th>Default Value</th>
@@ -560,7 +571,7 @@ Specify where the `repo` attribute's base is when defining `metadata_paths` and 
 
 ## Verify SSL
 Turn SSL Verification on or off.
-
+* set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th>Default Value</th>
@@ -575,11 +586,13 @@ Turn SSL Verification on or off.
 
 ## Check Nightly
 Will check nightly for updates instead of develop. 
+* This does not affect which version of PMM is grabbed when using `git pull` or any other update mechanism, it is only used for the initial version check when PMM runs to specify if a new version is available.
+* It is recommended to set this to `true` if you primarily use the `nightly` branch
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th>Default Value</th>
-    <td><code>true</code></td>
+    <td><code>false</code></td>
   </tr>
   <tr>
     <th>Allowed Values</th>
