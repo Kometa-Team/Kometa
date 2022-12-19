@@ -50,5 +50,3 @@ body:
       description: >
         Please share the relevant log file with the error on [Gist](https://gist.github.com).
       placeholder: "https://gist.github.com"
-    validations:
-      required: true

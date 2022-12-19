@@ -56,6 +56,7 @@ If no poster is specified the script will look in the library's [Image Asset Dir
 | `tmdb_list_poster` | **Description:** Changes poster to the TMDb List poster<br>**Values:** TMDb List ID                                                                                             |
 | `tmdb_profile`     | **Description:** Changes poster to the TMDb Person's profile<br>**Values:** TMDb Person ID                                                                                      |
 | `tvdb_poster`      | **Description:** Changes poster to the TVDb Movie poster for a movie library or the TVDb Show poster for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
+| `tvdb_list_poster` | **Description:** Changes poster to the TVDb List poster<br>**Values:** TVDb List URL                                                                                            |
 | `file_poster`      | **Description:** Changes poster to the image in the file system<br>**Values:** Path to image in the file system                                                                 |
 
 ## Background Collection/Playlist Metadata Updates

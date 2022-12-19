@@ -4,14 +4,14 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
 
 No configuration is required for these builders.
 
-| Attribute                           | Description                                                                                                                                                                                 | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`tvdb_list`](#tvdb-list)           | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom)                                                                   |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`tvdb_list_details`](#tvdb-list)   | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom) and updates the collection summary with the TVDb list description |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`tvdb_show`](#tvdb-show)           | Finds the series specified                                                                                                                                                                  |     &#10060;      |     &#9989;      |               &#10060;               | 
-| [`tvdb_show_details`](#tvdb-show)   | Finds the series specified and updates the collection with the summary, poster, and background from the TVDb series                                                                         |     &#10060;      |     &#9989;      |               &#10060;               |
-| [`tvdb_movie`](#tvdb-movie)         | Finds the movie specified                                                                                                                                                                   |      &#9989;      |     &#10060;     |               &#10060;               |
-| [`tvdb_movie_details`](#tvdb-movie) | Finds the movie specified and updates the collection with the summary, poster, and background from the TVDb movie                                                                           |      &#9989;      |     &#10060;     |               &#10060;               |
+| Attribute                           | Description                                                                                                                                                                                         | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
+|:------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`tvdb_list`](#tvdb-list)           | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom)                                                                           |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`tvdb_list_details`](#tvdb-list)   | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom) and updates the collection summary and poster with the TVDb list metadata |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`tvdb_show`](#tvdb-show)           | Finds the series specified                                                                                                                                                                          |     &#10060;      |     &#9989;      |               &#10060;               | 
+| [`tvdb_show_details`](#tvdb-show)   | Finds the series specified and updates the collection with the summary, poster, and background from the TVDb series                                                                                 |     &#10060;      |     &#9989;      |               &#10060;               |
+| [`tvdb_movie`](#tvdb-movie)         | Finds the movie specified                                                                                                                                                                           |      &#9989;      |     &#10060;     |               &#10060;               |
+| [`tvdb_movie_details`](#tvdb-movie) | Finds the movie specified and updates the collection with the summary, poster, and background from the TVDb movie                                                                                   |      &#9989;      |     &#10060;     |               &#10060;               |
 
 ## TVDb List
 
@@ -36,7 +36,7 @@ collections:
     sync_mode: sync
 ```
 
-* You can update the collection details with the TVDb list's description by using `tvdb_list_details`.
+* You can update the collection details with the TVDb list's description and poster by using `tvdb_list_details`.
 * You can specify multiple lists in `tvdb_list_details` but it will only use the first one to update the collection details.
 
 ```yaml

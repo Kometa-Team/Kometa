@@ -857,7 +857,9 @@ class CollectionBuilder:
         elif method_name == "tvdb_summary":
             self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
         elif method_name == "tvdb_description":
-            self.summaries[method_name] = self.config.TVDb.get_list_description(method_data)
+            summary, _ = self.config.TVDb.get_list_description(method_data)
+            if summary:
+                self.summaries[method_name] = summary
         elif method_name == "trakt_description":
             self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
         elif method_name == "letterboxd_description":
@@ -874,6 +876,12 @@ class CollectionBuilder:
                 self.posters[method_name] = method_data
             except ConnectionError:
                 logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
+        elif method_name == "tmdb_list_poster":
+            self.posters[method_name] = self.config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).poster_url
+        elif method_name == "tvdb_list_poster":
+            _, poster = self.config.TVDb.get_list_description(method_data)
+            if poster:
+                self.posters[method_name] = poster
         elif method_name == "tmdb_poster":
             self.posters[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).poster_url
         elif method_name == "tmdb_profile":
@@ -1457,6 +1465,8 @@ class CollectionBuilder:
                     item = self.config.TMDb.get_list(values[0])
                     if item.description:
                         self.summaries[method_name] = item.description
+                    if item.poster_url:
+                        self.posters[method_name] = item.poster_url
             for value in values:
                 self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
@@ -1512,7 +1522,11 @@ class CollectionBuilder:
                 if item.poster_url:
                     self.posters[method_name] = item.poster_url
             elif method_name.startswith("tvdb_list"):
-                self.summaries[method_name] = self.config.TVDb.get_list_description(values[0])
+                description, poster = self.config.TVDb.get_list_description(values[0])
+                if description:
+                    self.summaries[method_name] = description
+                if poster:
+                    self.posters[method_name] = poster
         for value in values:
             self.builders.append((method_name[:-8] if method_name.endswith("_details") else method_name, value))
 
@@ -2566,6 +2580,7 @@ class CollectionBuilder:
         logger.info("")
         if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
         elif "tmdb_description" in self.summaries:          summary = ("tmdb_description", self.summaries["tmdb_description"])
+        elif "tvdb_description" in self.summaries:          summary = ("tvdb_description", self.summaries["tvdb_description"])
         elif "letterboxd_description" in self.summaries:    summary = ("letterboxd_description", self.summaries["letterboxd_description"])
         elif "tmdb_summary" in self.summaries:              summary = ("tmdb_summary", self.summaries["tmdb_summary"])
         elif "tvdb_summary" in self.summaries:              summary = ("tvdb_summary", self.summaries["tvdb_summary"])
@@ -2574,6 +2589,7 @@ class CollectionBuilder:
         elif "tmdb_collection_details" in self.summaries:   summary = ("tmdb_collection_details", self.summaries["tmdb_collection_details"])
         elif "trakt_list_details" in self.summaries:        summary = ("trakt_list_details", self.summaries["trakt_list_details"])
         elif "tmdb_list_details" in self.summaries:         summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
+        elif "tvdb_list_details" in self.summaries:         summary = ("tvdb_list_details", self.summaries["tvdb_list_details"])
         elif "letterboxd_list_details" in self.summaries:   summary = ("letterboxd_list_details", self.summaries["letterboxd_list_details"])
         elif "icheckmovies_list_details" in self.summaries: summary = ("icheckmovies_list_details", self.summaries["icheckmovies_list_details"])
         elif "tmdb_actor_details" in self.summaries:        summary = ("tmdb_actor_details", self.summaries["tmdb_actor_details"])
