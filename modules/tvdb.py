@@ -79,8 +79,8 @@ class TVDbObj:
             if not self.title:
                 raise Failed(f"TVDb Error: Name not found from TVDb ID: {self.tvdb_id}")
 
-            self.poster_url = parse_page("(//h2[@class='mt-4' and text()='Posters']/following::div/a/@href)[1]")
-            self.background_url = parse_page("(//h2[@class='mt-4' and text()='Backgrounds']/following::div/a/@href)[1]")
+            self.poster_url = parse_page("//div[@id='artwork-posters']/div/div/a/@href")
+            self.background_url = parse_page("//div[@id='artwork-backgrounds']/div/div/a/@href")
             if is_movie:
                 released = parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]")
             else:
@@ -106,10 +106,6 @@ class TVDb:
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-    def get_list_description(self, tvdb_url):
-        response = self.config.get_html(tvdb_url, headers=util.header(self.language))
-        description = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
-        return description[0] if len(description) > 0 and len(description[0]) > 0 else ""
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_request(self, tvdb_url):
@@ -171,6 +167,14 @@ class TVDb:
             err_text = f"ID at the URL {tvdb_url}"
         raise Failed(f"TVDb Error: Could not find a TVDb {media_type} {err_text}")
 
+    def get_list_description(self, tvdb_url):
+        response = self.config.get_html(tvdb_url, headers=util.header(self.language))
+        description = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
+        description = description[0] if len(description) > 0 and len(description[0]) > 0 else None
+        poster = response.xpath("//div[@id='artwork']/div/div/a/@href")
+        poster = poster[0] if len(poster) > 0 and len(poster[0]) > 0 else None
+        return description, poster
+
     def _ids_from_url(self, tvdb_url):
         ids = []
         tvdb_url = tvdb_url.strip()
@@ -178,7 +182,7 @@ class TVDb:
         if tvdb_url.startswith((urls["list"], urls["alt_list"])):
             try:
                 response = self.config.get_html(tvdb_url, headers=util.header(self.language))
-                items = response.xpath("//div[@class='row']/div/div[@class='row']/div/h3/a")
+                items = response.xpath("//div[@id='general']//div/div/h3/a")
                 for item in items:
                     title = item.xpath("text()")[0]
                     item_url = item.xpath("@href")[0]

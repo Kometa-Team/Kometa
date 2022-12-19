@@ -23,7 +23,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 | Attribute                                     | Description                                                                                                                          | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
 |:----------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
 | [`tmdb_collection_details`](#tmdb-collection) | Finds every item in the TMDb collection and updates the collection with the summary, poster, and background from the TMDb collection |      &#9989;      |     &#10060;     |               &#10060;               |
-| [`tmdb_list_details`](#tmdb-list)             | Finds every item in the TMDb List and updates the collection with the description of the TMDb list                                   |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`tmdb_list_details`](#tmdb-list)             | Finds every item in the TMDb List and updates the collection with the description and poster of the TMDb list                        |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`tmdb_actor_details`](#tmdb-actor)           | Finds every item in the TMDb Person's Actor Credits with the biography and profile from the TMDb person                              |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`tmdb_crew_details`](#tmdb-crew)             | Finds every item in the TMDb Person's Crew Credits with the biography and profile from the TMDb person                               |      &#9989;      |     &#9989;      |               &#10060;               |
 | [`tmdb_director_details`](#tmdb-director)     | Finds every item in the TMDb Person's Actor Credits with the biography and profile from the TMDb person                              |      &#9989;      |     &#9989;      |               &#10060;               |
@@ -116,7 +116,7 @@ collections:
     sync_mode: sync
 ```
 
-* You can update the collection details with the TMDb list's description by using `tmdb_list_details`.
+* You can update the collection details with the TMDb list's description and poster by using `tmdb_list_details`.
 * You can specify multiple lists in `tmdb_list_details` but it will only use the first one to update the collection details.
 
 ```yaml

@@ -767,6 +767,7 @@ class ConfigFile:
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
                     lib_vars = lib["template_variables"]
 
+                params["metadata_path"] = []
                 try:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
@@ -777,8 +778,6 @@ class ConfigFile:
                         params["metadata_path"] = files
                     elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
-                    else:
-                        params["metadata_path"] = []
                 except Failed as e:
                     logger.error(e)
                 params["default_dir"] = default_dir

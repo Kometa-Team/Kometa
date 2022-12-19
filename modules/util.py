@@ -199,6 +199,10 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
             final_attr = f"tmdb_{image_type}"
         elif "tmdb_profile" in images:
             final_attr = "tmdb_profile"
+        elif "tmdb_list_poster" in images:
+            final_attr = "tmdb_list_poster"
+        elif "tvdb_list_poster" in images:
+            final_attr = "tvdb_list_poster"
         elif f"tvdb_{image_type}" in images:
             final_attr = f"tvdb_{image_type}"
         elif "asset_directory" in images:
@@ -219,6 +223,10 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
             final_attr = "tmdb_writer_details"
         elif "tmdb_movie_details" in images:
             final_attr = "tmdb_movie_details"
+        elif "tmdb_list_details" in images:
+            final_attr = "tmdb_list_details"
+        elif "tvdb_list_details" in images:
+            final_attr = "tvdb_list_details"
         elif "tvdb_movie_details" in images:
             final_attr = "tvdb_movie_details"
         elif "tvdb_show_details" in images:
