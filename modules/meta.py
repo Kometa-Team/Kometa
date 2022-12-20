@@ -1565,8 +1565,9 @@ class OverlayFile(DataFile):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.library = library
         self.data_type = "Overlay"
+        self.file_num = len(library.overlay_files)
         logger.info("")
-        logger.info(f"Loading Overlay {file_type}: {path}")
+        logger.info(f"Loading Overlay {self.file_num} {file_type}: {path}")
         logger.debug("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)

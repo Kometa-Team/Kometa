@@ -379,9 +379,8 @@ class Overlays:
 
                     logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
 
-                    if builder.overlay.mapping_name in properties:
-                        raise Failed(f"Overlay Error: Overlay {builder.overlay.mapping_name} already exists")
-                    properties[builder.overlay.mapping_name] = builder.overlay
+                    prop_name = builder.overlay.mapping_name
+                    properties[prop_name] = builder.overlay
 
                     builder.display_filters()
 
@@ -403,13 +402,13 @@ class Overlays:
                         for item in builder.found_items:
                             key_to_item[item.ratingKey] = item
                             added_titles.append(item)
-                            if item.ratingKey not in properties[builder.overlay.mapping_name].keys:
-                                properties[builder.overlay.mapping_name].keys.append(item.ratingKey)
+                            if item.ratingKey not in properties[prop_name].keys:
+                                properties[prop_name].keys.append(item.ratingKey)
                     if added_titles:
-                        logger.info(f"{len(added_titles)} Items found for {builder.overlay.mapping_name} Overlay")
+                        logger.info(f"{len(added_titles)} Items found for {prop_name}")
                         logger.trace(f"Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
                     else:
-                        logger.warning(f"No Items found for {builder.overlay.mapping_name} Overlay")
+                        logger.warning(f"No Items found for {prop_name}")
                     logger.info("")
                 except NotScheduled as e:
                     logger.info(e)

@@ -70,7 +70,6 @@ class Overlay:
         self.overlay_file = overlay_file
         self.original_mapping_name = original_mapping_name
         self.data = overlay_data
-        self.suppress = suppress
         self.level = level
         self.keys = []
         self.updated = False
@@ -107,17 +106,11 @@ class Overlay:
         if "name" not in self.data or not self.data["name"]:
             raise Failed(f"Overlay Error: overlay must have the name attribute")
         self.name = str(self.data["name"])
-        if self.original_mapping_name not in library.overlay_names:
-            library.overlay_names.append(self.original_mapping_name)
-            self.mapping_name = self.original_mapping_name
-        else:
-            name_count = 1
-            test_name = f"{self.original_mapping_name} ({name_count})"
-            while test_name in library.overlay_names:
-                name_count += 1
-                test_name = f"{self.original_mapping_name} ({name_count})"
-            library.overlay_names.append(test_name)
-            self.mapping_name = test_name
+
+        self.prefix = f"Overlay File ({self.overlay_file.file_num}) "
+
+        self.mapping_name = f"{self.prefix}{self.original_mapping_name}"
+        self.suppress = [f"{self.prefix}{s}" for s in suppress]
 
         if "group" in self.data and self.data["group"]:
             self.group = str(self.data["group"])
