@@ -125,6 +125,8 @@ class ConfigFile:
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
+        self.env_plex_url = attrs["plex_url"] if "plex_url" in attrs else ""
+        self.env_plex_token = attrs["plex_token"] if "plex_token" in attrs else ""
         current_time = datetime.now()
 
         with open(self.config_path, encoding="utf-8") as fp:
@@ -854,6 +856,10 @@ class ConfigFile:
                         "empty_trash": check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False),
                         "optimize": check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
                     }
+                    if params["plex"]["url"].lower() == "env":
+                        params["plex"]["url"] = self.env_plex_url
+                    if params["plex"]["token"].lower() == "env":
+                        params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")

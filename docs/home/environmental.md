@@ -33,6 +33,8 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [No Missing](#no-missing)                             | `-nm` or `--no-missing`            | `PMM_NO_MISSING`         |
 | [No Report](#no-report)                               | `-nr` or `--no-report`             | `PMM_NO_REPORT`          |
 | [Read Only Config](#read-only-config)                 | `-ro` or `--read-only-config`      | `PMM_READ_ONLY_CONFIG`   |
+| [ENV Plex URL](#env-plex-url--token)                  | `-pu` or `--plex-url`              | `PMM_PLEX_URL`           |
+| [ENV Plex Token](#env-plex-url--token)                | `-pt` or `--plex-token`            | `PMM_PLEX_TOKEN`         |
 | [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                | `PMM_DIVIDER`            |
 | [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                  | `PMM_WIDTH`              |
 
@@ -904,6 +906,62 @@ python plex_meta_manager.py --read-only-config
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --read-only-config
 ```
 ````
+
+### ENV Plex URL & Token
+
+Replaces `ENV` when it is used plex `url` or `token`. 
+
+#### Plex URL
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #1d1d1d;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-pu</code> or <code>--plex-url</code></td>
+    <td><code>PMM_PLEX_URL</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--plex-url 192.168.1.12:32400</code></td>
+    <td><code>PMM_PLEX_URL=192.168.1.12:32400</code></td>
+  </tr>
+</table>
+
+#### Plex Token
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #1d1d1d;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-pt</code> or <code>--plex-token</code></td>
+    <td><code>PMM_PLEX_TOKEN</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--plex-token AB23HE4588</code></td>
+    <td><code>PMM_PLEX_TOKEN=AB23HE4588</code></td>
+  </tr>
+</table>
+
+````{tab} Local Environment
+```
+python plex_meta_manager.py --plex-url 192.168.1.12:32400 --plex-token AB23HE4588
+```
+````
+````{tab} Docker Environment
+```
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --plex-url 192.168.1.12:32400 --plex-token AB23HE4588
+```
+````
+
 
 ### Divider Character & Screen Width
 
