@@ -43,6 +43,8 @@ parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run with
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
 parser.add_argument("-nr", "--no-report", dest="no_report", help="Run without saving a report", action="store_true", default=False)
 parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Run without writing to the config", action="store_true", default=False)
+parser.add_argument("-pu", "--plex-url", dest="plex_url", help="Plex URL for Plex ENV URLs", default="", type=str)
+parser.add_argument("-pt", "--plex-token", dest="plex_token", help="Plex Token for Plex ENV Tokens", default="", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
@@ -100,6 +102,8 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 timeout = get_arg("PMM_TIMEOUT", args.timeout, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
+plex_url = get_arg("PMM_PLEX_URL", args.plex_url)
+plex_token = get_arg("PMM_PLEX_TOKEN", args.plex_token)
 
 if collections:
     collection_only = True
@@ -207,6 +211,8 @@ def start(attrs):
     attrs["playlist_only"] = playlist_only
     attrs["operations_only"] = operations_only
     attrs["overlays_only"] = overlays_only
+    attrs["plex_url"] = plex_url
+    attrs["plex_token"] = plex_token
     logger.separator(debug=True)
     logger.debug(f"Run Command: {run_arg}")
     logger.debug(f"--config (PMM_CONFIG): {config_file}")
@@ -231,6 +237,8 @@ def start(attrs):
     logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
     logger.debug(f"--no-report (PMM_NO_REPORT): {no_report}")
     logger.debug(f"--read-only-config (PMM_READ_ONLY_CONFIG): {read_only_config}")
+    logger.debug(f"--plex-url (PMM_PLEX_URL): {plex_url}")
+    logger.debug(f"--plex-token (PMM_PLEX_TOKEN): {plex_token}")
     logger.debug(f"--divider (PMM_DIVIDER): {divider}")
     logger.debug(f"--width (PMM_WIDTH): {screen_width}")
     logger.debug(f"--debug (PMM_DEBUG): {debug}")
