@@ -22,7 +22,6 @@ class Library(ABC):
         self.queue_current = 0
         self.metadata_files = []
         self.overlay_files = []
-        self.overlay_names = []
         self.movie_map = {}
         self.show_map = {}
         self.imdb_map = {}
@@ -32,7 +31,6 @@ class Library(ABC):
         self.show_rating_key_map = {}
         self.cached_items = {}
         self.run_again = []
-        self.overlays_old = []
         self.type = ""
         self.config = config
         self.name = params["name"]
