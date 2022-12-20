@@ -983,7 +983,12 @@ class ConfigFile:
         return html.fromstring(self.get(url, headers=headers, params=params).content)
 
     def get_json(self, url, json=None, headers=None, params=None):
-        return self.get(url, json=json, headers=headers, params=params).json()
+        response = self.get(url, json=json, headers=headers, params=params)
+        try:
+            return response.json()
+        except ValueError:
+            logger.error(str(response.content))
+            raise
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def get(self, url, json=None, headers=None, params=None):
@@ -996,7 +1001,12 @@ class ConfigFile:
         return html.fromstring(self.post(url, data=data, json=json, headers=headers).content)
 
     def post_json(self, url, data=None, json=None, headers=None):
-        return self.post(url, data=data, json=json, headers=headers).json()
+        response = self.post(url, data=data, json=json, headers=headers)
+        try:
+            return response.json()
+        except ValueError:
+            logger.error(str(response.content))
+            raise
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def post(self, url, data=None, json=None, headers=None):

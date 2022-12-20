@@ -235,11 +235,11 @@ templates:
           - rating_alignment: horizontal
             horizontal_position: center
             rating1: none
-            value: <<ch2_offset>>
+            value: -<<ch2_offset>>
           - rating_alignment: horizontal
             horizontal_position: center
             rating3: none
-            value: -<<ch2_offset>>
+            value: <<ch2_offset>>
           - rating_alignment: horizontal
             horizontal_position: center
             value: <<center_offset>>
