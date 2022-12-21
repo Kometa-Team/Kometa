@@ -558,7 +558,7 @@ class Operations:
                                         self.library.upload_poster(season, season_poster, url=poster_url)
                                         logger.info(f"{season.title} Poster | Reset from {poster_location}")
                                         if "Overlay" in [la.tag for la in self.library.item_labels(season)]:
-                                            logger.info(self.library.edit_tags("label", season, remove_tags="Ovelray", do_print=False))
+                                            logger.info(self.library.edit_tags("label", season, remove_tags="Overlay", do_print=False))
                                     else:
                                         logger.info(f"{season.title} Poster | No Reset Image Found")
                             if self.library.mass_background_update:
@@ -616,7 +616,7 @@ class Operations:
                                             self.library.upload_poster(episode, episode_poster, url=poster_url)
                                             logger.info(f"{episode.title} Poster | Reset from {poster_location}")
                                             if "Overlay" in [la.tag for la in self.library.item_labels(episode)]:
-                                                logger.info(self.library.edit_tags("label", episode, remove_tags="Ovelray", do_print=False))
+                                                logger.info(self.library.edit_tags("label", episode, remove_tags="Overlay", do_print=False))
                                         else:
                                             logger.info(f"{episode.title} Poster | No Reset Image Found")
                                 if self.library.mass_background_update:
