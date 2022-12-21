@@ -7,6 +7,29 @@ templates:
       font_color: "#FFFFFF"
       back_radius: 30
       weight_<<key>>: <<weight>>
+      file_<<key>>: <<file>>
+      url_<<key>>: <<url>>
+      git_<<key>>: <<git>>
+      repo_<<key>>: <<repo>>
+      pmm_<<key>>: <<pmm>> 
+      font_<<key>>: <<font>>
+      font_size_<<key>>: <<font_size>>
+      font_color_<<key>>: <<font_color>>
+      font_style_<<key>>: <<font_style>>
+      horizontal_offset_<<key>>: <<horizontal_offset>>
+      horizontal_align_<<key>>: <<horizontal_align>>
+      vertical_offset_<<key>>: <<vertical_offset>>
+      vertical_align_<<key>>: <<vertical_align>>
+      stroke_width_<<key>>: <<stroke_width>>
+      stroke_color_<<key>>: <<stroke_color>>
+      back_color_<<key>>: <<back_color>>
+      back_width_<<key>>: <<back_width>>
+      back_height_<<key>>: <<back_height>>
+      back_align_<<key>>: <<back_align>>
+      back_radius_<<key>>: <<back_radius>>
+      back_padding_<<key>>: <<back_padding>>
+      back_line_color_<<key>>: <<back_line_color>>
+      back_line_width_<<key>>: <<back_line_width>>
       final_name: <<overlay_name>>
     optional:
       - overlay_level
@@ -46,31 +69,31 @@ templates:
     suppress_overlays: <<suppress_overlays>>
     overlay:
       name: <<final_name>>
-      file: <<file>>
-      url: <<url>>
-      git: <<git>>
-      repo: <<repo>>
-      pmm: <<pmm>>
+      file: <<file_<<key>>>>
+      url: <<url_<<key>>>>
+      git: <<git_<<key>>>>
+      repo: <<repo_<<key>>>>
+      pmm: <<pmm_<<key>>>>
       group: <<group>>
       queue: <<queue>>
       weight: <<weight_<<key>>>>
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      font: <<font>>
-      font_style: <<font_style>>
-      font_size: <<font_size>>
-      font_color: <<font_color>>
-      stroke_width: <<stroke_width>>
-      stroke_color: <<stroke_color>>
-      back_color: <<back_color>>
-      back_width: <<back_width>>
-      back_height: <<back_height>>
-      back_align: <<back_align>>
-      back_padding: <<back_padding>>
-      back_radius: <<back_radius>>
-      back_line_color: <<back_line_color>>
-      back_line_width: <<back_line_width>>
+      horizontal_offset: <<horizontal_offset_<<key>>>>
+      horizontal_align: <<horizontal_align_<<key>>>>
+      vertical_offset: <<vertical_offset_<<key>>>>
+      vertical_align: <<vertical_align_<<key>>>>
+      font: <<font_<<key>>>>
+      font_style: <<font_style_<<key>>>>
+      font_size: <<font_size_<<key>>>>
+      font_color: <<font_color_<<key>>>>
+      stroke_width: <<stroke_width_<<key>>>>
+      stroke_color: <<stroke_color_<<key>>>>
+      back_color: <<back_color_<<key>>>>
+      back_width: <<back_width_<<key>>>>
+      back_height: <<back_height_<<key>>>>
+      back_align: <<back_align_<<key>>>>
+      back_padding: <<back_padding_<<key>>>>
+      back_radius: <<back_radius_<<key>>>>
+      back_line_color: <<back_line_color_<<key>>>>
+      back_line_width: <<back_line_width_<<key>>>>
       addon_offset: <<addon_offset>>
       addon_position: <<addon_position>>

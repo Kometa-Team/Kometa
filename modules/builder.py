@@ -242,6 +242,20 @@ class CollectionBuilder:
         else:
             self.name = self.mapping_name
 
+        if self.playlist:
+            if "libraries" not in methods:
+                raise Failed("Playlist Error: libraries attribute is required")
+            logger.debug("")
+            logger.debug("Validating Method: libraries")
+            if not self.data[methods["libraries"]]:
+                raise Failed(f"{self.Type} Error: libraries attribute is blank")
+            logger.debug(f"Value: {self.data[methods['libraries']]}")
+            for pl_library in util.get_list(self.data[methods["libraries"]]):
+                if str(pl_library) not in config.library_map:
+                    raise Failed(f"Playlist Error: Library: {pl_library} not defined")
+                self.libraries.append(config.library_map[pl_library])
+            self.library = self.libraries[0]
+
         try:
             self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
         except Failed:
@@ -323,19 +337,6 @@ class CollectionBuilder:
         self.sync_to_users = None
         self.valid_users = []
         if self.playlist:
-            if "libraries" not in methods:
-                raise Failed("Playlist Error: libraries attribute is required")
-            logger.debug("")
-            logger.debug("Validating Method: libraries")
-            if not self.data[methods["libraries"]]:
-                raise Failed(f"{self.Type} Error: libraries attribute is blank")
-            logger.debug(f"Value: {self.data[methods['libraries']]}")
-            for pl_library in util.get_list(self.data[methods["libraries"]]):
-                if str(pl_library) not in config.library_map:
-                    raise Failed(f"Playlist Error: Library: {pl_library} not defined")
-                self.libraries.append(config.library_map[pl_library])
-            self.library = self.libraries[0]
-
             if "sync_to_users" in methods or "sync_to_user" in methods:
                 s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
                 logger.debug("")
