@@ -494,7 +494,7 @@ class Operations:
                                 self.library.upload_poster(item, new_poster, url=poster_url)
                                 logger.info(f"Poster | Reset from {poster_location}")
                                 if "Overlay" in [la.tag for la in self.library.item_labels(item)]:
-                                    logger.info(self.library.edit_tags("label", item, remove_tags="Ovelray", do_print=False))
+                                    logger.info(self.library.edit_tags("label", item, remove_tags="Overlay", do_print=False))
                             else:
                                 logger.info("Poster | No Reset Image Found")
 
