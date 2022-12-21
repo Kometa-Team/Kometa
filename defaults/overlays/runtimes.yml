@@ -13,6 +13,8 @@ external_templates:
         conditions:
           - library_type: show
             value: episode
+    default:
+      text: Runtime
     horizontal_offset: 15
     horizontal_align: right
     vertical_offset: 30
@@ -20,7 +22,7 @@ external_templates:
     back_color: "#00000099"
     back_width: 600
     back_height: 105
-    final_name: "text(Runtime: <<runtimeH>>h <<runtimeM>>m)"
+    final_name: "text(<<text>>: <<runtimeH>>h <<runtimeM>>m)"
 
 overlays:
   runtime_info:
