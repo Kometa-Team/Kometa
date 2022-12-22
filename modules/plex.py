@@ -715,7 +715,10 @@ class Plex(Library):
         return self._users
 
     def delete_user_playlist(self, title, user):
-        self.delete(self.PlexServer.switchUser(user).playlist(title))
+        try:
+            self.delete(self.PlexServer.switchUser(user).playlist(title))
+        except NotFound as e:
+            raise Failed(e)
 
     @property
     def account(self):
