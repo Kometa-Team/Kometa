@@ -1,0 +1,502 @@
+version: 1.18.0.7
+variables:
+  library_translation:
+    # For Movie Libraries
+    movie: Film
+    # For Show Libraries
+    show: Serie TV
+    # For Music Libraries
+    artist: Artista
+    # For Other Video Libraries
+    video: Video
+    # For Playlists
+    item: Elemento
+  library_translationU:
+    # For Movie Libraries
+    movie: Film
+    # For Show Libraries
+    show: Serie TV
+    # For Music Libraries
+    artist: Artisti
+    # For Other Video Libraries
+    video: Video
+    # For Playlists
+    item: Elementi
+key_names:
+  Action: Azione
+  Action & Adventure: Azione & Avventura
+  Actors: Attori
+  Adult: Adulti
+  Adventure: Avventura
+  Albanian: Albanese
+  Animation: Animazione
+  Anime: Anime
+  Arabic: Arabo
+  Argentina: Argentina
+  Audio Language: Lingua audio
+  Australia: Australia
+  Austria: Austria
+  Award: Premio
+  Bahamas: Bahamas
+  Basque: Basco
+  Belgium: Belgio
+  Bengali: Bengalese
+  Biography: Biografia
+  # Biopic: Biopic
+  Bosnian: Bosniaco
+  Brazil: Brasile
+  Bulgaria: Bulgaria
+  Bulgarian: Bulgaro
+  Canada: Canada
+  Catalan: Catalano
+  Chart: Grafico
+  Children: Bambini
+  Chile: Cile
+  China: Cina
+  Chinese: Cinese
+  Christmas: Natale
+  Comedy: Commedia
+  Competition: Concorso
+  Costa Rica: Costa Rica
+  Country: Paese
+  Crime: Crimine
+  Croatia: Croazia
+  Croatian: Croato
+  Czech: Ceco
+  Czech Republic: Repubblica Ceca
+  Danish: Danese
+  Decade: Decade
+  Denmark: Danimarca
+  Directors: Registi
+  Documentary: Documentario
+  Dominican Republic: Repubblica Dominicana
+  Drama: Drammatico
+  Dutch: Olandese
+  Easter: Pasqua
+  Egypt: Egitto
+  English: Inglese
+  Erotica: Erotico
+  Estonia: Estonia
+  Estonian: Estone
+  Family: Famiglia
+  Fantasy: Fantasia
+  Father's Day: La Festa del Papà
+  Filipino: Filippino
+  # Film Noir: Film Noir
+  Finland: Finlandia
+  Finnish: Finlandese
+  Food: Cibo
+  France: Francia
+  French: Francese
+  Galician: Galiziano
+  # Game Show: Gioco a Premi
+  Gangster: Gangster
+  Genre: Genere
+  Georgian: Georgiano
+  German: Tedesco
+  Germany: Germania
+  Greece: Grecia
+  Greek: Greco
+  Halloween: Halloween
+  Hebrew: Ebraico
+  Hindi: Hindi
+  History: Storia
+  Home and Garden: Casa e Giardino
+  Hong Kong: Hong Kong
+  Horror: Orrore
+  Hungarian: Ungherese
+  Hungary: Ungheria
+  Iceland: Islanda
+  Icelandic: Islandese
+  Independence Day: Giorno dell'Indipendenza
+  India: India
+  Indie: Indie
+  Indonesia: Indonesia
+  Indonesian: Indonesiano
+  Iran: Iran
+  Ireland: Irlanda
+  Israel: Israele
+  Italian: Italiano
+  Italy: Italia
+  Japan: Giappone
+  Japanese: Giapponese
+  # Kannada: Kannada
+  Kazakh: Kazako
+  Kids: Bambini
+  Korea: Corea
+  Korean: Coreano
+  # LGBTQ+: LGBTQ+
+  Labor Day: La Festa del Lavoro
+  Latin: Latino
+  Latvia: Lettonia
+  Latvian: Lettone
+  Luxembourg: Lussemburgo
+  Macedonian: Macedone
+  # Malay: Malese
+  # Malayalam: Malayalam
+  Malaysia: Malesia
+  Malaysian: Malese
+  # Marathi: Marathi
+  Martial Arts: Arti marziali
+  Memorial Day: Giorno della Memoria
+  Mexico: Messico
+  Mind-Bend: Scervellotico
+  Mind-Fuck: Sega mentale
+  Mini-Series: Mini-serie
+  Morocco: Marocco
+  Mother's Day: La Festa della Mamma
+  Music: Musica
+  Musical: Musical
+  Mystery: Mistero
+  Nepal: Nepal
+  Netherlands: Paesi Bassi
+  Network: Rete
+  New Year's Day: Capodanno
+  New Zealand: Nuova Zelanda
+  News: Notizie
+  News & Politics: Notizie e Politica
+  Norway: Norvegia
+  Norwegian: Norvegese
+  # Norwegian Bokmål: Norvegese Bokmål
+  # Norwegian Nynorsk: Norvegese nynorsk
+  Pakistan: Pakistan
+  Panama: Panama
+  Persian: Persiano
+  Peru: Perù
+  Philippines: Filippine
+  Poland: Polonia
+  Polish: Polacco
+  Politics: Politica
+  Portugal: Portogallo
+  Portugese: Portoghese
+  Portuguese: Portoghese
+  Producers: Produttori
+  # Punjabi: Punjabi
+  Qatar: Qatar
+  Ratings: Valutazioni
+  Reality: Realtà
+  Resolution: Risoluzione
+  Romance: Romanzo
+  Romania: Romania
+  Romanian: Rumeno
+  Romantic Comedy: Commedia Romantica
+  Romantic Drama: Dramma Romantico
+  Russia: Russia
+  Russian: Russo
+  Saudi Arabia: Arabia Saudita
+  Sci-Fi & Fantasy: Fantascienza e Fantasy
+  Science Fiction: Fantascienza
+  Seasonal: Stagionale
+  Serbia: Serbia
+  Serbian: Serbo
+  Short: Breve
+  Singapore: Singapore
+  # Slasher: Slasher
+  Slovak: Slovacco
+  Slovenian: Sloveno
+  # Soap: Soap
+  South Africa: Sudafrica
+  Spain: Spagna
+  Spanish: Spagnolo
+  Sport: Sport
+  Sri Lanka: Sri Lanka
+  St. Patrick's Day: La Festa di San Patrizio
+  Stand-Up Comedy: Cabaret
+  Streaming: Streaming
+  Studio: Studio
+  Subtitle Language: Lingua dei Sottotitoli
+  Superhero: Supereroe
+  Suspense: Suspense
+  Swahili: Swahili
+  Sweden: Svezia
+  Swedish: Svedese
+  Switzerland: Svizzera
+  Sword & Sorcery: Spada e Stregoneria
+  TV Movie: Film TV
+  Talk Show: Talk Show
+  Tamil: Tamil
+  Telugu: Telugu
+  Thai: Thailandese
+  Thailand: Thailanda
+  Thanksgiving: Ringraziamento
+  Thriller: Thriller
+  Travel: Viaggio
+  Turkey: Tacchino
+  Turkish: Turchia
+  Ukraine: Ucraina
+  Ukrainian: Ucraino
+  United Arab Emirates: Emirati Arabi Uniti
+  United Kingdom: Regno Unito
+  United States of America: Stati Uniti d'America
+  Universe: Universo
+  Urdu: Urdu
+  Valentine's Day: San Valentino
+  Vietnam: Vietnam
+  Vietnamese: Vietnamita
+  War & Politics: Guerra e Politica
+  Welsh: Gallese
+  Western: Occidentale
+  Writers: Scrittori
+  Year: Anno
+
+translations:
+  #############################################################
+  #                           Award                           #
+  #############################################################
+
+  bafta_best_name: BAFTA Miglior Film
+  bafta_best_summary: Accademia Britannica del Cinema e delle Arti Televisive Vincitori del Miglior Film.
+
+  # example key_name: 2022
+  bafta_year_name: BAFTA <<translated_key_name>>
+  bafta_year_summary: Premio BAFTA del <<translated_key_name>>.
+
+  cannes_best_name: Vincitore Palma d'Oro Cannes
+  cannes_best_summary: Vincitore Palma d'Oro Cannes.
+
+  # example key_name: 2022
+  cannes_year_name: Cannes <<translated_key_name>>
+  cannes_year_summary: Premio Cannes del <<translated_key_name>>.
+
+  choice_year_name: Premio della Critica <<translated_key_name>>
+  choice_year_summary: Premio della Critica del <<translated_key_name>>.
+
+  # example key_name: 2022
+  emmy_year_name: Emmys <<translated_key_name>>
+  emmy_year_summary: Vincitori Emmy <<translated_key_name>>.
+
+  golden_best_name: Golden Globe Miglior Film
+  golden_best_summary: Golden Globe Miglior Film.
+
+  # example key_name: 2022
+  golden_year_name: Golden Globe <<translated_key_name>>
+  golden_year_summary: Vincitori del Golden Globe <<translated_key_name>>.
+
+  oscars_picture_name: Vincitori degli Oscar per il Miglior Film
+  oscars_picture_summary: Il premio Oscar per il miglior film è uno dei premi Oscar assegnati annualmente dall'Academy of Motion Picture Arts and Sciences sin dal suo debutto nel 1929.
+
+  oscars_director_name: Vincitori degli Oscar come Miglior Regista
+  oscars_director_summary: Il premio Oscar per la miglior regia è uno dei premi Oscar assegnati annualmente dall'Academy of Motion Picture Arts and Sciences sin dal suo debutto nel 1929.
+
+  # example key_name: 2022
+  oscars_year_name: Vincitori degli Oscar <<translated_key_name>>
+  oscars_year_summary: Vincitori degli Academy Awards (Oscar) per <<translated_key_name>>.
+
+  berlinale_best_name: Orsi d'oro della Berlinale
+  berlinale_best_summary: Ogni anno, nell'ambito del programma pubblico della Berlinale (Festival Internazionale del Cinema di Berlino), vengono proiettati fino a 400 film, la maggior parte dei quali sono anteprime mondiali o europee. Possono essere presentati film di ogni genere, lunghezza e formato. L'Orso d'Oro (in tedesco Goldener Bär) è il premio più alto assegnato al miglior film proiettato durante il festival.
+
+  cesar_best_name: Vincitori del César per il miglior film
+  cesar_best_summary: Il Premio César è il premio cinematografico nazionale francese, assegnato per la prima volta nel 1975. Le candidature sono selezionate dai membri dell'Académie des Arts et Techniques du Cinéma. Il nome del premio deriva dallo scultore César Baldaccini. È considerato l'equivalente francese degli Academy Awards americani.
+
+  razzie_worst_name: Vincitori dei Razzies Golden Raspberry
+  razzie_worst_summary: Il Golden Raspberry Award for Worst Picture è un premio assegnato ai Golden Raspberry Awards annuali al peggior film dell'anno passato.
+
+  venice_best_name: Leoni d'oro di Venezia
+  venice_best_summary: La Mostra del Cinema di Venezia è il più antico festival cinematografico del mondo. Fondata nel 1932, da allora si svolge ogni anno a Venezia, in Italia. Fa parte della Biennale di Venezia, una grande mostra e festival biennale di arte contemporanea. Il Leone d'Oro viene assegnato al miglior film proiettato al festival.
+
+  # example key_name: 2022
+  spirit_year_name: Premi Independent Spirit <<translated_key_name>>
+  spirit_year_summary: <<translated_key_name>> Independent Spirit Awards.
+
+  sundance_best_name: Vincitori del Gran Premio della Giuria del Sundance
+  sundance_best_summary: Il Sundance Film Festival è un festival cinematografico che si svolge ogni anno nello stato dello Utah, negli Stati Uniti. È il più grande festival di cinema indipendente degli Stati Uniti. Si tiene a gennaio ed è la principale vetrina per i nuovi lavori di registi indipendenti americani e internazionali. Il festival comprende sezioni competitive per film drammatici e documentari americani e internazionali, sia lungometraggi che cortometraggi, e un gruppo di sezioni vetrina non competitive.
+
+  # example key_name: 2022
+  sundance_year_name: Sundance Film Festival <<translated_key_name>>
+  sundance_year_summary: Sundance Film Festival di <<translated_key_name>>.
+
+  #############################################################
+  #                           Chart                           #
+  #############################################################
+
+  anilist_popular_name: Popolari su AniList
+  anilist_popular_summary: Una raccolta degli Anime più popolari secondo AniList.
+
+  anilist_top_rated_name: Piu votati su AniList
+  anilist_top_rated_summary: Una raccolta degli Anime più votati secondo AniList.
+
+  anilist_trending_name: Tendenze su AniList
+  anilist_trending_summary: Una raccolta di anime di tendenza secondo AniList.
+
+  anilist_season_name: Stagione su AniList
+  anilist_season_summary: Una raccolta di anime della stagione corrente secondo AniList.
+
+  basic_released_name: Appena usciti
+  basic_released_summary: Una raccolta di <<library_translation>> appena rilasciate.
+
+  basic_episodes_name: Nuovi episodi
+  basic_episodes_summary: Una raccolta di episodi appena rilasciati.
+
+  # possible key_name: Netflix, Disney, HBO, Hulu, Paramount Plus, Prime Video
+  flixpatrol_name: <<translated_key_name>> Top <<limit>>
+  flixpatrol_summary: I migliori <<limit>> <<library_translation>> su <<translated_key_name>> secondo FlixPatrol.
+
+  imdb_popular_name: Popolari su IMDb
+  imdb_popular_summary: Elenco dei <<library_translation>> popolari su IMDb .
+
+  imdb_top_name: IMDb Top 250
+  imdb_top_summary: Raccolta dei Top 250 <<library_translation>> su IMDb.
+
+  imdb_lowest_name: Meno votati su IMDb
+  imdb_lowest_summary: Elenco dei <<library_translation>> su IMDb con il voto più basso.
+
+  mal_popular_name: Popolari su MyAnimeList
+  mal_popular_summary: Una raccolta degli anime più popolari secondo MyAnimeList.
+
+  mal_favorited_name: Favoriti su MyAnimeList
+  mal_favorited_summary: Una raccolta degli Anime più favoriti secondo MyAnimeList.
+
+  mal_top_name: Top di MyAnimeList
+  mal_top_summary: Una raccolta degli anime più votati secondo MyAnimeList.
+
+  mal_airing_name:  Top di MyAnimeList in Onda
+  mal_airing_summary: Una raccolta degli anime più votati attualmente in onda secondo MyAnimeList.
+
+  mal_season_name: Stagione su MyAnimeList
+  mal_season_summary: Una raccolta di anime della stagione in corso secondo MyAnimeList.
+
+  anidb_popular_name: Popolari su AniDB
+  anidb_popular_summary: Una raccolta di anime popolari su AniDB.
+
+  commonsense_selection_name: Buon Senso
+  commonsense_selection_summary: Una raccolta di <<library_translation>> di buon senso. Riconosce l'intrattenimento eccezionale con un sigillo ufficiale di qualità e impatto. Le selezioni includono media adatti all'età, che hanno il potenziale di suscitare conversazioni in famiglia, intrattenere le famiglie di tutti i tipi e avere un effetto positivo e duraturo sulla società.
+
+  stevenlu_popular_name: I film più popolari di StevenLu
+  stevenlu_popular_summary: Una raccolta dei film più popolari di StevenLu.
+
+  pirated_popular_name: I 10 film piratati della settimana
+  pirated_popular_summary: La Top Ten settimanale dei film piratati di TorrentFreak.com.
+
+  tautulli_popular_name: Popolari su Plex
+  tautulli_popular_summary: Una raccolta di <<library_translation>> popolari su Plex.
+
+  tautulli_watched_name: Guardati su Plex
+  tautulli_watched_summary: Una raccolta dei migliori <<library_translation>> guardati su Plex.
+
+  tmdb_airing_name: TMDb in Onda Oggi
+  tmdb_airing_summary: Una raccolta di spettacoli con episodi in onda oggi.
+
+  tmdb_air_name: TMDb in Onda
+  tmdb_air_summary: Una raccolta di spettacoli che sono ancora attivamente in onda.
+
+  tmdb_popular_name: Popolari su TMDb
+  tmdb_popular_summary: Una raccolta dei programmi <<library_translation>> più visti secondo TMDb.
+
+  tmdb_top_name: Top di TMDb
+  tmdb_top_summary: Una raccolta dei <<library_translation>> più votati secondo TMDb.
+
+  tmdb_trending_name: In Tendenza su TMDb
+  tmdb_trending_summary: Una raccolta dei <<library_translation>> di tendenza su TMDb.
+
+  trakt_collected_name: Raccolta di Trakt
+  trakt_collected_summary: Una raccolta della lista settimanale Trakt Collected di Trakt.
+
+  trakt_popular_name: Popolari su Trakt
+  trakt_popular_summary: Una raccolta della lista settimanale di Trakt Popular.
+
+  trakt_recommended_name: Consigliati su Trakt 
+  trakt_recommended_summary: Una raccolta della lista settimanale Trakt Recommended di Trakt.
+
+  trakt_trending_name: In Tendenza su Trakt
+  trakt_trending_summary: Una raccolta della lista settimanale di Trakt Trending.
+
+  trakt_watched_name: Osservati su Trakt
+  trakt_watched_summary: Una raccolta della lista settimanale di Trakt Watched.
+
+  #############################################################
+  #                           Both                            #
+  #############################################################
+
+  # possible key_names: Seasonal, Chart, Universe, Streaming, Network, Genre, Studio, Country, Audio Language, Subtitle Language, Decade, Year, Ratings, Resolution, Award, Actors, Directors, Producers, Writers
+  separator_name: <<translated_key_name>> Collezioni
+  separator_summary: Separatore di sezione per le collezioni di <<translated_key_name>>.
+
+  # example key_name: Robin Williams
+  actor_name: <<translated_key_name>>
+  actor_summary: <<library_translationU>> con <<translated_key_name>>.
+
+  # example key_name: English
+  audio_language_name: Audio in <<translated_key_name>>
+  audio_language_summary: <<library_translationU>> girati in lingua <<translated_key_name>>.
+
+  audio_language_other_name: Altri Audio
+  audio_language_other_summary: <<library_translationU>> girati in altre lingue non comuni.
+
+  collectionless_name: Senza collezione
+  collectionless_summary: Collezione di <<library_translationU>> utilizzate per far sì che Plex visualizzi correttamente gli elementi.
+
+  # example key_name: TV-MA
+  content_rating_name: <<translated_key_name>> <<library_translationU>>
+  content_rating_summary: <<library_translationU>> che sono classificati come <<translated_key_name>>.
+
+  # example key_name: TV-MA
+  content_rating_cs_name: Età <<translated_key_name>>+ <<library_translationU>>
+  content_rating_cs_summary: <<library_translationU>> che sono classificati come <<translated_key_name>> secondo il Common Sense Rating System.
+
+  content_rating_other_name: Non Classificati <<library_translationU>>
+  content_rating_other_summary: <<library_translationU>> non classificati, non classificati o con valutazioni non comuni.
+
+  # example key_name: United States
+  country_name: <<translated_key_name>>
+  country_summary: <<library_translationU>> girati in <<translated_key_name>>.
+
+  country_other_name: Altri Paesi
+  country_other_summary: <<library_translationU>> che sono stati girati in altri Paesi non comuni.
+
+  # example key_name: 2010s
+  decade_name: Il meglio del <<translated_key_name>>
+  decade_summary: I migliori <<limit>> <<library_translation>> del <<translated_key_name>>.
+
+  # example key_name: 2010
+  decade_show_name: Il meglio del <<translated_key_name>>
+  decade_show_summary: I migliori <<limit>> <<library_translation>> del <<translated_key_name>>.
+
+  # example key_name: Robin Williams
+  director_name: <<translated_key_name>> (Regista)
+  director_summary: <<library_translationU>> diretti da <<translated_key_name>>.
+
+  # example key_name: Action
+  genre_name: <<library_translationU>> <<translated_key_name>>
+  genre_summary: <<library_translationU>> di <<translated_key_name>>.
+
+  # example key_name: NBC
+  network_name: <<translated_key_name>>
+  network_summary: <<library_translationU>> trasmessi su <<translated_key_name>>.
+
+  # example key_name: Robin Williams
+  producer_name: <<translated_key_name>> (Produttore)
+  producer_summary: <<library_translationU>> prodotti da <<translated_key_name>>.
+
+  # example key_name: 1080p
+  resolution_name: <<library_translationU>> in <<translated_key_name>> 
+  resolution_summary: <<library_translationU>> con risoluzione <<translated_key_name>>.
+
+  resolution_other_name: Altre Risoluzioni <<library_translationU>>
+  resolution_other_summary: <<library_translationU>> che hanno altre risoluzioni non comuni.
+
+  # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
+  seasonal_name: <<library_translationU>> per <<translated_key_name>> 
+  seasonal_summary: Una raccolta di <<library_translation>> per <<translated_key_name>>.
+
+  # possible key_names: All 4, Apple TV+, BET+, BritBox, Disney+, hayu, HBO Max, Hulu, Netflix, NOW, Paramount+, Peacock, Prime Video
+  streaming_name: <<library_translationU>> di <<translated_key_name>> 
+  streaming_summary: <<library_translationU>> in streaming su <<translated_key_name>>.
+
+  # example key_name: Studio Ghibli
+  studio_name: <<translated_key_name>>
+  studio_summary: <<library_translationU>> prodotti da <<translated_key_name>>.
+
+  # example key_name: English
+  subtitle_language_name: Sottotitolati in <<translated_key_name>>
+  subtitle_language_summary: <<library_translationU>> con sottotitoli in <<translated_key_name>>.
+
+  subtitle_language_other_name: Altri Sottotitoli
+  subtitle_language_other_summary: <<library_translationU>> con sottotitoli non comuni.
+
+  # example key_name: Robin Williams
+  writer_name: <<translated_key_name>> (Scrittore)
+  writer_summary: <<library_translationU>> scritto da <<translated_key_name>>.
+
+  # example key_name: 2015
+  year_name: Il meglio del <<translated_key_name>>
+  year_summary: <<library_translationU>> rilasciati nel <<translated_key_name>>.
