@@ -20,12 +20,16 @@ templates:
       trakt_url_<<key>>: <<trakt_url>>
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<mapping_name_encoded>>.jpg
       name_<<key>>: <<mapping_name>>
+      sync_to_users_<<key>>: <<sync_to_users>>
+      exclude_users_<<key>>: <<exclude_users>>
     optional:
       - use_<<key>>
       - item_radarr_tag
       - item_sonarr_tag
       - ignore_ids
       - ignore_imdb_ids
+      - sync_to_users
+      - exclude_users
     allowed_library_types:
       - <<use_<<key>>>>
     ignore_ids: <<ignore_ids>>
@@ -34,7 +38,8 @@ templates:
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     trakt_list: <<trakt_url_<<key>>>>
     cache_builders: 1
-    sync_to_users: all
+    sync_to_users: <<sync_to_users_<<key>>>>
+    exclude_users: <<exclude_users_<<key>>>>
     sync_mode: sync
     libraries: <<libraries>>
     url_poster: <<url_poster_<<key>>>>
