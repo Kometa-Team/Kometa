@@ -52,6 +52,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`item_refresh_delay`](#item-refresh-delay)                   |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`playlist_sync_to_users`](#playlist-sync-to-users)           |   &#9989;    |   &#10060;    |          &#9989;          |
+| [`playlist_exclude_users`](#playlist-exclude-users)           |   &#9989;    |   &#10060;    |          &#9989;          |
 | [`playlist_report`](#playlist-report)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`custom_repo`](#custom-repo)                                 |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`verify_ssl`](#verify-ssl)                                   |   &#9989;    |   &#10060;    |         &#10060;          |
@@ -537,6 +538,19 @@ Set the default playlist `sync_to_users`. To Sync a playlist to only yourself le
   <tr>
     <th>Allowed Values</th>
     <td><code>all</code>, list of users, or comma-separated string of users</td>
+  </tr>
+</table>
+
+## Playlist Exclude Users
+Set the default playlist `exclude_users`.
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th>Default Value</th>
+    <td><code> </code></td>
+  </tr>
+  <tr>
+    <th>Allowed Values</th>
+    <td>list of users or comma-separated string of users</td>
   </tr>
 </table>
 

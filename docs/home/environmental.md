@@ -296,7 +296,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Collections Only
 
-Only run collection metadata/YAML files, skip library operations, overlays, and collections/metadata.
+Only run collection metadata/YAML files, skip library operations, overlays, and playlists.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

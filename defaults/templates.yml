@@ -45,6 +45,7 @@ templates:
       visible_library_<<key>>: <<visible_library>>
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
+      minimum_items_<<key>>: <<minimum_items>>
     optional:
       - use_<<key>>
       - allowed_libraries
@@ -58,6 +59,7 @@ templates:
       - image
       - ignore_ids
       - ignore_imdb_ids
+      - minimum_items
     allowed_library_types:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
@@ -73,6 +75,7 @@ templates:
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
     url_poster: <<url_poster_<<key>>>>
+    minimum_items: <<minimum_items_<<key>>>>
 
   trakt:
     optional:

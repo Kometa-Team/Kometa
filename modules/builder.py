@@ -335,6 +335,7 @@ class CollectionBuilder:
             self.overlay = Overlay(config, library, metadata, str(self.mapping_name), overlay_data, suppress, self.builder_level)
 
         self.sync_to_users = None
+        self.exclude_users = None
         self.valid_users = []
         if self.playlist:
             if "sync_to_users" in methods or "sync_to_user" in methods:
@@ -344,18 +345,35 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods[s_attr]]}")
                 self.sync_to_users = self.data[methods[s_attr]]
             else:
-                logger.warning(f"Playlist Error: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
                 self.sync_to_users = config.general["playlist_sync_to_users"]
+                logger.warning(f"Playlist Warning: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
+
+            if "exclude_users" in methods or "exclude_user" in methods:
+                s_attr = f"exclude_user{'s' if 'exclude_users' in methods else ''}"
+                logger.debug("")
+                logger.debug(f"Validating Method: {s_attr}")
+                logger.debug(f"Value: {self.data[methods[s_attr]]}")
+                self.exclude_users = self.data[methods[s_attr]]
+            elif config.general["playlist_exclude_users"]:
+                self.exclude_users = config.general["playlist_exclude_users"]
+                logger.warning(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
             plex_users = self.library.users
+
+            self.exclude_users = util.get_list(self.exclude_users)
+            for user in self.exclude_users:
+                if user not in plex_users:
+                    raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+
             if self.sync_to_users:
                 if str(self.sync_to_users) == "all":
-                    self.valid_users = plex_users
+                    self.valid_users = [p for p in plex_users if p not in self.exclude_users]
                 else:
                     for user in util.get_list(self.sync_to_users):
                         if user not in plex_users:
                             raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
-                        self.valid_users.append(user)
+                        if user not in self.exclude_users:
+                            self.valid_users.append(user)
 
             if "delete_playlist" in methods:
                 logger.debug("")
