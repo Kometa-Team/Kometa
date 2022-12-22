@@ -360,7 +360,7 @@ class CollectionBuilder:
 
             plex_users = self.library.users
 
-            self.exclude_users = util.get_list(self.exclude_users)
+            self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
             for user in self.exclude_users:
                 if user not in plex_users:
                     raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
