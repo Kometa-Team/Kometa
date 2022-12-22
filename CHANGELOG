@@ -1,55 +1,29 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated plexapi requirement to 4.13.1
-Updated num2words requirement to 0.5.12
-Updated pathvalidate requirement to 2.5.2
-
-**New Site to request and vote for Features Requests on at [features.metamanager.wiki](https://features.metamanager.wiki/)**
-
-# New Packaged Defaults System
-All the old PMM Defaults (i.e. `- git: PMM\...` Files) are now packaged into PMM locally and can be accessed using `- pmm: ...`
-Added Common Sense Selection [Movie](https://www.commonsensemedia.org/reviews/category/movie/tag/common-sense-selections-31822)] and [Show](https://www.commonsensemedia.org/reviews/category/tv/tag/common-sense-selections-31822) collections to [`chart/other`](https://metamanager.wiki/en/latest/defaults/chart/other.html)
-Added [Common Sense Media Content Rating Collections](https://metamanager.wiki/en/latest/defaults/both/content_rating_cs.html), called with `- pmm: content_rating_cs` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/latest/config/operations.html#mass-content-rating-update).
-Added [Common Sense Media Content Rating Collections](https://metamanager.wiki/en/latest/defaults/both/content_rating_cs.html), called with `- pmm: content_rating_cs` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/latest/config/operations.html#mass-content-rating-update).
-Added several [visual styles for Separators](https://metamanager.wiki/en/latest/defaults/separators.html#separator-styles) to match PLEX's Categories theming. Called using `sep_style` template variable.
-Removed special_release and incorporated it into [resolution](https://metamanager.wiki/en/latest/defaults/overlays/resolution.html).
-Enhanced [resolution](https://metamanager.wiki/en/latest/defaults/overlays/resolution.html) to support both dovetail overlays with resolutions and box overlays when resolutions are not being used. Regexes were enhanced to support the new TRaSH naming guides with the `{edition-` naming scheme.
-Added [Common Sense Age Rating](https://metamanager.wiki/en/latest/defaults/overlays/commonsense.html) overlays, called with `- pmm: commonsense` and to be used in combination with operation [`mass_content_rating_update: mdb_commonsense`](https://metamanager.wiki/en/latest/config/operations.html#mass-content-rating-update).
-Added [mediastinger](https://metamanager.wiki/en/latest/defaults/overlays/mediastinger.html) overlays to indicate mid-credits and post-credits scenes, called with `- pmm: mediastinger`
-Removed `imdb_top_250`, `oscars`, `mc_must_see`, `rt_cert_fresh` and `commonsense_selection` Overlays in favor of adding them all into the new combined [Ribbon Overlay](https://metamanager.wiki/en/latest/defaults/overlays/ribbon.html).
-Added the new [Versions Overlay](https://metamanager.wiki/en/latest/defaults/overlays/versions.html) which adds a visual indicator of multiple versions of media, called with `- pmm: versions`
-Removed the `audio_languages` Overlay and replaced it with the [Audio/Subtitle Language Count Overlay](https://metamanager.wiki/en/latest/defaults/overlays/language_count.html), called with `- pmm: language_count`.
-Added Translations for the default collection name and summary (we're working on images). Currently we have `en`, `fr`, `de`, `da`, and `pt-br` if anyone wants to translate pmm to another language ping a team member on discord and let them know you wanna contribute.
+Updated plexapi requirement to 4.13.2
+Updated retrying requirement to 1.3.4
+Updated lxml requirement to 4.92
 
 # New Features
-Added support for editions in `plex_search`, `smart_filter`, `filters`, special text overlays, and metadata editing.
-Added `item_edition` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the edition of items in a collection
-Added `edition` [dynamic collection type](https://metamanager.wiki/en/latest/metadata/dynamic.html#edition)
-Added `last_episode_aired_or_never` [date filter](https://metamanager.wiki/en/latest/metadata/filters.html#date-filters). thanks @axsuul#0591
-Added `versions` [number filter](https://metamanager.wiki/en/latest/metadata/filters.html#number-filters)
-Added `imdb_watchlist` [builder](https://metamanager.wiki/en/latest/metadata/builders/imdb.html#imdb-watchlist)
-Added `item_genre` [item metadata detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html#item-metadata-details) to update the genres of items in a collection
-Added `plex_watchlist` [Builder](https://metamanager.wiki/en/latest/metadata/builders/plex.html#plex-watchlist)
-Adds `current_year` to `plex_search`, `smart_filter`, and `filter` year/decade attributes.
-Added `stroke_width` and `stroke_color` as options for text overlays
-Added multiple new [special text variables](https://metamanager.wiki/en/latest/metadata/overlay.html#special-text-variables) and modifiers.
-Added support for the [AniDB API](https://metamanager.wiki/en/latest/config/anidb.html)
-Adds `mass_original_title_update` [library operation](https://metamanager.wiki/en/latest/config/operations.html)
-Adds many new options to the various mass_update [library operations](https://metamanager.wiki/en/latest/config/operations.html)
-Added the ability to give a list of sorts with `plex_search` and `smart_filter` to create a tiered sort
-Added `edition_filter` to [Movie metadata edits](https://metamanager.wiki/en/latest/metadata/metadata/movie.html#special-attributes) to allow searching for an item to include an edition.
-Added `--delete-labels` Run Commands to delete all labels in any library run.
-Added `season_label`, `episode_label`, `artist_label`, and `track_label` as `plex_search` options
-Moved alot of System Message to Trace Mode only to help declutter the meta.log file.
-Added Redacted Config File to the meta.log
+Now supports Python 3.11
+Wiki CSS update thanks to @YozoraXCII
+Added `languages` template variable to the languages default
+Added `mdb_average` as an option for `mass_update_*_ratings`
+Added `custom_keys` dynamic collection attribute
+Better Error handling for move errors
+Added Sonarr v4 support
+Added `album_genre`, `album_mood`, `album_style`, and `track_mood` as dynamic collection types
+Added `only_run_on_create` to only run collections when the collection doesn't exist already
+Added `exclude_user` as an option for playlist definitions
 
 # Bug Fixes
-Fixes #1014 Fix metadata assets
-Fixes #1067 `.yaml` can be used
-Fixes #1095 report file doesn't have to exist
-Fixes `plex_search`s with `episode_collection`
-Fixes Album Overlays
-Fixes Addon Images
-Fix Configs Repo Versioning
-Fixes codec and profile filters
-Fixes Ratings Error
-Various other minor fixes
+Fixed positioning issues with the resolution/editions default and the ratings default
+Fixed Metadata Asset Failures
+Fixed `smart_label` collection counts
+Fixed `delete_collections` operation
+Fixed using `include` with the defaults
+Fixed #1174 Content mapper error
+Fixed mal builder errors
+Fixed #1224
+Fixed audio_codec and video_format defaults regex patterns
+Fixed tvdb xpaths for their builders and operations
+Fixed overlays to allow only suppression of overlays which exist inside the same file
