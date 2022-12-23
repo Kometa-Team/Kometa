@@ -662,17 +662,17 @@ class CollectionBuilder:
             test_sort = self.library.default_collection_order
             logger.warning("")
             logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {test_sort}")
-        self.custom_sort = self.playlist
+        self.custom_sort = "custom" if self.playlist else None
         if test_sort:
             if self.smart:
                 raise Failed(f"{self.Type} Error: collection_order does not work with Smart Collections")
             logger.debug("")
             logger.debug("Validating Method: collection_order")
             logger.debug(f"Value: {test_sort}")
-            if test_sort in plex.collection_order_options:
-                self.details["collection_order"] = test_sort
-                if test_sort == "custom" and self.build_collection:
-                    self.custom_sort = True
+            if test_sort in plex.collection_order_options + ["custom.asc", "custom.desc"]:
+                self.details["collection_order"] = test_sort.split(".")[0]
+                if test_sort.startswith("custom") and self.build_collection:
+                    self.custom_sort = test_sort
             else:
                 sort_type = self.builder_level
                 if sort_type == "item":
@@ -690,11 +690,11 @@ class CollectionBuilder:
                     if ts not in sorts:
                         raise Failed(f"{self.Type} Error: collection_order: {ts} is invalid. Options: {', '.join(sorts)}")
                     self.custom_sort.append(ts)
-            if isinstance(self.custom_sort, list) and not self.custom_sort:
+            if not self.custom_sort:
                 raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/meisnate12/Plex-Meta-Manager/wiki/Smart-Builders#sort-options")
 
         if self.smart:
-            self.custom_sort = False
+            self.custom_sort = None
 
         for method_key, method_data in self.data.items():
             if method_key.lower() in ignored_details:
@@ -810,7 +810,7 @@ class CollectionBuilder:
         if self.blank_collection and len(self.builders) > 0:
             raise Failed(f"{self.Type} Error: No builders allowed with blank_collection")
 
-        if self.custom_sort is True and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
+        if not isinstance(self.custom_sort, list) and self.custom_sort and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
             raise Failed(f"{self.Type} Error: " + ('Playlists' if self.playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
 
@@ -2762,8 +2762,10 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        if self.custom_sort is True:
+        if not isinstance(self.custom_sort, list):
             items = self.found_items
+            if self.custom_sort == "custom.desc":
+                items = items[::-1]
         else:
             plex_search = {"sort_by": self.custom_sort}
             if self.builder_level in ["season", "episode"]:

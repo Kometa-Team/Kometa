@@ -1,29 +1,7 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated plexapi requirement to 4.13.2
-Updated retrying requirement to 1.3.4
-Updated lxml requirement to 4.92
 
 # New Features
-Now supports Python 3.11
-Wiki CSS update thanks to @YozoraXCII
-Added `languages` template variable to the languages default
-Added `mdb_average` as an option for `mass_update_*_ratings`
-Added `custom_keys` dynamic collection attribute
-Better Error handling for move errors
-Added Sonarr v4 support
-Added `album_genre`, `album_mood`, `album_style`, and `track_mood` as dynamic collection types
-Added `only_run_on_create` to only run collections when the collection doesn't exist already
-Added `exclude_user` as an option for playlist definitions
+Added new collection_order `custom.desc`. ([FR](https://features.metamanager.wiki/features/p/reverse-sort-collectionorder-custom))
 
 # Bug Fixes
-Fixed positioning issues with the resolution/editions default and the ratings default
-Fixed Metadata Asset Failures
-Fixed `smart_label` collection counts
-Fixed `delete_collections` operation
-Fixed using `include` with the defaults
-Fixed #1174 Content mapper error
-Fixed mal builder errors
-Fixed #1224
-Fixed audio_codec and video_format defaults regex patterns
-Fixed tvdb xpaths for their builders and operations
-Fixed overlays to allow only suppression of overlays which exist inside the same file
+Fixed Italian Translation 
