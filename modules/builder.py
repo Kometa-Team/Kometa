@@ -898,7 +898,7 @@ class CollectionBuilder:
         if method_name == "url_poster":
             try:
                 image_response = self.config.get(method_data, headers=util.header())
-                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png", "image/webp"]:
                     raise ConnectionError
                 self.posters[method_name] = method_data
             except ConnectionError:
@@ -925,7 +925,7 @@ class CollectionBuilder:
         if method_name == "url_background":
             try:
                 image_response = self.config.get(method_data, headers=util.header())
-                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png"]:
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png", "image/webp"]:
                     raise ConnectionError
                 self.backgrounds[method_name] = method_data
             except ConnectionError:

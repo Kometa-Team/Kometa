@@ -1239,7 +1239,7 @@ class Plex(Library):
 
         if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
-                if file.lower().endswith((".jpg", ".png", ".jpeg")):
+                if file.lower().endswith((".png", ".jpg", ".jpeg", "webp")):
                     try:
                         image = Image.open(file)
                         _w, _h = image.size
