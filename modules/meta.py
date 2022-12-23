@@ -161,13 +161,14 @@ class DataFile:
                         variables[var_key][yaml_key] = var_value[lib_type]
 
             if "translations" in yaml_content.data and yaml_content.data["translations"]:
-                for ky, vy in yaml_content.data["translations"].items():
-                    if ky in translations:
-                        translations[ky][yaml_key] = vy
+                for translation_key in translations:
+                    if translation_key in yaml_content.data["translations"]:
+                        translations[translation_key][yaml_key] = yaml_content.data["translations"][translation_key]
                     else:
-                        logger.error(f"Config Error: {ky} must have a default value in {yaml_path}")
+                        logger.error(f"Translation Error: translations attribute {translation_key} not found in {yaml_path}")
             else:
                 logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
+
             if "key_names" in yaml_content.data and yaml_content.data["key_names"]:
                 for kn, vn in yaml_content.data["key_names"].items():
                     if kn not in key_names:
