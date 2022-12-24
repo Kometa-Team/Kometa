@@ -22,10 +22,13 @@ class Convert:
         for anidb_id, ids in self._anidb_ids.items():
             anidb_id = int(anidb_id)
             if "mal_id" in ids:
-                self._mal_to_anidb[int(ids["mal_id"])] = anidb_id
-                self._anidb_to_mal[int(anidb_id)] = int(ids["mal_id"])
+                for mal_id in util.get_list(ids["mal_id"], int_list=True):
+                    self._mal_to_anidb[mal_id] = anidb_id
+                    if anidb_id not in self._anidb_to_mal:
+                        self._anidb_to_mal[anidb_id] = mal_id
             if "anilist_id" in ids:
-                self._anilist_to_anidb[int(ids["anilist_id"])] = anidb_id
+                for anilist_id in util.get_list(ids["anilist_id"], int_list=True):
+                    self._anilist_to_anidb[anilist_id] = anidb_id
             if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):
                 self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
                 for im_id in util.get_list(ids["imdb_id"]):
