@@ -582,8 +582,13 @@ class Operations:
                                         logger.info(f"{season.title} Background | Reset from {background_location}")
                                     else:
                                         logger.info(f"{season.title} Background | No Reset Image Found")
-
-                            tmdb_episodes = {e.episode_number: e for e in tmdb_seasons[season.seasonNumber].episodes} if season.seasonNumber in tmdb_seasons else {}
+                            tmdb_episodes = {}
+                            if season.seasonNumber in tmdb_seasons:
+                                for episode in tmdb_seasons[season.seasonNumber].episodes:
+                                    try:
+                                        tmdb_episodes[episode.episode_number] = episode
+                                    except NotFound:
+                                        logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
 
                             for episode in self.library.query(season.episodes):
                                 try:
