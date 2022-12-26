@@ -488,7 +488,7 @@ translations:
   subtitle_language_summary: <<library_translationU>>s con <<translated_key_name>> Subtítulos.
 
   subtitle_language_other_name: Otros Subtitulos
-  subtitle_language_other_summary: <<library_translationU>>s con otros subtítulos poco comunes.
+  subtitle_language_other_summary: <<library_translationU>>s con otros Subtítulos poco comunes.
 
   # example key_name: Robin Williams
   writer_name: <<translated_key_name>> (Escritor)
