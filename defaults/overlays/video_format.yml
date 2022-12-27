@@ -37,7 +37,7 @@ templates:
           - key: hdtv
             value: '(?i)\bhd[ ._-]?tv\b'
           - key: dvd
-            value: '(?i)\bdbvd\b'
+            value: '(?i)\bdvd\b'
           - key: sdtv
             value: '(?i)\bsd[ ._-]?tv\b'
     ignore_blank_results: true
