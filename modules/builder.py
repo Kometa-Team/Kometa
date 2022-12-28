@@ -2345,8 +2345,13 @@ class CollectionBuilder:
             final_return = False
             tmdb_item = None
             for filter_list in self.filters:
-                tmdb_f = [(k, v) for k, v in filter_list if k in tmdb_filters]
-                plex_f = [(k, v) for k, v in filter_list if k not in tmdb_filters]
+                tmdb_f = []
+                plex_f = []
+                for k, v in filter_list:
+                    if k.split(".")[0] in tmdb_filters:
+                        tmdb_f.append((k, v))
+                    else:
+                        plex_f.append((k, v))
                 or_result = True
                 if tmdb_f:
                     if not tmdb_item and isinstance(item, (Movie, Show)):
