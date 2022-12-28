@@ -3,6 +3,9 @@
 # New Features
 Added new collection_order `custom.desc` ([FR](https://features.metamanager.wiki/features/p/reverse-sort-collectionorder-custom))
 Added webp Image Support ([FR](https://features.metamanager.wiki/features/p/support-webp-image-extensions))
+Added Spanish Defaults Translation
+Added Delete Webhooks
 
 # Bug Fixes
-Fixed Italian Translation
+Fixed Italian Defaults Translation
+Fixed TMDb Modified Filters

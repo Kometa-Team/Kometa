@@ -37,6 +37,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 
 ```yaml
 {
+  "event": "error",             // Event
   "error": str,                 // Error Message
   "critical": bool              // Critical Error
 }
@@ -46,6 +47,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 
 ```yaml
 {
+  "event": "error",             // Event
   "error": str,                 // Error Message
   "critical": bool,             // Critical Error
   "server_name": str,           // Server Name
@@ -57,6 +59,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 
 ```yaml
 {
+  "event": "error",             // Event
   "error": str,                 // Error Message
   "critical": bool,             // Critical Error
   "server_name": str,           // Server Name
@@ -69,6 +72,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 
 ```yaml
 {
+  "event": "error",             // Event
   "error": str,                 // Error Message
   "critical": bool,             // Critical Error
   "server_name": str,           // Server Name
@@ -85,6 +89,7 @@ The Version notification will be sent at the beginning of a run if there is a ne
 
 ```yaml
 {
+  "event": "version",           // Event
   "current": str,               // Current Version
   "latest": str,                // Latest Version 
   "notes": str                  // Sends the lateset release notes or new commits to develop since your version
@@ -99,6 +104,7 @@ The Run Start notification will be sent at the beginning of every run.
 
 ```yaml
 {
+  "event": "run_start",         // Event
   "start_time": str,            // Time Run is started Format "YY-mm-dd HH:MM:SS"
 }
 ```
@@ -111,6 +117,7 @@ The Run End notification will be sent at the end of every run with statistics.
 
 ```yaml
 {
+  "event": "run_end",           // Event
   "start_time": str,            // Time Run started Format "YY-mm-dd HH:MM:SS"
   "end_time": str,              // Time Run ended Format "YY-mm-dd HH:MM:SS"
   "run_time": str,              // Time Run took to complete Format "HH:MM"
@@ -136,6 +143,7 @@ The Delete Notification will be sent whenever a collection/playlist is deleted c
 
 ```yaml
 {
+  "event": "delete",            // Event
   "message": str,               // Status Message
   "server_name": str,           // Server Name
   "library_name": str,          // Library Name (Only if a Collection is deleted)
@@ -150,6 +158,7 @@ The Changes Notification will be sent after each collection/playlist containing 
 
 ```yaml
 {
+  "event": "changes",           // Event
   "server_name": str,           // Server Name
   "library_name": str,          // Library Name
   "collection": str,            // Collection Name only in payload for a collection
