@@ -11,6 +11,7 @@ class Webhooks:
         self.version_webhooks = system_webhooks["version"] if "version" in system_webhooks else []
         self.run_start_webhooks = system_webhooks["run_start"] if "run_start" in system_webhooks else []
         self.run_end_webhooks = system_webhooks["run_end"] if "run_end" in system_webhooks else []
+        self.delete_webhooks = system_webhooks["delete"] if "delete" in system_webhooks else []
         self.library = library
         self.notifiarr = notifiarr
 
@@ -105,7 +106,14 @@ class Webhooks:
             if playlist:        json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, deleted=False,
+    def delete_hooks(self, message, server=None, library=None):
+        if self.delete_webhooks:
+            json = {"message": message}
+            if server:          json["server_name"] = str(server)
+            if library:         json["library_name"] = str(library)
+            self._request(self.delete_webhooks, json)
+
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False,
                          additions=None, removals=None, radarr=None, sonarr=None, playlist=False):
         if self.library:
             thumb = None
@@ -119,7 +127,6 @@ class Webhooks:
                 "library_name": self.library.name,
                 "playlist" if playlist else "collection": collection.title,
                 "created": created,
-                "deleted": deleted,
                 "poster": thumb,
                 "background": art,
                 "poster_url": poster_url,

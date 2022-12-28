@@ -19,10 +19,11 @@ webhooks:
 
 | Attribute                               | Global  | Library  | Collection |
 |:----------------------------------------|:-------:|:--------:|:----------:|
-| [`error`](#error-notifications)         | &#9989; | &#9989;  |  &#10060;  |
+| [`error`](#error-notifications)         | &#9989; | &#10060; |  &#10060;  |
 | [`version`](#version-notifications)     | &#9989; | &#10060; |  &#10060;  |
 | [`run_start`](#run-start-notifications) | &#9989; | &#10060; |  &#10060;  |
 | [`run_end`](#run-end-notifications)     | &#9989; | &#10060; |  &#10060;  |
+| [`delete`](#delete-notifications)       | &#9989; | &#10060; |  &#10060;  |
 | [`changes`](#changes-notifications)     | &#9989; | &#9989;  |  &#9989;   |
 
 * Each Attribute can be either a webhook url as a string or a comma-separated list of webhooks urls.
@@ -127,6 +128,20 @@ The Run End notification will be sent at the end of every run with statistics.
 }
 ```
 
+## Delete Notifications
+
+The Delete Notification will be sent whenever a collection/playlist is deleted containing the following payload.
+
+### JSON Payload
+
+```yaml
+{
+  "message": str,               // Status Message
+  "server_name": str,           // Server Name
+  "library_name": str,          // Library Name (Only if a Collection is deleted)
+}
+```
+
 ## Changes Notifications
 
 The Changes Notification will be sent after each collection/playlist containing the following payload if the collection/playlist has been created, has new items, or has had items removed.
@@ -140,7 +155,6 @@ The Changes Notification will be sent after each collection/playlist containing 
   "collection": str,            // Collection Name only in payload for a collection
   "playlist": str,              // Playlist Name only in payload for a playlist
   "created": bool,              // Was the Collection/Playlist Created on this run
-  "deleted": bool,              // Was the Collection/Playlist Deleted on this run
   "poster": str,                // Base64 Encoded Collection/Playlist Poster if no poster_url is found
   "poster_url": str,            // Collection/Playlist Poster URL if avaiable
   "background": str,            // Base64 Encoded Collection/Playlist Background if no poster_url is found

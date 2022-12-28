@@ -423,7 +423,8 @@ class ConfigFile:
             "version": check_for_attribute(self.data, "version", parent="webhooks", var_type="list", default_is_none=True),
             "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
-            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True)
+            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True),
+            "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True)
         }
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
         try:
@@ -694,7 +695,6 @@ class ConfigFile:
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
-                params["error_webhooks"] = check_for_attribute(lib, "error", parent="webhooks", var_type="list", default=self.webhooks["error"], do_print=False, save=False, default_is_none=True)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
                 if lib and "report_path" in lib and lib["report_path"]:
@@ -952,7 +952,7 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
-                library.Webhooks = Webhooks(self, {"error_webhooks": library.error_webhooks}, library=library, notifiarr=self.NotifiarrFactory)
+                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory)
                 library.Overlays = Overlays(self, library)
 
                 logger.info("")
@@ -985,6 +985,13 @@ class ConfigFile:
             except Failed as e:
                 logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
+
+    def notify_delete(self, message, server=None, library=None):
+        try:
+            self.Webhooks.delete_webhooks(message, server=server, library=library)
+        except Failed as e:
+            logger.stacktrace()
+            logger.error(f"Webhooks Error: {e}")
 
     def get_html(self, url, headers=None, params=None):
         return html.fromstring(self.get(url, headers=headers, params=params).content)
