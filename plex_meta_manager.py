@@ -634,7 +634,7 @@ def run_collection(config, library, metadata, requested_collections):
                         else:
                             raise Failed(e)
 
-                if not builder.found_items and builder.ignore_blank_results:
+                if not builder.found_items and not builder.ignore_blank_results:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
                 builder.display_filters()
