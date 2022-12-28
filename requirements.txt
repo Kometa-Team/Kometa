@@ -1,6 +1,6 @@
 PlexAPI==4.13.2
 tmdbapis==1.0.8
-arrapi==1.4.1
+arrapi==1.4.2
 lxml==4.9.2
 requests==2.28.1
 requests-cache==0.9.6
