@@ -41,8 +41,8 @@ string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "variables", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
-    "validate_builders", "libraries", "sync_to_users", "collection_name", "playlist_name", "name", "blank_collection",
-    "allowed_library_types", "delete_playlist", "ignore_blank_results", "only_run_on_create"
+    "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
+    "blank_collection", "allowed_library_types", "delete_playlist", "ignore_blank_results", "only_run_on_create"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
@@ -162,7 +162,7 @@ parts_collection_valid = [
      "url_theme", "file_theme", "item_label", "default_percent"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
-    "filters", "name_mapping", "show_filtered", "show_missing", "save_report",
+    "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "changes_webhooks", "minimum_items", "cache_builders", "default_percent"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
@@ -2876,7 +2876,6 @@ class CollectionBuilder:
                     poster_url=self.collection_poster.location if self.collection_poster and self.collection_poster.is_url else None,
                     background_url=self.collection_background.location if self.collection_background and self.collection_background.is_url else None,
                     created=self.created,
-                    deleted=self.deleted,
                     additions=self.notification_additions,
                     removals=self.notification_removals,
                     radarr=self.added_to_radarr,

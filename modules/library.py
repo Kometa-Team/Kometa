@@ -100,7 +100,6 @@ class Library(ABC):
         self.metadata_backup = params["metadata_backup"]
         self.genre_mapper = params["genre_mapper"]
         self.content_rating_mapper = params["content_rating_mapper"]
-        self.error_webhooks = params["error_webhooks"]
         self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
         self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
@@ -212,6 +211,10 @@ class Library(ABC):
 
     @abstractmethod
     def notify(self, text, collection=None, critical=True):
+        pass
+
+    @abstractmethod
+    def notify_delete(self, message):
         pass
 
     @abstractmethod

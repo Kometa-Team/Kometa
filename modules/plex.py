@@ -477,6 +477,9 @@ class Plex(Library):
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
+    def notify_delete(self, message):
+        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
         self.PlexServer.settings.save()
