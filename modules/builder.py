@@ -1231,7 +1231,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: chart: {value} does not work with show libraries")
                 elif value in imdb.show_charts and self.library.is_movie:
                     raise Failed(f"{self.Type} Error: chart: {value} does not work with movie libraries")
-                elif value in imdb.charts:
+                elif value in imdb.movie_charts or value in imdb.show_charts:
                     self.builders.append((method_name, value))
                 else:
                     raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
