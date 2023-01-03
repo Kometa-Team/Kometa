@@ -34,7 +34,7 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Build and push
         id: docker_build
@@ -88,12 +88,12 @@ jobs:
 
       - name: Get Changelog
         id: notes
-        run: echo ::set-output name=notes::$(cat CHANGELOG -Raw)
+        run: echo "NOTES=$(cat CHANGELOG -Raw)" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ steps.notes.outputs.notes }}
+          body: ${{ steps.notes.outputs.NOTES }}
           token: ${{ secrets.PAT }}
           tag_name: ${{ steps.get_version.outputs.VERSION }}

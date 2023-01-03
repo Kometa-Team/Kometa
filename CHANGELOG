@@ -1,4 +1,6 @@
 # Requirements Update (requirements will need to be reinstalled)
+Updated arrapi requirement to 1.4.2
+Updated pillow requirement to 9.4.0
 
 # New Features
 Added new collection_order `custom.desc` ([FR](https://features.metamanager.wiki/features/p/reverse-sort-collectionorder-custom))
@@ -9,3 +11,4 @@ Added Delete Webhooks
 # Bug Fixes
 Fixed Italian Defaults Translation
 Fixed TMDb Modified Filters
+Fixed ValueError from Anime IDs

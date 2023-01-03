@@ -10,7 +10,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 |:------------------------------------------------------|:----------------------------------------------|:-------------------------|
 | [Config](#config)                                     | `-c` or `--config`                            | `PMM_CONFIG`             |
 | [Time to Run](#time-to-run)                           | `-t` or `--time`                              | `PMM_TIME`               |
-| [Run](#run)                                           | `-r` or `--run`                               | `PMM_RUN`                |
+| [Run Immediately](#run-immediately)                   | `-r` or `--run`                               | `PMM_RUN`                |
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TEST`               |
 | [Debug](#debug)                                       | `-db` or `--debug`                            | `PMM_DEBUG`              |
 | [Trace](#trace)                                       | `-tr` or `--trace`                            | `PMM_TRACE`              |
@@ -126,7 +126,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 ```
 ````
 
-### Run
+### Run Immediately
 
 Perform a run immediately, bypassing the time to run flag.
 
@@ -213,7 +213,7 @@ Run with Debug Logs Reporting to the Command Window.
   <tr>
     <th>Example</th>
     <td><code>--debug</code></td>
-    <td><code>PMM_TIMEOUT=true</code></td>
+    <td><code>PMM_DEBUG=true</code></td>
   </tr>
 </table>
 
@@ -241,7 +241,7 @@ Run with extra Trace Debug Logs.
   <tr>
     <th>Flags</th>
     <td><code>-tr</code> or <code>--trace</code></td>
-    <td><code>PMM_TIMEOUT</code></td>
+    <td><code>PMM_TRACE</code></td>
   </tr>
   <tr>
     <th>Example</th>
@@ -263,7 +263,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Timeout
 
-Change the main Plex Meta Manager timeout. This timeout is overwritten byt those in your config file for those services.
+Change the main Plex Meta Manager timeout. This timeout is overwritten by those in your config file for those services.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -280,6 +280,10 @@ Change the main Plex Meta Manager timeout. This timeout is overwritten byt those
     <th>Example</th>
     <td><code>--timeout 360</code></td>
     <td><code>PMM_TIMEOUT=360</code></td>
+  </tr>
+  <tr>
+    <th>Values</th>
+    <td colspan="2">Integer Number of Seconds</td>
   </tr>
 </table>
 
@@ -361,7 +365,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 ```
 ````
 
-### Operation Only
+### Operations Only
 
 Only run library operations skipping collections/metadata, playlists, and overlays.
 
@@ -394,7 +398,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 ```
 ````
 
-### Overlay Only
+### Overlays Only
 
 Only run library overlays skipping collections/metadata, playlists, and operations.
 
