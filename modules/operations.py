@@ -290,9 +290,10 @@ class Operations:
 
                         if found_rating is None:
                             logger.info(f"No {display} Found")
-                        elif str(current) != str(found_rating):
-                            item.editField(item_attr, found_rating)
-                            return f"\n{display} | {found_rating}"
+                        else:
+                            if f"{current:.1f}" != f"{found_rating:.1f}":
+                                item.editField(item_attr, found_rating)
+                                return f"\n{display} | {found_rating}"
                     return ""
 
                 if self.library.mass_audience_rating_update:
