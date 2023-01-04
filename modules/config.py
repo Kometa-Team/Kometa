@@ -988,7 +988,7 @@ class ConfigFile:
 
     def notify_delete(self, message, server=None, library=None):
         try:
-            self.Webhooks.delete_webhooks(message, server=server, library=library)
+            self.Webhooks.delete_hooks(message, server=server, library=library)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")

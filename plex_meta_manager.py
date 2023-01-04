@@ -57,7 +57,7 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
         if env_value is not None:
             final_value = env_value
             break
-    if final_value is not None:
+    if final_value or (arg_int and final_value == 0):
         if arg_bool:
             if final_value is True or final_value is False:
                 return final_value
@@ -66,7 +66,10 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
             else:
                 return False
         elif arg_int:
-            return int(final_value)
+            try:
+                return int(final_value)
+            except ValueError:
+                return default
         else:
             return str(final_value)
     else:
