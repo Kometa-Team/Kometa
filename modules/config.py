@@ -816,10 +816,23 @@ class ConfigFile:
                                     params["reapply_overlays"] = True
                                 if "reset_overlays" in file or "reset_overlay" in file:
                                     attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                    if file[attr] and file[attr] in reset_overlay_options:
-                                        params["reset_overlays"] = file[attr]
+                                    if file[attr] and not isinstance(file[attr], list):
+                                        test_list = [file[attr]]
                                     else:
-                                        final_text = f"Config Error: reset_overlays attribute {file[attr]} invalid. Options: "
+                                        test_list = file[attr]
+                                    final_list = []
+                                    for test_item in test_list:
+                                        if test_item and test_item in reset_overlay_options:
+                                            final_list.append(test_item)
+                                        else:
+                                            final_text = f"Config Error: reset_overlays attribute {test_item} invalid. Options: "
+                                            for option, description in reset_overlay_options.items():
+                                                final_text = f"{final_text}\n    {option} ({description})"
+                                            logger.error(final_text)
+                                    if final_list:
+                                        params["reset_overlays"] = final_list
+                                    else:
+                                        final_text = f"Config Error: No proper reset_overlays option found. {file[attr]}. Options: "
                                         for option, description in reset_overlay_options.items():
                                             final_text = f"{final_text}\n    {option} ({description})"
                                         logger.error(final_text)
