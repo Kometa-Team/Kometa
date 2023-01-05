@@ -488,7 +488,7 @@ class Operations:
                                     new_poster = tmdb_item.poster_url
                                     poster_location = "TMDb"
                                 if not new_poster:
-                                    poster = next((p for p in item.posters() if p.provider == "local"), None)
+                                    poster = next((p for p in item.posters()), None)
                                     if poster:
                                         new_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
                                         poster_location = "Plex"
@@ -517,7 +517,7 @@ class Operations:
                                     new_background = tmdb_item.backdrop_url
                                     background_location = "TMDb"
                                 if not new_background:
-                                    background = next((p for p in item.arts() if p.provider == "local"), None)
+                                    background = next((p for p in item.arts()), None)
                                     if background:
                                         new_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
                                         background_location = "Plex"
@@ -554,7 +554,7 @@ class Operations:
                                             season_poster = tmdb_seasons[season.seasonNumber].poster_url
                                             poster_location = "TMDb"
                                         if not season_poster:
-                                            poster = next((p for p in season.posters() if p.provider == "local"), None)
+                                            poster = next((p for p in season.posters()), None)
                                             if poster:
                                                 season_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
                                                 poster_location = "Plex"
@@ -578,7 +578,7 @@ class Operations:
                                     background_url = False if season_background else True
                                     season_background = season_background.location if season_background else None
                                     if not season_background:
-                                        background = next((p for p in item.arts() if p.provider == "local"), None)
+                                        background = next((p for p in item.arts()), None)
                                         if background:
                                             season_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
                                             background_location = "Plex"
@@ -618,7 +618,7 @@ class Operations:
                                                 episode_poster = tmdb_episodes[episode.episodeNumber].still_url
                                                 poster_location = "TMDb"
                                             if not episode_poster:
-                                                poster = next((p for p in episode.posters() if p.provider == "local"), None)
+                                                poster = next((p for p in episode.posters()), None)
                                                 if poster:
                                                     episode_poster = f"{self.library.url}{poster.key}&X-Plex-Token={self.library.token}"
                                                     poster_location = "Plex"
@@ -642,7 +642,7 @@ class Operations:
                                         background_url = False if episode_background else True
                                         episode_background = episode_background.location if episode_background else None
                                         if not episode_background:
-                                            background = next((p for p in item.arts() if p.provider == "local"), None)
+                                            background = next((p for p in item.arts()), None)
                                             if background:
                                                 episode_background = f"{self.library.url}{background.key}&X-Plex-Token={self.library.token}"
                                                 background_location = "Plex"
