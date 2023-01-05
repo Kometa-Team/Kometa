@@ -291,7 +291,8 @@ class Operations:
                         if found_rating is None:
                             logger.info(f"No {display} Found")
                         else:
-                            if f"{current:.1f}" != f"{found_rating:.1f}":
+                            found_rating = f"{float(found_rating):.1f}"
+                            if str(current) != found_rating:
                                 item.editField(item_attr, found_rating)
                                 return f"\n{display} | {found_rating}"
                     return ""
@@ -690,9 +691,11 @@ class Operations:
 
                                 if found_rating is None:
                                     logger.info(f"No {display} Found")
-                                elif str(current) != str(found_rating):
-                                    ep.editField(item_attr, found_rating)
-                                    return f"\n{display} | {found_rating}"
+                                else:
+                                    found_rating = f"{float(found_rating):.1f}"
+                                    if str(current) != found_rating:
+                                        ep.editField(item_attr, found_rating)
+                                        return f"\n{display} | {found_rating}"
                             return ""
 
                         if self.library.mass_episode_audience_rating_update:

@@ -140,7 +140,7 @@ class Webhooks:
             })
 
     def slack(self, json):
-        if "end_time" in json:
+        if json["event"] == "run_end":
             title = ":white_check_mark: Plex Meta Manager Has Finished a Run"
             rows = [
                 [("*Start Time*", json["start_time"]), ("*End Time*", json["end_time"]), ("*Run Time*", json["run_time"])],
@@ -158,10 +158,10 @@ class Webhooks:
             if json["added_to_sonarr"]:
                 rows.append([("*Added To Sonarr*", json['added_to_sonarr'])])
 
-        elif "start_time" in json:
+        elif json["event"] == "run_start":
             title = ":information_source: Plex Meta Manager Has Started!"
             rows = [[("*Start Time*", json["start_time"])]]
-        elif "current" in json:
+        elif json["event"] == "version":
             title = "Plex Meta Manager Has a New Version Available"
             rows = [
                 [("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])],
@@ -183,35 +183,34 @@ class Webhooks:
                 row1.append(("*Playlist Name*", json["playlist"]))
             if row1:
                 rows.append(row1)
-            if "error" in json:
+            if json["event"] == "delete":
+                title = json["message"]
+            elif "error" in json:
                 title = f":warning: Plex Meta Manager Encountered {'a Critical' if json['critical'] else 'an'} Error"
                 rows.append([])
                 rows.append([(json["error"], )])
             else:
-                if json["deleted"]:
-                    title = f":heavy_minus_sign: A {text} has Been Deleted!"
-                else:
-                    title = f"{':heavy_plus_sign:' if json['created'] else ':infinity:'} A {text} has Been {'Created' if json['created'] else 'Modified'}!"
+                title = f"{':heavy_plus_sign:' if json['created'] else ':infinity:'} A {text} has Been {'Created' if json['created'] else 'Modified'}!"
 
-                    def get_field_text(items_list):
-                        field_text = ""
-                        for i, item in enumerate(items_list, 1):
-                            if "tmdb_id" in item:
-                                field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
-                            elif "tvdb_id" in item:
-                                field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
-                            else:
-                                field_text += f"\n{i}. {item['title']}"
-                        return field_text
+                def get_field_text(items_list):
+                    field_text = ""
+                    for i, item in enumerate(items_list, 1):
+                        if "tmdb_id" in item:
+                            field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
+                        elif "tvdb_id" in item:
+                            field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
+                        else:
+                            field_text += f"\n{i}. {item['title']}"
+                    return field_text
 
-                    if json["additions"]:
-                        rows.append([])
-                        rows.append([("*Items Added*", " ")])
-                        rows.append([(get_field_text(json["additions"]), )])
-                    if json["removals"]:
-                        rows.append([])
-                        rows.append([("*Items Removed*", " ")])
-                        rows.append([(get_field_text(json["removals"]), )])
+                if json["additions"]:
+                    rows.append([])
+                    rows.append([("*Items Added*", " ")])
+                    rows.append([(get_field_text(json["additions"]), )])
+                if json["removals"]:
+                    rows.append([])
+                    rows.append([("*Items Removed*", " ")])
+                    rows.append([(get_field_text(json["removals"]), )])
 
         new_json = {
             "text": title,
@@ -240,7 +239,7 @@ class Webhooks:
     def discord(self, json):
         description = None
         rows = []
-        if "end_time" in json:
+        if json["event"] == "run_end":
             title = "Run Completed"
             rows = [
                 [("Start Time", json["start_time"]), ("End Time", json["end_time"]), ("Run Time", json["run_time"])],
@@ -251,10 +250,10 @@ class Webhooks:
                 rows.append([(f"{json['added_to_radarr']} Movies Added To Radarr", None)])
             if json["added_to_sonarr"]:
                 rows.append([(f"{json['added_to_sonarr']} Series Added To Sonarr", None)])
-        elif "start_time" in json:
+        elif json["event"] == "run_start":
             title = "Run Started"
             description = json["start_time"]
-        elif "current" in json:
+        elif json["event"] == "version":
             title = "New Version Available"
             rows = [
                 [("Current", json["current"]), ("Latest", json["latest"])],
@@ -275,30 +274,29 @@ class Webhooks:
                 row1.append(("Playlist", json["playlist"]))
             if row1:
                 rows.append(row1)
-            if "error" in json:
+            if json["event"] == "delete":
+                title = json["message"]
+            elif "error" in json:
                 title = f"{'Critical ' if json['critical'] else ''}Error"
                 rows.append([("Error Message", json["error"])])
             else:
-                if json["deleted"]:
-                    title = f"{text} Deleted"
-                else:
-                    title = f"{text} {'Created' if json['created'] else 'Modified'}"
+                title = f"{text} {'Created' if json['created'] else 'Modified'}"
 
-                    def get_field_text(items_list):
-                        field_text = ""
-                        for i, item in enumerate(items_list, 1):
-                            if "tmdb_id" in item:
-                                field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
-                            elif "tvdb_id" in item:
-                                field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
-                            else:
-                                field_text += f"\n{i}. {item['title']}"
-                        return field_text
+                def get_field_text(items_list):
+                    field_text = ""
+                    for i, item in enumerate(items_list, 1):
+                        if "tmdb_id" in item:
+                            field_text += f"\n{i}. [{item['title']}](https://www.themoviedb.org/movie/{item['tmdb_id']})"
+                        elif "tvdb_id" in item:
+                            field_text += f"\n{i}. [{item['title']}](https://www.thetvdb.com/dereferrer/series/{item['tvdb_id']})"
+                        else:
+                            field_text += f"\n{i}. {item['title']}"
+                    return field_text
 
-                    if json["additions"]:
-                        rows.append([("Items Added", get_field_text(json["additions"]))])
-                    if json["removals"]:
-                        rows.append([("Items Removed", get_field_text(json["removals"]))])
+                if json["additions"]:
+                    rows.append([("Items Added", get_field_text(json["additions"]))])
+                if json["removals"]:
+                    rows.append([("Items Removed", get_field_text(json["removals"]))])
         new_json = {
             "embeds": [
                 {
