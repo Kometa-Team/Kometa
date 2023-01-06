@@ -9,6 +9,7 @@ Added Spanish Defaults Translation
 Added Delete Webhooks
 
 # Bug Fixes
+Fixes #1187 Franchise Defaults no longer ignore collection_section and sort_title
 Fixed Italian Defaults Translation
 Fixed TMDb Modified Filters
 Fixed ValueError from Anime IDs

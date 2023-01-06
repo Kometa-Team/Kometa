@@ -28,7 +28,6 @@ templates:
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/franchise/<<key_name_encoded>>.jpg
     optional:
       - summary_<<key>>
-      - name_<<key>>
       - name_mapping
       - sort_title
       - build_collection
@@ -41,7 +40,6 @@ templates:
       - item_sonarr_tag
       - sonarr_monitor
     summary: <<summary_<<key>>>>
-    name: <<name_<<key>>>>
     minimum_items: <<minimum_items>>
     tmdb_show: <<value>>
     url_poster: <<url_poster_<<key>>>>
