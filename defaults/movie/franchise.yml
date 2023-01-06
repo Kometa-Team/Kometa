@@ -27,12 +27,10 @@ templates:
       collection_order_<<key>>: <<collection_order>>
     optional:
       - summary_<<key>>
-      - name_<<key>>
       - movie
       - name_mapping
       - build_collection
       - collection_mode
-      - collection_order
       - collection_section
       - radarr_add_missing
       - radarr_folder
@@ -41,7 +39,6 @@ templates:
       - radarr_monitor
       - url_poster_<<key>>
     summary: <<summary_<<key>>>>
-    name: <<name_<<key>>>>
     cache_builders: 1
     minimum_items: <<minimum_items>>
     url_poster: <<url_poster_<<key>>>>

@@ -468,7 +468,7 @@ class DataFile:
                     logger.trace(f"Translation: {translation_variables}")
                     logger.trace("")
 
-                    def check_for_var(_method, _data):
+                    def check_for_var(_method, _data, _debug):
                         def scan_text(og_txt, var, actual_value):
                             if og_txt is None:
                                 return og_txt
@@ -478,9 +478,13 @@ class DataFile:
                                 return str(og_txt).replace(f"<<{var}>>", str(actual_value))
                             else:
                                 return og_txt
+                        if _debug:
+                            logger.trace(f"Start {_method}: {_data}")
                         for i_check in range(8):
                             for option in optional:
                                 if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
+                                    if _debug:
+                                        logger.trace(f"Failed {_method}: {_data}")
                                     raise Failed
                             for variable, variable_data in variables.items():
                                 if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
@@ -491,14 +495,16 @@ class DataFile:
                                 _data = scan_text(_data, variable, variable_data)
                             for dm, dd in default.items():
                                 _data = scan_text(_data, dm, dd)
+                        if _debug:
+                            logger.trace(f"End {_method}: {_data}")
                         return _data
 
-                    def check_data(_method, _data):
+                    def check_data(_method, _data, _debug):
                         if isinstance(_data, dict):
                             final_data = {}
                             for sm, sd in _data.items():
                                 try:
-                                    final_data[check_for_var(_method, sm)] = check_data(_method, sd)
+                                    final_data[check_for_var(_method, sm, _debug)] = check_data(_method, sd, _debug)
                                 except Failed:
                                     continue
                             if not final_data:
@@ -507,24 +513,25 @@ class DataFile:
                             final_data = []
                             for li in _data:
                                 try:
-                                    final_data.append(check_data(_method, li))
+                                    final_data.append(check_data(_method, li, _debug))
                                 except Failed:
                                     continue
                             if not final_data:
                                 raise Failed
                         else:
-                            final_data = check_for_var(_method, _data)
+                            final_data = check_for_var(_method, _data, _debug)
                         return final_data
 
                     for method_name, attr_data in template.items():
                         if method_name not in data and method_name not in ["default", "optional", "conditionals", "move_collection_prefix", "move_prefix"]:
                             try:
-                                new_name = check_for_var(method_name, method_name)
+                                debug_template = False
+                                new_name = check_for_var(method_name, method_name, debug_template)
                                 if new_name in new_attributes:
                                     logger.info("")
                                     logger.warning(f"Template Warning: template attribute: {new_name} from {variables['name']} skipped")
                                 else:
-                                    new_attributes[new_name] = check_data(new_name, attr_data)
+                                    new_attributes[new_name] = check_data(new_name, attr_data, debug_template)
                             except Failed:
                                 continue
             logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
