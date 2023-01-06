@@ -69,5 +69,6 @@ libraries:
   Movies:
     overlay_path:
       - pmm: status
-        text_canceled: CANCELLED
+        template_variables:
+          text_canceled: CANCELLED
 ```

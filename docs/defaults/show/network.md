@@ -56,7 +56,7 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: show/show/network
+      - pmm: network
         template_variables:
           use_separator: false
           sep_style: stb
