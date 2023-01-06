@@ -41,7 +41,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable       | Description & Values                                                                                                                                                |
 |:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `text`         | **Description:** Choose the text for the Overlay.<br>**Default:** `Runtime`<br>**Values:** Any String                                                               |
+| `text`         | **Description:** Choose the text for the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String                                                               |
 | `font`         | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                         |
 | `font_style`   | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                  |
 | `font_size`    | **Description:** Choose the font size for the Overlay.<br>**Default:** `55`<br>**Values:** Any Number greater then 0                                                |
