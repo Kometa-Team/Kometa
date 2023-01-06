@@ -450,7 +450,8 @@ class DataFile:
                             for k, v in default.items():
                                 if f"<<{k}>>" in key:
                                     key = key.replace(f"<<{k}>>", v)
-                            variables[key] = value
+                            if key not in variables:
+                                variables[key] = value
                     for key, value in variables.copy().items():
                         variables[f"{key}_encoded"] = requests.utils.quote(str(value))
 

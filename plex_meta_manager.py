@@ -956,6 +956,7 @@ if __name__ == "__main__":
                     else:
                         raise Failed(f"Argument Error: blank time argument")
             for time_to_run in valid_times:
+                params["time"] = time_to_run
                 schedule.every().day.at(time_to_run).do(process, params)
             while True:
                 schedule.run_pending()
