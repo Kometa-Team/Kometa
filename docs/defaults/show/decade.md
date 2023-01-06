@@ -21,7 +21,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   TV Shows:
     metadata_path:
-      - pmm: show/decade
+      - pmm: decade
 ```
 
 ## Template Variables
