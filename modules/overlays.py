@@ -165,8 +165,10 @@ class Overlays:
                             reset_list = ["plex", "tmdb"]
                         else:
                             reset_list = []
+                        reset_attempted = False
                         for reset in reset_list:
                             if reset == "plex":
+                                reset_attempted = True
                                 temp_poster = next((p for p in item.posters()), None)
                                 if temp_poster:
                                     new_backup = f"{self.library.url}{temp_poster.key}&X-Plex-Token={self.library.token}"
@@ -174,12 +176,13 @@ class Overlays:
                                 else:
                                     logger.trace("Plex Error: Plex Poster Download Failed")
                             if reset == "tmdb":
+                                reset_attempted = True
                                 try:
                                     new_backup = self.find_poster_url(item)
                                     break
                                 except Failed as e:
                                     logger.trace(e)
-                        if not new_backup and not self.library.reset_overlays:
+                        if reset_attempted and not new_backup:
                             logger.error("Overlay Error: Reset Failed")
                     else:
                         new_backup = item.posterUrl
