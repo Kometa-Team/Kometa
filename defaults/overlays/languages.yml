@@ -405,7 +405,7 @@ overlays:
     template: [name: flags, name: standard]
 
   catalan:
-    variables: {key: ca, text: CA, weight: 330, country: es}
+    variables: {key: ca, text: CA, weight: 330, country: ad}
     template: [name: flags, name: standard]
 
   welsh:
