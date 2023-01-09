@@ -931,7 +931,7 @@ def get_system_fonts():
     return system_fonts
 
 class YAML:
-    def __init__(self, path=None, input_data=None, check_empty=False, create=False):
+    def __init__(self, path=None, input_data=None, check_empty=False, create=False, start_empty=False):
         self.path = path
         self.input_data = input_data
         self.yaml = ruamel.yaml.YAML()
@@ -940,7 +940,7 @@ class YAML:
             if input_data:
                 self.data = self.yaml.load(input_data)
             else:
-                if create and not os.path.exists(self.path):
+                if start_empty or (create and not os.path.exists(self.path)):
                     with open(self.path, 'w'):
                         pass
                     self.data = {}
