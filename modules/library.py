@@ -279,8 +279,7 @@ class Library(ABC):
                         self.report_data[collection][other] = []
                     self.report_data[collection][other].append(title)
 
-        with open(self.report_path, "w"): pass
-        yaml = YAML(self.report_path)
+        yaml = YAML(self.report_path, start_empty=True)
         yaml.data = self.report_data
         yaml.save()
 
