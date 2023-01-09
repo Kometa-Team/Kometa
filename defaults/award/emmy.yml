@@ -29,7 +29,7 @@ dynamic_collections:
       - custom
     template_variables:
       imdb_list:
-        default: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=emmy_winner&sort=<<imdb_sort>>
+        default: https://www.imdb.com/search/title/?release_date=<<key-1>>-05-31,<<key>>-06-01&groups=emmy_winner&sort=<<imdb_sort>>
       imdb_sort:
         default: moviemeter,asc
       image:
