@@ -306,8 +306,8 @@ class DataFile:
                             conditionals[k] = v
 
                     language = variables["language"] if "language" in variables else "default"
-                    translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items()}
-                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items() if language in v or "default" in v})
+                    translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items() if k not in optional}
+                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items() if (language in v or "default" in v) and k not in optional})
                     key_name_variables = {}
                     for var_key, var_value in self.key_names.items():
                         if var_key == "library_type" and language in var_value:
@@ -474,8 +474,16 @@ class DataFile:
                                 return og_txt
                             elif str(og_txt) == f"<<{var}>>":
                                 return actual_value
-                            elif f"<<{var}>>" in str(og_txt):
-                                return str(og_txt).replace(f"<<{var}>>", str(actual_value))
+                            elif f"<<{var}" in str(og_txt):
+                                final = str(og_txt).replace(f"<<{var}>>", str(actual_value)) if f"<<{var}>>" in str(og_txt) else str(og_txt)
+                                if f"<<{var}" in final:
+                                    match = re.search(f"<<({var}([+-])(\d+))>>", final)
+                                    if match:
+                                        try:
+                                            final = final.replace(f"<<{match.group(1)}>>", str(int(actual_value) + (int(match.group(3)) * (-1 if match.group(2) == "-" else 1))))
+                                        except ValueError:
+                                            raise Failed(f"Template Error: {actual_value} must be a number to use {match.group(1)}")
+                                return final
                             else:
                                 return og_txt
                         if _debug:
