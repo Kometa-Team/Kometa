@@ -1,4 +1,5 @@
 import argparse, os, platform, psutil, sys, time, uuid
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
@@ -274,6 +275,32 @@ def start(attrs):
     version_line = f"Version: {version[0]}"
     if new_version:
         version_line = f"{version_line}        Newest Version: {new_version}"
+    try:
+        log_data = {}
+        with open(logger.main_log, encoding="utf-8") as f:
+            for log_line in f:
+                for err_type in ["WARNING", "ERROR", "CRITICAL"]:
+                    if f"[{err_type}]" in log_line:
+                        log_line = log_line.split("|")[1].strip()
+                        if err_type not in log_data:
+                            log_data[err_type] = []
+                        log_data[err_type].append(log_line)
+
+        for err_type in ["WARNING", "ERROR", "CRITICAL"]:
+            if err_type not in log_data:
+                continue
+            logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
+
+            logger.info("")
+            logger.info(f"Count | Message")
+            logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
+            for k, v in Counter(log_data[err_type]).most_common():
+                logger.info(f"{v:>5} | {k}")
+            logger.info("")
+    except Failed as e:
+        logger.stacktrace()
+        logger.error(f"Report Error: {e}")
+
     logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
     logger.remove_main_handler()
 
