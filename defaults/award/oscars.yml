@@ -59,7 +59,7 @@ dynamic_collections:
       - custom
     template_variables:
       imdb_list:
-        default: https://www.imdb.com/search/title/?release_date=<<key>>-01-01,<<key>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
+        default: https://www.imdb.com/search/title/?release_date=<<key-1>>-01-01,<<key-1>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
       imdb_sort:
         default: moviemeter,asc
       allowed_libraries:
