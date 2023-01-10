@@ -404,8 +404,10 @@ def time_window(tw):
         return f"{today - timedelta(weeks=1):%Y-0%V}"
     elif tw == "this_month":
         return f"{today:%Y-%m}"
+    elif tw == "last_month" and today.month == 1:
+        return f"{today.year - 1}-12"
     elif tw == "last_month":
-        return f"{today.year}-{today.month - 1 or 12}"
+        return f"{today.year}-{today.month - 1:02}"
     elif tw == "this_year":
         return f"{today.year}"
     elif tw == "last_year":
