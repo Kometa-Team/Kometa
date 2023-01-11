@@ -292,7 +292,7 @@ def start(attrs):
             logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
 
             logger.info("")
-            logger.info(f"Count | Message")
+            logger.info("Count | Message")
             logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
             for k, v in Counter(log_data[err_type]).most_common():
                 logger.info(f"{v:>5} | {k}")

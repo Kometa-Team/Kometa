@@ -145,7 +145,7 @@ There are some attributes unique to `templates`; `default`, `optional`, `conditi
 * `optional` can specify variables that if not specified on the template call will cause any attribute using one of those variables to be ignored in the template. You can make any template variable optional per collection by setting it to `null`.
 * `conditionals` can specify variables based on conditions set by the user. See more [here](#conditionals)
 * `move_prefix` can be given a list or comma-separated string of prefixes to move to the end of the collection/playlist name for sorting.
-    i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_name>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
+    i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_sort>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
 
 Every template call is given these template variables.
 
