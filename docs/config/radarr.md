@@ -8,6 +8,8 @@ Items in your List Exclusions will be ignored by PMM.
 
 A `radarr` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `radarr` mapping individually per library.
 
+At the library level, only those settings which are different to the default need to be specified; there is an example of this at the end of the page.
+
 Below is a `radarr` mapping example and the full set of attributes:
 ```yaml
 radarr:
@@ -52,34 +54,48 @@ radarr:
 
 # Other examples:
 
-Specifying a second Radarr instance for a specific library:
+Specifying different options for specific libraries:
 
-In this example we have two Radarr instances, standard and 4K.  We want to add 4K movies to the 4K Radarr instance with a different root folder and availability.
+In this example we have two Radarr instances, standard and 4K, and four libraries showing how one can override individual settings at the library level.
 
-```yaml
+```
 libraries:
-  Movies:
+  Library01:     # this library uses the default radarr config
     metadata_path:
       - file: config/Movies.yml
-  Movies - 4K:
+
+  Library02:     # this library overrides radarr root path and profile
     metadata_path:
       - file: config/Movies.yml
     radarr:
-      url: https://radarr-4K.bing.bang
-      token: SOME_TOKEN
-      root_folder_path: /movies-4K
-      availability: cinemas
+      root_folder_path: /data/media/movies/tony
+      quality_profile: Better
+
+  Library03:      # this library overrides radarr quality profile
+    metadata_path:
+      - file: config/Movies.yml
+    radarr:
+      quality_profile: Best
+
+  Library04:      # this library uses the 4K radarr instance
+    metadata_path:
+      - file: config/Movies.yml
+    radarr:
+      url: https://radarr-4k.bing.bang
+      token: SOME_OTHER_TOKEN
+      root_folder_path: /data/media/movies/geezer
+      quality_profile: Bestest
 ...
 radarr:
   url: https://radarr.bing.bang
   token: SOME_TOKEN
+  quality_profile: Good
   add_missing: true
   add_existing: false
   upgrade_existing: false
   root_folder_path: /movies
   monitor: movie
   availability: released
-  quality_profile: Any
   tag:
   search: false
   radarr_path:
