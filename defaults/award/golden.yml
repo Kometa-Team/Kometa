@@ -46,6 +46,7 @@ collections:
       - name: translation
         translation_key: golden_director
     tmdb_list: 8235502
+    
 dynamic_collections:
   Golden Globes Awards:
     type: number
