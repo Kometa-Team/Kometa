@@ -56,7 +56,8 @@ radarr:
 
 Specifying different options for specific libraries:
 
-In this example we have two Radarr instances, standard and 4K, and four libraries showing how one can override individual settings at the library level.
+In this example we have two Radarr instances, standard and 4K, and four libraries showing how one can override individual settings at the library level.  Also, movies are being added to the "Library05" library outside Radarr via a custom script and I want those new movies added to Radarr for tracking.
+
 
 ```
 libraries:
@@ -85,6 +86,18 @@ libraries:
       token: SOME_OTHER_TOKEN
       root_folder_path: /data/media/movies/geezer
       quality_profile: Bestest
+
+  Library05:      # movies get added by a custom script so they should get added to radarr-4k
+    metadata_path:
+      - file: config/Movies.yml
+    radarr:
+      url: https://radarr-4k.bing.bang
+      token: SOME_OTHER_TOKEN
+      root_folder_path: /data/media/movies/bill
+      quality_profile: Bestest
+      add_existing: true
+      sonarr_path: /data/media/movies/bill
+      plex_path: /mnt/unionfs/movies/bill
 ...
 radarr:
   url: https://radarr.bing.bang
