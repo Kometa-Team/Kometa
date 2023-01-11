@@ -8,7 +8,7 @@ Items in your List Exclusions will be ignored by PMM.
 
 A `radarr` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `radarr` mapping individually per library.
 
-At the library level, only those settings which are different to the default need to be specified; there is an example of this at the end of the page.
+At the library level, only those settings which are different to the global settings need to be specified; there is an example of this at the end of the page.
 
 Below is a `radarr` mapping example and the full set of attributes:
 ```yaml
