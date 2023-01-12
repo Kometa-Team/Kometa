@@ -232,7 +232,7 @@ class Operations:
                                     logger.trace(f"IMDb ID: {imdb_id}")
                                     raise
                             if mdb_item is None:
-                                logger.warning(f"No MdbItem for Guid: {item.guid}")
+                                logger.warning(f"No MdbItem for {item.title} (Guid: {item.guid})")
                         except LimitReached as e:
                             logger.debug(e)
 
