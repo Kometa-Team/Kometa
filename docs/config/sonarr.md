@@ -8,6 +8,9 @@ Items in your List Exclusions will be ignored by PMM.
 
 A `sonarr` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `sonarr` mapping individually per library.
 
+At the library level, only those settings which are different to the global settings need to be specified; there is an example of this at the end of the page.
+
+
 Below is a `sonarr` mapping example and the full set of attributes:
 ```YAML
 sonarr:
@@ -59,24 +62,48 @@ sonarr:
 
 Specifying a second Sonarr instance for a specific library:
 
-In this example we have two Sonarr instances, standard and 4K.  We want to add 4K shows to the 4K Sonarr instance with a different root folder and quality profile.  Also, shows are being added to the "TV Shows - 4K" library outside Sonarr via a custom script and I want those new shows added to Sonarr for tracking.
+In this example we have two Sonarr instances, standard and 4K, with five libraries that override various details.  Also, shows are being added to the "Library05" library outside Sonarr via a custom script and I want those new shows added to Sonarr for tracking.
 
-```yaml
+```
 libraries:
-  TV Shows:
+  Library01:     # this library uses the default sonarr config
     metadata_path:
       - file: config/TV.yml
-  TV Shows - 4K:
+
+  Library02:     # this library overrides sonarr root path and profile
     metadata_path:
       - file: config/TV.yml
-    sonarr:
-      url: https://sonarr-4K.bing.bang
-      token: SOME_TOKEN
-      root_folder_path: /shows-4K
-      quality_profile: 4K
+    radarr:
+      root_folder_path: /data/media/shows/tony
+      quality_profile: Better
+
+  Library03:      # this library overrides sonarr quality profile
+    metadata_path:
+      - file: config/TV.yml
+    radarr:
+      quality_profile: Best
+
+  Library04:      # this library uses the 4K sonarr instance
+    metadata_path:
+      - file: config/TV.yml
+    radarr:
+      url: https://sonarr-4k.bing.bang
+      token: SOME_OTHER_TOKEN
+      root_folder_path: /data/media/shows/geezer
+      quality_profile: Bestest
+      
+  Library05:      # shows get added by a custom script so they should get added to sonarr-4k
+    metadata_path:
+      - file: config/TV.yml
+    radarr:
+      url: https://sonarr-4k.bing.bang
+      token: SOME_OTHER_TOKEN
+      root_folder_path: /data/media/shows/bill
+      quality_profile: Bestest
       add_existing: true
-      sonarr_path: /shows-4K
-      plex_path: /mnt/unionfs/Media/TV
+      sonarr_path: /data/media/shows/bill
+      plex_path: /mnt/unionfs/shows/bill
+
 ...
 sonarr:
   url: https://sonarr.bing.bang
@@ -84,9 +111,9 @@ sonarr:
   add_missing: false
   add_existing: false
   upgrade_existing: false
-  root_folder_path: /shows
+  root_folder_path: /data/media/shows/ozzy
   monitor: all
-  quality_profile: HD-1080p
+  quality_profile: Good
   language_profile: English
   series_type: standard
   season_folder: true
