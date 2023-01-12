@@ -185,8 +185,11 @@ class Operations:
                     if any([o.startswith("mal") for o in self.library.meta_operations]):
                         if item.ratingKey in reverse_mal:
                             mal_id = reverse_mal[item.ratingKey]
-                        elif not anidb_id or anidb_id not in self.config.Convert._anidb_to_mal:
-                            logger.warning(f"No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                        elif not anidb_id:
+                            logger.warning(f"Covert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                            mal_id = None
+                        elif anidb_id not in self.config.Convert._anidb_to_mal:
+                            logger.warning(f"Covert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                             mal_id = None
                         else:
                             mal_id = self.config.Convert._anidb_to_mal[anidb_id]
