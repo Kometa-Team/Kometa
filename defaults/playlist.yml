@@ -120,3 +120,12 @@ playlists:
         trakt_url: https://trakt.tv/users/heyitsbea/lists/x-men
         summary_xmen: The X-Men are a fictional team of superheroes appearing in American comic books published by Marvel Comics, first appearing in The X-Men Issue 1. Although initially cancelled in 1970, following its 1975 revival and subsequent direction under writer Chris Claremont, it became one of the most recognizable and successful franchises of Marvel Comics.
       - name: arr
+
+  Dragon Ball (Timeline Order):
+    variables:
+      key: dragonball
+    template:
+      - name: playlist
+        trakt_url: https://trakt.tv/users/qamazi/lists/dragon-ball-binged-out
+        summary_xmen: Dragon Ball follows the adventures of an extraordinarily strong young boy named Goku as he searches for the seven dragon balls. These balls, when combined, can grant the owner any one wish he desires. Along the way he makes many new friends, and enemies, and he trains to become the strongest fighter in the world.
+      - name: arr
