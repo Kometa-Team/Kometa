@@ -28,6 +28,8 @@ collections:
         collection_order: release.desc
       - name: translation
         translation_key: golden_best
+    delete_collections_named:
+      - Golden Globe Best Motion Pictures
     tmdb_list: 
       - 8191011 # Drama
       - 8191022 # Musical or Comedy
