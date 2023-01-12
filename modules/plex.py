@@ -843,7 +843,7 @@ class Plex(Library):
         except NotFound:
             raise Failed(f"Plex Error: Playlist {title} not found")
 
-    def get_collection(self, data, force_search=False):
+    def get_collection(self, data, force_search=False, debug=True):
         if isinstance(data, Collection):
             return data
         elif isinstance(data, int) and not force_search:
@@ -853,10 +853,11 @@ class Plex(Library):
             for d in cols:
                 if d.title == data:
                     return d
-            logger.debug("")
-            for d in cols:
-                logger.debug(f"Found: {d.title}")
-            logger.debug(f"Looking for: {data}")
+            if debug:
+                logger.debug("")
+                for d in cols:
+                    logger.debug(f"Found: {d.title}")
+                logger.debug(f"Looking for: {data}")
         raise Failed(f"Plex Error: Collection {data} not found")
 
     def validate_collections(self, collections):
