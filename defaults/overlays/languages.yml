@@ -38,7 +38,7 @@ external_templates:
       country_<<key>>: <<country>>
       offset: 10
     queue: flags
-    pmm: flag/<<final_style>>/<<country_<<key>>>>
+    pmm_<<key>>: flag/<<final_style>>/<<country_<<key>>>>
     addon_position: <<final_align>>
     addon_offset: <<offset>>
     back_color: "#00000099"

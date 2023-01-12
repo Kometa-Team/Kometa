@@ -488,21 +488,26 @@ class DataFile:
                                 return og_txt
                         if _debug:
                             logger.trace(f"Start {_method}: {_data}")
-                        for i_check in range(8):
-                            for option in optional:
-                                if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
-                                    if _debug:
-                                        logger.trace(f"Failed {_method}: {_data}")
-                                    raise Failed
-                            for variable, variable_data in variables.items():
-                                if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                    _data = scan_text(_data, variable, variable_data.replace(",", ""))
-                                elif variable != "name":
+                        try:
+                            for i_check in range(8):
+                                for option in optional:
+                                    if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
+                                        if _debug:
+                                            logger.trace(f"Failed {_method}: {_data}")
+                                        raise Failed
+                                for variable, variable_data in variables.items():
+                                    if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                        _data = scan_text(_data, variable, variable_data.replace(",", ""))
+                                    elif variable != "name":
+                                        _data = scan_text(_data, variable, variable_data)
+                                for variable, variable_data in translation_variables.items():
                                     _data = scan_text(_data, variable, variable_data)
-                            for variable, variable_data in translation_variables.items():
-                                _data = scan_text(_data, variable, variable_data)
-                            for dm, dd in default.items():
-                                _data = scan_text(_data, dm, dd)
+                                for dm, dd in default.items():
+                                    _data = scan_text(_data, dm, dd)
+                        except Failed:
+                            if _debug:
+                                logger.trace(f"Failed {_method}: {_data}")
+                            raise
                         if _debug:
                             logger.trace(f"End {_method}: {_data}")
                         return _data
