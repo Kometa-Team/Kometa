@@ -1,4 +1,4 @@
-version: 1.18.0.7
+version: 1.18.2.1
 variables:
   library_translationU_singular:
     # For Movie Libraries
@@ -276,8 +276,11 @@ translations:
   emmy_year_name: Emmys <<translated_key_name>>
   emmy_year_summary: <<translated_key_name>> Emmy Gewinner.
 
-  golden_best_name: Golden Globe Bester Film
-  golden_best_summary: Golden Globe Bester Film.
+  golden_picture_name: Golden Globes Bester Film Gewinner
+  golden_picture_summary: Golden Globes Bester Film Gewinner.
+
+  golden_director_name: Golden Globes Beste Regie Gewinner
+  golden_director_summary: Golden Globes Beste Regie Gewinner.
 
   # Beispiel key_name: 2022
   golden_year_name: Golden Globe <<translated_key_name>>
