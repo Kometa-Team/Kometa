@@ -10,7 +10,8 @@ The `golden` Default Metadata File is used to create collections based on the Go
 
 | Collection                                                  | Key                               | Description                                                   |
 |:------------------------------------------------------------|:----------------------------------|:--------------------------------------------------------------|
-| `Golden Globe Best Motion Pictures`                         | `best`                            | Collection of Golden Globe Best Motion Picture Award Winners. |
+| `Golden Globes Best Picture Winners`                        | `best_picture`                    | Collection of Golden Globe Best Picture Award Winners.        |
+| `Golden Globes Best Director Winners`                       | `best_director`                   | Collection of Golden Globe Best Director Award Winners.       |
 | `Golden Globe <<year>>`<br>**Example:** `Golden Globe 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Golden Globe Award Winners for the given year.  |
 
 ## Config
