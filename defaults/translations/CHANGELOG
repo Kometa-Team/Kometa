@@ -1,3 +1,8 @@
+1.18.0.7 -> 1.18.2.1
+
+Added golden_picture_name, golden_picture_summary, golden_director_name, golden_director_summary
+Removed golden_best_name, golden_best_summary
+
 1.18.0.6 -> 1.18.0.7
 
 Added collectionless_name and collectionless_summary
