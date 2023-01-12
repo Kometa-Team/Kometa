@@ -15,9 +15,9 @@ translations:
   pmm: translations
 
 collections:
-  Golden Globe Best Motion Pictures:
+  Golden Globes Best Picture Winners:
     variables:
-      key: best
+      key: best_picture
     template:
       - name: shared
         sort: Golden Globes !1
@@ -25,10 +25,28 @@ collections:
         image: award/golden/best_picture_winner
       - name: arr
       - name: custom
+        collection_order: release.desc
       - name: translation
         translation_key: golden_best
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/golden-globe-award-best-motion-picture
+    tmdb_list: 
+      - 8191011 # Drama
+      - 8191022 # Musical or Comedy
+      - 8235497 # Animation
 
+  Golden Globes Best Director Winners:
+    variables:
+      key: best_director
+    template:
+      - name: shared
+        sort: Golden Globes !2
+        allowed_libraries: movie
+        image: award/golden/best_director_winner
+      - name: arr
+      - name: custom
+      - name: translation
+        translation_key: golden_director
+    tmdb_list: 8235502
+    
 dynamic_collections:
   Golden Globes Awards:
     type: number
