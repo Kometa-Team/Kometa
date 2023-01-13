@@ -40,6 +40,7 @@ dynamic_collections:
     include:
       - A&E
       - ABC
+      - ABC TV # Australian Broadcasting Company
       - Amazon
       - AMC
       - Animal Planet
@@ -47,26 +48,35 @@ dynamic_collections:
       - BET
       - Cartoon Network
       - Channel 4
-      - Channel 5 
+      - Channel 5
       - CBC
+      - CBC Television
       - CBS
       - Comedy Central
       - Discovery
+      - Disney+
       - Disney Channel
+      - Disney Junior
+      - Disney XD
       - E!
       - ESPN
       - Food Network
       - FOX
+      - FX
+      - Freevee
       - Hallmark
       - HBO
+      - HBO Max
       - HGTV
       - History
+      - Hulu
       - ITV
       - Lifetime
       - MTV
       - National Geographic
       - NBC
       - Nickelodeon
+      - Paramount+
       - PBS
       - Showtime
       - Sky
@@ -82,38 +92,26 @@ dynamic_collections:
       A&E:
         - A+E Networks UK
       ABC:
-        - ABC (AU)
-        - ABC (US)
-        - ABC Comedy
         - ABC Family
-        - ABC Kids
-        - ABC Me
-        - ABC Signature
         - ABC Spark
-        - ABC Studios
         - ABC.com
         - Freeform
+      ABC TV:
+        - ABC Comedy
+        - ABC Me
+        - ABC News
+        - ABC iview
+        - ABC KIDS
       Amazon:
-        - Amazon (Japan)
         - Amazon Kids+
-        - Amazon Prime Video
-        - Amazon Productions
-        - Amazon Studios
-        - Prime
-        - Prime Video
       AMC:
         - AMC+
-      Animal Planet:
-        - Animal Planet (CA)
-        - Animal Planet (UK)
       BBC:
         - BBC Alba
         - BBC America
         - BBC Choice
         - BBC First
         - BBC Four
-        - BBC HD
-        - BBC iPlayer
         - BBC Kids
         - BBC Knowledge
         - BBC News
@@ -124,7 +122,6 @@ dynamic_collections:
         - BBC Three
         - BBC Two
         - BBC UKTV
-        - BBC Wales
         - BBC World News
         - CBBC
         - CBeebies
@@ -133,54 +130,36 @@ dynamic_collections:
       Cartoon Network:
         - Cartoonito
       Channel 4:
-        - 4seven
         - All 4
         - E4
         - More4
       Channel 5:
-        - Channel 5 (UK)
-        - 5Action
-        - 5Select
         - 5Star
         - 5USA
-      CBC:
-        - CBC (CA)
+      CBC Television:
         - CBC Gem
-        - CBC Television
+        - CBC News Network
       CBS:
-        - CBS All Access
-        - CBS Reality
-        - CBS Reality (UK)
         - CBS.com
-      Comedy Central:
-        - Comedy Central (UK)
       Discovery:
-        - Discovery Asia
-        - Discovery Channel
-        - Discovery Channel (Asia)
-        - Discovery Channel (AU)
-        - Discovery Channel (CA)
-        - Discovery Channel (UK)
+        - Discovery Life
         - Discovery Family
+        - Discovery Asia
+        - Discovery World
+        - Discovery Channel
         - Discovery Health Channel
         - Discovery Kids
-        - Discovery Life
         - Discovery Real Time
-        - Discovery Turbo
-        - Discovery Turbo UK
+        - Discovery Science
+        - Discovery en Español
+        - Discovery Turbo Brasil
+      Discovery+:
         - discovery+
-        - Discovery+ (IN)
-        - Discovery+ (NO)
-        - Discovery+ (SE)
-        - Discovery+ (UK)
+        - Dplay
       Disney Channel:
-        - Disney Channel (CZ)
-        - Disney Channel (UK)
-        - Disney Junior
-        - Disney XD  
-        - Disney+
         - Playhouse Disney
-        - Toon Disney    
+      Disney XD:
+        - Toon Disney
       E!:
         - e.tv
       ESPN:
@@ -197,7 +176,7 @@ dynamic_collections:
         - FOX Sports 1
         - Fox Sports Networks
         - Fox8
-        - FX
+      FX:
         - FXX
       Hallmark:
         - Hallmark Channel
@@ -215,9 +194,6 @@ dynamic_collections:
         - HBO Nordic
         - HBO Signature
         - HBO Zone
-      History:
-        - History (CA)
-        - History (UK)
       ITV:
         - ITV Encore
         - ITV Wales
@@ -230,8 +206,8 @@ dynamic_collections:
       Lifetime:
         - Lifetime Movies
       MTV:
-        - MTV (AU/NZ)
-        - MTV (UK)
+        - MTV Australia
+        - MTV Canada
         - MTV Japan
         - MTV Nederland
         - MTV2
@@ -246,14 +222,14 @@ dynamic_collections:
         - Nick Jr.
         - Nicktoons
         - TeenNick
+      Paramount+:
+        - CBS All Access
       PBS:
         - PBS Kids
       Sky:
         - Sky 1
         - Sky Arts
         - Sky Atlantic
-        - "Sky Atlantic "
-        - Sky Atlantic (UK)
         - Sky Cinema
         - Sky Crime
         - Sky Deutschland
@@ -274,7 +250,9 @@ dynamic_collections:
         - TLC Go
         - TLC UK
       TNT:
-        - TNT (US)
+        - TNT España
+        - TNT Latin America
+        - TNT Serie
       UKTV:
         - UKTV Food
         - UKTV History
