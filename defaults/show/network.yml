@@ -40,12 +40,15 @@ dynamic_collections:
     include:
       - A&E
       - ABC
+      - ABC Family
       - ABC TV # Australian Broadcasting Company
+      - Adult Swim
       - Amazon
       - AMC
       - Animal Planet
       - BBC
       - BET
+      - BET+
       - Cartoon Network
       - Channel 4
       - Channel 5
@@ -54,10 +57,11 @@ dynamic_collections:
       - CBS
       - Comedy Central
       - Discovery
-      - Disney+
+      - Discovery+
       - Disney Channel
       - Disney Junior
       - Disney XD
+      - Disney+
       - E!
       - ESPN
       - Food Network
@@ -93,9 +97,7 @@ dynamic_collections:
         - A+E Networks UK
       ABC:
         - ABC Family
-        - ABC Spark
         - ABC.com
-        - Freeform
       ABC TV:
         - ABC Comedy
         - ABC Me
@@ -125,8 +127,6 @@ dynamic_collections:
         - BBC World News
         - CBBC
         - CBeebies
-      BET:
-        - BET+
       Cartoon Network:
         - Cartoonito
       Channel 4:
@@ -176,6 +176,8 @@ dynamic_collections:
         - FOX Sports 1
         - Fox Sports Networks
         - Fox8
+      Freeform:
+        - ABC Family
       FX:
         - FXX
       Hallmark:
