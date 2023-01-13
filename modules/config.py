@@ -978,7 +978,7 @@ class ConfigFile:
             if len(self.libraries) > 0:
                 logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
-                raise Failed("Plex Error: No Plex libraries were connected to")
+                raise Failed("Config Error: No libraries were found in config")
 
             logger.separator()
 
