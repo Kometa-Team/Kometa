@@ -33,7 +33,7 @@ key_names:
    Anime: Anime
    Arabic: Arábica
    Argentina: Argentina
-   Audio Language: Idioma de audio
+   Audio Language: Idioma del Audio
    Australia: Australia
    Austria: Austria
    Award: Premio
@@ -46,7 +46,7 @@ key_names:
    Bosnian: Bosnia
    Brazil: Brasil
   # Bulgaria: Bulgaria
-   Bulgarian: Bulgaro
+   Bulgarian: Búlgaro
    Canada: Canadá
    Catalan: Catalán
    Chart: Gráfico
@@ -89,7 +89,7 @@ key_names:
    France: Francia
    French: Francés
    Galician: Gallego
-   Game Show: Programa de juegos
+   Game Show: Programa de Juegos
    Gangster: Gánster
    Genre: Género
    Georgian: Georgiano
@@ -186,7 +186,7 @@ key_names:
    Saudi Arabia: Arabía Saudí
    Sci-Fi & Fantasy: Ciencia Ficción y Fantasía
    Science Fiction: Ciencia Ficción
-   Seasonal: Temporal
+   Seasonal: Temporada
    Serbia: Serbia
    Serbian: Serbio
    Short: Corto
@@ -288,8 +288,8 @@ translations:
   cesar_best_name: Ganadores César Mejor Película
   cesar_best_summary: El Premio César es el premio cinematográfico nacional de Francia, otorgado por primera vez en 1975. Las nominaciones son seleccionadas por los miembros de la Académie des Arts et Techniques du Cinéma. El nombre del premio proviene del escultor César Baldaccini. Se consideran el equivalente francés de los Premios de la Academia Estadounidense.
   
-  razzie_worst_name: Ganadores Razzies Frambuesa Dorada
-  razzie_worst_summary: El premio Golden Raspberry a la peor película es un premio otorgado en los premios anuales Golden Raspberry a la peor película del año pasado.
+  razzie_worst_name: Ganadores Razzies Frambuesa de Oro
+  razzie_worst_summary: El premio Frambuesa de Oro a la peor película es un premio otorgado en los premios anuales a la peor película del año pasado.
   
   venice_best_name: Leones de Oro de Venecia
   venice_best_summary: El Festival de Cine de Venecia es el festival de cine más antiguo del mundo. Fundado en 1932, el festival se lleva a cabo todos los años desde entonces en Venecia, Italia. Es parte de la Bienal de Venecia, una importante exposición bienal y festival de arte contemporáneo. El Leone d' del festival
@@ -381,7 +381,7 @@ translations:
   tmdb_air_summary: Una colección de series que todavía están estrenando episodios actualmente.
 
   tmdb_popular_name: TMDb Popular
-  tmdb_popular_summary: Una colección de lo más visto <<library_translation>>s según TMDb.
+  tmdb_popular_summary: Una colección de lo más visto en <<library_translation>>s según TMDb.
 
   tmdb_top_name: TMDb Top Rated
   tmdb_top_summary: Una colección de lo más valorado en <<library_translation>>s según TMDb.
@@ -417,7 +417,7 @@ translations:
   actor_summary: <<library_translationU>>s con <<translated_key_name>>.
 
   # example key_name: English
-  audio_language_name: <<translated_key_name>> Audio
+  audio_language_name: Audio <<translated_key_name>>
   audio_language_summary: <<library_translationU>>s filmado en Idioma <<translated_key_name>>.
 
   audio_language_other_name: Otro Audio
@@ -439,7 +439,7 @@ translations:
 
   # example key_name: United States
   country_name: <<translated_key_name>>
-  country_summary: <<library_translationU>>s grabado en <<translated_key_name>>.
+  country_summary: <<library_translationU>>s filmado en <<translated_key_name>>.
 
   country_other_name: Otros Países
   country_other_summary: <<library_translationU>>s filmado en otros países poco comunes.
@@ -466,7 +466,7 @@ translations:
 
   # example key_name: 1080p
   resolution_name: <<translated_key_name>> <<library_translationU>>s
-  resolution_summary: <<library_translationU>>s que tienen la resolución <<translated_key_name>>.
+  resolution_summary: <<library_translationU>>s que tienen resolución <<translated_key_name>>.
 
   resolution_other_name: Otra Resolución en <<library_translationU>>s
   resolution_other_summary: <<library_translationU>>s que tienen otras resoluciones poco comunes.
