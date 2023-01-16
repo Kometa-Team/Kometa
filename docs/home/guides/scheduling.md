@@ -19,8 +19,16 @@ There's a [Docker Walkthrough](docker) with more detailed instructions on settin
 ```
 docker run -d \
   --restart=unless-stopped \
+  -e TZ=<TIMEZONE>
   -v /path/to/config:/config:rw \
   meisnate12/plex-meta-manager
+```
+
+TZ=<TIMEZONE>
+<TIMEZONE> is replaced with your local timezone, or the timezone your device is in that is running Plex Meta Manager. For a list of available timezones, please see [Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). You want to replace <TIMEZONE> with the TZ Database Name. 
+
+```
+TZ=America/New_York
 ```
 
 This will run Plex Meta Manager in the background persistently until it is stopped by the user. While the docker container will be persistently running, Plex Meta Manager will not begin the run until the scheduled time.
