@@ -147,7 +147,7 @@ class DataFile:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
         lib_type = self.library.type.lower() if self.library else "item"
-        logger.debug(f"Translations Loaded From: {dir_path}")
+        logger.trace(f"Translations Loaded From: {dir_path}")
         key_names = {}
         variables = {k: {"default": v[lib_type]} for k, v in yaml.data["variables"].items()}
 
@@ -165,9 +165,9 @@ class DataFile:
                     if translation_key in yaml_content.data["translations"]:
                         translations[translation_key][yaml_key] = yaml_content.data["translations"][translation_key]
                     else:
-                        logger.error(f"Translation Error: translations attribute {translation_key} not found in {yaml_path}")
+                        logger.trace(f"Translation Error: translations attribute {translation_key} not found in {yaml_path}")
             else:
-                logger.error(f"Config Error: Top Level translations attribute not found in {yaml_path}")
+                logger.trace(f"Config Error: Top Level translations attribute not found in {yaml_path}")
 
             if "key_names" in yaml_content.data and yaml_content.data["key_names"]:
                 for kn, vn in yaml_content.data["key_names"].items():

@@ -265,8 +265,11 @@ translations:
   emmy_year_name: Emmys <<translated_key_name>>
   emmy_year_summary: <<translated_key_name>> Vencedores do Emmy.
 
-  golden_best_name: Globo de Ouro de Melhores Filmes
-  golden_best_summary: Globo de Ouro de Melhores Filmes.
+  golden_picture_name: Globos de Ouro Melhores Vencedores
+  golden_picture_summary: Golden Globes Best Picture Winners.
+
+  golden_director_name: Globos de Dourado Melhores Vencedores Directores
+  golden_director_summary: Golden Globes Best Director Winners.
 
   # example key_name: 2022
   golden_year_name: Globo de Ouro <<translated_key_name>>
