@@ -1,12 +1,14 @@
 # Requirements Update (requirements will need to be reinstalled)
 Updated arrapi requirement to 1.4.2
 Updated pillow requirement to 9.4.0
+Updated requests requirement to 2.28.2
 
 # New Features
 Added new collection_order `custom.desc` ([FR](https://features.metamanager.wiki/features/p/reverse-sort-collectionorder-custom))
 Added webp Image Support ([FR](https://features.metamanager.wiki/features/p/support-webp-image-extensions))
 Added Spanish Defaults Translation
 Added Delete Webhooks
+Added collection detail `delete_collections_named` to delete any collections listed while running this collection definition.
 
 # Bug Fixes
 Fixes #1187 Franchise Defaults no longer ignore collection_section and sort_title
