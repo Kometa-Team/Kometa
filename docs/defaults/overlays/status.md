@@ -8,12 +8,12 @@ The `status` Default Overlay File is used to create an overlay on a show detaili
 
 ## Supported Status
 
-| Audio Codec | Key         | Weight |
-|:------------|:------------|:-------|
-| AIRING      | `airing`    | `40`   |
-| RETURNING   | `returning` | `30`   |
-| CANCELED    | `canceled`  | `20`   |
-| ENDED       | `ended`     | `10`   |
+| Status    | Key         | Weight |
+|:----------|:------------|:-------|
+| AIRING    | `airing`    | `40`   |
+| RETURNING | `returning` | `30`   |
+| CANCELED  | `canceled`  | `20`   |
+| ENDED     | `ended`     | `10`   |
 
 ## Config
 
@@ -21,9 +21,6 @@ The below YAML in your config.yml will create the overlays:
 
 ```yaml
 libraries:
-  Movies:
-    overlay_path:
-      - pmm: status
   TV Shows:
     overlay_path:
       - pmm: status
@@ -66,7 +63,7 @@ The below is an example config.yml extract with some Template Variables added in
 
 ```yaml
 libraries:
-  Movies:
+  TV Shows:
     overlay_path:
       - pmm: status
         template_variables:
