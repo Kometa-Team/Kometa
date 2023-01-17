@@ -54,7 +54,7 @@ The below is an example config.yml extract with some Template Variables added in
 
 ```yaml
 libraries:
-  Movies:
+  TV Shows:
     metadata_path:
       - pmm: network
         template_variables:

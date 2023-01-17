@@ -59,7 +59,7 @@ The below is an example config.yml extract with some Template Variables added in
 
 ```yaml
 libraries:
-  Movies:
+  TV Shows:
     metadata_path:
       - pmm: content_rating_us
         template_variables:
