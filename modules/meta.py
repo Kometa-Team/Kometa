@@ -328,10 +328,12 @@ class DataFile:
                         var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in all_init_defaults.items() if dk not in variables}
                         for dkey, dvalue in var_default.items():
                             final_key = replace_var(dkey, var_default)
-                            final_value = replace_var(dvalue, var_default)
                             if final_key not in optional and final_key not in variables and final_key not in conditionals:
-                                default[final_key] = final_value
-                                default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
+                                default[final_key] = dvalue
+                                if "<<" in str(dvalue):
+                                    default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', dvalue)
+                                else:
+                                    default[f"{final_key}_encoded"] = requests.utils.quote(str(dvalue))
 
                     if "optional" in template:
                         if template["optional"]:
@@ -411,8 +413,11 @@ class DataFile:
                             if condition_passed:
                                 logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                 condition_found = True
-                                variables[final_key] = condition["value"]
-                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                if condition["value"] is not None:
+                                    variables[final_key] = condition["value"]
+                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                else:
+                                    optional.append(final_key)
                                 break
                         if not condition_found:
                             if "default" in con_value:
