@@ -49,7 +49,7 @@ The below is an example config.yml extract with some Template Variables added in
 
 ```yaml
 libraries:
-  Movies:
+  TV Shows:
     overlay_path:
       - pmm: episode_info
         template_variables:
