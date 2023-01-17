@@ -29,9 +29,9 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Critics Choice](award/choice)                             | `choice`          | Critics Choice Awards 2020                  |      &#9989;      |     &#9989;      |
 | [Emmys](award/emmy)                                        | `emmy`            | Emmys 2021                                  |      &#9989;      |     &#9989;      |
 | [Golden Globes](award/golden)                              | `golden`          | Best Motion Pictures                        |      &#9989;      |     &#9989;      |
-| [Academy Awards (Oscars)](award/oscars)                    | `oscars`          | Best Picture Winners                        |      &#9989;      |     &#9989;      |
+| [Academy Awards (Oscars)](award/oscars)                    | `oscars`          | Best Picture Winners                        |      &#9989;      |     &#10060;     |
 | [Independent Spirit](award/spirit)                         | `spirit`          | Independent Spirit Awards 2021              |      &#9989;      |     &#10060;     |
-| [Sundance](award/sundance)                                 | `sundance`        | Sundance Grand Jury Winners                 |      &#9989;      |     &#9989;      |
+| [Sundance](award/sundance)                                 | `sundance`        | Sundance Grand Jury Winners                 |      &#9989;      |     &#10060;     |
 | [Other](award/other)                                       | `other_award`     | Berlinale Golden Bears, Venice Golden Lions |      &#9989;      |     &#10060;     |
 
 ### General Collections
