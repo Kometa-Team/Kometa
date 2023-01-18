@@ -13,7 +13,7 @@ ms_auto = [
 ]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
-    "Show": ["network", "origin_country"] + all_auto + ms_auto,
+    "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
 }
@@ -23,7 +23,8 @@ dynamic_attributes = [
 ]
 auto_type_translation = {
     "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
-    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood", "edition": "editionTitle"
+    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood",
+    "edition": "editionTitle", "episode_year": "episode.year"
 }
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -486,8 +487,9 @@ class DataFile:
                                     if match:
                                         try:
                                             final = final.replace(f"<<{match.group(1)}>>", str(int(actual_value) + (int(match.group(3)) * (-1 if match.group(2) == "-" else 1))))
-                                        except ValueError:
-                                            raise Failed(f"Template Error: {actual_value} must be a number to use {match.group(1)}")
+                                        except (ValueError, TypeError):
+                                            logger.error(f"Template Error: {actual_value} must be a number to use {match.group(1)}")
+                                            raise Failed
                                 return final
                             else:
                                 return og_txt
@@ -681,7 +683,7 @@ class MetadataFile(DataFile):
                         auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                         default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
                         default_title_format = "Best <<library_type>>s of <<key_name>>"
-                    elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                    elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "episode_year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                         search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                         if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                             tags = library.get_tags(f"episode.{search_tag}")
@@ -714,7 +716,7 @@ class MetadataFile(DataFile):
                             default_title_format = "<<key_name>> <<library_type>>s"
                         else:
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
-                            default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
+                            default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade", "episode_year"] else "Top <<key_name>> <<library_type>>s"
                     elif auto_type == "tmdb_collection":
                         all_items = library.get_all()
                         for i, item in enumerate(all_items, 1):

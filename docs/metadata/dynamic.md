@@ -123,6 +123,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`album_genre`](#album-genre)                 | Create a collection for each album genre found in the library                                               |    &#10060;    | &#10060; | &#10060; | &#9989;  | &#10060; |
 | [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`episode_year`](#episode-year)               | Create a collection for each episode year found in the library                                              |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
 | [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
@@ -1102,6 +1103,65 @@ default_template:
 dynamic_collections:
   Years:         # mapping name does not matter just needs to be unique
     type: year
+    include:
+      - 2020
+      - 2021
+      - 2022
+    title_format: Best of <<key_name>>
+```
+
+### Episode Year
+
+Create a collection for each episode year found in the library.
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th><code>type</code> Option</th>
+    <td><code>episode_year</code></td>
+  </tr>
+  <tr>
+    <th><code>data</code> Value</th>
+    <td>Not Used</td>
+  </tr>
+  <tr>
+    <th>Keys</th>
+    <td>Episode Year</td>
+  </tr>
+  <tr>
+    <th>Key Names</th>
+    <td>Year</td>
+  </tr>
+  <tr>
+    <th>Default <code>title_format</code></th>
+    <td><code>Best &lt;&lt;library_type&gt;&gt;s of &lt;&lt;key_name&gt;&gt;</code></td>
+  </tr>
+  <tr>
+    <th>Default Template</th>
+    <td>
+
+```yaml
+default_template:
+  smart_filter:
+    limit: 50
+    sort_by: critic_rating.desc
+    any:
+      episode_year: <<value>>
+```
+
+</td>
+  </tr>
+</table>
+
+#### Example
+
+* Create dynamic collections based on each year found in the library (TV and Movies)
+* Use the `include` attribute to only show collections for years "2020", "2021" and "2022"
+* Name the collection "Best of [Year]"
+
+```yaml
+dynamic_collections:
+  Years:         # mapping name does not matter just needs to be unique
+    type: episode_year
     include:
       - 2020
       - 2021
