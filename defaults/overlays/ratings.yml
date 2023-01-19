@@ -38,6 +38,9 @@ templates:
       addon_offset: 15
       rating<<rating_num>>_addon_offset: <<addon_offset>>
       rating<<rating_num>>_addon_position: <<addon_position>>
+      minimum_rating: 0.0
+      fresh_rating: 6.0
+      maximum_rating: 10.0
       side: left
       horizontal_position: left
       vertical_position: center
@@ -399,15 +402,15 @@ templates:
           - rating_alignment: horizontal
             value: left
       gte:
-        default: 0.0
+        default: <<minimum_rating>>
         conditions:
           - image_level: Fresh
-            value: 6.0
+            value: <<fresh_rating>>
       lte:
-        default: 6.0
+        default: <<fresh_rating>>
         conditions:
           - image_level: Fresh
-            value: 10.0
+            value: <<maximum_rating>>
       gsuffix:
         conditions:
           - rating<<rating_num>>: [critic, audience, user]
