@@ -38,6 +38,8 @@ jobs:
         with:
           context: ./
           file: ./Dockerfile
+          build-args: |
+            "BRANCH=develop"
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:develop
