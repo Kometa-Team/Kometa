@@ -6,7 +6,6 @@ from modules.logs import MyLogger
 
 try:
     import plexapi, requests, schedule
-    from git import Repo, InvalidGitRepositoryError
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
@@ -80,10 +79,13 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
             return str(final_value)
     else:
         return default
-
 try:
-    git_branch = Repo(path=".").head.ref.name
-except InvalidGitRepositoryError:
+    from git import Repo, InvalidGitRepositoryError
+    try:
+        git_branch = Repo(path=".").head.ref.name
+    except InvalidGitRepositoryError:
+        git_branch = None
+except ImportError:
     git_branch = None
 env_version = get_arg("BRANCH_NAME", "master")
 is_docker = get_arg("PMM_DOCKER", False, arg_bool=True)
