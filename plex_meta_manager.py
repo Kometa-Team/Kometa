@@ -6,6 +6,7 @@ from modules.logs import MyLogger
 
 try:
     import plexapi, requests, schedule
+    from git import Repo, InvalidGitRepositoryError
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
@@ -80,6 +81,10 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
     else:
         return default
 
+try:
+    git_branch = Repo(path=".").head.ref.name
+except InvalidGitRepositoryError:
+    git_branch = None
 env_version = get_arg("BRANCH_NAME", "master")
 is_docker = get_arg("PMM_DOCKER", False, arg_bool=True)
 is_linuxserver = get_arg("PMM_LINUXSERVER", False, arg_bool=True)
@@ -163,6 +168,8 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
         if len(line) > 0:
             version = util.parse_version(line)
             break
+branch = util.guess_branch(version, env_version, git_branch)
+version = (version[0].replace("develop", branch), version[1].replace("develop", branch), version[2])
 
 uuid_file = os.path.join(default_dir, "UUID")
 uuid_num = None
@@ -196,9 +203,7 @@ def start(attrs):
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
     system_ver = "Docker" if is_docker else "Linuxserver" if is_linuxserver else f"Python {platform.python_version()}"
-    logger.info(f"    Version: {version[0]} ({system_ver})")
-    logger.trace(f"BRANCH_NAME: {test_value}")
-    logger.trace(f"env_version: {env_version}")
+    logger.info(f"    Version: {version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
     latest_version = util.current_version(version, env_version=env_version)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
