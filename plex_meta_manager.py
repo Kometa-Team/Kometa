@@ -50,11 +50,15 @@ parser.add_argument("-d", "--divider", dest="divider", help="Character that divi
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args = parser.parse_args()
 
+test_value = None
 def get_arg(env_str, default, arg_bool=False, arg_int=False):
+    global test_value
     env_vars = [env_str] if not isinstance(env_str, list) else env_str
     final_value = None
     for env_var in env_vars:
         env_value = os.environ.get(env_var)
+        if env_var == "BRANCH_NAME":
+            test_value = env_value
         if env_value is not None:
             final_value = env_value
             break
@@ -193,6 +197,8 @@ def start(attrs):
     logger.info_center("                                                                     |___/           ")
     system_ver = "Docker" if is_docker else "Linuxserver" if is_linuxserver else f"Python {platform.python_version()}"
     logger.info(f"    Version: {version[0]} ({system_ver})")
+    logger.trace(f"BRANCH_NAME: {test_value}")
+    logger.trace(f"env_version: {env_version}")
     latest_version = util.current_version(version, env_version=env_version)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
@@ -967,11 +973,14 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        params = {"config_file": config_file, "ignore_schedules": ignore_schedules}
         if run or test or collections or libraries or metadata_files or resume:
-            params["collections"] = collections
-            params["libraries"] = libraries
-            params["metadata_files"] = metadata_files
+            params = {
+                "config_file": config_file,
+                "ignore_schedules": ignore_schedules,
+                "collections": collections,
+                "libraries": libraries,
+                "metadata_files": metadata_files
+            }
             process(params)
         else:
             times_to_run = util.get_list(times)
@@ -985,7 +994,7 @@ if __name__ == "__main__":
                     else:
                         raise Failed(f"Argument Error: blank time argument")
             for time_to_run in valid_times:
-                params["time"] = time_to_run
+                params = {"config_file": config_file, "ignore_schedules": ignore_schedules, "time": time_to_run}
                 schedule.every().day.at(time_to_run).do(process, params)
             while True:
                 schedule.run_pending()
