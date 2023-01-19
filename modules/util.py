@@ -103,9 +103,11 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 previous_time = None
 start_time = None
 
-def current_version(version, nightly=False):
-    if nightly:
+def current_version(version, env_version=None, nightly=False):
+    if nightly or env_version == "nightly":
         return get_nightly()
+    elif env_version == "develop":
+        return get_develop()
     elif version[2] > 0:
         new_version = get_develop()
         if version[1] != new_version[1] or new_version[2] >= version[2]:
