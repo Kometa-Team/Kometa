@@ -103,6 +103,20 @@ parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in pare
 previous_time = None
 start_time = None
 
+def guess_branch(version, env_version, git_branch):
+    if git_branch:
+        return git_branch
+    elif env_version in ["nightly", "develop"]:
+        return env_version
+    elif version[2] > 0:
+        dev_version = get_develop()
+        if version[1] != dev_version[1] or version[2] <= dev_version[2]:
+            return "develop"
+        else:
+            return "nightly"
+    else:
+        return "master"
+
 def current_version(version, env_version=None, nightly=False):
     if nightly or env_version == "nightly":
         return get_nightly()
