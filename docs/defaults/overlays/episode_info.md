@@ -2,9 +2,11 @@
 
 The `episode_info` Default Overlay File is used to create an overlay on the episode title card on the episode numbering within a given series in your library.
 
-**This file only works with Show Libraries.**
-
 ![](images/episode_info.png)
+
+## Requirements & Recommendations
+
+Supported library types: Show
 
 ## Config
 

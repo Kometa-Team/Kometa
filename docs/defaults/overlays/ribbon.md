@@ -2,9 +2,11 @@
 
 The `ribbon` Default Overlay File is used to create a ribbon overlay based on the Top Lists of various sites on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](images/ribbon.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show
 
 ## Supported Ribbon
 

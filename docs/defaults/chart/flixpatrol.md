@@ -2,9 +2,11 @@
 
 The `flixpatrol` Default Metadata File is used to create collections based on FlixPatrol Charts.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/flixpatrol.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 01
 

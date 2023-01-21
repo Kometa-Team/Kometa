@@ -2,11 +2,15 @@
 
 The `commonsense` Default Overlay File is used to create an overlay based on the CommonSense Age Rating on each item within your library.
 
-Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
 
-**This file works with Movie and Show Libraries.**
 
 ![](images/commonsense.png)
+
+## Requirements & Recommendations
+
+Supported library types: Movie & Show
+
+Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
 
 ## Supported CommonSense Age Rating
 

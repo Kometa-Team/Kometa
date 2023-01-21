@@ -2,9 +2,13 @@
 
 The `golden` Default Metadata File is used to create collections based on the Golden Globe Awards.
 
-**The `Golden Globe Best Motion Pictures` Collection only works with Movie Libraries but the year collections work with both Movie and Show libraries.**
-
 ![](../images/golden.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Recommendations: The `Golden Globe Best Motion Pictures` Collection only works with Movie Libraries
 
 ## Collections Section 16
 

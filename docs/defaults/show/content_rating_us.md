@@ -4,9 +4,13 @@ The `content_rating_us` Default Metadata File is used to dynamically create coll
 
 If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Show Libraries, but has a Movie Library [Counterpart](../movie/content_rating_us).**
+**This file has a Movie Library [Counterpart](../movie/content_rating_us).**
 
 ![](../images/moviecontent_rating_us.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Show
 
 ## Collections Section 14
 

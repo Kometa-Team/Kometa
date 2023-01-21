@@ -2,11 +2,13 @@
 
 The `video_format` Default Overlay File is used to create an overlay based on the video format available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/video_format.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Season, Episode
+
+Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 
 ## Supported Video Formats
 

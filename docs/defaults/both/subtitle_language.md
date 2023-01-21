@@ -2,9 +2,11 @@
 
 The `subtitle_language` Default Metadata File is used to dynamically create collections based on the subtitle languages available in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/subtitle_language.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 11
 

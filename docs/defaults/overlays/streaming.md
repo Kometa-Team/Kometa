@@ -2,9 +2,11 @@
 
 The `streaming` Default Overlay File is used to create an overlay based on the streaming service the file is found on for each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](images/streaming.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show
 
 ## Supported Streaming Services
 

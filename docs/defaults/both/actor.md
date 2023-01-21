@@ -2,9 +2,11 @@
 
 The `actor` Default Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/actor1.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 17
 

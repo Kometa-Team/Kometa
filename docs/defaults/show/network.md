@@ -2,9 +2,11 @@
 
 The `network` Default Metadata File is used to dynamically create collections based on the networks available in your library.
 
-**This file only works with Show Libraries.**
-
 ![](../images/network.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Show
 
 ## Collections Section 04
 

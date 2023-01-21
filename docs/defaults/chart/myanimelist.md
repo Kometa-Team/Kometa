@@ -2,9 +2,11 @@
 
 The `myanimelist` Default Metadata File is used to create collections based on MyAnimeList Charts.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/myanimelist.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 01
 

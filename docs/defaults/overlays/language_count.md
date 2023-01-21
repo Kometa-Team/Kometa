@@ -2,11 +2,11 @@
 
 The `language_count` Default Overlay File is used to create an overlay based on the number of audio/subtitle languages available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/language_count.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Season, Episode
 
 ## Supported Audio/Subtitle Languages
 

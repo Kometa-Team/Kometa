@@ -2,11 +2,13 @@
 
 The `other_award` Default Metadata File is used to  create collections based on numerous other awards.
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
-**This file only works with Movie Libraries.**
-
 ![](../images/awardother.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 

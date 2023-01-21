@@ -23,7 +23,7 @@ These overlays are applied by calling the below paths into the `overlay_path` [s
 | [Ratings](overlays/ratings)                    | `ratings`        | IMDb Audience Rating, Metacritic Critic Rating                            | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
 | [Resolution/Editions](overlays/resolution)     | `resolution`     | 4K Dolby Vision logo, 720P logo, "Director's Cut", "Criterion Collection" | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
 | [Ribbon](overlays/ribbon)                      | `ribbon`         | IMDb Top 250 Ribbon, RT Fresh Ribbon                                      | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
-| [Runtimes](overlays/runtimes)                  | `runtimes`       | "Runtime: 1h 30m"                                                         | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
+| [Runtimes](overlays/runtimes)                  | `runtimes`       | "Runtime: 1h 30m"                                                         | &#9989;  |  &#9989;  | &#10060;  | &#9989;  |
 | [Status](overlays/status)                      | `status`         | Airing, Returning, Canceled, Ended                                        | &#10060; |  &#9989;  | &#10060;  | &#10060; |
 | [Streaming](overlays/streaming)                | `streaming`      | Netflix logo, Hulu logo                                                   | &#9989;  |  &#9989;  | &#10060;  | &#10060; |
 | [Versions](overlays/versions)                  | `versions`       | Multiple Versions logo                                                    | &#9989;  |  &#9989;  |  &#9989;  | &#9989;  |

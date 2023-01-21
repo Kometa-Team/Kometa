@@ -2,11 +2,13 @@
 
 The `cannes` Default Metadata File is used to create collections based on the Cannes Film Awards.
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
-**This file only works with Movie Libraries.**
-
 ![](../images/cannes.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
+
+Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 

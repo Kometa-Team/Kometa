@@ -2,9 +2,11 @@
 
 The `seasonal` Default Metadata File is used to dynamically create seasonal collections based on holidays .
 
-**This file only works with Movie Libraries.**
-
 ![](../images/seasonal.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
 
 ## Collections Section 00
 
