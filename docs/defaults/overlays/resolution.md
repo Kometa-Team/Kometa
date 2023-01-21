@@ -8,6 +8,8 @@ The `resolution` Default Overlay File is used to create an overlay based on the 
 
 Supported Overlay Level: Movie, Show, Episode
 
+Recommendations: Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
+
 ## Supported Resolutions
 
 | Resolution     | Key       |
