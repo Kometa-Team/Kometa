@@ -2,11 +2,11 @@
 
 The `languages` Default Overlay File is used to create an overlay of a flag and [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) based on the audio/subtitle languages available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/language.png)
+
+## Requirements & Recommendations
+
+Supported library types: Movie & Show
 
 ## Supported Audio/Subtitle Language Flags
 

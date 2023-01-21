@@ -2,9 +2,11 @@
 
 The `emmy` Default Metadata File is used to create collections based on the Emmy Awards.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/emmy.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 16
 

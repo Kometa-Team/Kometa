@@ -4,9 +4,11 @@ The `universe` Default Metadata File is used to create collections based on popu
 
 This Default file requires [Trakt Authentication](../../config/trakt)
 
-**This file only works with Movie Libraries.**
-
 ![](../images/universe.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
 
 ## Collections Section 02
 

@@ -4,9 +4,13 @@ The `content_rating_uk` Default Metadata File is used to dynamically create coll
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/content_rating_uk.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Recommendation: Set the Certification Country within your library's advanced settings to "United Kingdom"
 
 ## Collections Section 14
 

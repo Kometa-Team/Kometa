@@ -2,9 +2,11 @@
 
 The `audio_language` Default Metadata File is used to dynamically create collections based on the audio languages available in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/audio_language.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 10
 

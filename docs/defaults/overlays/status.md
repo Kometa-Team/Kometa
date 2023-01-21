@@ -2,9 +2,11 @@
 
 The `status` Default Overlay File is used to create an overlay on a show detailing its Current Airing Status for all shows in your library.
 
-**This file only works with Show Libraries.**
-
 ![](images/status.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Show
 
 ## Supported Status
 

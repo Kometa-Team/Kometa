@@ -2,11 +2,13 @@
 
 The `audio_codec` Default Overlay File is used to create an overlay based on the audio codec available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/audio_codec.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Season, Episode
+
+Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 
 ## Supported Audio Codecs
 

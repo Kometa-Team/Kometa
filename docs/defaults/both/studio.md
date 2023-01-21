@@ -4,9 +4,11 @@ The `studio` Default Metadata File is used to dynamically create collections bas
 
 This file also merges similarly named studios (such as "20th Century Fox" and "20th Century Animation") into one ("20th Century Studios")
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/studio.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 07
 

@@ -2,9 +2,11 @@
 
 The `oscars` Default Metadata File is used to create collections based on the Academy Awards (Oscars).
 
-**This file only works with Movie Libraries.**
-
 ![](../images/oscars.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
 
 ## Collections Section 16
 

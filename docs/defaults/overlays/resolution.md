@@ -2,11 +2,11 @@
 
 The `resolution` Default Overlay File is used to create an overlay based on the resolutions and editions available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/resolution.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Episode
 
 ## Supported Resolutions
 

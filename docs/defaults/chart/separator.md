@@ -2,9 +2,11 @@
 
 The `separator_chart` Default Metadata File is used to create a seperator collection for Charts.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/chartseparator.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 01
 

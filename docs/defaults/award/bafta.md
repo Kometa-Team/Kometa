@@ -2,11 +2,13 @@
 
 The `bafta` Default Metadata File is used to create collections based on the British Academy of Film and Television Arts Awards.
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
-**This file only works with Movie Libraries.**
-
 ![](../images/bafta.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
+
+Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 

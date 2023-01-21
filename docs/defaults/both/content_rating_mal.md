@@ -2,11 +2,15 @@
 
 The `content_rating_mal` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
 
-This file assumes that you are using the `mass_content_rating_update: mal` operation on your library, and if you do not use the MAL-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
-
-**This file works with Movie and Show Libraries.**
+If you do not use the MAL-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
 ![](../images/content_rating_mal.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with `mal` or `mdb_commonsense0` to update Plex to the MyAnimeList Content Rating.
 
 ## Collections Section 14
 

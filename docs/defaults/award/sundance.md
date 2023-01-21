@@ -2,11 +2,13 @@
 
 The `sundance` Default Metadata File is used to  create collections based on the Sundance Film Festival Awards.
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
-**This file only works with Movie Libraries.**
-
 ![](../images/sundance.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
+
+Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 

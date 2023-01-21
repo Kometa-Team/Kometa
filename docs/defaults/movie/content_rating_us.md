@@ -4,9 +4,15 @@ The `content_rating_us` Default Metadata File is used to dynamically create coll
 
 If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
-**This file works with Movie Libraries, but has a Show Library [Counterpart](../show/content_rating_us).**
+**This file has a Show Library [Counterpart](../show/content_rating_us).**
 
 ![](../images/moviecontent_rating_us.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
+
+Recommendation: Set the Certification Country within your library's advanced settings to "United States".
 
 ## Collections Section 14
 

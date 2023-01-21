@@ -2,9 +2,11 @@
 
 The `producer` Default Metadata File is used to dynamically create collections based on the most popular producers in your library.
 
-**This file only works with Movie Libraries.**
-
 ![](../images/producer1.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie
 
 ## Collections Section 19
 

@@ -2,10 +2,11 @@
 
 The `resolution` Default Metadata File is used to dynamically create collections based on the resolutions available in your library.
 
-
-**This file works with Movie and Show Libraries.**
-
 ![](../images/resolution.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 15
 

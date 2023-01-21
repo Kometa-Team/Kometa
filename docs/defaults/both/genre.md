@@ -4,9 +4,11 @@ The `genre` Default Metadata File is used to dynamically create collections base
 
 This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/genre.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
 
 ## Collections Section 06
 

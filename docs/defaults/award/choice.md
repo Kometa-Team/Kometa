@@ -2,11 +2,13 @@
 
 The `choice` Default Metadata File is used to create collections based on the Critics Choice Awards.
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
-**This file works with Movie and Show Libraries.**
-
 ![](../images/choice.png)
+
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 16
 

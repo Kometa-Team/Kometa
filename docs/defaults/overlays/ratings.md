@@ -2,13 +2,17 @@
 
 The `ratings` Default Overlay File is used to create an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library.
 
-This file only updates the overlays based on the data in Plex. Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass--rating-update) and the [Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode--rating-update) to update Plex to the Ratings you want on the Overlay.
-
-**This file works with Movie and Show Libraries.**
-
-**If no template variables are set this file will do nothing.**
+This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info.
 
 ![](images/ratings_overlay.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Episode
+
+Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
+
+Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass--rating-update) and the [Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode--rating-update) to update Plex to the Ratings you want on the Overlay.
 
 ## Config
 
