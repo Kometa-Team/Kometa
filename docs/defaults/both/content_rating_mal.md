@@ -10,7 +10,7 @@ If you do not use the MAL-based rating system within Plex, this file will attemp
 
 Supported Library Types: Movie, Show
 
-Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with `mal` or `mdb_commonsense0` to update Plex to the MyAnimeList Content Rating.
+Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with `mal` to update Plex to the MyAnimeList Content Rating.
 
 ## Collections Section 14
 
