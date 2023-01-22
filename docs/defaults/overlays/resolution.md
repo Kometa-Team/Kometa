@@ -102,4 +102,6 @@ libraries:
           use_720p: false
           use_576p: false
           use_480p: false
+          use_1080p_hdr: false
+          use_1080p_dv: false
 ```
