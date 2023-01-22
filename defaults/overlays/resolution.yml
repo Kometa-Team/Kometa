@@ -120,11 +120,13 @@ templates:
     optional:
       - search
       - use_<<key>>
+      _ use_<<key_<<alt>>
       - use_edition
       - allowed_libraries
     allowed_library_types:
       - <<use_<<key>>>>
       - <<use_edition>>
+      - <<use_<<key>>_<<alt>>>>
       - <<allowed_libraries>>
     ignore_blank_results: true
     plex_all: true
