@@ -679,9 +679,6 @@ def run_collection(config, library, metadata, requested_collections):
                         else:
                             raise Failed(e)
 
-                if not builder.found_items and not builder.ignore_blank_results:
-                    raise NonExisting(f"{builder.Type} Warning: No items found")
-
                 builder.display_filters()
 
                 if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
@@ -702,6 +699,9 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[str(mapping_name)]["radarr"] += radarr_add
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
+
+                if not builder.found_items and not builder.ignore_blank_results:
+                    raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
             if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
