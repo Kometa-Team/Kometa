@@ -706,16 +706,16 @@ def parse_and_or(error, attribute, data, test_list=None):
         for item in ors:
             if not item:
                 raise Failed(f"{error} Error: Cannot have a blank {attribute}")
-            if test_list and item not in test_list:
+            if test_list and str(item) not in test_list:
                 raise Failed(f"{error} Error: {attribute} {item} is invalid")
         if out:
             out += f" and "
         if len(ands) > 1 and len(ors) > 1:
             out += "("
         if len(ors) > 1:
-            out += ' or '.join([test_list[int(o)] if test_list else o for o in ors])
+            out += ' or '.join([test_list[test_list[str(o)]] if test_list else o for o in ors])
         else:
-            out += test_list[int(ors[0])] if test_list else ors[0]
+            out += test_list[test_list[str(ors[0])]] if test_list else ors[0]
         if len(ands) > 1 and len(ors) > 1:
             out += ")"
     return out
