@@ -378,6 +378,7 @@ class DataFile:
                                 if var_key == "value":
                                     continue
                                 error_text = ""
+                                con_value = ""
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
@@ -403,9 +404,11 @@ class DataFile:
                                     elif str(con_value) != str(var_value):
                                         error_text = f'is not "{var_value}"'
                                 else:
-                                    error_text = "is not a variable provided or a default variable"
+                                    error_text = " is not a variable provided or a default variable"
                                 if error_text:
-                                    logger.trace(f'Condition {i} Failed: {var_key}: "{con_value}" {error_text}')
+                                    if con_value:
+                                        error_text = f': "{con_value}" {error_text}'
+                                    logger.trace(f'Condition {i} Failed: {var_key}{error_text}')
                                     condition_passed = False
                             if condition_passed:
                                 logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')

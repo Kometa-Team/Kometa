@@ -12,6 +12,11 @@ external_templates:
     default:
       vertical_align: top
     conditionals:
+      horizontal_align:
+        default: right
+        conditions:
+          - overlay_level: episode
+            value: center
       vertical_offset:
         default: 15
         conditions:
@@ -34,11 +39,6 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      horizontal_align:
-        default: right
-        conditions:
-          - overlay_level: episode
-            value: center
     back_color: "#00000099"
     back_width: 105
     back_height: 105
