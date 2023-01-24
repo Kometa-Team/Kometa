@@ -49,18 +49,18 @@ external_templates:
               - IMAX
               - Remastered
               - Criterion
-      horizontal_offset:
-        default: 15
+      final_horizontal_offset:
+        default: <<horizontal_offset>>
         conditions:
           - type: resolution_dovetail
-            value: 45
+            value: <<horizontal_offset+30>>
       vertical_offset:
-        default: 15
+        default: <<vertical_offset>>
         conditions:
           - type: edition_dovetail
-            value: 79
+            value: <<vertical_offset+64>>
           - type: resolution_dovetail
-            value: 45
+            value: <<vertical_offset+30>>
       back_width:
         conditions:
           - type: [edition, resolution, edition_dovetail]
@@ -99,6 +99,8 @@ external_templates:
             value: edition
           - type: [resolution, resolution_dovetail]
             value: resolution
+    horizontal_offset: 15
+    vertical_offset: 15
     horizontal_align: left
     vertical_align: top
 
@@ -120,13 +122,11 @@ templates:
     optional:
       - search
       - use_<<key>>
-      - use_<<key_<<alt>>
       - use_edition
       - allowed_libraries
     allowed_library_types:
       - <<use_<<key>>>>
       - <<use_edition>>
-      - <<use_<<key>>_<<alt>>>>
       - <<allowed_libraries>>
     ignore_blank_results: true
     plex_all: true
@@ -163,12 +163,14 @@ templates:
     optional:
       - all
       - use_<<key>>
+      - use_<<key>>_<<alt>>
       - use_<<alt>>
       - use_resolution
       - allowed_libraries
     allowed_library_types:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
+      - <<use_<<key>>_<<alt>>>>
       - <<allowed_libraries>>
       - <<use_resolution>>
     ignore_blank_results: true
