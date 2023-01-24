@@ -46,11 +46,13 @@ extensions = [
     'myst_parser',
     'sphinx_inline_tabs',
     'sphinx_copybutton',
-    'sphinx_reredirects'
+    'sphinx_reredirects',
+    'sphinx_design'
 ]
 
 source_suffix = ['.rst', '.md']
 myst_heading_anchors = 4
+myst_enable_extensions = ["colon_fence"]
 
 # -- Napoleon Settings -----------------------------------------------------
 napoleon_google_docstring = True
@@ -545,7 +547,7 @@ html_static_path = ["_static"]
 
 html_css_files = [
     "custom.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
 ]
 
 def setup(app):

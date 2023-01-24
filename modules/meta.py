@@ -377,39 +377,35 @@ class DataFile:
                             for var_key, var_value in condition.items():
                                 if var_key == "value":
                                     continue
+                                error_text = ""
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
-                                    var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
-                                    if (not var_value and var_key[:-7] in variables and variables[var_key[:-7]]) or (var_value and (var_key[:-7] not in variables or not variables[var_key[:-7]])):
-                                        logger.trace(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
-                                        condition_passed = False
+                                    con_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                    if con_value:
+                                        if var_key[:-7] not in variables or not variables[var_key[:-7]]:
+                                            error_text = "- does not exist"
+                                    elif var_key[:-7] in variables and variables[var_key[:-7]]:
+                                        error_text = "- exists"
                                 elif var_key.endswith(".not"):
-                                    if (isinstance(var_value, list) and variables[var_key[:-4]] in var_value) or \
-                                            (not isinstance(var_value, list) and str(variables[var_key[:-4]]) == str(var_value)):
+                                    if var_key[:-4] in variables:
+                                        con_value = variables[var_key[:-4]]
                                         if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key[:-4]} "{variables[var_key[:-4]]}" in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key[:-4]} "{variables[var_key[:-4]]}" is "{var_value}"')
-                                        condition_passed = False
-                                elif var_key in variables:
-                                    if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
-                                        if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
-                                        condition_passed = False
-                                elif var_key in default:
-                                    if (isinstance(var_value, list) and default[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and str(default[var_key]) != str(var_value)):
-                                        if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
-                                        condition_passed = False
+                                            if con_value in var_value:
+                                                error_text = f'in {var_value}'
+                                        elif str(con_value) == str(var_value):
+                                            error_text = f'is "{var_value}"'
+                                elif var_key in variables or var_key in default:
+                                    con_value = variables[var_key] if var_key in variables else default[var_key]
+                                    if isinstance(var_value, list):
+                                        if con_value not in var_value:
+                                            error_text = f'not in {var_value}'
+                                    elif str(con_value) != str(var_value):
+                                        error_text = f'is not "{var_value}"'
                                 else:
-                                    logger.trace(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                    error_text = "is not a variable provided or a default variable"
+                                if error_text:
+                                    logger.trace(f'Condition {i} Failed: {var_key}: "{con_value}" {error_text}')
                                     condition_passed = False
                             if condition_passed:
                                 logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
