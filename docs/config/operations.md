@@ -141,7 +141,7 @@ Updates every item's original title in the library to the chosen site's original
 
 Updates every item's originally available date in the library to the chosen site's date.
 
-**Attribute:** `mass_original_title_update`
+**Attribute:** `mass_originally_available_update`
 
 **Values:**
 
@@ -245,7 +245,12 @@ Updates every item's labels in the library to match the IMDb Parental Guide
 
 **Attribute:** `mass_imdb_parental_labels`
 
-**Values** `with_none` or `without_none`
+**Values:**
+
+| Value          | Description                                                                                                         |
+|:---------------|:--------------------------------------------------------------------------------------------------------------------|
+| `with_none`    | Apply all Parental Labels regardless of value                                                                       |
+| `without_none` | Only apply Parental Labels if the value is not none (i.e. do not apply "Sex & Nudity" label if the value is "None") |
 
 ## Mass Collection Mode
 

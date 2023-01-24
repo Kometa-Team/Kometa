@@ -9,17 +9,32 @@
 external_templates:
   pmm: templates
   template_variables:
+    default:
+      horizontal_align: center
+      vertical_align: bottom
     conditionals:
       image_key:
         default: audio
         conditions:
           - use_subtitles: true
             value: subs
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
     group: language
-    horizontal_offset: 0
-    horizontal_align: center
-    vertical_offset: 30
-    vertical_align: bottom
     back_color: "#00000099"
     back_width: 188
     back_height: 105

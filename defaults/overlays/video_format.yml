@@ -11,11 +11,26 @@ external_templates:
   template_variables:
     default:
       text_<<key>>: <<overlay_name>>
+      horizontal_align: left
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
     group: quality
-    horizontal_offset: 15
-    horizontal_align: left
-    vertical_offset: 30
-    vertical_align: bottom
     back_color: "#00000099"
     back_width: 305
     back_height: 105

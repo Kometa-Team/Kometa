@@ -9,7 +9,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | Default                                                    | Path              | Example Collections                         |  Works with Movies   |  Works with Shows   |
 |:-----------------------------------------------------------|:------------------|:--------------------------------------------|:--------------------:|:-------------------:|
 | [Award Separator](award/separator)                         | `separator_award` | Award Collections                           |       &#9989;        |       &#9989;       |
-| [British Academy of Film and Television Arts](award/bafta) | `bafta`           | BAFTA Best Films, BAFTA 2021                | &#9989;<sup>1</sup>  |     &#10060;        |
+| [British Academy of Film and Television Arts](award/bafta) | `bafta`           | BAFTA Best Films, BAFTA 2021                | &#9989;<sup>1</sup>  |      &#10060;       |
 | [Cannes](award/cannes)                                     | `cannes`          | Cannes - Palme d'or, Cannes 2018            | &#9989;<sup>1</sup>  |      &#10060;       |
 | [Critics Choice](award/choice)                             | `choice`          | Critics Choice Awards 2020                  | &#9989;<sup>1</sup>  | &#9989;<sup>1</sup> |
 | [Emmys](award/emmy)                                        | `emmy`            | Emmys 2021                                  |       &#9989;        |       &#9989;       |
@@ -18,6 +18,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Independent Spirit](award/spirit)                         | `spirit`          | Independent Spirit Awards 2021              | &#9989;<sup>1</sup>  |      &#10060;       |
 | [Sundance](award/sundance)                                 | `sundance`        | Sundance Grand Jury Winners                 | &#9989;<sup>1</sup>  |      &#10060;       |
 | [Other](award/other)                                       | `other_award`     | Berlinale Golden Bears, Venice Golden Lions | &#9989;<sup>1</sup>  |      &#10060;       |
+
 <sup>1</sup> Requires [Trakt Authentication](../config/trakt)
 
 ### Chart Collections
@@ -34,8 +35,8 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Tautulli](chart/tautulli)         | `tautulli`        | Plex Popular, Plex Watched                 | &#9989;<sup>2</sup> | &#9989;<sup>2</sup> |
 | [TMDb](chart/tmdb)                 | `tmdb`            | TMDb Popular, TMDb Airing Today            |       &#9989;       |       &#9989;       |
 | [Trakt](chart/trakt)               | `trakt`           | Trakt Popular, Trakt Trending              | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> |
-<sup>1</sup> Requires [Trakt Authentication](../config/trakt)
 
+<sup>1</sup> Requires [Trakt Authentication](../config/trakt)
 <sup>2</sup> Requires [Tautulli Authentication](../config/tautulli)
 
 ### General Collections
