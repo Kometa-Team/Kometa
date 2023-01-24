@@ -1,24 +1,5 @@
 # Frequently Asked Questions & Knowledgebase
 
-## {}
-
-{fas}`spinner;sd-text-primary`
-
-- An icon {fas}`spinner;sd-text-primary`, some more text.
-- An icon {fab}`github`, some more text.
-- An icon {fab}`gitkraken;sd-text-success fa-xl`, some more text.
-- An icon {fas}`skull;sd-text-danger`, some more text.
-
-## ::
-
-:fas:`spinner;sd-text-primary`
-
-- An icon :fas:`spinner;sd-text-primary`, some more text.
-- An icon :fab:`github`, some more text.
-- An icon :fab:`gitkraken;sd-text-success fa-xl`, some more text.
-- An icon :fas:`skull;sd-text-danger`, some more text.
-
-
 This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/NfH6mGFuAB).
 
 ## Frequently Asked Questions

@@ -711,7 +711,7 @@ def parse_and_or(error, attribute, data, test_list):
                 raise Failed(f"{error} Error: Cannot have a blank {attribute}")
             if str(item) not in test_list:
                 raise Failed(f"{error} Error: {attribute} {item} is invalid")
-            or_num.append(test_list[str(item)])
+            or_num.append(str(test_list[str(item)]))
         if final:
             final += ","
         final += "|".join(or_num)
