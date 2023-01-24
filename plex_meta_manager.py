@@ -10,7 +10,7 @@ try:
     from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     print("Requirements Error: Requirements are not installed")
     sys.exit(0)
 
