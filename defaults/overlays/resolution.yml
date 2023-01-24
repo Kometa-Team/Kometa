@@ -120,7 +120,7 @@ templates:
     optional:
       - search
       - use_<<key>>
-      _ use_<<key_<<alt>>
+      - use_<<key_<<alt>>
       - use_edition
       - allowed_libraries
     allowed_library_types:
