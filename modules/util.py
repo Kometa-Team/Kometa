@@ -117,10 +117,10 @@ def guess_branch(version, env_version, git_branch):
     else:
         return "master"
 
-def current_version(version, env_version=None, nightly=False):
-    if nightly or env_version == "nightly":
+def current_version(version, branch=None, nightly=False):
+    if nightly or branch == "nightly":
         return get_nightly()
-    elif env_version == "develop":
+    elif branch == "develop":
         return get_develop()
     elif version[2] > 0:
         new_version = get_develop()
@@ -154,12 +154,13 @@ def get_master():
 def get_version(level):
     try:
         url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{level}/VERSION"
-        return parse_version(requests.get(url).content.decode().strip())
+        return parse_version(requests.get(url).content.decode().strip(), text=level)
     except requests.exceptions.ConnectionError:
         return "Unknown", "Unknown", 0
 
-def parse_version(version):
-    split_version = version.split("-develop")
+def parse_version(version, text="develop"):
+    version = version.replace("develop", text)
+    split_version = version.split(f"-{text}")
     return version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
 
 def download_image(title, image_url, download_directory, filename):

@@ -114,7 +114,7 @@ class ConfigFile:
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
-        self.env_version = attrs["env_version"] if "env_version" in attrs else None
+        self.branch = attrs["branch"] if "branch" in attrs else None
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
@@ -133,7 +133,7 @@ class ConfigFile:
         with open(self.config_path, encoding="utf-8") as fp:
             logger.separator("Redacted Config", space=False, border=False, debug=True)
             for line in fp.readlines():
-                logger.debug(re.sub(r"(token|client.*|url|api_*key|secret|webhooks|error|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
+                logger.debug(re.sub(r"(token|client.*|url|api_*key|secret|error|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
             logger.debug("")
 
         self.data = YAML(self.config_path).data
@@ -386,7 +386,7 @@ class ConfigFile:
                 repo = repo.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/tree/", "/")
             self.custom_repo = repo
         self.check_nightly = self.general["check_nightly"]
-        self.latest_version = util.current_version(self.version, env_version=self.env_version, nightly=self.check_nightly)
+        self.latest_version = util.current_version(self.version, branch=self.branch, nightly=self.check_nightly)
 
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
