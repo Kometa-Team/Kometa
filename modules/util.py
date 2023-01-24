@@ -699,16 +699,22 @@ def check_int(value, datatype="int", minimum=1, maximum=None):
     except ValueError:
         pass
 
-def parse_and_or(error, attribute, data, test_list=None):
+def parse_and_or(error, attribute, data, test_list):
     out = ""
+    final = ""
     ands = [d.strip() for d in data.split(",")]
     for an in ands:
         ors = [a.strip() for a in an.split("|")]
+        or_num = []
         for item in ors:
             if not item:
                 raise Failed(f"{error} Error: Cannot have a blank {attribute}")
-            if test_list and str(item) not in test_list:
+            if str(item) not in test_list:
                 raise Failed(f"{error} Error: {attribute} {item} is invalid")
+            or_num.append(test_list[str(item)])
+        if final:
+            final += ","
+        final += "|".join(or_num)
         if out:
             out += f" and "
         if len(ands) > 1 and len(ors) > 1:
@@ -719,7 +725,7 @@ def parse_and_or(error, attribute, data, test_list=None):
             out += test_list[test_list[str(ors[0])]] if test_list else ors[0]
         if len(ands) > 1 and len(ors) > 1:
             out += ")"
-    return out
+    return out, final
 
 def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
