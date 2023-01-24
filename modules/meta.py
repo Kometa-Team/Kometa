@@ -209,7 +209,7 @@ class DataFile:
 
                     remove_variables = []
                     optional = []
-                    for tm in original_variables:
+                    for tm in original_variables.copy():
                         if original_variables[tm] is None:
                             remove_variables.append(tm)
                             original_variables.pop(tm)
@@ -385,12 +385,12 @@ class DataFile:
                                         logger.trace(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
                                         condition_passed = False
                                 elif var_key.endswith(".not"):
-                                    if (isinstance(var_value, list) and variables[var_key] in var_value) or \
-                                            (not isinstance(var_value, list) and str(variables[var_key]) == str(var_value)):
+                                    if (isinstance(var_value, list) and variables[var_key[:-4]] in var_value) or \
+                                            (not isinstance(var_value, list) and str(variables[var_key[:-4]]) == str(var_value)):
                                         if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" in {var_value}')
+                                            logger.trace(f'Condition {i} Failed: {var_key[:-4]} "{variables[var_key[:-4]]}" in {var_value}')
                                         else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
+                                            logger.trace(f'Condition {i} Failed: {var_key[:-4]} "{variables[var_key[:-4]]}" is "{var_value}"')
                                         condition_passed = False
                                 elif var_key in variables:
                                     if (isinstance(var_value, list) and variables[var_key] not in var_value) or \

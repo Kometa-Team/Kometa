@@ -1319,16 +1319,19 @@ class CollectionBuilder:
                         final_text += f"\nStatus: {final_attributes['status']}"
                     if "genre" in dict_methods:
                         genre_str = str(util.parse(self.Type, "genre", dict_data, methods=dict_methods, parent=method_name))
-                        final_text += f"\nGenre: {util.parse_and_or(self.Type, 'Genre', genre_str, test_list=self.config.MyAnimeList.genres)}"
-                        final_attributes["genres"] = genre_str
+                        out_text, out_ints = util.parse_and_or(self.Type, 'Genre', genre_str, self.config.MyAnimeList.genres)
+                        final_text += f"\nGenre: {out_text}"
+                        final_attributes["genres"] = out_ints
                     if "genre.not" in dict_methods:
                         genre_str = str(util.parse(self.Type, "genre.not", dict_data, methods=dict_methods, parent=method_name))
-                        final_text += f"\nNot Genre: {util.parse_and_or(self.Type, 'Genre', genre_str, test_list=self.config.MyAnimeList.genres)}"
-                        final_attributes["genres_exclude"] = genre_str
+                        out_text, out_ints = util.parse_and_or(self.Type, 'Genre', genre_str, self.config.MyAnimeList.genres)
+                        final_text += f"\nNot Genre: {out_text}"
+                        final_attributes["genres_exclude"] = out_ints
                     if "studio" in dict_methods:
                         studio_str = str(util.parse(self.Type, "studio", dict_data, methods=dict_methods, parent=method_name))
-                        final_text += f"\nStudio: {util.parse_and_or(self.Type, 'Studio', studio_str, test_list=self.config.MyAnimeList.studios)}"
-                        final_attributes["producers"] = studio_str
+                        out_text, out_ints = util.parse_and_or(self.Type, 'Studio', studio_str, self.config.MyAnimeList.studios)
+                        final_text += f"\nStudio: {out_text}"
+                        final_attributes["producers"] = out_ints
                     if "content_rating" in dict_methods:
                         final_attributes["rating"] = util.parse(self.Type, "content_rating", dict_data, methods=dict_methods, parent=method_name, options=mal.search_ratings)
                         final_text += f"\nContent Rating: {final_attributes['rating']}"
