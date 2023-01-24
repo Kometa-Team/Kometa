@@ -206,7 +206,7 @@ def start(attrs):
     logger.info_center("                                                                     |___/           ")
     system_ver = "Docker" if is_docker else "Linuxserver" if is_linuxserver else f"Python {platform.python_version()}"
     logger.info(f"    Version: {version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
-    latest_version = util.current_version(version, env_version=env_version)
+    latest_version = util.current_version(version, branch=branch)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
@@ -223,7 +223,7 @@ def start(attrs):
     attrs["time_obj"] = start_time
     attrs["read_only"] = read_only_config
     attrs["version"] = version
-    attrs["env_version"] = env_version
+    attrs["branch"] = branch
     attrs["no_missing"] = no_missing
     attrs["no_report"] = no_report
     attrs["collection_only"] = collection_only
