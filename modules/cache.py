@@ -552,7 +552,7 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO anidb_data2(anidb_id) VALUES(?)", (anidb_id,))
-                update_sql = "UPDATE anidb_data SET main_title = ?, titles = ?, studio = ?, rating = ?, average = ?, score = ?, " \
+                update_sql = "UPDATE anidb_data2 SET main_title = ?, titles = ?, studio = ?, rating = ?, average = ?, score = ?, " \
                              "released = ?, tags = ?, mal_id = ?, imdb_id = ?, tmdb_id = ?, tmdb_type = ?, expiration_date = ? WHERE anidb_id = ?"
                 cursor.execute(update_sql, (
                     anidb.main_title, str(anidb.titles), anidb.studio, anidb.rating, anidb.average, anidb.score,
@@ -593,7 +593,7 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO mal_data2(mal_id) VALUES(?)", (mal_id,))
-                update_sql = "UPDATE mal_data SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
+                update_sql = "UPDATE mal_data2 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
                              "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, studio = ? expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
