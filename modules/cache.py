@@ -594,7 +594,7 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO mal_data2(mal_id) VALUES(?)", (mal_id,))
                 update_sql = "UPDATE mal_data2 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
-                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, studio = ? expiration_date = ? WHERE mal_id = ?"
+                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, studio = ?, expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
                     mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), mal.studio, expiration_date.strftime("%Y-%m-%d"), mal_id
