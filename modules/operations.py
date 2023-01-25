@@ -501,7 +501,7 @@ class Operations:
                                 if "Overlay" in [la.tag for la in self.library.item_labels(item)]:
                                     logger.info(self.library.edit_tags("label", item, remove_tags="Overlay", do_print=False))
                             else:
-                                logger.info("Poster | No Reset Image Found")
+                                logger.warning("Poster | No Reset Image Found")
                         item.reload()
 
                     if self.library.mass_background_update:
@@ -528,7 +528,7 @@ class Operations:
                                 self.library.upload_background(item, new_background, url=background_url)
                                 logger.info(f"Background | Reset from {background_location}")
                             else:
-                                logger.info(f"Background | No Reset Image Found")
+                                logger.warning(f"Background | No Reset Image Found")
                         item.reload()
 
                     if self.library.is_show:
@@ -567,7 +567,7 @@ class Operations:
                                         if "Overlay" in [la.tag for la in self.library.item_labels(season)]:
                                             logger.info(self.library.edit_tags("label", season, remove_tags="Overlay", do_print=False))
                                     else:
-                                        logger.info(f"{season.title} Poster | No Reset Image Found")
+                                        logger.warning(f"{season.title} Poster | No Reset Image Found")
                                 item.reload()
                             if self.library.mass_background_update:
                                 if self.library.mass_background_update == "lock":
@@ -589,7 +589,7 @@ class Operations:
                                         self.library.upload_background(item, season_background, url=background_url)
                                         logger.info(f"{season.title} Background | Reset from {background_location}")
                                     else:
-                                        logger.info(f"{season.title} Background | No Reset Image Found")
+                                        logger.warning(f"{season.title} Background | No Reset Image Found")
                             tmdb_episodes = {}
                             if season.seasonNumber in tmdb_seasons:
                                 for episode in tmdb_seasons[season.seasonNumber].episodes:
@@ -631,7 +631,7 @@ class Operations:
                                             if "Overlay" in [la.tag for la in self.library.item_labels(episode)]:
                                                 logger.info(self.library.edit_tags("label", episode, remove_tags="Overlay", do_print=False))
                                         else:
-                                            logger.info(f"{episode.title} Poster | No Reset Image Found")
+                                            logger.warning(f"{episode.title} Poster | No Reset Image Found")
                                     item.reload()
                                 if self.library.mass_background_update:
                                     if self.library.mass_background_update == "lock":
@@ -653,7 +653,7 @@ class Operations:
                                             self.library.upload_background(item, episode_background, url=background_url)
                                             logger.info(f"{episode.title} Background | Reset from {background_location}")
                                         else:
-                                            logger.info(f"{episode.title} Background | No Reset Image Found")
+                                            logger.warning(f"{episode.title} Background | No Reset Image Found")
                                     item.reload()
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]

@@ -378,36 +378,36 @@ class DataFile:
                                 if var_key == "value":
                                     continue
                                 error_text = ""
-                                con_value = ""
+                                con_var_value = ""
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
-                                    con_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
-                                    if con_value:
+                                    con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                    if con_var_value:
                                         if var_key[:-7] not in variables or not variables[var_key[:-7]]:
                                             error_text = "- does not exist"
                                     elif var_key[:-7] in variables and variables[var_key[:-7]]:
                                         error_text = "- exists"
                                 elif var_key.endswith(".not"):
                                     if var_key[:-4] in variables:
-                                        con_value = variables[var_key[:-4]]
+                                        con_var_value = variables[var_key[:-4]]
                                         if isinstance(var_value, list):
-                                            if con_value in var_value:
+                                            if con_var_value in var_value:
                                                 error_text = f'in {var_value}'
-                                        elif str(con_value) == str(var_value):
+                                        elif str(con_var_value) == str(var_value):
                                             error_text = f'is "{var_value}"'
                                 elif var_key in variables or var_key in default:
-                                    con_value = variables[var_key] if var_key in variables else default[var_key]
+                                    con_var_value = variables[var_key] if var_key in variables else default[var_key]
                                     if isinstance(var_value, list):
-                                        if con_value not in var_value:
+                                        if con_var_value not in var_value:
                                             error_text = f'not in {var_value}'
-                                    elif str(con_value) != str(var_value):
+                                    elif str(con_var_value) != str(var_value):
                                         error_text = f'is not "{var_value}"'
                                 else:
                                     error_text = " is not a variable provided or a default variable"
                                 if error_text:
-                                    if con_value:
-                                        error_text = f': "{con_value}" {error_text}'
+                                    if con_var_value:
+                                        error_text = f': "{con_var_value}" {error_text}'
                                     logger.trace(f'Condition {i} Failed: {var_key}{error_text}')
                                     condition_passed = False
                             if condition_passed:
