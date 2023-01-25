@@ -124,9 +124,24 @@ class ConfigFile:
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
-        self.requested_collections = util.get_list(attrs["collections"]) if "collections" in attrs else None
-        self.requested_libraries = util.get_list(attrs["libraries"]) if "libraries" in attrs else None
-        self.requested_metadata_files = [mf[:-4] if str(mf).endswith(".yml") else mf for mf in util.get_list(attrs["metadata_files"])] if "metadata_files" in attrs and attrs["metadata_files"] else None
+        self.requested_collections = None
+        if "collections" in attrs and attrs["collections"]:
+            self.requested_collections = [s.strip() for s in attrs["collections"].split("|")]
+        self.requested_libraries = None
+        if "libraries" in attrs and attrs["libraries"]:
+            self.requested_libraries = [s.strip() for s in attrs["libraries"].split("|")]
+        self.requested_metadata_files = None
+        if "metadata_files" in attrs and attrs["metadata_files"]:
+            self.requested_metadata_files = []
+            for s in attrs["libraries"].split("|"):
+                s = s.stripe()
+                if s:
+                    if s.endswith(".yml"):
+                        self.requested_metadata_files.append(s[:-4])
+                    elif s.endswith(".yaml"):
+                        self.requested_metadata_files.append(s[:-5])
+                    else:
+                        self.requested_metadata_files.append(s)
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False

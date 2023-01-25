@@ -448,23 +448,23 @@ Perform a collections run immediately to run only the pre-defined collections, b
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--run-collections "Harry Potter, Star Wars"</code></td>
-    <td><code>PMM_COLLECTIONS=Harry Potter, Star Wars</code></td>
+    <td><code>--run-collections "Harry Potter|Star Wars"</code></td>
+    <td><code>PMM_COLLECTIONS=Harry Potter|Star Wars</code></td>
   </tr>
   <tr>
     <th>Values</th>
-    <td colspan="2">Comma-separated list of Collection Names to run</td>
+    <td colspan="2">Pipe-separated list of Collection Names to run</td>
   </tr>
 </table>
 
 ````{tab} Local Environment
 ```
-python plex_meta_manager.py --run-collections "Harry Potter, Star Wars"
+python plex_meta_manager.py --run-collections "Harry Potter|Star Wars"
 ```
 ````
 ````{tab} Docker Environment
 ```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-collections "Harry Potter, Star Wars"
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-collections "Harry Potter|Star Wars"
 ```
 ````
 
@@ -485,12 +485,12 @@ Perform a libraries run immediately to run only the pre-defined libraries, bypas
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--run-libraries "Movies - 4K, TV Shows - 4K"</code></td>
-    <td><code>PMM_LIBRARIES=Movies - 4K, TV Shows - 4K</code></td>
+    <td><code>--run-libraries "Movies - 4K|TV Shows - 4K"</code></td>
+    <td><code>PMM_LIBRARIES=Movies - 4K|TV Shows - 4K</code></td>
   </tr>
   <tr>
     <th>Values</th>
-    <td colspan="2">Comma-separated list of Library Names to run</td>
+    <td colspan="2">Pipe-separated list of Library Names to run</td>
   </tr>
 </table>
 
@@ -522,12 +522,12 @@ Perform a metadata files run immediately to run only the pre-defined metadata fi
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--run-metadata-files "Movies.yml, MovieCharts"</code></td>
-    <td><code>PMM_METADATA_FILES=Movies.yml, MovieCharts</code></td>
+    <td><code>--run-metadata-files "Movies.yml|MovieCharts"</code></td>
+    <td><code>PMM_METADATA_FILES=Movies.yml|MovieCharts</code></td>
   </tr>
   <tr>
     <th>Available Values</th>
-    <td colspan="2">Comma-separated list of Metadata Filenames to run</td>
+    <td colspan="2">Pipe-separated list of Metadata Filenames to run</td>
   </tr>
 </table>
 
