@@ -557,7 +557,7 @@ class Cache:
                 cursor.execute(update_sql, (
                     anidb.main_title, str(anidb.titles), anidb.studio, anidb.rating, anidb.average, anidb.score,
                     anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags),
-                    anidb_id.mal_id, anidb.imdb_id, anidb.tmdb_id, anidb.tmdb_type,
+                    anidb.mal_id, anidb.imdb_id, anidb.tmdb_id, anidb.tmdb_type,
                     expiration_date.strftime("%Y-%m-%d"), anidb_id
                 ))
 
