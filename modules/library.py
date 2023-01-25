@@ -74,6 +74,7 @@ class Library(ABC):
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
         self.delete_collections = params["delete_collections"]
+        self.mass_studio_update = params["mass_studio_update"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -112,7 +113,7 @@ class Library(ABC):
                                        or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                        or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
                                        or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
-                                       or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper \
+                                       or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
                                        or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
         self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \

@@ -23,6 +23,7 @@ The available attributes for the operations attribute are as follows
 | [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    |  &#9989;   |   &#9989;   | &#9989;  |
 | [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    |  &#9989;   |   &#9989;   | &#10060; |
 | [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    |  &#9989;   |   &#9989;   | &#10060; |
+| [Mass Studio Update](#mass-studio-update)                             | Updates every item's studio in the library to the chosen site's studio.                                                                                    |  &#9989;   |   &#9989;   | &#10060; |
 | [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                                   |  &#9989;   |   &#9989;   | &#10060; |
 | [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                               |  &#9989;   |   &#9989;   | &#10060; |
 | [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.                                                     |  &#10060;  |   &#9989;   | &#10060; |
@@ -136,6 +137,24 @@ Updates every item's original title in the library to the chosen site's original
 | `unlock`         | Unlock Original Title Field                                                                     |
 | `remove`         | Remove Original Title and Lock Field                                                            |
 | `reset`          | Remove Original Title and Unlock Field                                                          |
+
+## Mass Studio Update
+
+Updates every item's studio in the library to the chosen site's studio.
+
+**Attribute:** `mass_studio_update`
+
+**Values:**
+
+| Value    | Description                            |
+|:---------|:---------------------------------------|
+| `anidb`  | Use AniDB Animation Work for Studio    |
+| `mal`    | Use MyAnimeList Studio for Studio      |
+| `tmdb`   | Use TMDb Studio for Studio             |
+| `lock`   | Lock Original Title Field              |
+| `unlock` | Unlock Original Title Field            |
+| `remove` | Remove Original Title and Lock Field   |
+| `reset`  | Remove Original Title and Unlock Field |
 
 ## Mass Originally Available Update
 

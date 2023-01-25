@@ -10,7 +10,7 @@ meta_operations = [
     "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
     "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
     "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update",
-    "mass_poster_update", "mass_background_update"
+    "mass_poster_update", "mass_background_update", "mass_studio_update"
 ]
 
 class Operations:
@@ -422,6 +422,34 @@ class Operations:
                             elif str(item.originalTitle) != str(new_original_title):
                                 item.editOriginalTitle(new_original_title)
                                 batch_display += f"\nOriginal Title | {new_original_title}"
+                        except Failed:
+                            pass
+
+                if self.library.mass_studio_update:
+                    if self.library.mass_studio_update in ["remove", "reset"] and item.studio:
+                        item.editField("studio", None, locked=self.library.mass_studio_update == "remove")
+                        batch_display += f"\nStudio | None"
+                    elif self.library.mass_studio_update in ["unlock", "reset"] and "studio" in locked_fields:
+                        self.library.edit_query(item, {"originalTitle.locked": 0})
+                        batch_display += f"\nStudio | Unlocked"
+                    elif self.library.mass_studio_update in ["lock", "remove"] and "studio" not in locked_fields:
+                        self.library.edit_query(item, {"studio.locked": 1})
+                        batch_display += f"\nStudio | Locked"
+                    elif self.library.mass_studio_update not in ["lock", "unlock", "remove", "reset"]:
+                        try:
+                            if anidb_item and self.library.mass_studio_update == "anidb":
+                                new_studio = anidb_item.studio
+                            elif mal_item and self.library.mass_studio_update == "mal":
+                                new_studio = mal_item.studio
+                            elif tmdb_item and self.library.mass_studio_update == "tmdb":
+                                new_studio = tmdb_item.studio
+                            else:
+                                raise Failed
+                            if not new_studio:
+                                logger.info(f"No Studio Found")
+                            elif str(item.studio) != str(new_studio):
+                                item.editStudio(new_studio)
+                                batch_display += f"\nStudio | {new_studio}"
                         except Failed:
                             pass
 

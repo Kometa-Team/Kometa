@@ -30,6 +30,8 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS overlay_ratings")
+                cursor.execute("DROP TABLE IF EXISTS anidb_data")
+                cursor.execute("DROP TABLE IF EXISTS mal_data")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -121,20 +123,25 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS anidb_data (
+                    """CREATE TABLE IF NOT EXISTS anidb_data2 (
                     key INTEGER PRIMARY KEY,
                     anidb_id INTEGER UNIQUE,
                     main_title TEXT,
                     titles TEXT,
+                    studio TEXT,
                     rating REAL,
                     average REAL,
                     score REAL,
                     released TEXT,
                     tags TEXT,
+                    mal_id INTEGER,
+                    imdb_id TEXT,
+                    tmdb_id INTEGER,
+                    tmdb_type TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mal_data (
+                    """CREATE TABLE IF NOT EXISTS mal_data2 (
                     key INTEGER PRIMARY KEY,
                     mal_id INTEGER UNIQUE,
                     title TEXT,
@@ -148,6 +155,7 @@ class Cache:
                     rank INTEGER,
                     popularity TEXT,
                     genres TEXT,
+                    studio TEXT,
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
@@ -518,16 +526,21 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM anidb_data WHERE anidb_id = ?", (anidb_id,))
+                cursor.execute("SELECT * FROM anidb_data2 WHERE anidb_id = ?", (anidb_id,))
                 row = cursor.fetchone()
                 if row:
                     anidb_dict["main_title"] = row["main_title"]
                     anidb_dict["titles"] = row["titles"] if row["titles"] else None
+                    anidb_dict["studio"] = row["studio"] if row["studio"] else None
                     anidb_dict["rating"] = row["rating"] if row["rating"] else None
                     anidb_dict["average"] = row["average"] if row["average"] else None
                     anidb_dict["score"] = row["score"] if row["score"] else None
                     anidb_dict["released"] = row["released"] if row["released"] else None
                     anidb_dict["tags"] = row["tags"] if row["tags"] else None
+                    anidb_dict["mal_id"] = row["mal_id"] if row["mal_id"] else None
+                    anidb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else None
+                    anidb_dict["tmdb_id"] = row["tmdb_id"] if row["tmdb_id"] else None
+                    anidb_dict["tmdb_type"] = row["tmdb_type"] if row["tmdb_type"] else None
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > expiration
@@ -538,12 +551,13 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO anidb_data(anidb_id) VALUES(?)", (anidb_id,))
-                update_sql = "UPDATE anidb_data SET main_title = ?, titles = ?, rating = ?, average = ?, score = ?, " \
-                             "released = ?, tags = ?, expiration_date = ? WHERE anidb_id = ?"
+                cursor.execute("INSERT OR IGNORE INTO anidb_data2(anidb_id) VALUES(?)", (anidb_id,))
+                update_sql = "UPDATE anidb_data SET main_title = ?, titles = ?, studio = ?, rating = ?, average = ?, score = ?, " \
+                             "released = ?, tags = ?, mal_id = ?, imdb_id = ?, tmdb_id = ?, tmdb_type = ?, expiration_date = ? WHERE anidb_id = ?"
                 cursor.execute(update_sql, (
-                    anidb.main_title, str(anidb.titles), anidb.rating, anidb.average, anidb.score,
+                    anidb.main_title, str(anidb.titles), anidb.studio, anidb.rating, anidb.average, anidb.score,
                     anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags),
+                    anidb_id.mal_id, anidb.imdb_id, anidb.tmdb_id, anidb.tmdb_type,
                     expiration_date.strftime("%Y-%m-%d"), anidb_id
                 ))
 
@@ -553,7 +567,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mal_data WHERE mal_id = ?", (mal_id,))
+                cursor.execute("SELECT * FROM mal_data2 WHERE mal_id = ?", (mal_id,))
                 row = cursor.fetchone()
                 if row:
                     mal_dict["title"] = row["title"]
@@ -567,6 +581,7 @@ class Cache:
                     mal_dict["rank"] = row["rank"] if row["rank"] else None
                     mal_dict["popularity"] = row["popularity"] if row["popularity"] else None
                     mal_dict["genres"] = row["genres"] if row["genres"] else None
+                    mal_dict["studio"] = row["studio"] if row["studio"] else None
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > expiration
@@ -577,12 +592,12 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mal_data(mal_id) VALUES(?)", (mal_id,))
+                cursor.execute("INSERT OR IGNORE INTO mal_data2(mal_id) VALUES(?)", (mal_id,))
                 update_sql = "UPDATE mal_data SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
-                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ? , expiration_date = ? WHERE mal_id = ?"
+                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, studio = ? expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
-                    mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), expiration_date.strftime("%Y-%m-%d"), mal_id
+                    mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), mal.studio, expiration_date.strftime("%Y-%m-%d"), mal_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
