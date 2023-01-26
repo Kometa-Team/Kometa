@@ -52,6 +52,7 @@ settings:
   missing_only_released: false
   only_filter_missing: false
   show_unmanaged: true
+  show_unconfigured: true
   show_filtered: false
   show_options: false
   show_missing: true
@@ -62,7 +63,7 @@ settings:
   ignore_imdb_ids:
   item_refresh_delay: 0
   playlist_sync_to_user: all
-  playlist_exclude_user:
+  playlist_exclude_users:
   playlist_report: false
   verify_ssl: true
   custom_repo:

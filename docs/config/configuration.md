@@ -87,6 +87,7 @@ settings:
   missing_only_released: false
   only_filter_missing: false
   show_unmanaged: true
+  show_unconfigured: true
   show_filtered: false
   show_options: false
   show_missing: true
@@ -97,7 +98,7 @@ settings:
   ignore_imdb_ids:
   item_refresh_delay: 0
   playlist_sync_to_user: all
-  playlist_exclude_user: 
+  playlist_exclude_users: 
   playlist_report: false
   verify_ssl: true
   custom_repo:
@@ -187,3 +188,27 @@ mal:
 
 **Expand the above to see the full config.yml file before continuing.**
 <br/>
+
+<details>
+  <summary>Example config.yml file 2</summary>
+
+```{include} ../../config/config.yml.template
+```
+
+</details>
+
+<details>
+  <summary>Example config.yml file 3</summary>
+
+```yaml
+
+    ```{include} ../../config/config.yml.template
+    ```
+
+```
+</details>
+
+
+
+```{include} ../../config/config.yml.template
+```
