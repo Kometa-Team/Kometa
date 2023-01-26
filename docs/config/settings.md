@@ -41,6 +41,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`run_again_delay`](#run-again-delay)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`missing_only_released`](#missing-only-released)             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_unmanaged`](#show-unmanaged-collections)               |   &#9989;    |    &#9989;    |         &#10060;          |
+| [`show_unconfigured`](#show-unconfigured-collections)         |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`show_filtered`](#show-filtered)                             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_options`](#show-options)                               |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_missing`](#show-missing)                               |   &#9989;    |    &#9989;    |          &#9989;          |
