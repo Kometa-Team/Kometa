@@ -315,9 +315,9 @@ class IMDb:
 
     def item_filter(self, imdb_info, filter_attr, modifier, filter_final, filter_data):
         if filter_attr == "imdb_keyword":
-            mr = imdb_info["minimum_relevant"]
-            mv = imdb_info["minimum_votes"]
-            mp = imdb_info["minimum_percentage"]
+            mr = filter_data["minimum_relevant"]
+            mv = filter_data["minimum_votes"]
+            mp = filter_data["minimum_percentage"]
             attrs = [k for k, (r, v) in imdb_info.items() if r >= mr and v >= mv and (v == 0 or r / v >= mp)]
             if modifier == ".regex":
                 has_match = False
@@ -332,7 +332,7 @@ class IMDb:
                 modifier = f".{modifier[7:]}"
                 if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
                     return False
-            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
-                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+            elif (not list(set(filter_data["keywords"]) & set(attrs)) and modifier == "") \
+                    or (list(set(filter_data["keywords"]) & set(attrs)) and modifier == ".not"):
                 return False
         return True

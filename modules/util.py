@@ -733,13 +733,15 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         options = [o for o in translation]
     value = data[methods[attribute]] if methods and attribute in methods else data
 
-    if datatype in ["list", "commalist", "strlist"]:
+    if datatype in ["list", "commalist", "strlist", "lowerlist"]:
         final_list = []
         if value:
             if datatype in ["commalist", "strlist"] and isinstance(value, dict):
                 raise Failed(f"{error} Error: {display} {value} must be a list or string")
             if datatype == "commalist":
                 value = get_list(value)
+            if datatype == "lowerlist":
+                value = get_list(value, lower=True)
             if not isinstance(value, list):
                 value = [value]
             for v in value:
