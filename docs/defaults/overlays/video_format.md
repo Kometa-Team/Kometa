@@ -29,7 +29,7 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_path:
-      - pmm: audio_codec
+      - pmm: video_format
   TV Shows:
     overlay_path:
       - pmm: video_format
@@ -81,7 +81,7 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     overlay_path:
-      - pmm: audio_codec
+      - pmm: video_format
         template_variables:
           text_bluray: BLURAY
           use_sdtv: false
