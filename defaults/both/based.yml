@@ -1,0 +1,65 @@
+##############################################################################
+#                         "Based On..." Collections                          #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#        https://metamanager.wiki/en/latest/defaults/both/based.html         #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "14"
+
+translations:
+  pmm: translations
+
+collections:
+  Based On... Collections:
+    template:
+      - name: separator
+        separator: based
+      - name: translation
+        key_name: Based On...
+        translation_key: separator
+
+dynamic_collections:
+  Based:
+    type: custom
+    data:
+      books: Book
+      comics: Comic
+      true_story: True Story
+      video_games: Video Game
+    title_format: Based on a <<key_name>>
+    template:
+      - filter
+      - translation
+      - shared
+    addons:
+      books:
+        - based-on-novel
+        - based-on-novella
+        - based-on-novels
+        - based-on-book-series
+        - based-on-novelette
+        - based-on-book
+        - based-on-novel-or-booka
+      comics:
+        - based-on-comic-book
+        - based-on-manga
+        - based-on-comic
+      true_story:
+        - based-on-real-events
+        - based-on-real-story
+        - based-on-true-story
+      video_games:
+        - based-on-video-game
+        - based-on-a-video-game
+        - video-game-adaption
+    template_variables:
+      filter_term:
+        default: imdb_keyword
+      image:
+        default: based/<<key_name_encoded>>
+      translation_key:
+        default: based

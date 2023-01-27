@@ -237,7 +237,7 @@ html_theme_options = {
                 ("_menu", "Movie", "defaults/defaults", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
-                    ("Based On...", "defaults/both/basedon"),
+                    ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),
@@ -262,7 +262,7 @@ html_theme_options = {
                 ("_menu", "Show", "defaults/defaults", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
-                    ("Based On...", "defaults/both/basedon"),
+                    ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),

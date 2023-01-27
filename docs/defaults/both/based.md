@@ -1,8 +1,8 @@
 # Based On... Collections
 
-The `basedon` Default Metadata File is used to create collections with items that are based on or inspired by various media outlets (such as Books or Video Games).
+The `based` Default Metadata File is used to create collections with items that are based on or inspired by various media outlets (such as Books or Video Games).
 
-![](../images/basedon.png)
+![](../images/based.png)
 
 ## Requirements & Recommendations
 
@@ -15,8 +15,8 @@ Supported Library Types: Movie, Show
 | `Based On...  Collections` | `separator`   | [Separator Collection](../separators) to denote the Section of Collections. |
 | `Based on a Book`          | `books`       | Collection of Movies/Shows based on or inspired by books                    |
 | `Based on a Comic`         | `comics`      | Collection of Movies/Shows based on or inspired by comics                   |
-| `Based on a True Story`    | `true-story`  | Collection of Movies/Shows based on or inspired by true stories             |
-| `Based on a Video Game`    | `video-games` | Collection of Movies/Shows based on or inspired by video games              |
+| `Based on a True Story`    | `true_story`  | Collection of Movies/Shows based on or inspired by true stories             |
+| `Based on a Video Game`    | `video_games` | Collection of Movies/Shows based on or inspired by video games              |
 
 ## Config
 
@@ -26,10 +26,10 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     metadata_path:
-      - pmm: basedon
+      - pmm: based
   TV Shows:
     metadata_path:
-      - pmm: basedon
+      - pmm: based
 ```
 
 ## Template Variables
@@ -62,13 +62,13 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     metadata_path:
-      - pmm: basedon
+      - pmm: based
         template_variables:
           use_separator: false
           sep_style: purple
           use_comics: false
-          order_true-story: 01
-          visible_library_video-games: true
-          visible_home_video-games: true
-          visible_shared_video-games: true
+          order_true_story: 01
+          visible_library_video_games: true
+          visible_home_video_games: true
+          visible_shared_video_games: true
 ```
