@@ -30,4 +30,7 @@ This table outlines the third-party services that Plex Meta Manager can make use
 This example outlines what a "standard" config.yml file might look like when in use.
 
 ```{literalinclude} ../../config/config.yml.template
+---
+language: yaml
+---
 ```

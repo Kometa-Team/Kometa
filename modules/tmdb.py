@@ -461,6 +461,11 @@ class TMDb:
                             has_match = True
                 if has_match is False:
                     return False
+            elif modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+                test_number = len(attrs) if attrs else 0
+                modifier = f".{modifier[7:]}"
+                if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
+                    return False
             elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
                     or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                 return False

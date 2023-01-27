@@ -76,7 +76,7 @@ filters_by_type = {
     "movie_show_episode_track": ["duration"],
     "movie_show_artist_album": ["genre"],
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
-    "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword"],
+    "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword", "imdb_keyword"],
     "movie_episode": ["director", "producer", "writer"],
     "movie_artist": ["country"],
     "show_artist": ["folder"],
@@ -100,6 +100,7 @@ tmdb_filters = [
     "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
     "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
+imdb_filters = ["imdb_keyword"]
 string_filters = [
     "title", "summary", "studio", "edition", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title",
     "audio_codec", "audio_profile", "video_codec", "video_profile"
@@ -107,7 +108,7 @@ string_filters = [
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre"
+    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "imdb_keyword"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_overlay", "has_dolby_vision"]
@@ -1607,6 +1608,7 @@ class CollectionBuilder:
             if current_filters:
                 self.filters.append(current_filters)
         self.has_tmdb_filters = any([k in tmdb_filters for f in self.filters for k, v in f])
+        self.has_imdb_filters = any([k in imdb_filters for f in self.filters for k, v in f])
 
     def gather_ids(self, method, value):
         expired = None
@@ -2097,6 +2099,9 @@ class CollectionBuilder:
             return util.validate_regex(data, self.Type, validate=validate)
         elif attribute in string_attributes and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
+        elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
+                or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
+            return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute == "origin_country":
             return util.get_list(data, upper=True)
         elif attribute in ["original_language", "tmdb_keyword"]:
@@ -2115,6 +2120,19 @@ class CollectionBuilder:
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in tmdb.discover_types.items()])
         elif attribute == "tmdb_status":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in tmdb.discover_status.items()])
+        elif attribute == "imdb_keyword":
+            new_dictionary = {"minimum_votes": 0, "minimum_relevant": 0, "minimum_percentage": 0}
+            if isinstance(data, dict) and "keyword" not in data:
+                raise Failed(f"{self.Type} Error: imdb_keyword requires the keyword attribute")
+            elif isinstance(data, dict):
+                dict_methods = {dm.lower(): dm for dm in data}
+                new_dictionary["keywords"] = util.parse(self.Type, "keyword", data, methods=dict_methods, parent=attribute, datatype="commalist")
+                new_dictionary["minimum_votes"] = util.parse(self.Type, "minimum_votes", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0)
+                new_dictionary["minimum_relevant"] = util.parse(self.Type, "minimum_relevant", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0)
+                new_dictionary["minimum_percentage"] = util.parse(self.Type, "minimum_percentage", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0, maximum=100)
+            else:
+                new_dictionary["keywords"] = util.parse(self.Type, final, data, datatype="commalist")
+            return new_dictionary
         elif attribute in tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
@@ -2184,9 +2202,6 @@ class CollectionBuilder:
                 data = str(data)[:-1]
             search_data = util.parse(self.Type, final, data, datatype="int", minimum=0)
             return f"{search_data}{search_mod}" if plex_search else search_data
-        elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
-                or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
-            return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif attribute in float_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
         elif attribute in boolean_attributes or (attribute in float_attributes and modifier in [".rated"]):
@@ -2325,8 +2340,16 @@ class CollectionBuilder:
                 return False
         return True
 
+    def check_imdb_filters(self, imdb_info, filters_in):
+        for filter_method, filter_data in filters_in:
+            filter_attr, modifier, filter_final = self.library.split(filter_method)
+            if self.config.IMDb.item_filter(imdb_info, filter_attr, modifier, filter_final, filter_data) is False:
+                return False
+        return True
+
     def check_missing_filters(self, item_id, is_movie, tmdb_item=None, check_released=False):
-        if self.has_tmdb_filters or check_released:
+        imdb_info = None
+        if self.has_tmdb_filters or self.has_imdb_filters or check_released:
             try:
                 if tmdb_item is None:
                     if is_movie:
@@ -2335,20 +2358,34 @@ class CollectionBuilder:
                         tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
             except Failed:
                 return False
+            if self.has_imdb_filters and tmdb_item and tmdb_item.imdb_id:
+                try:
+                    imdb_info = self.config.IMDb.keywords(tmdb_item.imdb_id)
+                except Failed as e:
+                    logger.error(e)
+                    return False
         if check_released:
             date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date
             if not date_to_check or date_to_check > self.current_time:
                 return False
         final_return = True
-        if self.has_tmdb_filters:
+        if self.has_tmdb_filters or self.has_imdb_filters:
             final_return = False
             for filter_list in self.filters:
-                tmdb_f = [(k, v) for k, v in filter_list if k in tmdb_filters]
-                if not tmdb_f:
-                    continue
+                tmdb_f = []
+                imdb_f = []
+                for k, v in filter_list:
+                    if k.split(".")[0] in tmdb_filters:
+                        tmdb_f.append((k, v))
+                    elif k.split(".")[0] in imdb_filters:
+                        imdb_f.append((k, v))
                 or_result = True
-                if self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
-                    or_result = False
+                if tmdb_f:
+                    if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
+                        or_result = False
+                if imdb_f:
+                    if not imdb_info and self.check_imdb_filters(imdb_info, imdb_f) is False:
+                        or_result = False
                 if or_result:
                     final_return = True
         return final_return
@@ -2360,12 +2397,16 @@ class CollectionBuilder:
             item = self.library.reload(item)
             final_return = False
             tmdb_item = None
+            imdb_info = None
             for filter_list in self.filters:
                 tmdb_f = []
+                imdb_f = []
                 plex_f = []
                 for k, v in filter_list:
                     if k.split(".")[0] in tmdb_filters:
                         tmdb_f.append((k, v))
+                    elif k.split(".")[0] in imdb_filters:
+                        imdb_f.append((k, v))
                     else:
                         plex_f.append((k, v))
                 or_result = True
@@ -2380,9 +2421,23 @@ class CollectionBuilder:
                                     tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey], ignore_cache=True)
                                 else:
                                     tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True), ignore_cache=True)
-                            except Failed:
+                            except Failed as e:
+                                logger.error(e)
                                 or_result = False
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.library.movie_rating_key_map) is False:
+                        or_result = False
+                if imdb_f:
+                    if not imdb_info and isinstance(item, (Movie, Show)):
+                        if item.ratingKey not in self.library.imdb_rating_key_map:
+                            logger.warning(f"Filter Error: No IMDb ID found for {item.title}")
+                            or_result = False
+                        else:
+                            try:
+                                imdb_info = self.config.IMDb.keywords(self.library.imdb_rating_key_map[item.ratingKey])
+                            except Failed as e:
+                                logger.error(e)
+                                or_result = False
+                    if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
                 if plex_f and self.library.check_filters(item, plex_f, self.current_time) is False:
                     or_result = False

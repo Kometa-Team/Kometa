@@ -269,6 +269,13 @@ class Cache:
                     media_type TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS imdb_keywords (
+                    key INTEGER PRIMARY KEY,
+                    imdb_id TEXT,
+                    keywords TEXT,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS imdb_parental (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
@@ -936,6 +943,31 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"DELETE FROM list_ids WHERE list_key = ?", (list_key,))
+
+    def query_imdb_keywords(self, imdb_id, expiration):
+        imdb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM imdb_keywords WHERE imdb_id = ?", (imdb_id,))
+                row = cursor.fetchone()
+                if row:
+                    keywords = row["keywords"] if row["keywords"] else ""
+                    imdb_dict = {k.split(":")[0]: (int(k.split(":")[1]), int(k.split(":")[2])) for k in keywords.split("|")}
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return imdb_dict, expired
+
+    def update_imdb_keywords(self, expired, imdb_id, keywords, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO imdb_keywords(imdb_id) VALUES(?)", (imdb_id,))
+                update_sql = "UPDATE imdb_keywords SET keywords = ?, expiration_date = ? WHERE imdb_id = ?"
+                cursor.execute(update_sql, ("|".join([f"{k}:{u}:{v}" for k, (u, v) in keywords.items()]), expiration_date.strftime("%Y-%m-%d"), imdb_id))
 
     def query_imdb_parental(self, imdb_id, expiration):
         imdb_dict = {}
