@@ -2126,12 +2126,12 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: imdb_keyword requires the keyword attribute")
             elif isinstance(data, dict):
                 dict_methods = {dm.lower(): dm for dm in data}
-                new_dictionary["keywords"] = util.parse(self.Type, "keyword", data, methods=dict_methods, parent=attribute, datatype="commalist")
+                new_dictionary["keywords"] = util.parse(self.Type, "keyword", data, methods=dict_methods, parent=attribute, datatype="lowerlist")
                 new_dictionary["minimum_votes"] = util.parse(self.Type, "minimum_votes", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0)
                 new_dictionary["minimum_relevant"] = util.parse(self.Type, "minimum_relevant", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0)
                 new_dictionary["minimum_percentage"] = util.parse(self.Type, "minimum_percentage", data, methods=dict_methods, parent=attribute, datatype="int", minimum=0, maximum=100)
             else:
-                new_dictionary["keywords"] = util.parse(self.Type, final, data, datatype="commalist")
+                new_dictionary["keywords"] = util.parse(self.Type, final, data, datatype="lowerlist")
             return new_dictionary
         elif attribute in tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
