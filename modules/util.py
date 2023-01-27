@@ -493,9 +493,9 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
                     if not ignore_schedules:
                         err = e
                 if err:
-                    logger.warning(f"Metadata Schedule:{err}\n\nMetadata File{'s' if len(current) > 1 else ''} not scheduled to run")
+                    logger.info(f"Metadata Schedule:{err}\n")
                     for file_type, file_path, temp_vars, asset_directory in current:
-                        logger.warning(f"{file_type}: {file_path}")
+                        logger.warning(f"{file_type}: {file_path} not scheduled to run")
                     logger.info("")
                     continue
             files.extend(current)
