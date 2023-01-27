@@ -1067,6 +1067,44 @@ class Plex(Library):
                 logger.info(final)
         return final[28:] if final else final
 
+    def image_update(self, item, image, tmdb=None, title=None, poster=True):
+        text = f"{f'{title} ' if title else ''}{'Poster' if poster else 'Background'}"
+        attr = self.mass_poster_update if poster else self.mass_background_update
+        if attr == "lock":
+            self.query(item.lockPoster if poster else item.lockArt)
+            logger.info(f"{text} | Locked")
+        elif attr == "unlock":
+            self.query(item.unlockPoster if poster else item.unlockArt)
+            logger.info(f"{text} | Unlocked")
+        else:
+            location = "the Assets Directory" if image else ""
+            image_url = False if image else True
+            image = image.location if image else None
+            if not image:
+                if attr == "tmdb" and tmdb:
+                    image = tmdb
+                    location = "TMDb"
+                if not image:
+                    images = item.posters() if poster else item.arts()
+                    temp_image = next((p for p in images), None)
+                    if temp_image:
+                        if temp_image.key.startswith("/"):
+                            image = f"{self.url}{temp_image.key}&X-Plex-Token={self.token}"
+                        else:
+                            image = temp_image.key
+                        location = "Plex"
+            if image:
+                logger.info(f"{text} | Reset from {location}")
+                if poster:
+                    self.upload_poster(item, image, url=image_url)
+                else:
+                    self.upload_background(item, image, url=image_url)
+                if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
+                    logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+            else:
+                logger.warning(f"{text} | No Reset Image Found")
+        item.reload()
+
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None):
         if title is None:
             title = item.title
