@@ -227,6 +227,16 @@ class Library(ABC):
     def upload_poster(self, item, image, url=False):
         pass
 
+    def poster_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title)
+
+    def background_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False)
+
+    @abstractmethod
+    def image_update(self, item, image, tmdb=None, title=None, poster=True):
+        pass
+
     @abstractmethod
     def reload(self, item, force=False):
         pass
