@@ -1,4 +1,4 @@
-version: 1.18.2.1
+version: 1.18.2.2
 variables:
   library_translation:
     # For Movie Libraries
@@ -43,6 +43,7 @@ key_names:
   # Bengali: Bengali
   # Biography: Biography
   # Biopic: Biopic
+  # Book: Book
   # Bosnian: Bosnian
   # Brazil: Brazil
   # Bulgaria: Bulgaria
@@ -55,6 +56,7 @@ key_names:
   # China: China
   # Chinese: Chinese
   # Christmas: Christmas
+  # Comic: Comic
   # Comedy: Comedy
   # Competition: Competition
   # Costa Rica: Costa Rica
@@ -221,6 +223,7 @@ key_names:
   # Thanksgiving: Thanksgiving
   # Thriller: Thriller
   # Travel: Travel
+  # True Story: True Story
   # Turkey: Turkey
   # Turkish: Turkish
   # Ukraine: Ukraine
@@ -231,6 +234,7 @@ key_names:
   # Universe: Universe
   # Urdu: Urdu
   # Valentine's Day: Valentine's Day
+  # Video Game: Video Game
   # Vietnam: Vietnam
   # Vietnamese: Vietnamese
   # War & Politics: War & Politics
@@ -424,6 +428,10 @@ translations:
 
   audio_language_other_name: Other Audio
   audio_language_other_summary: <<library_translationU>>s filmed in other uncommon Languages.
+
+  # possible key_names: Book, Comic, True Story, Video Game
+  basedon_name: Based on a <<translated_key_name>>
+  basedon_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
 
   collectionless_name: Collectionless
   collectionless_summary: Collection of <<library_translationU>>s used to make Plex display items correctly.
