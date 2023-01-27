@@ -45,7 +45,7 @@ These collections are applied by calling the below paths into the `metadata_path
 |:------------------------------------------------------------------------------------|:---------------------|:-------------------------------------------------------|:-----------------:|:----------------:|
 | [Actor](both/actor)                                                                 | `actor`              | Chris Hemsworth, Margot Robbie                         |      &#9989;      |     &#9989;      |
 | [Audio Language](both/audio_language)                                               | `audio_language`     | French Audio, Korean Audio                             |      &#9989;      |     &#9989;      |
-| [Based On...](both/basedon)                                                         | `basedon`            | Based on a Book, Based on a True Story                 |      &#9989;      |     &#9989;      |
+| [Based On...](both/based)                                                           | `based`              | Based on a Book, Based on a True Story                 |      &#9989;      |     &#9989;      |
 | [Collectionless](both/collectionless)                                               | `collectionless`     | Collectionless                                         |      &#9989;      |     &#9989;      |
 | [Common Sense Content Rating](both/content_rating_cs)                               | `content_rating_cs`  | 1, 2, 3, 4, 5, 6, 15, 16, 17, 18                       |      &#9989;      |     &#9989;      |
 | [MyAnimeList Content Rating](both/content_rating_mal)                               | `content_rating_mal` | G, PG, PG-13, R, R+, Rx                                |      &#9989;      |     &#9989;      |
