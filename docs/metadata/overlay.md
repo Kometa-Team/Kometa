@@ -9,10 +9,9 @@ All overlay coordinates assume 1000 x 1500 for Posters and 1920 x 1080 for Backg
 **To remove all overlays add `remove_overlays: true` to the `overlay_path` [Libraries Attribute](../config/libraries.md#remove-overlays).**
 
 **IMPORTANT NOTE ON OVERLAYS:
-**Once you have applied overlays to your posters in PLex, it is highly recommennded that you never change artwork on a thing directly in Plex again.  PMM uses labels on the items in Plex to decide if an overlays has been applied, so if you change artwork behind it's back things can become confused and items can end up with double-overlaid posters.  It's recommended to set new artwork using the asset directory, which will ensure that this doesn't happen. 
+**Once you have applied overlays to your posters in PLex, it is highly recommennded that you never change artwork on a thing directly in Plex again.  PMM uses labels on the items in Plex to decide if an overlays has been applied, so if you change artwork behind PMM's back things can become confused and items can end up with double-overlaid posters.  It's recommended to set new artwork using the asset directory, which will ensure that this doesn't happen. 
 
 **To change a single overlay original image either remove the `Overlay` shared label and update the Image in Plex or replace the image in the assets folder and then PMM will overlay the new image**
-
 
 These are the attributes which can be used within the Overlay File:
 
