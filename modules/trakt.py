@@ -281,7 +281,7 @@ class Trakt:
                 ids.append((int(item["id"]), final_id, final_type) if trakt_ids else (final_id, final_type))
             else:
                 name = data["name"] if current_type in ["person", "list"] else f"{data['title']} ({data['year']})"
-                logger.error(f"Trakt Error: No {id_display} found for {name}")
+                logger.warning(f"Trakt Error: No {id_display} found for {name}")
         return ids
 
     def _build_item_json(self, ids):
