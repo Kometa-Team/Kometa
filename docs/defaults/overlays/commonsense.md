@@ -2,8 +2,6 @@
 
 The `commonsense` Default Overlay File is used to create an overlay based on the CommonSense Age Rating on each item within your library.
 
-
-
 ![](images/commonsense.png)
 
 ## Requirements & Recommendations

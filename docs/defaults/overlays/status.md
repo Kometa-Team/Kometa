@@ -69,5 +69,5 @@ libraries:
     overlay_path:
       - pmm: status
         template_variables:
-          text_canceled: CANCELLED
+          text_canceled: "C A N C E L L E D"
 ```
