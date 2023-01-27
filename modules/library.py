@@ -29,6 +29,7 @@ class Library(ABC):
         self.mal_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
+        self.imdb_rating_key_map = {}
         self.cached_items = {}
         self.run_again = []
         self.type = ""
@@ -316,6 +317,7 @@ class Library(ABC):
                         self.show_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.show_map)
                 if imdb_id:
+                    self.imdb_rating_key_map[key] = imdb_id[0]
                     util.add_dict_list(imdb_id, key, self.imdb_map)
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")

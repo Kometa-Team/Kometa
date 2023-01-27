@@ -157,6 +157,29 @@ class IMDb:
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
+    def keywords(self, imdb_id, ignore_cache=False):
+        imdb_keywords = {}
+        expired = None
+        if self.config.Cache and not ignore_cache:
+            imdb_keywords, expired = self.config.Cache.query_imdb_keywords(imdb_id, self.config.Cache.expiration)
+            if imdb_keywords and expired is False:
+                return imdb_keywords
+        response = self.config.get_html(f"https://www.imdb.com/title/{imdb_id}/keywords")
+        keywords = response.xpath("//td[@class='soda sodavote']")
+        if not keywords:
+            raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+        for k in keywords:
+            name = k.xpath("div[@class='sodatext']/a/text()")[0]
+            relevant = k.xpath("div[@class='did-you-know-actions']/div/a/text()")[0].strip()
+            if "of" in relevant:
+                result = re.search(r"(\d+) of (\d+).*", relevant)
+                imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
+            else:
+                imdb_keywords[name] = (0, 0)
+        if self.config.Cache and not ignore_cache:
+            self.config.Cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.config.Cache.expiration)
+        return imdb_keywords
+
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
         expired = None
@@ -289,3 +312,27 @@ class IMDb:
         if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
             return None
         return self.episode_ratings[imdb_id][season_num][episode_num]
+
+    def item_filter(self, imdb_info, filter_attr, modifier, filter_final, filter_data):
+        if filter_attr == "imdb_keyword":
+            mr = imdb_info["minimum_relevant"]
+            mv = imdb_info["minimum_votes"]
+            mp = imdb_info["minimum_percentage"]
+            attrs = [k for k, (r, v) in imdb_info.items() if r >= mr and v >= mv and (v == 0 or r / v >= mp)]
+            if modifier == ".regex":
+                has_match = False
+                for reg in filter_data:
+                    for name in attrs:
+                        if re.compile(reg).search(name):
+                            has_match = True
+                if has_match is False:
+                    return False
+            elif modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+                test_number = len(attrs) if attrs else 0
+                modifier = f".{modifier[7:]}"
+                if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
+                    return False
+            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                return False
+        return True
