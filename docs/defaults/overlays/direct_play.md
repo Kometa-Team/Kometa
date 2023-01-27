@@ -20,12 +20,6 @@ libraries:
   TV Shows:
     overlay_path:
       - pmm: direct_play
-      - pmm: direct_play
-        template_variables:
-          overlay_level: season
-      - pmm: direct_play
-        template_variables:
-          overlay_level: episode
 ```
 
 ## Template Variables

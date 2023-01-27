@@ -20,6 +20,9 @@ libraries:
   TV Shows:
     overlay_path:
       - pmm: runtimes
+      - pmm: runtimes
+        template_variables:
+          overlay_label: episode
 ```
 
 ## Template Variables
@@ -58,5 +61,7 @@ libraries:
   TV Shows:
     overlay_path:
       - pmm: runtimes
+        template_variables:
+          overlay_label: episode
         font: fonts/Inter-Bold.ttf
 ```
