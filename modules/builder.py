@@ -416,6 +416,7 @@ class CollectionBuilder:
         self.builders = []
         self.filters = []
         self.has_tmdb_filters = False
+        self.has_imdb_filters = False
         self.found_items = []
         self.filtered_items = []
         self.filtered_keys = {}
