@@ -104,7 +104,7 @@ class Operations:
 
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
-                item.batchEdits()
+                #item.batchEdits()
                 batch_display = ""
 
                 if self.library.remove_title_parentheses:
@@ -341,9 +341,14 @@ class Operations:
                                     else:
                                         mapped_genres.append(genre)
                                 new_genres = mapped_genres
+                        is_locked = None
+                        if self.library.mass_genre_update in ["unlock", "reset"] and "genre" in locked_fields:
+                            is_locked = False
+                        elif self.library.mass_genre_update in ["lock", "remove"] and "genre" not in locked_fields:
+                            is_locked = True
                         temp_display = self.library.edit_tags("genre", item, sync_tags=new_genres, do_print=False,
                                                               locked=False if self.library.mass_genre_update in ["unlock", "reset"] else True,
-                                                              is_locked="genre" in locked_fields)
+                                                              is_locked=is_locked)
                         if temp_display:
                             batch_display += f"\n{temp_display}"
                     except Failed:
@@ -489,7 +494,7 @@ class Operations:
 
                 if len(batch_display) > 0:
                     try:
-                        item.saveEdits()
+                        #item.saveEdits()
                         logger.info(f"Batch Edits{batch_display}")
                     except (NotFound, BadRequest):
                         logger.stacktrace()
