@@ -1543,7 +1543,7 @@ class Plex(Library):
                     failures += 1
                 if failures > failure_threshold:
                     return False
-        elif filter_attr in builder.number_filters or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+        elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
             test_number = []
             if filter_attr in ["channels", "height", "width", "aspect"]:
                 test_number = 0
