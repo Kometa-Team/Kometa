@@ -21,6 +21,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 7:
 parser = argparse.ArgumentParser()
 parser.add_argument("-db", "--debug", dest="debug", help="Run with Debug Logs Reporting to the Command Window", action="store_true", default=False)
 parser.add_argument("-tr", "--trace", dest="trace", help="Run with extra Trace Debug Logs", action="store_true", default=False)
+parser.add_argument("-lr", "--log-request", "log-requests", dest="log_requests", help="Run with all Requests printed", action="store_true", default=False)
 parser.add_argument("-c", "--config", dest="config", help="Run with desired *.yml file", type=str)
 parser.add_argument("-t", "--time", "--times", dest="times", help="Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)", default="05:00", type=str)
 parser.add_argument("-ti", "--timeout", dest="timeout", help="PMM Global Timeout (Default: 180)", default=180, type=int)
@@ -118,6 +119,7 @@ screen_width = get_arg("PMM_WIDTH", args.width, arg_int=True)
 timeout = get_arg("PMM_TIMEOUT", args.timeout, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
+log_requests = get_arg("PMM_LOG_REQUESTS", args.log_requests, arg_bool=True)
 plex_url = get_arg("PMM_PLEX_URL", args.plex_url)
 plex_token = get_arg("PMM_PLEX_TOKEN", args.plex_token)
 
@@ -138,7 +140,7 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
     sys.exit(0)
 
-logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug, trace)
+logger = MyLogger("Plex Meta Manager", default_dir, screen_width, divider[0], ignore_ghost, test or debug, trace, log_requests)
 
 from modules import util
 util.logger = logger
