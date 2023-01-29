@@ -14,6 +14,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TEST`               |
 | [Debug](#debug)                                       | `-db` or `--debug`                            | `PMM_DEBUG`              |
 | [Trace](#trace)                                       | `-tr` or `--trace`                            | `PMM_TRACE`              |
+| [Log Requests](#log-requests)                         | `-lr` or `--log-requests`                     | `PMM_LOG_REQUESTS`       |
 | [Timeout](#timeout)                                   | `-ti` or `--timeout`                          | `PMM_TIMEOUT`            |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`                 | `PMM_COLLECTIONS_ONLY`   |
 | [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`                   | `PMM_PLAYLISTS_ONLY`     |
@@ -257,7 +258,40 @@ python plex_meta_manager.py --trace
 ````
 ````{tab} Docker Environment
 ```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --trace0
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --trace
+```
+````
+
+### Log Requests
+
+Run with every network request printed to the Logs. **This can potentially have personal information in it.**
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #1d1d1d;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>-lr</code> or <code>--log-request</code> or <code>--log-requests</code></td>
+    <td><code>PMM_LOG_REQUESTS</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--log-requests</code></td>
+    <td><code>PMM_NETWORK=true</code></td>
+  </tr>
+</table>
+
+````{tab} Local Environment
+```
+python plex_meta_manager.py --log-requests
+```
+````
+````{tab} Docker Environment
+```
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --log-requests
 ```
 ````
 

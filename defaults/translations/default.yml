@@ -430,8 +430,8 @@ translations:
   audio_language_other_summary: <<library_translationU>>s filmed in other uncommon Languages.
 
   # possible key_names: Book, Comic, True Story, Video Game
-  basedon_name: Based on a <<translated_key_name>>
-  basedon_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
+  based_name: Based on a <<translated_key_name>>
+  based_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
 
   collectionless_name: Collectionless
   collectionless_summary: Collection of <<library_translationU>>s used to make Plex display items correctly.
