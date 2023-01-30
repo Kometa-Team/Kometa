@@ -1,8 +1,8 @@
 ##############################################################################
-#                         "Based On..." Collections                          #
+#                       "Based On..." Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/both/based.html         #
+#      https://metamanager.wiki/en/latest/defaults/both/based.html           #
 ##############################################################################
 
 external_templates:
@@ -32,33 +32,13 @@ dynamic_collections:
       video_games: Video Game
     title_format: Based on a <<key_name>>
     template:
-      - filter
+      - mdb_smart
       - translation
       - shared
-    addons:
-      books:
-        - based-on-novel
-        - based-on-novella
-        - based-on-novels
-        - based-on-book-series
-        - based-on-novelette
-        - based-on-book
-        - based-on-novel-or-booka
-      comics:
-        - based-on-comic-book
-        - based-on-manga
-        - based-on-comic
-      true_story:
-        - based-on-real-events
-        - based-on-real-story
-        - based-on-true-story
-      video_games:
-        - based-on-video-game
-        - based-on-a-video-game
-        - video-game-adaption
+      - arr
     template_variables:
-      filter_term:
-        default: imdb_keyword
+      mdblist_list:
+        default: https://mdblist.com/lists/plexmetamanager/based_on_<<key>>_<<library_type>>s
       image:
         default: based/<<key_name_encoded>>
       translation_key:
