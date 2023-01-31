@@ -52,10 +52,15 @@ templates:
         conditions:
           - key: [ended, returning, canceled]
             value: <<key>>
+      last_days:
+        conditions:
+          - key: airing
+            last.exists: true
+            value: <<last>>
     ignore_blank_results: true
     plex_search:
       any:
-        episode_air_date: <<last>>
+        episode_air_date: <<last_days>>
     plex_all: <<all>>
     filters:
       tmdb_status: <<tmdb>>
