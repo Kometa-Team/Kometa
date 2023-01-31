@@ -17,9 +17,19 @@ Supported Library Types: Movie
 
 ### Rainier Style
 
-Below is a screenshot of the alternative Rainier (`rainier`) style which can be set via the `style` template variable.
+![](../images/person_rainier.png)
 
-![](../images/writer2.png)
+### Signature Style
+
+![](../images/person_signature.png)
+
+### Diivoy Style
+
+![](../images/person_diivoy.png)
+
+### Diivoy Color Style
+
+![](../images/person_diivoycolor.png)
 
 ## Config
 
@@ -44,7 +54,7 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 |:------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `style`                       | **Description:** Controls the visual theme of the collections created<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>bw</code></td><td>Black & White Theme</td></tr><tr><td><code>rainier</code></td><td>Rainier Theme</td></tr></table>                                                                                                                                                                                                                                                                                          |
+| `style`                       | **Description:** Controls the visual theme of the collections created.<br>**Default:** `bw`<br>**Values:** `bw`, `rainier`, `signature`, `diivoy`, or `diivoycolor`                                                                                                                                                                                                                                                                                                                                                                                |
 | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                                                                                                                                                                                                                                                                                               |
@@ -64,7 +74,7 @@ libraries:
     metadata_path:
       - pmm: writer
         template_variables:
-          style: rainier
+          style: signature
           use_separator: false
           sep_style: purple
           data:
