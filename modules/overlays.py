@@ -204,7 +204,13 @@ class Overlays:
                             handler.write(image_response.content)
                         while util.is_locked(backup_image_path):
                             time.sleep(1)
-                        has_original = backup_image_path
+                        backup_poster = Image.open(backup_image_path)
+                        exif_tags = backup_poster.getexif()
+                        if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
+                            logger.error(f"{item_title[:60]:<60} | Overlay Backup Error: Poster already has an Overlay")
+                            os.remove(backup_image_path)
+                        else:
+                            has_original = backup_image_path
 
                     poster_compare = None
                     if poster is None and has_original is None:
@@ -213,8 +219,11 @@ class Overlays:
                         try:
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
 
-                            new_poster = Image.open(poster.location if poster else has_original) \
-                                .convert("RGB").resize((canvas_width, canvas_height), Image.ANTIALIAS)
+                            new_poster = Image.open(poster.location if poster else has_original)
+                            exif_tags = new_poster.getexif()
+                            exif_tags[0x04bc] = "overlay"
+                            new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.LANCZOS)
+                            
                             if blur_num > 0:
                                 new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
 
@@ -327,7 +336,7 @@ class Overlays:
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                         new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                     else:
-                                        new_poster = new_poster.resize(current_overlay.image.size, Image.ANTIALIAS)
+                                        new_poster = new_poster.resize(current_overlay.image.size, Image.LANCZOS)
                                         new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
 
                             for queue, weights in queue_overlays.items():
@@ -356,7 +365,7 @@ class Overlays:
                                             overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                         new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                             temp = os.path.join(self.library.overlay_folder, "temp.jpg")
-                            new_poster.save(temp)
+                            new_poster.save(temp, exif=exif_tags)
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                             self.library.reload(item, force=True)
