@@ -1562,7 +1562,9 @@ class Plex(Library):
                     for part in media.parts:
                         test_number.extend([s.language for s in part.subtitleStreams()])
             elif filter_attr == "duration":
-                test_number = getattr(item, filter_actual) / 60000
+                test_number = getattr(item, filter_actual)
+                if test_number:
+                    test_number /= 60000
             else:
                 test_number = getattr(item, filter_actual)
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:

@@ -472,7 +472,7 @@ def run_libraries(config):
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
-            logger.separator(f"Skipping {library.name} Library")
+            logger.separator(f"Skipping {library.original_mapping_name} Library")
             continue
         library_status[library.name] = {}
         try:
@@ -480,10 +480,10 @@ def run_libraries(config):
             plexapi.server.TIMEOUT = library.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
-            logger.separator(f"{library.name} Library")
+            logger.separator(f"{library.original_mapping_name} Library")
 
             logger.debug("")
-            logger.debug(f"Mapping Name: {library.original_mapping_name}")
+            logger.debug(f"Library Name: {library.name}")
             logger.debug(f"Folder Name: {library.mapping_name}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
@@ -559,7 +559,7 @@ def run_libraries(config):
                     config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
             if not library.is_music:
                 logger.info("")
-                logger.separator(f"Mapping {library.name} Library", space=False, border=False)
+                logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]

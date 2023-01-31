@@ -421,7 +421,7 @@ While `show_missing` is true items missing from collections will be displayed.
 </table>
 
 ## Only Filter Missing
-Only items missing from a collection will be filtered
+Only items missing from a collection will be filtered. **Only specific filters can filter missing. See [Filters](../metadata/filters) for more information.** 
 * this can be used to filter which missing media items get sent to Sonarr/Radarr
 
 <table class="dualTable colwidths-auto align-default table">
