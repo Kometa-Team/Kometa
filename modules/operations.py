@@ -508,8 +508,10 @@ class Operations:
                         name = None
                         new_poster = None
                         new_background = None
-                    self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None)
-                    self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None)
+                    if self.library.mass_poster_update:
+                        self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None)
+                    if self.library.mass_background_update:
+                        self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None)
 
                     if self.library.is_show:
                         real_show = tmdb_item.load_show() if tmdb_item else None
@@ -521,8 +523,10 @@ class Operations:
                                 season_poster = None
                                 season_background = None
                             tmdb_poster = tmdb_seasons[season.seasonNumber].poster_url if season.seasonNumber in tmdb_seasons else None
-                            self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season.title if season else None)
-                            self.library.background_update(season, season_background, title=season.title if season else None)
+                            if self.library.mass_poster_update:
+                                self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season.title if season else None)
+                            if self.library.mass_background_update:
+                                self.library.background_update(season, season_background, title=season.title if season else None)
 
                             tmdb_episodes = {}
                             if season.seasonNumber in tmdb_seasons:
@@ -539,8 +543,10 @@ class Operations:
                                     episode_poster = None
                                     episode_background = None
                                 tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
-                                self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode.title if episode else None)
-                                self.library.background_update(episode, episode_background, title=episode.title if episode else None)
+                                if self.library.mass_poster_update:
+                                    self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode.title if episode else None)
+                                if self.library.mass_background_update:
+                                    self.library.background_update(episode, episode_background, title=episode.title if episode else None)
 
                 episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
 
