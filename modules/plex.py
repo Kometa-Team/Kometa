@@ -1103,7 +1103,6 @@ class Plex(Library):
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
             else:
                 logger.warning(f"{text} | No Reset Image Found")
-        item.reload()
 
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None):
         if title is None:
