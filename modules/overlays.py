@@ -155,6 +155,10 @@ class Overlays:
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
+                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
+                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"))
+                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
+                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"))
                     elif has_overlay:
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
@@ -530,13 +534,11 @@ class Overlays:
         except Failed:
             poster = None
         is_url = False
-        original = None
         poster_location = None
         if poster:
             poster_location = poster.location
         elif any([os.path.exists(loc) for loc in locations]):
-            original = next((loc for loc in locations if os.path.exists(loc)))
-            poster_location = original
+            poster_location = next((loc for loc in locations if os.path.exists(loc)))
         if not poster_location:
             is_url = True
             try:
@@ -546,7 +548,8 @@ class Overlays:
         if poster_location:
             self.library.upload_poster(item, poster_location, url=is_url)
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
-            if original:
-                os.remove(original)
+            for loc in locations:
+                if os.path.exists(loc):
+                    os.remove(loc)
         else:
             logger.error(f"No Poster found to restore for {item_title}")
