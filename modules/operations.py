@@ -531,6 +531,7 @@ class Operations:
                             tmdb_episodes = {}
                             if season.seasonNumber in tmdb_seasons:
                                 for episode in tmdb_seasons[season.seasonNumber].episodes:
+                                    episode._partial = False
                                     try:
                                         tmdb_episodes[episode.episode_number] = episode
                                     except NotFound:
