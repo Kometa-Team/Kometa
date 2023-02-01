@@ -48,7 +48,7 @@ The table below shows the asset folder path structures that will be searched for
 | Episode poster                   | `assets/ASSET_NAME/S##E##.ext`                   | `assets/ASSET_NAME_S##E##.ext`                      |
 | Episode background               | `assets/ASSET_NAME/S##E##_background.ext`        | `assets/ASSET_NAME_S##E##_background.ext`           |
 
-* For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `system_name` is specified, which you would then use what's specified in `system_name`.
+* For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `name_mapping` is specified, which you would then use what's specified in `name_mapping`.
 
 * For **Movies** replace `ASSET_NAME` with the exact name of the folder the video file is stored in.
   * i.e. if you have `Movies/Star Wars (1977)/Star Wars (1977) [1080p].mp4` then your asset directory would look at either `assets/Star Wars (1977)/poster.png` or `assets/Star Wars (1977).png` for the poster.

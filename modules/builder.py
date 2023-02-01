@@ -1596,7 +1596,10 @@ class CollectionBuilder:
                 elif filter_final is None:
                     message = f"{self.Type} Error: {filter_final} filter attribute is blank"
                 else:
-                    final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
+                    try:
+                        final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
+                    except FilterFailed as e:
+                        raise Failed(e)
                     if self.builder_level in ["show", "season", "artist", "album"] and filter_attr in sub_filters:
                         current_filters.append(("episodes" if self.builder_level in ["show", "season"] else "tracks", {filter_final: final_data, "percentage": self.default_percent}))
                     else:
