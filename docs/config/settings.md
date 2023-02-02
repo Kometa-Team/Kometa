@@ -570,7 +570,7 @@ Set `playlist_report` to true to print out a playlist report at the end of the l
 </table>
 
 ## Custom Repo
-Specify where the `repo` attribute's base is when defining `metadata_paths`, `playlist_files` and `overlay_paths`.
+Specify where the `repo` attribute's base is when defining `metadata_path`, `playlist_file` and `overlay_path`.
 * Ensure you are using the raw GitHub link (i.e. https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
 
 <table class="dualTable colwidths-auto align-default table">
