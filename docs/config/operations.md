@@ -85,18 +85,19 @@ Updates every item's genres in the library to the chosen site's genres.
 
 **Values:**
 
-| Value    | Description                        |
-|:---------|:-----------------------------------|
-| `tmdb`   | Use TMDb for Genres                |
-| `tvdb`   | Use TVDb for Genres                |
-| `imdb`   | Use IMDb for Genres                |
-| `omdb`   | Use IMDb through OMDb for Genres   |
-| `anidb`  | Use AniDB Tags for Genres          |
-| `mal`    | Use MyAnimeList for Genres         |
-| `lock`   | Lock Genre Field                   |
-| `unlock` | Unlock Genre Field                 |
-| `remove` | Remove all Genres and Lock Field   |
-| `reset`  | Remove all Genres and Unlock Field |
+| Value       | Description                        |
+|:------------|:-----------------------------------|
+| `tmdb`      | Use TMDb for Genres                |
+| `tvdb`      | Use TVDb for Genres                |
+| `imdb`      | Use IMDb for Genres                |
+| `omdb`      | Use IMDb through OMDb for Genres   |
+| `anidb`     | Use AniDB Main Tags for Genres     |
+| `anidb_all` | Use All AniDB Tags for Genres      |
+| `mal`       | Use MyAnimeList for Genres         |
+| `lock`      | Lock Genre Field                   |
+| `unlock`    | Unlock Genre Field                 |
+| `remove`    | Remove all Genres and Lock Field   |
+| `reset`     | Remove all Genres and Unlock Field |
 
 ## Mass Content Rating Update
 

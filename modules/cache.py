@@ -31,6 +31,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS overlay_ratings")
                 cursor.execute("DROP TABLE IF EXISTS anidb_data")
+                cursor.execute("DROP TABLE IF EXISTS anidb_data2")
                 cursor.execute("DROP TABLE IF EXISTS mal_data")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
@@ -123,7 +124,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS anidb_data2 (
+                    """CREATE TABLE IF NOT EXISTS anidb_data3 (
                     key INTEGER PRIMARY KEY,
                     anidb_id INTEGER UNIQUE,
                     main_title TEXT,
@@ -134,6 +135,7 @@ class Cache:
                     score REAL,
                     released TEXT,
                     tags TEXT,
+                    all_tags TEXT,
                     mal_id INTEGER,
                     imdb_id TEXT,
                     tmdb_id INTEGER,
@@ -533,7 +535,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM anidb_data2 WHERE anidb_id = ?", (anidb_id,))
+                cursor.execute("SELECT * FROM anidb_data3 WHERE anidb_id = ?", (anidb_id,))
                 row = cursor.fetchone()
                 if row:
                     anidb_dict["main_title"] = row["main_title"]
@@ -544,6 +546,7 @@ class Cache:
                     anidb_dict["score"] = row["score"] if row["score"] else None
                     anidb_dict["released"] = row["released"] if row["released"] else None
                     anidb_dict["tags"] = row["tags"] if row["tags"] else None
+                    anidb_dict["all_tags"] = row["all_tags"] if row["all_tags"] else None
                     anidb_dict["mal_id"] = row["mal_id"] if row["mal_id"] else None
                     anidb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else None
                     anidb_dict["tmdb_id"] = row["tmdb_id"] if row["tmdb_id"] else None
@@ -558,12 +561,12 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO anidb_data2(anidb_id) VALUES(?)", (anidb_id,))
-                update_sql = "UPDATE anidb_data2 SET main_title = ?, titles = ?, studio = ?, rating = ?, average = ?, score = ?, " \
-                             "released = ?, tags = ?, mal_id = ?, imdb_id = ?, tmdb_id = ?, tmdb_type = ?, expiration_date = ? WHERE anidb_id = ?"
+                cursor.execute("INSERT OR IGNORE INTO anidb_data3(anidb_id) VALUES(?)", (anidb_id,))
+                update_sql = "UPDATE anidb_data3 SET main_title = ?, titles = ?, studio = ?, rating = ?, average = ?, score = ?, " \
+                             "released = ?, tags = ?, all_tags = ?, mal_id = ?, imdb_id = ?, tmdb_id = ?, tmdb_type = ?, expiration_date = ? WHERE anidb_id = ?"
                 cursor.execute(update_sql, (
                     anidb.main_title, str(anidb.titles), anidb.studio, anidb.rating, anidb.average, anidb.score,
-                    anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags),
+                    anidb.released.strftime("%Y-%m-%d") if anidb.released else None, "|".join(anidb.tags), "|".join(anidb.all_tags),
                     anidb.mal_id, anidb.imdb_id, anidb.tmdb_id, anidb.tmdb_type,
                     expiration_date.strftime("%Y-%m-%d"), anidb_id
                 ))

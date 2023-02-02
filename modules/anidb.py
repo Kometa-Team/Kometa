@@ -69,6 +69,7 @@ class AniDBObj:
         self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
         self.released = _parse("released", "//anime/startdate/text()", is_date=True)
         self.tags = _parse("tags", "//anime/tags/tag[@infobox='true']/name/text()", is_list=True)
+        self.all_tags = _parse("all_tags", "//anime/tags/tag/name/text()", is_list=True)
         self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
         self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
         if isinstance(data, dict):
