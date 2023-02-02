@@ -323,6 +323,8 @@ class Operations:
                                 new_genres = tvdb_item.genres
                             elif anidb_item and self.library.mass_genre_update == "anidb":
                                 new_genres = [str(t).title() for t in anidb_item.tags]
+                            elif anidb_item and self.library.mass_genre_update == "anidb_all":
+                                new_genres = [str(t).title() for t in anidb_item.all_tags]
                             elif mal_item and self.library.mass_genre_update == "mal":
                                 new_genres = mal_item.genres
                             else:
