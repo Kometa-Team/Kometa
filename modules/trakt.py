@@ -473,7 +473,7 @@ class Trakt:
                         final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=status)
                     valid_dicts.append(final_dict)
                 else:
-                    userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "watchlist"])
+                    userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommendations", "watched", "collected", "watchlist"])
                     user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
                     sort_by = None
                     if userlist in ["recommended", "watchlist"] and "sort_by" in dict_methods:
