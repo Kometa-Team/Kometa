@@ -15,6 +15,7 @@ urls = {
     "tag": f"{base_url}/tag",
     "login": f"{base_url}/perl-bin/animedb.pl"
 }
+weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
 
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
@@ -36,7 +37,9 @@ class AniDBObj:
                     else:
                         return data[attr]
                 parse_results = data.xpath(xpath)
-                if is_dict:
+                if attr == "tags":
+                    return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
+                elif attr == "titles":
                     return {ta.get("xml:lang"): ta.text_content() for ta in parse_results}
                 elif len(parse_results) > 0:
                     parse_results = [r.strip() for r in parse_results if len(r) > 0]
@@ -68,8 +71,7 @@ class AniDBObj:
         self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
         self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
         self.released = _parse("released", "//anime/startdate/text()", is_date=True)
-        self.tags = _parse("tags", "//anime/tags/tag[@infobox='true']/name/text()", is_list=True)
-        self.all_tags = _parse("all_tags", "//anime/tags/tag/name/text()", is_list=True)
+        self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
         self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
         self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
         if isinstance(data, dict):
