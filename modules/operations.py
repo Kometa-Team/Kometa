@@ -1,6 +1,6 @@
 import os, re
 from datetime import datetime
-from modules import plex, util
+from modules import plex, util, anidb
 from modules.util import Failed, LimitReached, YAML
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -321,10 +321,8 @@ class Operations:
                                 new_genres = omdb_item.genres
                             elif tvdb_item and self.library.mass_genre_update == "tvdb":
                                 new_genres = tvdb_item.genres
-                            elif anidb_item and self.library.mass_genre_update == "anidb":
-                                new_genres = [str(t).title() for t in anidb_item.tags]
-                            elif anidb_item and self.library.mass_genre_update == "anidb_all":
-                                new_genres = [str(t).title() for t in anidb_item.all_tags]
+                            elif anidb_item and self.library.mass_genre_update in anidb.weights:
+                                new_genres = [str(t).title() for t, w in anidb_item.tags.items() if w >= anidb.weights[self.library.mass_genre_update]]
                             elif mal_item and self.library.mass_genre_update == "mal":
                                 new_genres = mal_item.genres
                             else:

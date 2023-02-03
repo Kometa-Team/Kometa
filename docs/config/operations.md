@@ -85,19 +85,24 @@ Updates every item's genres in the library to the chosen site's genres.
 
 **Values:**
 
-| Value       | Description                        |
-|:------------|:-----------------------------------|
-| `tmdb`      | Use TMDb for Genres                |
-| `tvdb`      | Use TVDb for Genres                |
-| `imdb`      | Use IMDb for Genres                |
-| `omdb`      | Use IMDb through OMDb for Genres   |
-| `anidb`     | Use AniDB Main Tags for Genres     |
-| `anidb_all` | Use All AniDB Tags for Genres      |
-| `mal`       | Use MyAnimeList for Genres         |
-| `lock`      | Lock Genre Field                   |
-| `unlock`    | Unlock Genre Field                 |
-| `remove`    | Remove all Genres and Lock Field   |
-| `reset`     | Remove all Genres and Unlock Field |
+| Value       | Description                                                    |
+|:------------|:---------------------------------------------------------------|
+| `tmdb`      | Use TMDb for Genres                                            |
+| `tvdb`      | Use TVDb for Genres                                            |
+| `imdb`      | Use IMDb for Genres                                            |
+| `omdb`      | Use IMDb through OMDb for Genres                               |
+| `anidb`     | Use AniDB Main Tags for Genres                                 |
+| `anidb_3_0` | Use AniDB Main Tags and All 3 Star Tags and above for Genres   |
+| `anidb_2_5` | Use AniDB Main Tags and All 2.5 Star Tags and above for Genres |
+| `anidb_2_0` | Use AniDB Main Tags and All 2 Star Tags and above for Genres   |
+| `anidb_1_5` | Use AniDB Main Tags and All 1.5 Star Tags and above for Genres |
+| `anidb_1_0` | Use AniDB Main Tags and All 1 Star Tags and above for Genres   |
+| `anidb_0_5` | Use AniDB Main Tags and All 0.5 Star Tags and above for Genres |
+| `mal`       | Use MyAnimeList for Genres                                     |
+| `lock`      | Lock Genre Field                                               |
+| `unlock`    | Unlock Genre Field                                             |
+| `remove`    | Remove all Genres and Lock Field                               |
+| `reset`     | Remove all Genres and Unlock Field                             |
 
 ## Mass Content Rating Update
 
