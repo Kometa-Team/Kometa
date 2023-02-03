@@ -1,4 +1,4 @@
-import os, re, time
+import os, re
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
@@ -170,53 +170,19 @@ class Overlays:
                             reset_list = ["plex", "tmdb"]
                         else:
                             reset_list = []
-                        reset_attempted = False
-                        for reset in reset_list:
-                            if reset == "plex":
-                                reset_attempted = True
-                                temp_poster = next((p for p in item.posters()), None)
-                                if temp_poster:
-                                    new_backup = f"{self.library.url}{temp_poster.key}&X-Plex-Token={self.library.token}"
-                                    break
-                                else:
-                                    logger.trace("Plex Error: Plex Poster Download Failed")
-                            if reset == "tmdb":
-                                reset_attempted = True
-                                try:
-                                    new_backup = self.find_poster_url(item)
-                                    break
-                                except Failed as e:
-                                    logger.trace(e)
-                        if reset_attempted and not new_backup:
-                            logger.error("Overlay Error: Reset Failed")
+                        try:
+                            new_backup = self.library.item_posters(item)
+                        except Failed as e:
+                            if any(r in reset_list for r in ["plex", "tmdb"]):
+                                logger.error(e)
                     else:
                         new_backup = item.posterUrl
                     if new_backup:
                         changed_image = True
-                        image_response = self.config.get(new_backup)
-                        if image_response.status_code >= 400:
-                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Download Failed")
-                        if image_response.headers["Content-Type"] not in ["image/png", "image/jpeg", "image/webp"]:
-                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: Image Not PNG, JPG, or WEBP")
-                        if image_response.headers["Content-Type"] == "image/jpeg":
-                            i_ext = "jpg"
-                        elif image_response.headers["Content-Type"] == "image/webp":
-                            i_ext = "webp"
-                        else:
-                            i_ext = "png"
-                        backup_image_path = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.{i_ext}")
-                        with open(backup_image_path, "wb") as handler:
-                            handler.write(image_response.content)
-                        while util.is_locked(backup_image_path):
-                            time.sleep(1)
-                        backup_poster = Image.open(backup_image_path)
-                        exif_tags = backup_poster.getexif()
-                        if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
-                            logger.error(f"{item_title[:60]:<60} | Overlay Backup Error: Poster already has an Overlay")
-                            os.remove(backup_image_path)
-                        else:
-                            has_original = backup_image_path
-
+                        try:
+                            has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
+                        except Failed as e:
+                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
@@ -387,6 +353,8 @@ class Overlays:
                 except Failed as e:
                     logger.error(f"{e}\nOverlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:
+                    logger.info(e)
+                    logger.info(type(e))
                     logger.stacktrace(e)
                     logger.error("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
@@ -509,21 +477,6 @@ class Overlays:
                             key_to_overlays[over_key][1].remove(v)
         return key_to_overlays, properties
 
-    def find_poster_url(self, item):
-        if isinstance(item, Movie):
-            if item.ratingKey in self.library.movie_rating_key_map:
-                return self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey]).poster_url
-        elif isinstance(item, (Show, Season, Episode)):
-            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
-            if check_key in self.library.show_rating_key_map:
-                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[check_key])
-                if isinstance(item, Show) and item.ratingKey in self.library.show_rating_key_map:
-                    return self.config.TMDb.get_show(tmdb_id).poster_url
-                elif isinstance(item, Season):
-                    return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
-                elif isinstance(item, Episode):
-                    return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
-
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
         items = self.library.search(label=label, libtype=libtype)
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
@@ -542,9 +495,9 @@ class Overlays:
         if not poster_location:
             is_url = True
             try:
-                poster_location = self.find_poster_url(item)
-            except Failed as e:
-                logger.error(e)
+                poster_location = self.library.item_posters(item)
+            except Failed:
+                pass
         if poster_location:
             self.library.upload_poster(item, poster_location, url=is_url)
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)

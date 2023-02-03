@@ -595,6 +595,49 @@ class Plex(Library):
         except BadRequest:
             raise Failed(f"Item: {item.title} Labels failed to load")
 
+    def find_poster_url(self, item):
+        if isinstance(item, Movie):
+            if item.ratingKey in self.movie_rating_key_map:
+                return self.config.TMDb.get_movie(self.movie_rating_key_map[item.ratingKey]).poster_url
+        elif isinstance(item, (Show, Season, Episode)):
+            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
+            if check_key in self.show_rating_key_map:
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.show_rating_key_map[check_key])
+                if isinstance(item, Show) and item.ratingKey in self.show_rating_key_map:
+                    return self.config.TMDb.get_show(tmdb_id).poster_url
+                elif isinstance(item, Season):
+                    return self.config.TMDb.get_season(tmdb_id, item.seasonNumber).poster_url
+                elif isinstance(item, Episode):
+                    return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
+
+    def item_posters(self, item, providers=None):
+        if not providers:
+            providers = ["plex", "tmdb"]
+        image_url = None
+        for provider in providers:
+            if provider == "plex":
+                for poster in item.posters():
+                    if poster.key.startswith("/"):
+                        image_url = f"{self.url}{poster.key}&X-Plex-Token={self.token}"
+                        if poster.ratingKey.startswith("upload"):
+                            try:
+                                self.check_image_for_overlay(image_url, os.path.join(self.overlay_backup, "temp"), remove=True)
+                            except Failed as e:
+                                logger.trace(f"Plex Error: {e}")
+                                continue
+                    break
+            if provider == "tmdb":
+                try:
+                    image_url = self.find_poster_url(item)
+                except Failed as e:
+                    logger.trace(e)
+                    continue
+            if image_url:
+                break
+        if not image_url:
+            raise Failed("Overlay Error: No Poster found to reset")
+        return image_url
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False

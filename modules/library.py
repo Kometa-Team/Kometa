@@ -1,9 +1,10 @@
-import os
+import os, time
 from abc import ABC, abstractmethod
 from modules import util, operations
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.util import Failed, NotScheduled, YAML
+from PIL import Image, ImageFilter
 
 logger = util.logger
 
@@ -247,6 +248,40 @@ class Library(ABC):
 
     @abstractmethod
     def item_labels(self, item):
+        pass
+
+    @abstractmethod
+    def find_poster_url(self, item):
+        pass
+
+    def check_image_for_overlay(self, image_url, image_path, remove=False):
+        image_response = self.config.get(image_url)
+        if image_response.status_code >= 400:
+            raise Failed("Image Download Failed")
+        if image_response.headers["Content-Type"] not in ["image/png", "image/jpeg", "image/webp"]:
+            raise Failed("Image Not PNG, JPG, or WEBP")
+        if image_response.headers["Content-Type"] == "image/jpeg":
+            image_path += ".jpg"
+        elif image_response.headers["Content-Type"] == "image/webp":
+            image_path += ".webp"
+        else:
+            image_path += ".png"
+        with open(image_path, "wb") as handler:
+            handler.write(image_response.content)
+        while util.is_locked(image_path):
+            time.sleep(1)
+        with Image.open(image_path) as image:
+            exif_tags = image.getexif()
+        if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
+            os.remove(image_path)
+            raise Failed("Poster already has an Overlay")
+        if remove:
+            os.remove(image_path)
+        else:
+            return image_path
+
+    @abstractmethod
+    def item_posters(self, item):
         pass
 
     @abstractmethod

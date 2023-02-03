@@ -13,10 +13,6 @@ external_templates:
       horizontal_align: right
       vertical_align: bottom
     conditionals:
-      overlay_level:
-        conditions:
-          - library_type: show
-            value: episode
       vertical_offset:
         default: 15
         conditions:
