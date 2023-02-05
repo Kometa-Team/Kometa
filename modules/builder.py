@@ -1,4 +1,5 @@
 import os, re, time
+from arrapi import ArrException
 from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
@@ -2496,11 +2497,17 @@ class CollectionBuilder:
                                 added_to_radarr += len(added)
                             except Failed as e:
                                 logger.error(e)
+                            except ArrException as e:
+                                logger.stacktrace()
+                                logger.error(f"Arr Error: {e}")
                         if "item_radarr_tag" in self.item_details:
                             try:
                                 self.library.Radarr.edit_tags(missing_tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
                             except Failed as e:
                                 logger.error(e)
+                            except ArrException as e:
+                                logger.stacktrace()
+                                logger.error(f"Arr Error: {e}")
                     if self.run_again:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
@@ -2541,11 +2548,17 @@ class CollectionBuilder:
                                 added_to_sonarr += len(added)
                             except Failed as e:
                                 logger.error(e)
+                            except ArrException as e:
+                                logger.stacktrace()
+                                logger.error(f"Arr Error: {e}")
                         if "item_sonarr_tag" in self.item_details:
                             try:
                                 self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
                             except Failed as e:
                                 logger.error(e)
+                            except ArrException as e:
+                                logger.stacktrace()
+                                logger.error(f"Arr Error: {e}")
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
