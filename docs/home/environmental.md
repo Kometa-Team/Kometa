@@ -297,7 +297,7 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Timeout
 
-Change the main Plex Meta Manager timeout. This timeout is overwritten by those in your config file for those services.
+Change the timeout for all non-Plex services (such as TMDb, Radarr, and Trakt). This is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

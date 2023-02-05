@@ -171,7 +171,7 @@ class Overlays:
                         else:
                             reset_list = []
                         try:
-                            new_backup = self.library.item_posters(item)
+                            new_backup = self.library.item_posters(item, providers=reset_list)
                         except Failed as e:
                             if any(r in reset_list for r in ["plex", "tmdb"]):
                                 logger.error(e)
@@ -339,7 +339,6 @@ class Overlays:
                             new_poster.save(temp, exif=exif_tags)
                             self.library.upload_poster(item, temp)
                             self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                            self.library.reload(item, force=True)
                             poster_compare = poster.compare if poster else item.thumb
                             logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:

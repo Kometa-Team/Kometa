@@ -281,7 +281,7 @@ class Library(ABC):
             return image_path
 
     @abstractmethod
-    def item_posters(self, item):
+    def item_posters(self, item, providers=None):
         pass
 
     @abstractmethod

@@ -31,7 +31,6 @@ Plex Meta Manager can
 
 6. and more.
 
-
 ## Getting Started
 
 These are the high-level steps you must take to get Plex Meta Manager up and running:

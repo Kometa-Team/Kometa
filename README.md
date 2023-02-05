@@ -15,6 +15,22 @@
 
 Plex Meta Manager is an open source Python 3 project that has been designed to ease the creation and maintenance of metadata, collections, and playlists within a Plex Media Server. The script is designed to be run continuously and be able to update information based on sources outside your plex environment. Plex Meta Manager supports Movie/TV/Music libraries and Playlists.
 
+## What Can Plex-Meta-Manager Do?
+
+Plex Meta Manager can
+
+1. Create and maintain collections in Plex libraries using external lists, Plex searches, or filters.
+
+2. Create, maintain, and share playlists on Plex servers using the same or similar criteria.
+
+3. Manage metadata [artwork, titles, summaries, release year, etc.] for anything on your Plex server.
+
+4. Add overlays to item artwork to display various details [ratings, resolution, edition, etc.].
+
+5. Send missing items from external lists [for example the IMDB 250] to Radarr or Sonarr for download.
+
+6. and more.
+
 ## Getting Started
 
 These are the high-level steps you must take to get Plex Meta Manager up and running:

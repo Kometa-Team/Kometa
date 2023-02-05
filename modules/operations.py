@@ -322,6 +322,8 @@ class Operations:
                             elif tvdb_item and self.library.mass_genre_update == "tvdb":
                                 new_genres = tvdb_item.genres
                             elif anidb_item and self.library.mass_genre_update in anidb.weights:
+                                logger.trace(anidb_item.main_title)
+                                logger.trace(anidb_item.tags)
                                 new_genres = [str(t).title() for t, w in anidb_item.tags.items() if w >= anidb.weights[self.library.mass_genre_update]]
                             elif mal_item and self.library.mass_genre_update == "mal":
                                 new_genres = mal_item.genres
@@ -514,7 +516,11 @@ class Operations:
                         self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None)
 
                     if self.library.is_show:
-                        real_show = tmdb_item.load_show() if tmdb_item else None
+                        real_show = None
+                        try:
+                            real_show = tmdb_item.load_show() if tmdb_item else None
+                        except Failed as e:
+                            logger.error(e)
                         tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
                         for season in self.library.query(item.seasons):
                             try:
