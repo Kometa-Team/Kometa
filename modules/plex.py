@@ -1139,9 +1139,17 @@ class Plex(Library):
             if image:
                 logger.info(f"{text} | Reset from {location}")
                 if poster:
-                    self.upload_poster(item, image, url=image_url)
+                    try:
+                        self.upload_poster(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.stacktrace()
+                        logger.error(f"Plex Error: {e}")
                 else:
-                    self.upload_background(item, image, url=image_url)
+                    try:
+                        self.upload_background(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.stacktrace()
+                        logger.error(f"Plex Error: {e}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
             else:
