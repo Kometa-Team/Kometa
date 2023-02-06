@@ -1210,7 +1210,7 @@ class MetadataFile(DataFile):
             nonlocal updated
             if updated:
                 try:
-                    current_item.saveEdits()
+                    #current_item.saveEdits()
                     logger.info(f"{description} Details Update Successful")
                 except BadRequest:
                     logger.error(f"{description} Details Update Failed")
@@ -1256,7 +1256,7 @@ class MetadataFile(DataFile):
             summary = tmdb_item.overview
             genres = tmdb_item.genres
 
-        item.batchEdits()
+        #item.batchEdits()
         if title:
             add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
@@ -1279,7 +1279,7 @@ class MetadataFile(DataFile):
 
         if self.library.type in util.advance_tags_to_edit:
             advance_edits = {}
-            prefs = [p.id for p in item.preferences()]
+            prefs = None
             for advance_edit in util.advance_tags_to_edit[self.library.type]:
                 if advance_edit in methods:
                     if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
@@ -1287,6 +1287,8 @@ class MetadataFile(DataFile):
                     elif meta[methods[advance_edit]]:
                         ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
                         method_data = str(meta[methods[advance_edit]]).lower()
+                        if prefs is None:
+                            prefs = [p.id for p in item.preferences()]
                         if method_data not in options:
                             logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
                         elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:

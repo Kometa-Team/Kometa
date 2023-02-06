@@ -254,7 +254,7 @@ class Trakt:
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
 
-    def _parse(self, items, typeless=False, item_type=None, trakt_ids=False):
+    def _parse(self, items, typeless=False, item_type=None, trakt_ids=False, ignore_other=False):
         ids = []
         for item in items:
             if typeless:
@@ -267,6 +267,8 @@ class Trakt:
                 data = item[id_translation[item["type"]]]
                 current_type = item["type"]
             else:
+                continue
+            if current_type in ["person", "list"] and ignore_other:
                 continue
             id_type, id_display = id_types[current_type]
             if id_type in data["ids"] and data["ids"][id_type]:
@@ -373,7 +375,7 @@ class Trakt:
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
 
-    def _list(self, data, urlparse=True, trakt_ids=False, fail=True):
+    def _list(self, data, urlparse=True, trakt_ids=False, fail=True, ignore_other=False):
         try:
             url = requests.utils.urlparse(data).path if urlparse else f"/users/me/lists/{data}"
             items = self._request(f"{url}/items")
@@ -384,9 +386,9 @@ class Trakt:
                 raise Failed(f"Trakt Error: List {data} is empty")
             else:
                 return []
-        return self._parse(items, trakt_ids=trakt_ids)
+        return self._parse(items, trakt_ids=trakt_ids, ignore_other=ignore_other)
 
-    def _userlist(self, list_type, user, is_movie, sort_by=None):
+    def _userlist(self, list_type, user, is_movie, sort_by=None, ignore_other=False):
         try:
             url_end = "movies" if is_movie else "shows"
             if sort_by:
@@ -396,7 +398,7 @@ class Trakt:
             raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
             raise Failed(f"Trakt Error: {user}'s {list_type.capitalize()} is empty")
-        return self._parse(items, item_type="movie" if is_movie else "show")
+        return self._parse(items, item_type="movie" if is_movie else "show", ignore_other=ignore_other)
 
     def _recommendations(self, limit, is_movie):
         media_type = "Movie" if is_movie else "Show"
@@ -408,10 +410,10 @@ class Trakt:
             raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
         return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
 
-    def _charts(self, chart_type, is_movie, params, time_period=None):
+    def _charts(self, chart_type, is_movie, params, time_period=None, ignore_other=False):
         chart_url = f"{chart_type}/{time_period}" if time_period else chart_type
         items = self._request(f"/{'movies' if is_movie else 'shows'}/{chart_url}", params=params)
-        return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show")
+        return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show", ignore_other=ignore_other)
 
     def get_people(self, data):
         return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"}
@@ -491,7 +493,7 @@ class Trakt:
         media_type = "Movie" if is_movie else "Show"
         if method == "trakt_list":
             logger.info(f"Processing {pretty}: {data}")
-            return self._list(data)
+            return self._list(data, ignore_other=True)
         elif method == "trakt_recommendations":
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             return self._recommendations(data, is_movie)
@@ -504,10 +506,10 @@ class Trakt:
                     logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
                     values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
                     params[attr] = ",".join(values) if isinstance(values, list) else values
-            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"])
+            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)
         elif method == "trakt_userlist":
             logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
-            return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"])
+            return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"], ignore_other=True)
         elif method == "trakt_boxoffice":
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             return self._charts("boxoffice", is_movie, {"limit": data})

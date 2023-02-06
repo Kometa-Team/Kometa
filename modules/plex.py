@@ -611,7 +611,7 @@ class Plex(Library):
                     return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
 
     def item_posters(self, item, providers=None):
-        if not providers:
+        if providers is None:
             providers = ["plex", "tmdb"]
         image_url = None
         for provider in providers:
