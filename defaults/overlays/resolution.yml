@@ -49,6 +49,9 @@ external_templates:
               - IMAX
               - Remastered
               - Criterion
+              - Coda
+              - Diamond
+              - Platinum
       final_horizontal_offset:
         default: <<horizontal_offset>>
         conditions:
@@ -282,7 +285,16 @@ overlays:
   Criterion-Dovetail:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
-
+  Coda-Dovetail:
+    variables: {key: cuda, weight: 10, search: Coda, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Diamond-Dovetail:
+    variables: {key: diamond, weight: 10, search: Diamond, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+    
+  Platinum-Dovetail:
+    variables: {key: platinum, weight: 10, search: Platinum, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
   4K-DV:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution}
     template: [name: resolution, name: standard]
@@ -380,3 +392,15 @@ overlays:
   Criterion:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Coda:
+    variables: {key: coda, weight: 10, search: Coda, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Diamond:
+    variables: {key: diamond, weight: 10, search: Diamond, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Platinum:
+    variables: {key: platinum, weight: 10, search: Platinum, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+    
+    
+    
