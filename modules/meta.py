@@ -987,7 +987,11 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if key in v:
+                            if k in self.temp_vars and key in self.temp_vars[k]:
+                                og_call[k] = self.temp_vars[k][key]
+                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
+                                og_call[k] = self.temp_vars[k]["default"]
+                            elif key in v:
                                 og_call[k] = v[key]
                             elif "default" in v:
                                 og_call[k] = v["default"]
@@ -1018,6 +1022,10 @@ class MetadataFile(DataFile):
                             auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
+                            if k in self.temp_vars and "other" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["other"]
+                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["default"]
                             if "other" in v:
                                 og_other[k] = v["other"]
                             elif "default" in v:

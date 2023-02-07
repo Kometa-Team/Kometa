@@ -590,6 +590,12 @@ class CollectionBuilder:
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
+        if "tmdb_person_offset" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_person_offset")
+            logger.debug(f"Value: {data[methods['tmdb_person_offset']]}")
+            self.tmdb_person_offset = util.parse(self.Type, "tmdb_person_offset", self.data, datatype="int", methods=methods, default=0, minimum=0)
+
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
@@ -613,11 +619,12 @@ class CollectionBuilder:
                             try:
                                 results = self.config.TMDb.search_people(tmdb_person)
                                 if results:
+                                    result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
                                     valid_names.append(tmdb_person)
-                                    if results[0].biography:
-                                        self.summaries["tmdb_person"] = results[0].biography
-                                    if results[0].profile_url:
-                                        self.posters["tmdb_person"] = results[0].profile_url
+                                    if results[result_index].biography:
+                                        self.summaries["tmdb_person"] = results[result_index].biography
+                                    if results[result_index].profile_url:
+                                        self.posters["tmdb_person"] = results[result_index].profile_url
                             except Failed as ee:
                                 logger.error(ee)
                 if len(valid_names) > 0:

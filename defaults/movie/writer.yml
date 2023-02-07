@@ -30,12 +30,16 @@ dynamic_collections:
       limit: 25
     title_format: <<key_name>> (Writer)
     template:
+      - tmdb_person
       - smart_filter
       - translation
       - shared
     template_variables:
       tmdb_person:
         default: <<value>>
+      tmdb_person_offset:
+        default: 0
+        Charles Bennett: 1
       search_term:
         default: writer
       search_value:
@@ -44,5 +48,3 @@ dynamic_collections:
         default: writer
       style:
         default: bw
-      url_poster:
-        default: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>>.jpg
