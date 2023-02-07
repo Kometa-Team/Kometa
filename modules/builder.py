@@ -57,11 +57,11 @@ item_details = ["non_item_remove_label", "item_label", "item_genre", "item_editi
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
-    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag"
+    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache"
 ]
 sonarr_details = [
     "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
-    "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag"
+    "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag", "sonarr_ignore_cache"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 sub_filters = [
@@ -1069,7 +1069,7 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower()
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
@@ -1088,7 +1088,7 @@ class CollectionBuilder:
             self.builders.append((method_name, True))
 
     def _sonarr(self, method_name, method_data):
-        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
             self.sonarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
             self.sonarr_details[method_name[7:]] = method_data
