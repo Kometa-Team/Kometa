@@ -611,7 +611,7 @@ class Plex(Library):
                     return self.config.TMDb.get_episode(tmdb_id, item.seasonNumber, item.episodeNumber).still_url
 
     def item_posters(self, item, providers=None):
-        if not providers:
+        if providers is None:
             providers = ["plex", "tmdb"]
         image_url = None
         for provider in providers:
@@ -1139,9 +1139,17 @@ class Plex(Library):
             if image:
                 logger.info(f"{text} | Reset from {location}")
                 if poster:
-                    self.upload_poster(item, image, url=image_url)
+                    try:
+                        self.upload_poster(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.stacktrace()
+                        logger.error(f"Plex Error: {e}")
                 else:
-                    self.upload_background(item, image, url=image_url)
+                    try:
+                        self.upload_background(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.stacktrace()
+                        logger.error(f"Plex Error: {e}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
             else:
@@ -1323,7 +1331,7 @@ class Plex(Library):
 
         if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
-                if file.lower().endswith((".png", ".jpg", ".jpeg", "webp")) and re.match(r"s\d+e\d+|season\d+", file.lower()):
+                if file.lower().endswith((".png", ".jpg", ".jpeg", "webp")) and not re.match(r"s\d+e\d+|season\d+", file.lower()):
                     try:
                         image = Image.open(file)
                         _w, _h = image.size

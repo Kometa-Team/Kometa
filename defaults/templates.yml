@@ -87,6 +87,23 @@ templates:
       - imdb_list
     imdb_list: <<imdb_list>>
 
+  tmdb_person:
+    default:
+      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
+      url_poster_<<key>>: <<url_poster>>
+    optional:
+      - tmdb_person
+      - tmdb_person_offset
+    tmdb_person: <<tmdb_person>>
+    tmdb_person_offset: <<tmdb_person_offset>>
+    conditionals:
+      extra:
+        default: ""
+        conditions:
+          - tmdb_person_offset.exists: true
+            tmdb_person_offset.not: 0
+            value: " (<<tmdb_person_offset>>)"
+
   smart_filter:
     default:
       sort_by: release.desc
@@ -94,12 +111,10 @@ templates:
       limit_<<key>>: <<limit>>
       search_value: <<value>>
     optional:
-      - tmdb_person
       - search_term2
       - search_value2
       - limit
       - type
-    tmdb_person: <<tmdb_person>>
     smart_filter:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>

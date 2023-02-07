@@ -2,8 +2,6 @@
 
 The `producer` Default Metadata File is used to dynamically create collections based on the most popular producers in your library.
 
-![](../images/person_bw.png)
-
 ## Requirements & Recommendations
 
 Supported Library Types: Movie
@@ -15,21 +13,8 @@ Supported Library Types: Movie
 | `Producer Collections`                             | `separator`                                        | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<producer_name>>`<br>**Example:** `Frank Welker` | `<<producer_name>>`<br>**Example:** `Frank Welker` | Collection of Movies by th Producer.                                        |
 
-### Rainier Style
-
-![](../images/person_rainier.png)
-
-### Signature Style
-
-![](../images/person_signature.png)
-
-### Diivoy Style
-
-![](../images/person_diivoy.png)
-
-### Diivoy Color Style
-
-![](../images/person_diivoycolor.png)
+```{include} ../people.md
+```
 
 ## Config
 
@@ -63,6 +48,7 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `exclude`                     | **Description:** Exclude these Producers from creating a Dynamic Collection.<br>**Values:** List of Producer Names                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `producer_name`               | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> (Producer)`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                                                                                                                                                                                                                                                               |
 | `producer_summary`            | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s produced by <<key_name>>.`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                                                                                                                                                                                                                                 |
+| `tmdb_person_offset`          | **Description:** Changes the summary tmdb_person_offset for specific People.<br>**Default:** `0`<br>**Values:** Dictionary of Actor Name as the keys and the tmdb_person_offset as the value.                                                                                                                                                                                                                                                                                                                                                      |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
@@ -81,4 +67,6 @@ libraries:
             depth: 10
             limit: 20
           sort_by: title.asc
+          tmdb_person_offset:
+            Richard Brooks: 1
 ```
