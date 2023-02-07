@@ -2,8 +2,6 @@
 
 The `actor` Default Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
 
-![](../images/person_bw.png)
-
 ## Requirements & Recommendations
 
 Supported Library Types: Movie, Show
@@ -15,22 +13,8 @@ Supported Library Types: Movie, Show
 | `Actors Collections`                            | `separator`                                     | [Separator Collection](../separators) to denote the Section of Collections. |
 | `<<actor_name>>`<br>**Example:** `Frank Welker` | `<<actor_name>>`<br>**Example:** `Frank Welker` | Collection of Movies/Shows the actor is top billing in.                     |
 
-### Rainier Style
-
-![](../images/person_rainier.png)
-
-### Signature Style
-
-![](../images/person_signature.png)
-
-### Diivoy Style
-
-![](../images/person_diivoy.png)
-
-### Diivoy Color Style
-
-![](../images/person_diivoycolor.png)
-
+```{include} ../people.md
+```
 
 ## Config
 
@@ -67,6 +51,7 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `exclude`                     | **Description:** Exclude these Actors from creating a Dynamic Collection.<br>**Values:** List of Actor Names                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `actor_name`                  | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                                                                                                                                                                                                                                                                          |
 | `actor_summary`               | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s with <<key_name>>.`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                                                                                                                                                                                                                                        |
+| `tmdb_person_offset`          | **Description:** Changes the summary `tmdb_person_offset` for specific People.<br>**Default:** `0`<br>**Values:** Dictionary of Actor Name as the keys and the `tmdb_person_offset` as the value.                                                                                                                                                                                                                                                                                                                                                  |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
@@ -85,4 +70,6 @@ libraries:
           sort_by: title.asc
           use_separator: false
           sep_style: purple
+          tmdb_person_offset:
+            Richard Brooks: 1
 ```

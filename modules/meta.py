@@ -987,7 +987,11 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if key in v:
+                            if k in self.temp_vars and key in self.temp_vars[k]:
+                                og_call[k] = self.temp_vars[k][key]
+                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
+                                og_call[k] = self.temp_vars[k]["default"]
+                            elif key in v:
                                 og_call[k] = v[key]
                             elif "default" in v:
                                 og_call[k] = v["default"]
@@ -1018,6 +1022,10 @@ class MetadataFile(DataFile):
                             auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
+                            if k in self.temp_vars and "other" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["other"]
+                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["default"]
                             if "other" in v:
                                 og_other[k] = v["other"]
                             elif "default" in v:
@@ -1210,7 +1218,7 @@ class MetadataFile(DataFile):
             nonlocal updated
             if updated:
                 try:
-                    current_item.saveEdits()
+                    #current_item.saveEdits()
                     logger.info(f"{description} Details Update Successful")
                 except BadRequest:
                     logger.error(f"{description} Details Update Failed")
@@ -1256,7 +1264,7 @@ class MetadataFile(DataFile):
             summary = tmdb_item.overview
             genres = tmdb_item.genres
 
-        item.batchEdits()
+        #item.batchEdits()
         if title:
             add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
@@ -1279,7 +1287,7 @@ class MetadataFile(DataFile):
 
         if self.library.type in util.advance_tags_to_edit:
             advance_edits = {}
-            prefs = [p.id for p in item.preferences()]
+            prefs = None
             for advance_edit in util.advance_tags_to_edit[self.library.type]:
                 if advance_edit in methods:
                     if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
@@ -1287,6 +1295,8 @@ class MetadataFile(DataFile):
                     elif meta[methods[advance_edit]]:
                         ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
                         method_data = str(meta[methods[advance_edit]]).lower()
+                        if prefs is None:
+                            prefs = [p.id for p in item.preferences()]
                         if method_data not in options:
                             logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
                         elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:

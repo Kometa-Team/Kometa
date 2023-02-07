@@ -57,11 +57,11 @@ item_details = ["non_item_remove_label", "item_label", "item_genre", "item_editi
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
-    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag"
+    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache"
 ]
 sonarr_details = [
     "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
-    "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag"
+    "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag", "sonarr_ignore_cache"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 sub_filters = [
@@ -590,6 +590,12 @@ class CollectionBuilder:
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
+        if "tmdb_person_offset" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_person_offset")
+            logger.debug(f"Value: {data[methods['tmdb_person_offset']]}")
+            self.tmdb_person_offset = util.parse(self.Type, "tmdb_person_offset", self.data, datatype="int", methods=methods, default=0, minimum=0)
+
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
@@ -613,11 +619,12 @@ class CollectionBuilder:
                             try:
                                 results = self.config.TMDb.search_people(tmdb_person)
                                 if results:
+                                    result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
                                     valid_names.append(tmdb_person)
-                                    if results[0].biography:
-                                        self.summaries["tmdb_person"] = results[0].biography
-                                    if results[0].profile_url:
-                                        self.posters["tmdb_person"] = results[0].profile_url
+                                    if results[result_index].biography:
+                                        self.summaries["tmdb_person"] = results[result_index].biography
+                                    if results[result_index].profile_url:
+                                        self.posters["tmdb_person"] = results[result_index].profile_url
                             except Failed as ee:
                                 logger.error(ee)
                 if len(valid_names) > 0:
@@ -1069,7 +1076,7 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower()
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
@@ -1088,7 +1095,7 @@ class CollectionBuilder:
             self.builders.append((method_name, True))
 
     def _sonarr(self, method_name, method_data):
-        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search"]:
+        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
             self.sonarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
             self.sonarr_details[method_name[7:]] = method_data
