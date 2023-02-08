@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Requirements: [Tautulli Authentication](../../config/tautulli)
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection     | Key       | Description                                          |
 |:---------------|:----------|:-----------------------------------------------------|

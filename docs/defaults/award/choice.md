@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Requirements: [Trakt Authentication](../../config/trakt)
 
-## Collections Section 16
+## Collections Section 130
 
 | Collection                                                                    | Key                               | Description                                                    |
 |:------------------------------------------------------------------------------|:----------------------------------|:---------------------------------------------------------------|

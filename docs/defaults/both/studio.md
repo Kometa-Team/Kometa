@@ -10,7 +10,7 @@ This file also merges similarly named studios (such as "20th Century Fox" and "2
 
 Supported Library Types: Movie, Show
 
-## Collections Section 07
+## Collections Section 070
 
 | Collection                                           | Key                                                  | Description                                                                 |
 |:-----------------------------------------------------|:-----------------------------------------------------|:----------------------------------------------------------------------------|

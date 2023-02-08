@@ -10,7 +10,7 @@ This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci
 
 Supported Library Types: Movie, Show
 
-## Collections Section 06
+## Collections Section 060
 
 | Collection                                               | Key                              | Description                                                                 |
 |:---------------------------------------------------------|:---------------------------------|:----------------------------------------------------------------------------|

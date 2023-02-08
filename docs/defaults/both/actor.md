@@ -6,7 +6,7 @@ The `actor` Default Metadata File is used to dynamically create collections base
 
 Supported Library Types: Movie, Show
 
-## Collections Section 17
+## Collections Section 140
 
 | Collection                                      | Key                                             | Description                                                                 |
 |:------------------------------------------------|:------------------------------------------------|:----------------------------------------------------------------------------|

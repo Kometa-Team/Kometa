@@ -8,7 +8,7 @@ The `seasonal` Default Metadata File is used to dynamically create seasonal coll
 
 Supported Library Types: Movie
 
-## Collections Section 00
+## Collections Section 000
 
 | Collection                   | Key            | Description                                                                 |
 |:-----------------------------|:---------------|:----------------------------------------------------------------------------|

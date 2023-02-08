@@ -10,7 +10,7 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 Supported Library Types: Movie
 
-## Collections Section 02
+## Collections Section 040
 
 | Collection                  | Key         | Description                                                                 |
 |:----------------------------|:------------|:----------------------------------------------------------------------------|

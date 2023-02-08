@@ -10,7 +10,7 @@ The `decade` Metadata File is used to dynamically create collections based on th
 
 Supported Library Types: Show
 
-## Collections Section 12
+## Collections Section 100
 
 | Collection                                           | Key                               | Description                                                                 |
 |:-----------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|

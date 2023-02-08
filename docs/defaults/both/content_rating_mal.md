@@ -12,7 +12,7 @@ Supported Library Types: Movie, Show
 
 Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with `mal` to update Plex to the MyAnimeList Content Rating.
 
-## Collections Section 14
+## Collections Section 110
 
 | Collection                                                      | Key                                          | Description                                                                    |
 |:----------------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|

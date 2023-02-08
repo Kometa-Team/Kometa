@@ -8,7 +8,7 @@ The `separator_award` Default Metadata File is used to create a seperator collec
 
 Supported Library Types: Movie, Show
 
-## Collections Section 16
+## Collections Section 130
 
 | Collection          | Key         | Description                                                                 |
 |:--------------------|:------------|:----------------------------------------------------------------------------|
