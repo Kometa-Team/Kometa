@@ -8,7 +8,7 @@ The `studio_anime` Default Metadata File is used to dynamically create collectio
 
 Supported Library Types: Movie, Show
 
-## Collections Section 07
+## Collections Section 070
 
 | Collection                                           | Key                                                  | Description                                                                 |
 |:-----------------------------------------------------|:-----------------------------------------------------|:----------------------------------------------------------------------------|

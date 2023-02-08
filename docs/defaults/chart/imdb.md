@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Recommendations: The `IMDb Lowest Rated` Collection only works with Movie Libraries
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection          | Key       | Description                                          |
 |:--------------------|:----------|:-----------------------------------------------------|

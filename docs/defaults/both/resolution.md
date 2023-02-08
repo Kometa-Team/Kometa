@@ -8,7 +8,7 @@ The `resolution` Default Metadata File is used to dynamically create collections
 
 Supported Library Types: Movie, Show
 
-## Collections Section 15
+## Collections Section 120
 
 | Collection                                                   | Key                                 | Description                                                                 |
 |:-------------------------------------------------------------|:------------------------------------|:----------------------------------------------------------------------------|

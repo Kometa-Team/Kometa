@@ -8,7 +8,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "02"
+    collection_section: "040"
 
 translations:
   pmm: translations

@@ -8,7 +8,7 @@ The `anilist` Default Metadata File is used to create collections based on Anili
 
 Supported Library Types: Movie, Show
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection          | Key        | Description                                          |
 |:--------------------|:-----------|:-----------------------------------------------------|

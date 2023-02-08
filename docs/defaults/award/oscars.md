@@ -8,7 +8,7 @@ The `oscars` Default Metadata File is used to create collections based on the Ac
 
 Supported Library Types: Movie
 
-## Collections Section 16
+## Collections Section 130
 
 | Collection                                                      | Key                               | Description                                            |
 |:----------------------------------------------------------------|:----------------------------------|:-------------------------------------------------------|

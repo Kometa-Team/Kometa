@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Recommendations: The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection                          | Key           | Description                                          |
 |:------------------------------------|:--------------|:-----------------------------------------------------|

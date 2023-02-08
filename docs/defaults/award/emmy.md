@@ -8,7 +8,7 @@ The `emmy` Default Metadata File is used to create collections based on the Emmy
 
 Supported Library Types: Movie, Show
 
-## Collections Section 16
+## Collections Section 130
 
 | Collection                                    | Key                               | Description                                           |
 |:----------------------------------------------|:----------------------------------|:------------------------------------------------------|

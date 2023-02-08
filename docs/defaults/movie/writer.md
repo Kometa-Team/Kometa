@@ -6,7 +6,7 @@ The `writer` Default Metadata File is used to dynamically create collections bas
 
 Supported Library Types: Movie
 
-## Collections Section 20
+## Collections Section 170
 
 | Collection                                       | Key                                              | Description                                                                 |
 |:-------------------------------------------------|:-------------------------------------------------|:----------------------------------------------------------------------------|

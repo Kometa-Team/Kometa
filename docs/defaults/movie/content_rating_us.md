@@ -14,7 +14,7 @@ Supported Library Types: Movie
 
 Recommendation: Set the Certification Country within your library's advanced settings to "United States".
 
-## Collections Section 14
+## Collections Section 110
 
 | Collection                                             | Key                                      | Description                                                                     |
 |:-------------------------------------------------------|:-----------------------------------------|:--------------------------------------------------------------------------------|

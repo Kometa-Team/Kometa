@@ -8,7 +8,7 @@ The `streaming` Default Metadata File is used to dynamically create collections 
 
 Supported Library Types: Movie, Show
 
-## Collections Section 03
+## Collections Section 030
 
 | Collection                 | Key           | Description                                                                 |
 |:---------------------------|:--------------|:----------------------------------------------------------------------------|
