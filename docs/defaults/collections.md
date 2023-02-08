@@ -82,7 +82,6 @@ This is the default PMM collection ordering:
 | `content_rating_uk`    | `110`              |
 | `content_rating_cs`    | `110`              |
 | `resolution`           | `120`              |
-| `resolution_standards` | `120`              |
 | `bafta`                | `130`              |
 | `cannes`               | `130`              |
 | `choice`               | `130`              |
