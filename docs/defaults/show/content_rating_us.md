@@ -12,7 +12,7 @@ If you do not use the US-based rating system within Plex, this file will attempt
 
 Supported Library Types: Show
 
-## Collections Section 14
+## Collections Section 110
 
 | Collection                                               | Key                                          | Description                                                                    |
 |:---------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|

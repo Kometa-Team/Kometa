@@ -12,7 +12,7 @@ Supported Library Types: Movie, Show
 
 Recommendation: Set the Certification Country within your library's advanced settings to "United Kingdom"
 
-## Collections Section 14
+## Collections Section 110
 
 | Collection                                                    | Key                                       | Description                                                                           |
 |:--------------------------------------------------------------|:------------------------------------------|:--------------------------------------------------------------------------------------|

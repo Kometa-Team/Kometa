@@ -8,7 +8,7 @@ The `separator_chart` Default Metadata File is used to create a seperator collec
 
 Supported Library Types: Movie, Show
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection          | Key         | Description                                                                 |
 |:--------------------|:------------|:----------------------------------------------------------------------------|

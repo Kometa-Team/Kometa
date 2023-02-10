@@ -10,7 +10,7 @@ The `country` Default Metadata File is used to dynamically create collections ba
 
 Supported Library Types: Show
 
-## Collections Section 09
+## Collections Section 080
 
 | Collection                              | Key                                                | Description                                                                 |
 |:----------------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|

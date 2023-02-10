@@ -10,7 +10,7 @@ The `decade` Default Metadata File is used to dynamically create collections bas
 
 Supported Library Types: Movie
 
-## Collections Section 12
+## Collections Section 100
 
 | Collection                                           | Key                               | Description                                                                 |
 |:-----------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|

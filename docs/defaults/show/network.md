@@ -8,7 +8,7 @@ The `network` Default Metadata File is used to dynamically create collections ba
 
 Supported Library Types: Show
 
-## Collections Section 04
+## Collections Section 050
 
 | Collection                          | Key                                 | Description                                                                 |
 |:------------------------------------|:------------------------------------|:----------------------------------------------------------------------------|
