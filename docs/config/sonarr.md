@@ -74,20 +74,20 @@ libraries:
   Library02:     # this library overrides sonarr root path and profile
     metadata_path:
       - file: config/TV.yml
-    radarr:
+    sonarr:
       root_folder_path: /data/media/shows/tony
       quality_profile: Better
 
   Library03:      # this library overrides sonarr quality profile
     metadata_path:
       - file: config/TV.yml
-    radarr:
+    sonarr:
       quality_profile: Best
 
   Library04:      # this library uses the 4K sonarr instance
     metadata_path:
       - file: config/TV.yml
-    radarr:
+    sonarr:
       url: https://sonarr-4k.bing.bang
       token: SOME_OTHER_TOKEN
       root_folder_path: /data/media/shows/geezer
@@ -96,7 +96,7 @@ libraries:
   Library05:      # shows get added by a custom script so they should get added to sonarr-4k
     metadata_path:
       - file: config/TV.yml
-    radarr:
+    sonarr:
       url: https://sonarr-4k.bing.bang
       token: SOME_OTHER_TOKEN
       root_folder_path: /data/media/shows/bill
