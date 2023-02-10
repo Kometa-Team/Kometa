@@ -625,6 +625,8 @@ class Plex(Library):
                             except Failed as e:
                                 logger.trace(f"Plex Error: {e}")
                                 continue
+                    else:
+                        image_url = poster.key
                     break
             if provider == "tmdb":
                 try:
