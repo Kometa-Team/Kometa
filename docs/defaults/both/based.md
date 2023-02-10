@@ -8,7 +8,7 @@ The `based` Default Metadata File is used to create collections with items that 
 
 Supported Library Types: Movie, Show
 
-## Collections Section 03
+## Collections Section 085
 
 | Collection                 | Key           | Description                                                                 |
 |:---------------------------|:--------------|:----------------------------------------------------------------------------|

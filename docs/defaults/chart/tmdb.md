@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Recommendations: The `TMDb Airing Today` and `TMDb On The Air` Collections only work with Show Libraries
 
-## Collections Section 01
+## Collections Section 020
 
 | Collection          | Key        | Description                                          |
 |:--------------------|:-----------|:-----------------------------------------------------|

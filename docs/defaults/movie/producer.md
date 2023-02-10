@@ -6,7 +6,7 @@ The `producer` Default Metadata File is used to dynamically create collections b
 
 Supported Library Types: Movie
 
-## Collections Section 19
+## Collections Section 160
 
 | Collection                                         | Key                                                | Description                                                                 |
 |:---------------------------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|

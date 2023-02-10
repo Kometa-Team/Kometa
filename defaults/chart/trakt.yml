@@ -8,7 +8,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
+    collection_section: "020"
     image: chart/<<collection_name_encoded>>
 
 translations:

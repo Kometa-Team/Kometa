@@ -6,7 +6,7 @@ The `director` Default Metadata File is used to dynamically create collections b
 
 Supported Library Types: Movie
 
-## Collections Section 18
+## Collections Section 150
 
 | Collection                                         | Key                                                | Description                                                                 |
 |:---------------------------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|

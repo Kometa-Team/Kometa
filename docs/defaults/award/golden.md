@@ -10,7 +10,7 @@ Supported Library Types: Movie, Show
 
 Recommendations: The `Golden Globe Best Motion Pictures` Collection only works with Movie Libraries
 
-## Collections Section 16
+## Collections Section 130
 
 | Collection                                                  | Key                               | Description                                                   |
 |:------------------------------------------------------------|:----------------------------------|:--------------------------------------------------------------|
