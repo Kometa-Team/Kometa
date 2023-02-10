@@ -30,7 +30,7 @@ If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following ba
 
 ## Local Install Overview
 
-Plex Meta Manager is compatible with Python 3.7 through 3.10. Later versions may function but are untested.
+Plex Meta Manager is compatible with Python 3.7 through 3.11. Later versions may function but are untested.
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. For a detailed step-by-step walkthrough, refer to the [Local Walkthrough](guides/local) guide.
 
@@ -94,5 +94,7 @@ services:
       - /path/to/config:/config
     restart: unless-stopped
 ```
-## Dockerfile
+
+### Dockerfile
+
 A `Dockerfile` is included within the GitHub repository for those who require it, although this is only suggested for those with knowledge of dockerfiles. The official Plex Meta Manager build is available on the [Dockerhub Website](https://hub.docker.com/r/meisnate12/plex-meta-manager).

@@ -266,7 +266,7 @@ class Overlays:
                                     elif mod == "00":
                                         final_value = f"{int(actual_value):03}"
                                     elif mod == "/":
-                                        final_value = f"{int(actual_value) / 2:.2f}"
+                                        final_value = f"{float(actual_value) / 2:.1f}"
                                     elif mod == "U":
                                         final_value = str(actual_value).upper()
                                     elif mod == "L":

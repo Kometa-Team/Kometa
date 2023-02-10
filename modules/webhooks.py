@@ -109,7 +109,7 @@ class Webhooks:
 
     def delete_hooks(self, message, server=None, library=None):
         if self.delete_webhooks:
-            json = {"event": "delete", "message": message}
+            json = {"event": "delete", "message": str(message)}
             if server:          json["server_name"] = str(server)
             if library:         json["library_name"] = str(library)
             self._request(self.delete_webhooks, json)

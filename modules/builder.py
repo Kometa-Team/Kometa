@@ -43,7 +43,8 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "variables", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
-    "blank_collection", "allowed_library_types", "delete_playlist", "ignore_blank_results", "only_run_on_create", "delete_collections_named"
+    "blank_collection", "allowed_library_types", "delete_playlist", "ignore_blank_results", "only_run_on_create",
+    "delete_collections_named", "tmdb_person_offset"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
