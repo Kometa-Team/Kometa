@@ -195,7 +195,7 @@ templates:
             value: -335         # If side is 'top' or 'bottom' and no previous conditions are meet
 ```
 
-## Advance Example
+## Advanced Example
 
 Here's an example IMDb Genre template and two different ways to call it.
 
