@@ -86,14 +86,10 @@ jobs:
           git tag ${{ steps.get_version.outputs.VERSION }}
           git push origin ${{ steps.get_version.outputs.VERSION }}
 
-      - name: Get Changelog
-        id: notes
-        run: echo 'NOTES=$(cat CHANGELOG)' >> $GITHUB_OUTPUT
-
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ steps.notes.outputs.NOTES }}
+          body_path: CHANGELOG
           token: ${{ secrets.PAT }}
           tag_name: ${{ steps.get_version.outputs.VERSION }}
