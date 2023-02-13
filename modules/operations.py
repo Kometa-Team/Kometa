@@ -437,7 +437,7 @@ class Operations:
                         item.editField("studio", None, locked=self.library.mass_studio_update == "remove")
                         batch_display += f"\nStudio | None"
                     elif self.library.mass_studio_update in ["unlock", "reset"] and "studio" in locked_fields:
-                        self.library.edit_query(item, {"originalTitle.locked": 0})
+                        self.library.edit_query(item, {"studio.locked": 0})
                         batch_display += f"\nStudio | Unlocked"
                     elif self.library.mass_studio_update in ["lock", "remove"] and "studio" not in locked_fields:
                         self.library.edit_query(item, {"studio.locked": 1})

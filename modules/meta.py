@@ -133,9 +133,11 @@ class DataFile:
                         if os.path.exists(os.path.abspath(os.path.join(defaults_path, default_folder, file_path))):
                             file_path = os.path.abspath(os.path.join(defaults_path, default_folder, file_path))
                             break
-            content_path = os.path.abspath(f"{file_path}/default.yml" if translation else file_path)
+            content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
+                if os.path.exists(os.path.join("config", content_path)):
+                    content_path = os.path.join("config", content_path)
                 if file_type == "PMM Default":
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
@@ -595,7 +597,7 @@ class MetadataFile(DataFile):
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
-            logger.debug("")
+            logger.info("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
@@ -959,6 +961,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Sync: {sync}")
                     logger.debug(f"Include: {include}")
                     logger.debug(f"Other Name: {other_name}")
+                    logger.debug(f"All Keys: {all_keys.keys()}")
                     if not auto_list:
                         raise Failed("No Keys found to create a set of Dynamic Collections")
                     logger.debug(f"Keys (Title):")
@@ -1588,7 +1591,7 @@ class PlaylistFile(DataFile):
         self.data_type = "Playlist"
         logger.info("")
         logger.info(f"Loading Playlist {file_type}: {path}")
-        logger.debug("")
+        logger.info("")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
@@ -1606,7 +1609,7 @@ class OverlayFile(DataFile):
         self.file_num = len(library.overlay_files)
         logger.info("")
         logger.info(f"Loading Overlay {self.file_num} {file_type}: {path}")
-        logger.debug("")
+        logger.info("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)

@@ -591,6 +591,7 @@ class CollectionBuilder:
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
+        self.tmdb_person_offset = 0
         if "tmdb_person_offset" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person_offset")

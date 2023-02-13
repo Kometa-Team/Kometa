@@ -138,8 +138,16 @@ and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are b
 </table>
 
 ## Create Asset Folders
-Whilst searching for assets, if an asset folder cannot be found within the `asset_directory`, create one. This only applies to library items utilized in a Metadata/Playlist file (i.e. Star Wars Collection)
-* This may create hundreds/thousands of folders if `plex_all` is used, which can cause performance issues when loading the directory. 
+
+Whilst searching for assets, if an asset folder cannot be found within the `asset_directory` one will be created.
+
+Asset Searches can happen in a number of ways.
+* Any Collection specified under the `collections` header in a Metadata File.
+* Any Item specified under the `metadata` header in a Metadata File.
+* Any Playlist specified under the `playlists` header in a Playlist File.
+* Any Item in a library that is running the `assets_for_all` Library Operation.
+* Any Item that has an Overlay applied to it.
+* Any Item found by a Builder while the definition also has `item_assets: true` specified. 
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

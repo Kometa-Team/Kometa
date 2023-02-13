@@ -301,7 +301,7 @@ class Webhooks:
             "embeds": [
                 {
                     "title": title,
-                    "color": 844716
+                    "color": 0x00bc8c
                 }
             ],
             "username": "Metabot",
