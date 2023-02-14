@@ -383,7 +383,10 @@ class CollectionBuilder:
                 logger.debug("Validating Method: delete_playlist")
                 logger.debug(f"Value: {data[methods['delete_playlist']]}")
                 if util.parse(self.Type, "delete_playlist", self.data, datatype="bool", methods=methods, default=False):
-                    self.obj = self.library.get_playlist(self.name)
+                    try:
+                        self.obj = self.library.get_playlist(self.name)
+                    except Failed as e:
+                        logger.error(e)
                     raise Deleted(self.delete())
         else:
             self.libraries.append(self.library)
