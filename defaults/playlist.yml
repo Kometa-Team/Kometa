@@ -22,6 +22,7 @@ templates:
       name_<<key>>: <<mapping_name>>
       sync_to_users_<<key>>: <<sync_to_users>>
       exclude_users_<<key>>: <<exclude_users>>
+      delete_playlist_<<key>>: <<delete_playlist>>
     optional:
       - use_<<key>>
       - item_radarr_tag
@@ -30,6 +31,7 @@ templates:
       - ignore_imdb_ids
       - sync_to_users
       - exclude_users
+      - delete_playlist
     allowed_library_types:
       - <<use_<<key>>>>
     ignore_ids: <<ignore_ids>>
@@ -40,6 +42,7 @@ templates:
     cache_builders: 1
     sync_to_users: <<sync_to_users_<<key>>>>
     exclude_users: <<exclude_users_<<key>>>>
+    delete_playlist: <<delete_playlist_<<key>>>>
     sync_mode: sync
     libraries: <<libraries>>
     url_poster: <<url_poster_<<key>>>>
