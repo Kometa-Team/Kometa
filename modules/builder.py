@@ -2927,8 +2927,9 @@ class CollectionBuilder:
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def delete(self):
+        title = self.obj.title if self.obj else self.name
         if self.playlist:
-            output = f"Deleting {self.Type} {self.obj.title}"
+            output = f"Deleting {self.Type} {title}"
             output += f"\n{self.Type} {'deleted' if self.obj else 'not found'} on {self.library.account.username}"
         elif self.obj:
             output = f"{self.Type} {self.obj.title} deleted"
@@ -2943,7 +2944,7 @@ class CollectionBuilder:
         if self.playlist and self.valid_users:
             for user in self.valid_users:
                 try:
-                    self.library.delete_user_playlist(self.obj.title, user)
+                    self.library.delete_user_playlist(title, user)
                     output += f"\nPlaylist deleted on User {user}"
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
