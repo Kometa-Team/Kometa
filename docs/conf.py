@@ -47,7 +47,8 @@ extensions = [
     'sphinx_inline_tabs',
     'sphinx_copybutton',
     'sphinx_reredirects',
-    'sphinx_design'
+    'sphinx_design',
+    'notfound.extension'
 ]
 
 source_suffix = ['.rst', '.md']
