@@ -5,3 +5,4 @@ sphinx-copybutton
 sphinx-reredirects
 sphinx_design
 sphinx-reload
+sphinx-notfound-page
