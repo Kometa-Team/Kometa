@@ -17,9 +17,11 @@ Supported Library Types: Movie, Show
 | `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.                          |
 | `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.                               |
 | `BritBox Movies/Shows`     | `britbox`     | Collection of Movies/Shows Streaming on BritBox.                            |
-| `Crunchyroll Movies/Shows` | `crunchyroll` | Collection of Movies/Shows Streaming on Crunchyroll.                        |
+| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.                              |
+| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.                               |
+| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.                                |
 | `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.                            |
-| `hayu Movies/Shows`        | `hayu`        | Collection of Movies/Shows Streaming on hayu.                               |
+| `hayu Shows`               | `hayu`        | Collection of Shows Streaming on hayu.                                      |
 | `HBO Max Movies/Shows`     | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.                            |
 | `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.                               |
 | `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.                            |
@@ -62,10 +64,23 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `sync_mode`                     | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table> |
 | `sync_mode_<<key>>`<sup>1</sup> | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table> |
 | `exclude`                       | **Description:** Exclude these Streaming Services from creating a Dynamic Collection.<br>**Values:** List of Streaming Service Keys                                                                                                                                                              |
+| `region`                        | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                       |
 | `streaming_name`                | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                              |
 | `streaming_summary`             | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s streaming on <<key_name>>.`<br>**Values:** Any string.                                                                                                                        |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+
+## Regional Variants
+
+Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
+
+| Region           | Key                              | Description                                                                                                                               |
+|:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| any besides `us` | `amazon`, `disney`, `netflix`    | These collections will use regional variant lists to ensure the lists populate with what is available in the region specified             |
+| any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These collections will not be created if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `ca` | `crave`                          | These collections will not be created if the region is not `ca` as these streaming services are Canada-focused                            |
+| `ca`             | `hbomax`, `showtime`             | These collections will not be created if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
@@ -75,10 +90,9 @@ libraries:
     metadata_path:
       - pmm: streaming
         template_variables:
+          region: fr
           use_separator: false
           sep_style: stb
-          use_all4: false
-          order_britbox: 01
           visible_library_disney: true
           visible_home_disney: true
           visible_shared_disney: true

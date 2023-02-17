@@ -91,7 +91,7 @@ playlists:
       key: startrek
     template:
       - name: playlist
-        trakt_url: https://trakt.tv/users/pedrohcramos/lists/star-trek-timeline
+        trakt_url: https://trakt.tv/users/username57/lists/star-trek-prime-canon-timeline
         summary_startrek: Few film franchises have lasted as long as Star Trek. Through five decades and three different crews, the Star Trek films have saved more than a few worlds (and the whales), traveling through time more than once to do it. With them being set in so many different time periods, their actual chronological order might get a little confusing. No need to fret as this is the proper order… in linear time, anyway. On a quantum level is a whole other thing.
       - name: arr
 
