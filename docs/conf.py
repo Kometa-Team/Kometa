@@ -281,7 +281,7 @@ html_theme_options = {
                     ("Studios", "defaults/both/studio"),
                     ("Anime Studios", "defaults/both/studio_anime"),
                     ("Subtitle Languages", "defaults/both/subtitle_language"),
-                    ("Universes", "defaults/both/universe"),n
+                    ("Universes", "defaults/both/universe"),
                     ("Years", "defaults/both/year"),
                 ]),
             ]),
