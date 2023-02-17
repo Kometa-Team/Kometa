@@ -265,7 +265,7 @@ class CollectionBuilder:
             self.obj = None
 
         self.only_run_on_create = False
-        if "only_run_on_create" in methods and not self.playlist:
+        if "only_run_on_create" in methods:
             logger.debug("")
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
@@ -281,7 +281,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {self.data[methods['allowed_library_types']]}")
             found_type = False
             for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
-                if library_type == "true" or library_type == self.library.Plex.type:
+                if library_type == "true" or (self.library and library_type == self.library.Plex.type):
                     found_type = True
                 elif library_type == "false":
                     raise NotScheduled(f"Skipped because allowed_library_types is false")
