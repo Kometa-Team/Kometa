@@ -108,7 +108,7 @@ redirects = {
     "metadata/details/details": "update.html",
     "malauth": "https://replit.com/@chazlarson/MALAuth",
     "traktauth": "https://replit.com/@chazlarson/TraktAuth",
-    "defaults/movie/universe": "../both/universe.html",
+    "defaults/movie/universe": "../../both/universe.html",
 }
 
 # Theme options are theme-specific and customize the look and feel of a
