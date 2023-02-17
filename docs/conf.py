@@ -106,6 +106,8 @@ redirects = {
     "home/guides/defaults": "../../defaults/guide.html",
     "metadata/details/setting": "definition.html",
     "metadata/details/details": "update.html",
+    "malauth": "https://replit.com/@chazlarson/MALAuth",
+    "traktauth": "https://replit.com/@chazlarson/TraktAuth",
 }
 
 # Theme options are theme-specific and customize the look and feel of a
@@ -279,7 +281,7 @@ html_theme_options = {
                     ("Studios", "defaults/both/studio"),
                     ("Anime Studios", "defaults/both/studio_anime"),
                     ("Subtitle Languages", "defaults/both/subtitle_language"),
-                    ("Universes", "defaults/both/universe"),
+                    ("Universes", "defaults/both/universe"),n
                     ("Years", "defaults/both/year"),
                 ]),
             ]),
