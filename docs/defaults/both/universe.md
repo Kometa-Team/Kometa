@@ -8,25 +8,28 @@ This Default file requires [Trakt Authentication](../../config/trakt)
 
 ## Requirements & Recommendations
 
-Supported Library Types: Movie
+Supported Library Types: Movie & Show
 
 ## Collections Section 040
 
-| Collection                  | Key         | Description                                                                 |
-|:----------------------------|:------------|:----------------------------------------------------------------------------|
-| `Universe Collections`      | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
-| `Star Wars Universe`        | `star`      | Collection of Movies in the Star Wars Universe                              |
-| `DC Animated Universe`      | `dca`       | Collection of Movies in the DC Animated Universe                            |
-| `DC Extended Universe`      | `dcu`       | Collection of Movies in the DC Extended Universe                            |
-| `Marvel Cinematic Universe` | `mcu`       | Collection of Movies in the Marvel Cinematic Universe                       |
-| `Wizarding World`           | `wizard`    | Collection of Movies in the Wizarding World Universe                        |
-| `Alien / Predator`          | `avp`       | Collection of Movies in the Alien / Predator Universe                       |
-| `X-Men Universe`            | `xmen`      | Collection of Movies in the X-Men Universe                                  |
-| `Middle Earth`              | `middle`    | Collection of Movies in the Middle Earth Universe                           |
-| `Fast & Furious`            | `fast`      | Collection of Movies in the Fast & Furious Universe                         |
-| `Star Trek`                 | `trek`      | Collection of Movies in the Star Trek Universe                              |
-| `Rocky / Creed`             | `rocky`     | Collection of Movies in the Rocky / Creed Universe                          |
-| `The Mummy Universe`        | `mummy`     | Collection of Movies in the The Mummy Universe                              |
+| Collection                   | Key         | Description                                                                 |
+|:-----------------------------|:------------|:----------------------------------------------------------------------------|
+| `Universe Collections`       | `separator` | [Separator Collection](../separators) to denote the Section of Collections. |
+| `Alien / Predator`           | `avp`       | Collection of Movies in the Alien / Predator Universe                       |
+| `Arrowverse`                 | `arrow`     | Collection of Movies in the The Arrow Universe                              |
+| `DC Animated Universe`       | `dca`       | Collection of Movies in the DC Animated Universe                            |
+| `DC Extended Universe`       | `dcu`       | Collection of Movies in the DC Extended Universe                            |
+| `Fast & Furious`             | `fast`      | Collection of Movies in the Fast & Furious Universe                         |
+| `In Association with Marvel` | `marvel`    | Collection of Movies in the Marvel Universe (but not part of MCU)           |
+| `Marvel Cinematic Universe`  | `mcu`       | Collection of Movies in the Marvel Cinematic Universe                       |
+| `Middle Earth`               | `middle`    | Collection of Movies in the Middle Earth Universe                           |
+| `The Mummy Universe`         | `mummy`     | Collection of Movies in the The Mummy Universe                              |
+| `Rocky / Creed`              | `rocky`     | Collection of Movies in the Rocky / Creed Universe                          |
+| `Star Trek`                  | `trek`      | Collection of Movies in the Star Trek Universe                              |
+| `Star Wars Universe`         | `star`      | Collection of Movies in the Star Wars Universe                              |
+| `View Askewverse`            | `askew`     | Collection of Movies in the The View Askew Universe                         |
+| `Wizarding World`            | `wizard`    | Collection of Movies in the Wizarding World Universe                        |
+| `X-Men Universe`             | `xmen`      | Collection of Movies in the X-Men Universe                                  |
 
 ## Config
 
@@ -35,6 +38,9 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
+    metadata_path:
+      - pmm: universe
+  TV Shows:
     metadata_path:
       - pmm: universe
 ```
@@ -80,7 +86,7 @@ libraries:
           # Add a custom universe
           append_data:
             monster: MonsterVerse
-          trakt_list_veteran: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies
+          trakt_list_monster: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies
 ```
 
 ## Default values
@@ -91,34 +97,40 @@ These are lists provided for reference to show what values will be in use if you
 
 ```yaml
 data:
-  star: Star Wars Universe
+  avp: Alien / Predator
+  arrow: Arrowverse
   dca: DC Animated Universe
   dcu: DC Extended Universe
-  mcu: Marvel Cinematic Universe
-  wizard: Wizarding World
-  avp: Alien / Predator
-  xmen: X-Men Universe
-  middle: Middle Earth
   fast: Fast & Furious
-  trek: Star Trek
-  rocky: Rocky / Creed
+  marvel: In Association With Marvel
+  mcu: Marvel Cinematic Universe
+  middle: Middle Earth
   mummy: The Mummy Universe
+  rocky: Rocky / Creed
+  trek: Star Trek
+  star: Star Wars Universe
+  askew: View Askewniverse
+  wizard: Wizarding World
+  xmen: X-Men Universe
 ```
 
-### Default `trakt_list`
+### Default `mdblist_list`
 
 ```yaml
-trakt_list:
-  star: https://trakt.tv/users/zorge88/lists/star-wars
-  dca: https://trakt.tv/users/donxy/lists/dc-animated-movie-universe
-  dcu: https://trakt.tv/users/donxy/lists/dc-extended-universe
-  mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
-  wizard: https://trakt.tv/users/strangerer/lists/harry-potter
-  avp: https://trakt.tv/users/donxy/lists/alien-predator-timeline
-  xmen: https://trakt.tv/users/donxy/lists/x-men-universe
-  middle: https://trakt.tv/users/dybro/lists/lord-of-the-rings
-  fast: https://trakt.tv/users/vargajoe/lists/fast-and-furious-chronology
-  trek: https://trakt.tv/users/arachn0id/lists/star-trek-movies
-  rocky: https://trakt.tv/users/strangerer/lists/rocky
-  mummy: https://trakt.tv/users/rzepkowski/lists/the-mummy-movies
+mdblist_list:
+    avp: https://mdblist.com/lists/plexmetamanager/external/9243
+    arrow: https://mdblist.com/lists/plexmetamanager/external/15113
+    dca: https://mdblist.com/lists/plexmetamanager/external/15405
+    dcu: https://mdblist.com/lists/plexmetamanager/external/15107
+    fast: https://mdblist.com/lists/plexmetamanager/external/9246
+    marvel: https://mdblist.com/lists/plexmetamanager/external/15110
+    mcu: https://mdblist.com/lists/plexmetamanager/external/15109
+    middle: https://mdblist.com/lists/plexmetamanager/external/15199
+    mummy: https://mdblist.com/lists/plexmetamanager/external/9249
+    rocky: https://mdblist.com/lists/plexmetamanager/external/9248
+    trek: https://mdblist.com/lists/plexmetamanager/external/15354
+    star: https://mdblist.com/lists/plexmetamanager/external/15105
+    askew: https://mdblist.com/lists/plexmetamanager/external/15362
+    wizard: https://mdblist.com/lists/plexmetamanager/external/9242
+    xmen: https://mdblist.com/lists/plexmetamanager/external/9244
 ```

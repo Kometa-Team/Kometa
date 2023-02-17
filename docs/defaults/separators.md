@@ -10,29 +10,30 @@ Below is an example of a separator, which can be seen surrounded by a red square
 
 ## Separator Files
 
-These are all the files that contain a separator.
+These are all the files that contain a separator 
 
-| Collection Name               | Default File        | Collection Section |
-|-------------------------------|:--------------------|:-------------------|
-| Seasonal Collections          | `seasonal`          | `00`               |
-| Chart Collections             | `separator_chart`   | `01`               |
-| Universe Collections          | `universe`          | `02`               |
-| Streaming Collections         | `streaming`         | `03`               |
-| Network Collections           | `network`           | `04`               |
-| Genre Collections             | `genre`             | `06`               |
-| Studio Collections            | `studio`            | `07`               |
-| Country Collections           | `country`           | `09`               |
-| Audio Language Collections    | `audio_language`    | `10`               |
-| Subtitle Language Collections | `subtitle_language` | `11`               |
-| Decade Collections            | `decade`            | `12`               |
-| Year Collections              | `year`              | `13`               |
-| Ratings Collections           | `content_rating*`   | `14`               |
-| Resolution Collections        | `resolution*`       | `15`               |
-| Award Collections             | `separator_award`   | `16`               |
-| Actors Collections            | `actor`             | `17`               |
-| Directors Collections         | `director`          | `18`               |
-| Producers Collections         | `producer`          | `19`               |
-| Writers Collections           | `writer`            | `20`               |
+| Collection Name               | Default File        |
+|-------------------------------|:--------------------|
+| Seasonal Collections          | `seasonal`          |
+| Chart Collections             | `separator_chart`   |
+| Universe Collections          | `universe`          |
+| Streaming Collections         | `streaming`         |
+| Network Collections           | `network`           |
+| Genre Collections             | `genre`             |
+| Studio Collections            | `studio`            |
+| Country Collections           | `country`           |
+| Audio Language Collections    | `audio_language`    |
+| Subtitle Language Collections | `subtitle_language` |
+| Decade Collections            | `decade`            |
+| Year Collections              | `year`              |
+| Ratings Collections           | `content_rating*`   |
+| Resolution Collections        | `resolution*`       |
+| Award Collections             | `separator_award`   |
+| Actors Collections            | `actor`             |
+| Directors Collections         | `director`          |
+| Producers Collections         | `producer`          |
+| Writers Collections           | `writer`            |
+| Based On... Collections       | `based`             |
 
 ## Shared Separator Variables 
 
