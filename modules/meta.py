@@ -950,6 +950,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Addons: {addons}")
                     logger.debug(f"Template: {template_names}")
                     logger.debug(f"Other Template: {other_templates}")
+                    logger.debug(f"Library Variables: {self.temp_vars}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
@@ -990,10 +991,8 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if k in self.temp_vars and key in self.temp_vars[k]:
-                                og_call[k] = self.temp_vars[k][key]
-                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
-                                og_call[k] = self.temp_vars[k]["default"]
+                            if k in self.temp_vars:
+                                og_call[k] = self.temp_vars[k]
                             elif key in v:
                                 og_call[k] = v[key]
                             elif "default" in v:
