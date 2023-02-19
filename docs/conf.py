@@ -109,6 +109,7 @@ redirects = {
     "malauth": "https://replit.com/@chazlarson/MALAuth",
     "traktauth": "https://replit.com/@chazlarson/TraktAuth",
     "defaults/movie/universe": "../../both/universe.html",
+    "discord": "https://discord.gg/FNqqw5jRSz",
 }
 
 # Theme options are theme-specific and customize the look and feel of a
