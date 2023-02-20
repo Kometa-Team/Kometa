@@ -11,15 +11,15 @@
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
 
-Your Plex folders are growing out of control. You use overlays from [Plex Meta Manager](https://github.com/meisnate12/Plex-Meta-Manager) (PMM) or upload lots of custom art from [Title Card Maker](https://github.com/CollinHeist/TitleCardMaker) (TCM) that you no longer want to use or need to eliminate. You don't want to perform the plex dance if you can avoid it. This script will free up gigs of space....
+Your Plex folders are growing out of control. You use overlays from [Plex Meta Manager](https://github.com/meisnate12/Plex-Meta-Manager) (PMM) or upload lots of custom art from [Title Card Maker](https://github.com/CollinHeist/TitleCardMaker) (TCM) that you no longer want to use or need to eliminate. You don't want to perform the [plex dance](https://www.plexopedia.com/plex-media-server/general/plex-dance/) if you can avoid it. This script will free up gigs of space....
 
-It can also perform some Plex operations like "empty trash", "clean bundles", and "optimize db". 
-
-Red is deleted, Green is kept because it is the actively selected poster. The other two come standard from PLEX when the posters are retrieved so the script will not touch those either:
+As well as being able to clean the PhotoTranscoder Directory and running the Plex operations Empty Trash, Clean Bundles, and Optimize DB. 
 
 Special Thanks to [bullmoose20](https://github.com/bullmoose20) for the original [Plex Bloat Fix](https://github.com/bullmoose20/Plex-Stuff#plex-bloat-fix) (PBF) Script this is based on.
 
-![](dispaly.png)
+![](cleanup.png)
+
+This image shows which photos would be removed. Red is removed, Green is kept because it is the actively selected poster. The other two come standard from Plex when the posters are retrieved so the script will not touch those either:
 
 ## Installing Plex Image Cleanup
 
@@ -110,81 +110,29 @@ A `Dockerfile` is included within the GitHub repository for those who require it
 
 ## Usage
 
-**IMPORTANT! Due to a recent change that PLEX made (circa Jan 2023), you SHOULD restart plex before running this script. Restarting allows for all temp SQLite files to be written to the primary plex db ensuring that we know exactly which posters have been selected and should be preserved.**
+When running Plex Image Cleanup, make sure that you are not running any tools which may touch posters, backgrounds or title card images - namely [Plex Meta Manager](https://github.com/meisnate12/Plex-Meta-Manager) or [TitleCardMaker](https://github.com/CollinHeist/TitleCardMaker).
 
-**IMPORTANT: the script currently does not verify that Plex is idle before doing this. MAKE SURE that Plex is idle before running the script to avoid any database problems that may be caused by copying the DB out from under Plex while it's being optimized or the like. ONLY use this if you have a backup.**
+It is recommended to schedule Plex Image Cleanup after the above tools or Plex's Scheduled Tasks.
 
-### Notes / Tips
+An example schedule would be:
+* 00:00-02:00 - TitleCardMaker
+* 02:00-05:00 - Plex Scheduled Tasks
+* 05:00-07:00 - Plex Meta Manager
+* 07:00-09:00 - Plex Image Cleanup
 
-* Make sure that you are NOT actively updating posters or title cards with PMM or TCM while running this script. Schedule this after the last run happens. So TCM, Plex Scheduled Tasks, PMM, THEN schedule or run Plex Image Cleanup. Example: TCM @ 00:00, PLEX @ 02:00-05:00, and PMM @ 05:00
+### Tips
+
 * Ensure you have proper permissions to delete/rename or the script will fail
 * For performance purposes, it's recommended to run locally so that accessing the files is not done over a network share
-* The script will copy the database file rather than downloading it through the Plex API. The assumption here is that you are running the script on the same machine as plex. This is useful in cases where the DB is too large to download.
-* If you are using plex in docker, create a script that will perform a docker restart, sleep for about 30 seconds, and then run this script. [pbf.sh](https://github.com/bullmoose20/Plex-Stuff/blob/main/pbf.sh) is an example bash script of doing this with Plex Bloat Fix.
 
-### Options
+## Global Options
 
-Each option can be applied in three ways:
+Plex Image Cleanup has multiple Global Options to change how it runs these are set in 3 different ways listed in priority order:
 
-1. Use the Shell Command when launching.
-2. Setting the Environment Variable.
-3. Adding the Environment Variables to `config/.env` 
-
-| Option          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Required |
-|:----------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
-| Plex Path       | Path to the Plex Install Folder (Contains Folders: `Cache`, `Metadata`, `Plug-in Support`).<br>**Shell Command:** `-p` or `--plex "C:\Plex Media Server"`<br>**Environment Variable:** `PLEX_PATH=C:\Plex Media Server`                                                                                                                                                                                                                                                                                                                                                          | &#9989;  |
-| Mode            | Mode to Run the Script in.<br>**Default:** `report`<br>**Options:**<br>`report`: File changes will be reported but not done.<br>`rename`: Files will be renamed in the Metadata Directory. (CAN BE RESTORED)<br>`restore`: Restores Renamed Bloat Images.<br>`clear`: Clears out the PIC Restore Directory. (CANNOT BE RESTORED)<br>`remove`: Files will be removed in the Metadata Directory. (CANNOT BE RESTORED)<br>`nothing`: Does not process any files in the Metadata Directory.<br>**Shell Command:** `-m` or `--mode remove`<br>**Environment Variable:** `MODE=remove` | &#10060; |
-| Schedule        | Schedule to run in continuous mode. [Schedule Options](#schedule-options)<br>**Shell Command:** `-sc` or <code>--schedule "05:00&#124;weekly(sunday)"</code><br>**Environment Variable:** <code>SCHEDULE="05:00&#124;weekly(sunday)"</code>                                                                                                                                                                                                                                                                                                                                      | &#10060; |
-| Plex URL        | Plex URL of the Server you want to connect to.<br>**If Plex URL and Plex Token are not specified it assumes a Local Run**<br>**Shell Command:** `-u` or `--url "http://192.168.1.12:32400"`<br>**Environment Variable:** `PLEX_URL=http://192.168.1.12:32400`                                                                                                                                                                                                                                                                                                                    | &#10060; |
-| Plex Token      | Plex Token of the Server you want to connect to.<br>**If Plex URL and Plex Token are not specified it assumes a Local Run**<br>**Shell Command:** `-t` or `--token "123456789"`<br>**Environment Variable:** `PLEX_TOKEN=123456789`                                                                                                                                                                                                                                                                                                                                              | &#10060; |
-| Discord URL     | Discord Webhook URL to send notifications to.<br>**Shell Command:** `-d` or `--discord "https://discord.com/api/webhooks/###/###"`<br>**Environment Variable:** `DISCORD=https://discord.com/api/webhooks/###/###`                                                                                                                                                                                                                                                                                                                                                               | &#10060; |
-| Timeout         | Timeout can be any number greater then 0.<br>**Default:** `600`<br>**Shell Command:** `-ti` or `--timeout 1000`<br>**Environment Variable:** `TIMEOUT=1000`                                                                                                                                                                                                                                                                                                                                                                                                                      | &#10060; |
-| Sleep Timer     | Sleep Timer between Empty Trash, Clean Bundles, and Optimize DB.<br>**Default:** `60`<br>**Shell Command:** `-s` or `--sleep 100`<br>**Environment Variable:** `SLEEP=100`                                                                                                                                                                                                                                                                                                                                                                                                       | &#10060; |
-| Ignore Running  | Ignore Warnings the Plex is currently Running.<br>**Shell Command:** `-i` or `--ignore`<br>**Environment Variable:** `IGNORE_RUNNING=True`                                                                                                                                                                                                                                                                                                                                                                                                                                       | &#10060; |
-| Local DB        | Copy Local DB instead of Downloading from the API (Helps with Large DBs).<br>**Shell Command:** `-l` or `--local`<br>**Environment Variable:** `LOCAL_DB=True`                                                                                                                                                                                                                                                                                                                                                                                                                   | &#10060; |
-| Use Existing    | Use the existing database if less then 2 hours old.<br>**Shell Command:** `-e` or `--existing`<br>**Environment Variable:** `USE_EXISTING=True`                                                                                                                                                                                                                                                                                                                                                                                                                                  | &#10060; |
-| Clean Transcode | Clean Plex's PhotoTranscoder Directory.<br>**Shell Command:** `-ct` or `--transcode`<br>**Environment Variable:** `CLEAN_TRANSCODE=True`                                                                                                                                                                                                                                                                                                                                                                                                                                         | &#10060; |
-| Empty Trash     | Run Plex's Empty Trash Operation.<br>**Shell Command:** `-et` or `--empty-trash`<br>**Environment Variable:** `EMPTY_TRASH=True`                                                                                                                                                                                                                                                                                                                                                                                                                                                 | &#10060; |
-| Clean Bundles   | Run Plex's Clean Bundles Operation.<br>**Shell Command:** `-cb` or `--clean-bundles`<br>**Environment Variable:** `CLEAN_BUNDLES=True`                                                                                                                                                                                                                                                                                                                                                                                                                                           | &#10060; |
-| Optimize DB     | Run Plex's Optimize DB Operation.<br>**Shell Command:** `-od` or `--optimize-db`<br>**Environment Variable:** `OPTIMIZE_DB=True`                                                                                                                                                                                                                                                                                                                                                                                                                                                 | &#10060; |
-| Trace Logs      | Run with every request and file action logged.<br>**Shell Command:** `-tr` or `--trace`<br>**Environment Variable:** `TRACE=True`                                                                                                                                                                                                                                                                                                                                                                                                                                                | &#10060; |
-
-### Schedule Options
-
-Schedule Blocks define how and when the script will run.
-
-Each Schedule Blocks has 2 required parts (`time` and `frequency`) and 1 optional part (`options`) all separated with a `|`. (Example: `time|frequency` or `time|frequency|options`)
-
-You can have multiple Schedule Blocks separated with a `,` (`time|frequency,time|frequency|options`).
-
-#### Schedule Block Parts
-
-* `time`: Time in the day the run will occur.
-  * Time: `HH:MM` 24-hour format
-  * Examples: `00:00`-`23:59` 
-* `frequency`: Frequency to schedule the run. 
-  * Frequencies: `daily`, `weekly(Day of Week)`, or `monthly(Day of Month)`
-  * Examples: `weekly(sunday)` or `monthly(1)`
-* `options`: Options changed for the run in the format `option=value`, with multiple options separated with a `;`. 
-  * Options: `mode`, `transcode`, `empty-trash`, `clean-bundles`, or `optimize-db`
-  * Examples: `mode=nothing` or `transcode=true`
-  * **NOTE: This just overrides what you have set by the run command/environment variable**
-
-### Schedule Block Example
-
-```
-SCHEDULE=08:00|weekly(sunday)|mode=clear,09:00|weekly(sunday)|mode=move,10:00|monthly(1)|mode=nothing;transcode=true
-```
-
-* Run at 8:00 AM on Sundays with the Options: `mode: clear`
-  * `08:00|weekly(sunday)|mode=remove`
-  * `time |frequency     |options`
-* Run at 9:00 AM on Sundays with the Options: `mode: move`
-  * `09:00|weekly(sunday)|mode=move`
-  * `time |frequency     |options`
-* Run at 10:00 AM on the 1st of each month with the Options: `mode: nothing` and `transcode: true` 
-  * `10:00|monthly(1)|mode=nothing;transcode=true`
-  * `time |frequency |options`
+1. Setting the Environment Variable.
+2. Adding the Environment Variables to `config/.env` 
+   * `example.env` is included as an example but is not read by the script it will only read a file specifically called `.env`.
+3. Use the Shell Command when launching.
 
 ### Example .env File
 ```
@@ -199,9 +147,177 @@ SLEEP=60
 IGNORE_RUNNING=False
 LOCAL_DB=False
 USE_EXISTING=False
-CLEAN_TRANSCODE=False
+PHOTO_TRANSCODER=False
 EMPTY_TRASH=False
 CLEAN_BUNDLES=False
 OPTIMIZE_DB=False
 TRACE=False
 ```
+
+### Base Options
+
+#### Plex Path
+
+The only required Option is the `Plex Path` Option which is the Plex Config Folder containing the servers Metadata including `Cache`, `Metadata`, and `Plug-in Support`.
+
+To set the `Plex Path` for the run: 
+* **Environment Variable:** `PLEX_PATH=C:\Plex Media Server`
+* **Shell Command:** `-p "C:\Plex Media Server"` or `--plex "C:\Plex Media Server"`
+* Will also check `/plex` relative to the base directory of the script if neither of the above are specified.
+
+#### Mode
+
+How Plex Image Cleanup runs depends on the `Mode` Option that's currently set for that run.
+
+* `report`: Metadata Directory File changes will be reported but not performed.
+* `move`: Metadata Directory Files will be moved to the PIC Restore Directory. (CAN BE RESTORED)
+* `restore`: Restores the Metadata Directory Files from the PIC Restore Directory.
+* `clear`: Clears out the PIC Restore Directory. (CANNOT BE RESTORED)
+* `remove`: Metadata Directory Files will be removed. (CANNOT BE RESTORED)
+* `nothing`: Metadata Directory Files will not even be looked at.
+
+To set the Global `Mode` for the run: 
+* **Environment Variable:** `MODE=remove`
+* **Shell Command:** `-m remove` or `--mode remove`
+
+### Database
+
+The script needs to query the server's plex database to make sure it doesn't remove actively selected images. 
+
+#### Download From Plex API
+
+By default, the script will expect to connect to your Plex Server to download the Database using your `Plex URL` and `Plex Token` Options ([Finding a Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)).
+
+* **Environment Variables:** 
+  * `PLEX_URL=http://192.168.1.12:32400`
+  * `PLEX_TOKEN=123456789`
+* **Shell Commands:** 
+  * `-u "http://192.168.1.12:32400"` or `--url "http://192.168.1.12:32400"`
+  * `-t "123456789"` or `--token "123456789"`
+
+#### Copy From Local
+
+Alternatively the database can be copied from your local config folder you supplied in the [`Plex Path`](#plex-path) Option by using the `Local DB` Option. 
+
+* **Environment Variable:** `LOCAL_DB=True`
+* **Shell Command:** `-l` or `--local`
+
+**IMPORTANT! When Copying the Local Database, it is recommended to restart Plex before running this script and to make sure Plex is idle.**
+
+Restarting allows for all temp SQLite files to be written to the primary Plex DB ensuring that all currently selected posters are properly known and preserved.
+
+The script will not run when the temp SQLite files are found. To ignore this error, use the `Ignore Running` Option.
+
+* **Environment Variable:** `IGNORE_RUNNING=True` 
+* **Shell Command:** `-i` or `--ignore`
+
+#### Use Existing
+
+A previously downloaded or copied database can be used if it's less than 2 hours old by using the `Use Existing` Option. If the database is more than 2 hours old a new one will be downloaded or copied.
+
+* **Environment Variable:** `USE_EXISTING=True`
+* **Shell Command:** `-e` or `--existing`
+
+### Other Operations
+
+In addition to cleaning the Plex Metadata Directory for custom images the script can clean out your PhotoTranscoder Directory, Empty Trash, Clean Bundles, and Optimize DB.
+
+#### Photo Transcoder
+
+* **Environment Variable:** `PHOTO_TRANSCODER=True`
+* **Shell Command:** `-pt` or `--photo-transcoder`
+
+#### Empty Trash
+
+* **Environment Variable:** `EMPTY_TRASH=True`
+* **Shell Command:** `-et` or `--empty-trash`
+
+#### Clean Bundles
+
+* **Environment Variable:** `CLEAN_BUNDLES=True`
+* **Shell Command:** `-cb` or `--clean-bundles`
+
+#### Optimize DB
+
+* **Environment Variable:** `OPTIMIZE_DB=True`
+* **Shell Command:** `-od` or `--optimize-db`
+
+### Other Options
+
+#### Discord URL
+
+Discord Webhook URL to send notifications to.
+
+* **Environment Variable:** `DISCORD=https://discord.com/api/webhooks/###/###`
+* **Shell Command:** `-d "https://discord.com/api/webhooks/###/###"` or `--discord "https://discord.com/api/webhooks/###/###"`
+
+#### Timeout
+
+Connection Timeout in seconds that's greater than 0.
+
+* **Default:** `600`
+* **Environment Variable:** `TIMEOUT=1000`
+* **Shell Command:** `-ti 1000` or `--timeout 1000`
+
+#### Sleep
+
+Sleep Timer between Empty Trash, Clean Bundles, and Optimize DB in seconds that's greater than 0 .
+
+* **Default:** `60`
+* **Environment Variable:** `SLEEP=100`
+* **Shell Command:** `-s 100` or `--sleep 100`
+
+#### Trace
+
+Run with every request and file action logged.
+
+* **Environment Variable:** `TRACE=True`
+* **Shell Command:** `-tr` or `--trace`
+
+### Continuous Schedule
+
+Plex Image Cleanup can be run either immediately or on a schedule. The default behavior is to run immediately to run using a schedule simply pass in the `Schedule` Option.
+
+Add a Schedule Block to the `Schedule` Option to run Plex Image Cleanup using a continuous schedule.
+
+* **Shell Command:** `-sc` or `--schedule "05:00|weekly(sunday)"`
+* **Environment Variable:** `SCHEDULE="05:00|weekly(sunday)"`
+
+### Schedule Blocks
+
+Schedule Blocks define how and when the script will run.
+
+Each Schedule Blocks has 2 required parts (`time` and `frequency`) and 1 optional part (`options`) all separated with a `|`. (Example: `time|frequency` or `time|frequency|options`)
+
+You can have multiple Schedule Blocks separated with a `,` (`time|frequency,time|frequency|options`).
+
+#### Schedule Block Parts
+
+* `time`: Time in the day the run will occur.
+  * **Time:** `HH:MM` 24-hour format
+  * **Examples:** `00:00`-`23:59` 
+* `frequency`: Frequency to schedule the run. 
+  * **Frequencies:** `daily`, `weekly(day of week)`, or `monthly(day of month)`
+  * **Examples:** `weekly(sunday)` or `monthly(1)`
+* `options`: Options changed for the run in the format `option=value`, with multiple options separated with a `;`. 
+  * **Options:** `mode`, `photo-transcoder`, `empty-trash`, `clean-bundles`, or `optimize-db`
+  * **Examples:** `mode=nothing` or `photo-transcoder=true`
+  * **NOTE: This overrides the currently set global value for just this one scheduled run**
+
+### Schedule Block Example
+
+```
+SCHEDULE=08:00|weekly(sunday)|mode=clear,09:00|weekly(sunday)|mode=move,10:00|monthly(1)|mode=nothing;photo-transcoder=true
+```
+
+The example above is detailed out below to better explain how it works:
+
+* Run at 8:00 AM on Sundays with the Options: `mode: clear`
+  * `08:00|weekly(sunday)|mode=remove`
+  * `time |frequency     |options`
+* Run at 9:00 AM on Sundays with the Options: `mode: move`
+  * `09:00|weekly(sunday)|mode=move`
+  * `time |frequency     |options`
+* Run at 10:00 AM on the 1st of each month with the Options: `mode: nothing` and `photo-transcoder: true` 
+  * `10:00|monthly(1)|mode=nothing;photo-transcoder=true`
+  * `time |frequency |options`
