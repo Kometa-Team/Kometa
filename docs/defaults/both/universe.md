@@ -2,8 +2,6 @@
 
 The `universe` Default Metadata File is used to create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World).
 
-This Default file requires [Trakt Authentication](../../config/trakt)
-
 ![](../images/universe.png)
 
 ## Requirements & Recommendations
