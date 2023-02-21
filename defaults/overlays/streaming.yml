@@ -36,10 +36,16 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: streaming/<<overlay_name>>
     back_color: "#00000099"
     back_width: 305
     back_height: 105
-    pmm: streaming/<<overlay_name>>
 
 templates:
   mdb_streaming:

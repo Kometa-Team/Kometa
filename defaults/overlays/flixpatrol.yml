@@ -13,6 +13,14 @@ external_templates:
       style: round
       limit: 10
       limit_<<key>>: <<limit>>
+    conditionals:
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: logo/<<style>>/<<key>>
     queue: position
     back_color: "#00000099"
     back_width: 160
@@ -21,7 +29,6 @@ external_templates:
     addon_position: top
     addon_offset: 30
     back_padding: 15
-    pmm: logo/<<style>>/<<key>>
     final_name: text(<<pre_text>><<limit_<<key>>>>)
 
 queues:

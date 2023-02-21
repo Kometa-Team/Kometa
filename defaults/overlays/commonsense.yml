@@ -45,10 +45,16 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: Commonsense
     back_color: "#00000099"
     back_width: 305
     back_height: 105
-    pmm: Commonsense
     addon_position: left
     addon_offset: 15
     final_name: text(<<pre>><<overlay_name>><<post>>)

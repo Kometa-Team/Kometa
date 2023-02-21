@@ -93,8 +93,16 @@ external_templates:
       pmm:
         conditions:
           - type: [edition, edition_dovetail]
+            file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
             value: edition/<<key>>
           - type: [resolution, resolution_dovetail]
+            file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
             value: resolution/<<key>><<alt>>
       group:
         conditions:

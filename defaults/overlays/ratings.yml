@@ -424,6 +424,17 @@ templates:
           - rating<<rating_num>>: [critic, audience, user]
             image_level: Rotten
             value: lt
+      rating<<rating_num>>_pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            rating<<rating_num>>_file.exists: false
+            rating<<rating_num>>_url.exists: false
+            rating<<rating_num>>_git.exists: false
+            rating<<rating_num>>_repo.exists: false
+            value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
     plex_search:
       all:
         <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
