@@ -377,7 +377,7 @@ class Trakt:
 
     def _list(self, data, urlparse=True, trakt_ids=False, fail=True, ignore_other=False):
         try:
-            url = requests.utils.urlparse(data).path if urlparse else f"/users/me/lists/{data}"
+            url = requests.utils.urlparse(data).path.replace("/official/", "/") if urlparse else f"/users/me/lists/{data}"
             items = self._request(f"{url}/items")
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
