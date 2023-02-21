@@ -265,7 +265,7 @@ class CollectionBuilder:
             self.obj = None
 
         self.only_run_on_create = False
-        if "only_run_on_create" in methods:
+        if "only_run_on_create" in methods and not self.playlist:
             logger.debug("")
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
@@ -273,7 +273,7 @@ class CollectionBuilder:
         if self.obj and self.only_run_on_create:
             raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
-        if "allowed_library_types" in methods and not self.playlist:
+        if "allowed_library_types" in methods:
             logger.debug("")
             logger.debug("Validating Method: allowed_library_types")
             if self.data[methods["allowed_library_types"]] is None:
