@@ -32,13 +32,19 @@ external_templates:
             value: 26
           - style: square
             value:
+      pmm_<<key>>:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: flag/<<final_style>>/<<country_<<key>>>>
     default:
       style: round
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
     queue: flags
-    pmm_<<key>>: flag/<<final_style>>/<<country_<<key>>>>
     addon_position: <<final_align>>
     addon_offset: <<offset>>
     back_color: "#00000099"

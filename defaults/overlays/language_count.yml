@@ -34,11 +34,17 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: <<key>>_<<image_key>>
     group: language
     back_color: "#00000099"
     back_width: 188
     back_height: 105
-    pmm: <<key>>_<<image_key>>
 
 templates:
   language:

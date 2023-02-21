@@ -38,11 +38,17 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: audio_codec/<<style>>/<<key>>
     group: audio_codec
     vertical_offset: 15
     back_color: "#00000099"
     back_width: 305
-    pmm: audio_codec/<<style>>/<<key>>
 
 templates:
   audio_codec:
