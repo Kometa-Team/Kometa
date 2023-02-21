@@ -563,7 +563,7 @@ class Operations:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
                     for ep in item.episodes():
-                        ep.batchEdits()
+                        #ep.batchEdits()
                         batch_display = ""
                         item_title = self.library.get_item_sort_title(ep, atr="title")
                         logger.info("")
@@ -610,7 +610,7 @@ class Operations:
                             batch_display += update_episode_rating(self.library.mass_episode_user_rating_update, "userRating", "User Rating")
 
                         if len(batch_display) > 0:
-                            ep.saveEdits()
+                            #ep.saveEdits()
                             logger.info(f"Batch Edits:{batch_display}")
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
