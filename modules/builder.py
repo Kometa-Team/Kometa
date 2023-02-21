@@ -2746,8 +2746,8 @@ class CollectionBuilder:
                     except NotFound:
                         logger.error("Details: Failed to Update Please delete the collection and run again")
                     logger.info("")
-        else:
-            self.obj.batchEdits()
+        #else:
+            #self.obj.batchEdits()
 
             batch_display = "Collection Metadata Edits"
             if summary and str(summary[1]) != str(self.obj.summary):
@@ -2776,7 +2776,7 @@ class CollectionBuilder:
             logger.info(batch_display)
             if len(batch_display) > 25:
                 try:
-                    self.obj.saveEdits()
+                    #self.obj.saveEdits()
                     logger.info("Details: have been updated")
                     updated_details.append("Metadata")
                 except NotFound:

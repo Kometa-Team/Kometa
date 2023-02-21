@@ -1338,7 +1338,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: Season: {season_id} not found")
                         continue
                     season_methods = {sm.lower(): sm for sm in season_dict}
-                    season.batchEdits()
+                    #season.batchEdits()
                     add_edit("title", season, season_dict, season_methods)
                     add_edit("summary", season, season_dict, season_methods)
                     add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
@@ -1372,7 +1372,7 @@ class MetadataFile(DataFile):
                                     logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
-                                episode.batchEdits()
+                                #episode.batchEdits()
                                 add_edit("title", episode, episode_dict, episode_methods)
                                 add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                                 add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -1415,7 +1415,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
                         continue
                     episode_methods = {em.lower(): em for em in episode_dict}
-                    episode.batchEdits()
+                    #episode.batchEdits()
                     add_edit("title", episode, episode_dict, episode_methods)
                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                     add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -1456,7 +1456,7 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"Metadata Error: Album: {album_name} not found")
                         continue
-                    album.batchEdits()
+                    #album.batchEdits()
                     add_edit("title", album, album_dict, album_methods, value=title)
                     add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
                     add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
@@ -1501,7 +1501,7 @@ class MetadataFile(DataFile):
                                     logger.error(f"Metadata Error: Track: {track_num} not found")
                                     continue
 
-                                track.batchEdits()
+                                #track.batchEdits()
                                 add_edit("title", track, track_dict, track_methods, value=title)
                                 add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
                                 add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
@@ -1561,7 +1561,7 @@ class MetadataFile(DataFile):
                     race = race_lookup[season.seasonNumber]
                     title = race.format_name(round_prefix, shorten_gp)
                     updated = False
-                    season.batchEdits()
+                    #season.batchEdits()
                     add_edit("title", season, value=title)
                     finish_edit(season, f"Season: {title}")
                     _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=title,
@@ -1572,7 +1572,7 @@ class MetadataFile(DataFile):
                     for episode in season.episodes():
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
-                            episode.batchEdits()
+                            #episode.batchEdits()
                             add_edit("title", episode, value=ep_title)
                             add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                             finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
