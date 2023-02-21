@@ -636,6 +636,19 @@ class Plex(Library):
                     continue
             if image_url:
                 break
+        if not image_url and "plex" in providers and isinstance(item, Season):
+            for poster in item.show().posters():
+                if poster.key.startswith("/"):
+                    image_url = f"{self.url}{poster.key}&X-Plex-Token={self.token}"
+                    if poster.ratingKey.startswith("upload"):
+                        try:
+                            self.check_image_for_overlay(image_url, os.path.join(self.overlay_backup, "temp"), remove=True)
+                        except Failed as e:
+                            logger.trace(f"Plex Error: {e}")
+                            continue
+                else:
+                    image_url = poster.key
+                break
         if not image_url:
             raise Failed("Overlay Error: No Poster found to reset")
         return image_url
