@@ -559,6 +559,8 @@ class DataFile:
                                     new_attributes[new_name] = check_data(new_name, attr_data, debug_template)
                             except Failed:
                                 continue
+                    logger.trace(f"Current Final: {new_attributes}")
+                    logger.trace("")
             logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)

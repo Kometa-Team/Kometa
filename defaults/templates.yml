@@ -96,6 +96,7 @@ templates:
       - tmdb_person_offset
     tmdb_person: <<tmdb_person>>
     tmdb_person_offset: <<tmdb_person_offset>>
+    url_poster: <<url_poster_<<key>>>>
     conditionals:
       extra:
         default: ""
