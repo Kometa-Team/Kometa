@@ -1077,10 +1077,7 @@ class Plex(Library):
             kwargs["year"] = year
         if edition is not None:
             kwargs["editionTitle"] = edition
-        for d in self.search(title=str(data), **kwargs):
-            if d.title == data:
-                return d
-        return None
+        return [d for d in self.search(title=str(data), **kwargs) if d.title == data]
 
     def edit_advance(self, item, edits):
         try:
