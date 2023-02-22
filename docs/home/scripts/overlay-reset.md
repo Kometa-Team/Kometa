@@ -120,7 +120,8 @@ Each option can be applied in three ways:
 | Flat Assets           | PMM Asset Folder uses [Flat Assets Image Paths](https://metamanager.wiki/en/latest/home/guides/assets.html#asset-naming).<br>**Shell Command:** `-f` or `--flat`<br>**Environment Variable:** `PMM_FLAT=True`                                                                     | &#10060; |
 | Reset Season Posters  | Restore Season posters during run.<br>**Shell Command:** `-s` or `--season`<br>**Environment Variable:** `SEASON=True`                                                                                                                                                            | &#10060; |
 | Reset Episode Posters | Restore Episode posters during run.<br>**Shell Command:** `-e` or `--episode`<br>**Environment Variable:** `EPISODE=True`                                                                                                                                                         | &#10060; |
-| Trace Logs            | Run with every request logged.<br>**Shell Command:** `-tr` or `--trace`<br>**Environment Variable:** `TRACE=True`                                                                                                                                                                 | &#10060; |
+| Trace Logs            | Run with extra trace logs.<br>**Shell Command:** `-tr` or `--trace`<br>**Environment Variable:** `TRACE=True`                                                                                                                                                                     | &#10060; |
+| Log Requests          | Run with every request logged.<br>**Shell Command:** `-lr` or `--log-requests`<br>**Environment Variable:** `LOG_REQUESTS=True`                                                                                                                                                   | &#10060; |
 
 
 ### Example .env File
@@ -138,4 +139,5 @@ PMM_FLAT=False
 SEASON=True
 EPISODE=True
 TRACE=False
+LOG_REQUESTS=False
 ```

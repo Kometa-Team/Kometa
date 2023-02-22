@@ -996,7 +996,9 @@ if __name__ == "__main__":
             valid_times = []
             for time_to_run in times_to_run:
                 try:
-                    valid_times.append(datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M"))
+                    final_time = datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M")
+                    if final_time not in valid_times:
+                        valid_times.append(final_time)
                 except ValueError:
                     if time_to_run:
                         raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
@@ -1023,7 +1025,7 @@ if __name__ == "__main__":
                         minutes = int((seconds % 3600) // 60)
                         time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                         time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                        logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(times_to_run)}")
+                        logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(valid_times)}")
                     else:
                         logger.error(f"Time Error: {valid_times}")
                 time.sleep(60)

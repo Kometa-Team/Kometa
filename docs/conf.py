@@ -145,6 +145,12 @@ html_theme_options = {
             ("Log Files", "home/logs"),
             ("Run Commands & Environment Variables", "home/environmental"),
             ("Knowledgebase/FAQ", "home/kb"),
+            ("_menu", "Companion Scripts", "home/scripts", [
+                ("Companion Scripts", "home/scripts"),
+                ("_divider", ),
+                ("PMM Overlay Reset", "home/scripts/overlay-reset"),
+                ("Plex Image Cleanup", "home/scripts/image-cleanup"),
+            ]),
             ("_divider", ),
             ("YAML File Guide", "home/guides/yaml"),
             ("Scheduling Guide", "home/guides/scheduling"),

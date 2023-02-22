@@ -152,6 +152,7 @@ EMPTY_TRASH=False
 CLEAN_BUNDLES=False
 OPTIMIZE_DB=False
 TRACE=False
+LOG_REQUESTS=False
 ```
 
 ### Base Options
@@ -269,10 +270,17 @@ Sleep Timer between Empty Trash, Clean Bundles, and Optimize DB in seconds that'
 
 #### Trace
 
-Run with every request and file action logged.
+Run with extra trace logs.
 
 * **Environment Variable:** `TRACE=True`
 * **Shell Command:** `-tr` or `--trace`
+
+#### Log Requests
+
+Run with every request and file action logged.
+
+* **Environment Variable:** `LOG_REQUESTS=True`
+* **Shell Command:** `-lr` or `--log-requests`
 
 ### Continuous Schedule
 
