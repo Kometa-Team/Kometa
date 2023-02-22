@@ -227,8 +227,12 @@ class DataFile:
                         name = mapping_name
 
                     name_var = f"{self.data_type.lower()}_name"
+                    now = datetime.now()
                     original_variables[name_var] = str(name)
                     original_variables["mapping_name"] = mapping_name
+                    original_variables["current_year"] = now.year
+                    original_variables["current_month"] = now.month
+                    original_variables["current_day"] = now.day
                     original_variables["library_type"] = self.library.type.lower() if self.library else "item"
                     original_variables["library_typeU"] = self.library.type if self.library else "Item"
                     original_variables["library_name"] = self.library.name if self.library else "playlist"

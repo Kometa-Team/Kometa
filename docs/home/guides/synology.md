@@ -56,7 +56,7 @@ This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container
 
    ![](synology/dsm7-02.png)
 
-7. To add Environment Variables and Command Line Arguments click "Advance Settings". (Optional)
+7. To add Environment Variables and Command Line Arguments click "Advanced Settings". (Optional)
 
    Information on available Command Line Arguments and Environment Variables can be found [here](../environmental)
 
@@ -89,7 +89,7 @@ This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container
 ````
 ````{tab} DiskStation Manager 6
 
-5. You can name the Container whatever you want using the "Container Name" text Box. Then click "Advance Settings".
+5. You can name the Container whatever you want using the "Container Name" text Box. Then click "Advanced Settings".
 
    ![](synology/dsm6-01.png)
 
@@ -112,7 +112,7 @@ This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container
 
    ![](synology/dsm6-04.png)
 
-9. Select "Apply" to save the "Advance Settings", select "Next" to go to the Summary, and select "Done" to finish and creating the container.
+9. Select "Apply" to save the "Advanced Settings", select "Next" to go to the Summary, and select "Done" to finish and creating the container.
 
    ![](synology/dsm6-05.png)
    
