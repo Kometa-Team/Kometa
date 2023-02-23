@@ -442,7 +442,7 @@ templates:
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
     overlay_level: <<overlay_level>>
-    allowed_library_types: <<run_this>>
+    run_definition: <<run_this>>
     ignore_blank_results: true
     overlay:
       name: text(<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>)

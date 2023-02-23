@@ -290,7 +290,7 @@ templates:
           - use_subtitles: true
             value: subtitle_language
     ignore_blank_results: true
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
     plex_search:
       all:

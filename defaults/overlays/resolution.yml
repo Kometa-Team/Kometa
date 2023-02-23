@@ -135,7 +135,7 @@ templates:
       - use_<<key>>
       - use_edition
       - allowed_libraries
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_edition>>
       - <<allowed_libraries>>
@@ -178,7 +178,7 @@ templates:
       - use_<<alt>>
       - use_resolution
       - allowed_libraries
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
       - <<use_<<key>>_<<alt>>>>
