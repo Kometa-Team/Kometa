@@ -460,6 +460,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
 
         self.type = self.Plex.type.capitalize()
+        self.plex_pass = self.PlexServer.myPlexSubscription
         self._users = []
         self._all_items = []
         self._account = None
