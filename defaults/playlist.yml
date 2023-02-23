@@ -32,7 +32,7 @@ templates:
       - sync_to_users
       - exclude_users
       - delete_playlist
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
     ignore_ids: <<ignore_ids>>
     ignore_imdb_ids: <<ignore_imdb_ids>>

@@ -64,7 +64,7 @@ templates:
       - addon_offset
       - addon_position
     overlay_level: <<overlay_level>>
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
       - <<allowed_libraries>>

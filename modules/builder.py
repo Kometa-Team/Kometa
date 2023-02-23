@@ -43,7 +43,7 @@ ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "variables", "test", "suppress_overlays",
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
-    "blank_collection", "allowed_library_types", "delete_playlist", "ignore_blank_results", "only_run_on_create",
+    "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
     "delete_collections_named", "tmdb_person_offset"
 ]
 details = [
@@ -165,7 +165,7 @@ parts_collection_valid = [
      "url_theme", "file_theme", "item_label", "default_percent"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
-    "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types",
+    "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types", "run_definition",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "changes_webhooks", "minimum_items", "cache_builders", "default_percent"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
@@ -273,22 +273,24 @@ class CollectionBuilder:
         if self.obj and self.only_run_on_create:
             raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
-        if "allowed_library_types" in methods:
+        if "allowed_library_types" in methods and "run_definition" not in methods:
+            logger.warning(f"{self.Type} Warning: allowed_library_types will run as run_definition")
+            methods["run_definition"] = methods["allowed_library_types"]
+
+        if "run_definition" in methods:
             logger.debug("")
-            logger.debug("Validating Method: allowed_library_types")
-            if self.data[methods["allowed_library_types"]] is None:
-                raise NotScheduled("Skipped because allowed_library_types has no library types")
-            logger.debug(f"Value: {self.data[methods['allowed_library_types']]}")
-            found_type = False
-            for library_type in util.get_list(self.data[methods["allowed_library_types"]], lower=True):
-                if library_type == "true" or (self.library and library_type == self.library.Plex.type):
-                    found_type = True
+            logger.debug("Validating Method: run_definition")
+            if self.data[methods["run_definition"]] is None:
+                raise NotScheduled("Skipped because run_definition has no value")
+            logger.debug(f"Value: {self.data[methods['run_definition']]}")
+            valid_options = ["true", "false"] + plex.library_types
+            for library_type in util.get_list(self.data[methods["run_definition"]], lower=True):
+                if library_type not in valid_options:
+                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
                 elif library_type == "false":
-                    raise NotScheduled(f"Skipped because allowed_library_types is false")
-                elif library_type not in plex.library_types:
-                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: {', '.join(plex.library_types)}")
-            if not found_type:
-                raise NotScheduled(f"Skipped because allowed_library_types {self.data[methods['allowed_library_types']]} doesn't match the library type: {self.library.Plex.type}")
+                    raise NotScheduled(f"Skipped because run_definition is false")
+                elif library_type != "true" and self.library and library_type != self.library.Plex.type:
+                    raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
         if self.playlist:               self.builder_level = "item"
         elif self.library.is_show:      self.builder_level = "show"

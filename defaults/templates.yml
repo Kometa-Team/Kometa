@@ -21,7 +21,7 @@ templates:
             value: false
           - placeholder_imdb_id.exists: true
             value: false
-    allowed_library_types: <<use_separator>>
+    run_definition: <<use_separator>>
     collection_mode: <<collection_mode>>
     sort_title: "!<<collection_section>>_!<<collection_name>>"
     tmdb_movie: <<placeholder_tmdb_movie>>
@@ -60,7 +60,7 @@ templates:
       - ignore_ids
       - ignore_imdb_ids
       - minimum_items
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
     ignore_ids: <<ignore_ids>>
@@ -201,13 +201,13 @@ templates:
       pre: "_~"
     optional:
       - use_other
-    allowed_library_types: <<use_other>>
+    run_definition: <<use_other>>
     sort_title: "!<<collection_section>><<pre>><<sort>>"
 
   use_year_collections:
     optional:
       - use_year_collections
-    allowed_library_types: <<use_year_collections>>
+    run_definition: <<use_year_collections>>
 
   translation:
     default:

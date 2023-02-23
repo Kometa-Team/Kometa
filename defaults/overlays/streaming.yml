@@ -9,7 +9,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
       - <<allowed_libraries>>
@@ -49,7 +49,7 @@ external_templates:
 
 templates:
   mdb_streaming:
-    allowed_library_types:
+    run_definition:
       - <<allowed_streaming>>
     ignore_blank_results: true
     mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s<<watch_region>>

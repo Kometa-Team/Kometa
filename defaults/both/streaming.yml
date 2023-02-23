@@ -62,7 +62,7 @@ templates:
       sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
       - <<allowed_streaming>>

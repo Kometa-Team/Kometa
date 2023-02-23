@@ -535,7 +535,8 @@ def run_libraries(config):
                 for library_type in library_types:
                     for item in library.get_all(builder_level=library_type):
                         try:
-                            library.edit_tags("label", item, sync_tags=[])
+                            sync = ["Overlay"] if "Overlay" in [i.tag for i in item.labels] else []
+                            library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
                 library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split('.')[0]
@@ -774,8 +775,8 @@ def run_collection(config, library, metadata, requested_collections):
                 library.notify_delete(e)
                 library.stats["deleted"] += 1
                 library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
-            elif str(e).startswith("Skipped because allowed_library_types"):
-                library.status[str(mapping_name)]["status"] = "Skipped Invalid Library Type"
+            elif str(e).startswith("Skipped because run_definition"):
+                library.status[str(mapping_name)]["status"] = "Skipped Run Definition"
             else:
                 library.status[str(mapping_name)]["status"] = "Not Scheduled"
         except FilterFailed:
