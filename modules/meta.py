@@ -1171,14 +1171,14 @@ class MetadataFile(DataFile):
                         id_type = "TMDb" if self.library.is_movie else "TVDb"
                     logger.info("")
                     logger.info(f"{id_type} ID Mapping: {mapping_id}")
-                    if self.library.is_movie and mapping_name in self.library.movie_map:
-                        for item_id in self.library.movie_map[mapping_name]:
+                    if self.library.is_movie and mapping_id in self.library.movie_map:
+                        for item_id in self.library.movie_map[mapping_id]:
                             item.append(self.library.fetchItem(item_id))
-                    elif self.library.is_show and mapping_name in self.library.show_map:
-                        for item_id in self.library.show_map[mapping_name]:
+                    elif self.library.is_show and mapping_id in self.library.show_map:
+                        for item_id in self.library.show_map[mapping_id]:
                             item.append(self.library.fetchItem(item_id))
-                    elif mapping_name in self.library.imdb_map:
-                        for item_id in self.library.imdb_map[mapping_name]:
+                    elif mapping_id in self.library.imdb_map:
+                        for item_id in self.library.imdb_map[mapping_id]:
                             item.append(self.library.fetchItem(item_id))
                     else:
                         logger.error(f"Metadata Error: {id_type} ID not mapped")
