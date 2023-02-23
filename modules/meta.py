@@ -1196,10 +1196,19 @@ class MetadataFile(DataFile):
                 edition_contains = []
                 if self.library.is_movie:
                     if "blank_edition" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: blank_edition")
+                        logger.debug(f"Value: {meta[methods['blank_edition']]}")
                         blank_edition = util.parse("Metadata", "blank_edition", meta, datatype="bool", methods=methods, default=False)
                     if "edition_filter" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: edition_filter")
+                        logger.debug(f"Value: {meta[methods['edition_filter']]}")
                         edition_titles = util.parse("Metadata", "edition_filter", meta, datatype="strlist", methods=methods)
                     if "edition_contains" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: edition_contains")
+                        logger.debug(f"Value: {meta[methods['edition_contains']]}")
                         edition_contains = util.parse("Metadata", "edition_contains", meta, datatype="strlist", methods=methods)
 
                 if not item:
@@ -1237,7 +1246,15 @@ class MetadataFile(DataFile):
                     logger.trace("Edition Filtering: ")
                     for i in item:
                         self.library.reload(i)
-                        check = i.editionTitle if i.editionTitle else ""
+                        if self.library.plex_pass:
+                            check = i.editionTitle if i.editionTitle else ""
+                        else:
+                            logger.warning("Plex Warning: Plex Pass is required to use the Edition Field scanning filenames instead")
+                            values = [loc for loc in i.locations if loc]
+                            if not values:
+                                raise  Failed(f"Plex Error: No Filepaths found for {i.title}")
+                            res = re.search(r'(?i)[\[{]edition-([^}\]]*)', values[0])
+                            check = res.group(1) if res else ""
                         if blank_edition and not check:
                             logger.trace(f"  Found {i.title} with no Edition")
                             new_item.append(i)
@@ -1373,7 +1390,10 @@ class MetadataFile(DataFile):
             add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
-            add_edit("edition", item, meta, methods, key="editionTitle")
+            if "edition" in methods and not self.library.plex_pass:
+                logger.error("Plex Error: Plex Pass is Required to edit Edition")
+            else:
+                add_edit("edition", item, meta, methods, key="editionTitle")
         add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
         if not self.library.is_music:
             add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
