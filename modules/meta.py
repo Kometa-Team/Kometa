@@ -1236,6 +1236,7 @@ class MetadataFile(DataFile):
                     logger.trace("")
                     logger.trace("Edition Filtering: ")
                     for i in item:
+                        self.library.reload(i)
                         check = i.editionTitle if i.editionTitle else ""
                         if blank_edition and not check:
                             logger.trace(f"  Found {i.title} with no Edition")
