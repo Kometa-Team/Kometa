@@ -1103,39 +1103,10 @@ class MetadataFile(DataFile):
                 methods = {mm.lower(): mm for mm in meta}
 
                 logger.info("")
-                logger.separator(f"{mapping_name} Metadata", space=False, border=False)
-                logger.info("")
-
-
-
-                item = None
-                if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
-                    if isinstance(mapping_name, int):
-                        id_type = "TMDb" if self.library.is_movie else "TVDb"
-                    else:
-                        id_type = "IMDb"
-                    logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
-                    logger.info("")
-                    item = []
-                    if self.library.is_movie and mapping_name in self.library.movie_map:
-                        for item_id in self.library.movie_map[mapping_name]:
-                            item.append(self.library.fetchItem(item_id))
-                    elif self.library.is_show and mapping_name in self.library.show_map:
-                        for item_id in self.library.show_map[mapping_name]:
-                            item.append(self.library.fetchItem(item_id))
-                    elif mapping_name in self.library.imdb_map:
-                        for item_id in self.library.imdb_map[mapping_name]:
-                            item.append(self.library.fetchItem(item_id))
-                    else:
-                        logger.error(f"Metadata Error: {id_type} ID not mapped")
-                        continue
-                    title = None
-                else:
-                    logger.separator(f"{mapping_name} Metadata", space=False, border=False)
-                    logger.info("")
-                    title = mapping_name
+                logger.separator(f"{mapping_name} Metadata")
 
                 if "template" in methods:
+                    logger.debug("")
                     logger.separator(f"Building Definition From Templates", space=False, border=False)
                     logger.debug("")
                     named_templates = []
@@ -1148,7 +1119,6 @@ class MetadataFile(DataFile):
                             raise Failed(f"Metadata Error: template sub-attribute name cannot be blank")
                         named_templates.append(original_variables["name"])
                     logger.debug(f"Templates Called: {', '.join(named_templates)}")
-                    logger.debug("")
                     new_variables = {}
                     if "variables" in methods:
                         logger.debug("")
@@ -1191,6 +1161,7 @@ class MetadataFile(DataFile):
                 if not mapping_id and (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
                     mapping_id = mapping_name
 
+                item = []
                 if not mapping_id:
                     title = mapping_name
                 else:
@@ -1198,8 +1169,8 @@ class MetadataFile(DataFile):
                         id_type = "IMDb"
                     else:
                         id_type = "TMDb" if self.library.is_movie else "TVDb"
+                    logger.info("")
                     logger.info(f"{id_type} ID Mapping: {mapping_id}")
-                    item = []
                     if self.library.is_movie and mapping_name in self.library.movie_map:
                         for item_id in self.library.movie_map[mapping_name]:
                             item.append(self.library.fetchItem(item_id))
@@ -1220,19 +1191,16 @@ class MetadataFile(DataFile):
                     else:
                         title = meta[methods["title"]]
 
-                edition_titles = []
                 blank_edition = False
-                if "edition_filter" in methods and self.library.is_movie:
-                    if not meta[methods["edition_filter"]]:
-                        blank_edition = True
-                    else:
-                        edition_titles = util.get_list(meta[methods["edition_filter"]])
-
-                edition_contains = None
-                if "edition_contains" in methods and self.library.is_movie:
-                    edition_contains = util.get_list(meta[methods["edition_contains"]])
-                if not edition_contains:
-                    edition_contains = []
+                edition_titles = []
+                edition_contains = []
+                if self.library.is_movie:
+                    if "blank_edition" in methods:
+                        blank_edition = util.parse("Metadata", "blank_edition", meta, datatype="bool", methods=methods, default=False)
+                    if "edition_filter" in methods:
+                        edition_titles = util.parse("Metadata", "edition_filter", meta, datatype="strlist", methods=methods)
+                    if "edition_contains" in methods:
+                        edition_contains = util.parse("Metadata", "edition_contains", meta, datatype="strlist", methods=methods)
 
                 if not item:
                     year = None
@@ -1247,22 +1215,16 @@ class MetadataFile(DataFile):
                             pass
                         if year is None:
                             raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
-                    if blank_edition and not edition_contains:
-                        edition_title = ""
-                    elif len(edition_titles) == 1 and not edition_contains:
-                        edition_title = edition_titles[0]
-                    else:
-                        edition_title = None
-                    item = self.library.search_item(title, year=year, edition=edition_title)
+                    item = self.library.search_item(title, year=year)
 
                     if not item and "alt_title" in methods:
                         if meta[methods["alt_title"]] is None:
                             logger.error("Metadata Error: alt_title attribute is blank")
                         else:
                             alt_title = meta[methods["alt_title"]]
-                            item = self.library.search_item(alt_title, year=year, edition=edition_title)
+                            item = self.library.search_item(alt_title, year=year)
                             if not item:
-                                item = self.library.search_item(alt_title, edition=edition_title)
+                                item = self.library.search_item(alt_title)
 
                     if not item:
                         logger.error(f"Skipping {mapping_name}: Item {title} not found")
@@ -1271,15 +1233,36 @@ class MetadataFile(DataFile):
                     item = [item]
                 if blank_edition or edition_titles or edition_contains:
                     new_item = []
+                    logger.trace("")
+                    logger.trace("Edition Filtering: ")
                     for i in item:
-                        if (blank_edition and not i.editionTitle) \
-                                or (edition_titles and i.editionTitle in edition_titles) \
-                                or (edition_contains and any([r in i.editionTitle for r in edition_contains])):
+                        check = i.editionTitle if i.editionTitle else ""
+                        if blank_edition and not check:
+                            logger.trace(f"  Found {i.title} with no Edition")
                             new_item.append(i)
-
+                        elif edition_titles and check in edition_titles:
+                            logger.trace(f"  Found {i.title} with Edition: {check}")
+                            new_item.append(i)
+                        else:
+                            found = False
+                            if edition_contains:
+                                for ec in edition_contains:
+                                    if ec in check:
+                                        found = True
+                                        logger.trace(f"  Found {i.title} with Edition: {check} containing {ec}")
+                                        new_item.append(i)
+                                        break
+                            if not found:
+                                if check:
+                                    logger.trace(f"  {i.title} with Edition: {check} ignored")
+                                else:
+                                    logger.trace(f"  {i.title} with no Edition ignored")
+                    item = new_item
                 for i in item:
                     try:
+                        logger.info("")
                         logger.separator(f"Updating {i.title}", space=False, border=False)
+                        logger.info("")
                         self.update_metadata_item(i, title, mapping_name, meta, methods)
                     except Failed as e:
                         logger.error(e)

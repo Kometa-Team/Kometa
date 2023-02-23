@@ -804,9 +804,9 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             return value
         elif isinstance(value, (int, float)):
             return value > 0
-        elif str(value).lower() in ["t", "true"]:
+        elif str(value).lower() in ["t", "true", "y", "yes"]:
             return True
-        elif str(value).lower() in ["f", "false"]:
+        elif str(value).lower() in ["f", "false", "n", "no"]:
             return False
         else:
             message = f"{display} must be either true or false"
