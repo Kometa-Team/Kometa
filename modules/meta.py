@@ -1244,12 +1244,13 @@ class MetadataFile(DataFile):
                     new_item = []
                     logger.trace("")
                     logger.trace("Edition Filtering: ")
+                    if not self.library.plex_pass:
+                        logger.warning("Plex Warning: Plex Pass is required to use the Edition Field scanning filenames instead")
                     for i in item:
                         self.library.reload(i)
                         if self.library.plex_pass:
                             check = i.editionTitle if i.editionTitle else ""
                         else:
-                            logger.warning("Plex Warning: Plex Pass is required to use the Edition Field scanning filenames instead")
                             values = [loc for loc in i.locations if loc]
                             if not values:
                                 raise  Failed(f"Plex Error: No Filepaths found for {i.title}")
