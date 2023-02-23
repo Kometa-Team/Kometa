@@ -1103,6 +1103,11 @@ class MetadataFile(DataFile):
                 methods = {mm.lower(): mm for mm in meta}
 
                 logger.info("")
+                logger.separator(f"{mapping_name} Metadata", space=False, border=False)
+                logger.info("")
+
+
+
                 item = None
                 if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
                     if isinstance(mapping_name, int):
@@ -1174,23 +1179,60 @@ class MetadataFile(DataFile):
                         elif library_type != "true" and self.library and library_type != self.library.Plex.type:
                             raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
+                mapping_id = None
+                if "mapping_id" in methods and not self.library.is_music:
+                    logger.debug("")
+                    logger.debug("Validating Method: mapping_id")
+                    if not meta[methods["mapping_id"]]:
+                        raise Failed("Metadata Error: mapping_id attribute is blank")
+                    logger.debug(f"Value: {meta[methods['mapping_id']]}")
+                    mapping_id = meta[methods["mapping_id"]]
+
+                if not mapping_id and (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
+                    mapping_id = mapping_name
+
+                if not mapping_id:
+                    title = mapping_name
+                else:
+                    if str(mapping_id).startswith("tt"):
+                        id_type = "IMDb"
+                    else:
+                        id_type = "TMDb" if self.library.is_movie else "TVDb"
+                    logger.info(f"{id_type} ID Mapping: {mapping_id}")
+                    item = []
+                    if self.library.is_movie and mapping_name in self.library.movie_map:
+                        for item_id in self.library.movie_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    elif self.library.is_show and mapping_name in self.library.show_map:
+                        for item_id in self.library.show_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    elif mapping_name in self.library.imdb_map:
+                        for item_id in self.library.imdb_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    else:
+                        logger.error(f"Metadata Error: {id_type} ID not mapped")
+                        continue
+                    title = None
+
                 if "title" in methods:
                     if meta[methods["title"]] is None:
                         logger.error("Metadata Error: title attribute is blank")
                     else:
                         title = meta[methods["title"]]
 
-                edition_titles = None
+                edition_titles = []
+                blank_edition = False
                 if "edition_filter" in methods and self.library.is_movie:
-                    edition_titles = util.get_list(meta[methods["edition_filter"]])
-                    if not edition_titles:
-                        edition_titles = [""]
+                    if not meta[methods["edition_filter"]]:
+                        blank_edition = True
+                    else:
+                        edition_titles = util.get_list(meta[methods["edition_filter"]])
 
                 edition_contains = None
                 if "edition_contains" in methods and self.library.is_movie:
                     edition_contains = util.get_list(meta[methods["edition_contains"]])
-                    if not edition_contains:
-                        edition_contains = []
+                if not edition_contains:
+                    edition_contains = []
 
                 if not item:
                     year = None
@@ -1205,7 +1247,12 @@ class MetadataFile(DataFile):
                             pass
                         if year is None:
                             raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
-                    edition_title = edition_titles[0] if len(edition_titles) == 1 else None
+                    if blank_edition and not edition_contains:
+                        edition_title = ""
+                    elif len(edition_titles) == 1 and not edition_contains:
+                        edition_title = edition_titles[0]
+                    else:
+                        edition_title = None
                     item = self.library.search_item(title, year=year, edition=edition_title)
 
                     if not item and "alt_title" in methods:
@@ -1222,8 +1269,13 @@ class MetadataFile(DataFile):
                         continue
                 if not isinstance(item, list):
                     item = [item]
-                if edition_titles or edition_contains:
-                    item = [i for i in item if (edition_titles and i.editionTitle in edition_titles) or (edition_contains and any([r in i.editionTitle for r in edition_contains]))]
+                if blank_edition or edition_titles or edition_contains:
+                    new_item = []
+                    for i in item:
+                        if (blank_edition and not i.editionTitle) \
+                                or (edition_titles and i.editionTitle in edition_titles) \
+                                or (edition_contains and any([r in i.editionTitle for r in edition_contains])):
+                            new_item.append(i)
 
                 for i in item:
                     try:
