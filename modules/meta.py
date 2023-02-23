@@ -1099,117 +1099,142 @@ class MetadataFile(DataFile):
         logger.info("")
         next_year = datetime.now().year + 1
         for mapping_name, meta in self.metadata.items():
-            methods = {mm.lower(): mm for mm in meta}
+            try:
+                methods = {mm.lower(): mm for mm in meta}
 
-            logger.info("")
-            item = None
-            if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
-                if isinstance(mapping_name, int):
-                    id_type = "TMDb" if self.library.is_movie else "TVDb"
-                else:
-                    id_type = "IMDb"
-                logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
                 logger.info("")
-                item = []
-                if self.library.is_movie and mapping_name in self.library.movie_map:
-                    for item_id in self.library.movie_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
-                elif self.library.is_show and mapping_name in self.library.show_map:
-                    for item_id in self.library.show_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
-                elif mapping_name in self.library.imdb_map:
-                    for item_id in self.library.imdb_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
-                else:
-                    logger.error(f"Metadata Error: {id_type} ID not mapped")
-                    continue
-                title = None
-            else:
-                logger.separator(f"{mapping_name} Metadata", space=False, border=False)
-                logger.info("")
-                title = mapping_name
-            if "template" in methods:
-                logger.separator(f"Building Definition From Templates", space=False, border=False)
-                logger.debug("")
-                named_templates = []
-                for original_variables in util.get_list(meta[methods["template"]], split=False):
-                    if not isinstance(original_variables, dict):
-                        raise Failed(f"Metadata Error: template attribute is not a dictionary")
-                    elif "name" not in original_variables:
-                        raise Failed(f"Metadata Error: template sub-attribute name is required")
-                    elif not original_variables["name"]:
-                        raise Failed(f"Metadata Error: template sub-attribute name cannot be blank")
-                    named_templates.append(original_variables["name"])
-                logger.debug(f"Templates Called: {', '.join(named_templates)}")
-                logger.debug("")
-                new_variables = {}
-                if "variables" in methods:
-                    logger.debug("")
-                    logger.debug("Validating Method: variables")
-                    if not isinstance(meta[methods["variables"]], dict):
-                        raise Failed(f"Metadata Error: variables must be a dictionary (key: value pairs)")
-                    logger.trace(meta[methods["variables"]])
-                    new_variables = meta[methods["variables"]]
-                name = meta[methods["name"]] if "name" in methods else None
-                new_attributes = self.apply_template(name, mapping_name, meta, meta[methods["template"]], new_variables)
-                for attr in new_attributes:
-                    if attr.lower() not in methods:
-                        meta[attr] = new_attributes[attr]
-                        methods[attr.lower()] = attr
-
-            if "title" in methods:
-                if meta[methods["title"]] is None:
-                    logger.error("Metadata Error: title attribute is blank")
-                else:
-                    title = meta[methods["title"]]
-
-            edition_titles = None
-            if "edition_filter" in methods and self.library.is_movie:
-                edition_titles = util.get_list(meta[methods["edition_filter"]])
-                if not edition_titles:
-                    edition_titles = [""]
-
-            edition_contains = None
-            if "edition_contains" in methods and self.library.is_movie:
-                edition_contains = util.get_list(meta[methods["edition_contains"]])
-                if not edition_contains:
-                    edition_contains = []
-
-            if not item:
-                year = None
-                if "year" in methods and not self.library.is_music:
-                    if meta[methods["year"]] is None:
-                        raise Failed("Metadata Error: year attribute is blank")
-                    try:
-                        year_value = int(str(meta[methods["year"]]))
-                        if 1800 <= year_value <= next_year:
-                            year = year_value
-                    except ValueError:
-                        pass
-                    if year is None:
-                        raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
-                edition_title = edition_titles[0] if len(edition_titles) == 1 else None
-                item = self.library.search_item(title, year=year, edition=edition_title)
-
-                if not item and "alt_title" in methods:
-                    if meta[methods["alt_title"]] is None:
-                        logger.error("Metadata Error: alt_title attribute is blank")
+                item = None
+                if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
+                    if isinstance(mapping_name, int):
+                        id_type = "TMDb" if self.library.is_movie else "TVDb"
                     else:
-                        alt_title = meta[methods["alt_title"]]
-                        item = self.library.search_item(alt_title, year=year, edition=edition_title)
-                        if not item:
-                            item = self.library.search_item(alt_title, edition=edition_title)
+                        id_type = "IMDb"
+                    logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
+                    logger.info("")
+                    item = []
+                    if self.library.is_movie and mapping_name in self.library.movie_map:
+                        for item_id in self.library.movie_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    elif self.library.is_show and mapping_name in self.library.show_map:
+                        for item_id in self.library.show_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    elif mapping_name in self.library.imdb_map:
+                        for item_id in self.library.imdb_map[mapping_name]:
+                            item.append(self.library.fetchItem(item_id))
+                    else:
+                        logger.error(f"Metadata Error: {id_type} ID not mapped")
+                        continue
+                    title = None
+                else:
+                    logger.separator(f"{mapping_name} Metadata", space=False, border=False)
+                    logger.info("")
+                    title = mapping_name
+
+                if "template" in methods:
+                    logger.separator(f"Building Definition From Templates", space=False, border=False)
+                    logger.debug("")
+                    named_templates = []
+                    for original_variables in util.get_list(meta[methods["template"]], split=False):
+                        if not isinstance(original_variables, dict):
+                            raise Failed(f"Metadata Error: template attribute is not a dictionary")
+                        elif "name" not in original_variables:
+                            raise Failed(f"Metadata Error: template sub-attribute name is required")
+                        elif not original_variables["name"]:
+                            raise Failed(f"Metadata Error: template sub-attribute name cannot be blank")
+                        named_templates.append(original_variables["name"])
+                    logger.debug(f"Templates Called: {', '.join(named_templates)}")
+                    logger.debug("")
+                    new_variables = {}
+                    if "variables" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: variables")
+                        if not isinstance(meta[methods["variables"]], dict):
+                            raise Failed(f"Metadata Error: variables must be a dictionary (key: value pairs)")
+                        logger.trace(meta[methods["variables"]])
+                        new_variables = meta[methods["variables"]]
+                    name = meta[methods["name"]] if "name" in methods else None
+                    new_attributes = self.apply_template(name, mapping_name, meta, meta[methods["template"]], new_variables)
+                    for attr in new_attributes:
+                        if attr.lower() not in methods:
+                            meta[attr] = new_attributes[attr]
+                            methods[attr.lower()] = attr
+
+                if "run_definition" in methods:
+                    logger.debug("")
+                    logger.debug("Validating Method: run_definition")
+                    if meta[methods["run_definition"]] is None:
+                        raise NotScheduled("Skipped because run_definition has no value")
+                    logger.debug(f"Value: {meta[methods['run_definition']]}")
+                    valid_options = ["true", "false"] + plex.library_types
+                    for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                        if library_type not in valid_options:
+                            raise Failed(f"Metadata Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
+                        elif library_type == "false":
+                            raise NotScheduled(f"Skipped because run_definition is false")
+                        elif library_type != "true" and self.library and library_type != self.library.Plex.type:
+                            raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
+
+                if "title" in methods:
+                    if meta[methods["title"]] is None:
+                        logger.error("Metadata Error: title attribute is blank")
+                    else:
+                        title = meta[methods["title"]]
+
+                edition_titles = None
+                if "edition_filter" in methods and self.library.is_movie:
+                    edition_titles = util.get_list(meta[methods["edition_filter"]])
+                    if not edition_titles:
+                        edition_titles = [""]
+
+                edition_contains = None
+                if "edition_contains" in methods and self.library.is_movie:
+                    edition_contains = util.get_list(meta[methods["edition_contains"]])
+                    if not edition_contains:
+                        edition_contains = []
 
                 if not item:
-                    logger.error(f"Skipping {mapping_name}: Item {title} not found")
-                    continue
-            if not isinstance(item, list):
-                item = [item]
-            if edition_titles or edition_contains:
-                item = [i for i in item if (edition_titles and i.editionTitle in edition_titles) or (edition_contains and any([r in i.editionTitle for r in edition_contains]))]
-                
-            for i in item:
-                self.update_metadata_item(i, title, mapping_name, meta, methods)
+                    year = None
+                    if "year" in methods and not self.library.is_music:
+                        if meta[methods["year"]] is None:
+                            raise Failed("Metadata Error: year attribute is blank")
+                        try:
+                            year_value = int(str(meta[methods["year"]]))
+                            if 1800 <= year_value <= next_year:
+                                year = year_value
+                        except ValueError:
+                            pass
+                        if year is None:
+                            raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
+                    edition_title = edition_titles[0] if len(edition_titles) == 1 else None
+                    item = self.library.search_item(title, year=year, edition=edition_title)
+
+                    if not item and "alt_title" in methods:
+                        if meta[methods["alt_title"]] is None:
+                            logger.error("Metadata Error: alt_title attribute is blank")
+                        else:
+                            alt_title = meta[methods["alt_title"]]
+                            item = self.library.search_item(alt_title, year=year, edition=edition_title)
+                            if not item:
+                                item = self.library.search_item(alt_title, edition=edition_title)
+
+                    if not item:
+                        logger.error(f"Skipping {mapping_name}: Item {title} not found")
+                        continue
+                if not isinstance(item, list):
+                    item = [item]
+                if edition_titles or edition_contains:
+                    item = [i for i in item if (edition_titles and i.editionTitle in edition_titles) or (edition_contains and any([r in i.editionTitle for r in edition_contains]))]
+
+                for i in item:
+                    try:
+                        logger.separator(f"Updating {i.title}", space=False, border=False)
+                        self.update_metadata_item(i, title, mapping_name, meta, methods)
+                    except Failed as e:
+                        logger.error(e)
+            except NotScheduled as e:
+                logger.info(e)
+            except Failed as e:
+                logger.error(e)
 
     def update_metadata_item(self, item, title, mapping_name, meta, methods):
 
@@ -1359,7 +1384,33 @@ class MetadataFile(DataFile):
             updated = True
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        if "seasons" in methods and self.library.is_show:
+        update_seasons = True
+        if "update_seasons" in methods and self.library.is_show:
+            logger.debug("")
+            logger.debug("Validating Method: update_seasons")
+            if meta[methods["update_seasons"]] is None:
+                logger.warning("Metadata Warning: update_seasons has no value and season updates will be performed")
+            logger.debug(f"Value: {meta[methods['update_seasons']]}")
+            for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                if library_type not in ["true", "false"]:
+                    raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
+                elif library_type == "false":
+                    update_seasons = False
+
+        update_episodes = True
+        if "update_episodes" in methods and self.library.is_show:
+            logger.debug("")
+            logger.debug("Validating Method: update_episodes")
+            if meta[methods["update_episodes"]] is None:
+                logger.warning("Metadata Warning: update_episodes has no value and episode updates will be performed")
+            logger.debug(f"Value: {meta[methods['update_episodes']]}")
+            for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                if library_type not in ["true", "false"]:
+                    raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
+                elif library_type == "false":
+                    update_episodes = False
+
+        if "seasons" in methods and self.library.is_show and (update_seasons or update_episodes):
             if not meta[methods["seasons"]]:
                 logger.error("Metadata Error: seasons attribute is blank")
             elif not isinstance(meta[methods["seasons"]], dict):
@@ -1379,21 +1430,22 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: Season: {season_id} not found")
                         continue
                     season_methods = {sm.lower(): sm for sm in season_dict}
-                    #season.batchEdits()
-                    add_edit("title", season, season_dict, season_methods)
-                    add_edit("summary", season, season_dict, season_methods)
-                    add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
-                    if self.edit_tags("label", season, season_dict, season_methods):
-                        updated = True
-                    finish_edit(season, f"Season: {season_id}")
-                    _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
-                                                         title=f"{item.title} Season {season.seasonNumber}",
-                                                         image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
-                    if ups:
-                        updated = True
-                    logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                    if update_seasons:
+                        #season.batchEdits()
+                        add_edit("title", season, season_dict, season_methods)
+                        add_edit("summary", season, season_dict, season_methods)
+                        add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
+                        if self.edit_tags("label", season, season_dict, season_methods):
+                            updated = True
+                        finish_edit(season, f"Season: {season_id}")
+                        _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
+                                                             title=f"{item.title} Season {season.seasonNumber}",
+                                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                        if ups:
+                            updated = True
+                        logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-                    if "episodes" in season_methods and self.library.is_show:
+                    if "episodes" in season_methods and update_episodes and self.library.is_show:
                         if not season_dict[season_methods["episodes"]]:
                             logger.error("Metadata Error: episodes attribute is blank")
                         elif not isinstance(season_dict[season_methods["episodes"]], dict):
@@ -1433,7 +1485,7 @@ class MetadataFile(DataFile):
                                     updated = True
                                 logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        if "episodes" in methods and self.library.is_show:
+        if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:
                 logger.error("Metadata Error: episodes attribute is blank")
             elif not isinstance(meta[methods["episodes"]], dict):
