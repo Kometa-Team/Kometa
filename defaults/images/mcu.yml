@@ -85,13 +85,13 @@ metadata:
     template: {name: mcu, id: 640146}
   "Guardians of the Galaxy Volume 3 (2023)":
     template: {name: mcu, id: 447365}
-  "One Shot: Peter's To-Do List"
+  "One Shot: Peter's To-Do List":
     template: {name: mcu, id: 758025}
-  "One Shot: Team Darryl"
+  "One Shot: Team Darryl":
     template: {name: mcu, id: 505945}
-  "One Shot: Team Thor"
+  "One Shot: Team Thor":
     template: {name: mcu, id: 413279}
-  "One Shot: Team Thor Part 2"
+  "One Shot: Team Thor Part 2":
     template: {name: mcu, id: 441829}
   "Fantastic Four (2025)":
     template: {name: mcu, id: 617126}
