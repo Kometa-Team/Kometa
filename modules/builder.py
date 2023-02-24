@@ -131,7 +131,7 @@ all_filters = boolean_filters + special_filters + \
               [f"{f}{m}" for f in number_filters for m in number_modifiers]
 date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 year_attributes = plex.year_attributes + ["tmdb_year"]
-number_attributes = plex.number_attributes + ["channels", "height", "width"]
+number_attributes = plex.number_attributes + ["channels", "height", "width", "tmdb_vote_count"]
 tag_attributes = plex.tag_attributes
 string_attributes = plex.string_attributes + string_filters
 float_attributes = plex.float_attributes + ["aspect"]
