@@ -8,7 +8,7 @@ The `subtitle_language` Default Metadata File is used to dynamically create coll
 
 Supported Library Types: Movie, Show
 
-## Collections Section 090
+## Collections Section 095
 
 | Collection                                               | Key                                       | Description                                                                 |
 |:---------------------------------------------------------|:------------------------------------------|:----------------------------------------------------------------------------|
