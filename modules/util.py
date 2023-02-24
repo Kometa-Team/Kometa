@@ -199,6 +199,8 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
         final_attr = None
         if prioritize_assets and "asset_directory" in images:
             return images["asset_directory"]
+        elif "image_set" in images:
+            final_attr = "image_set"
         elif f"url_{image_type}" in images:
             if download_url_assets and item_dir:
                 if "asset_directory" in images:
@@ -432,11 +434,14 @@ def time_window(tw):
     else:
         return tw
 
-def load_files(files_to_load, method, schedule=None, lib_vars=None):
+def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
     files = []
     if not lib_vars:
         lib_vars = {}
-    for file in get_list(files_to_load, split=False):
+    files_to_load = get_list(files_to_load, split=False)
+    if single and len(files_to_load) > 1:
+        raise Failed(f"{err_type} Error: {method} can only have one entry")
+    for file in files_to_load:
         if isinstance(file, dict):
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
@@ -450,7 +455,7 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
                     if os.path.exists(asset_path):
                         asset_directory.append(asset_path)
                     else:
-                        logger.error(f"Config Error: Asset Directory Does Not Exist: {asset_path}")
+                        logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
 
             current = []
             def check_dict(attr, name):
@@ -461,25 +466,25 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
                         else:
                             current.append((name, file[attr], temp_vars, asset_directory))
                     else:
-                        logger.error(f"Config Error: {method} {attr} is blank")
+                        logger.error(f"{err_type} Error: {method} {attr} is blank")
 
             check_dict("url", "URL")
             check_dict("git", "Git")
             check_dict("pmm", "PMM Default")
             check_dict("repo", "Repo")
             check_dict("file", "File")
-            if "folder" in file:
+            if not single and "folder" in file:
                 if file["folder"] is None:
-                    logger.error(f"Config Error: {method} folder is blank")
+                    logger.error(f"{err_type} Error: {method} folder is blank")
                 elif not os.path.isdir(file["folder"]):
-                    logger.error(f"Config Error: Folder not found: {file['folder']}")
+                    logger.error(f"{err_type} Error: Folder not found: {file['folder']}")
                 else:
                     yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
                     yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
                     if yml_files:
                         current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
                     else:
-                        logger.error(f"Config Error: No YAML (.yml|.yaml) files found in {file['folder']}")
+                        logger.error(f"{err_type} Error: No YAML (.yml|.yaml) files found in {file['folder']}")
 
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule
@@ -503,7 +508,7 @@ def load_files(files_to_load, method, schedule=None, lib_vars=None):
             if os.path.exists(file):
                 files.append(("File", file, {}, None))
             else:
-                logger.error(f"Config Error: Path not found: {file}")
+                logger.error(f"{err_type} Error: Path not found: {file}")
     return files
 
 def check_num(num, is_int=True):

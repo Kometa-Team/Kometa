@@ -1168,10 +1168,14 @@ class Plex(Library):
             else:
                 logger.warning(f"{text} | No Reset Image Found")
 
-    def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None):
+    def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, image_set=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
+        if image_set and "poster" in image_set:
+            posters["image_set"] = image_set["poster"]
+        if image_set and "background" in image_set:
+            backgrounds["image_set"] = image_set["background"]
         try:
             asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:

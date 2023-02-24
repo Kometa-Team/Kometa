@@ -126,18 +126,16 @@ class DataFile:
                 defaults_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
                 if overlay:
                     defaults_path = os.path.join(defaults_path, "overlays")
-                if os.path.exists(os.path.abspath(os.path.join(defaults_path, file_path))):
-                    file_path = os.path.abspath(os.path.join(defaults_path, file_path))
+                if os.path.exists(os.path.join(defaults_path, file_path)):
+                    file_path = os.path.join(defaults_path, file_path)
                 elif self.library:
                     for default_folder in [self.library.type.lower(), "both", "chart", "award"]:
-                        if os.path.exists(os.path.abspath(os.path.join(defaults_path, default_folder, file_path))):
-                            file_path = os.path.abspath(os.path.join(defaults_path, default_folder, file_path))
+                        if os.path.exists(os.path.join(defaults_path, default_folder, file_path)):
+                            file_path = os.path.join(defaults_path, default_folder, file_path)
                             break
             content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
-                if os.path.exists(os.path.join("config", content_path)):
-                    content_path = os.path.join("config", content_path)
                 if file_type == "PMM Default":
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
@@ -1436,7 +1434,45 @@ class MetadataFile(DataFile):
                 else:
                     logger.error(f"{mapping_name} Advanced Details Update Failed")
 
-        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None)
+        image_set_data = None
+        if "image_set" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: image_set")
+            set_files = meta[methods["image_set"]]
+            if not set_files:
+                raise Failed("Metadata Error: image_set attribute is blank")
+            logger.debug(f"Value: {set_files}")
+            set_dict = set_files[0] if isinstance(set_files, list) else set_files
+            if not isinstance(set_dict, dict):
+                raise Failed("Metadata Error: No image_set path dictionary found")
+            elif not set_dict:
+                raise Failed("Metadata Error: image_set path dictionary is empty")
+            set_name = ""
+            for k, v in set_dict.items():
+                set_name = f"{k}: {v}"
+                break
+            if set_name not in self.config.image_sets:
+                files = util.load_files(meta[methods["image_set"]], "image_set", err_type="Metadata", single=True)
+                if not files:
+                    raise Failed("Metadata Error: No Path Found for image_set")
+                file_type, set_file, _, _ = files[0]
+                temp_data = self.load_file(file_type, set_file)
+                if "set" not in temp_data:
+                    raise Failed('Image Set Error: Image sets must use the base attribute "set"')
+                if not isinstance(temp_data, dict):
+                    raise Failed("Image Set Error: Image set must be a dictionary")
+                if not temp_data["set"]:
+                    raise Failed("Image Set Error: Image set attribute is empty")
+                if not isinstance(temp_data["set"], dict):
+                    raise Failed("Image Set Error: Image set set attribute must be a dictionary")
+                self.config.image_sets[set_name] = temp_data["set"]
+            image_set_data = self.config.image_sets[set_name]
+
+        main_set_data = None
+        if image_set_data and mapping_name in image_set_data:
+            main_set_data = image_set_data[mapping_name]
+
+        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, image_set=main_set_data)
         if ups:
             updated = True
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1445,27 +1481,29 @@ class MetadataFile(DataFile):
         if "update_seasons" in methods and self.library.is_show:
             logger.debug("")
             logger.debug("Validating Method: update_seasons")
-            if meta[methods["update_seasons"]] is None:
+            if not meta[methods["update_seasons"]]:
                 logger.warning("Metadata Warning: update_seasons has no value and season updates will be performed")
-            logger.debug(f"Value: {meta[methods['update_seasons']]}")
-            for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
-                if library_type not in ["true", "false"]:
-                    raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
-                elif library_type == "false":
-                    update_seasons = False
+            else:
+                logger.debug(f"Value: {meta[methods['update_seasons']]}")
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                    if library_type not in ["true", "false"]:
+                        raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
+                    elif library_type == "false":
+                        update_seasons = False
 
         update_episodes = True
         if "update_episodes" in methods and self.library.is_show:
             logger.debug("")
             logger.debug("Validating Method: update_episodes")
-            if meta[methods["update_episodes"]] is None:
+            if not meta[methods["update_episodes"]]:
                 logger.warning("Metadata Warning: update_episodes has no value and episode updates will be performed")
-            logger.debug(f"Value: {meta[methods['update_episodes']]}")
-            for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
-                if library_type not in ["true", "false"]:
-                    raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
-                elif library_type == "false":
-                    update_episodes = False
+            else:
+                logger.debug(f"Value: {meta[methods['update_episodes']]}")
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                    if library_type not in ["true", "false"]:
+                        raise Failed(f"Metadata Error: {library_type} is invalid. Options: true or false")
+                    elif library_type == "false":
+                        update_episodes = False
 
         if "seasons" in methods and self.library.is_show and (update_seasons or update_episodes):
             if not meta[methods["seasons"]]:
@@ -1487,6 +1525,7 @@ class MetadataFile(DataFile):
                         logger.error(f"Metadata Error: Season: {season_id} not found")
                         continue
                     season_methods = {sm.lower(): sm for sm in season_dict}
+                    season_image_set = None
                     if update_seasons:
                         #season.batchEdits()
                         add_edit("title", season, season_dict, season_methods)
@@ -1495,9 +1534,12 @@ class MetadataFile(DataFile):
                         if self.edit_tags("label", season, season_dict, season_methods):
                             updated = True
                         finish_edit(season, f"Season: {season_id}")
+                        if main_set_data and "seasons" in main_set_data and main_set_data["seasons"] and season_id in main_set_data["seasons"]:
+                            season_image_set = main_set_data["seasons"][season_id]
                         _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
                                                              title=f"{item.title} Season {season.seasonNumber}",
-                                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
+                                                             folder_name=folder_name, image_set=season_image_set)
                         if ups:
                             updated = True
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1512,14 +1554,14 @@ class MetadataFile(DataFile):
                             for episode in season.episodes():
                                 episodes[episode.title] = episode
                                 episodes[int(episode.index)] = episode
-                            for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
+                            for episode_id, episode_dict in season_dict[season_methods["episodes"]].items():
                                 updated = False
                                 logger.info("")
-                                logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
-                                if episode_str in episodes:
-                                    episode = episodes[episode_str]
+                                logger.info(f"Updating episode {episode_id} in {season_id} of {mapping_name}...")
+                                if episode_id in episodes:
+                                    episode = episodes[episode_id]
                                 else:
-                                    logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
+                                    logger.error(f"Metadata Error: Episode {episode_id} in Season {season_id} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
                                 #episode.batchEdits()
@@ -1534,13 +1576,17 @@ class MetadataFile(DataFile):
                                 for tag_edit in ["director", "writer", "label"]:
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
-                                finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
+                                finish_edit(episode, f"Episode: {episode_id} in Season: {season_id}")
+                                episode_image_set = None
+                                if season_image_set and "episodes" in season_image_set and season_image_set["episodes"] and episode_id in season_image_set["episodes"]:
+                                    episode_image_set = season_image_set["episodes"][episode_id]
                                 _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
                                                                      title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name,
+                                                                     image_set=episode_image_set)
                                 if ups:
                                     updated = True
-                                logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
         if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:
