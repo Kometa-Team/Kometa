@@ -8,7 +8,7 @@ The `year` Default Metadata File is used to dynamically create collections based
 
 Supported Library Types: Movie, Show
 
-## Collections Section 100
+## Collections Section 105
 
 | Collection                                        | Key                               | Description                                                                 |
 |:--------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|
