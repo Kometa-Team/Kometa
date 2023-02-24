@@ -96,7 +96,7 @@ class DataFile:
         else:
             return data
 
-    def load_file(self, file_type, file_path, overlay=False, metadata=False, translation=False):
+    def load_file(self, file_type, file_path, overlay=False, translation=False):
         if translation:
             if file_path.endswith(".yml"):
                 file_path = file_path[:-4]
@@ -117,19 +117,15 @@ class DataFile:
             yaml = YAML(input_data=response.content, check_empty=True)
         else:
             if file_type == "PMM Default":
-                if not overlay and not metadata and file_path.startswith(("movie/", "chart/", "award/")):
+                if not overlay and file_path.startswith(("movie/", "chart/", "award/")):
                     file_path = file_path[6:]
-                elif not overlay and not metadata and file_path.startswith(("show/", "both/")):
+                elif not overlay and file_path.startswith(("show/", "both/")):
                     file_path = file_path[5:]
-                elif overlay and not metadata and file_path.startswith("overlays/"):
-                    file_path = file_path[9:]
-                elif metadata and not overlay and file_path.startswith("metadata/"):
+                elif overlay and file_path.startswith("overlays/"):
                     file_path = file_path[9:]
                 defaults_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
                 if overlay:
                     defaults_path = os.path.join(defaults_path, "overlays")
-                elif metadata:
-                    defaults_path = os.path.join(defaults_path, "metadata")
                 if os.path.exists(os.path.join(defaults_path, file_path)):
                     file_path = os.path.join(defaults_path, file_path)
                 elif self.library:
