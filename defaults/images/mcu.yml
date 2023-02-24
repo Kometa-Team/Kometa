@@ -5,99 +5,99 @@ external_templates:
 
 metadata:
   "Captain America: The First Avenger (2011)":
-    template: {name: mcu, id: 1771}
+    template: {name: images, id: 1771}
   "Marvel One-Shot: Agent Carter (2013)":
-    template: {name: mcu, id: 211387}
+    template: {name: images, id: 211387}
   "Captain Marvel (2019)":
-    template: {name: mcu, id: 299537}
+    template: {name: images, id: 299537}
   "Iron Man (2008)":
-    template: {name: mcu, id: 1726}
+    template: {name: images, id: 1726}
   "Iron Man 2 (2010)":
-    template: {name: mcu, id: 10138}
+    template: {name: images, id: 10138}
   "The Incredible Hulk (2008)":
-    template: {name: mcu, id: 1724}
+    template: {name: images, id: 1724}
   "Marvel One-Shot: A Funny Thing Happened on the Way to Thor's Hammer (2011)":
-    template: {name: mcu, id: 76535}
+    template: {name: images, id: 76535}
   "Thor (2011)":
-    template: {name: mcu, id: 10195}
+    template: {name: images, id: 10195}
   "Marvel One-Shot: The Consultant (2011)":
-    template: {name: mcu, id: 76122}
+    template: {name: images, id: 76122}
   The Avengers (2012)":
-    template: {name: mcu, id: 24428}
+    template: {name: images, id: 24428}
   "Marvel One-Shot: Item 47 (2012)":
-    template: {name: mcu, id: 119569}
+    template: {name: images, id: 119569}
   "Iron Man 3 (2013)":
-    template: {name: mcu, id: 68721}
+    template: {name: images, id: 68721}
   "Marvel One-Shot: All Hail the King (2014)":
-    template: {name: mcu, id: 253980}
+    template: {name: images, id: 253980}
   "Thor: The Dark World (2013)":
-    template: {name: mcu, id: 76338}
+    template: {name: images, id: 76338}
   "Captain America: The Winter Soldier (2014)":
-    template: {name: mcu, id: 100402}
+    template: {name: images, id: 100402}
   "Guardians of the Galaxy (2014)":
-    template: {name: mcu, id: 118340}
+    template: {name: images, id: 118340}
   "Guardians of the Galaxy Vol. 2 (2017)":
-    template: {name: mcu, id: 283995}
+    template: {name: images, id: 283995}
   "Avengers: Age of Ultron (2015)":
-    template: {name: mcu, id: 99861}
+    template: {name: images, id: 99861}
   "Ant-Man (2015)":
-    template: {name: mcu, id: 102899}
+    template: {name: images, id: 102899}
   "Captain America: Civil War (2016)":
-    template: {name: mcu, id: 271110}
+    template: {name: images, id: 271110}
   "Black Panther (2018)":
-    template: {name: mcu, id: 284054}
+    template: {name: images, id: 284054}
   "Black Widow (2021)":
-    template: {name: mcu, id: 497698}
+    template: {name: images, id: 497698}
   "Spider-Man: Homecoming (2017)":
-    template: {name: mcu, id: 315635}
+    template: {name: images, id: 315635}
   "Doctor Strange (2016)":
-    template: {name: mcu, id: 284052}
+    template: {name: images, id: 284052}
   "Thor: Ragnarok (2017)":
-    template: {name: mcu, id: 284053}
+    template: {name: images, id: 284053}
   "Ant-Man and the Wasp (2018)":
-    template: {name: mcu, id: 363088}
+    template: {name: images, id: 363088}
   "Avengers: Infinity War (2018)":
-    template: {name: mcu, id: 299536}
+    template: {name: images, id: 299536}
   "Avengers: Endgame (2019)":
-    template: {name: mcu, id: 299534}
+    template: {name: images, id: 299534}
   "Spider-Man: Far From Home (2019)":
-    template: {name: mcu, id: 429617}
+    template: {name: images, id: 429617}
   "Spider-Man: No Way Home (2021)":
-    template: {name: mcu, id: 634649}
+    template: {name: images, id: 634649}
   "Spider-Man: No Way Home (The More Fun Stuff Version) (2021)":
-    template: {name: mcu, id: 634649}
+    template: {name: images, id: 634649}
     edition_contains: Fun Stuff
   "Shang-Chi and the Legend of the Ten Rings (2021)":
-    template: {name: mcu, id: 566525}
+    template: {name: images, id: 566525}
   "Eternals (2021)":
-    template: {name: mcu, id: 524434}
+    template: {name: images, id: 524434}
   "Doctor Strange in the Multiverse of Madness (2022)":
-    template: {name: mcu, id: 453395}
+    template: {name: images, id: 453395}
   "Thor: Love and Thunder (2022)":
-    template: {name: mcu, id: 616037}
+    template: {name: images, id: 616037}
   "Black Panther: Wakanda Forever (2022)":
-    template: {name: mcu, id: 505642}
+    template: {name: images, id: 505642}
   "The Marvels (2023)":
-    template: {name: mcu, id: 609681}
+    template: {name: images, id: 609681}
   "The Guardians of the Galaxy Holiday Special (2022)":
-    template: {name: mcu, id: 774752}
+    template: {name: images, id: 774752}
   "Ant-Man and the Wasp: Quantumania (2023)":
-    template: {name: mcu, id: 640146}
+    template: {name: images, id: 640146}
   "Guardians of the Galaxy Volume 3 (2023)":
-    template: {name: mcu, id: 447365}
+    template: {name: images, id: 447365}
   "One Shot: Peter's To-Do List":
-    template: {name: mcu, id: 758025}
+    template: {name: images, id: 758025}
   "One Shot: Team Darryl":
-    template: {name: mcu, id: 505945}
+    template: {name: images, id: 505945}
   "One Shot: Team Thor":
-    template: {name: mcu, id: 413279}
+    template: {name: images, id: 413279}
   "One Shot: Team Thor Part 2":
-    template: {name: mcu, id: 441829}
+    template: {name: images, id: 441829}
   "Fantastic Four (2025)":
-    template: {name: mcu, id: 617126}
+    template: {name: images, id: 617126}
   "Blade (2024)":
-    template: {name: mcu, id: 617127}
+    template: {name: images, id: 617127}
   "Deadpool 3 (2024)":
-    template: {name: mcu, id: 533535}
+    template: {name: images, id: 533535}
   "Captain America: New World Order (2024)":
-    template: {name: mcu, id: 822119}
+    template: {name: images, id: 822119}
