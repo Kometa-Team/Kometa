@@ -309,6 +309,7 @@ class Overlays:
                                     else:
                                         new_poster = new_poster.resize(current_overlay.image.size, Image.LANCZOS)
                                         new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
+                                        new_poster = new_poster.resize((canvas_width, canvas_height), Image.LANCZOS)
 
                             for queue, weights in queue_overlays.items():
                                 cords = self.library.queues[queue]

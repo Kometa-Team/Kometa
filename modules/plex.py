@@ -1174,8 +1174,12 @@ class Plex(Library):
         posters, backgrounds = util.get_image_dicts(group, alias)
         if image_set and "poster" in image_set:
             posters["image_set"] = image_set["poster"]
+        elif image_set and "poster_tpdb" in image_set:
+            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['poster_tpdb']}"
         if image_set and "background" in image_set:
             backgrounds["image_set"] = image_set["background"]
+        elif image_set and "background_tpdb" in image_set:
+            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['background_tpdb']}"
         try:
             asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:
