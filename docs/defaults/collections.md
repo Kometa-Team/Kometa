@@ -75,9 +75,9 @@ This is the default PMM collection ordering:
 | `country`              | `080`              |
 | `based`                | `085`              |
 | `audio_language`       | `090`              |
-| `subtitle_language`    | `090`              |
+| `subtitle_language`    | `095`              |
 | `decade`               | `100`              |
-| `year`                 | `100`              |
+| `year`                 | `105`              |
 | `content_rating_us`    | `110`              |
 | `content_rating_uk`    | `110`              |
 | `content_rating_cs`    | `110`              |
