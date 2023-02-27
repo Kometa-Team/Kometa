@@ -74,6 +74,7 @@ jobs:
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
+          message: <@&1079153184007790652>
           title: "nightly build: **Failure**"
           color: 0xe30c43
           url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}

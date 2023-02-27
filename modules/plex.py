@@ -1172,14 +1172,14 @@ class Plex(Library):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
-        if image_set and "poster" in image_set and image_set["poster"]:
-            posters["image_set"] = image_set["poster"]
-        elif image_set and "poster_tpdb" in image_set and image_set["poster_tpdb"]:
-            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['poster_tpdb']}"
-        if image_set and "background" in image_set and image_set["background"]:
-            backgrounds["image_set"] = image_set["background"]
-        elif image_set and "background_tpdb" in image_set and image_set["background_tpdb"]:
-            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['background_tpdb']}"
+        if image_set and "url_poster" in image_set and image_set["url_poster"]:
+            posters["image_set"] = image_set["url_poster"]
+        elif image_set and "tpdb_poster" in image_set and image_set["tpdb_poster"]:
+            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_poster']}"
+        if image_set and "url_background" in image_set and image_set["url_background"]:
+            backgrounds["image_set"] = image_set["url_background"]
+        elif image_set and "tpdb_background" in image_set and image_set["tpdb_background"]:
+            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
         try:
             asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:

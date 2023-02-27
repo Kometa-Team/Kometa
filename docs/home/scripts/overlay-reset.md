@@ -32,7 +32,7 @@ There are no detailed walkthroughs specifically for PMM Overlay Reset but the pr
 
 ### Local Install Overview
 
-PMM Overlay Reset is compatible with Python 3.7 through 3.11. Later versions may function but are untested.
+PMM Overlay Reset is compatible with Python 3.11. Later versions may function but are untested.
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. 
 
@@ -106,22 +106,24 @@ Each option can be applied in three ways:
 2. Setting the Environment Variable.
 3. Adding the Environment Variables to `config/.env` 
 
-| Option                | Description                                                                                                                                                                                                                                                                       | Required |
-|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
-| Plex URl              | Plex URL of the Server you want to connect to.<br>**Shell Command:** `-u` or `--url "http://192.168.1.12:32400"`<br>**Environment Variable:** `PLEX_URL=http://192.168.1.12:32400`                                                                                                | &#9989;  |
-| Plex Token            | Plex Token of the Server you want to connect to.<br>**Shell Command:** `-t` or `--token "123456789"`<br>**Environment Variable:** `PLEX_TOKEN=123456789`                                                                                                                          | &#9989;  |
-| Plex Library          | Plex Library Name you want to reset.<br>**Shell Command:** `-l` or `--library Movies`<br>**Environment Variable:** `PLEX_LIBRARY=Movies`                                                                                                                                          | &#9989;  |
-| PMM Asset Folder      | Plex Meta Manager Asset Folder to Scan for restoring posters.<br>**Shell Command:** `-a` or `--asset C:\Plex Meta Manager\config\assets`<br>**Environment Variable:** `PMM_ASSET=C:\Plex Meta Manager\config\assets`                                                              | &#10060; |
-| PMM Original Folder   | Plex Meta Manager Original Folder to Scan for restoring posters.<br>**Shell Command:** `-o` or `--original C:\Plex Meta Manager\config\overlays\Movies Original Posters`<br>**Environment Variable:** `PMM_ORIGINAL=C:\Plex Meta Manager\config\overlays\Movies Original Posters` | &#10060; |
-| TMDb V3 API Key       | TMDb V3 API Key for restoring posters from TMDb.<br>**Shell Command:** `-ta` or `--tmdbapi 123456789123456789`<br>**Environment Variable:** `TMDBAPI=123456789123456789`                                                                                                          | &#10060; |
-| Resume                | Plex Item Title to Resume restoring posters from.<br>**Shell Command:** `-re` or `--resume "Mad Max"`<br>**Environment Variable:** `RESUME=Mad Max`                                                                                                                               | &#10060; |
-| Timeout               | Timeout can be any number greater then 0. **Default:** `600`<br>**Shell Command:** `-ti` or `--timeout 1000`<br>**Environment Variable:** `TIMEOUT=1000`                                                                                                                          | &#10060; |
-| Dry Run               | Run as a Dry Run without making changes in Plex.<br>**Shell Command:** `-d` or `--dry`<br>**Environment Variable:** `DRY_RUN=True`                                                                                                                                                | &#10060; |
-| Flat Assets           | PMM Asset Folder uses [Flat Assets Image Paths](https://metamanager.wiki/en/latest/home/guides/assets.html#asset-naming).<br>**Shell Command:** `-f` or `--flat`<br>**Environment Variable:** `PMM_FLAT=True`                                                                     | &#10060; |
-| Reset Season Posters  | Restore Season posters during run.<br>**Shell Command:** `-s` or `--season`<br>**Environment Variable:** `SEASON=True`                                                                                                                                                            | &#10060; |
-| Reset Episode Posters | Restore Episode posters during run.<br>**Shell Command:** `-e` or `--episode`<br>**Environment Variable:** `EPISODE=True`                                                                                                                                                         | &#10060; |
-| Trace Logs            | Run with extra trace logs.<br>**Shell Command:** `-tr` or `--trace`<br>**Environment Variable:** `TRACE=True`                                                                                                                                                                     | &#10060; |
-| Log Requests          | Run with every request logged.<br>**Shell Command:** `-lr` or `--log-requests`<br>**Environment Variable:** `LOG_REQUESTS=True`                                                                                                                                                   | &#10060; |
+| Option                  | Description                                                                                                                                                                                                                                                                         | Required |
+|:------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|
+| Plex URl                | Plex URL of the Server you want to connect to.<br>**Shell Command:** `-u` or `--url "http://192.168.1.12:32400"`<br>**Environment Variable:** `PLEX_URL=http://192.168.1.12:32400`                                                                                                  | &#9989;  |
+| Plex Token              | Plex Token of the Server you want to connect to.<br>**Shell Command:** `-t` or `--token 123456789`<br>**Environment Variable:** `PLEX_TOKEN=123456789`                                                                                                                              | &#9989;  |
+| Plex Library            | Plex Library Name you want to reset.<br>**Shell Command:** `-l` or `--library Movies`<br>**Environment Variable:** `PLEX_LIBRARY=Movies`                                                                                                                                            | &#9989;  |
+| PMM Asset Folder        | Plex Meta Manager Asset Folder to Scan for restoring posters.<br>**Shell Command:** `-a` or `--asset "C:\Plex Meta Manager\config\assets"`<br>**Environment Variable:** `PMM_ASSET=C:\Plex Meta Manager\config\assets`                                                              | &#10060; |
+| PMM Original Folder     | Plex Meta Manager Original Folder to Scan for restoring posters.<br>**Shell Command:** `-o` or `--original "C:\Plex Meta Manager\config\overlays\Movies Original Posters"`<br>**Environment Variable:** `PMM_ORIGINAL=C:\Plex Meta Manager\config\overlays\Movies Original Posters` | &#10060; |
+| TMDb V3 API Key         | TMDb V3 API Key for restoring posters from TMDb.<br>**Shell Command:** `-ta` or `--tmdbapi 123456789123456789`<br>**Environment Variable:** `TMDBAPI=123456789123456789`                                                                                                            | &#10060; |
+| Start From              | Plex Item Title to Start restoring posters from.<br>**Shell Command:** `-st` or `--start "Mad Max"`<br>**Environment Variable:** `START=Mad Max`                                                                                                                                    | &#10060; |
+| Items                   | Restore specific Plex Items by Title. Can use a bar-separated (<code>&#124;</code>) list.<br>**Shell Command:** `-it` or <code>--items "Mad Max&#124;Mad Max 2"</code><br>**Environment Variable:** <code>ITEMS=Mad Max&#124;Mad Max 2</code>                                       | &#10060; |
+| Timeout                 | Timeout can be any number greater then 0. **Default:** `600`<br>**Shell Command:** `-ti` or `--timeout 1000`<br>**Environment Variable:** `TIMEOUT=1000`                                                                                                                            | &#10060; |
+| Dry Run                 | Run as a Dry Run without making changes in Plex.<br>**Shell Command:** `-d` or `--dry`<br>**Environment Variable:** `DRY_RUN=True`                                                                                                                                                  | &#10060; |
+| Flat Assets             | PMM Asset Folder uses [Flat Assets Image Paths](https://metamanager.wiki/en/latest/home/guides/assets.html#asset-naming).<br>**Shell Command:** `-f` or `--flat`<br>**Environment Variable:** `PMM_FLAT=True`                                                                       | &#10060; |
+| Reset Season Posters    | Restore Season posters during run.<br>**Shell Command:** `-s` or `--season`<br>**Environment Variable:** `SEASON=True`                                                                                                                                                              | &#10060; |
+| Reset Episode Posters   | Restore Episode posters during run.<br>**Shell Command:** `-e` or `--episode`<br>**Environment Variable:** `EPISODE=True`                                                                                                                                                           | &#10060; |
+| Ignore Automatic Resume | Ignores the automatic resume.<br>**Shell Command:** `-ir` or `--ignore-resume`<br>**Environment Variable:** `IGNORE_RESUME=True`                                                                                                                                                    | &#10060; |
+| Trace Logs              | Run with extra trace logs.<br>**Shell Command:** `-tr` or `--trace`<br>**Environment Variable:** `TRACE=True`                                                                                                                                                                       | &#10060; |
+| Log Requests            | Run with every request logged.<br>**Shell Command:** `-lr` or `--log-requests`<br>**Environment Variable:** `LOG_REQUESTS=True`                                                                                                                                                     | &#10060; |
 
 
 ### Example .env File
@@ -132,12 +134,14 @@ PLEX_LIBRARY=Movies
 PMM_ASSET=C:\Plex Meta Manager\config\assets
 PMM_ORIGINAL=C:\Plex Meta Manager\config\overlays\Movies Original Posters
 TMDBAPI=123456789123456789
-RESUME=
+START=
+ITEMS=
 TIMEOUT=600
 DRY_RUN=True
 PMM_FLAT=False
 SEASON=True
 EPISODE=True
+IGNORE_RESUME=False
 TRACE=False
 LOG_REQUESTS=False
 ```
