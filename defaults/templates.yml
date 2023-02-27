@@ -235,6 +235,8 @@ templates:
             repo.exists: false
             value: images/<<set>>/<<style>>
     mapping_id: <<id>>
+    run_definition:
+      - <<use_<<set>>>>
     image_set:
       pmm: <<pmm>>
       file: <<file>>

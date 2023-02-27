@@ -40,7 +40,7 @@ There are no detailed walkthroughs specifically for Plex Image Cleanup but the p
 
 ### Local Install Overview
 
-Plex Image Cleanup is compatible with Python 3.10 and 3.11. Later versions may function but are untested.
+Plex Image Cleanup is compatible with Python 3.11. Later versions may function but are untested.
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. 
 
