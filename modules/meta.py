@@ -1245,7 +1245,7 @@ class MetadataFile(DataFile):
                     if not self.library.plex_pass:
                         logger.warning("Plex Warning: Plex Pass is required to use the Edition Field scanning filenames instead")
                     for i in item:
-                        self.library.reload(i)
+                        i = self.library.reload(i)
                         if self.library.plex_pass:
                             check = i.editionTitle if i.editionTitle else ""
                         else:

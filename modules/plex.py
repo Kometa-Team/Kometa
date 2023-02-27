@@ -658,7 +658,7 @@ class Plex(Library):
     def reload(self, item, force=False):
         is_full = False
         cached_item = item
-        if cached_item.ratingKey in self.cached_items:
+        if not force and cached_item.ratingKey in self.cached_items:
             cached_item, is_full = self.cached_items[cached_item.ratingKey]
         try:
             if not is_full or force:
@@ -668,7 +668,7 @@ class Plex(Library):
                                    includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                                    includeRelatedCount=0, includeReviews=False, includeStations=False)
-                cached_item._initpath = cached_item._details_key
+                cached_item._autoReload = False
                 self.cached_items[cached_item.ratingKey] = (cached_item, True)
             return cached_item
         except (BadRequest, NotFound) as e:
