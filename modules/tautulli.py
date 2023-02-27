@@ -45,16 +45,16 @@ class Tautulli:
                 if int(item[stat_type]) < params['list_minimum']:
                     continue
                 try:
-                    plex_item = self.library.fetchItem(int(item["rating_key"]))
+                    plex_item = self.library.fetch_item(int(item["rating_key"]))
                     if not isinstance(plex_item, (Movie, Show)):
                         raise BadRequest
                     rating_keys.append((item["rating_key"], "ratingKey"))
-                except (BadRequest, NotFound):
+                except Failed as e:
                     new_item = self.library.exact_search(item["title"], year=item["year"])
                     if new_item:
                         rating_keys.append((new_item[0].ratingKey, "ratingKey"))
                     else:
-                        logger.error(f"Plex Error: Item not found {item}")
+                        logger.error(e)
         return rating_keys
 
     def _request(self, url):

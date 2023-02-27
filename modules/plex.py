@@ -506,6 +506,20 @@ class Plex(Library):
             terms["year"] = year
         return self.Plex.search(libtype=libtype, **terms)
 
+    def fetch_item(self, item):
+        if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
+            return self.reload(item)
+        key = int(item)
+        if key in self.cached_items:
+            return self.reload(self.cached_items[key][0])
+        try:
+            current = self.fetchItem(key)
+            if isinstance(current, (Movie, Show, Season, Episode, Artist, Album, Track)):
+                return self.reload(current)
+        except (BadRequest, NotFound) as e:
+            logger.trace(e)
+        raise Failed(f"Plex Error: Item {item} not found")
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
@@ -657,23 +671,22 @@ class Plex(Library):
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False
-        cached_item = item
-        if not force and cached_item.ratingKey in self.cached_items:
-            cached_item, is_full = self.cached_items[cached_item.ratingKey]
+        if not force and item.ratingKey in self.cached_items:
+            item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                cached_item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False,
+                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False,
                                    includeChapters=False, includeChildren=False, includeConcerts=False,
                                    includeExternalMedia=False, includeExtras=False, includeFields=False,
                                    includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
                                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
                                    includeRelatedCount=0, includeReviews=False, includeStations=False)
-                cached_item._autoReload = False
-                self.cached_items[cached_item.ratingKey] = (cached_item, True)
-            return cached_item
+                item._autoReload = False
+                self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
+        return item
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def edit_query(self, item, edits, advanced=False):

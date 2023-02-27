@@ -1730,7 +1730,7 @@ class CollectionBuilder:
                                     for pl_library in self.libraries:
                                         if tvdb_id in pl_library.show_map:
                                             found = True
-                                            show_item = pl_library.fetchItem(pl_library.show_map[tvdb_id][0])
+                                            show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
                                             try:
                                                 items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                                             except NotFound:
@@ -1769,7 +1769,7 @@ class CollectionBuilder:
                     for pl_library in self.libraries:
                         if tvdb_id in pl_library.show_map:
                             found = True
-                            show_item = pl_library.fetchItem(pl_library.show_map[tvdb_id][0])
+                            show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
                             try:
                                 season_obj = show_item.season(season=int(season_num))
                                 if self.playlist:
@@ -1788,7 +1788,7 @@ class CollectionBuilder:
                     for pl_library in self.libraries:
                         if tvdb_id in pl_library.show_map:
                             found = True
-                            show_item = pl_library.fetchItem(pl_library.show_map[tvdb_id][0])
+                            show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
                             try:
                                 items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                             except NotFound:
@@ -1825,7 +1825,7 @@ class CollectionBuilder:
                                 rating_keys = []
                                 for rk in found_keys:
                                     try:
-                                        item = self.fetch_item(rk)
+                                        item = self.library.fetch_item(rk)
                                         if self.builder_level == "episode" and isinstance(item, Show):
                                             if tvdb_season is not None:
                                                 item = item.season(season=tvdb_season)
@@ -1843,7 +1843,7 @@ class CollectionBuilder:
                     rating_keys = [rating_keys]
                 for rk in rating_keys:
                     try:
-                        item = self.fetch_item(rk)
+                        item = self.library.fetch_item(rk)
                         if self.playlist and isinstance(item, (Show, Season)):
                             items.extend(item.episodes())
                         elif self.builder_level == "movie" and not isinstance(item, Movie):
@@ -2263,24 +2263,6 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: {final} attribute must be a dictionary")
         else:
             raise Failed(f"{self.Type} Error: {final} attribute not supported")
-
-    def fetch_item(self, item):
-        if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
-            if item.ratingKey not in self.library.cached_items:
-                self.library.cached_items[item.ratingKey] = (item, False)
-                return item
-        key = int(item)
-        if key in self.library.cached_items:
-            cached_item, full_obj = self.library.cached_items[key]
-            return cached_item
-        try:
-            current = self.library.fetchItem(key)
-            if not isinstance(current, (Movie, Show, Season, Episode, Artist, Album, Track)):
-                raise NotFound
-            self.library.cached_items[key] = (current, True)
-            return current
-        except (BadRequest, NotFound):
-            raise Failed(f"Plex Error: Item {item} not found")
 
     def add_to_collection(self):
         logger.info("")
@@ -3008,9 +2990,9 @@ class CollectionBuilder:
         if len(rating_keys) > 0:
             for rating_key in rating_keys:
                 try:
-                    current = self.library.fetchItem(int(rating_key))
-                except (BadRequest, NotFound):
-                    logger.error(f"Plex Error: Item {rating_key} not found")
+                    current = self.library.fetch_item(int(rating_key))
+                except Failed as e:
+                    logger.error(e)
                     continue
                 if current in collection_items:
                     logger.info(f"{name} {self.Type} | = | {util.item_title(current)}")

@@ -1171,13 +1171,13 @@ class MetadataFile(DataFile):
                     logger.info(f"{id_type} ID Mapping: {mapping_id}")
                     if self.library.is_movie and mapping_id in self.library.movie_map:
                         for item_id in self.library.movie_map[mapping_id]:
-                            item.append(self.library.fetchItem(item_id))
+                            item.append(self.library.fetch_item(item_id))
                     elif self.library.is_show and mapping_id in self.library.show_map:
                         for item_id in self.library.show_map[mapping_id]:
-                            item.append(self.library.fetchItem(item_id))
+                            item.append(self.library.fetch_item(item_id))
                     elif mapping_id in self.library.imdb_map:
                         for item_id in self.library.imdb_map[mapping_id]:
-                            item.append(self.library.fetchItem(item_id))
+                            item.append(self.library.fetch_item(item_id))
                     else:
                         logger.error(f"Metadata Error: {id_type} ID not mapped")
                         continue
