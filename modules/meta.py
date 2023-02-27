@@ -1013,7 +1013,7 @@ class MetadataFile(DataFile):
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
-                            col = {"template": template_call, "label": str(map_name)}
+                            col = {"template": template_call, "append_label": str(map_name)}
                             if test:
                                 col["test"] = True
                             if collection_title in sync:
@@ -1041,7 +1041,7 @@ class MetadataFile(DataFile):
                             new_call = og_other.copy()
                             new_call["name"] = other_template
                             other_call.append(new_call)
-                        col = {"template": other_call, "label": str(map_name)}
+                        col = {"template": other_call, "append_label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:

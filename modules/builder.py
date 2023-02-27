@@ -5,7 +5,7 @@ from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, 
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from plexapi.audio import Artist, Album, Track
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show, Season, Episode
 from requests.exceptions import ConnectionError
 from urllib.parse import quote
@@ -44,7 +44,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset"
+    "delete_collections_named", "tmdb_person_offset", "append_label"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
@@ -833,6 +833,18 @@ class CollectionBuilder:
                     raise
                 else:
                     logger.error(e)
+
+        if "append_label" in methods and not self.playlist and not self.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: append_label")
+            logger.debug(f"Value: {data[methods['append_label']]}")
+            append_labels = util.get_list(data[methods["append_label"]])
+            if "label.sync" in self.details:
+                self.details["label.sync"].extend(append_labels)
+            elif "label" in self.details:
+                self.details["label"].extend(append_labels)
+            else:
+                self.details["label"] = append_labels
 
         if not self.server_preroll and not self.smart_url and not self.blank_collection and len(self.builders) == 0:
             raise Failed(f"{self.Type} Error: No builders were found")
