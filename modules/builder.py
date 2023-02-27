@@ -2618,7 +2618,7 @@ class CollectionBuilder:
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
-            self.library.reload(item)
+            item = self.library.reload(item)
             current_labels = [la.tag for la in self.library.item_labels(item)]
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
