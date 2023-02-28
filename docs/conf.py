@@ -153,6 +153,7 @@ html_theme_options = {
             ]),
             ("_divider", ),
             ("YAML File Guide", "home/guides/yaml"),
+            ("Ratings Explained", "home/guides/ratings"),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
