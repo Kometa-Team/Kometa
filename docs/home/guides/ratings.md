@@ -1,6 +1,16 @@
-# PMM PMM Ratings Explained
+# PMM Ratings Explained
 
 How do ratings and ratings overlays work in PMM? This Guide will walk through some basics of how ratings work in conjunction with Plex Meta Manager.
+
+<h4>Basics</h4>
+
+Each thing in Plex that can have a rating [movie, show, episode, album, track] has three ratings "boxes" or "fields".  Critic, Audience, and User.
+
+The Critic and Audience ratings are typically managed by Plex, pulling from whatever you specify as the ratings source for the library; this is what determines the images that are displayed in the Plex UI.  The User rating is the star rating assigned by you to the item.
+
+PMM can insert a broader range of values into those fields than Plex supports natively, then it can leverage those values in overlays and the like.
+
+It's doing this "behind Plex's back", so there can be some seeming inconsistencies in the way things are displayed in the UI.  This guide is intended to clear up some of these things.
 
 <h4>Setup</h4>
 
