@@ -1367,9 +1367,8 @@ class Plex(Library):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
                 if file.lower().endswith((".png", ".jpg", ".jpeg", "webp")) and not re.match(r"s\d+e\d+|season\d+", file.lower()):
                     try:
-                        image = Image.open(file)
-                        _w, _h = image.size
-                        image.close()
+                        with Image.open(file) as image:
+                            _w, _h = image.size
                         if not poster and _h >= _w:
                             new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
