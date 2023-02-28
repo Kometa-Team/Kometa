@@ -883,6 +883,18 @@ class ConfigFile:
                     except Failed as e:
                         logger.error(e)
 
+                params["images_path"] = []
+                try:
+                    if lib and "images_path" in lib:
+                        if not lib["images_path"]:
+                            raise Failed("Config Error: images_path attribute is blank")
+                        files = util.load_files(lib["images_path"], "images_path")
+                        if not files:
+                            raise Failed("Config Error: No Paths Found for images_path")
+                        params["images_path"] = files
+                except Failed as e:
+                    logger.error(e)
+
                 try:
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)
