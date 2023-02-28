@@ -189,159 +189,158 @@ class Overlays:
                     elif self.library.reapply_overlays or changed_image or overlay_change:
                         try:
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
+                            with Image.open(poster.location if poster else has_original) as new_poster:
+                                exif_tags = new_poster.getexif()
+                                exif_tags[0x04bc] = "overlay"
+                                new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.LANCZOS)
 
-                            new_poster = Image.open(poster.location if poster else has_original)
-                            exif_tags = new_poster.getexif()
-                            exif_tags[0x04bc] = "overlay"
-                            new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.LANCZOS)
-                            
-                            if blur_num > 0:
-                                new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
+                                if blur_num > 0:
+                                    new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
 
-                            def get_text(text_overlay):
-                                full_text = text_overlay.name[5:-1]
-                                for format_var in overlay.vars_by_type[text_overlay.level]:
-                                    if f"<<{format_var}" in full_text and format_var == "originally_available[":
-                                        mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
-                                        format_var = "originally_available"
-                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.double_mods)):
-                                        mod = format_var[-2:]
-                                        format_var = format_var[:-2]
-                                    elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.single_mods)):
-                                        mod = format_var[-1]
-                                        format_var = format_var[:-1]
-                                    elif f"<<{format_var}>>" in full_text:
-                                        mod = ""
-                                    else:
-                                        continue
-                                    if format_var == "show_title":
-                                        actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
-                                    elif format_var in plex.attribute_translation:
-                                        actual_attr = plex.attribute_translation[format_var]
-                                    else:
-                                        actual_attr = format_var
-                                    if format_var == "bitrate":
-                                        actual_value = None
-                                        for media in item.media:
-                                            current = int(media.bitrate)
-                                            if actual_value is None:
-                                                actual_value = current
-                                                if mod == "":
-                                                    break
-                                            elif mod == "H" and current > actual_value:
-                                                actual_value = current
-                                            elif mod == "L" and current < actual_value:
-                                                actual_value = current
-                                    else:
-                                        if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                            raise Failed(f"Overlay Warning: No {full_text} found")
-                                        actual_value = getattr(item, actual_attr)
-                                        if format_var == "versions":
-                                            actual_value = len(actual_value)
-                                    if self.config.Cache:
-                                        cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
-                                        self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
-                                    sub_value = None
-                                    if format_var == "originally_available":
-                                        if mod:
-                                            sub_value = "<<originally_available\\[(.+)]>>"
-                                            final_value = actual_value.strftime(mod)
+                                def get_text(text_overlay):
+                                    full_text = text_overlay.name[5:-1]
+                                    for format_var in overlay.vars_by_type[text_overlay.level]:
+                                        if f"<<{format_var}" in full_text and format_var == "originally_available[":
+                                            mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
+                                            format_var = "originally_available"
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.double_mods)):
+                                            mod = format_var[-2:]
+                                            format_var = format_var[:-2]
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.single_mods)):
+                                            mod = format_var[-1]
+                                            format_var = format_var[:-1]
+                                        elif f"<<{format_var}>>" in full_text:
+                                            mod = ""
                                         else:
-                                            final_value = actual_value.strftime("%Y-%m-%d")
-                                    elif format_var == "runtime":
-                                        if mod == "H":
-                                            final_value = int((actual_value / 60000) // 60)
-                                        elif mod == "M":
-                                            final_value = int((actual_value / 60000) % 60)
-                                        else:
-                                            final_value = int(actual_value / 60000)
-                                    elif mod == "%":
-                                        final_value = int(actual_value * 10)
-                                    elif mod == "#":
-                                        final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
-                                    elif mod == "W":
-                                        final_value = num2words(int(actual_value))
-                                    elif mod == "0":
-                                        final_value = f"{int(actual_value):02}"
-                                    elif mod == "00":
-                                        final_value = f"{int(actual_value):03}"
-                                    elif mod == "/":
-                                        final_value = f"{float(actual_value) / 2:.1f}"
-                                    elif mod == "U":
-                                        final_value = str(actual_value).upper()
-                                    elif mod == "L":
-                                        final_value = str(actual_value).lower()
-                                    elif mod == "P":
-                                        final_value = str(actual_value).title()
-                                    else:
-                                        final_value = actual_value
-                                    if sub_value:
-                                        full_text = re.sub(sub_value, str(final_value), full_text)
-                                    else:
-                                        full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
-                                return str(full_text)
-
-                            for over_name in applied_names:
-                                current_overlay = properties[over_name]
-                                if current_overlay.name.startswith("text"):
-                                    if "<<" in current_overlay.name:
-                                        image_box = current_overlay.image.size if current_overlay.image else None
-                                        try:
-                                            overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))
-                                        except Failed as e:
-                                            logger.warning(e)
                                             continue
-                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                    else:
-                                        overlay_image, addon_box = current_overlay.get_canvas(item)
-                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                    if current_overlay.image:
-                                        new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
-                                elif current_overlay.name == "backdrop":
-                                    overlay_image, _ = current_overlay.get_canvas(item)
-                                    new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                else:
-                                    if current_overlay.has_coordinates():
-                                        overlay_image, overlay_box = current_overlay.get_canvas(item)
-                                        if current_overlay.portrait is not None:
-                                            new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                        new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
-                                    else:
-                                        new_poster = new_poster.resize(current_overlay.image.size, Image.LANCZOS)
-                                        new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
-                                        new_poster = new_poster.resize((canvas_width, canvas_height), Image.LANCZOS)
+                                        if format_var == "show_title":
+                                            actual_attr = "parentTitle" if text_overlay.level == "season" else "grandparentTitle"
+                                        elif format_var in plex.attribute_translation:
+                                            actual_attr = plex.attribute_translation[format_var]
+                                        else:
+                                            actual_attr = format_var
+                                        if format_var == "bitrate":
+                                            actual_value = None
+                                            for media in item.media:
+                                                current = int(media.bitrate)
+                                                if actual_value is None:
+                                                    actual_value = current
+                                                    if mod == "":
+                                                        break
+                                                elif mod == "H" and current > actual_value:
+                                                    actual_value = current
+                                                elif mod == "L" and current < actual_value:
+                                                    actual_value = current
+                                        else:
+                                            if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
+                                                raise Failed(f"Overlay Warning: No {full_text} found")
+                                            actual_value = getattr(item, actual_attr)
+                                            if format_var == "versions":
+                                                actual_value = len(actual_value)
+                                        if self.config.Cache:
+                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
+                                            self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
+                                        sub_value = None
+                                        if format_var == "originally_available":
+                                            if mod:
+                                                sub_value = "<<originally_available\\[(.+)]>>"
+                                                final_value = actual_value.strftime(mod)
+                                            else:
+                                                final_value = actual_value.strftime("%Y-%m-%d")
+                                        elif format_var == "runtime":
+                                            if mod == "H":
+                                                final_value = int((actual_value / 60000) // 60)
+                                            elif mod == "M":
+                                                final_value = int((actual_value / 60000) % 60)
+                                            else:
+                                                final_value = int(actual_value / 60000)
+                                        elif mod == "%":
+                                            final_value = int(actual_value * 10)
+                                        elif mod == "#":
+                                            final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
+                                        elif mod == "W":
+                                            final_value = num2words(int(actual_value))
+                                        elif mod == "0":
+                                            final_value = f"{int(actual_value):02}"
+                                        elif mod == "00":
+                                            final_value = f"{int(actual_value):03}"
+                                        elif mod == "/":
+                                            final_value = f"{float(actual_value) / 2:.1f}"
+                                        elif mod == "U":
+                                            final_value = str(actual_value).upper()
+                                        elif mod == "L":
+                                            final_value = str(actual_value).lower()
+                                        elif mod == "P":
+                                            final_value = str(actual_value).title()
+                                        else:
+                                            final_value = actual_value
+                                        if sub_value:
+                                            full_text = re.sub(sub_value, str(final_value), full_text)
+                                        else:
+                                            full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
+                                    return str(full_text)
 
-                            for queue, weights in queue_overlays.items():
-                                cords = self.library.queues[queue]
-                                sorted_weights = sorted(weights.items(), reverse=True)
-                                for o, cord in enumerate(cords):
-                                    if len(sorted_weights) <= o:
-                                        break
-                                    over_name = sorted_weights[o][1]
+                                for over_name in applied_names:
                                     current_overlay = properties[over_name]
                                     if current_overlay.name.startswith("text"):
-                                        image_box = current_overlay.image.size if current_overlay.image else None
-                                        try:
-                                            overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay), new_cords=cord)
-                                        except Failed as e:
-                                            logger.warning(e)
-                                            continue
-                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
-                                        if current_overlay.image:
-                                            new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
-                                    else:
-                                        if current_overlay.has_back:
-                                            overlay_image, overlay_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
+                                        if "<<" in current_overlay.name:
+                                            image_box = current_overlay.image.size if current_overlay.image else None
+                                            try:
+                                                overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))
+                                            except Failed as e:
+                                                logger.warning(e)
+                                                continue
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                         else:
-                                            overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
-                                        new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
-                            temp = os.path.join(self.library.overlay_folder, "temp.jpg")
-                            new_poster.save(temp, exif=exif_tags)
-                            self.library.upload_poster(item, temp)
-                            self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                            poster_compare = poster.compare if poster else item.thumb
-                            logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
+                                            overlay_image, addon_box = current_overlay.get_canvas(item)
+                                            new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                        if current_overlay.image:
+                                            new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
+                                    elif current_overlay.name == "backdrop":
+                                        overlay_image, _ = current_overlay.get_canvas(item)
+                                        new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                    else:
+                                        if current_overlay.has_coordinates():
+                                            overlay_image, overlay_box = current_overlay.get_canvas(item)
+                                            if current_overlay.portrait is not None:
+                                                new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                            new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
+                                        else:
+                                            new_poster = new_poster.resize(current_overlay.image.size, Image.LANCZOS)
+                                            new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
+                                            new_poster = new_poster.resize((canvas_width, canvas_height), Image.LANCZOS)
+
+                                for queue, weights in queue_overlays.items():
+                                    cords = self.library.queues[queue]
+                                    sorted_weights = sorted(weights.items(), reverse=True)
+                                    for o, cord in enumerate(cords):
+                                        if len(sorted_weights) <= o:
+                                            break
+                                        over_name = sorted_weights[o][1]
+                                        current_overlay = properties[over_name]
+                                        if current_overlay.name.startswith("text"):
+                                            image_box = current_overlay.image.size if current_overlay.image else None
+                                            try:
+                                                overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay), new_cords=cord)
+                                            except Failed as e:
+                                                logger.warning(e)
+                                                continue
+                                            new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                            if current_overlay.image:
+                                                new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
+                                        else:
+                                            if current_overlay.has_back:
+                                                overlay_image, overlay_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
+                                                new_poster.paste(overlay_image, (0, 0), overlay_image)
+                                            else:
+                                                overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
+                                            new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
+                                temp = os.path.join(self.library.overlay_folder, "temp.jpg")
+                                new_poster.save(temp, exif=exif_tags)
+                                self.library.upload_poster(item, temp)
+                                self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
+                                poster_compare = poster.compare if poster else item.thumb
+                                logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
                             raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
@@ -359,6 +358,9 @@ class Overlays:
                     logger.error("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
+        for _, over in properties.items():
+            if over.image:
+                over.image.close()
         overlay_run_time = str(datetime.now() - overlay_start).split('.')[0]
         logger.info("")
         logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
