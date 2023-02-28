@@ -51,6 +51,7 @@ libraries:
 * `rating1`, `rating1_image`, `rating2`, `rating2_image` are set to match the ratings that Plex already has assigned to those fields (critic/audience).  The order here is arbitrary.
 * `rating3` is set to be the user rating and it's image (`rating3_image`) is set to IMDb just because we have to pick something.
 * `reapply_overlays` is set to true to ensure that PMM always updates the overlays as we run things.
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 </details>
 
@@ -109,7 +110,7 @@ When the above is run you see this result:
 
 <h4>Update User Ratings</h4>
 
-Now let's actually update the ratings and push some numbers into those boxes using library operations  We'll start with making that user rating accurate:
+Now let's actually update the ratings and push some numbers into those boxes using library operations. We'll start with making that user rating accurate:
 
 <details>
   <summary>Click to see the updated config</summary>
@@ -197,7 +198,7 @@ The log will show PMM updating those values.
 
 <h4>Use Trakt Rating</h4>
 
-Let's change the Trakt rating to that trakt public rating of 85% instead, which is available via mdblist:
+Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDbList:
 
 <details>
   <summary>Click to see the updated config</summary>
@@ -229,7 +230,7 @@ When the above is run you should get:
 
    ![](ratings/ratings-09.png)
 
-* Note how the `60%` in `rating1` became `80%`
+* Note how the `60%` in `rating1` became `85%`
 
 <h4>Use Proper Images</h4>
 
