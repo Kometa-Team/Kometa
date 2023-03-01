@@ -266,16 +266,18 @@ Updates every item's background to the chosen sites background. Will fallback to
 
 ## Mass IMDb Parental Labels
 
-Updates every item's labels in the library to match the IMDb Parental Guide
+Updates every item's labels in the library to match the IMDb Parental Guide.
 
 **Attribute:** `mass_imdb_parental_labels`
 
 **Values:**
 
-| Value          | Description                                                                                                         |
-|:---------------|:--------------------------------------------------------------------------------------------------------------------|
-| `with_none`    | Apply all Parental Labels regardless of value                                                                       |
-| `without_none` | Only apply Parental Labels if the value is not none (i.e. do not apply "Sex & Nudity" label if the value is "None") |
+| Value      | Description                                                                       |
+|:-----------|:----------------------------------------------------------------------------------|
+| `none`     | Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe` |
+| `mild`     | Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`         |
+| `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`                  |
+| `severe`   | Apply all Parental Labels with a value of `Severe`                                |
 
 ## Mass Collection Mode
 
