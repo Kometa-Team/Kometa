@@ -186,16 +186,16 @@ class Overlays:
                         try:
                             has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
                         except Failed as e:
-                            raise Failed(f"Overlay Error: {e}")
+                            raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
                     if poster is None and has_original is None:
-                        logger.error(f"Overlay Error: No poster found")
+                        logger.error(f"  Overlay Error: No poster found")
                     elif self.library.reapply_overlays or changed_image or overlay_change:
                         try:
                             if not self.library.reapply_overlays and changed_image:
-                                logger.trace("Overlay applied because new image was detected")
+                                logger.trace("  Overlay applied because new image was detected")
                             elif not self.library.reapply_overlays and overlay_change:
-                                logger.trace(f"Overlay applied because overlay changed {change_reason}")
+                                logger.trace(f"  Overlay applied because overlay changed {change_reason}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
@@ -296,7 +296,7 @@ class Overlays:
                                             try:
                                                 overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))
                                             except Failed as e:
-                                                logger.warning(e)
+                                                logger.warning(f"  {e}")
                                                 continue
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                         else:
@@ -331,7 +331,7 @@ class Overlays:
                                             try:
                                                 overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay), new_cords=cord)
                                             except Failed as e:
-                                                logger.warning(e)
+                                                logger.warning(f"  {e}")
                                                 continue
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                             if current_overlay.image:
@@ -348,17 +348,17 @@ class Overlays:
                                 self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                                 poster_compare = poster.compare if poster else item.thumb
-                                logger.info(f"Overlays Applied: {', '.join(over_names)}")
+                                logger.info(f"  Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
-                            raise Failed(f"Overlay Error: {e}")
+                            raise Failed(f"  Overlay Error: {e}")
                     else:
-                        logger.info("Overlay Update Not Needed")
+                        logger.info("  Overlay Update Not Needed")
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
-                    logger.error(f"{e}\nOverlays Attempted on {item_title}: {', '.join(over_names)}")
+                    logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:
                     logger.info(e)
                     logger.info(type(e))

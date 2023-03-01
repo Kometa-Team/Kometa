@@ -33,7 +33,12 @@ from retrying import retry
 logger = util.logger
 
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
-imdb_label_options = {"with_none": "Add IMDb Parental Labels including None", "without_none": "Add IMDb Parental Labels including None"}
+imdb_label_options = {
+    "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
+    "mild": "Add IMDb Parental Labels for Mild, Moderate, or Severe",
+    "moderate": "Add IMDb Parental Labels for Moderate or Severe",
+    "severe": "Add IMDb Parental Labels for Severe"
+}
 mass_genre_options = {
     "lock": "Unlock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
     "tmdb": "Use TMDb Genres", "imdb": "Use IMDb Genres", "omdb": "Use IMDb Genres through OMDb", "tvdb": "Use TVDb Genres",
@@ -99,7 +104,8 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
-    "mass_imdb_parental_labels": imdb_label_options, "mass_poster_update": mass_image_options, "mass_background_update": mass_image_options,
+    "mass_imdb_parental_labels": imdb_label_options, "mass_episode_imdb_parental_labels": imdb_label_options,
+    "mass_poster_update": mass_image_options, "mass_background_update": mass_image_options,
     "mass_collection_mode": "mass_collection_mode", "metadata_backup": "metadata_backup", "delete_collections": "delete_collections",
     "genre_mapper": "mapper", "content_rating_mapper": "mapper",
 }
@@ -212,6 +218,11 @@ class ConfigFile:
                         self.data["libraries"][library]["operations"]["radarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("radarr_add_all")
                     if "sonarr_add_all" in self.data["libraries"][library]["operations"]:
                         self.data["libraries"][library]["operations"]["sonarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("sonarr_add_all")
+                    if "mass_imdb_parental_labels" in self.data["libraries"][library]["operations"] and self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"]:
+                        if self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] == "with_none":
+                            self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] = "none"
+                        elif self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] == "without_none":
+                            self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] = "mild"
                 if "webhooks" in self.data["libraries"][library] and self.data["libraries"][library]["webhooks"] and "collection_changes" not in self.data["libraries"][library]["webhooks"]:
                     changes = []
                     def hooks(attr):

@@ -99,6 +99,7 @@ collection_mode_options = {
 }
 parental_types = ["nudity", "violence", "profanity", "alcohol", "frightening"]
 parental_values = ["None", "Mild", "Moderate", "Severe"]
+parental_levels = {"none": [], "mild": ["None"], "moderate": ["None", "Mild"], "severe": ["None", "Mild", "Moderate"]}
 parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in parental_values]
 previous_time = None
 start_time = None

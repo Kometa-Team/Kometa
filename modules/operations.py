@@ -38,6 +38,7 @@ class Operations:
         logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
+        logger.debug(f"Mass Episode IMDb Parental Labels: {self.library.mass_episode_imdb_parental_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
@@ -95,7 +96,7 @@ class Operations:
                     continue
                 logger.info("")
                 logger.info(f"Processing: {i}/{len(items)} {item.title}")
-                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.assets_for_all or self.library.mass_imdb_parental_labels else []
+                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
 
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
@@ -116,7 +117,7 @@ class Operations:
                 if self.library.mass_imdb_parental_labels:
                     try:
                         parental_guide = self.config.IMDb.parental_guide(imdb_id)
-                        parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if self.library.mass_imdb_parental_labels == "with_none" or v != "None"]
+                        parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
                         add_labels = [la for la in parental_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
                         if add_labels or remove_labels:
@@ -555,7 +556,10 @@ class Operations:
                                 if self.library.mass_background_update:
                                     self.library.background_update(episode, episode_background, title=episode.title if episode else None)
 
-                episode_ops = [self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update, self.library.mass_episode_user_rating_update]
+                episode_ops = [
+                    self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update,
+                    self.library.mass_episode_user_rating_update, self.library.mass_episode_imdb_parental_labels
+                ]
 
                 if any([x is not None for x in episode_ops]):
 
@@ -564,6 +568,7 @@ class Operations:
 
                     for ep in item.episodes():
                         #ep.batchEdits()
+                        ep = self.library.reload(ep)
                         batch_display = ""
                         item_title = self.library.get_item_sort_title(ep, atr="title")
                         logger.info("")
