@@ -104,15 +104,18 @@ class Overlays:
                         else:
                             applied_names.append(over_name)
 
+                    change_reason = ""
                     overlay_change = False if has_overlay else True
                     if not overlay_change:
                         for oc in overlay_compare:
                             if oc not in compare_names:
+                                change_reason = f"{oc} not in {compare_names}"
                                 overlay_change = True
 
                     if not overlay_change:
                         for compare_name, original_name in compare_names.items():
                             if compare_name not in overlay_compare or properties[original_name].updated:
+                                change_reason = f"{compare_name} not in {overlay_compare} or {properties[original_name].updated}"
                                 overlay_change = True
 
                     if self.config.Cache:
@@ -177,17 +180,22 @@ class Overlays:
                                 logger.error(e)
                     else:
                         new_backup = item.posterUrl
+                    logger.info(f"\n{item_title}")
                     if new_backup:
                         changed_image = True
                         try:
                             has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
                         except Failed as e:
-                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
+                            raise Failed(f"Overlay Error: {e}")
                     poster_compare = None
                     if poster is None and has_original is None:
-                        logger.error(f"{item_title[:60]:<60} | Overlay Error: No poster found")
+                        logger.error(f"Overlay Error: No poster found")
                     elif self.library.reapply_overlays or changed_image or overlay_change:
                         try:
+                            if not self.library.reapply_overlays and changed_image:
+                                logger.trace("Overlay applied because new image was detected")
+                            elif not self.library.reapply_overlays and overlay_change:
+                                logger.trace(f"Overlay applied because overlay changed {change_reason}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
@@ -340,12 +348,12 @@ class Overlays:
                                 self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                                 poster_compare = poster.compare if poster else item.thumb
-                                logger.info(f"{item_title[:60]:<60} | Overlays Applied: {', '.join(over_names)}")
+                                logger.info(f"Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
-                            raise Failed(f"{item_title[:60]:<60} | Overlay Error: {e}")
-                    elif self.library.show_asset_not_needed:
-                        logger.info(f"{item_title[:60]:<60} | Overlay Update Not Needed")
+                            raise Failed(f"Overlay Error: {e}")
+                    else:
+                        logger.info("Overlay Update Not Needed")
 
                     if self.config.Cache and poster_compare:
                         self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
