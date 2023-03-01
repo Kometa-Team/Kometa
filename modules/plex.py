@@ -1404,6 +1404,7 @@ class Plex(Library):
         return tmdb_id, tvdb_id, imdb_id
 
     def get_locked_attributes(self, item, titles=None):
+        item = self.reload(item)
         attrs = {}
         fields = {f.name: f for f in item.fields if f.locked}
         if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:

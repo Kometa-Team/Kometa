@@ -50,7 +50,7 @@ details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
     "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region", "default_percent"
 ] + boolean_details + scheduled_boolean + string_details
-collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test"] + \
+collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + \
                          poster_details + background_details + summary_details + string_details
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh"] + item_false_details
