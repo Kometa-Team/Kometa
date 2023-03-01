@@ -220,7 +220,7 @@ html_theme_options = {
                 ("Shared Variables", "defaults/collection_variables"),
                 ("_divider", ),
                 ("Separators", "defaults/separators"),
-                ("_menu", "Award", "defaults/defaults", "#award-collections", [
+                ("_menu", "Award", "defaults/collections", "#award-collections", [
                     ("Awards Separator", "defaults/award/separator"),
                     ("_divider",),
                     ("Academy Awards (Oscars)", "defaults/award/oscars"),
@@ -233,7 +233,7 @@ html_theme_options = {
                     ("Sundance Film Festival Awards", "defaults/award/sundance"),
                     ("Other Awards", "defaults/award/other"),
                 ]),
-                ("_menu", "Chart", "defaults/defaults", "#chart-collections", [
+                ("_menu", "Chart", "defaults/collections", "#chart-collections", [
                     ("Chart Separator", "defaults/chart/separator"),
                     ("_divider",),
                     ("Basic Charts", "defaults/chart/basic"),
@@ -246,7 +246,7 @@ html_theme_options = {
                     ("Trakt Charts", "defaults/chart/trakt"),
                     ("Other Charts", "defaults/chart/other"),
                 ]),
-                ("_menu", "Movie", "defaults/defaults", "#general-collections", [
+                ("_menu", "Movie", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Based On...", "defaults/both/based"),
@@ -271,7 +271,7 @@ html_theme_options = {
                     ("Writers", "defaults/movie/writer"),
                     ("Years", "defaults/both/year"),
                 ]),
-                ("_menu", "Show", "defaults/defaults", "#general-collections", [
+                ("_menu", "Show", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Based On...", "defaults/both/based"),
