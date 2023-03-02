@@ -1572,6 +1572,8 @@ class Plex(Library):
             filter_check = False
             if filter_attr == "has_collection":
                 filter_check = len(item.collections) > 0
+            elif filter_attr == "has_edition":
+                filter_check = True if item.edition else False
             elif filter_attr == "has_overlay":
                 for label in self.item_labels(item):
                     if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
