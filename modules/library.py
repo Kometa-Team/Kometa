@@ -122,7 +122,7 @@ class Library(ABC):
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
                                  or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [i for i in [getattr(self, o) for o in operations.meta_operations] if i]
-        self.label_operations = True if self.library.assets_for_all or self.library.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels else False
+        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels else False
 
         if self.asset_directory:
             logger.info("")
