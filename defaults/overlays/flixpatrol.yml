@@ -94,3 +94,7 @@ overlays:
   Prime:
     variables: {key: prime, weight: 10, slug: amazon_prime}
     template: [name: standard, name: flixpatrol]
+    
+  Apple:
+    variables: {key: apple, weight: 9, slug: apple_plus}
+    template: [name: standard, name: flixpatrol]
