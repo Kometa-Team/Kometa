@@ -587,8 +587,9 @@ class DataFile:
                 self.translation_variables.update({k: v for k, v in variables.items() if k not in self.translation_variables})
 
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, image_set_file=False):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
+        self.image_set_file = image_set_file
         metadata_name = self.get_file_name()
         if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
             raise NotScheduled(metadata_name)
