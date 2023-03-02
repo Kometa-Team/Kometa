@@ -127,11 +127,12 @@ Boolean Filters have no modifiers.
 
 ### Attribute
 
-| Boolean Filters     | Description                                                 | Movies  |        Shows        |       Seasons       | Episodes | Artists  |  Albums  |  Track   |
-|:--------------------|:------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:--------:|:--------:|:--------:|
-| `has_collection`    | Matches every item that has or does not have a collection   | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
-| `has_dolby_vision`  | Matches every item that has or does not have a dolby vision | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
-| `has_overlay`       | Matches every item that has or does not have an overlay     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#10060; |
+| Boolean Filters    | Description                                                 | Movies  |        Shows        |       Seasons       | Episodes | Artists  |  Albums  |  Track   |
+|:-------------------|:------------------------------------------------------------|:-------:|:-------------------:|:-------------------:|:--------:|:--------:|:--------:|:--------:|
+| `has_collection`   | Matches every item that has or does not have a collection   | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#9989;  |
+| `has_edition`      | Matches every item that has or does not have an edition     | &#9989; |      &#10060;       |      &#10060;       | &#10060; | &#10060; | &#10060; | &#10060; |
+| `has_dolby_vision` | Matches every item that has or does not have a dolby vision | &#9989; | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> | &#9989;  | &#10060; | &#10060; | &#10060; |
+| `has_overlay`      | Matches every item that has or does not have an overlay     | &#9989; |       &#9989;       |       &#9989;       | &#9989;  | &#9989;  | &#9989;  | &#10060; |
 
 <sup>1</sup> Filters using the special `episodes` [filter](#special-filters) with the [default percent](details/definition).
 
