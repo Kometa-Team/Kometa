@@ -4,7 +4,7 @@ from modules import util, operations
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.util import Failed, NotScheduled, YAML
-from PIL import Image, ImageFilter
+from PIL import Image
 
 logger = util.logger
 
@@ -23,6 +23,7 @@ class Library(ABC):
         self.queue_current = 0
         self.metadata_files = []
         self.overlay_files = []
+        self.images_files = []
         self.movie_map = {}
         self.show_map = {}
         self.imdb_map = {}
@@ -39,6 +40,7 @@ class Library(ABC):
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
         self.overlay_path = params["overlay_path"]
+        self.images_path = params["images_path"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
@@ -145,7 +147,7 @@ class Library(ABC):
                     self.metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
-                    logger.info(f"Metadata File Failed To Load")
+                    logger.info("Metadata File Failed To Load")
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Metadata File")
@@ -159,7 +161,15 @@ class Library(ABC):
                         self.queue_current += 1
                 except Failed as e:
                     logger.error(e)
-                    logger.info(f"Overlay File Failed To Load")
+                    logger.info("Overlay File Failed To Load")
+        if not operations_only and not overlays_only:
+            for file_type, images_file, temp_vars, asset_directory in self.images_path:
+                try:
+                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, image_set_file=True)
+                    self.images_files.append(images_obj)
+                except Failed as e:
+                    logger.error(e)
+                    logger.info("Images File Failed To Load")
 
     def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False

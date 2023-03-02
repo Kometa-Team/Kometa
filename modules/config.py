@@ -927,8 +927,8 @@ class ConfigFile:
                     logger.info("")
                     logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
                     library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
-                    if not library.metadata_files and not library.overlay_files and not library.library_operation and not self.playlist_files:
-                        raise Failed("Config Error: No valid metadata files, overlay files, playlist files, or library operations found")
+                    if not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
+                        raise Failed("Config Error: No valid metadata files, overlay files, images files, playlist files, or library operations found")
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)

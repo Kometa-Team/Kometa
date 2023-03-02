@@ -577,6 +577,22 @@ def run_libraries(config):
 
             if not operations_only and not overlays_only and not playlist_only:
                 time_start = datetime.now()
+                for images in library.images_files:
+                    images_name = images.get_file_name()
+                    if config.requested_metadata_files and images_name not in config.requested_metadata_files:
+                        logger.info("")
+                        logger.separator(f"Skipping {images_name} Images File")
+                        continue
+                    logger.info("")
+                    logger.separator(f"Running {images_name} Images File\n{images.path}")
+                    if not test and not resume and not collection_only:
+                        try:
+                            images.update_metadata()
+                        except Failed as e:
+                            library.notify(e)
+                            logger.error(e)
+
+                time_start = datetime.now()
                 for metadata in library.metadata_files:
                     metadata_name = metadata.get_file_name()
                     if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
