@@ -12,13 +12,13 @@ Supported Overlay Level: Movie, Show
 
 | Service     | Key         | Weight |
 |:------------|:------------|:-------|
-| Apple+      | `apple`     | `70`   |
 | Netflix     | `netflix`   | `60`   |
 | Disney+     | `disney`    | `50`   |
 | HBO         | `hbo`       | `40`   |
 | Hulu        | `hulu`      | `30`   |
 | Paramount+  | `paramount` | `20`   |
 | Prime Video | `prime`     | `10`   |
+| Apple+      | `apple`     | `9`    |
 
 ## Config
 
