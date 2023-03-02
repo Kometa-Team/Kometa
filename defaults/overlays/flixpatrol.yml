@@ -56,10 +56,16 @@ templates:
       location_<<key>>: <<location>>
       limit: 10
       limit_<<key>>: <<limit>>
+    conditionals:
+      actual_location:
+        default: <<location_<<key>>>>
+        conditions:
+          - key: apple
+            value: world
     ignore_blank_results: true
     flixpatrol_top:
       platform: <<slug>>
-      location: <<location_<<key>>>>
+      location: <<actual_location>>
       time_window: <<time_window_<<key>>>>
       limit: <<limit_<<key>>>>
 
