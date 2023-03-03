@@ -165,6 +165,8 @@ templates:
       sonarr_tag_<<key>>: <<sonarr_tag>>
       radarr_monitor_<<key>>: <<radarr_monitor>>
       sonarr_monitor_<<key>>: <<sonarr_monitor>>
+      radarr_search_<<key>>: <<radarr_search>>
+      sonarr_search_<<key>>: <<sonarr_search>>
     optional:
       - radarr_add_missing
       - sonarr_add_missing
@@ -174,6 +176,8 @@ templates:
       - sonarr_tag
       - radarr_monitor
       - sonarr_monitor
+      - radarr_search
+      - sonarr_search
     radarr_add_missing: <<radarr_add_missing_<<key>>>>
     sonarr_add_missing: <<sonarr_add_missing_<<key>>>>
     radarr_folder: <<radarr_folder_<<key>>>>
@@ -182,6 +186,8 @@ templates:
     sonarr_tag: <<sonarr_tag_<<key>>>>
     radarr_monitor: <<radarr_monitor_<<key>>>>
     sonarr_monitor: <<sonarr_monitor_<<key>>>>
+    radarr_search: <<radarr_search_<<key>>>>
+    sonarr_search: <<sonarr_search_<<key>>>>
 
   custom:
     default:
