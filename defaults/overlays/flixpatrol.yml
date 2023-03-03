@@ -96,5 +96,5 @@ overlays:
     template: [name: standard, name: flixpatrol]
     
   Apple:
-    variables: {key: apple, weight: 9, slug: apple_plus}
+    variables: {key: apple, weight: 9, slug: apple_tv}
     template: [name: standard, name: flixpatrol]
