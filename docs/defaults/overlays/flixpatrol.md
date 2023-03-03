@@ -18,6 +18,7 @@ Supported Overlay Level: Movie, Show
 | Hulu        | `hulu`      | `30`   |
 | Paramount+  | `paramount` | `20`   |
 | Prime Video | `prime`     | `10`   |
+| Apple+      | `apple`     | `9`    |
 
 ## Config
 
