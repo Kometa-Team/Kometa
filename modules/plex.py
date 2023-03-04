@@ -1192,7 +1192,7 @@ class Plex(Library):
         if image_set and "url_background" in image_set and image_set["url_background"]:
             backgrounds["image_set"] = image_set["url_background"]
         elif image_set and "tpdb_background" in image_set and image_set["tpdb_background"]:
-            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
+            backgrounds["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
         try:
             asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:

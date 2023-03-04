@@ -409,7 +409,6 @@ class ConfigFile:
             "check_nightly": check_for_attribute(self.data, "check_nightly", parent="settings", var_type="bool", default=False),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
-        self.image_sets = {}
         self.custom_repo = None
         if self.general["custom_repo"]:
             repo = self.general["custom_repo"]

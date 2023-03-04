@@ -2844,6 +2844,16 @@ class CollectionBuilder:
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
+        if self.mapping_name in self.library.collection_images or self.name in self.library.collection_images:
+            image_set = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
+            if image_set and "url_poster" in image_set and image_set["url_poster"]:
+                self.posters["image_set"] = image_set["url_poster"]
+            elif image_set and "tpdb_poster" in image_set and image_set["tpdb_poster"]:
+                self.posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_poster']}"
+            if image_set and "url_background" in image_set and image_set["url_background"]:
+                self.backgrounds["image_set"] = image_set["url_background"]
+            elif image_set and "tpdb_background" in image_set and image_set["tpdb_background"]:
+                self.backgrounds["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
 
         self.collection_poster = util.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
         self.collection_background = util.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)

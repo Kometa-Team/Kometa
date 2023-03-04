@@ -591,6 +591,7 @@ def run_libraries(config):
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
+                library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
 
                 time_start = datetime.now()
                 for metadata in library.metadata_files:
