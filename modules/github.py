@@ -9,6 +9,7 @@ configs_raw_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manage
 class GitHub:
     def __init__(self, config):
         self.config = config
+        self.images_raw_url = "https://raw.githubusercontent.com/meisnate12/PMM-Image-Sets/master/"
         self._configs_url = None
         self._config_tags = []
 

@@ -20,6 +20,8 @@ class Library(ABC):
         self.collections = []
         self.metadatas = []
         self.queues = {}
+        self.image_sets = {}
+        self.collection_images = {}
         self.queue_current = 0
         self.metadata_files = []
         self.overlay_files = []
