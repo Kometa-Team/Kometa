@@ -45,7 +45,7 @@ dynamic_collections:
       hulu: Hulu
       paramount: Paramount+
       prime: Prime Video
-      apple: Apple+
+      apple: Apple TV+
     title_format: <<key_name>> Top <<limit>>
     template:
       - flixpatrol
@@ -60,7 +60,7 @@ dynamic_collections:
         default: <<key>>
         paramount: paramount_plus
         prime: amazon_prime
-        apple: apple_plus
+        apple: apple_tv
       image:
         default: chart/<<key>>_top
       translation_key:
