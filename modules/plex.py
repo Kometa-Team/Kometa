@@ -1574,6 +1574,10 @@ class Plex(Library):
                 filter_check = len(item.collections) > 0
             elif filter_attr == "has_edition":
                 filter_check = True if item.edition else False
+            elif filter_attr == "has_stinger":
+                filter_check = False
+                if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
+                    filter_check = True
             elif filter_attr == "has_overlay":
                 for label in self.item_labels(item):
                     if label.tag.lower().endswith(" overlay") or label.tag.lower() == "overlay":
@@ -1637,6 +1641,10 @@ class Plex(Library):
                     attr = getattr(media, filter_actual)
                     if attr and attr > test_number:
                         test_number = attr
+            elif filter_attr == "stinger_rating":
+                test_number = None
+                if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
+                    test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
             elif filter_attr == "versions":
                 test_number = len(item.media)
             elif filter_attr == "audio_language":

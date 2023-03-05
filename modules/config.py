@@ -32,6 +32,7 @@ from retrying import retry
 
 logger = util.logger
 
+mediastingers_url = "https://raw.githubusercontent.com/meisnate12/PMM-Mediastingers/master/stingers.yml"
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 imdb_label_options = {
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
@@ -121,6 +122,7 @@ class ConfigFile:
         logger.info(f"Using {self.config_path} as config")
         logger.clear_errors()
 
+        self._mediastingers = None
         self.default_dir = default_dir
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
@@ -1086,3 +1088,9 @@ class ConfigFile:
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
     def post(self, url, data=None, json=None, headers=None):
         return self.session.post(url, data=data, json=json, headers=headers)
+
+    @property
+    def mediastingers(self):
+        if self._mediastingers is None:
+            self._mediastingers = YAML(input_data=self.get(mediastingers_url).content).data
+        return self._mediastingers
