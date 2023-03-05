@@ -26,7 +26,7 @@ locations = [
     "united_kingdom", "united_states", "uruguay", "uzbekistan", "venezuela", "vietnam", "zambia", "zimbabwe"
 ]
 popular = ["movie_db", "facebook", "google", "twitter", "twitter_trends", "instagram", "instagram_trends", "youtube", "imdb", "letterboxd", "rotten_tomatoes", "tmdb", "trakt"]
-platforms = ["netflix", "hbo", "disney", "amazon", "itunes", "google", "paramount_plus", "hulu", "vudu", "imdb", "amazon_prime", "star_plus", "apple_plus"]
+platforms = ["netflix", "hbo", "disney", "amazon", "itunes", "google", "paramount_plus", "hulu", "vudu", "imdb", "amazon_prime", "star_plus", "apple_tv"]
 base_url = "https://flixpatrol.com"
 urls = {
     "top10": f"{base_url}/top10/",
