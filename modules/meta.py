@@ -649,7 +649,7 @@ class MetadataFile(DataFile):
                 if "collections" in set_data and set_data["collections"]:
                     self.set_collections[set_key] = set_data["collections"]
                 image_set = self.temp_vars[methods[f"set_file_{set_key}"]] if f"set_file_{set_key}" in methods else styles[style]
-                for item_name, item_data in set_data:
+                for item_name, item_data in set_data.items():
                     if item_name in ["styles", "collections"]:
                         continue
                     if isinstance(item_data, dict):
@@ -1538,7 +1538,7 @@ class MetadataFile(DataFile):
                 self.library.image_sets[set_name] = temp_data["set"]
                 set_key = meta[methods["set"]] if "set" in methods else None
                 if set_key and set_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
-                    for k, alts in self.set_collections.items():
+                    for k, alts in self.set_collections[set_key].items():
                         if k in temp_data["collections"]:
                             self.library.collection_images[k] = temp_data["collections"][k]
                             for alt in alts:
