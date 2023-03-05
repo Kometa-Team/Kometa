@@ -84,7 +84,7 @@ filters_by_type = {
     "show_artist": ["folder"],
     "show_season": ["episodes"],
     "artist_album": ["tracks"],
-    "movie": ["edition", "has_edition"],
+    "movie": ["edition", "has_edition", "stinger_rating", "has_stinger"],
     "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"],
     "artist": ["albums"],
     "album": ["record_label"]
@@ -113,12 +113,12 @@ tag_filters = [
     "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "imdb_keyword"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
-boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vision"]
+boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vision", "has_stinger"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = [
     "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration",
-    "channels", "height", "width", "aspect", "versions"]
+    "channels", "height", "width", "aspect", "versions", "stinger_rating"]
 number_modifiers = ["", ".not", ".gt", ".gte", ".lt", ".lte"]
 special_filters = [
     "history", "episodes", "seasons", "albums", "tracks", "original_language", "original_language.not",
