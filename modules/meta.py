@@ -654,12 +654,30 @@ class MetadataFile(DataFile):
                         continue
                     if isinstance(item_data, dict):
                         if "mapping_id" not in item_data:
-                            raise Failed(f"Image Set Warning: {set_key}: {item_name}: No mapping ID found")
+                            raise Failed(f"Image Set Error: {set_key}: {item_name}: No mapping ID found")
                         meta_data = item_data
                     else:
                         meta_data = {"mapping_id": item_data}
+                    if not image_set:
+                        raise Failed("Image Set Error: style file call attribute is blank")
+                    set_dict = image_set[0] if isinstance(image_set, list) else image_set
+                    if not isinstance(set_dict, dict):
+                        raise Failed("Image Set Error: style file call attribute is not a dictionary")
+                    elif not set_dict:
+                        raise Failed("Image Set Error: style file call attribute dictionary is empty")
+                    image_set_data = self.get_image_set(set_dict, set_key)
                     meta_data["image_set"] = image_set
                     meta_data["set"] = set_key
+                    if item_name in image_set_data and isinstance(image_set_data[item_name], dict) and "seasons" in image_set_data[item_name] and image_set_data[item_name]["seasons"]:
+                        season_dict = {}
+                        for season_num, season_data in image_set_data[item_name]["seasons"].items():
+                            season_dict[season_num] = {}
+                            if season_data and "episodes" in season_data:
+                                episode_dict = {}
+                                for episode_num in season_data["episodes"]:
+                                    episode_dict[episode_num] = {}
+                                season_dict[season_num]["episodes"] = episode_dict
+                        meta_data["seasons"] = season_dict
                     self.metadata[item_name] = meta_data
             if not self.metadata:
                 raise Failed(f"{self.type_str} Error: No metadata items added")
@@ -1133,6 +1151,35 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
+    def get_image_set(self, set_data, set_name):
+        set_id = ""
+        for k, v in set_data.items():
+            set_id = f"{k}: {v}"
+            break
+        if set_id in self.library.image_sets:
+            return self.library.image_sets[set_id]
+        files = util.load_files(set_data, "image_set", err_type=self.type_str, single=True)
+        if not files:
+            raise Failed(f"{self.type_str} Error: No Path Found for image_set")
+        file_type, set_file, _, _ = files[0]
+        temp_data = self.load_file(file_type, set_file, images=True, folder=f"{'movies' if self.library.is_movie else 'shows'}-sets/")
+        if "set" not in temp_data:
+            raise Failed('Image Set Error: Image sets must use the base attribute "set"')
+        if not isinstance(temp_data, dict):
+            raise Failed("Image Set Error: Image set must be a dictionary")
+        if not temp_data["set"]:
+            raise Failed("Image Set Error: Image set attribute is empty")
+        if not isinstance(temp_data["set"], dict):
+            raise Failed("Image Set Error: Image set set attribute must be a dictionary")
+        self.library.image_sets[set_id] = temp_data["set"]
+        if set_name and set_name in self.set_collections and "collections" in temp_data and temp_data["collections"]:
+            for k, alts in self.set_collections[set_name].items():
+                if k in temp_data["collections"]:
+                    self.library.collection_images[k] = temp_data["collections"][k]
+                    for alt in alts:
+                        self.library.collection_images[alt] = temp_data["collections"][k]
+        return self.library.image_sets[set_id]
+
     def get_collections(self, requested_collections):
         if requested_collections:
             return {c: self.collections[c] for c in util.get_list(requested_collections) if c in self.collections}
@@ -1517,33 +1564,7 @@ class MetadataFile(DataFile):
                 raise Failed(f"{self.type_str} Error: No image_set path dictionary found")
             elif not set_dict:
                 raise Failed(f"{self.type_str} Error: image_set path dictionary is empty")
-            set_name = ""
-            for k, v in set_dict.items():
-                set_name = f"{k}: {v}"
-                break
-            if set_name not in self.library.image_sets:
-                files = util.load_files(meta[methods["image_set"]], "image_set", err_type=self.type_str, single=True)
-                if not files:
-                    raise Failed(f"{self.type_str} Error: No Path Found for image_set")
-                file_type, set_file, _, _ = files[0]
-                temp_data = self.load_file(file_type, set_file, images=True, folder=f"{'movies' if self.library.is_movie else 'shows'}-sets/")
-                if "set" not in temp_data:
-                    raise Failed('Image Set Error: Image sets must use the base attribute "set"')
-                if not isinstance(temp_data, dict):
-                    raise Failed("Image Set Error: Image set must be a dictionary")
-                if not temp_data["set"]:
-                    raise Failed("Image Set Error: Image set attribute is empty")
-                if not isinstance(temp_data["set"], dict):
-                    raise Failed("Image Set Error: Image set set attribute must be a dictionary")
-                self.library.image_sets[set_name] = temp_data["set"]
-                set_key = meta[methods["set"]] if "set" in methods else None
-                if set_key and set_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
-                    for k, alts in self.set_collections[set_key].items():
-                        if k in temp_data["collections"]:
-                            self.library.collection_images[k] = temp_data["collections"][k]
-                            for alt in alts:
-                                self.library.collection_images[alt] = temp_data["collections"][k]
-            image_set_data = self.library.image_sets[set_name]
+            image_set_data = self.get_image_set(set_dict, meta[methods["set"]] if "set" in methods else None)
 
         main_set_data = None
         if image_set_data and mapping_name in image_set_data:
