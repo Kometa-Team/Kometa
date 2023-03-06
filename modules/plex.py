@@ -1573,7 +1573,7 @@ class Plex(Library):
             if filter_attr == "has_collection":
                 filter_check = len(item.collections) > 0
             elif filter_attr == "has_edition":
-                filter_check = True if item.edition else False
+                filter_check = True if item.editionTitle else False
             elif filter_attr == "has_stinger":
                 filter_check = False
                 if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
