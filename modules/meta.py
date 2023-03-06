@@ -1184,7 +1184,7 @@ class MetadataFile(DataFile):
                 return self.config.get(repo_url(u)).content.decode().strip()
 
             def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
-                attr_name = "poster" if is_poster else "background"
+                attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
                 if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
                     return f"tpdb_{attr_name}", from_repo(f"{check_key}/{git_name if git_name else f'{attr_name}.tpdb'}")
                 elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
@@ -1198,12 +1198,12 @@ class MetadataFile(DataFile):
                             return f"url_{attr_name}", repo_url(f"{check_key}/{ct}")
                 return None, None
 
-            def init_set(check_key, check_tree, git_name=None):
+            def init_set(check_key, check_tree):
                 _data = {}
-                attr, attr_data = check_for_definition(check_key, check_tree, git_name=git_name)
+                attr, attr_data = check_for_definition(check_key, check_tree)
                 if attr:
                     _data[attr] = attr_data
-                attr, attr_data = check_for_definition(check_key, check_tree, is_poster=False, git_name=git_name)
+                attr, attr_data = check_for_definition(check_key, check_tree, is_poster=False)
                 if attr:
                     _data[attr] = attr_data
                 return _data
@@ -1229,7 +1229,11 @@ class MetadataFile(DataFile):
                             match = re.search(r"(\d+)(?!.*\d)", sk)
                             if match:
                                 episode_num = int(match.group(1))
-                                episodes[episode_num] = init_set(f"{k}/{ik}", season_folder, git_name=sk)
+                                if episode_num not in episodes:
+                                    episodes[episode_num] = {}
+                                    attr, attr_data = check_for_definition(f"{k}/{ik}", season_folder, git_name=sk)
+                                    if attr:
+                                        episodes[episode_num][attr] = attr_data
                         if episodes:
                             season_data["episodes"] = episodes
                         seasons[season_num] = season_data
