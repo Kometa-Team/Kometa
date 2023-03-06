@@ -1,9 +1,11 @@
 import re
 from modules import util
+from modules.util import Failed
 
 logger = util.logger
 
-base_url = "https://api.github.com/repos/meisnate12/Plex-Meta-Manager"
+base_url = "https://api.github.com"
+pmm_base = f"{base_url}/repos/meisnate12/Plex-Meta-Manager"
 configs_raw_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs"
 
 class GitHub:
@@ -13,13 +15,29 @@ class GitHub:
         self._configs_url = None
         self._config_tags = []
 
+    def get_top_tree(self, repo):
+        if not str(repo).startswith("/"):
+            repo = f"/{repo}"
+        if not str(repo).endswith("/"):
+            repo = f"{repo}/"
+        response = self.config.get(f"{base_url}/repos{repo}commits")
+        if response.status_code >= 400:
+            raise Failed(f"Git Error: No repo found at https://github.com{repo}")
+        return self.get_tree(response.json()[0]["commit"]["tree"]["url"]), repo
+
+    def get_tree(self, tree_url):
+        response = self.config.get(tree_url)
+        if response.status_code >= 400:
+            raise Failed(f"Git Error: No tree found at {tree_url}")
+        return {i["path"]: i for i in response.json()["tree"]}
+
     def latest_release_notes(self):
-        response = self.config.get_json(f"{base_url}/releases/latest")
+        response = self.config.get_json(f"{pmm_base}/releases/latest")
         return response["body"]
 
     def get_commits(self, dev_version, nightly=False):
-        master_sha = self.config.get_json(f"{base_url}/commits/master")["sha"]
-        response = self.config.get_json(f"{base_url}/commits", params={"sha": "nightly" if nightly else "develop"})
+        master_sha = self.config.get_json(f"{pmm_base}/commits/master")["sha"]
+        response = self.config.get_json(f"{pmm_base}/commits", params={"sha": "nightly" if nightly else "develop"})
         commits = []
         for commit in response:
             if commit["sha"] == master_sha:
@@ -35,7 +53,7 @@ class GitHub:
     def config_tags(self):
         if not self._config_tags:
             try:
-                self._config_tags = [r["ref"][11:] for r in self.config.get_json(f"{base_url}-Configs/git/refs/tags")]
+                self._config_tags = [r["ref"][11:] for r in self.config.get_json(f"{pmm_base}-Configs/git/refs/tags")]
             except TypeError:
                 pass
         return self._config_tags

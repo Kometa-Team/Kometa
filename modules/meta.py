@@ -665,7 +665,7 @@ class MetadataFile(DataFile):
                         raise Failed("Image Set Error: style file call attribute is not a dictionary")
                     elif not set_dict:
                         raise Failed("Image Set Error: style file call attribute dictionary is empty")
-                    image_set_data = self.get_image_set(set_dict, set_key)
+                    image_set_data = self.get_image_set(set_dict, set_key, asset_data=set_data)
                     meta_data["image_set"] = image_set
                     meta_data["set"] = set_key
                     if item_name in image_set_data and isinstance(image_set_data[item_name], dict) and "seasons" in image_set_data[item_name] and image_set_data[item_name]["seasons"]:
@@ -1151,33 +1151,123 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
-    def get_image_set(self, set_data, set_name):
+    def get_image_set(self, set_data, set_name, asset_data=None):
         set_id = ""
         for k, v in set_data.items():
             set_id = f"{k}: {v}"
             break
-        if set_id in self.library.image_sets:
-            return self.library.image_sets[set_id]
-        files = util.load_files(set_data, "image_set", err_type=self.type_str, single=True)
-        if not files:
-            raise Failed(f"{self.type_str} Error: No Path Found for image_set")
-        file_type, set_file, _, _ = files[0]
-        temp_data = self.load_file(file_type, set_file, images=True, folder=f"{'movies' if self.library.is_movie else 'shows'}-sets/")
-        if "set" not in temp_data:
-            raise Failed('Image Set Error: Image sets must use the base attribute "set"')
-        if not isinstance(temp_data, dict):
-            raise Failed("Image Set Error: Image set must be a dictionary")
-        if not temp_data["set"]:
-            raise Failed("Image Set Error: Image set attribute is empty")
-        if not isinstance(temp_data["set"], dict):
-            raise Failed("Image Set Error: Image set set attribute must be a dictionary")
-        self.library.image_sets[set_id] = temp_data["set"]
-        if set_name and set_name in self.set_collections and "collections" in temp_data and temp_data["collections"]:
-            for k, alts in self.set_collections[set_name].items():
-                if k in temp_data["collections"]:
-                    self.library.collection_images[k] = temp_data["collections"][k]
-                    for alt in alts:
-                        self.library.collection_images[alt] = temp_data["collections"][k]
+        if set_id not in self.library.image_sets and "git_assets" in set_data:
+            if not set_data["git_assets"]:
+                raise Failed("Image Set Error: git_assets cannot be blank")
+            if not asset_data:
+                raise Failed("Image Set Error: asset_data cannot be blank")
+            top_tree, repo = self.config.GitHub.get_top_tree(set_data["git_assets"])
+            sub = set_data["git_subfolder"] if "git_subfolder" in set_data and set_data["git_subfolder"] else ""
+            sub = sub.replace("\\", "/")
+            if sub.startswith("/"):
+                sub = sub[1:]
+            if sub.endswith("/"):
+                sub = sub[:-1]
+            if sub:
+                sub_str = ""
+                for folder in sub.split("/"):
+                    sub_str += f"{folder}/"
+                    if folder not in top_tree:
+                        raise Failed(f"Image Set Error: Subfolder {folder} Not Found at https://github.com{repo}tree/master/{sub_str}")
+                    top_tree = self.config.GitHub.get_tree(top_tree[folder]["url"])
+                sub = f"{sub}/"
+
+            def repo_url(u):
+                return f"https://raw.githubusercontent.com{repo}master/{sub}{u}"
+
+            def from_repo(u):
+                return self.config.get(repo_url(u)).content.decode().strip()
+
+            def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
+                attr_name = "poster" if is_poster else "background"
+                if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
+                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{git_name if git_name else f'{attr_name}.tpdb'}")
+                elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
+                    return f"url_{attr_name}", from_repo(f"{check_key}/{git_name if git_name else f'{attr_name}.url'}")
+                elif git_name:
+                    if git_name in check_tree:
+                        return f"url_{attr_name}", repo_url(f"{check_key}/{git_name}")
+                else:
+                    for ct in check_tree:
+                        if ct.startswith(attr_name):
+                            return f"url_{attr_name}", repo_url(f"{check_key}/{ct}")
+                return None, None
+
+            def init_set(check_key, check_tree, git_name=None):
+                _data = {}
+                attr, attr_data = check_for_definition(check_key, check_tree, git_name=git_name)
+                if attr:
+                    _data[attr] = attr_data
+                attr, attr_data = check_for_definition(check_key, check_tree, is_poster=False, git_name=git_name)
+                if attr:
+                    _data[attr] = attr_data
+                return _data
+
+            image_sets = {}
+            for k in asset_data:
+                if k in ["styles", "collections"]:
+                    continue
+                if k not in top_tree:
+                    logger.info(f"Image Set Warning: {k} not found at https://github.com{repo}tree/master/{sub}")
+                    continue
+                item_folder = self.config.GitHub.get_tree(top_tree[k]["url"])
+                item_data = init_set(k, item_folder)
+                seasons = {}
+                for ik in item_folder:
+                    match = re.search(r"(\d+)", ik)
+                    if match:
+                        season_num = int(match.group(1))
+                        season_folder = self.config.GitHub.get_tree(item_folder[ik]["url"])
+                        season_data = init_set(f"{k}/{ik}", season_folder)
+                        episodes = {}
+                        for sk in season_folder:
+                            match = re.search(r"(\d+)(?!.*\d)", sk)
+                            if match:
+                                episode_num = int(match.group(1))
+                                episodes[episode_num] = init_set(f"{k}/{ik}", season_folder, git_name=sk)
+                        if episodes:
+                            season_data["episodes"] = episodes
+                        seasons[season_num] = season_data
+                if seasons:
+                    item_data["seasons"] = seasons
+                image_sets[k] = item_data
+
+            self.library.image_sets[set_id] = image_sets
+
+            if set_name and set_name in self.set_collections and "collections" in top_tree:
+                collections_folder = self.config.GitHub.get_tree(top_tree["collections"]["url"])
+                for k, alts in self.set_collections[set_name].items():
+                    if k in collections_folder:
+                        collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]))
+                        self.library.collection_images[k] = collection_data
+                        for alt in alts:
+                            self.library.collection_images[alt] = collection_data
+        elif set_id not in self.library.image_sets:
+            files = util.load_files(set_data, "image_set", err_type=self.type_str, single=True)
+            if not files:
+                raise Failed(f"{self.type_str} Error: No Path Found for image_set")
+            file_type, set_file, _, _ = files[0]
+            temp_data = self.load_file(file_type, set_file, images=True, folder=f"{'movies' if self.library.is_movie else 'shows'}-sets/")
+            if "set" not in temp_data:
+                raise Failed('Image Set Error: Image sets must use the base attribute "set"')
+            if not isinstance(temp_data, dict):
+                raise Failed("Image Set Error: Image set must be a dictionary")
+            if not temp_data["set"]:
+                raise Failed("Image Set Error: Image set attribute is empty")
+            if not isinstance(temp_data["set"], dict):
+                raise Failed("Image Set Error: Image set set attribute must be a dictionary")
+            self.library.image_sets[set_id] = temp_data["set"]
+            if set_name and set_name in self.set_collections and "collections" in temp_data and temp_data["collections"]:
+                for k, alts in self.set_collections[set_name].items():
+                    if k in temp_data["collections"]:
+                        self.library.collection_images[k] = temp_data["collections"][k]
+                        for alt in alts:
+                            self.library.collection_images[alt] = temp_data["collections"][k]
         return self.library.image_sets[set_id]
 
     def get_collections(self, requested_collections):
