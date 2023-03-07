@@ -39,10 +39,10 @@ var_mods = {
     "audience_rating": ["", "%", "#", "/"],
     "originally_available": ["", "["],
     "runtime": ["", "H", "M"],
-    "season_number": ["", "W", "0", "00"],
-    "episode_number": ["", "W", "0", "00"],
-    "episode_count": ["", "W", "0", "00"],
-    "versions": ["", "W", "0", "00"],
+    "season_number": ["", "W", "WU", "WL", "0", "00"],
+    "episode_number": ["", "W", "WU", "WL", "0", "00"],
+    "episode_count": ["", "W", "WU", "WL", "0", "00"],
+    "versions": ["", "W", "WU", "WL", "0", "00"],
 }
 single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
 double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
