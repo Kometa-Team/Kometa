@@ -164,6 +164,9 @@ def parse_version(version, text="develop"):
     split_version = version.split(f"-{text}")
     return version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
 
+def quote(data):
+    return requests.utils.quote(str(data))
+
 def download_image(title, image_url, download_directory, filename):
     response = requests.get(image_url, headers=header())
     if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:

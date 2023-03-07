@@ -345,7 +345,7 @@ class DataFile:
                                 if "<<" in str(dvalue):
                                     default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', dvalue)
                                 else:
-                                    default[f"{final_key}_encoded"] = requests.utils.quote(str(dvalue))
+                                    default[f"{final_key}_encoded"] = util.quote(dvalue)
 
                     if "optional" in template:
                         if template["optional"]:
@@ -426,7 +426,7 @@ class DataFile:
                                 condition_found = True
                                 if condition["value"] is not None:
                                     variables[final_key] = condition["value"]
-                                    variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                    variables[f"{final_key}_encoded"] = util.quote(condition["value"])
                                 else:
                                     optional.append(final_key)
                                 break
@@ -434,7 +434,7 @@ class DataFile:
                             if "default" in con_value:
                                 logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
-                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
+                                variables[f"{final_key}_encoded"] = util.quote(con_value["default"])
                             else:
                                 logger.debug(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
@@ -469,7 +469,7 @@ class DataFile:
                             if key not in variables:
                                 variables[key] = value
                     for key, value in variables.copy().items():
-                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
+                        variables[f"{key}_encoded"] = util.quote(value)
 
                     default = {k: v for k, v in default.items() if k not in variables}
                     optional = [o for o in optional if o not in variables and o not in default]
@@ -1171,11 +1171,12 @@ class MetadataFile(DataFile):
             if sub:
                 sub_str = ""
                 for folder in sub.split("/"):
-                    sub_str += f"{folder}/"
+                    folder_encode = util.quote(folder)
+                    sub_str += f"{folder_encode}/"
                     if folder not in top_tree:
                         raise Failed(f"Image Set Error: Subfolder {folder} Not Found at https://github.com{repo}tree/master/{sub_str}")
                     top_tree = self.config.GitHub.get_tree(top_tree[folder]["url"])
-                sub = f"{sub}/"
+                sub = sub_str
 
             def repo_url(u):
                 return f"https://raw.githubusercontent.com{repo}master/{sub}{u}"
@@ -1186,16 +1187,16 @@ class MetadataFile(DataFile):
             def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
                 attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
                 if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
-                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{git_name if git_name else f'{attr_name}.tpdb'}")
+                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.tpdb'}")
                 elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
-                    return f"url_{attr_name}", from_repo(f"{check_key}/{git_name if git_name else f'{attr_name}.url'}")
+                    return f"url_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.url'}")
                 elif git_name:
                     if git_name in check_tree:
-                        return f"url_{attr_name}", repo_url(f"{check_key}/{git_name}")
+                        return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(git_name)}")
                 else:
                     for ct in check_tree:
-                        if ct.startswith(attr_name):
-                            return f"url_{attr_name}", repo_url(f"{check_key}/{ct}")
+                        if ct.lower().startswith(attr_name):
+                            return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(ct)}")
                 return None, None
 
             def init_set(check_key, check_tree):
@@ -1215,15 +1216,17 @@ class MetadataFile(DataFile):
                 if k not in top_tree:
                     logger.info(f"Image Set Warning: {k} not found at https://github.com{repo}tree/master/{sub}")
                     continue
+                k_encoded = util.quote(k)
                 item_folder = self.config.GitHub.get_tree(top_tree[k]["url"])
-                item_data = init_set(k, item_folder)
+                item_data = init_set(k_encoded, item_folder)
                 seasons = {}
                 for ik in item_folder:
                     match = re.search(r"(\d+)", ik)
                     if match:
+                        season_path = f"{k_encoded}/{util.quote(ik)}"
                         season_num = int(match.group(1))
                         season_folder = self.config.GitHub.get_tree(item_folder[ik]["url"])
-                        season_data = init_set(f"{k}/{ik}", season_folder)
+                        season_data = init_set(season_path, season_folder)
                         episodes = {}
                         for sk in season_folder:
                             match = re.search(r"(\d+)(?!.*\d)", sk)
@@ -1231,9 +1234,9 @@ class MetadataFile(DataFile):
                                 episode_num = int(match.group(1))
                                 if episode_num not in episodes:
                                     episodes[episode_num] = {}
-                                    attr, attr_data = check_for_definition(f"{k}/{ik}", season_folder, git_name=sk)
-                                    if attr:
-                                        episodes[episode_num][attr] = attr_data
+                                    a, ad = check_for_definition(season_path, season_folder, git_name=sk)
+                                    if a:
+                                        episodes[episode_num][a] = ad
                         if episodes:
                             season_data["episodes"] = episodes
                         seasons[season_num] = season_data
