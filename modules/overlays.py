@@ -268,6 +268,10 @@ class Overlays:
                                             final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
                                         elif mod == "W":
                                             final_value = num2words(int(actual_value))
+                                        elif mod == "WU":
+                                            final_value = num2words(int(actual_value)).upper()
+                                        elif mod == "WL":
+                                            final_value = num2words(int(actual_value)).lower()
                                         elif mod == "0":
                                             final_value = f"{int(actual_value):02}"
                                         elif mod == "00":
