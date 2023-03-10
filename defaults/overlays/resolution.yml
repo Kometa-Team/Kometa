@@ -61,6 +61,9 @@ external_templates:
         default: <<vertical_offset>>
         conditions:
           - type: edition_dovetail
+            vertical_align: "bottom"
+            value: <<vertical_offset>>
+          - type: edition_dovetail
             value: <<vertical_offset+64>>
           - type: resolution_dovetail
             value: <<vertical_offset+30>>
