@@ -1,4 +1,4 @@
-PlexAPI==4.13.2
+PlexAPI==4.13.4
 tmdbapis==1.1.0
 arrapi==1.4.2
 lxml==4.9.2

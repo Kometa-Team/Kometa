@@ -1,21 +1,21 @@
-import argparse, os, platform, psutil, sys, time, uuid
+import argparse, os, platform, sys, time, uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
 
+if sys.version_info[0] != 3 or sys.version_info[1] < 7:
+    print("Version Error: Version: %s.%s.%s incompatible please use Python 3.7+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    sys.exit(0)
+
 try:
-    import plexapi, requests, schedule
+    import plexapi, psutil, requests, schedule
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError):
     print("Requirements Error: Requirements are not installed")
-    sys.exit(0)
-
-if sys.version_info[0] != 3 or sys.version_info[1] < 7:
-    print("Version Error: Version: %s.%s.%s incompatible please use Python 3.7+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 parser = argparse.ArgumentParser()
