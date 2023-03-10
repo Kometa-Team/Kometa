@@ -201,21 +201,23 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
             logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
         if prioritize_assets and "asset_directory" in images:
             return images["asset_directory"]
-        if download_url_assets and item_dir and ("image_set" in images or f"url_{image_type}" in images):
-            if "asset_directory" in images:
-                return images["asset_directory"]
-            else:
-                try:
-                    return download_image(title, images[f"url_{image_type}"], item_dir, image_name)
-                except Failed as e:
-                    logger.error(e)
         for attr in ["image_set", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
                      "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory", "tmdb_person",
                      "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details",
                      "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
                      "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
             if attr in images:
-                return images[attr] if attr == "asset_directory" else ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
+                if attr in ["image_set", f"url_{image_type}"] and download_url_assets and item_dir:
+                    if "asset_directory" in images:
+                        return images["asset_directory"]
+                    else:
+                        try:
+                            return download_image(title, images[attr], item_dir, image_name)
+                        except Failed as e:
+                            logger.error(e)
+                if attr == "asset_directory":
+                    return images[attr]
+                return ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
 
 def add_dict_list(keys, value, dict_map):
     for key in keys:

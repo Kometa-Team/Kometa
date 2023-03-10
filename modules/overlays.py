@@ -24,7 +24,7 @@ class Overlays:
         os.makedirs(self.library.overlay_backup, exist_ok=True)
 
         key_to_overlays = {}
-        properties = None
+        properties = {}
         if not self.library.remove_overlays:
             key_to_overlays, properties = self.compile_overlays()
         ignore_list = [rk for rk in key_to_overlays]
