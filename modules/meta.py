@@ -1259,7 +1259,8 @@ class MetadataFile(DataFile):
             if not files:
                 raise Failed(f"{self.type_str} Error: No Path Found for image_set")
             file_type, set_file, _, _ = files[0]
-            temp_data = self.load_file(file_type, set_file, images=True, folder=f"{'movies' if self.library.is_movie else 'shows'}-sets/")
+            folder_name = os.path.splitext(os.path.basename(set_file))[0]
+            temp_data = self.load_file(file_type, set_file, images=True, folder=f"{folder_name}-sets/")
             if "set" not in temp_data:
                 raise Failed('Image Set Error: Image sets must use the base attribute "set"')
             if not isinstance(temp_data, dict):

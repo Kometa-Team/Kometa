@@ -104,38 +104,35 @@ class Overlays:
                         else:
                             applied_names.append(over_name)
 
-                    change_reason = ""
-                    overlay_change = False if has_overlay else True
+                    overlay_change = "" if has_overlay else "No Overlay Label"
                     if not overlay_change:
                         for oc in overlay_compare:
                             if oc not in compare_names:
-                                change_reason = f"{oc} not in {compare_names}"
-                                overlay_change = True
+                                overlay_change = f"{oc} not in {compare_names}"
 
                     if not overlay_change:
                         for compare_name, original_name in compare_names.items():
                             if compare_name not in overlay_compare or properties[original_name].updated:
-                                change_reason = f"{compare_name} not in {overlay_compare} or {properties[original_name].updated}"
-                                overlay_change = True
+                                overlay_change = f"{compare_name} not in {overlay_compare} or {properties[original_name].updated}"
 
                     if self.config.Cache:
                         for over_name in over_names:
-                            current_overlay = properties[over_name]
-                            if current_overlay.name.startswith("text"):
+                            if properties[over_name].name.startswith("text"):
                                 for cache_key, cache_value in self.config.Cache.query_overlay_special_text(item.ratingKey).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
-                                    if cache_value is None or not hasattr(item, actual) or getattr(item, actual) is None:
+                                    if not hasattr(item, actual):
+                                        continue
+                                    actual_value = getattr(item, actual)
+                                    if cache_value is None or actual_value is None:
                                         continue
                                     if cache_key in overlay.float_vars:
                                         cache_value = float(cache_value)
                                     if cache_key in overlay.int_vars:
                                         cache_value = int(cache_value)
-
                                     if cache_key in overlay.date_vars:
-                                        if getattr(item, actual).strftime("%Y-%m-%d") != cache_value:
-                                            overlay_change = True
-                                    elif getattr(item, actual) != cache_value:
-                                        overlay_change = True
+                                        actual_value = actual_value.strftime("%Y-%m-%d")
+                                    if actual_value != cache_value:
+                                        overlay_change = f"Special Text Changed from {cache_value} to {actual_value}"
                     try:
                         poster, background, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
@@ -153,7 +150,6 @@ class Overlays:
                             logger.warning(e)
 
                     has_original = None
-                    changed_image = False
                     new_backup = None
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
@@ -182,7 +178,6 @@ class Overlays:
                         new_backup = item.posterUrl
                     logger.info(f"\n{item_title}")
                     if new_backup:
-                        changed_image = True
                         try:
                             has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
                         except Failed as e:
@@ -190,12 +185,12 @@ class Overlays:
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"  Overlay Error: No poster found")
-                    elif self.library.reapply_overlays or changed_image or overlay_change:
+                    elif self.library.reapply_overlays or new_backup or overlay_change:
                         try:
-                            if not self.library.reapply_overlays and changed_image:
-                                logger.trace("  Overlay applied because new image was detected")
+                            if not self.library.reapply_overlays and new_backup:
+                                logger.trace("  Overlay Reason: New image detected")
                             elif not self.library.reapply_overlays and overlay_change:
-                                logger.trace(f"  Overlay applied because overlay changed {change_reason}")
+                                logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
