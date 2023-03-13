@@ -631,9 +631,9 @@ class MetadataFile(DataFile):
                 elif "styles" not in set_data:
                     raise Failed("Set Data must have the styles attribute")
                 styles = util.parse("Set Data", "styles", set_data["styles"], datatype="dictlist")
-                if "default" not in styles:
+                if "default" not in styles or not styles["default"]:
                     raise Failed("Set Data styles attribute must have a default")
-                if styles["default"] not in styles:
+                if styles["default"][0] not in styles:
                     raise Failed(f"Set Data styles default style not found. Options: {', '.join([s for s in styles])}")
                 use_key = None
                 if f"use_{set_key}" in methods:
