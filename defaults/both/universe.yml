@@ -21,8 +21,6 @@ templates:
       minimum_items: 2
     optional:
       - name_mapping
-      - name_<<key>>
-      - summary_<<key>>
       - trakt_list_<<key>>
       - imdb_list_<<key>>
       - mdblist_list
@@ -31,8 +29,6 @@ templates:
     imdb_list: <<imdb_list_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
-    summary: <<summary_<<key>>>>
-    name: <<name_<<key>>>>
 
 collections:
   Universe Collections:
@@ -62,13 +58,12 @@ dynamic_collections:
       mummy: The Mummy Universe
       wizard: Wizarding World
       xmen: X-Men Universe
-
-
     template:
       - universe
-      - shared
       - arr
       - custom
+      - translation
+      - shared
     template_variables:
       allowed_libraries:
         avp: movie
@@ -93,7 +88,5 @@ dynamic_collections:
         askew: https://mdblist.com/lists/plexmetamanager/external/15362
         wizard: https://mdblist.com/lists/plexmetamanager/external/9242
         xmen: https://mdblist.com/lists/plexmetamanager/external/9244
-
-
       image:
         default: universe/<<key>>
