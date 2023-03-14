@@ -478,7 +478,7 @@ class Trakt:
                     userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommendations", "watched", "collected", "watchlist"])
                     user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
                     sort_by = None
-                    if userlist in ["recommended", "watchlist"] and "sort_by" in dict_methods:
+                    if userlist in ["recommendations", "watchlist"] and "sort_by" in dict_methods:
                         sort_by = util.parse(err_type, "sort_by", trakt_dict, methods=dict_methods, parent=method_name, default="rank", options=["rank", "added", "released", "title"])
                     self._userlist("collection" if userlist == "collected" else userlist, user, is_movie, sort_by=sort_by)
                     valid_dicts.append({"userlist": userlist, "user": user, "sort_by": sort_by})
