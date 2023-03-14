@@ -26,17 +26,21 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 
 | Edition             | Key             | Weight |
 |:--------------------|:----------------|:-------|
-| Director's Cut      | `directorscut`  | `150`  |
-| Extended Edition    | `extended`      | `140`  |
-| Uncut Edition       | `uncut`         | `130`  |
-| Unrated Edition     | `unrated`       | `120`  |
-| Special Edition     | `special`       | `110`  |
-| Final Cut           | `finalcut`      | `100`  |
-| Anniversary Edition | `anniversary`   | `90`   |
-| Collector's Edition | `collector`     | `80`   |
-| International Cut   | `international` | `70`   |
-| Theatrical Cut      | `theatrical`    | `60`   |
-| Ultimate Cut        | `ultimate`      | `50`   |
+| Extended Edition    | `extended`      | `190`  |
+| Uncut Edition       | `uncut`         | `180`  |
+| Unrated Edition     | `unrated`       | `170`  |
+| Special Edition     | `special`       | `160`  |
+| Anniversary Edition | `anniversary`   | `150`  |
+| Collector's Edition | `collector`     | `140`  |
+| Diamond Edition     | `diamond`       | `130`  |
+| Platinum Edition    | `platinum`      | `120`  |
+| Director's Cut      | `directors`     | `110`  |
+| Final Cut           | `final`         | `100`  |
+| International Cut   | `international` | `90`   |
+| Theatrical Cut      | `theatrical`    | `80`   |
+| Ultimate Cut        | `ultimate`      | `70`   |
+| Alternate Cut       | `alternate`     | `60`   |
+| Coda Cut            | `coda`          | `50`   |
 | IMAX Enhanced       | `enhanced`      | `40`   |
 | IMAX                | `imax`          | `30`   |
 | Remastered          | `remastered`    | `20`   |
