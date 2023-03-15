@@ -94,7 +94,7 @@ trakt_list:
   dragonball: https://trakt.tv/users/qamazi/lists/dragon-ball-binged-out
   mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
   pokemon: https://trakt.tv/users/munch54/lists/pokemon-watching-order
-  startrek: https://trakt.tv/users/pedrohcramos/lists/star-trek-timeline
+  startrek: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
   starwars: https://trakt.tv/users/ruben_vw_/lists/star-wars-canon-timeline
   clonewars: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
   xmen: https://trakt.tv/users/heyitsbea/lists/x-men
