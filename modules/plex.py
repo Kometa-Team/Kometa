@@ -828,6 +828,7 @@ class Plex(Library):
         else:
             locked = True
             if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
+                item = self.reload(item)
                 field = next((f for f in item.fields if f.name == "collection"), None)
                 locked = field is not None
             self.query_collection(item, collection, locked=locked, add=add)
