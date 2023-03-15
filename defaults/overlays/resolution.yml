@@ -305,7 +305,7 @@ overlays:
     variables: {key: enhanced, weight: 40, search: IMAX Enhanced, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   IMAX-Dovetail:
-    variables: {key: imax, weight: 30, search: Imax, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: imax, weight: 30, search: IMAX, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Remastered-Dovetail:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition_dovetail, allowed_libraries: movie}
@@ -385,10 +385,10 @@ overlays:
     variables: {key: collector, weight: 140, search: Collector, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Diamond-Edition:
-    variables: {key: diamond, weight: 130, search: Diamond, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: diamond, weight: 130, search: Diamond, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Platinum-Edition:
-    variables: {key: platinum, weight: 120, search: Platinum, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: platinum, weight: 120, search: Platinum, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Directors-Cut:
     variables: {key: directors, weight: 110, search: Director, type: edition, allowed_libraries: movie}
@@ -406,16 +406,16 @@ overlays:
     variables: {key: ultimate, weight: 70, search: Ultimate, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Alternate-Cut:
-    variables: {key: alternate, weight: 60, search: Alternate, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: alternate, weight: 60, search: Alternate, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Coda-Cut:
-    variables: {key: coda, weight: 50, search: Coda, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: coda, weight: 50, search: Coda, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   IMAX-Enhanced:
     variables: {key: enhanced, weight: 40, search: IMAX Enhanced, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   IMAX:
-    variables: {key: imax, weight: 30, type: edition, allowed_libraries: movie}
+    variables: {key: imax, weight: 30, search: IMAX, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Remastered:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition, allowed_libraries: movie}
