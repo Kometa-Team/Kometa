@@ -91,8 +91,8 @@ playlists:
       key: startrek
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/username57/lists/star-trek-prime-canon-timeline
-        summary_startrek: Few film franchises have lasted as long as Star Trek. Through five decades and three different crews, the Star Trek films have saved more than a few worlds (and the whales), traveling through time more than once to do it. With them being set in so many different time periods, their actual chronological order might get a little confusing. No need to fret as this is the proper order… in linear time, anyway. On a quantum level is a whole other thing.
+        trakt_list: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
+        summary_startrek: All Star Trek canon in chronological order, as found on thestartrekchronologyproject.blogspot.com. Includes animated series. Will be updated with new shows as they come out. Does not include Kelvinverse movies.
       - name: arr
 
   Star Wars (Timeline Order):
@@ -104,7 +104,6 @@ playlists:
         summary_starwars: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over.
       - name: arr
 
-
   Star Wars The Clone Wars (Timeline Order):
     variables:
       key: clonewars
@@ -113,7 +112,6 @@ playlists:
         trakt_list: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
         summary_clonewars: As more star systems get swept into the Clone Wars, the valiant Jedi knights struggle to maintain order. Anakin Skywalker and his Padawan learner Ahsoka Tano embark on a mission that brings them face-to-face with Jabba the Hutt. Plotting against them is evil Count Dooku and his agent, Asajj Ventress, who would ensure that the Jedis fail. Meanwhile, Yoda and Obi-Wan Kenobi lead the clone army against the forces of the Dark Side.
       - name: arr
-
 
   X-Men (Timeline Order):
     variables:
