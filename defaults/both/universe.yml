@@ -29,7 +29,6 @@ templates:
       - name_mapping
       - trakt_list_<<key>>
       - imdb_list_<<key>>
-      - mdblist_list
     minimum_items: <<minimum_items>>
     name_mapping: <<name_mapping_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>

@@ -631,9 +631,10 @@ class MetadataFile(DataFile):
                 elif "styles" not in set_data:
                     raise Failed("Set Data must have the styles attribute")
                 styles = util.parse("Set Data", "styles", set_data["styles"], datatype="dictlist")
-                if "default" not in styles:
+                if "default" not in styles or not styles["default"]:
                     raise Failed("Set Data styles attribute must have a default")
-                if styles["default"] not in styles:
+                style = styles["default"][0]
+                if style not in styles:
                     raise Failed(f"Set Data styles default style not found. Options: {', '.join([s for s in styles])}")
                 use_key = None
                 if f"use_{set_key}" in methods:
@@ -641,13 +642,12 @@ class MetadataFile(DataFile):
                     logger.info(f"Use {set_key}: {use_key}")
                 if use_key is False or (use_all is False and use_key is None):
                     continue
-                style = styles["default"]
                 if f"style_{set_key}" in methods:
                     style = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=style)
                     logger.info(f"Style {set_key}: {style}")
                 if style not in styles:
                     logger.warning(f"Image Set Warning: {set_key} has no style: {style} using default: {styles['default']}. Options: {', '.join([s for s in styles])}")
-                    style = styles["default"]
+                    style = styles["default"][0]
                 if "collections" in set_data and set_data["collections"]:
                     self.set_collections[set_key] = set_data["collections"]
                 image_set = self.temp_vars[methods[f"set_file_{set_key}"]] if f"set_file_{set_key}" in methods else styles[style]
