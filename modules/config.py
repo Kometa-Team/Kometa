@@ -141,7 +141,7 @@ class ConfigFile:
         self.requested_metadata_files = None
         if "metadata_files" in attrs and attrs["metadata_files"]:
             self.requested_metadata_files = []
-            for s in attrs["libraries"].split("|"):
+            for s in attrs["metadata_files"].split("|"):
                 s = s.stripe()
                 if s:
                     if s.endswith(".yml"):

@@ -1753,6 +1753,12 @@ class MetadataFile(DataFile):
                                 episodes[episode.title] = episode
                                 if episode.index:
                                     episodes[int(episode.index)] = episode
+                                elif episode.originallyAvailableAt:
+                                    available = episode.originallyAvailableAt
+                                    episodes[f"{available.month:02}/{available.day:02}"] = episode
+                                    episodes[f"{available.month}/{available.day}"] = episode
+                                    episodes[f"{available.month:02}-{available.day:02}"] = episode
+                                    episodes[f"{available.month}-{available.day}"] = episode
                             for episode_id, episode_dict in season_dict[season_methods["episodes"]].items():
                                 updated = False
                                 logger.info("")

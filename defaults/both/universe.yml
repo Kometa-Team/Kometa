@@ -15,6 +15,12 @@ translations:
 
 templates:
   universe:
+    conditionals:
+      mdblist_list:
+        conditions:
+          - trakt_list.exists: false
+            imdb_list.exists: false
+            value: <<mdblist_url>>
     default:
       mdblist_list_<<key>>: <<mdblist_list>>
       name_mapping_<<key>>: <<name_mapping>>
@@ -72,7 +78,7 @@ dynamic_collections:
         rocky: movie
         mummy: movie
         middle: movie
-      mdblist_list:
+      mdblist_url:
         avp: https://mdblist.com/lists/plexmetamanager/external/9243
         arrow: https://mdblist.com/lists/plexmetamanager/external/15113
         dca: https://mdblist.com/lists/plexmetamanager/external/15405
