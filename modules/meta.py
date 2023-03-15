@@ -1276,8 +1276,9 @@ class MetadataFile(DataFile):
                 for k, alts in self.set_collections[set_name].items():
                     if k in temp_data["collections"]:
                         self.library.collection_images[k] = temp_data["collections"][k]
-                        for alt in alts:
-                            self.library.collection_images[alt] = temp_data["collections"][k]
+                        if alts:
+                            for alt in alts:
+                                self.library.collection_images[alt] = temp_data["collections"][k]
         return self.library.image_sets[set_id]
 
     def get_collections(self, requested_collections):
