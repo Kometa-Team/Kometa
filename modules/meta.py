@@ -606,9 +606,11 @@ class MetadataFile(DataFile):
         self.metadata = None
         self.collections = None
         self.templates = None
+        self.update_collections = True
         self.update_seasons = True
         self.update_episodes = True
         self.set_collections = {}
+        self.style_priority = []
         if image_set_file:
             logger.info("")
             logger.separator(f"Loading Images {file_type}: {path}")
@@ -616,39 +618,86 @@ class MetadataFile(DataFile):
             self.metadata = {}
             data = self.load_file(self.type, self.path, images=True)
             methods = {t.lower(): t for t in self.temp_vars}
+
             use_all = True if "use_all" in methods and self.temp_vars[methods["use_all"]] else False
             logger.info(f"Use All Sets: {use_all}")
+
+            exclude = []
+            if "exclude" in methods:
+                if not use_all:
+                    raise Failed(f"Image Set Error: exclude only works when use_all is true")
+                exclude = util.parse("Images", "exclude", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Exclude: {exclude}")
+
+            include = []
+            if "include" in methods:
+                if use_all:
+                    raise Failed(f"Image Set Error: include only works when use_all is false")
+                include = util.parse("Images", "include", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Include: {include}")
+
+            if "style_priority" in methods:
+                self.style_priority = util.parse("Images", "style_priority", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Style Priority: {self.style_priority}")
+
+            if "update_collections" in methods:
+                self.update_collections = util.parse("Images", "update_collections", self.temp_vars, datatype="bool", methods=methods, default=True)
+            logger.info(f"Update Collections: {self.update_collections}")
+
             if "update_seasons" in methods:
                 self.update_seasons = util.parse("Images", "update_seasons", self.temp_vars, datatype="bool", methods=methods, default=True)
-
             logger.info(f"Update Seasons: {self.update_seasons}")
+
             if "update_episodes" in methods:
                 self.update_episodes = util.parse("Images", "update_episodes", self.temp_vars, datatype="bool", methods=methods, default=True)
             logger.info(f"Update Episodes: {self.update_episodes}")
+
             for set_key, set_data in get_dict("sets", data).items():
                 if not isinstance(set_data, dict):
-                    raise Failed("Set Data must be a dictionary")
+                    raise Failed("Image Set Error: Set Data must be a dictionary")
                 elif "styles" not in set_data:
-                    raise Failed("Set Data must have the styles attribute")
+                    raise Failed("Image Set Error: Set Data must have the styles attribute")
                 styles = util.parse("Set Data", "styles", set_data["styles"], datatype="dictlist")
                 if "default" not in styles or not styles["default"]:
-                    raise Failed("Set Data styles attribute must have a default")
-                style = styles["default"][0]
-                if style not in styles:
-                    raise Failed(f"Set Data styles default style not found. Options: {', '.join([s for s in styles])}")
+                    raise Failed("Image Set Error: Set Data styles attribute must have a default")
+                default_style = styles["default"][0]
+                if default_style not in styles:
+                    raise Failed(f"Image Set Error: Set Data styles default style not found. Options: {', '.join([s for s in styles])}")
                 use_key = None
                 if f"use_{set_key}" in methods:
                     use_key = util.parse("Images", f"use_{set_key}", self.temp_vars, datatype="bool",methods=methods, default=False)
                     logger.info(f"Use {set_key}: {use_key}")
-                if use_key is False or (use_all is False and use_key is None):
+                if use_key is False:
+                    logger.trace(f"Skipped as use_{set_key} is false")
                     continue
+                elif use_all and set_key in exclude:
+                    logger.trace(f"Skipped as {set_key} is in the exclude list")
+                    continue
+                elif not use_all and use_key is None and set_key not in include:
+                    logger.trace(f"Skipped as use_all is false and use_{set_key} is not set{f' and {set_key} not in the include list' if include else ''}")
+                    continue
+                prioritized_style = None
+                for ps in self.style_priority:
+                    if ps in styles:
+                        prioritized_style = ps
+                        break
                 if f"style_{set_key}" in methods:
-                    style = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=style)
+                    style = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=default_style)
                     logger.info(f"Style {set_key}: {style}")
-                if style not in styles:
-                    logger.warning(f"Image Set Warning: {set_key} has no style: {style} using default: {styles['default']}. Options: {', '.join([s for s in styles])}")
-                    style = styles["default"][0]
-                if "collections" in set_data and set_data["collections"]:
+                    if style not in styles:
+                        p_warning = f"Image Set Warning: {set_key} has no style: {style} using"
+                        if prioritized_style:
+                            logger.warning(f"{p_warning} Prioritized Style: {prioritized_style}")
+                            style = prioritized_style
+                        else:
+                            logger.warning(f"{p_warning} default: {default_style}. Options: {', '.join([s for s in styles])}")
+                            style = default_style
+                elif prioritized_style:
+                    logger.info(f"Using Prioritized Style: {prioritized_style}")
+                    style = prioritized_style
+                else:
+                    style = default_style
+                if self.update_collections and "collections" in set_data and set_data["collections"]:
                     self.set_collections[set_key] = set_data["collections"]
                 image_set = self.temp_vars[methods[f"set_file_{set_key}"]] if f"set_file_{set_key}" in methods else styles[style]
                 for item_name, item_data in set_data.items():
