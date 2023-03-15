@@ -38,229 +38,280 @@ dynamic_collections:
       translation_key:
         default: network
     include:
-      - A&E
-      - ABC
-      - ABC Family
-      - ABC TV # Australian Broadcasting Company
-      - Adult Swim
-      - Amazon
-      - AMC
-      - Animal Planet
-      - Apple TV+
-      - BBC
-      - BET
-      - BET+
-      - Cartoon Network
-      - Channel 4
-      - Channel 5
-      - CBC
-      - CBC Television
-      - CBS
-      - Comedy Central
-      - Discovery
-      - Discovery+
-      - Disney Channel
-      - Disney Junior
-      - Disney XD
-      - Disney+
-      - E!
-      - ESPN
-      - Food Network
-      - FOX
-      - FX
-      - Freevee
-      - Hallmark
-      - HBO
-      - HBO Max
-      - HGTV
-      - History
-      - Hulu
-      - ITV
-      - Lifetime
-      - MTV
-      - National Geographic
-      - NBC
-      - Nickelodeon
-      - Paramount+
-      - PBS
-      - Showtime
-      - Sky
-      - Starz
-      - The CW
-      - TLC
-      - TNT
-      - UKTV
-      - USA
+      - BBC One
       - YouTube
+      - ITV
+      - BBC Two
+      - Netflix
+      - ABC
+      - NBC
+      - CBS
+      - Channel 4
+      - ZDF
+      - TVB Jade
+      - TV Tokyo
+      - Fuji TV
+      - CBC Television
+      - iQiyi
+      - ARD
+      - Tencent Video
+      - TBS
+      - Tokyo MX
+      - Amazon
+      - PBS
+      - FOX
+      - tv asahi
+      - Youku
+      - TV Globo
+      - MBC
+      - Nippon TV
+      - Channel 5
+      - SBS
+      - ABC TV
+      - AT-X
+      - GMA Network
+      - National Geographic
+      - KBS2
+      - TF1
+      - tvN
+      - SVT1
+      - bilibili
+      - Channel 3
+      - Discovery
+      - BBC Four
+      - ABS-CBN
+      - History
+      - Arte
+      - Las Estrellas
+      - TV 2
+      - NHK
+      - HBO
+      - CCTV
+      - France 2
 
-    addons:
-      A&E:
-        - A+E Networks UK
-      ABC:
-        - ABC Family
-        - ABC.com
-      ABC TV:
-        - ABC Comedy
-        - ABC Me
-        - ABC News
-        - ABC iview
-        - ABC KIDS
-      Amazon:
-        - Amazon Kids+
-      AMC:
-        - AMC+
-      BBC:
-        - BBC Alba
-        - BBC America
-        - BBC Choice
-        - BBC First
-        - BBC Four
-        - BBC Kids
-        - BBC Knowledge
-        - BBC News
-        - BBC One
-        - BBC One Northern Ireland
-        - BBC Scotland
-        - BBC Television
-        - BBC Three
-        - BBC Two
-        - BBC UKTV
-        - BBC World News
-        - CBBC
-        - CBeebies
-      Cartoon Network:
-        - Cartoonito
-      Channel 4:
-        - All 4
-        - E4
-        - More4
-      Channel 5:
-        - 5Star
-        - 5USA
-      CBC Television:
-        - CBC Gem
-        - CBC News Network
-      CBS:
-        - CBS.com
-      Discovery:
-        - Discovery Life
-        - Discovery Family
-        - Discovery Asia
-        - Discovery World
-        - Discovery Channel
-        - Discovery Health Channel
-        - Discovery Kids
-        - Discovery Real Time
-        - Discovery Science
-        - Discovery en Español
-        - Discovery Turbo Brasil
-      Discovery+:
-        - discovery+
-        - Dplay
-      Disney Channel:
-        - Playhouse Disney
-      Disney XD:
-        - Toon Disney
-      E!:
-        - e.tv
-      ESPN:
-        - ESPN+
-      Food Network:
-        - Cooking Channel
-      FOX:
-        - Fox Action Movies
-        - Fox Business Network
-        - FOX España
-        - Fox Kids
-        - Fox Nation
-        - Fox Premium Series
-        - FOX Sports 1
-        - Fox Sports Networks
-        - Fox8
-      Freeform:
-        - ABC Family
-      FX:
-        - FXX
-      Hallmark:
-        - Hallmark Channel
-        - Hallmark Movies & Mysteries
-        - Hallmark Movies Now
-      HBO:
-        - HBO2
-        - HBO Asia
-        - HBO Canada
-        - HBO Comedy
-        - HBO España
-        - HBO Europe
-        - HBO Family
-        - HBO Latin America
-        - HBO Nordic
-        - HBO Signature
-        - HBO Zone
-      ITV:
-        - ITV Encore
-        - ITV Wales
-        - ITV1
-        - ITV2
-        - ITV4
-        - ITVBe
-        - CITV
-        - STV
-      Lifetime:
-        - Lifetime Movies
-      MTV:
-        - MTV Australia
-        - MTV Canada
-        - MTV Japan
-        - MTV Nederland
-        - MTV2
-        - MTV3
-      National Geographic:
-        - Nat Geo Wild
-        - National Geographic Brasil
-        - National Geographic Channel
-        - National Geographic Wild
-      Nickelodeon:
-        - Nick at Nite
-        - Nick Jr.
-        - Nicktoons
-        - TeenNick
-      Paramount+:
-        - CBS All Access
-      PBS:
-        - PBS Kids
-      Sky:
-        - Sky 1
-        - Sky Arts
-        - Sky Atlantic
-        - Sky Cinema
-        - Sky Crime
-        - Sky Deutschland
-        - Sky Documentaries
-        - Sky History
-        - Sky Living
-        - Sky Max
-        - Sky Nature
-        - Sky One
-        - Sky Showcase
-        - Sky Sports
-        - Sky Two
-        - Sky Witness
-        - Sky1
-      The CW:
-        - CW seed
-      TLC:
-        - TLC Go
-        - TLC UK
-      TNT:
-        - TNT España
-        - TNT Latin America
-        - TNT Serie
-      UKTV:
-        - UKTV Food
-        - UKTV History
-        - UKTV Yesterday
-      USA:
-        - USA Network
-      YouTube:
-        - YouTube Premium
+    #   - A&E
+    #   - ABC
+    #   - ABC Family
+    #   - ABC TV # Australian Broadcasting Company
+    #   - Adult Swim
+    #   - Amazon
+    #   - AMC
+    #   - AMC+
+    #   - Animal Planet
+    #   - Apple TV+
+    #   - BBC
+    #   - BET
+    #   - BET+
+    #   - Cartoon Network
+    #   - Channel 4
+    #   - Channel 5
+    #   - CBC
+    #   - CBC Television
+    #   - CBS
+    #   - Comedy Central
+    #   - Discovery
+    #   - Discovery+
+    #   - Disney Channel
+    #   - Disney Junior
+    #   - Disney XD
+    #   - Disney+
+    #   - E!
+    #   - ESPN
+    #   - Food Network
+    #   - FOX
+    #   - FX
+    #   - Freeform
+    #   - Freevee
+    #   - Hallmark
+    #   - HBO
+    #   - HBO Max
+    #   - HGTV
+    #   - History
+    #   - Hulu
+    #   - ITV
+    #   - Lifetime
+    #   - MTV
+    #   - National Geographic
+    #   - NBC
+    #   - Nickelodeon
+    #   - Paramount+
+    #   - Paramount Network
+    #   - PBS
+    #   - Showtime
+    #   - Sky
+    #   - Starz
+    #   - The CW
+    #   - TLC
+    #   - TNT
+    #   - UKTV
+    #   - USA
+    #   - YouTube
+
+    # addons:
+    #   A&E:
+    #     - A+E Networks UK
+    #   ABC:
+    #     - ABC.com
+    #   ABC TV:
+    #     - ABC Comedy
+    #     - ABC Me
+    #     - ABC News
+    #     - ABC iview
+    #     - ABC KIDS
+    #   Amazon:
+    #     - Amazon Kids+
+    #   AMC:
+    #     - AMC.com
+    #   BBC:
+    #     - BBC Alba
+    #     - BBC America
+    #     - BBC Choice
+    #     - BBC First
+    #     - BBC Four
+    #     - BBC Kids
+    #     - BBC Knowledge
+    #     - BBC News
+    #     - BBC One
+    #     - BBC One Northern Ireland
+    #     - BBC Scotland
+    #     - BBC Television
+    #     - BBC Three
+    #     - BBC Two
+    #     - BBC UKTV
+    #     - BBC World News
+    #     - CBBC
+    #     - CBeebies
+    #   Cartoon Network:
+    #     - Cartoonito
+    #   Channel 4:
+    #     - All 4
+    #     - E4
+    #     - More4
+    #   Channel 5:
+    #     - 5Star
+    #     - 5USA
+    #   CBC Television:
+    #     - CBC Gem
+    #     - CBC News Network
+    #   CBS:
+    #     - CBS.com
+    #   Discovery:
+    #     - Discovery Life
+    #     - Discovery Family
+    #     - Discovery Asia
+    #     - Discovery World
+    #     - Discovery Channel
+    #     - Discovery Health Channel
+    #     - Discovery Kids
+    #     - Discovery Real Time
+    #     - Discovery Science
+    #     - Discovery en Español
+    #     - Discovery Turbo Brasil
+    #   Discovery+:
+    #     - discovery+
+    #     - Dplay
+    #   Disney Channel:
+    #     - Playhouse Disney
+    #   Disney XD:
+    #     - Toon Disney
+    #   E!:
+    #     - e.tv
+    #   ESPN:
+    #     - ESPN+
+    #   Food Network:
+    #     - Cooking Channel
+    #   FOX:
+    #     - Fox Crime
+    #     - FOXlife
+    #     - Fox Premium Series
+    #     - Fox Latin America
+    #     - Fox Sports 2
+    #     - Fox Kids
+
+    #     - Fox Nation
+    #     - FOX Sports 1
+    #     - Fox Sports Networks
+    #     - Fox8
+    #   FX:
+    #     - FXX
+    #   Hallmark:
+    #     - Hallmark Channel
+    #     - Hallmark Drama
+    #     - Hallmark Movies & Mysteries
+    #     - Hallmark Movies Now
+    #   HBO:
+    #     - HBO Europe
+    #     - HBO Asia
+    #     - HBO Canada
+    #     - HBO Mundi
+    #     - HBO Nordic
+    #     - HBO Latin America
+    #     - HBO España
+    #     - HBO Family
+    #   ITV:
+    #     - ITV Encore
+    #     - ITV Wales
+    #     - ITV1
+    #     - ITV2
+    #     - ITV4
+    #     - ITVBe
+    #     - CITV
+    #     - STV
+    #   Lifetime:
+    #     - Lifetime Movies
+    #   MTV:
+    #     - MTV Australia
+    #     - MTV Canada
+    #     - MTV Japan
+    #     - MTV Nederland
+    #     - MTV2
+    #     - MTV3
+    #   National Geographic:
+    #     - Nat Geo Wild
+    #     - National Geographic Brasil
+    #     - National Geographic Channel
+    #     - National Geographic Wild
+    #   Nickelodeon:
+    #     - Nick at Nite
+    #     - Nick Jr.
+    #     - Nicktoons
+    #     - TeenNick
+    #   Paramount+:
+    #     - CBS All Access
+    #   PBS:
+    #     - PBS Kids
+    #   Sky:
+    #     - Sky 1
+    #     - Sky Arts
+    #     - Sky Atlantic
+    #     - Sky Cinema
+    #     - Sky Crime
+    #     - Sky Deutschland
+    #     - Sky Documentaries
+    #     - Sky History
+    #     - Sky Living
+    #     - Sky Max
+    #     - Sky Nature
+    #     - Sky One
+    #     - Sky Showcase
+    #     - Sky Sports
+    #     - Sky Two
+    #     - Sky Witness
+    #     - Sky1
+    #   The CW:
+    #     - CW seed
+    #   TLC:
+    #     - TLC Go
+    #     - TLC UK
+    #   TNT:
+    #     - TNT España
+    #     - TNT Latin America
+    #     - TNT Serie
+    #   UKTV:
+    #     - UKTV Food
+    #     - UKTV History
+    #     - UKTV Yesterday
+    #   USA:
+    #     - USA Network
+    #   YouTube:
+    #     - YouTube Premium
