@@ -309,7 +309,7 @@ class Overlays:
                                     else:
                                         if current_overlay.has_coordinates():
                                             overlay_image, overlay_box = current_overlay.get_canvas(item)
-                                            if current_overlay.backdrop_box is not None:
+                                            if overlay_image is not None:
                                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                         else:
