@@ -827,8 +827,8 @@ class Plex(Library):
             self.query_data(item.addLabel if add else item.removeLabel, collection)
         else:
             locked = True
+            item = self.reload(item)
             if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
-                item = self.reload(item)
                 field = next((f for f in item.fields if f.name == "collection"), None)
                 locked = field is not None
             self.query_collection(item, collection, locked=locked, add=add)
