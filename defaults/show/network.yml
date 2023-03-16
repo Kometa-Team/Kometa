@@ -38,58 +38,186 @@ dynamic_collections:
       translation_key:
         default: network
     include:
+      # TMDB Most Common X Most Watched Network Rankings
+      - ABC # American Broadcasting Company
+      - CBS
+      - Discovery
+      - FOX
+      - History
+      - National Geographic
+      - NBC
+      - TBS
+
+      ## TMDB Most Common X Top Streaming Service
+      - Amazon
+      - discovery+
+      - iQiyi
+      - Netflix
+      - Tencent Video
+
+      ## Thoughts
+      - Disney Channel # 315 shows
+      - Disney+         # 285 Shows
+      - ESPN # 163 Shows across Networks, Most Watched, Most Subscribed
+
+      ## TMDB Most Common ##
       - BBC One
       - YouTube
       - ITV
       - BBC Two
-      - Netflix
-      - ABC
-      - NBC
-      - CBS
       - Channel 4
       - ZDF
       - TVB Jade
       - TV Tokyo
       - Fuji TV
       - CBC Television
-      - iQiyi
       - ARD
-      - Tencent Video
-      - TBS
       - Tokyo MX
-      - Amazon
+      - SBS
       - PBS
-      - FOX
       - tv asahi
+      - Arte
       - Youku
+      - ABC TV
       - TV Globo
       - MBC
       - Nippon TV
       - Channel 5
-      - SBS
-      - ABC TV
+      - TV 2
+      - tvN
       - AT-X
       - GMA Network
-      - National Geographic
       - KBS2
       - TF1
-      - tvN
       - SVT1
       - bilibili
       - Channel 3
-      - Discovery
+      - TV3
       - BBC Four
+      - MTV
       - ABS-CBN
-      - History
-      - Arte
       - Las Estrellas
-      - TV 2
-      - NHK
-      - HBO
-      - CCTV
-      - France 2
+      - RTL
 
-    #   - A&E
+      ## Most Watched Network Rankings ##
+      - Fox News Channel  # 50 Shows
+      - ESPN              # 102+26+16+6+5+3+2+1+1+1 
+      - Univision
+      - MSNBC
+      - HGTV
+      - Hallmark Channel
+      - Ion
+      - TLC
+      - TNT
+      - Telemundo
+      - Food Network
+      - INSP
+      - USA Network
+      - CNN
+      - Me TV
+      - Bravo
+      - Lifetime
+      - The CW
+      - Investigation Discovery
+      - TV Land
+      - A&E
+      - Hallmark Movie & Mysteries
+      - Paramount Network
+      - UniMás
+      - AMC
+      - FX
+      - Grit
+      - WE TV
+      - Game Show Network
+      - Syfy
+      - BET
+      - Travel Channel
+      - ESPN 2
+      - Oxygen
+      - Freeform
+      - MTV
+      - Nickelodeon
+      - Animal Planet
+      - Nick at Nite
+      - Fox Sports 1
+      - Comedy Central
+      - Bounce TV
+
+      ## Most Subscribed Streaming Service
+      - Disney+
+      - HBO Max
+      - Hulu
+      - Paramount+
+      - Apple TV
+      - Eros Now
+      - Alt Balaji
+      - Globoplay
+      - Starz
+      - iFlix
+      - ESPN
+      - Canal Plus
+      - StarTimes
+      - Peacock
+      - CuriosityStream
+      - SonyLiv
+      - Discovery+
+      - AMC
+      - Mubi
+      - Viu
+      - Dazn
+      - Via Play
+      - WatchIT
+      - Crunchyroll
+      - BluTV
+      - RTL Plus
+      - Shahid
+      - KinoPoisk
+      - Crave
+      - Claro TV
+      - Wavve
+      - Zee5
+      - Hulu Nippon TV
+      - Docomo
+      - tving
+      - U-Next
+      - TIMvision
+      - Sling TV
+      - ivi TV
+      - Stan
+      - Sky Deutschland
+      - StarzPlay
+      - BritBox
+      - TV+
+      - Now TV
+      - OCS
+
+    addons:
+      Disney:
+        - Disney XD
+        - Disney Junior
+        - Toon Disney
+        - Disney Channel
+        - Playhouse Disney
+        - Disney Junior Latin America
+        - Disney Junior Brasil
+        - Disney Channel Asia
+        - disney.com
+        - Disney Channel Middle East
+      Disney+:
+        - Disney+ Hotstar
+      ESPN:
+        - ESPN2
+        - ESPN+
+        - ESPN Classic
+        - ESPNU
+        - ESPNews
+        - ESPN Australia
+        - Sony ESPN
+        - ESPN.com
+        - ESPN Deportes
+
+
+    #   -
     #   - ABC
     #   - ABC Family
     #   - ABC TV # Australian Broadcasting Company
