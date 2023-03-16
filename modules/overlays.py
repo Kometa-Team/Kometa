@@ -361,7 +361,7 @@ class Overlays:
                 except Exception as e:
                     logger.info(e)
                     logger.info(type(e))
-                    logger.stacktrace(e)
+                    logger.stacktrace()
                     logger.error("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
