@@ -457,7 +457,9 @@ class Plex(Library):
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
         if self.Plex.type not in library_types:
-            raise Failed(f"Plex Error: Plex Library must be a Movies or TV Shows library")
+            raise Failed(f"Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
+        if not self.Plex.allowSync:
+            raise Failed("Plex Error: Plex Token is read only. Please get a new token")
 
         self.type = self.Plex.type.capitalize()
         self.plex_pass = self.PlexServer.myPlexSubscription
