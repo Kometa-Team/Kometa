@@ -74,12 +74,8 @@ class Overlay:
         self.keys = []
         self.updated = False
         self.image = None
-        self.landscape = None
-        self.landscape_box = None
-        self.portrait = None
-        self.portrait_box = None
-        self.square = None
-        self.square_box = None
+        self.backdrop_box = None
+        self.backdrop_text = None
         self.group = None
         self.queue = None
         self.queue_name = None
@@ -285,13 +281,10 @@ class Overlay:
                     except ValueError:
                         raise Failed("Overlay Error: originally_available date format not valid")
             box = self.image.size if self.image else None
-            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
-            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
-            self.square, self.square_box = self.get_backdrop(square_dim, box=box, text=self.name[5:-1])
+            self.backdrop_box = box
+            self.backdrop_text = self.name[5:-1]
         elif self.name.startswith("backdrop"):
-            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.back_box)
-            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.back_box)
-            self.square, self.square_box = self.get_backdrop(square_dim, box=self.back_box)
+            self.backdrop_box = self.back_box
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)
@@ -306,9 +299,7 @@ class Overlay:
             try:
                 self.image = Image.open(self.path).convert("RGBA")
                 if self.has_coordinates():
-                    self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.image.size)
-                    self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.image.size)
-                    self.square, self.square_box = self.get_backdrop(square_dim, box=self.image.size)
+                    self.backdrop_box = self.image.size
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
@@ -438,8 +429,9 @@ class Overlay:
 
     def get_canvas(self, item):
         if isinstance(item, Episode):
-            return self.landscape, self.landscape_box
+            canvas_size = landscape_dim
         elif isinstance(item, Album):
-            return self.square, self.square_box
+            canvas_size = square_dim
         else:
-            return self.portrait, self.portrait_box
+            canvas_size = portrait_dim
+        return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)
