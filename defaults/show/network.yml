@@ -44,6 +44,7 @@ dynamic_collections:
       - Discovery
       - FOX
       - History
+      - MTV
       - National Geographic
       - NBC
       - TBS
@@ -55,148 +56,136 @@ dynamic_collections:
       - Netflix
       - Tencent Video
 
-      ## Thoughts
-      - Disney Channel # 315 shows
-      - Disney+         # 285 Shows
-      - ESPN # 163 Shows across Networks, Most Watched, Most Subscribed
-
       ## TMDB Most Common ##
-      - BBC One
-      - YouTube
-      - ITV
-      - BBC Two
-      - Channel 4
-      - ZDF
-      - TVB Jade
-      - TV Tokyo
-      - Fuji TV
-      - CBC Television
-      - ARD
-      - Tokyo MX
-      - SBS
-      - PBS
-      - tv asahi
-      - Arte
-      - Youku
-      - ABC TV
-      - TV Globo
+      - ABC TV # Australian Broadcasting Corporation
+      - ABS-CBN # ABS-CBN Corporation
+      - AT-X # Japanese anime television network
+      - ARD # Joint organisation of Germany's regional public-service broadcasters
+      - Arte # European public service channel dedicated to culture
+      - BBC One # British free-to-air public broadcast television channel
+      - BBC Two # British free-to-air public broadcast television channel
+      - BBC Four # British free-to-air public broadcast television channel
+      - bilibili # B Site, a video sharing website based in Shanghai
+      - CBC Television # Canadian English-language broadcast television network
+      - Channel 3 # Thai free-to-air television network
+      - Channel 4 # British free-to-air public broadcast television channel
+      - Channel 5 # British free-to-air public broadcast television channel
+      - Fuji TV # Japanese television station based
+      - GMA Network # Philippine free-to-air television
+      - ITV # British free-to-air public broadcast television network
+      - KBS2 # Korean Broadcasting System, an entertainment oriented network
+      - Las Estrellas
       - MBC
       - Nippon TV
-      - Channel 5
-      - TV 2
-      - tvN
-      - AT-X
-      - GMA Network
-      - KBS2
-      - TF1
+      - PBS
+      - SBS
       - SVT1
-      - bilibili
-      - Channel 3
+      - TF1
+      - Tokyo MX
+      - TV 2
+      - tv asahi
+      - TV Globo
+      - TV Tokyo
       - TV3
-      - BBC Four
-      - MTV
-      - ABS-CBN
-      - Las Estrellas
+      - TVB Jade
+      - tvN
       - RTL
+      - Youku
+      - YouTube
+      - ZDF
 
       ## Most Watched Network Rankings ##
-      - Fox News Channel  # 50 Shows
-      - ESPN              # 102+26+16+6+5+3+2+1+1+1 
-      - Univision
-      - MSNBC
+      - A&E
+      - AMC
+      - Animal Planet
+      - BET
+      - Bravo
+      - Bounce TV
+      - CNN
+      - Comedy Central
+      - ESPN
+      - Food Network
+      - Freeform
+      - FX
+      - Game Show Network
+      - Hallmark
       - HGTV
-      - Hallmark Channel
-      - Ion
+      - Investigation Discovery
+      - ION Television
+      - Lifetime
+      - Nick at Nite
+      - Nickelodeon
+      - Oxygen
+      - Paramount Network # 24 shows, probably gets rolled into Paramount+ or vice versa
+      - Syfy
+      - Telemundo
+      - The CW
       - TLC
       - TNT
-      - Telemundo
-      - Food Network
-      - INSP
-      - USA Network
-      - CNN
-      - Me TV
-      - Bravo
-      - Lifetime
-      - The CW
-      - Investigation Discovery
-      - TV Land
-      - A&E
-      - Hallmark Movie & Mysteries
-      - Paramount Network
-      - UniMás
-      - AMC
-      - FX
-      - Grit
-      - WE TV
-      - Game Show Network
-      - Syfy
-      - BET
       - Travel Channel
-      - ESPN 2
-      - Oxygen
-      - Freeform
-      - MTV
-      - Nickelodeon
-      - Animal Planet
-      - Nick at Nite
-      - Fox Sports 1
-      - Comedy Central
-      - Bounce TV
+      - TV Land
+      - UniMás
+      - Univision
+      - USA Network
+      - WE tv
 
-      ## Most Subscribed Streaming Service
-      - Disney+
-      - HBO Max
-      - Hulu
-      - Paramount+
-      - Apple TV
-      - Eros Now
-      - Alt Balaji
-      - Globoplay
-      - Starz
-      - iFlix
-      - ESPN
-      - Canal Plus
-      - StarTimes
-      - Peacock
-      - CuriosityStream
-      - SonyLiv
-      - Discovery+
-      - AMC
-      - Mubi
-      - Viu
-      - Dazn
-      - Via Play
-      - WatchIT
-      - Crunchyroll
-      - BluTV
-      - RTL Plus
-      - Shahid
-      - KinoPoisk
-      - Crave
-      - Claro TV
-      - Wavve
-      - Zee5
-      - Hulu Nippon TV
-      - Docomo
-      - tving
-      - U-Next
-      - TIMvision
-      - Sling TV
-      - ivi TV
-      - Stan
-      - Sky Deutschland
-      - StarzPlay
-      - BritBox
-      - TV+
-      - Now TV
-      - OCS
+      ## Most Subscribed Streaming Service w/ min 50 shows
+      - AMC # 78 shows across networks
+      - ALTBalaji # 61 shows
+      - Apple TV+ # 153 shows
+      - BluTV # 58 shows
+      - Canal+ # 296 shows across networks
+      - Disney+ # 285 shows
+      - Globoplay # 118 shows
+      - HBO Max # 206 shows
+      - Hulu # 258 shows
+      - Paramount+ # 125 shows
+      - Peacock # 124 shows
+      - Shahid # 193 shows
+      - Starz # 65 shows across networks
+      - tving # 82 shows
+      - Viaplay # 168 shows
+      - ViuTV # 59 shows
+      - ZEE5 # 184 shows
+
+      ## Addtional Thoughts
+      - HBO # 462 shows across networks
 
     addons:
-      Disney:
+      ABC:
+        - ABC.com
+        - ABC Family
+      ABC TV:
+        - ABC Comedy
+        - ABC Me
+        - ABC News
+        - ABC iview
+        - ABC KIDS
+      AMC:
+        - AMC.com
+      Canal+:
+        - Canal+ Poland
+        - Canal+ Family
+        - Canal+ Discovery
+        - Canal+ Afrique
+      CBS:
+        - CBS.com
+      Discovery:
+        - Discovery Kids
+        - Discovery Health Channel
+        - Discovery Channel
+        - Discovery Home & Health Brasil
+        - Discovery Family
+        - Discovery Real Time
+        - Discovery Asia
+        - Discovery Home & Health
+        - Discovery Life
+        - Discovery World
+        - Discovery Science
+      Disney Channel:
         - Disney XD
         - Disney Junior
         - Toon Disney
-        - Disney Channel
         - Playhouse Disney
         - Disney Junior Latin America
         - Disney Junior Brasil
@@ -215,231 +204,70 @@ dynamic_collections:
         - Sony ESPN
         - ESPN.com
         - ESPN Deportes
-
-
-    #   -
-    #   - ABC
-    #   - ABC Family
-    #   - ABC TV # Australian Broadcasting Company
-    #   - Adult Swim
-    #   - Amazon
-    #   - AMC
-    #   - AMC+
-    #   - Animal Planet
-    #   - Apple TV+
-    #   - BBC
-    #   - BET
-    #   - BET+
-    #   - Cartoon Network
-    #   - Channel 4
-    #   - Channel 5
-    #   - CBC
-    #   - CBC Television
-    #   - CBS
-    #   - Comedy Central
-    #   - Discovery
-    #   - Discovery+
-    #   - Disney Channel
-    #   - Disney Junior
-    #   - Disney XD
-    #   - Disney+
-    #   - E!
-    #   - ESPN
-    #   - Food Network
-    #   - FOX
-    #   - FX
-    #   - Freeform
-    #   - Freevee
-    #   - Hallmark
-    #   - HBO
-    #   - HBO Max
-    #   - HGTV
-    #   - History
-    #   - Hulu
-    #   - ITV
-    #   - Lifetime
-    #   - MTV
-    #   - National Geographic
-    #   - NBC
-    #   - Nickelodeon
-    #   - Paramount+
-    #   - Paramount Network
-    #   - PBS
-    #   - Showtime
-    #   - Sky
-    #   - Starz
-    #   - The CW
-    #   - TLC
-    #   - TNT
-    #   - UKTV
-    #   - USA
-    #   - YouTube
-
-    # addons:
-    #   A&E:
-    #     - A+E Networks UK
-    #   ABC:
-    #     - ABC.com
-    #   ABC TV:
-    #     - ABC Comedy
-    #     - ABC Me
-    #     - ABC News
-    #     - ABC iview
-    #     - ABC KIDS
-    #   Amazon:
-    #     - Amazon Kids+
-    #   AMC:
-    #     - AMC.com
-    #   BBC:
-    #     - BBC Alba
-    #     - BBC America
-    #     - BBC Choice
-    #     - BBC First
-    #     - BBC Four
-    #     - BBC Kids
-    #     - BBC Knowledge
-    #     - BBC News
-    #     - BBC One
-    #     - BBC One Northern Ireland
-    #     - BBC Scotland
-    #     - BBC Television
-    #     - BBC Three
-    #     - BBC Two
-    #     - BBC UKTV
-    #     - BBC World News
-    #     - CBBC
-    #     - CBeebies
-    #   Cartoon Network:
-    #     - Cartoonito
-    #   Channel 4:
-    #     - All 4
-    #     - E4
-    #     - More4
-    #   Channel 5:
-    #     - 5Star
-    #     - 5USA
-    #   CBC Television:
-    #     - CBC Gem
-    #     - CBC News Network
-    #   CBS:
-    #     - CBS.com
-    #   Discovery:
-    #     - Discovery Life
-    #     - Discovery Family
-    #     - Discovery Asia
-    #     - Discovery World
-    #     - Discovery Channel
-    #     - Discovery Health Channel
-    #     - Discovery Kids
-    #     - Discovery Real Time
-    #     - Discovery Science
-    #     - Discovery en Español
-    #     - Discovery Turbo Brasil
-    #   Discovery+:
-    #     - discovery+
-    #     - Dplay
-    #   Disney Channel:
-    #     - Playhouse Disney
-    #   Disney XD:
-    #     - Toon Disney
-    #   E!:
-    #     - e.tv
-    #   ESPN:
-    #     - ESPN+
-    #   Food Network:
-    #     - Cooking Channel
-    #   FOX:
-    #     - Fox Crime
-    #     - FOXlife
-    #     - Fox Premium Series
-    #     - Fox Latin America
-    #     - Fox Sports 2
-    #     - Fox Kids
-
-    #     - Fox Nation
-    #     - FOX Sports 1
-    #     - Fox Sports Networks
-    #     - Fox8
-    #   FX:
-    #     - FXX
-    #   Hallmark:
-    #     - Hallmark Channel
-    #     - Hallmark Drama
-    #     - Hallmark Movies & Mysteries
-    #     - Hallmark Movies Now
-    #   HBO:
-    #     - HBO Europe
-    #     - HBO Asia
-    #     - HBO Canada
-    #     - HBO Mundi
-    #     - HBO Nordic
-    #     - HBO Latin America
-    #     - HBO España
-    #     - HBO Family
-    #   ITV:
-    #     - ITV Encore
-    #     - ITV Wales
-    #     - ITV1
-    #     - ITV2
-    #     - ITV4
-    #     - ITVBe
-    #     - CITV
-    #     - STV
-    #   Lifetime:
-    #     - Lifetime Movies
-    #   MTV:
-    #     - MTV Australia
-    #     - MTV Canada
-    #     - MTV Japan
-    #     - MTV Nederland
-    #     - MTV2
-    #     - MTV3
-    #   National Geographic:
-    #     - Nat Geo Wild
-    #     - National Geographic Brasil
-    #     - National Geographic Channel
-    #     - National Geographic Wild
-    #   Nickelodeon:
-    #     - Nick at Nite
-    #     - Nick Jr.
-    #     - Nicktoons
-    #     - TeenNick
-    #   Paramount+:
-    #     - CBS All Access
-    #   PBS:
-    #     - PBS Kids
-    #   Sky:
-    #     - Sky 1
-    #     - Sky Arts
-    #     - Sky Atlantic
-    #     - Sky Cinema
-    #     - Sky Crime
-    #     - Sky Deutschland
-    #     - Sky Documentaries
-    #     - Sky History
-    #     - Sky Living
-    #     - Sky Max
-    #     - Sky Nature
-    #     - Sky One
-    #     - Sky Showcase
-    #     - Sky Sports
-    #     - Sky Two
-    #     - Sky Witness
-    #     - Sky1
-    #   The CW:
-    #     - CW seed
-    #   TLC:
-    #     - TLC Go
-    #     - TLC UK
-    #   TNT:
-    #     - TNT España
-    #     - TNT Latin America
-    #     - TNT Serie
-    #   UKTV:
-    #     - UKTV Food
-    #     - UKTV History
-    #     - UKTV Yesterday
-    #   USA:
-    #     - USA Network
-    #   YouTube:
-    #     - YouTube Premium
+      FOX:
+        - Fox News Channel
+        - Fox Sports
+        - Fox Reality Channel
+        - Fox Sports Networks
+        - Fox Latin America
+        - Fox Brasil
+        - Fox Soccer
+        - Fox Sports 2
+        - Fox Nation
+        - Fox Sports 1
+        - fox.com
+        - Fox Sports Detroit
+      Hallmark:
+        - Hallmark Channel
+        - Hallmark Drama
+        - Hallmark Movie & Mysteries
+        - Hallmark Movies Now
+      HBO:
+        - HBO Brasil
+        - HBO Europe
+        - HBO Asia
+        - HBO Latin America
+        - HBO España
+        - HBO Nordic
+        - HBO Canada
+        - HBO Family
+        - HBO Mundi
+      HBO Max:
+        - HBO Go
+      History:
+        - History Channel Italia
+      MTV:
+        - MTV2
+        - MTV3
+        - MTV Lebanon
+        - MTV Latin America
+        - MTV Italia
+        - MTV Australia
+        - MTV Canada
+        - MTV Global
+        - MTV Nederland
+      National Geographic:
+        - National Geographic Channel
+        - National Geographic Brasil
+        - National Geographic Latinoamerica
+        - National Geographic India
+      NBC:
+        - CNBC
+        - MSNBC
+        - NBCSN
+        - CNBC Europe
+        - CNBC Asia
+        - WNBC
+        - Nikkei CNBC
+        - KNBC
+        - CNBC World
+        - CNBC TV18
+        - NBC Weather Plus
+        - NBC Radio Network
+      Paramount+:
+        - CBS All Access # Rebranded on Mar 4, 2021
+      Starz:
+        - Starz Encore
+      TBS:
+        - TBS.com
+        - TBS Brasil
