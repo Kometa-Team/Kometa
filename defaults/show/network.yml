@@ -38,7 +38,7 @@ dynamic_collections:
       translation_key:
         default: network
     include:
-      # TMDB Most Common X Most Watched Network Rankings
+      # TMDB Most Common & Most Watched Network Rankings
       - ABC # American Broadcasting Company
       - CBS
       - Discovery
@@ -49,7 +49,7 @@ dynamic_collections:
       - NBC
       - TBS
 
-      ## TMDB Most Common X Top Streaming Service
+      ## TMDB Most Common & Top Streaming Service
       - Amazon
       - discovery+
       - iQiyi
@@ -150,6 +150,7 @@ dynamic_collections:
 
       ## Addtional Thoughts
       - HBO # 462 shows across networks
+      - Disney Channel # 532 shows across networks
 
     addons:
       ABC:
@@ -217,6 +218,8 @@ dynamic_collections:
         - Fox Sports 1
         - fox.com
         - Fox Sports Detroit
+      Freeform:
+        - ABC Family
       Hallmark:
         - Hallmark Channel
         - Hallmark Drama
