@@ -651,10 +651,14 @@ class MetadataFile(DataFile):
             if "update_episodes" in methods:
                 self.update_episodes = util.parse("Images", "update_episodes", self.temp_vars, datatype="bool", methods=methods, default=True)
             logger.info(f"Update Episodes: {self.update_episodes}")
-
+            item_attr = "movies" if self.library.is_movie else "shows"
             for set_key, set_data in get_dict("sets", data).items():
                 if not isinstance(set_data, dict):
                     raise Failed("Image Set Error: Set Data must be a dictionary")
+                elif item_attr not in set_data:
+                    raise Failed(f"Set Data must have the {item_attr} attribute")
+                elif not set_data[item_attr]:
+                    raise Failed(f"Set Data attribute {item_attr} is empty")
                 elif "styles" not in set_data:
                     raise Failed("Image Set Error: Set Data must have the styles attribute")
                 styles = util.parse("Set Data", "styles", set_data["styles"], datatype="dictlist")
@@ -699,10 +703,13 @@ class MetadataFile(DataFile):
                     style = default_style
                 if self.update_collections and "collections" in set_data and set_data["collections"]:
                     self.set_collections[set_key] = set_data["collections"]
-                image_set = self.temp_vars[methods[f"set_file_{set_key}"]] if f"set_file_{set_key}" in methods else styles[style]
-                for item_name, item_data in set_data.items():
-                    if item_name in ["styles", "collections"]:
-                        continue
+                if f"set_file_{set_key}" in methods:
+                    image_set = self.temp_vars[methods[f"set_file_{set_key}"]]
+                elif not styles[style]:
+                    image_set = [{"pmm": f"{set_key}/{style}"}]
+                else:
+                    image_set = styles[style]
+                for item_name, item_data in set_data[item_attr].items():
                     if isinstance(item_data, dict):
                         if "mapping_id" not in item_data:
                             raise Failed(f"Image Set Error: {set_key}: {item_name}: No mapping ID found")
