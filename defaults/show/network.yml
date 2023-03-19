@@ -56,6 +56,9 @@ dynamic_collections:
       - Netflix
       - Tencent Video
 
+      ## Most Watched Network & Top Streaming Service
+      - AMC # 78 shows across networks
+
       ## TMDB Most Common ##
       - ABC TV # Australian Broadcasting Corporation
       - ABS-CBN # ABS-CBN Corporation
@@ -74,33 +77,33 @@ dynamic_collections:
       - GMA Network # Philippine free-to-air television
       - ITV # British free-to-air public broadcast television network
       - KBS2 # Korean Broadcasting System, an entertainment oriented network
-      - Las Estrellas
-      - MBC
-      - Nippon TV
-      - PBS
-      - SBS
-      - SVT1
-      - TF1
-      - Tokyo MX
-      - TV 2
-      - tv asahi
-      - TV Globo
-      - TV Tokyo
-      - TV3
-      - TVB Jade
-      - tvN
-      - RTL
-      - Youku
-      - YouTube
-      - ZDF
+      - Las Estrellas # A TelevisaUnivision network
+      - MBC # Munhwa Broadcasting Corporation - South Korea Channel 11
+      - Nippon TV # JOAX-DTV, the flagship station of the Nippon News Network and the Nippon Television Network System
+      - PBS # Public Broadcasting Service is an American public broadcaster and non-commercial, free-to-air television network
+      - SVT1 # Swedish public service broadcaster Sveriges Television
+      - TF1 # French commercial television network owned by TF1 Group
+      - Tokyo MX # JOMX-DTV, an independent television station in Tokyo, Japan, owned by the Tokyo Metropolitan Television Broadcasting Corporation
+      - tv asahi # JOEX-DTV, a television station owned and operated by the TV Asahi Corporation
+      - TV Globo # Brazilian free-to-air television network
+      - TV Tokyo # JOTX-DTV, a television station headquartered in the Sumitomo Fudosan Roppongi Grand Tower in Roppongi, Minato, Tokyo, Japan
+      - TVB Jade # Hong Kong Cantonese-language free-to-air television channel
+      - tvN # South Korean nationwide pay television network owned by CJ E&M
+      - RTL # Luxembourg-based international media conglomerate
+      - Youku # A video hosting service based in Beijing, China
+      - YouTube # online video sharing and social media platform headquartered in San Bruno, California
+      - ZDF # German public-service television broadcaster based in Mainz, Rhineland-Palatinate
+
+      ## Identical Network Names in TMDB (but different id's)
+      - SBS # Special Broadcasting Service & Seoul Broadcasting System appears to be identical in TMDB
+      - TV 2 # Norwegian terrestrial television channel & Danish government-owned broadcast and subscription television station
+      - TV3 # Catalan public broadcaster Televisió de Catalunya & Malaysian free-to-air television channel
 
       ## Most Watched Network Rankings ##
       - A&E
-      - AMC
       - Animal Planet
       - BET
       - Bravo
-      - Bounce TV
       - CNN
       - Comedy Central
       - ESPN
@@ -113,7 +116,6 @@ dynamic_collections:
       - Investigation Discovery
       - ION Television
       - Lifetime
-      - Nick at Nite
       - Nickelodeon
       - Oxygen
       - Paramount Network # 24 shows, probably gets rolled into Paramount+ or vice versa
@@ -124,13 +126,12 @@ dynamic_collections:
       - TNT
       - Travel Channel
       - TV Land
-      - UniMás
-      - Univision
+      - UniMás # TelevisaUnivision channel
+      - Univision # Now TelevisaUnivision
       - USA Network
       - WE tv
 
       ## Most Subscribed Streaming Service w/ min 50 shows
-      - AMC # 78 shows across networks
       - ALTBalaji # 61 shows
       - Apple TV+ # 153 shows
       - BluTV # 58 shows
@@ -149,30 +150,103 @@ dynamic_collections:
       - ZEE5 # 184 shows
 
       ## Addtional Thoughts
-      - HBO # 462 shows across networks
+      - ABC Family # 92 shows - addon to ABC or Freeform depending on user pref
+      - BET+ # 19 shows
+
+      ## Networks with posters already made
+      - ABC Kids # Should be ABC TV addon
+      - Acorn TV # 17 shows
+      - Adult Swim # 126 shows
+      - Amazon Kids+ # 5 shows
+      - Antena 3 # 179 shows
+      - BBC America # 37 shows
+      - Boomerang # 20 shows
+      - BritBox # 17 shows
+      - Cartoon Network # 236 shows across networks
+      - Cartoonito # 5 shows
+      - CBC # 93 shows across networks - Different than CBC Television
+      - Cbeebies # 121 shows
+      - Cinemax # 36 shows across networks
+      - Citytv # 38 shows
+      - Cooking Channel # 48 shows
+      - Crunchyroll # 14 shows
+      - CTV # 233 shows across networks
+      - Curiosity Stream # 54 shows
+      - Dave # 55 shows
+      - Discovery Kids # 38 shows across network
       - Disney Channel # 532 shows across networks
+      - Disney Junior # 89 shows across networks
+      - Disney XD # 82 shows - could get rolled to Disney+ or Disney Channel depending on user pref
+      - E! # 149 shows
+      - Epix # 30 shows
+      - FXX # 16 shows - mostly all also part of FX
+      - Family Channel # 40 shows
+      - Fox Kids # 29 shows across networks
+      - Freevee # 15 shows
+      - Global TV # 86 shows
+      - HBO # 462 shows across networks
+      - IFC # 50 shows across networks
+      - IMDb TV # 11 shows
+      - Nick Jr # 35 shows
+      - Nicktoons # 27 shows
+      - PBS Kids # 45 shows
+      - Showcase # 35 shows
+      - Showtime # 212 shows
+      - Shudder # 18 shows
+      - Sky # a lot
+      - Smithsonian # 125 shows across networks
+      - Spike # 139 shows
+      - Stan # 24 shows
+      - Sundance TV # 33 shows
+      - Turner Classic Movies # 5 shows
+      - truTV # 99 shows
+      - UPN # 108 shows
+      - USA Network #155 shows
+      - Universal Kids # 23 shows
+      - VH1 # 225 shows
+      - Vice
 
     addons:
       ABC:
         - ABC.com
-        - ABC Family
       ABC TV:
         - ABC Comedy
         - ABC Me
         - ABC News
         - ABC iview
-        - ABC KIDS
       AMC:
         - AMC.com
+      Animal Planet:
+        - Animal Planet Brasil
+        - Animal Planet Deutschland
+      BET:
+        - BET Her
       Canal+:
         - Canal+ Poland
         - Canal+ Family
         - Canal+ Discovery
         - Canal+ Afrique
+      Cartoon Network:
+        - Cartoon Network Latin America
+        - Cartoon Network Anything
+      CBC:
+        - CBCDrama
+      CBC Television:
+        - CBC Gem
+        - CBC News Network
+        - CBC Comedy
       CBS:
         - CBS.com
+      CTV:
+        - CTV Two
+        - CTV News Channel
+        - CTV Sci-Fi Channel
+        - CTV Comedy Channel
+        - CTV Life Channel
+        - ctv.ca
+      The CW:
+        - CW seed
       Discovery:
-        - Discovery Kids
         - Discovery Health Channel
         - Discovery Channel
         - Discovery Home & Health Brasil
@@ -184,15 +258,14 @@ dynamic_collections:
         - Discovery World
         - Discovery Science
       Disney Channel:
-        - Disney XD
-        - Disney Junior
         - Toon Disney
         - Playhouse Disney
-        - Disney Junior Latin America
-        - Disney Junior Brasil
         - Disney Channel Asia
         - disney.com
         - Disney Channel Middle East
+      Disney Junior:
+        - Disney Junior Latin America
+        - Disney Junior Brasil
       Disney+:
         - Disney+ Hotstar
       ESPN:
@@ -218,8 +291,6 @@ dynamic_collections:
         - Fox Sports 1
         - fox.com
         - Fox Sports Detroit
-      Freeform:
-        - ABC Family
       Hallmark:
         - Hallmark Channel
         - Hallmark Drama
@@ -237,8 +308,12 @@ dynamic_collections:
         - HBO Mundi
       HBO Max:
         - HBO Go
+      HGTV:
+        - HGTV Canada
       History:
         - History Channel Italia
+      Lifetime:
+        - Lifetime Movies
       MTV:
         - MTV2
         - MTV3
@@ -267,10 +342,52 @@ dynamic_collections:
         - CNBC TV18
         - NBC Weather Plus
         - NBC Radio Network
+      Nickelodeon:
+        - Nick at Nite
       Paramount+:
         - CBS All Access # Rebranded on Mar 4, 2021
+      Sky:
+        - Sky One
+        - Sky Atlantic
+        - Sky Arts
+        - Sky History
+        - Sky Living
+        - Sky Crime
+        - Sky Uno
+        - Sky Max
+        - Sky Sports
+        - Sky Documentaries
+        - Sky Nature
+        - Sky News
+        - Sky Cinema
+        - Sky News Australia
+        - Sky Italia
+        - Sky Comedy
+        - Sky Sports F1
+        - Sky Two
+        - Sky Witness
+        - sky Travel
+        - Sky Vision
+        - Sky News Weather Channel
+      Smithsonian:
+        - Smithsonian Channel
+        - Smithsonian Earth
       Starz:
         - Starz Encore
       TBS:
         - TBS.com
         - TBS Brasil
+      TNT:
+        - TNT Comedy
+        - TNT Latin America
+        - TNT España
+        - TNT Serie
+        - TNT Glitz
+      Travel Channel:
+        - Travel Channel United Kingdom
+      VH1:
+        - VH1 Classic
+      Vice:
+        - Viceland
+        - Vice TV
+        - Vice.com
