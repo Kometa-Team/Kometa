@@ -11,7 +11,7 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 19429
-    sort_title: !_Bruce Lee
+    sort_title: "!_Bruce Lee"
     sync_mode: sync
     collection_order: release
 ```
@@ -25,7 +25,7 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 19429
-    sort_title: !_Bruce Lee
+    sort_title: "!_Bruce Lee"
     sync_mode: sync
     collection_order: release
   Chris Pratt:
@@ -33,7 +33,7 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 73457
-    sort_title: !_Chris Pratt
+    sort_title: "!_Chris Pratt"
     sync_mode: sync
     collection_order: release
 ```
@@ -55,7 +55,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     sync_mode: sync
     collection_order: release
 ```
@@ -97,7 +97,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     sync_mode: sync
     collection_order: release
 collections:
@@ -120,7 +120,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
   Common:
     summary: "Movies that <<collection_name>> (TMDb ID: <<person>>) are in"
     sync_mode: sync
@@ -212,7 +212,7 @@ templates:
       limit: <<limit>>
     - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>&sort=user_rating,desc
       limit: <<limit>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     url_poster: https://theposterdb.com/api/assets/<<poster_id>>
     sync_mode: sync
     collection_order: alpha
