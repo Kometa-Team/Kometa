@@ -16,13 +16,13 @@ translations:
 templates:
   universe:
     conditionals:
-      mdblist_list:
+      my_mdblist_list:
         conditions:
           - trakt_list.exists: false
             imdb_list.exists: false
             value: <<mdblist_url>>
     default:
-      mdblist_list_<<key>>: <<mdblist_list>>
+      mdblist_list_<<key>>: <<my_mdblist_list>>
       name_mapping_<<key>>: <<name_mapping>>
       minimum_items: 2
     optional:
