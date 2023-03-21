@@ -399,6 +399,7 @@ class DataFile:
                                             error_text = "- does not exist"
                                     elif var_key[:-7] in variables and variables[var_key[:-7]]:
                                         error_text = "- exists"
+                                    con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):
                                     if var_key[:-4] in variables:
                                         con_var_value = variables[var_key[:-4]]
@@ -422,7 +423,7 @@ class DataFile:
                                     logger.trace(f'Condition {i} Failed: {var_key}{error_text}')
                                     condition_passed = False
                             if condition_passed:
-                                logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
+                                logger.trace(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                 condition_found = True
                                 if condition["value"] is not None:
                                     variables[final_key] = condition["value"]
@@ -432,11 +433,11 @@ class DataFile:
                                 break
                         if not condition_found:
                             if "default" in con_value:
-                                logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
+                                logger.trace(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
                                 variables[f"{final_key}_encoded"] = util.quote(con_value["default"])
                             else:
-                                logger.debug(f"Conditional Variable: {final_key} added as optional variable")
+                                logger.trace(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
                                 optional.append(f"{final_key}_encoded")
 
