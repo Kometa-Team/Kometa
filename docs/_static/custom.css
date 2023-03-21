@@ -380,8 +380,8 @@ table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
 .image-accordion {
-    background-color: #eee;
-    color: #444;
+    background-color: #1D1D1D;
+    color: #0ce3ac;
     cursor: pointer;
     padding: 18px;
     width: 100%;
@@ -391,29 +391,30 @@ table.dualTable td, table.dualTable th {
     font-size: 15px;
     transition: 0.4s;
 }
-.image-active, .image-accordion:hover {
-    background-color: #ccc;
+.image-active, {
+    background-color: #D1D1D;
+}
+.image-accordion:hover {
+    background-color: #181818;
 }
 .image-panel {
-  padding: 0 18px;
-  background-color: white;
+  background-color: #181818;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.2s ease-out;
 }
 .image-accordion:after {
-  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  content: '\25BC';
   font-size: 13px;
   color: #777;
   float: right;
   margin-left: 5px;
 }
 .image-active:after {
-  content: "\2796"; /* Unicode character for "minus" sign (-) */
+  content: "\25B2";
 }
 table.image-table {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin: 0 auto;
   border-spacing: 10px;
   border-collapse: separate;
 }
