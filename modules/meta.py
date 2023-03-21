@@ -662,6 +662,9 @@ class MetadataFile(DataFile):
             for set_key, set_data in get_dict("sections", data).items():
                 if not isinstance(set_data, dict):
                     raise Failed("Image Set Error: Set Data must be a dictionary")
+                elif "builders" not in set_data or not set_data["builders"]:
+                    logger.trace(f"Skipping No Builder for Section: {set_key}")
+                    continue
                 elif item_attr not in set_data:
                     raise Failed(f"Set Data must have the {item_attr} attribute")
                 elif not set_data[item_attr]:
