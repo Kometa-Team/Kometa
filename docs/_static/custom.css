@@ -379,6 +379,38 @@ table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable 
 table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
+.image-accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+.image-active, .image-accordion:hover {
+    background-color: #ccc;
+}
+.image-panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+.image-accordion:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: #777;
+  float: right;
+  margin-left: 5px;
+}
+.image-active:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
 table.image-table {
   margin-top: 5px;
   margin-bottom: 5px;
@@ -386,7 +418,7 @@ table.image-table {
   border-collapse: separate;
 }
 table.image-table td {
-  padding: 15px
+  padding: 15px;
   text-align: center;
   background-color: #1D1D1D
 }
