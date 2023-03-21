@@ -379,6 +379,19 @@ table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable 
 table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
+table.image-table {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+table.image-table tr {
+  padding: 1px
+}
+table.image-table td {
+  padding: 15px
+}
+table.image-table, table.image-table tbody, table.image-table tr, table.image-table td, table.image-table th {
+  background-color: rgba(0, 0, 0, 0.0) !important;
+}
 details {
   margin-bottom: 5px;
   border-color: #7c4dff;
