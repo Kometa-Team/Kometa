@@ -382,14 +382,15 @@ table.dualTable td, table.dualTable th {
 table.image-table {
   margin-top: 5px;
   margin-bottom: 5px;
-}
-table.image-table tr {
-  padding: 1px
+  border-spacing: 10px;
+  border-collapse: separate;
 }
 table.image-table td {
   padding: 15px
+  text-align: center;
+  background-color: #1D1D1D
 }
-table.image-table, table.image-table tbody, table.image-table tr, table.image-table td, table.image-table th {
+table.image-table, table.image-table tbody, table.image-table tr, table.image-table th {
   background-color: rgba(0, 0, 0, 0.0) !important;
 }
 details {
