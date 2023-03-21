@@ -1184,18 +1184,18 @@ class Plex(Library):
             else:
                 logger.warning(f"{text} | No Reset Image Found")
 
-    def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, image_set=None):
+    def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, style_data=None):
         if title is None:
             title = item.title
         posters, backgrounds = util.get_image_dicts(group, alias)
-        if image_set and "url_poster" in image_set and image_set["url_poster"]:
-            posters["image_set"] = image_set["url_poster"]
-        elif image_set and "tpdb_poster" in image_set and image_set["tpdb_poster"]:
-            posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_poster']}"
-        if image_set and "url_background" in image_set and image_set["url_background"]:
-            backgrounds["image_set"] = image_set["url_background"]
-        elif image_set and "tpdb_background" in image_set and image_set["tpdb_background"]:
-            backgrounds["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
+        if style_data and "url_poster" in style_data and style_data["url_poster"]:
+            posters["style_data"] = style_data["url_poster"]
+        elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
+            posters["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_poster']}"
+        if style_data and "url_background" in style_data and style_data["url_background"]:
+            backgrounds["style_data"] = style_data["url_background"]
+        elif style_data and "tpdb_background" in style_data and style_data["tpdb_background"]:
+            backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
         try:
             asset_poster, asset_background, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:

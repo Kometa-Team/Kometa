@@ -97,6 +97,7 @@ collection_mode_options = {
     "hide_items": "hideItems", "hideitems": "hideItems",
     "show_items": "showItems", "showitems": "showItems"
 }
+image_content_types = ["image/png", "image/jpeg", "image/webp"]
 parental_types = ["nudity", "violence", "profanity", "alcohol", "frightening"]
 parental_values = ["None", "Mild", "Moderate", "Severe"]
 parental_levels = {"none": [], "mild": ["None"], "moderate": ["None", "Mild"], "severe": ["None", "Mild", "Moderate"]}
@@ -167,11 +168,19 @@ def parse_version(version, text="develop"):
 def quote(data):
     return requests.utils.quote(str(data))
 
-def download_image(title, image_url, download_directory, filename):
+def download_image(title, image_url, download_directory, filename=None):
     response = requests.get(image_url, headers=header())
-    if response.status_code >= 400 or "Content-Type" not in response.headers or response.headers["Content-Type"] not in ["image/png", "image/jpeg"]:
+    if response.status_code >= 400:
         raise Failed(f"Image Error: Failed to download Image URL: {image_url}")
-    new_image = os.path.join(download_directory, f"{filename}{'.png' if response.headers['Content-Type'] == 'image/png' else '.jpg'}")
+    if "Content-Type" not in response.headers or response.headers["Content-Type"] not in image_content_types:
+        raise Failed("Image Not PNG, JPG, or WEBP")
+    new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
+    if response.headers["Content-Type"] == "image/jpeg":
+        new_image += ".jpg"
+    elif response.headers["Content-Type"] == "image/webp":
+        new_image += ".webp"
+    else:
+        new_image += ".png"
     with open(new_image, "wb") as handler:
         handler.write(response.content)
     return ImageData("asset_directory", new_image, prefix=f"{title}'s ", is_url=False)
@@ -201,13 +210,13 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
             logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
         if prioritize_assets and "asset_directory" in images:
             return images["asset_directory"]
-        for attr in ["image_set", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
+        for attr in ["style_data", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
                      "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory", "tmdb_person",
                      "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details",
                      "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
                      "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
             if attr in images:
-                if attr in ["image_set", f"url_{image_type}"] and download_url_assets and item_dir:
+                if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
                     if "asset_directory" in images:
                         return images["asset_directory"]
                     else:

@@ -940,7 +940,7 @@ class CollectionBuilder:
         if method_name == "url_poster":
             try:
                 image_response = self.config.get(method_data, headers=util.header())
-                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png", "image/webp"]:
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in util.image_content_types:
                     raise ConnectionError
                 self.posters[method_name] = method_data
             except ConnectionError:
@@ -967,7 +967,7 @@ class CollectionBuilder:
         if method_name == "url_background":
             try:
                 image_response = self.config.get(method_data, headers=util.header())
-                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in ["image/jpeg", "image/png", "image/webp"]:
+                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in util.image_content_types:
                     raise ConnectionError
                 self.backgrounds[method_name] = method_data
             except ConnectionError:
@@ -2845,15 +2845,15 @@ class CollectionBuilder:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
         if self.mapping_name in self.library.collection_images or self.name in self.library.collection_images:
-            image_set = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
-            if image_set and "url_poster" in image_set and image_set["url_poster"]:
-                self.posters["image_set"] = image_set["url_poster"]
-            elif image_set and "tpdb_poster" in image_set and image_set["tpdb_poster"]:
-                self.posters["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_poster']}"
-            if image_set and "url_background" in image_set and image_set["url_background"]:
-                self.backgrounds["image_set"] = image_set["url_background"]
-            elif image_set and "tpdb_background" in image_set and image_set["tpdb_background"]:
-                self.backgrounds["image_set"] = f"https://theposterdb.com/api/assets/{image_set['tpdb_background']}"
+            style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
+            if style_data and "url_poster" in style_data and style_data["url_poster"]:
+                self.posters["style_data"] = style_data["url_poster"]
+            elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
+                self.posters["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_poster']}"
+            if style_data and "url_background" in style_data and style_data["url_background"]:
+                self.backgrounds["style_data"] = style_data["url_background"]
+            elif style_data and "tpdb_background" in style_data and style_data["tpdb_background"]:
+                self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
 
         self.collection_poster = util.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
         self.collection_background = util.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
