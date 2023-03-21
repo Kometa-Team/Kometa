@@ -616,11 +616,18 @@ class MetadataFile(DataFile):
             logger.separator(f"Loading Images {file_type}: {path}")
             logger.info("")
             self.metadata = {}
-            data = self.load_file(self.type, self.path, images=True)
+            if self.type == "PMM Default":
+                if self.path.endswith(".yml"):
+                    self.path = self.path[:-4]
+                elif self.path.endswith(".yaml"):
+                    self.path = self.path[:-5]
+                data = self.load_file(self.type, "set", images=True, folder=f"{self.path}/")
+            else:
+                data = self.load_file(self.type, self.path, images=True)
             methods = {t.lower(): t for t in self.temp_vars}
 
             use_all = True if "use_all" in methods and self.temp_vars[methods["use_all"]] else False
-            logger.info(f"Use All Sets: {use_all}")
+            logger.info(f"Use All Sections: {use_all}")
 
             exclude = []
             if "exclude" in methods:
@@ -652,7 +659,7 @@ class MetadataFile(DataFile):
                 self.update_episodes = util.parse("Images", "update_episodes", self.temp_vars, datatype="bool", methods=methods, default=True)
             logger.info(f"Update Episodes: {self.update_episodes}")
             item_attr = "movies" if self.library.is_movie else "shows"
-            for set_key, set_data in get_dict("sets", data).items():
+            for set_key, set_data in get_dict("sections", data).items():
                 if not isinstance(set_data, dict):
                     raise Failed("Image Set Error: Set Data must be a dictionary")
                 elif item_attr not in set_data:
@@ -686,49 +693,53 @@ class MetadataFile(DataFile):
                         prioritized_style = ps
                         break
                 if f"style_{set_key}" in methods:
-                    style = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=default_style)
-                    logger.info(f"Style {set_key}: {style}")
-                    if style not in styles:
-                        p_warning = f"Image Set Warning: {set_key} has no style: {style} using"
+                    style_key = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=default_style)
+                    logger.info(f"Style {set_key}: {style_key}")
+                    if style_key not in styles:
+                        p_warning = f"Image Set Warning: {set_key} has no style: {style_key} using"
                         if prioritized_style:
                             logger.warning(f"{p_warning} Prioritized Style: {prioritized_style}")
-                            style = prioritized_style
+                            style_key = prioritized_style
                         else:
                             logger.warning(f"{p_warning} default: {default_style}. Options: {', '.join([s for s in styles])}")
-                            style = default_style
+                            style_key = default_style
                 elif prioritized_style:
                     logger.info(f"Using Prioritized Style: {prioritized_style}")
-                    style = prioritized_style
+                    style_key = prioritized_style
                 else:
-                    style = default_style
+                    style_key = default_style
                 if self.update_collections and "collections" in set_data and set_data["collections"]:
                     self.set_collections[set_key] = set_data["collections"]
-                if f"set_file_{set_key}" in methods:
-                    image_set = self.temp_vars[methods[f"set_file_{set_key}"]]
-                elif not styles[style]:
-                    image_set = [{"pmm": f"{set_key}/{style}"}]
+
+                if f"style_file_{set_key}" in methods:
+                    style_file = self.temp_vars[methods[f"style_file_{set_key}"]]
+                elif not styles[style_key]:
+                    style_file = [{"pmm": f"{set_key}/{style_key}"}]
                 else:
-                    image_set = styles[style]
+                    style_file = styles[style_key]
+                if not style_file:
+                    raise Failed("Image Style Error: style file call attribute is blank")
+                style_dict = style_file[0] if isinstance(style_file, list) else style_file
+                if not isinstance(style_dict, dict):
+                    raise Failed("Image Style Error: style file call attribute is not a dictionary")
+                elif not style_dict:
+                    raise Failed("Image Style Error: style file call attribute dictionary is empty")
+                style_data = self.get_style_data(style_dict, set_key, items_data=set_data[item_attr])
                 for item_name, item_data in set_data[item_attr].items():
+                    if item_name not in style_data or not style_data[item_name]:
+                        continue
                     if isinstance(item_data, dict):
                         if "mapping_id" not in item_data:
                             raise Failed(f"Image Set Error: {set_key}: {item_name}: No mapping ID found")
                         meta_data = item_data
                     else:
                         meta_data = {"mapping_id": item_data}
-                    if not image_set:
-                        raise Failed("Image Set Error: style file call attribute is blank")
-                    set_dict = image_set[0] if isinstance(image_set, list) else image_set
-                    if not isinstance(set_dict, dict):
-                        raise Failed("Image Set Error: style file call attribute is not a dictionary")
-                    elif not set_dict:
-                        raise Failed("Image Set Error: style file call attribute dictionary is empty")
-                    image_set_data = self.get_image_set(set_dict, set_key, asset_data=set_data)
-                    meta_data["image_set"] = image_set
-                    meta_data["set"] = set_key
-                    if item_name in image_set_data and isinstance(image_set_data[item_name], dict) and "seasons" in image_set_data[item_name] and image_set_data[item_name]["seasons"]:
+                    meta_data["style_data"] = style_data[item_name]
+                    meta_data["set_key"] = set_key
+                    meta_data["style_key"] = style_key
+                    if "seasons" in style_data[item_name] and style_data[item_name]["seasons"]:
                         season_dict = {}
-                        for season_num, season_data in image_set_data[item_name]["seasons"].items():
+                        for season_num, season_data in style_data[item_name]["seasons"].items():
                             season_dict[season_num] = {}
                             if season_data and "episodes" in season_data:
                                 episode_dict = {}
@@ -1209,18 +1220,20 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
-    def get_image_set(self, set_data, set_name, asset_data=None):
-        set_id = ""
-        for k, v in set_data.items():
-            set_id = f"{k}: {v}"
+    def get_style_data(self, style_file, set_key, items_data=None):
+        style_id = ""
+        for k, v in style_file.items():
+            style_id = f"{k}: {v}"
             break
-        if set_id not in self.library.image_sets and "git_assets" in set_data:
-            if not set_data["git_assets"]:
-                raise Failed("Image Set Error: git_assets cannot be blank")
-            if not asset_data:
-                raise Failed("Image Set Error: asset_data cannot be blank")
-            top_tree, repo = self.config.GitHub.get_top_tree(set_data["git_assets"])
-            sub = set_data["git_subfolder"] if "git_subfolder" in set_data and set_data["git_subfolder"] else ""
+        if style_id in self.library.image_styles:
+            return self.library.image_styles[style_id]
+        if "git_style" in style_file:
+            if not style_file["git_style"]:
+                raise Failed("Image Set Error: git_style cannot be blank")
+            if not items_data:
+                raise Failed("Image Set Error: items_data cannot be blank")
+            top_tree, repo = self.config.GitHub.get_top_tree(style_file["git_style"])
+            sub = style_file["git_subfolder"] if "git_subfolder" in style_file and style_file["git_subfolder"] else ""
             sub = sub.replace("\\", "/")
             if sub.startswith("/"):
                 sub = sub[1:]
@@ -1267,10 +1280,8 @@ class MetadataFile(DataFile):
                     _data[attr] = attr_data
                 return _data
 
-            image_sets = {}
-            for k in asset_data:
-                if k in ["styles", "collections"]:
-                    continue
+            style_data = {}
+            for k in items_data:
                 if k not in top_tree:
                     logger.info(f"Image Set Warning: {k} not found at https://github.com{repo}tree/master/{sub}")
                     continue
@@ -1300,42 +1311,42 @@ class MetadataFile(DataFile):
                         seasons[season_num] = season_data
                 if seasons:
                     item_data["seasons"] = seasons
-                image_sets[k] = item_data
+                style_data[k] = item_data
 
-            self.library.image_sets[set_id] = image_sets
+            self.library.image_styles[style_id] = style_data
 
-            if set_name and set_name in self.set_collections and "collections" in top_tree:
+            if set_key and set_key in self.set_collections and "collections" in top_tree:
                 collections_folder = self.config.GitHub.get_tree(top_tree["collections"]["url"])
-                for k, alts in self.set_collections[set_name].items():
+                for k, alts in self.set_collections[set_key].items():
                     if k in collections_folder:
                         collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]))
                         self.library.collection_images[k] = collection_data
                         for alt in alts:
                             self.library.collection_images[alt] = collection_data
-        elif set_id not in self.library.image_sets:
-            files = util.load_files(set_data, "image_set", err_type=self.type_str, single=True)
+        else:
+            files = util.load_files(style_file, "style_file", err_type=self.type_str, single=True)
             if not files:
-                raise Failed(f"{self.type_str} Error: No Path Found for image_set")
-            file_type, set_file, _, _ = files[0]
-            folder_name = os.path.splitext(os.path.basename(self.path))[0]
-            temp_data = self.load_file(file_type, set_file, images=True, folder=f"{folder_name}-sets/")
-            if "set" not in temp_data:
-                raise Failed('Image Set Error: Image sets must use the base attribute "set"')
+                raise Failed(f"{self.type_str} Error: No Path Found for style_file")
+            file_type, style_path, _, _ = files[0]
+            temp_data = self.load_file(file_type, style_path, images=True, folder=f"{self.path}/styles/")
+            item_attr = "movies" if self.library.is_movie else "shows"
             if not isinstance(temp_data, dict):
-                raise Failed("Image Set Error: Image set must be a dictionary")
-            if not temp_data["set"]:
-                raise Failed("Image Set Error: Image set attribute is empty")
-            if not isinstance(temp_data["set"], dict):
-                raise Failed("Image Set Error: Image set set attribute must be a dictionary")
-            self.library.image_sets[set_id] = temp_data["set"]
-            if set_name and set_name in self.set_collections and "collections" in temp_data and temp_data["collections"]:
-                for k, alts in self.set_collections[set_name].items():
+                raise Failed("Image Style Error: base must be a dictionary")
+            if item_attr not in temp_data:
+                raise Failed(f"Image Style Error: Image Styles must use the base attribute {item_attr}")
+            if not temp_data[item_attr]:
+                raise Failed(f"Image Style Error: {item_attr} attribute is empty")
+            if not isinstance(temp_data[item_attr], dict):
+                raise Failed(f"Image Style Error: {item_attr} attribute must be a dictionary")
+            self.library.image_styles[style_id] = temp_data[item_attr]
+            if set_key and set_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
+                for k, alts in self.set_collections[set_key].items():
                     if k in temp_data["collections"]:
                         self.library.collection_images[k] = temp_data["collections"][k]
                         if alts:
                             for alt in alts:
                                 self.library.collection_images[alt] = temp_data["collections"][k]
-        return self.library.image_sets[set_id]
+        return self.library.image_styles[style_id]
 
     def get_collections(self, requested_collections):
         if requested_collections:
@@ -1708,26 +1719,12 @@ class MetadataFile(DataFile):
                 else:
                     logger.error(f"{mapping_name} Advanced Details Update Failed")
 
-        image_set_data = None
-        if "image_set" in methods:
-            logger.debug("")
-            logger.debug("Validating Method: image_set")
-            set_files = meta[methods["image_set"]]
-            if not set_files:
-                raise Failed(f"{self.type_str} Error: image_set attribute is blank")
-            logger.debug(f"Value: {set_files}")
-            set_dict = set_files[0] if isinstance(set_files, list) else set_files
-            if not isinstance(set_dict, dict):
-                raise Failed(f"{self.type_str} Error: No image_set path dictionary found")
-            elif not set_dict:
-                raise Failed(f"{self.type_str} Error: image_set path dictionary is empty")
-            image_set_data = self.get_image_set(set_dict, meta[methods["set"]] if "set" in methods else None)
+        style_data = None
+        if "style_data" in methods:
+            style_data = meta[methods["style_data"]]
+            logger.trace(f"Style Data: {style_data}")
 
-        main_set_data = None
-        if image_set_data and mapping_name in image_set_data:
-            main_set_data = image_set_data[mapping_name]
-
-        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, image_set=main_set_data)
+        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1780,7 +1777,7 @@ class MetadataFile(DataFile):
                         logger.error(f"{self.type_str} Error: Season: {season_id} not found")
                         continue
                     season_methods = {sm.lower(): sm for sm in season_dict}
-                    season_image_set = None
+                    season_style_data = None
                     if update_seasons:
                         #season.batchEdits()
                         add_edit("title", season, season_dict, season_methods)
@@ -1789,12 +1786,12 @@ class MetadataFile(DataFile):
                         if self.edit_tags("label", season, season_dict, season_methods):
                             updated = True
                         finish_edit(season, f"Season: {season_id}")
-                        if main_set_data and "seasons" in main_set_data and main_set_data["seasons"] and season_id in main_set_data["seasons"]:
-                            season_image_set = main_set_data["seasons"][season_id]
+                        if style_data and "seasons" in style_data and style_data["seasons"] and season_id in style_data["seasons"]:
+                            season_style_data = style_data["seasons"][season_id]
                         _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
                                                              title=f"{item.title} Season {season.seasonNumber}",
                                                              image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
-                                                             folder_name=folder_name, image_set=season_image_set)
+                                                             folder_name=folder_name, style_data=season_style_data)
                         if ups:
                             updated = True
                         logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
@@ -1839,13 +1836,13 @@ class MetadataFile(DataFile):
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
                                 finish_edit(episode, f"Episode: {episode_id} in Season: {season_id}")
-                                episode_image_set = None
-                                if season_image_set and "episodes" in season_image_set and season_image_set["episodes"] and episode_id in season_image_set["episodes"]:
-                                    episode_image_set = season_image_set["episodes"][episode_id]
+                                episode_style_data = None
+                                if season_style_data and "episodes" in season_style_data and season_style_data["episodes"] and episode_id in season_style_data["episodes"]:
+                                    episode_style_data = season_style_data["episodes"][episode_id]
                                 _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
                                                                      title=f"{item.title} {episode.seasonEpisode.upper()}",
                                                                      image_name=episode.seasonEpisode.upper(), folder_name=folder_name,
-                                                                     image_set=episode_image_set)
+                                                                     style_data=episode_style_data)
                                 if ups:
                                     updated = True
                                 logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")

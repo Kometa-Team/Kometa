@@ -20,7 +20,7 @@ class Library(ABC):
         self.collections = []
         self.metadatas = []
         self.queues = {}
-        self.image_sets = {}
+        self.image_styles = {}
         self.collection_images = {}
         self.queue_current = 0
         self.metadata_files = []
@@ -267,19 +267,7 @@ class Library(ABC):
         pass
 
     def check_image_for_overlay(self, image_url, image_path, remove=False):
-        image_response = self.config.get(image_url)
-        if image_response.status_code >= 400:
-            raise Failed("Image Download Failed")
-        if image_response.headers["Content-Type"] not in ["image/png", "image/jpeg", "image/webp"]:
-            raise Failed("Image Not PNG, JPG, or WEBP")
-        if image_response.headers["Content-Type"] == "image/jpeg":
-            image_path += ".jpg"
-        elif image_response.headers["Content-Type"] == "image/webp":
-            image_path += ".webp"
-        else:
-            image_path += ".png"
-        with open(image_path, "wb") as handler:
-            handler.write(image_response.content)
+        image_path = util.download_image("", image_url, image_path).location
         while util.is_locked(image_path):
             time.sleep(1)
         with Image.open(image_path) as image:
