@@ -749,7 +749,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             if datatype == "dict":
                 return value
             elif datatype == "dictlist":
-                return {k: v if isinstance(v, list) else [v] for k, v in value.items()}
+                return {k: v if isinstance(v, list) else [v] if v else [] for k, v in value.items()}
             elif datatype == "dictliststr":
                 return {str(k): [str(y) for y in v] if isinstance(v, list) else [str(v)] for k, v in value.items()}
             elif datatype == "strdict":
