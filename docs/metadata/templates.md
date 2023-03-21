@@ -16,6 +16,8 @@ collections:
     collection_order: release
 ```
 
+Note: The `sort_title` in these examples is wrapped in quotes because it contains a character [`!`] which has [syntactic meaning in YAML files](../home/guides/yaml#string-literals).  This "quoting special characters" is a general YAML requirement, not something specific to `sort_title`.
+
 Then you add another:
 
 ```yaml
