@@ -8,8 +8,13 @@ $(document).ready(function(){
             if (panel.style.maxHeight) {
                 panel.style.maxHeight = null;
             } else {
-                panel.style.maxHeight = panel.scrollHeight + "px";
+                panel.style.maxHeight = parseInt(panel.scrollHeight) + 10 + "px";
                 parent.style.maxHeight = parseInt(parent.style.maxHeight) + panel.scrollHeight + "px";
+            } 
+            if (panel.style.padding) {
+                panel.style.padding = null;
+            } else {
+                panel.style.padding = "0 10px 10px 10px"
             } 
         });
     });

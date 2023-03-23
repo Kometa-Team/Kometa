@@ -379,6 +379,19 @@ table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable 
 table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
+.images-index-table {
+    padding: 0;
+}
+.images-index-table li {
+    display: inline-block;
+}
+.images-inline-link {
+    padding: 8px 10px;
+    display: inline-block;
+    background-color: #181818;
+    border-radius: 10px;
+    margin: 0 5px 5px 0;
+}
 .image-accordion {
     border-radius: 15px;
     background-color: #1D1D1D;
@@ -419,14 +432,17 @@ table.dualTable td, table.dualTable th {
 }
 table.image-table {
   /* margin: 0 auto; */
-  border-spacing: 10px;
   border-collapse: separate;
 }
-table.image-table td {
-  border-radius: 15px;
-  padding: 15px;
-  text-align: center;
-  background-color: #1D1D1D
+table.image-table div {
+    margin: 0 10px 0 0;
+    border-radius: 15px;
+    padding: 10px 10px 0 10px;
+    text-align: center;
+    background-color: #1D1D1D
+}
+table.image-table td:last-child div {
+    margin: 0;
 }
 table.image-table, table.image-table tbody, table.image-table tr, table.image-table th {
   background-color: rgba(0, 0, 0, 0.0) !important;
