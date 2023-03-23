@@ -96,7 +96,7 @@ data:
       "1431": CSI
       "4614": NCIS
       "4629": Stargate
-      "8514": "Rupaul's Drag Race"
+      "8514": "RuPaul's Drag Race"
       "6357": The Twilight Zone
       "10222": The Real Housewives
       "31917": Pretty Little Liars
@@ -121,7 +121,7 @@ addons:
       1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
       4614: [17610, 124271, 61387, 4376]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG
       4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
-      8514: [200870, 212798, 38409, 200865, 67482, 124045, 216276, 77233, 92611, 98888, 94038, 127841, 67564, 122692, 139203, 203734, 108934, 204701, 210689, 155431, 106475, 152261, 66769] #Sweden, Sweden Untucked, Untucked, Belgium, All-Stars, Spain, Brazil, Thailand, UK, Secret Celebrity, Canada, Italy, All Stars Untucked, Australia, Philippines, Canada VS the World, Holland, Philippines Untucked, Spain Untucked, UK VS the World, Vegas Revue, France, Ruvealed
+      8514: [200870, 212798, 38409, 200865, 67482, 124045, 216276, 77233, 92611, 98888, 94038, 127841, 67564, 122692, 139203, 203734, 108934, 204701, 210689, 155431, 106475, 152261, 66769] #Drag Race: Sweden, Sweden Untucked, Untucked, Belgium, All-Stars, Spain, Brazil, Thailand, UK, Secret Celebrity, Canada, Italy, All Stars Untucked, Australia, Philippines, Canada VS the World, Holland, Philippines Untucked, Spain Untucked, UK VS the World, Vegas Revue, France, Ruvealed
       6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
       10222: [34268, 32390, 17380, 18204, 65300, 10222, 31493, 217065, 14808, 136105, 61868, 39283, 62087, 76474, 70612, 110381, 70463, 67480, 196592, 139703, 126149, 59556, 113333, 214463, 131449, 216849] # Real Housewives of Orange County: Miami, BH, ATL, NJ, Potomac, DC, Capetown, NYC, Ult. Girls Trip, Cheshire, Dallas, Melbourne, Hungary, Toronto, SLC, Sydney, Auckland, Dubai, ATL Porsha’s Family Matters, Johannesburg, Vancouver, Jersey, Amsterdam, Durban, Cheshire Christmas Cruising
       31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
