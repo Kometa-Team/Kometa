@@ -380,6 +380,7 @@ table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
 .image-accordion {
+    border-radius: 15px;
     background-color: #1D1D1D;
     color: #0ce3ac;
     cursor: pointer;
@@ -388,11 +389,13 @@ table.dualTable td, table.dualTable th {
     border: none;
     text-align: left;
     outline: none;
-    font-size: 15px;
+    font-size: 20px;
     transition: 0.4s;
+    margin: 15px 0 0 0;
 }
-.image-active, {
-    background-color: #D1D1D;
+.image-active {
+    border-radius: 15px 15px 0 0 !important;
+    background-color: #181818;
 }
 .image-accordion:hover {
     background-color: #181818;
@@ -400,7 +403,8 @@ table.dualTable td, table.dualTable th {
 .image-panel {
   background-color: #181818;
   max-height: 0;
-  overflow: hidden;
+  overflow: auto hidden;
+  border-radius: 0 0 15px 15px;
   transition: max-height 0.2s ease-out;
 }
 .image-accordion:after {
@@ -414,17 +418,22 @@ table.dualTable td, table.dualTable th {
   content: "\25B2";
 }
 table.image-table {
-  margin: 0 auto;
+  /* margin: 0 auto; */
   border-spacing: 10px;
   border-collapse: separate;
 }
 table.image-table td {
+  border-radius: 15px;
   padding: 15px;
   text-align: center;
   background-color: #1D1D1D
 }
 table.image-table, table.image-table tbody, table.image-table tr, table.image-table th {
   background-color: rgba(0, 0, 0, 0.0) !important;
+}
+table.image-table img {
+  border-radius: 15px;
+  margin: 0 0 15px 0;
 }
 details {
   margin-bottom: 5px;
