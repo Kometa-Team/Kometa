@@ -895,15 +895,15 @@ class ConfigFile:
                     except Failed as e:
                         logger.error(e)
 
-                params["images_path"] = []
+                params["image_sets"] = []
                 try:
-                    if lib and "images_path" in lib:
-                        if not lib["images_path"]:
-                            raise Failed("Config Error: images_path attribute is blank")
-                        files = util.load_files(lib["images_path"], "images_path")
+                    if lib and "image_sets" in lib:
+                        if not lib["image_sets"]:
+                            raise Failed("Config Error: image_sets attribute is blank")
+                        files = util.load_files(lib["image_sets"], "image_sets")
                         if not files:
-                            raise Failed("Config Error: No Paths Found for images_path")
-                        params["images_path"] = files
+                            raise Failed("Config Error: No Paths Found for image_sets")
+                        params["image_sets"] = files
                 except Failed as e:
                     logger.error(e)
 
