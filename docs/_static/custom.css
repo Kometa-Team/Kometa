@@ -391,6 +391,11 @@ table.dualTable td, table.dualTable th {
     background-color: #181818;
     border-radius: 10px;
     margin: 0 5px 5px 0;
+    text-align: center;
+    line-height: 20px;
+}
+.images-inline-link {
+    font-size: 60%;
 }
 .image-accordion {
     border-radius: 15px;
@@ -404,7 +409,7 @@ table.dualTable td, table.dualTable th {
     outline: none;
     font-size: 20px;
     transition: 0.4s;
-    margin: 15px 0 0 0;
+    margin: 5px 0 0 0;
 }
 .image-active {
     border-radius: 15px 15px 0 0 !important;
@@ -419,6 +424,8 @@ table.dualTable td, table.dualTable th {
   overflow: auto hidden;
   border-radius: 0 0 15px 15px;
   transition: max-height 0.2s ease-out;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 .image-accordion:after {
   content: '\25BC';
@@ -439,7 +446,8 @@ table.image-table div {
     border-radius: 15px;
     padding: 10px 10px 0 10px;
     text-align: center;
-    background-color: #1D1D1D
+    background-color: #1D1D1D;
+    line-height: 15px;
 }
 table.image-table td:last-child div {
     margin: 0;

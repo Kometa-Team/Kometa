@@ -42,7 +42,7 @@ class Library(ABC):
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
         self.overlay_path = params["overlay_path"]
-        self.images_path = params["images_path"]
+        self.image_sets = params["image_sets"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
@@ -165,7 +165,7 @@ class Library(ABC):
                     logger.error(e)
                     logger.info("Overlay File Failed To Load")
         if not operations_only and not overlays_only:
-            for file_type, images_file, temp_vars, asset_directory in self.images_path:
+            for file_type, images_file, temp_vars, asset_directory in self.image_sets:
                 try:
                     images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, image_set_file=True)
                     self.images_files.append(images_obj)
