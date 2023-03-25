@@ -23,223 +23,457 @@ variables:
     # For Playlists
     item: Article
 key_names:
-  # Action: Action
+  4/20: 4/20
+  Abkhazian: Abkhazien
+  Action: Action
   Action & Adventure: Action et Aventure
+  Actor: Acteur
   Actors: Acteurs et Actrices
   Adult: Adulte
   Adventure: Aventure
+  Afar: Afar
+  Afrikaans: Afrikaans
+  Age: Age
+  Airing today: Diffusés aujourd'hui
+  Akan: Akan
   Albanian: Albanais
-  # Animation: Animation
+  Amharic: Amharique
+  Animation: Animation
   Anime: Animé
   Arabic: Arabes
+  Aragonese: Aragonais
   Argentina: Argentine
+  Armenian: Armenien
+  Asian American & Pacific Islander Heritage Month: Mois du patrimoine des Américains d'origine asiatique et des îles du Pacifique
+  Assamese: Assamais
+  Assassin: Assassin
   Audio Language: Langue audio
   Australia: Australie
   Austria: L'Autriche
+  Avaric: Avar
+  Avestan: Avestique
   Award: Prix
-  # Bahamas: Bahamas
-  # Basque: Basque
+  Aymara: Aymara
+  Azerbaijani: Azéri
+  Bambara: Bambara
+  Bahamas: Bahamas
+  Based on...: Basés sur...
+  Based on a book: Basés sur un livre
+  Based on a comic: Basés sur un comic
+  Based on a true story: Basés sur des faits réels
+  Based on a video game: Basés sur un jeu vidéo
+  Basque: Basque
+  Bashkir: Bachkir
+  Belarusian: Biélorusses
   Belgium: Belgique
-  # Bengali: Bengali
+  Bengali: Bengali
+  Best Director Winners: Gagnants du meilleur directeur
+  Best Picture Winner: Gagnant du meilleur film
+  Best Picture Winners: Gagnants du meilleur film
+  Best of: Meilleur de
   Biography: Biographie
-  # Biopic: Biopic
+  Biopic: Biopic
+  Bislama: Bichelamar
+  Black History Month: Mois de l'histoire des Noirs
   Bosnian: Bosniaque
+  Bottom Rated: Notes basses
+  Box office: Box-office
+  Boys Love: Boys Love
   Brazil: Brésil
+  Breton: Bretons
   Bulgaria: Bulgarie
   Bulgarian: Bulgare
-  # Canada: Canada
+  Burmese: Birman
+  Canada: Canada
+  Cars: Voitures
   Catalan: Catalans
+  Central Khmer: Khmer
+  Chamorro: Chamorro
   Chart: Graphique
+  Chechen: Tchétchènes
+  Chichewa: Chewa
   Children: Enfants
   Chile: Chili
   China: Chine
   Chinese: Chinois
   Christmas: Noël
+  Church Slavic: Slavon d'église
+  Chuvash: Tchouvaches
+  Collected: Collectés
   Comedy: La Comédie
   Competition: Compétition
-  # Costa Rica: Costa Rica
+  Con Artist: Escroquerie
+  Content Ratings: Évaluation du contenu
+  Cornish: Cornique
+  Corsican: Corses
+  Costa Rica: Costa Rica
   Country: Pays
-  # Crime: Crime
+  Creature Horror: Créatures
+  Cree: Cri
+  Crime: Crime
   Croatia: Croatie
   Croatian: Croate
   Czech: Tchèques
   Czech Republic: République tchèque
   Danish: Danois
+  Day of persons with disabilities: Journée mondiale des personnes handicapées
   Decade: Décennie
+  Demons: Démons
   Denmark: Danemark
+  Director: Réalisateur
   Directors: Réalisateurs
+  Divehi: Maldivien
   Documentary: Documentaire
   Dominican Republic: République Dominicaine
   Drama: Dramatiques
+  Dzongkha: Dzongkha
   Dutch: Néerlandais
   Easter: Pâques
+  Ecchi: Ecchi
   Egypt: Egypte
   English: Anglais
   Erotica: Érotique
+  Esperanto: Espéranto
   Estonia: Estonie
   Estonian: Estoniens
+  Ewe: Éwé
   Family: Famille
+  Families: Familles
   Fantasy: Fantaisies
+  Faroese: Féroïens
   Father's Day: Fête des pères
+  Favorited: Favoris
+  Fijian: Fijiens
   Filipino: Philippins
-  # Film Noir: Film Noir
+  Film Noir: Film Noir
   Finland: Finlande
   Finnish: Finnois
   Food: Aliments
-  # France: France
+  Found Footage Horror: Images Trouvées
+  France: France
+  Franchise: Franchise
   French: Français
+  Fulah: Peul
+  Gaelic: Gaélique écossais
   Galician: Galiciens
+  Game: Jeu
   Game Show: Jeu télévisé
+  Ganda: Ganda
   Gangster: Bandit
-  # Genre: Genre
+  Genre: Genre
   Georgian: Géorgien
   German: Allemands
   Germany: Allemagne
+  Girls Love: Girl's Love
+  Gourmet: Gourmet
+  Grand jury winners: Grand prix du jury
   Greece: Grèce
   Greek: Grecs
-  # Halloween: Halloween
+  Guarani: Guarani
+  Gujarati: Goudjarati
+  Haitian: Créole haïtien
+  Halloween: Halloween
+  Harem: Harem
+  Hausa: Haoussa
   Hebrew: Hébreu
-  # Hindi: Hindi
+  Heist: Braquage
+  Hentai: Hentai
+  Herero: Héréro
+  Hindi: Hindi
+  Hiri Motu: Hiri Motu
   History: Historiques
   Home and Garden: Maison et jardin
-  # Hong Kong: Hong Kong
+  Hong Kong: Hong Kong
   Horror: Horreur
   Hungarian: Hongrois
   Hungary: Hongrie
   Iceland: Islande
   Icelandic: Islandais
+  Ido: Ido
+  Igbo: Igbo
   Independence Day: Le jour de l'indépendance
   India: Inde
   Indie: Indé
   Indonesia: Indonésie
   Indonesian: Indonésiens
+  Interlingua: Interlingue
+  Interlingue: Interlingue
+  Inuktitut: Inuktitut
+  Inupiaq: Inupiaq
   Iran: L'Iran
   Ireland: Irlande
+  Irish: Irlandais
   Israel: Israël
   Italian: Italiens
   Italy: Italie
   Japan: Japon
   Japanese: Japonais
-  # Kannada: Kannada
-  # Kazakh: Kazakh
+  Javanese: Javanais
+  Kalaallisut: Groenlandais
+  Kannada: Kannada
+  Kanuri: Kanouri
+  Kashmiri: Cachemiri
+  Kazakh: Kazakh
   Kids: Des gamins
+  Kids Network: Chaines Enfants
+  Kikuyu: Kikuyu
+  Kinyarwanda: Kinyarwanda
+  Kirghiz: Kirghize
+  Komi: Komi
+  Kongo: Kikongo
   Korea: Corée
   Korean: Coréens
-  # LGBTQ+: LGBTQ+
+  Kuanyama: Kuanyama
+  Kurdish: Kurde
+  LGBTQ+: LGBTQ+
+  LGBTQ+ Pride Month: Mois des fiertés
   Labor Day: Fête du travail
-  # Latin: Latin
+  Lao: Lao
+  Latin: Latin
+  Latinx Heritage Month: Mois de l'héritage hispanique
   Latvia: Lettonie
   Latvian: Letton
-  # Luxembourg: Luxembourg
+  Limburgan: Limbourgeois
+  Lingala: Lingala
+  Lithuanian: Lituanien
+  Luba-katanga: Luba-katanga
+  Luxembourg: Luxembourg
+  Luxembourgish: Luxembourgeois
+  Lowest rated: Moins bien notés
   Macedonian: Macédonien
+  Malagasy: Malgache
   Malay: Malais
-  # Malayalam: Malayalam
+  Malayalam: Malayalam
   Malaysia: Malaisie
   Malaysian: Malaisien
-  # Mandarin: Mandarin
+  Maltese: Maltais
+  Mandarin: Mandarin
+  Manx: Mannois
+  Maori: Maori
   Marathi: Marathe
   Martial Arts: Arts martiaux
+  Marshallese: Marshallais
+  Mecha: Mecha 
   Memorial Day: Jour du souvenir
   Mexico: Mexique
+  Military: Militaire
   Mind-Bend: Courbure de l'esprit
   Mind-Fuck: Baise mentale
+  Mind-F**k: Baise mentale
   Mini-Series: Mini-série
+  Mongolian: Mongol
   Morocco: Maroc
   Mother's Day: Fête des mères
+  Movie chart: Box-office films
   Music: Musiques
   Musical: Musicale
   Mystery: Mystère
+  Nauru: Nauruan
+  Navajo: Navajo
+  Ndonga: Ndonga
   Nepal: Népal
+  Nepali: Népalais
   Netherlands: Pays-Bas
   Network: Réseau
+  New Episodes: Nouveaux épisodes
+  # New Premieres: New Premieres
+  New Year: Nouvelle Année
   New Year's Day: Le jour de l'An
   New Zealand: Nouvelle-Zélande
+  Newly released episodes: Nouveaux épisodes disponibles
+  Newly released: Nouvellement disponibles
   News: Nouvelles
   News & Politics: Actualités et politique
+  Nominations: Nominations
+  Not rated: Non classé
+  Now Playing: En cours
+  North Ndebele: Ndébélé du Nord
+  Northern Sami: Same du Nord
   Norway: Norvège
   Norwegian: Norvégiens
   Norwegian Bokmål: Norvégien Bokmål
   Norwegian Nynorsk: Norvégien Nynorsk
-  # Pakistan: Pakistan
-  # Panama: Panama
+  Occitan: Occitan
+  Ojibwa: Ojibwé
+  On the air: En direct
+  Oriya: Odia
+  Oromo: Oromo
+  Ossetian: Ossète
+  Other: Autre
+  Outdoor Adventure: Aventure en plein air
+  Pakistan: Pakistan
+  Pali: Pali
+  Panama: Panama
+  Parody: Parodie
+  Pashto: Pachto
   Persian: Persane
+  Personal: Personnel
   Peru: Pérou
-  # Philippines: Philippines
+  Philippines: Philippines
+  Pilots: Pilotes
+  Plex people watching: Ce que regardent les membres
+  Plex pilots: Pilotes Plex
+  Plex popular: Populaires sur Plex
+  Plex Watched: Regardés sur Plex
   Poland: Pologne
+  Police: Police
   Polish: Polonais
   Politics: Politique
+  Popular: Populaire
   Portugal: le Portugal
   Portugese: Portugais
   Portuguese: Portugais
+  Producer: Producteur
   Producers: Producteurs et Productrices
+  Psychedelic: Psychédélique
+  Psychological: Psychologique
+  Psychological horror: Horreur psychologique
   Punjabi: Pendjabi
-  # Qatar: Qatar
-  Ratings: Notes
+  Qatar: Qatar
+  Quechua: Quechua
+  Rated: Classé
+  Ratings: Classements
   Reality: Réalité
+  Recommended: Recommandés
+  Recently added: Ajoutés récemment
+  Recently aired: Diffusés récemment
   Resolution: Résolution
   Romance: Romantiques
   Romania: Roumanie
   Romanian: Roumains
   Romantic Comedy: Comédie romantique
   Romantic Drama: Drame romantique
+  Romansh: Romanche
+  Rundi: Kirondi
   Russia: Russie
   Russian: Russes
+  Samoan: Samoan
+  Samurai: Samouraï
+  Sango: Sango
+  Sanskrit: Sanscrit 
+  Sardinian: Sarde
   Saudi Arabia: Arabie Saoudite
+  School: École
   Sci-Fi & Fantasy: Science-fiction et fantaisie
   Science Fiction: La science-fiction
+  Season: Saison
   Seasonal: Saisonnier
   Serbia: Serbie
   Serbian: Serbe
+  Serial killer: Tueur en série
+  Shona: Shona
   Short: Court Métrage
+  Shoujo: Shōjo
+  Shounen: Shōnen
+  Sichuan Yi: Yi
+  Sindhi: Sindi
   Singapore: Singapour
-  # Slasher: Slasher
+  Sinhala: Cingalais
+  Slasher: Slasher
+  Slice of life: Tranche de vie
   Slovak: Slovaques
   Slovenian: Slovène
   Soap: Feuilleton
+  Somali: Somali
   South Africa: Afrique du Sud
+  South Ndebele: Ndébélé du Sud
+  Southern Sotho: Sotho du Sud
+  Space: Espace
   Spain: Espagne
   Spanish: Espagnols
-  # Sport: Sport
-  # Sri Lanka: Sri Lanka
+  Sport: Sport
+  Spy: Espion
+  Sri Lanka: Sri Lanka
   St. Patrick's Day: Le jour de la Saint-Patrick
   Stand-Up Comedy: Comédie debout
+  Stevenlu's popular movies: Films populaires selon StevenLu
+  Stoner Comedy: Stoner
   Streaming: Diffusion
-  # Studio: Studio
+  Studio: Studio
+  Studio Animation: Studio d'Animation
+  Subtitle: Sous-titre
   Subtitle Language: Langue des sous-titres
+  Sundanese: Soundanais
   Superhero: Super-héros
+  Super Power: Super-pouvoir
+  Supernatural: Surnaturel
+  Survival: Survie
   Suspense: Le Suspense
-  # Swahili: Swahili
+  Swahili: Kiswahili
+  Swati: Swati
   Sweden: Suède
   Swedish: Suédois
   Switzerland: Suisse
   Sword & Sorcery: Épée et sorcellerie
+  TV Chart: Box-office Séries
   TV Movie: Téléfilm
+  Tagalog: Tagal
+  Tahitian: Tahitien
+  Tajik: Tadjik 
   Talk Show: Talk-show
   Tamil: Tamouls
+  Tatar: Tatar
   Telugu: Télougou
   Thai: Thaïlandais
   Thailand: Thaïlande
   Thanksgiving: Action de grâces
   Thriller: Suspense
+  Tibetan: Tibétain
+  Tigrinya: Tigrigna 
+  Timeline Order: Ordre chronologique
+  Tonga: Tongien
+  TOP 10: TOP 10
+  TOP 10 PIRATED: TOP 10 Piratés
+  TOP 250: TOP 250
+  TOP AIRING: Top en diffusion
+  TOP Rated: Mieux Notés
   Travel: Voyager
+  Trending: Tendance
+  Tsonga: Tsonga
+  Tswana: Tswana
   Turkey: Turquie
   Turkish: Turcs
-  # Ukraine: Ukraine
+  Turkmen: Turkmène
+  Twi: Tchi
+  Uighur: Ouïghour
+  UK Network: Chaines Royaume-Uni
+  UK Streaming: Streaming Royaume-Uni
+  Ukraine: Ukraine
   Ukrainian: Ukrainien
   United Arab Emirates: Emirats Arabes Unis
   United Kingdom: Royaume-Uni
   United States of America: les États-Unis d'Amérique
   Universe: Univers
   Urdu: Ourdou
+  US Network: Chaines États-Unis
+  US Streaming: Streaming États-Unis
+  Uzbek: Ouzbek
   Valentine's Day: La Saint-Valentin
+  Vampire: Vampire
+  Venda: Venda
   Vietnam: Viêt Nam
   Vietnamese: Vietnamien
+  Volapük: Volapük
+  Walloon: Wallon
   War: Guerre
   War & Politics: Guerre & Politique
+  Watched: Regardés
+  Watchlist: Liste de lecture
   Welsh: Gallois
   Western: Le Western
+  Western Frisian: Frison Occidental
+  Winners: Gagnants
+  Wolof: Wolof
+  Women's History Month: Mois de l'histoire des femmes
+  Writer: Scénariste
   Writers: Scénaristes
+  Xhosa: Xhosa
   Year: de l'année
+  Yiddish: Yiddish
+  Yoruba: Yoruba
+  Zhuang: Zhuang
+  Zombie Horror: Zombies
+  Zulu: Zoulou
 
 translations:
   #############################################################
@@ -314,7 +548,7 @@ translations:
   #                           Chart                           #
   #############################################################
 
-  anilist_popular_name: AniList Populaire
+  anilist_popular_name: AniList Populaires
   anilist_popular_summary: Une collection des anime les plus populaires selon AniList.
 
   anilist_top_rated_name: AniList Le mieux noté
@@ -336,7 +570,7 @@ translations:
   flixpatrol_name: Top <<limit>> <<translated_key_name>>
   flixpatrol_summary: Top <<limit>> des <<library_translation>>s sur <<translated_key_name>> selon FlixPatrol.
 
-  imdb_popular_name: IMDb Populaire
+  imdb_popular_name: IMDb Populaires
   imdb_popular_summary: Liste des <<library_translation>>s IMDb Popular.
 
   imdb_top_name: IMDb Top 250
@@ -345,7 +579,7 @@ translations:
   imdb_lowest_name: IMDb Le moins bien noté
   imdb_lowest_summary: Liste des <<library_translation>>s IMDb les moins bien notés.
 
-  mal_popular_name: MyAnimeList Populaire
+  mal_popular_name: MyAnimeList Populaires
   mal_popular_summary: Une collection des anime les plus populaires selon MyAnimeList.
 
   mal_favorited_name: Favoris MyAnimeList
@@ -360,7 +594,7 @@ translations:
   mal_season_name: Saison MyAnimeList
   mal_season_summary: Une collection d’anime de la saison en cours selon MyAnimeList.
 
-  anidb_popular_name: AniDB Populaire
+  anidb_popular_name: AniDB Populaires
   anidb_popular_summary: Une collection d’anime populaire sur AniDB.
 
   commonsense_selection_name: Sélection de Common Sense
@@ -372,10 +606,10 @@ translations:
   pirated_popular_name: Top 10 des films piratés de la semaine
   pirated_popular_summary: Top 10 des films piratés hebdomadaires de TorrentFreak.com.
 
-  tautulli_popular_name: Plex Populaire
+  tautulli_popular_name: Plex Populaires
   tautulli_popular_summary: Une collection de <<library_translation>>s populaires sur Plex.
 
-  tautulli_watched_name: Plex regardé
+  tautulli_watched_name: Plex regardés
   tautulli_watched_summary: Une collection des meilleurs <<library_translation>>s regardés sur Plex.
 
   tmdb_airing_name: TMDb diffusé aujourd’hui
@@ -384,7 +618,7 @@ translations:
   tmdb_air_name: TMDb à l’antenne
   tmdb_air_summary: Une collection d’émissions qui diffusent encore activement des épisodes.
 
-  tmdb_popular_name: TMDb Populaire
+  tmdb_popular_name: TMDb Populaires
   tmdb_popular_summary: Une collection des <<library_translation>>s les plus regardés selon TMDb.
 
   tmdb_top_name: TMDb le mieux noté
@@ -396,16 +630,16 @@ translations:
   trakt_collected_name: Trakt collecté
   trakt_collected_summary: Une collection de la liste hebdomadaire collectée de Trakt.
 
-  trakt_popular_name: Trakt Populaire
+  trakt_popular_name: Trakt Populaires
   trakt_popular_summary: Une collection de la liste populaire hebdomadaire Trakt de Trakt.
 
-  trakt_recommended_name: Trakt Recommandé
+  trakt_recommended_name: Trakt Recommandés
   trakt_recommended_summary: Une collection de la liste hebdomadaire recommandée de Trakt.
 
   trakt_trending_name: Tendance Trakt
   trakt_trending_summary: Une collection de la liste hebdomadaire des tendances Trakt de Trakt.
 
-  trakt_watched_name: Trakt regardé
+  trakt_watched_name: Trakt regardés
   trakt_watched_summary: Une collection de la liste hebdomadaire surveillée de Trakt.
 
   #############################################################
@@ -421,7 +655,7 @@ translations:
   actor_summary: <<library_translationU>>s avec <<translated_key_name>>.
 
   # example key_name: English
-  audio_language_name: <<translated_key_name>>
+  audio_language_name: Audio <<translated_key_name>>
   audio_language_summary: <<library_translationU>>s tournés en langue <<translated_key_name>>.
 
   audio_language_other_name: Autres audio
@@ -438,8 +672,11 @@ translations:
   content_rating_cs_name: <<library_translationU>>s pour les <<translated_key_name>> ans et plus
   content_rating_cs_summary: <<library_translationU>> qui sont notés <<translated_key_name>> selon le Common Sense Rating System.
 
-  content_rating_other_name: <<library_translationU>>s non classés
-  content_rating_other_summary: <<library_translationU>>s qui ne sont pas classés, non classés ou tout autre classement peu commun.
+  content_rating_other_name: Not Rated <<library_translationU>>s
+  content_rating_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
+
+  # content_ratings_other_name: Other Ratings
+  # content_ratings_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
 
   # example key_name: United States
   country_name: <<translated_key_name>>
@@ -452,6 +689,9 @@ translations:
   decade_name: Les meilleurs des années <<translated_key_name>>
   decade_summary: Top <<limit>> des <<library_translation>>s des années <<translated_key_name>>.
 
+  # decade_other_name: Other Decades
+  # decade_other_summary: <<library_translationU>>s released in other decades.
+
   # example key_name: Robin Williams
   director_name: <<translated_key_name>> (Réalisateur)
   director_summary: <<library_translationU>>s réalisés par <<translated_key_name>>.
@@ -460,10 +700,19 @@ translations:
   genre_name: <<translated_key_name>>
   genre_summary: <<library_translationU>>s qui ont le genre <<translated_key_name>>.
 
+  # genre_other_name: Other Genres
+  # genre_other_summary: <<library_translationU>>s that have other uncommon genres.
+
   # example key_name: NBC
   network_name: <<translated_key_name>>
   network_summary: <<library_translationU>>s diffusés sur <<translated_key_name>>.
 
+  # network_other_name: Other Networks
+  # network_other_summary: <<library_translationU>>s broadcast on other uncommon networks.
+
+  # network_kids_other_name: Other Kids Networks
+  # network_kids_other_summary: <<library_translationU>>s broadcast on other uncommon kids networks.
+  
   # example key_name: Robin Williams
   producer_name: <<translated_key_name>> (Producteur)
   producer_summary: <<library_translationU>>s produits par <<translated_key_name>>.
@@ -474,6 +723,9 @@ translations:
 
   resolution_other_name: Autres résolutions de <<library_translationU>>s
   resolution_other_summary: <<library_translationU>>s qui ont d’autres résolutions inhabituelles
+
+  # resolutions_other_name: Other Resolutions
+  # resolutions_other_summary: <<library_translationU>>s that have other uncommon resolutions.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
   seasonal_name: <<library_translationU>>s <<translated_key_name>>
@@ -486,6 +738,12 @@ translations:
   # example key_name: Studio Ghibli
   studio_name: <<translated_key_name>>
   studio_summary: <<library_translationU>>s produits par <<translated_key_name>>.
+
+  # studio_other_name: Other Studios
+  # studio_other_summary: <<library_translationU>>s produced by other uncommon studios.
+
+  # studio_animation_other_name: Other Animation Studios
+  # studio_animation_other_summary: <<library_translationU>>s produced by other uncommon animation studios.
 
   # example key_name: English
   subtitle_language_name: Sous-titres <<translated_key_name>>
@@ -501,3 +759,6 @@ translations:
   # example key_name: 2015
   year_name: Les meilleurs de <<translated_key_name>>
   year_summary: <<library_translationU>>s sortis en <<translated_key_name>>.
+
+  # year_other_name: Other Years
+  # year_other_summary: <<library_translationU>>s released in other years.
