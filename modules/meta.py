@@ -677,9 +677,8 @@ class MetadataFile(DataFile):
                     raise Failed("Image Section Error: Section Data styles attribute is empty")
                 default_style = None
                 for sk, sv in styles.items():
-                    if sv:
-                        default_style = sk
-                        break
+                    default_style = sk
+                    break
                 if not default_style:
                     raise Failed(f"Image Section Error: No styles found for section: {section_key}")
                 use_key = None
