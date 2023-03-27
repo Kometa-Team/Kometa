@@ -1,4 +1,4 @@
-version: 1.18.2.1
+version: 1.18.3.1
 variables:
   library_translation:
     # For Movie Libraries
@@ -75,6 +75,7 @@ key_names:
   # Biopic: Biopic
   # Bislama: Bislama
   # Black History Month: Black History Month
+  # Book: Book
   # Bosnian: Bosnian
   # Bottom Rated: Bottom Rated
   # Box office: Box office
@@ -101,6 +102,7 @@ key_names:
   # Chuvash: Chuvash
   # Collected: Collected
   # Comedy: Comedy
+  # Comic: Comic
   # Competition: Competition
   # Con Artist: Con Artist
   # Content Ratings: Content Ratings
@@ -428,6 +430,7 @@ key_names:
   # TOP AIRING: TOP AIRING
   # TOP Rated: TOP Rated
   # Travel: Travel
+  # True Story: True Story
   # Trending: Trending
   # Tsonga: Tsonga
   # Tswana: Tswana
@@ -451,6 +454,7 @@ key_names:
   # Valentine's Day: Valentine's Day
   # Vampire: Vampire
   # Venda: Venda
+  # Video Game: Video Game
   # Vietnam: Vietnam
   # Vietnamese: Vietnamese
   # Volapük: Volapük
@@ -660,6 +664,10 @@ translations:
 
   audio_language_other_name: Other Audio
   audio_language_other_summary: <<library_translationU>>s filmed in other uncommon Languages.
+
+  # possible key_names: Book, Comic, True Story, Video Game
+  based_name: Based on a <<translated_key_name>>
+  based_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
 
   collectionless_name: Collectionless
   collectionless_summary: Collection of <<library_translationU>>s used to make Plex display items correctly.
