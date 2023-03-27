@@ -394,7 +394,7 @@ table.dualTable td, table.dualTable th {
     text-align: center;
     line-height: 20px;
 }
-.images-inline-link {
+.images-inline-link code {
     font-size: 60%;
 }
 .image-accordion {
