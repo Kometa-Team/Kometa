@@ -1,4 +1,4 @@
-version: 1.18.2.1
+version: 1.18.3.1
 variables:
   library_translation:
     # For Movie Libraries
@@ -75,6 +75,7 @@ key_names:
   Biopic: Biopic
   Bislama: Bichelamar
   Black History Month: Mois de l'histoire des Noirs
+  # Book: Book
   Bosnian: Bosniaque
   Bottom Rated: Notes basses
   Box office: Box-office
@@ -101,6 +102,7 @@ key_names:
   Chuvash: Tchouvaches
   Collected: Collectés
   Comedy: La Comédie
+  # Comic: Comic
   Competition: Compétition
   Con Artist: Escroquerie
   Content Ratings: Évaluation du contenu
@@ -428,6 +430,7 @@ key_names:
   TOP AIRING: Top en diffusion
   TOP Rated: Mieux Notés
   Travel: Voyager
+  # True Story: True Story
   Trending: Tendance
   Tsonga: Tsonga
   Tswana: Tswana
@@ -451,6 +454,7 @@ key_names:
   Valentine's Day: La Saint-Valentin
   Vampire: Vampire
   Venda: Venda
+  # Video Game: Video Game
   Vietnam: Viêt Nam
   Vietnamese: Vietnamien
   Volapük: Volapük
@@ -661,6 +665,10 @@ translations:
   audio_language_other_name: Autres audio
   audio_language_other_summary: <<library_translationU>>s tournés dans d’autres langues peu communes.
 
+  # possible key_names: Book, Comic, True Story, Video Game
+  # based_name: Based on a <<translated_key_name>>
+  # based_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
+
   collectionless_name: Sans collection
   collectionless_summary: Collection de <<library_translationU>>s utilisées pour que Plex affiche correctement les éléments.
 
@@ -672,15 +680,15 @@ translations:
   content_rating_cs_name: <<library_translationU>>s pour les <<translated_key_name>> ans et plus
   content_rating_cs_summary: <<library_translationU>> qui sont notés <<translated_key_name>> selon le Common Sense Rating System.
 
-  content_rating_other_name: Not Rated <<library_translationU>>s
-  content_rating_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
+  content_rating_other_name: <<library_translationU>>s Non Catégorisés
+  content_rating_other_summary: <<library_translationU>>s non catégorisés ou catégorisés de manière non conventionnelle.
 
-  # content_ratings_other_name: Other Ratings
-  # content_ratings_other_summary: <<library_translationU>>s that are Unrated, Not Rated or any other uncommon Ratings.
+  content_ratings_other_name: Autres Catégorisations
+  content_ratings_other_summary: <<library_translationU>>s non catégorisés ou catégorisés de manière non conventionnelle.
 
   # example key_name: United States
   country_name: <<translated_key_name>>
-  country_summary: <<library_translationU>>s filmés dans <<translated_key_name>>.
+  country_summary: <<library_translationU>>s filmés en <<translated_key_name>>.
 
   country_other_name: Autres pays
   country_other_summary: <<library_translationU>>s filmés dans d'autres pays peu communs.
@@ -700,18 +708,18 @@ translations:
   genre_name: <<translated_key_name>>
   genre_summary: <<library_translationU>>s qui ont le genre <<translated_key_name>>.
 
-  # genre_other_name: Other Genres
-  # genre_other_summary: <<library_translationU>>s that have other uncommon genres.
+  genre_other_name: Autres Genres
+  genre_other_summary: <<library_translationU>>s de genres peu communs.
 
   # example key_name: NBC
   network_name: <<translated_key_name>>
   network_summary: <<library_translationU>>s diffusés sur <<translated_key_name>>.
 
-  # network_other_name: Other Networks
-  # network_other_summary: <<library_translationU>>s broadcast on other uncommon networks.
+  network_other_name: Autres Chaînes
+  network_other_summary: <<library_translationU>>s diffusés sur des chaines peu connues.
 
-  # network_kids_other_name: Other Kids Networks
-  # network_kids_other_summary: <<library_translationU>>s broadcast on other uncommon kids networks.
+  network_kids_other_name: Autres Chaines Enfants
+  network_kids_other_summary: <<library_translationU>>s diffusés sur d'autres chaines pour enfants.
   
   # example key_name: Robin Williams
   producer_name: <<translated_key_name>> (Producteur)
@@ -724,8 +732,8 @@ translations:
   resolution_other_name: Autres résolutions de <<library_translationU>>s
   resolution_other_summary: <<library_translationU>>s qui ont d’autres résolutions inhabituelles
 
-  # resolutions_other_name: Other Resolutions
-  # resolutions_other_summary: <<library_translationU>>s that have other uncommon resolutions.
+  resolutions_other_name: Autres Resolutions
+  resolutions_other_summary: <<library_translationU>>s en résolutions peu communes.
 
   # possible key_names: New Year's Day, Valentine's Day, St. Patrick's Day, Easter, Mother's Day, Memorial Day, Father's Day, Independence Day, Labor Day, Halloween, Thanksgiving, Christmas
   seasonal_name: <<library_translationU>>s <<translated_key_name>>
@@ -739,11 +747,11 @@ translations:
   studio_name: <<translated_key_name>>
   studio_summary: <<library_translationU>>s produits par <<translated_key_name>>.
 
-  # studio_other_name: Other Studios
-  # studio_other_summary: <<library_translationU>>s produced by other uncommon studios.
+  studio_other_name: Autres Studios
+  studio_other_summary: <<library_translationU>>s produits par d'autres studios peu connus.
 
-  # studio_animation_other_name: Other Animation Studios
-  # studio_animation_other_summary: <<library_translationU>>s produced by other uncommon animation studios.
+  studio_animation_other_name: Autres Studios d'Animation
+  studio_animation_other_summary: <<library_translationU>>s produits par d'autres sutudions d'animation peu connus.
 
   # example key_name: English
   subtitle_language_name: Sous-titres <<translated_key_name>>
@@ -760,5 +768,5 @@ translations:
   year_name: Les meilleurs de <<translated_key_name>>
   year_summary: <<library_translationU>>s sortis en <<translated_key_name>>.
 
-  # year_other_name: Other Years
-  # year_other_summary: <<library_translationU>>s released in other years.
+  year_other_name: Autres Années
+  year_other_summary: <<library_translationU>>s sortis au cours d'autres années.
