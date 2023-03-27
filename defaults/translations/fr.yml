@@ -75,7 +75,7 @@ key_names:
   Biopic: Biopic
   Bislama: Bichelamar
   Black History Month: Mois de l'histoire des Noirs
-  # Book: Book
+  Book: Livre
   Bosnian: Bosniaque
   Bottom Rated: Notes basses
   Box office: Box-office
@@ -102,7 +102,7 @@ key_names:
   Chuvash: Tchouvaches
   Collected: Collectés
   Comedy: La Comédie
-  # Comic: Comic
+  Comic: Comic
   Competition: Compétition
   Con Artist: Escroquerie
   Content Ratings: Évaluation du contenu
@@ -278,7 +278,7 @@ key_names:
   Netherlands: Pays-Bas
   Network: Réseau
   New Episodes: Nouveaux épisodes
-  # New Premieres: New Premieres
+  New Premieres: Nouvelles Saisons
   New Year: Nouvelle Année
   New Year's Day: Le jour de l'An
   New Zealand: Nouvelle-Zélande
@@ -430,7 +430,7 @@ key_names:
   TOP AIRING: Top en diffusion
   TOP Rated: Mieux Notés
   Travel: Voyager
-  # True Story: True Story
+  True Story: Histoire vraie
   Trending: Tendance
   Tsonga: Tsonga
   Tswana: Tswana
@@ -454,7 +454,7 @@ key_names:
   Valentine's Day: La Saint-Valentin
   Vampire: Vampire
   Venda: Venda
-  # Video Game: Video Game
+  Video Game: Jeu Vidéo
   Vietnam: Viêt Nam
   Vietnamese: Vietnamien
   Volapük: Volapük
@@ -666,8 +666,8 @@ translations:
   audio_language_other_summary: <<library_translationU>>s tournés dans d’autres langues peu communes.
 
   # possible key_names: Book, Comic, True Story, Video Game
-  # based_name: Based on a <<translated_key_name>>
-  # based_summary: <<library_translationU>>s based on or inspired by <<translated_key_name>>s.
+  based_name: Basé sur un <<translated_key_name>>
+  based_summary: <<library_translationU>>s basé sur ou inspiré par <<translated_key_name>>s.
 
   collectionless_name: Sans collection
   collectionless_summary: Collection de <<library_translationU>>s utilisées pour que Plex affiche correctement les éléments.
@@ -697,8 +697,8 @@ translations:
   decade_name: Les meilleurs des années <<translated_key_name>>
   decade_summary: Top <<limit>> des <<library_translation>>s des années <<translated_key_name>>.
 
-  # decade_other_name: Other Decades
-  # decade_other_summary: <<library_translationU>>s released in other decades.
+  decade_other_name: Autres Décades
+  decade_other_summary: <<library_translationU>>s sortis durant d'autres décades.
 
   # example key_name: Robin Williams
   director_name: <<translated_key_name>> (Réalisateur)
