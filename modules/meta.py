@@ -660,47 +660,51 @@ class MetadataFile(DataFile):
                 self.update_episodes = util.parse("Images", "update_episodes", self.temp_vars, datatype="bool", methods=methods, default=True)
             logger.info(f"Update Episodes: {self.update_episodes}")
             item_attr = "movies" if self.library.is_movie else "shows"
-            for set_key, set_data in get_dict("sections", data).items():
-                if not isinstance(set_data, dict):
-                    raise Failed("Image Set Error: Set Data must be a dictionary")
-                elif "builders" not in set_data or not set_data["builders"]:
-                    logger.trace(f"Skipping No Builder for Section: {set_key}")
+            for section_key, section_data in get_dict("sections", data).items():
+                if not isinstance(section_data, dict):
+                    raise Failed("Image Set Error: Section Data must be a dictionary")
+                if "builders" not in section_data or not section_data["builders"]:
+                    logger.trace(f"Skipping No Builder for Section: {section_key}")
                     continue
-                elif item_attr not in set_data:
-                    raise Failed(f"Set Data must have the {item_attr} attribute")
-                elif not set_data[item_attr]:
-                    raise Failed(f"Set Data attribute {item_attr} is empty")
-                elif "styles" not in set_data:
-                    raise Failed("Image Set Error: Set Data must have the styles attribute")
-                styles = util.parse("Set Data", "styles", set_data["styles"], datatype="dictlist")
-                if "default" not in styles or not styles["default"]:
-                    raise Failed("Image Set Error: Set Data styles attribute must have a default")
-                default_style = styles["default"][0]
-                if default_style not in styles:
-                    raise Failed(f"Image Set Error: Set Data styles default style not found. Options: {', '.join([s for s in styles])}")
+                elif item_attr not in section_data:
+                    raise Failed(f"Section Data must have the {item_attr} attribute")
+                elif not section_data[item_attr]:
+                    raise Failed(f"Section Data attribute {item_attr} is empty")
+                elif "styles" not in section_data:
+                    raise Failed("Image Section Error: Section Data must have the styles attribute")
+                styles = util.parse("Section Data", "styles", section_data["styles"], datatype="dictlist")
+                if not styles:
+                    raise Failed("Image Section Error: Section Data styles attribute is empty")
+                default_style = None
+                for sk, sv in styles.items():
+                    if sv:
+                        default_style = sk
+                        break
+                if not default_style:
+                    raise Failed(f"Image Section Error: No styles found for section: {section_key}")
                 use_key = None
-                if f"use_{set_key}" in methods:
-                    use_key = util.parse("Images", f"use_{set_key}", self.temp_vars, datatype="bool",methods=methods, default=False)
-                    logger.info(f"Use {set_key}: {use_key}")
+                if f"use_{section_key}" in methods:
+                    use_key = util.parse("Images", f"use_{section_key}", self.temp_vars, datatype="bool",methods=methods, default=False)
+                    logger.info(f"Use {section_key}: {use_key}")
                 if use_key is False:
-                    logger.trace(f"Skipped as use_{set_key} is false")
+                    logger.trace(f"Skipped as use_{section_key} is false")
                     continue
-                elif use_all and set_key in exclude:
-                    logger.trace(f"Skipped as {set_key} is in the exclude list")
+                elif use_all and section_key in exclude:
+                    logger.trace(f"Skipped as {section_key} is in the exclude list")
                     continue
-                elif not use_all and use_key is None and set_key not in include:
-                    logger.trace(f"Skipped as use_all is false and use_{set_key} is not set{f' and {set_key} not in the include list' if include else ''}")
+                elif not use_all and use_key is None and section_key not in include:
+                    logger.trace(f"Skipped as use_all is false and use_{section_key} is not set{f' and {section_key} not in the include list' if include else ''}")
                     continue
                 prioritized_style = None
                 for ps in self.style_priority:
                     if ps in styles:
                         prioritized_style = ps
                         break
-                if f"style_{set_key}" in methods:
-                    style_key = util.parse("Images", f"style_{set_key}", self.temp_vars, methods=methods, default=default_style)
-                    logger.info(f"Style {set_key}: {style_key}")
+                if f"style_{section_key}" in methods:
+                    style_key = util.parse("Images", f"style_{section_key}", self.temp_vars, methods=methods, default=default_style)
+                    logger.info(f"Style {section_key}: {style_key}")
                     if style_key not in styles:
-                        p_warning = f"Image Set Warning: {set_key} has no style: {style_key} using"
+                        p_warning = f"Image Section Warning: {section_key} has no style: {style_key} using"
                         if prioritized_style:
                             logger.warning(f"{p_warning} Prioritized Style: {prioritized_style}")
                             style_key = prioritized_style
@@ -712,13 +716,13 @@ class MetadataFile(DataFile):
                     style_key = prioritized_style
                 else:
                     style_key = default_style
-                if self.update_collections and "collections" in set_data and set_data["collections"]:
-                    self.set_collections[set_key] = set_data["collections"]
+                if self.update_collections and "collections" in section_data and section_data["collections"]:
+                    self.set_collections[section_key] = section_data["collections"]
 
-                if f"style_file_{set_key}" in methods:
-                    style_file = self.temp_vars[methods[f"style_file_{set_key}"]]
+                if f"style_file_{section_key}" in methods:
+                    style_file = self.temp_vars[methods[f"style_file_{section_key}"]]
                 elif not styles[style_key]:
-                    style_file = [{"pmm": f"{set_key}/{style_key}"}]
+                    style_file = [{"pmm": f"{section_key}/{style_key}"}]
                 else:
                     style_file = styles[style_key]
                 if not style_file:
@@ -728,18 +732,18 @@ class MetadataFile(DataFile):
                     raise Failed("Image Style Error: style file call attribute is not a dictionary")
                 elif not style_dict:
                     raise Failed("Image Style Error: style file call attribute dictionary is empty")
-                style_data = self.get_style_data(style_dict, set_key, items_data=set_data[item_attr])
-                for item_name, item_data in set_data[item_attr].items():
+                style_data = self.get_style_data(style_dict, section_key, items_data=section_data[item_attr])
+                for item_name, item_data in section_data[item_attr].items():
                     if item_name not in style_data or not style_data[item_name]:
                         continue
                     if isinstance(item_data, dict):
                         if "mapping_id" not in item_data:
-                            raise Failed(f"Image Set Error: {set_key}: {item_name}: No mapping ID found")
+                            raise Failed(f"Image Section Error: {section_key}: {item_name}: No mapping ID found")
                         meta_data = item_data
                     else:
                         meta_data = {"mapping_id": item_data}
                     meta_data["style_data"] = style_data[item_name]
-                    meta_data["set_key"] = set_key
+                    meta_data["section_key"] = section_key
                     meta_data["style_key"] = style_key
                     if "seasons" in style_data[item_name] and style_data[item_name]["seasons"]:
                         season_dict = {}
@@ -1224,7 +1228,7 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
-    def get_style_data(self, style_file, set_key, items_data=None):
+    def get_style_data(self, style_file, section_key, items_data=None):
         style_id = ""
         for k, v in style_file.items():
             style_id = f"{k}: {v}"
@@ -1319,9 +1323,9 @@ class MetadataFile(DataFile):
 
             self.library.image_styles[style_id] = style_data
 
-            if set_key and set_key in self.set_collections and "collections" in top_tree:
+            if section_key and section_key in self.set_collections and "collections" in top_tree:
                 collections_folder = self.config.GitHub.get_tree(top_tree["collections"]["url"])
-                for k, alts in self.set_collections[set_key].items():
+                for k, alts in self.set_collections[section_key].items():
                     if k in collections_folder:
                         collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]))
                         self.library.collection_images[k] = collection_data
@@ -1343,8 +1347,8 @@ class MetadataFile(DataFile):
             if not isinstance(temp_data[item_attr], dict):
                 raise Failed(f"Image Style Error: {item_attr} attribute must be a dictionary")
             self.library.image_styles[style_id] = temp_data[item_attr]
-            if set_key and set_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
-                for k, alts in self.set_collections[set_key].items():
+            if section_key and section_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
+                for k, alts in self.set_collections[section_key].items():
                     if k in temp_data["collections"]:
                         self.library.collection_images[k] = temp_data["collections"][k]
                         if alts:
