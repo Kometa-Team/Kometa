@@ -93,7 +93,7 @@ Example Docker Compose file:
 ```yaml
 version: "2.1"
 services:
-  plex-meta-manager:
+  plex-image-cleanup:
     image: meisnate12/plex-image-cleanup
     container_name: plex-image-cleanup
     environment:
