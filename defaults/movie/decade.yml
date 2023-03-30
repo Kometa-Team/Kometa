@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "100"
 
-translations:
-  pmm: translations
-
 collections:
   Decade Collections:
     template:
       - name: separator
         separator: decade
-      - name: translation
         key_name: Decade
         translation_key: separator
 
@@ -28,7 +24,6 @@ dynamic_collections:
     title_format: Best of <<key_name>>
     template:
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

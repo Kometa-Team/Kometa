@@ -665,7 +665,7 @@ class Operations:
             else:
                 if "PMM" not in labels:
                     unmanaged_collections.append(col)
-                if col.title not in self.library.collections:
+                if col.title not in self.library.collection_names:
                     unconfigured_collections.append(col)
 
         if self.library.show_unmanaged and len(unmanaged_collections) > 0:

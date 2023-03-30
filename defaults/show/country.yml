@@ -11,15 +11,11 @@ external_templates:
   template_variables:
     collection_section: "080"
 
-translations:
-  pmm: translations
-
 collections:
   Country Collections:
     template:
       - name: separator
         separator: country
-      - name: translation
         key_name: Country
         translation_key: separator
 
@@ -30,12 +26,10 @@ dynamic_collections:
     other_name: Other Countries
     template:
       - filter
-      - translation
       - shared
     other_template:
       - other_collection
       - filter
-      - translation
       - shared
     template_variables:
       filter_term:

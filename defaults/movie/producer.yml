@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "160"
 
-translations:
-  pmm: translations
-
 collections:
   Producers Collections:
     template:
       - name: separator
         separator: producer
-      - name: translation
         key_name: Producers
         translation_key: separator
 
@@ -32,7 +28,6 @@ dynamic_collections:
     template:
       - tmdb_person
       - smart_filter
-      - translation
       - shared
     template_variables:
       tmdb_person:

@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "085"
 
-translations:
-  pmm: translations
-
 collections:
   Based On... Collections:
     template:
       - name: separator
         separator: based
-      - name: translation
         key_name: Based On...
         translation_key: separator
 
@@ -33,7 +29,6 @@ dynamic_collections:
     title_format: Based on a <<key_name>>
     template:
       - mdb_smart
-      - translation
       - shared
       - arr
     template_variables:

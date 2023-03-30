@@ -10,9 +10,6 @@ external_templates:
   template_variables:
     collection_section: 130
 
-translations:
-  pmm: translations
-
 dynamic_collections:
   Emmy Awards:
     type: number

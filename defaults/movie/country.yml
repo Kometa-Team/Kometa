@@ -11,9 +11,6 @@ external_templates:
   template_variables:
     collection_section: "080"
 
-translations:
-  pmm: translations
-
 collections:
   Country Collections:
     template:
@@ -30,12 +27,10 @@ dynamic_collections:
     other_name: Other Countries
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

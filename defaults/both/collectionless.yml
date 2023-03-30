@@ -5,23 +5,43 @@
 #    https://metamanager.wiki/en/latest/defaults/both/collectionless.html    #
 ##############################################################################
 
-translations:
-  pmm: translations
-
 templates:
   collectionless:
     default:
       exclude_prefix:
         - "!"
         - "~"
-      summary_collectionless: <<collectionless_summary>>
-      name_collectionless: <<collectionless_name>>
       sort_title: ~_Collectionless
       collection_order: alpha
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/collectionless.jpg
     optional:
       - collection_mode
       - exclude
+      - summary_collectionless
+      - name_collectionless
+      - tmdb_movie
+      - tmdb_show
+      - tmdb_list
+      - tvdb_movie
+      - tvdb_show
+      - tvdb_list
+      - imdb_id
+      - imdb_list
+      - plex_search
+      - mdblist_list
+      - trakt_list
+    tmdb_movie: <<tmdb_movie>>
+    tmdb_show: <<tmdb_show>>
+    tmdb_list: <<tmdb_list>>
+    tvdb_movie: <<tvdb_movie>>
+    tvdb_show: <<tvdb_show>>
+    tvdb_list: <<tvmdb_list>>
+    imdb_id: <<imdb_id>>
+    imdb_list: <<imdb_list>>
+    plex_search: <<plex_search>>
+    mdblist_list: <<mdblist_list>>
+    trakt_list: <<trakt_list>>
+    translation_key: collectionless
     url_poster: <<url_poster>>
     collection_order: <<collection_order>>
     sort_title: <<sort_title>>

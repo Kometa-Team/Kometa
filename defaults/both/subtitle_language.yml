@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "095"
 
-translations:
-  pmm: translations
-
 collections:
   Subtitle Language Collections:
     template:
       - name: separator
         separator: subtitle_language
-      - name: translation
         key_name: Subtitle Language
         translation_key: separator
 
@@ -29,12 +25,10 @@ dynamic_collections:
     other_name: Other Subtitles
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

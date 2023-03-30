@@ -44,7 +44,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset", "append_label"
+    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
@@ -182,6 +182,7 @@ class CollectionBuilder:
         self.data = data
         self.library = library
         self.libraries = []
+        self.summaries = {}
         self.playlist = library is None
         self.overlay = overlay
         methods = {m.lower(): m for m in self.data}
@@ -235,6 +236,101 @@ class CollectionBuilder:
 
         logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
+        self.builder_language = self.metadata.language
+        if "language" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: language")
+            if not self.data[methods["language"]]:
+                raise Failed(f"{self.Type} Error: language attribute is blank")
+            logger.debug(f"Value: {self.data[methods['language']]}")
+            if str(self.data[methods["language"]]).lower() not in self.config.GitHub.translation_keys:
+                logger.warning(f"Config Error: Language: {str(self.data[methods['language']]).lower()} Not Found using {self.builder_language}. Options: {', '.join(self.config.GitHub.translation_keys)}")
+            else:
+                self.builder_language = str(self.data[methods["language"]]).lower()
+
+        self.name = None
+        if "translation_key" in methods:
+            english = self.config.GitHub.translation_yaml("en")
+            translations = self.config.GitHub.translation_yaml(self.builder_language)
+            logger.debug("")
+            logger.debug("Validating Method: translation_key")
+            if not self.data[methods["translation_key"]]:
+                raise Failed(f"{self.Type} Error: translation_key attribute is blank")
+            logger.debug(f"Value: {self.data[methods['translation_key']]}")
+            translation_key = str(self.data[methods["translation_key"]])
+            if translation_key not in english["collections"]:
+                raise Failed(f"{self.Type} Error: translation_key: {translation_key} is invalid")
+
+            key_name = ""
+            if "key_name" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: key_name")
+                if not self.data[methods["key_name"]]:
+                    raise Failed(f"{self.Type} Error: key_name attribute is blank")
+                logger.debug(f"Value: {self.data[methods['key_name']]}")
+                key_name = str(self.data[methods["key_name"]])
+                if self.builder_language != "en":
+                    key_name_key = None
+                    for k, v in english["key_names"]:
+                        if key_name == v:
+                            key_name_key = k
+                            break
+                    if key_name_key and key_name_key in translations["key_names"]:
+                        key_name = translations["key_names"][key_name_key]
+
+            t_limit = self.data[methods["limit"]] if "limit" in methods and self.data[methods["limit"]] else 0
+
+            lib_type = self.library.type.lower() if self.library else "item"
+            en_vars = {k: v[lib_type] for k, v in english["variables"].items() if lib_type in v and v[lib_type]}
+            t_vars = {k: v[lib_type] for k, v in translations["variables"].items() if lib_type in v and v[lib_type]}
+            for k, v in en_vars.items():
+                if k not in t_vars:
+                    t_vars[k] = v
+
+            def apply_vars(input_str, var_set):
+                input_str = str(input_str)
+                for ik, iv in var_set.items():
+                    if f"<<{ik}>>" in input_str:
+                        input_str = input_str.replace(f"<<{ik}>>", iv)
+                    if f"<<{ik}U>>" in input_str:
+                        input_str = input_str.replace(f"<<{ik}U>>", str(iv).capitalize())
+                if "<<key_name>>" in input_str:
+                    input_str = input_str.replace("<<key_name>>", key_name)
+                if "<<limit>>" in input_str:
+                    input_str = input_str.replace("<<limit>>", t_limit)
+                return input_str
+
+            self.name = None
+            summary = None
+            english_name = apply_vars(english["collections"][translation_key]["name"], en_vars)
+            self.name = english_name
+            if translation_key in translations["collections"]:
+                logger.info(translations["collections"][translation_key])
+                if "name" in translations["collections"][translation_key]:
+                    self.name = apply_vars(translations["collections"][translation_key]["name"], t_vars)
+                if "summary" in translations["collections"][translation_key]:
+                    summary = apply_vars(translations["collections"][translation_key]["summary"], t_vars)
+            if not summary:
+                summary = apply_vars(english["collections"][translation_key]["summary"], en_vars)
+            if summary:
+                self.summaries["translation"] = summary
+            if "translation_prefix" in methods:
+                logger.debug("")
+                logger.debug("Validating Method: translation_prefix")
+                if not self.data[methods["translation_prefix"]]:
+                    raise Failed(f"{self.Type} Error: translation_prefix attribute is blank")
+                logger.debug(f"Value: {self.data[methods['translation_prefix']]}")
+                self.name = f"{self.data[methods['translation_prefix']]}{self.name}"
+                english_name = f"{self.data[methods['translation_prefix']]}{english_name}"
+            if self.name != english_name:
+                if "delete_collections_named" not in methods:
+                    self.data["delete_collections_named"] = english_name
+                    methods["delete_collections_named"] = "delete_collections_named"
+                if not isinstance(self.data[methods["delete_collections_named"]], list):
+                    self.data[methods["delete_collections_named"]] = [self.data[methods["delete_collections_named"]]]
+                if english_name not in self.data[methods["delete_collections_named"]]:
+                    self.data[methods["delete_collections_named"]].append(english_name)
+
         if "name" in methods:
             logger.debug("")
             logger.debug("Validating Method: name")
@@ -242,7 +338,8 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: name attribute is blank")
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
-        else:
+
+        if not self.name:
             self.name = self.mapping_name
 
         if self.playlist:
@@ -435,7 +532,6 @@ class CollectionBuilder:
         self.remove_item_map = {}
         self.posters = {}
         self.backgrounds = {}
-        self.summaries = {}
         self.schedule = ""
         self.limit = 0
         self.beginning_count = 0
@@ -2708,6 +2804,7 @@ class CollectionBuilder:
         logger.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
+        elif "translation" in self.summaries:               summary = ("translation", self.summaries["translation"])
         elif "tmdb_description" in self.summaries:          summary = ("tmdb_description", self.summaries["tmdb_description"])
         elif "tvdb_description" in self.summaries:          summary = ("tvdb_description", self.summaries["tvdb_description"])
         elif "letterboxd_description" in self.summaries:    summary = ("letterboxd_description", self.summaries["letterboxd_description"])
@@ -2881,7 +2978,7 @@ class CollectionBuilder:
             plex_search = {"sort_by": self.custom_sort}
             if self.builder_level in ["season", "episode"]:
                 plex_search["type"] = f"{self.builder_level}s"
-                plex_search["any"] = {f"{self.builder_level}_collection": self.name}
+                plex_search["any"] = {f"{self.builder_level}_collection": self.name} # noqa
             else:
                 plex_search["any"] = {"collection": self.name}
             try:

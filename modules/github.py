@@ -4,16 +4,20 @@ from modules.util import Failed
 
 logger = util.logger
 
+raw_url = "https://raw.githubusercontent.com"
 base_url = "https://api.github.com"
 pmm_base = f"{base_url}/repos/meisnate12/Plex-Meta-Manager"
-configs_raw_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Configs"
+configs_raw_url = f"{raw_url}/meisnate12/Plex-Meta-Manager-Configs"
 
 class GitHub:
     def __init__(self, config):
         self.config = config
-        self.images_raw_url = "https://raw.githubusercontent.com/meisnate12/PMM-Image-Sets/master/"
+        self.images_raw_url = f"{raw_url}/meisnate12/PMM-Image-Sets/master/"
+        self.translation_url = f"{raw_url}/meisnate12/PMM-Translations/master/defaults/"
         self._configs_url = None
         self._config_tags = []
+        self._translation_keys = []
+        self._translations = {}
 
     def get_top_tree(self, repo):
         if not str(repo).startswith("/"):
@@ -68,3 +72,21 @@ class GitHub:
             ):
                 self._configs_url = f"{configs_raw_url}/v{self.config.version[1]}/"
         return self._configs_url
+
+    @property
+    def translation_keys(self):
+        if not self._translation_keys:
+            tree, repo = self.get_top_tree("meisnate12/PMM-Translations")
+            self._translation_keys = [tk[:-4] for tk in self.get_tree(tree["defaults"]["url"])]
+        return self._translation_keys
+
+    def translation_yaml(self, translation_key):
+        if translation_key not in self._translations:
+            url = f"{self.translation_url}{translation_key}.yml"
+            yaml = util.YAML(input_data=self.config.get(url).content).data
+            output = {"collections": {}, "key_name": {}, "variables": {}}
+            for k in output:
+                if k in yaml:
+                    output[k] = yaml[k]
+            self._translations[translation_key] = output
+        return self._translations[translation_key]

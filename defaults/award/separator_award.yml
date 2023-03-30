@@ -10,14 +10,10 @@ external_templates:
   template_variables:
     collection_section: 130
 
-translations:
-  pmm: translations
-
 collections:
   Award Collections:
     template:
       - name: separator
         separator: award
-      - name: translation
         key_name: Award
         translation_key: separator
