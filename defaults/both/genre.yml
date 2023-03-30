@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "060"
 
-translations:
-  pmm: translations
-
 collections:
   Genre Collections:
     template:
       - name: separator
         separator: genre
-      - name: translation
         key_name: Genre
         translation_key: separator
 
@@ -28,7 +24,6 @@ dynamic_collections:
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

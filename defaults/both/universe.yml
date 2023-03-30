@@ -10,9 +10,6 @@ external_templates:
   template_variables:
     collection_section: "040"
 
-translations:
-  pmm: translations
-
 templates:
   universe:
     conditionals:
@@ -41,7 +38,6 @@ collections:
     template:
       - name: separator
         separator: universe
-      - name: translation
         key_name: Universe
         translation_key: separator
 
@@ -68,7 +64,6 @@ dynamic_collections:
       - universe
       - arr
       - custom
-      - translation
       - shared
     template_variables:
       allowed_libraries:

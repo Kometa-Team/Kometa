@@ -11,9 +11,6 @@ external_templates:
     collection_section: "020"
     image: chart/<<collection_name_encoded>>
 
-translations:
-  pmm: translations
-
 templates:
   imdb_chart:
     imdb_chart: <<chart>>_<<library_type>>s
@@ -26,10 +23,9 @@ collections:
       - name: imdb_chart
         chart: popular
       - name: shared
+        translation_key: imdb_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: imdb_popular
 
   IMDb Top 250:
     variables:
@@ -38,10 +34,9 @@ collections:
       - name: imdb_chart
         chart: top
       - name: shared
+        translation_key: imdb_top
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: imdb_top
 
   IMDb Lowest Rated:
     variables:
@@ -50,7 +45,6 @@ collections:
     template:
       - name: shared
         allowed_libraries: movie
+        translation_key: imdb_lowest
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: imdb_lowest

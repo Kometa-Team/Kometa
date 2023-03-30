@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "070"
 
-translations:
-  pmm: translations
-
 collections:
   Anime Collections:
     template:
       - name: separator
         separator: studio
-      - name: translation
         key_name: Studio
         translation_key: separator
 
@@ -28,7 +24,6 @@ dynamic_collections:
     title_format: <<key_name>>
     template:
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

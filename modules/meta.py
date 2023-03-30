@@ -70,6 +70,12 @@ class DataFile:
         self.type = file_type
         self.path = path
         self.temp_vars = temp_vars
+        self.language = "en"
+        if "language" in self.temp_vars and self.temp_vars["language"]:
+            if self.temp_vars["language"].lower() not in self.config.GitHub.translation_keys:
+                logger.warning(f"Config Error: Language: {self.temp_vars['language'].lower()} Not Found using en. Options: {', '.join(self.config.GitHub.translation_keys)}")
+            else:
+                self.language = self.temp_vars["language"].lower()
         self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}

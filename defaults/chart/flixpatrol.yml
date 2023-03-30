@@ -11,9 +11,6 @@ external_templates:
     collection_section: "020"
     pre: "_#"
 
-translations:
-  pmm: translations
-
 templates:
   flixpatrol:
     default:
@@ -28,7 +25,8 @@ templates:
         default: <<location_<<key>>>>
         conditions:
           - key: apple
-            value: world      
+            value: world
+    limit: <<limit>>
     flixpatrol_top:
       platform: <<platform>>
       location: <<actual_location>>
@@ -49,7 +47,6 @@ dynamic_collections:
     title_format: <<key_name>> Top <<limit>>
     template:
       - flixpatrol
-      - translation
       - shared
       - arr
       - custom

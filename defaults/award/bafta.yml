@@ -11,9 +11,6 @@ external_templates:
   template_variables:
     collection_section: 130
 
-translations:
-  pmm: translations
-
 collections:
   BAFTA Best Films:
     variables:
@@ -23,10 +20,9 @@ collections:
         sort: BAFTA !
         allowed_libraries: movie
         image: award/bafta/winner
+        translation_key: bafta_best
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: bafta_best
     trakt_list: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
 
 dynamic_collections:
@@ -40,7 +36,6 @@ dynamic_collections:
     template:
       - use_year_collections
       - trakt
-      - translation
       - shared
       - arr
       - custom

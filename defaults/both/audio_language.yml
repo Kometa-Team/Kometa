@@ -10,15 +10,11 @@ external_templates:
   template_variables:
     collection_section: "090"
 
-translations:
-  pmm: translations
-
 collections:
   Audio Language Collections:
     template:
       - name: separator
         separator: audio_language
-      - name: translation
         key_name: Audio Language
         translation_key: separator
 
@@ -29,12 +25,10 @@ dynamic_collections:
     other_name: Other Audio
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:

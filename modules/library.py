@@ -18,6 +18,7 @@ class Library(ABC):
         self.Overlays = None
         self.Notifiarr = None
         self.collections = []
+        self.collection_names = []
         self.metadatas = []
         self.queues = {}
         self.image_styles = {}

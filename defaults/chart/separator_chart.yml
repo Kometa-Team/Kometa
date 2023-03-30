@@ -10,14 +10,10 @@ external_templates:
   template_variables:
     collection_section: "020"
 
-translations:
-  pmm: translations
-
 collections:
   Chart Collections:
     template:
       - name: separator
         separator: chart
-      - name: translation
         key_name: Chart
         translation_key: separator

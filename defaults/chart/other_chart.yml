@@ -11,9 +11,6 @@ external_templates:
     collection_section: "020"
     image: chart/<<collection_name_encoded>>
 
-translations:
-  pmm: translations
-
 templates:
   anidb:
     default:
@@ -30,10 +27,9 @@ collections:
     template:
       - name: anidb
       - name: shared
+        translation_key: anidb_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: anidb_popular
 
   Common Sense Selection:
     variables:
@@ -41,10 +37,9 @@ collections:
     template:
       - name: commonsense
       - name: shared
+        translation_key: commonsense_selection
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: commonsense_selection
 
   StevenLu's Popular Movies:
     variables:
@@ -53,10 +48,9 @@ collections:
     template:
       - name: shared
         allowed_libraries: movie
+        translation_key:  stevenlu_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key:  stevenlu_popular
 
   Top 10 Pirated Movies of the Week:
     variables:
@@ -65,7 +59,6 @@ collections:
     template:
       - name: shared
         allowed_libraries: movie
+        translation_key: pirated_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: pirated_popular

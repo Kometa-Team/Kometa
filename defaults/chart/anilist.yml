@@ -11,9 +11,6 @@ external_templates:
     collection_section: "020"
     image: chart/<<collection_name_encoded>>
 
-translations:
-  pmm: translations
-
 templates:
   anilist:
     default:
@@ -39,10 +36,9 @@ collections:
     template:
       - name: anilist
       - name: shared
+        translation_key: anilist_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: anilist_popular
 
   AniList Top Rated:
     variables:
@@ -51,10 +47,9 @@ collections:
       - name: anilist
         chart: top_rated
       - name: shared
+        translation_key: anilist_top_rated
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: anilist_top_rated
 
   AniList Trending:
     variables:
@@ -62,10 +57,9 @@ collections:
     template:
       - name: anilist
       - name: shared
+        translation_key: anilist_trending
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: anilist_trending
 
   AniList Season:
     variables:
@@ -73,7 +67,6 @@ collections:
     template:
       - name: season
       - name: shared
+        translation_key: anilist_season
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: anilist_season

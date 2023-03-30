@@ -11,9 +11,6 @@ external_templates:
   template_variables:
     collection_section: 130
 
-translations:
-  pmm: translations
-
 dynamic_collections:
   Critics Choice Awards:
     type: number
@@ -25,7 +22,6 @@ dynamic_collections:
     template:
       - use_year_collections
       - trakt
-      - translation
       - shared
       - arr
       - custom

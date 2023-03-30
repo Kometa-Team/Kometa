@@ -27,6 +27,7 @@ templates:
       collection_order_<<key>>: <<collection_order>>
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/franchise/<<key_name_encoded>>.jpg
     optional:
+      - name_<<key>>
       - summary_<<key>>
       - name_mapping
       - sort_title
@@ -39,6 +40,7 @@ templates:
       - sonarr_tag
       - item_sonarr_tag
       - sonarr_monitor
+    name: <<name_<<key>>>>
     summary: <<summary_<<key>>>>
     minimum_items: <<minimum_items>>
     tmdb_show: <<value>>

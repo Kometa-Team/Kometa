@@ -668,9 +668,11 @@ def run_collection(config, library, metadata, requested_collections):
         try:
             builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
             library.stats["names"].append(builder.name)
+            if builder.build_collection:
+                library.collection_names.append(builder.name)
             logger.info("")
 
-            logger.separator(f"Running {mapping_name} Collection", space=False, border=False)
+            logger.separator(f"Running {builder.name} Collection", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 logger.info(builder.schedule)

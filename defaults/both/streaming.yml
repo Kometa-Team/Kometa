@@ -10,9 +10,6 @@ external_templates:
   template_variables:
     collection_section: "030"
 
-translations:
-  pmm: translations
-
 templates:
   mdb_streaming:
     optional:
@@ -76,7 +73,6 @@ collections:
     template:
       - name: separator
         separator: streaming
-      - name: translation
         key_name: Streaming
         translation_key: separator
 
@@ -104,7 +100,6 @@ dynamic_collections:
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - mdb_streaming
-      - translation
       - shared
       - arr
     template_variables:

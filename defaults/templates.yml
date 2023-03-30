@@ -5,12 +5,18 @@ templates:
       sep_style: orig
       collection_section: "00"
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+      summary_<<key>>: <<summary_format>>
+      name_<<key>>: <<name_format>>
     optional:
       - use_separator
       - collection_mode
       - placeholder_tmdb_movie
       - placeholder_tvdb_show
       - placeholder_imdb_id
+      - summary_format
+      - name_format
+      - key_name
+      - translation_key
     conditionals:
       use_blank:
         default: true
@@ -29,6 +35,10 @@ templates:
     imdb_id: <<placeholder_imdb_id>>
     blank_collection: <<use_blank>>
     url_poster: <<url_poster_<<key>>>>
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
 
   shared:
     default:
@@ -46,6 +56,8 @@ templates:
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
       minimum_items_<<key>>: <<minimum_items>>
+      summary_<<key>>: <<summary_format>>
+      name_<<key>>: <<name_format>>
     optional:
       - use_<<key>>
       - allowed_libraries
@@ -60,9 +72,19 @@ templates:
       - ignore_ids
       - ignore_imdb_ids
       - minimum_items
+      - summary_format
+      - name_format
+      - key_name
+      - translation_key
+      - limit
     run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
+    limit: <<limit>>
     ignore_ids: <<ignore_ids>>
     ignore_imdb_ids: <<ignore_imdb_ids>>
     trakt_list: <<trakt_list>>
@@ -214,13 +236,3 @@ templates:
     optional:
       - use_year_collections
     run_definition: <<use_year_collections>>
-
-  translation:
-    default:
-      summary_<<key>>: <<<<translation_key>>_summary>>
-      name_<<key>>: <<<<translation_key>>_name>>
-    optional:
-      - <<translation_key>>_summary
-      - <<translation_key>>_name
-    summary: <<summary_<<key>>>>
-    name: <<name_<<key>>>>
