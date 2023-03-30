@@ -82,7 +82,7 @@ dynamic_collections:
       - tmdbshow
     addons:
       121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
-      253: [655, 1855, 314, 67198, 85949, 85948] # Star Trek, The Next Generation, Voyager, Enterprise, Discovery, Picard, Lower Decks
+      253: [655, 580, 1855, 1992, 314, 103516, 67198, 82491, 85948, 85949, 106393] # TOS, TAS, TNG, DS9, VOY, ENT, DIS, SHO, PIC, LOW, PRO, SNW
       549: [2734, 4601, 3357, 32632, 72496, 157088, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
       951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
       1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
