@@ -84,7 +84,7 @@ Example Docker Compose file:
 ```yaml
 version: "2.1"
 services:
-  plex-meta-manager:
+  pmm-overlay-reset:
     image: meisnate12/pmm-overlay-reset
     container_name: pmm-overlay-reset
     environment:
