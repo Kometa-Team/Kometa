@@ -9,6 +9,7 @@
 [![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/NfH6mGFuAB)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
 [![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
+[![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/engage/plex-meta-manager/)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
 [![Feature Requests](https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic)](https://features.metamanager.wiki/)
@@ -51,30 +52,6 @@ If you find steps 1-3 above daunting, there are some walkthroughs available that
    2. The [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) covers the same thing, running the script via Docker.
    3. The [unRAID Walkthrough](https://metamanager.wiki/en/latest/home/guides/unraid.html) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) first on your computer to gain that understanding.
 
-## Development & Nightly Builds
-
-Development and Nightly builds are deemed as "beta" builds which are updated far more frequently than the master branch. Bug fixes, new features and and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
-
-The development builds (particularly the nightly branch) is only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes.
-
-### Development
-
-[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
-
-The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) branch has the most updated **documented** fixes and enhancements to Plex Meta Manager.  This version is tested and documented to some degree, but it is still an active development branch, so there may be rough edges.
-
-If switching to the develop build, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master build.
-
-### Nightly
-
-[![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
-
-There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) build which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented.
-
-**This branch will have squashed commits which can cause `git pull`/`git fetch` to error you can use `git reset origin/nightly --hard` to fix the branch.**
-
-As this build is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly build will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
-
 ## Example Usage
 
 Plex Meta Manager gives the user the power to curate a set of Collections to make discovering and organizing media easy. They can be built either using plex-based searches/filters, or by using popular builders such as TMDb, IMDb, Trakt, MDBList, MyAnimeList and many more.
@@ -88,21 +65,95 @@ Some example collections that can be created are:
   * Actors
   * Decades
 
-Below are some user-curated collections which have been created by Plex Meta Manager.
+Below are some user-curated collections which have been created by Plex Meta Manager using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html).
 
+### Example Movie Collection
 ![Movie Collection Preview](https://metamanager.wiki/en/latest/_images/movie-collection-preview.png)
 
+### Example Movie Overlays
 ![Movie Library Preview](https://metamanager.wiki/en/latest/_images/movie-library-preview.png)
 
+### Example Show Collection
 ![Show Collection Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
 
+### Example Show Overlays
 ![Show Library Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
 
-## Default and User Submitted Metadata/Overlay Files
+## Develop & Nightly Branches
+
+Develop and Nightly branches are deemed as "beta" branches which are updated far more frequently than the master branch. Bug fixes, new features and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
+
+These branches (particularly the nightly branch) are only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes, and accept the risk that these branches may suffer breakages at any point.
+
+<details class="details-tabs">
+  <summary>Develop Branch - Click to Expand</summary>
+
+[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
+
+The [develop](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop) branch has the most updated **documented** fixes and enhancements to Plex Meta Manager.  This version is tested and documented to some degree, but it is still an active Develop branch, so there may be rough edges.
+
+Switching to `develop`:
+````{tab} Running in Docker
+Add ":develop" to the image name in your run command or configuration:
+```
+meisnate12/plex-meta-manager:develop
+```
+````
+````{tab} Running on the Host
+In the directory where you cloned PMM:
+```bash
+git checkout develop
+```
+To switch back:
+```bash
+git checkout master
+```
+````
+
+If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master branch.
+
+</details>
+
+<br>
+
+<details class="details-tabs">
+  <summary>Nightly Branch - Click to Expand</summary>
+
+[![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
+
+**This branch will have squashed commits which can cause `git pull`/`git fetch` to error you can use `git reset origin/nightly --hard` to fix the branch.**
+
+There is also a [nightly](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly) branch which will have the absolute latest version of the script, but it could easily break, there is no guarantee that it even works, and any new features will not be documented until they have progressed enough to reach the develop branch.
+
+Switching to `nightly`:
+
+````{tab} Running in Docker
+Add ":nightly" to the image name in your run command or configuration:
+```
+meisnate12/plex-meta-manager:nightly
+```
+````
+````{tab} Running on the Host
+In the directory where you cloned PMM:
+```bash
+git checkout nightly
+```
+To switch back:
+```bash
+git checkout master
+```
+````
+
+As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
+</details>
+
+## Defaults and User Metadata/Overlay Files
 
 The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
 
 To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
+
+Plex Meta Manager can manage the metadata fields for movies, shows, seasons, episodes, artists, albums, tracks, and collections, which can allow you to have a full backup of your customizations in case of a database loss.
 
 ## Discord Support Server
 Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB). we have a dedicated support thread system so that your query can be dealt with efficiently by our team and community.
@@ -112,16 +163,11 @@ If you have an idea for how to enhance Plex Meta Manager or just want to vote on
 
 ## Errors and Configuration Questions
 If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB), please follow this guidance:
-* If you have an idea for how to enhance Plex Meta Manager please open a new [Feature Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+enhancement&2.feature_request.yml&title=%5BFeature%5D%3A+).
-* If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=1.bug_report.yml&title=%5BBug%5D%3A++) if the error persists.
+* If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) if the error persists.
 * If you see a mistake/typo with the [Plex Meta Manager Wiki](https://metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
 * If you have a metadata configuration query please post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).
 
 ## Contributing
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
 
-## IBRACORP Video Walkthrough
-
-[IBRACORP](https://ibracorp.io/) made a video walkthrough for installing Plex Meta Manager on unRAID.  While you might not be using unRAID the video goes over many key aspects of Plex Meta Manager and can be a great place to start learning how to use the script. Please note, since the making of the video, some significant changes have been made to Plex Meta Manager 1.17 and beyond so always reference the wiki for the latest details.
-
-[![Plex Meta Manager](https://img.youtube.com/vi/dF69MNoot3w/0.jpg)](https://www.youtube.com/watch?v=dF69MNoot3w "Plex Meta Manager")
+<br>

@@ -16,8 +16,7 @@ templates:
       movie_<<key>>: <<movie>>
       pre: "_"
       order_<<key>>: ""
-      sort: <<collection_name>>
-      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
       sort_title_<<key>>: <<sort_title>>
       radarr_add_missing_<<key>>: <<radarr_add_missing>>
       radarr_folder_<<key>>: <<radarr_folder>>

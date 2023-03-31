@@ -16,8 +16,7 @@ templates:
       name_mapping_<<key>>: <<name_mapping>>
       pre: "_"
       order_<<key>>: ""
-      sort: <<collection_name>>
-      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
       sort_title_<<key>>: <<sort_title>>
       sonarr_add_missing_<<key>>: <<sonarr_add_missing>>
       sonarr_folder_<<key>>: <<sonarr_folder>>
