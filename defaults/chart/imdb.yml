@@ -9,7 +9,7 @@ external_templates:
   pmm: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<collection_name_encoded>>
+    image: chart/<<mapping_name_encoded>>
 
 templates:
   imdb_chart:

@@ -2847,9 +2847,18 @@ class CollectionBuilder:
                 self.obj.editSummary(summary[1])
                 batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
 
-            if "sort_title" in self.details and str(self.details["sort_title"]) != str(self.obj.titleSort):
-                self.obj.editSortTitle(self.details["sort_title"])
-                batch_display += f"\nSort Title | {self.details['sort_title']}"
+            if "sort_title" in self.details:
+                new_sort_title = str(self.details["sort_title"])
+                if "<<title>>" in new_sort_title:
+                    title = self.name
+                    for op in ["The ", "A ", "An "]:
+                        if title.startswith(f"{op} "):
+                            title = f"{new_sort_title[len(op):].strip()}, {op.strip()}"
+                            break
+                    new_sort_title.replace("<<title>>", title)
+                if new_sort_title != str(self.obj.titleSort):
+                    self.obj.editSortTitle(self.details["sort_title"])
+                    batch_display += f"\nSort Title | {self.details['sort_title']}"
 
             if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
                 self.obj.editContentRating(self.details["content_rating"])

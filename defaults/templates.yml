@@ -29,7 +29,7 @@ templates:
             value: false
     run_definition: <<use_separator>>
     collection_mode: <<collection_mode>>
-    sort_title: "!<<collection_section>>_!<<collection_name>>"
+    sort_title: "!<<collection_section>>_!<<title>>"
     tmdb_movie: <<placeholder_tmdb_movie>>
     tvdb_show: <<placeholder_tvdb_show>>
     imdb_id: <<placeholder_imdb_id>>
@@ -43,8 +43,7 @@ templates:
   shared:
     default:
       collection_section: "00"
-      sort: <<collection_name>>
-      key: <<collection_name>>
+      key: <<mapping_name>>
       pre: "_"
       order: ""
       order_<<key>>: <<order>>
@@ -95,7 +94,7 @@ templates:
     visible_shared: <<visible_shared_<<key>>>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
-    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
     url_poster: <<url_poster_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
 
@@ -178,7 +177,7 @@ templates:
 
   arr:
     default:
-      key: <<collection_name>>
+      key: <<mapping_name>>
       radarr_add_missing_<<key>>: <<radarr_add_missing>>
       sonarr_add_missing_<<key>>: <<sonarr_add_missing>>
       radarr_folder_<<key>>: <<radarr_folder>>
@@ -225,12 +224,11 @@ templates:
   other_collection:
     default:
       collection_section: "00"
-      sort: <<collection_name>>
       pre: "_~"
     optional:
       - use_other
     run_definition: <<use_other>>
-    sort_title: "!<<collection_section>><<pre>><<sort>>"
+    sort_title: "!<<collection_section>><<pre>><<title>>"
 
   use_year_collections:
     optional:
