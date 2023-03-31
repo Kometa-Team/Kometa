@@ -291,13 +291,13 @@ class CollectionBuilder:
                 input_str = str(input_str)
                 for ik, iv in var_set.items():
                     if f"<<{ik}>>" in input_str:
-                        input_str = input_str.replace(f"<<{ik}>>", iv)
+                        input_str = input_str.replace(f"<<{ik}>>", str(iv))
                     if f"<<{ik}U>>" in input_str:
                         input_str = input_str.replace(f"<<{ik}U>>", str(iv).capitalize())
                 if "<<key_name>>" in input_str:
-                    input_str = input_str.replace("<<key_name>>", key_name)
+                    input_str = input_str.replace("<<key_name>>", str(key_name))
                 if "<<limit>>" in input_str:
-                    input_str = input_str.replace("<<limit>>", t_limit)
+                    input_str = input_str.replace("<<limit>>", str(t_limit))
                 return input_str
 
             self.name = None
