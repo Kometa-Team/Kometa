@@ -79,9 +79,6 @@ class DataFile:
         self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}
-        self.translations = {}
-        self.key_names = {}
-        self.translation_variables = {}
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -323,23 +320,10 @@ class DataFile:
                         if k not in variables:
                             conditionals[k] = v
 
-                    language = variables["language"] if "language" in variables else "default"
-                    translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items() if k not in optional}
-                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items() if (language in v or "default" in v) and k not in optional})
-                    key_name_variables = {}
-                    for var_key, var_value in self.key_names.items():
-                        if var_key == "library_type" and language in var_value:
-                            variables[var_key] = var_value[language].lower()
-                            variables[f"{var_key}U"] = var_value[language]
-                        elif language in var_value:
-                            key_name_variables[var_key] = var_value[language]
                     if "key_name" in variables:
                         variables["original_key_name"] = variables["key_name"]
                         first_letter = str(variables["key_name"]).upper()[0]
                         variables["key_name_first_letter"] = first_letter if first_letter.isalpha() else "#"
-                        if variables["key_name"] in key_name_variables:
-                            variables["key_name"] = key_name_variables[variables["key_name"]]
-                        variables["translated_key_name"] = variables["key_name"]
 
                     default = {}
                     if all_init_defaults:
@@ -488,8 +472,6 @@ class DataFile:
                     logger.trace("")
                     logger.trace(f"Optional: {optional}")
                     logger.trace("")
-                    logger.trace(f"Translation: {translation_variables}")
-                    logger.trace("")
 
                     def check_for_var(_method, _data, _debug):
                         def scan_text(og_txt, var, actual_value):
@@ -515,7 +497,7 @@ class DataFile:
                         try:
                             for i_check in range(8):
                                 for option in optional:
-                                    if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
+                                    if option not in variables and f"<<{option}>>" in str(_data):
                                         if _debug:
                                             logger.trace(f"Failed {_method}: {_data}")
                                         raise Failed
@@ -524,8 +506,6 @@ class DataFile:
                                         _data = scan_text(_data, variable, variable_data.replace(",", ""))
                                     elif variable != "name":
                                         _data = scan_text(_data, variable, variable_data)
-                                for variable, variable_data in translation_variables.items():
-                                    _data = scan_text(_data, variable, variable_data)
                                 for dm, dd in default.items():
                                     _data = scan_text(_data, dm, dd)
                         except Failed:
@@ -588,17 +568,6 @@ class DataFile:
                 temp_data = self.load_file(file_type, template_file, overlay=overlay)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     self.templates.update({k: (v, temp_vars) for k, v in temp_data["templates"].items() if k not in self.templates})
-
-    def translation_files(self, data, overlay=False):
-        if data and "translations" in data and data["translations"]:
-            files = util.load_files(data["translations"], "translations")
-            if not files:
-                logger.error("Config Error: No Paths Found for translations")
-            for file_type, template_file, _, _ in files:
-                temp_data, key_data, variables = self.load_file(file_type, template_file, overlay=overlay, translation=True)
-                self.translations.update({k: v for k, v in temp_data.items() if k not in self.translations})
-                self.key_names.update({k: v for k, v in key_data.items() if k not in self.key_names})
-                self.translation_variables.update({k: v for k, v in variables.items() if k not in self.translation_variables})
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, image_set_file=False):
@@ -776,7 +745,6 @@ class MetadataFile(DataFile):
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
-            self.translation_files(data)
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
@@ -2063,7 +2031,6 @@ class PlaylistFile(DataFile):
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
         self.external_templates(data)
-        self.translation_files(data)
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
@@ -2198,7 +2165,6 @@ class OverlayFile(DataFile):
             self.queue_names[queue_name] = queue_current
             queue_current += 1
         self.external_templates(data, overlay=True)
-        self.translation_files(data, overlay=True)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")
         logger.info(f"Overlay File Loaded Successfully")
