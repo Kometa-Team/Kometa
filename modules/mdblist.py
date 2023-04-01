@@ -9,7 +9,8 @@ logger = util.logger
 builders = ["mdblist_list"]
 sort_names = [
     "rank", "score", "score_average", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular",
-    "rogerebert", "rtomatoes", "metacritic", "myanimelist", "budget", "revenue", "added"
+    "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes", 
+    "updated", "last_air_date", "watched", "rating", "usort", "added", "runtime", "budget", "revenue", "title"
 ]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
