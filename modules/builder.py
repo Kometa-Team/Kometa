@@ -41,13 +41,13 @@ scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
     "smart_filter", "smart_label", "smart_url", "run_again", "schedule", "sync_mode", "template", "variables", "test", "suppress_overlays",
-    "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay",
-    "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name",
+    "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay", "pmm_poster",
+    "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name", "limit",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
     "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix"
 ]
 details = [
-    "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "limit", "url_theme",
+    "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "url_theme",
     "file_theme", "minimum_items", "label", "album_sorting", "cache_builders", "tmdb_region", "default_percent"
 ] + boolean_details + scheduled_boolean + string_details
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + \
@@ -249,9 +249,55 @@ class CollectionBuilder:
                 self.builder_language = str(self.data[methods["language"]]).lower()
 
         self.name = None
-        if "translation_key" in methods:
+        if "name" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: name")
+            if not self.data[methods["name"]]:
+                raise Failed(f"{self.Type} Error: name attribute is blank")
+            logger.debug(f"Value: {self.data[methods['name']]}")
+            self.name = str(self.data[methods["name"]])
+
+        english = None
+        translations = None
+
+        self.limit = 0
+        if "limit" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: limit")
+            if not self.data[methods["limit"]]:
+                raise Failed(f"{self.Type} Error: limit attribute is blank")
+            self.limit = util.parse(self.Type, "limit", self.data[methods["limit"]], datatype="int", minimum=1)
+
+        en_key = None
+        trans_key = None
+        if "key_name" in methods:
             english = self.config.GitHub.translation_yaml("en")
             translations = self.config.GitHub.translation_yaml(self.builder_language)
+            logger.debug("")
+            logger.debug("Validating Method: key_name")
+            if not self.data[methods["key_name"]]:
+                raise Failed(f"{self.Type} Error: key_name attribute is blank")
+            en_key = str(self.data[methods["key_name"]])
+            trans_key = en_key
+            if self.builder_language != "en":
+                key_name_key = None
+                for k, v in english["key_names"].items():
+                    if en_key == v:
+                        key_name_key = k
+                        break
+                if key_name_key and key_name_key in translations["key_names"]:
+                    trans_key = translations["key_names"][key_name_key]
+            logger.debug(f"Value: {trans_key}")
+
+        en_name = None
+        en_summary = None
+        trans_name = None
+        trans_summary = None
+        if "translation_key" in methods:
+            if not english:
+                english = self.config.GitHub.translation_yaml("en")
+            if not translations:
+                translations = self.config.GitHub.translation_yaml(self.builder_language)
             logger.debug("")
             logger.debug("Validating Method: translation_key")
             if not self.data[methods["translation_key"]]:
@@ -261,83 +307,85 @@ class CollectionBuilder:
             if translation_key not in english["collections"]:
                 raise Failed(f"{self.Type} Error: translation_key: {translation_key} is invalid")
 
-            key_name = ""
-            if "key_name" in methods:
-                logger.debug("")
-                logger.debug("Validating Method: key_name")
-                if not self.data[methods["key_name"]]:
-                    raise Failed(f"{self.Type} Error: key_name attribute is blank")
-                logger.debug(f"Value: {self.data[methods['key_name']]}")
-                key_name = str(self.data[methods["key_name"]])
-                if self.builder_language != "en":
-                    key_name_key = None
-                    for k, v in english["key_names"]:
-                        if key_name == v:
-                            key_name_key = k
-                            break
-                    if key_name_key and key_name_key in translations["key_names"]:
-                        key_name = translations["key_names"][key_name_key]
-
-            t_limit = self.data[methods["limit"]] if "limit" in methods and self.data[methods["limit"]] else 0
-
-            lib_type = self.library.type.lower() if self.library else "item"
-            en_vars = {k: v[lib_type] for k, v in english["variables"].items() if lib_type in v and v[lib_type]}
-            t_vars = {k: v[lib_type] for k, v in translations["variables"].items() if lib_type in v and v[lib_type]}
-            for k, v in en_vars.items():
-                if k not in t_vars:
-                    t_vars[k] = v
-
-            def apply_vars(input_str, var_set):
-                input_str = str(input_str)
-                for ik, iv in var_set.items():
-                    if f"<<{ik}>>" in input_str:
-                        input_str = input_str.replace(f"<<{ik}>>", str(iv))
-                    if f"<<{ik}U>>" in input_str:
-                        input_str = input_str.replace(f"<<{ik}U>>", str(iv).capitalize())
-                if "<<key_name>>" in input_str:
-                    input_str = input_str.replace("<<key_name>>", str(key_name))
-                if "<<limit>>" in input_str:
-                    input_str = input_str.replace("<<limit>>", str(t_limit))
-                return input_str
-
-            self.name = None
-            summary = None
-            english_name = apply_vars(english["collections"][translation_key]["name"], en_vars)
-            self.name = english_name
+            en_name = english["collections"][translation_key]["name"]
+            en_summary = english["collections"][translation_key]["summary"]
             if translation_key in translations["collections"]:
-                logger.info(translations["collections"][translation_key])
                 if "name" in translations["collections"][translation_key]:
-                    self.name = apply_vars(translations["collections"][translation_key]["name"], t_vars)
+                    trans_name = translations["collections"][translation_key]["name"]
                 if "summary" in translations["collections"][translation_key]:
-                    summary = apply_vars(translations["collections"][translation_key]["summary"], t_vars)
-            if not summary:
-                summary = apply_vars(english["collections"][translation_key]["summary"], en_vars)
-            if summary:
-                self.summaries["translation"] = summary
+                    trans_summary = translations["collections"][translation_key]["summary"]
             if "translation_prefix" in methods:
                 logger.debug("")
                 logger.debug("Validating Method: translation_prefix")
                 if not self.data[methods["translation_prefix"]]:
                     raise Failed(f"{self.Type} Error: translation_prefix attribute is blank")
                 logger.debug(f"Value: {self.data[methods['translation_prefix']]}")
-                self.name = f"{self.data[methods['translation_prefix']]}{self.name}"
-                english_name = f"{self.data[methods['translation_prefix']]}{english_name}"
-            if self.name != english_name:
-                if "delete_collections_named" not in methods:
-                    self.data["delete_collections_named"] = english_name
-                    methods["delete_collections_named"] = "delete_collections_named"
-                if not isinstance(self.data[methods["delete_collections_named"]], list):
-                    self.data[methods["delete_collections_named"]] = [self.data[methods["delete_collections_named"]]]
-                if english_name not in self.data[methods["delete_collections_named"]]:
-                    self.data[methods["delete_collections_named"]].append(english_name)
+                en_name = f"{self.data[methods['translation_prefix']]}{en_name}"
+                trans_name = f"{self.data[methods['translation_prefix']]}{trans_name}"
 
-        if "name" in methods:
-            logger.debug("")
-            logger.debug("Validating Method: name")
-            if not self.data[methods["name"]]:
-                raise Failed(f"{self.Type} Error: name attribute is blank")
-            logger.debug(f"Value: {self.data[methods['name']]}")
-            self.name = str(self.data[methods["name"]])
+        if self.name or en_name or trans_name:
+            if not english:
+                english = self.config.GitHub.translation_yaml("en")
+            if not translations:
+                translations = self.config.GitHub.translation_yaml(self.builder_language)
+            lib_type = self.library.type.lower() if self.library else "item"
+            en_vars = {k: v[lib_type] for k, v in english["variables"].items() if lib_type in v and v[lib_type]}
+            trans_vars = {k: v[lib_type] for k, v in translations["variables"].items() if lib_type in v and v[lib_type]}
+            for k, v in en_vars.items():
+                if k not in trans_vars:
+                    trans_vars[k] = v
+
+            def apply_vars(input_str, var_set, var_key, var_limit):
+                input_str = str(input_str)
+                if "<<library_type>>" in input_str:
+                    input_str = input_str.replace("<<library_type>>", "<<library_translation>>")
+                if "<<library_typeU>>" in input_str:
+                    input_str = input_str.replace("<<library_typeU>>", "<<library_translationU>>")
+                for ik, iv in var_set.items():
+                    if f"<<{ik}>>" in input_str:
+                        input_str = input_str.replace(f"<<{ik}>>", str(iv))
+                    if f"<<{ik}U>>" in input_str:
+                        input_str = input_str.replace(f"<<{ik}U>>", str(iv).capitalize())
+                if var_key and "<<key_name>>" in input_str:
+                    input_str = input_str.replace("<<key_name>>", str(var_key))
+                if var_limit and "<<limit>>" in input_str:
+                    input_str = input_str.replace("<<limit>>", str(var_limit))
+                return input_str
+
+            if self.name:
+                self.name = apply_vars(self.name, trans_vars, trans_key, self.limit)
+            if en_name:
+                en_name = apply_vars(en_name, en_vars, en_key, self.limit)
+            if trans_name:
+                trans_name = apply_vars(trans_name, trans_vars, trans_key, self.limit)
+            if en_summary:
+                en_summary = apply_vars(en_summary, en_vars, en_key, self.limit)
+            if trans_summary:
+                trans_summary = apply_vars(trans_summary, trans_vars, trans_key, self.limit)
+
+            delete_cols = []
+            if (self.name and self.name != en_name) or (not self.name and en_name != trans_name):
+                delete_cols.append(en_name)
+            if self.name and self.name != trans_name:
+                delete_cols.append(trans_name)
+
+            if delete_cols:
+                if "delete_collections_named" not in methods:
+                    self.data["delete_collections_named"] = delete_cols
+                    methods["delete_collections_named"] = "delete_collections_named"
+                elif not self.data[methods["delete_collections_named"]]:
+                    self.data[methods["delete_collections_named"]] = delete_cols
+                elif not isinstance(self.data[methods["delete_collections_named"]], list):
+                    delete_cols.append(self.data[methods["delete_collections_named"]])
+                    self.data[methods["delete_collections_named"]] = delete_cols
+                else:
+                    self.data[methods["delete_collections_named"]].extend(delete_cols)
+
+            if not self.name:
+                self.name = trans_name if trans_name else en_name
+            logger.info(self.name)
+            if en_summary or trans_summary:
+                self.summaries["translation"] = trans_summary if trans_summary else en_summary
 
         if not self.name:
             self.name = self.mapping_name
@@ -533,7 +581,6 @@ class CollectionBuilder:
         self.posters = {}
         self.backgrounds = {}
         self.schedule = ""
-        self.limit = 0
         self.beginning_count = 0
         self.default_percent = 50
         self.minimum = self.library.minimum_items
@@ -1100,8 +1147,6 @@ class CollectionBuilder:
                 logger.error(f"Config Error: {method_data} collection_filtering invalid\n\tadmin (Always the server admin user)\n\tuser (User currently viewing the content)")
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
-        elif method_name == "limit":
-            self.limit = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
         elif method_name == "cache_builders":
             self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="int", minimum=0)
         elif method_name == "default_percent":
@@ -2853,12 +2898,13 @@ class CollectionBuilder:
                     title = self.name
                     for op in ["The ", "A ", "An "]:
                         if title.startswith(f"{op} "):
-                            title = f"{new_sort_title[len(op):].strip()}, {op.strip()}"
+                            title = f"{title[len(op):].strip()}, {op.strip()}"
                             break
-                    new_sort_title.replace("<<title>>", title)
+                    new_sort_title = new_sort_title.replace("<<title>>", title)
+                logger.info(new_sort_title)
                 if new_sort_title != str(self.obj.titleSort):
-                    self.obj.editSortTitle(self.details["sort_title"])
-                    batch_display += f"\nSort Title | {self.details['sort_title']}"
+                    self.obj.editSortTitle(new_sort_title)
+                    batch_display += f"\nSort Title | {new_sort_title}"
 
             if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
                 self.obj.editContentRating(self.details["content_rating"])

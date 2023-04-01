@@ -227,7 +227,7 @@ class Overlay:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
             text = f"{match.group(1)}"
-            code_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             font_base = os.path.join(code_base, "fonts")
             self.font_name = os.path.join(font_base, "Roboto-Medium.ttf")
             if "font_size" in self.data:

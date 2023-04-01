@@ -251,10 +251,11 @@ class DataFile:
                         return_item = input_item
                         for search_dict in search_dicts:
                             for rk, rv in search_dict.items():
-                                if f"<<{rk}>>" == str(return_item):
-                                    return_item = rv
-                                if f"<<{rk}>>" in str(return_item):
-                                    return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
+                                if rk not in ["name_format", "summary_format"]:
+                                    if f"<<{rk}>>" == str(return_item):
+                                        return_item = rv
+                                    if f"<<{rk}>>" in str(return_item):
+                                        return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
                         return return_item
 
                     conditionals = {}
@@ -504,10 +505,15 @@ class DataFile:
                                 for variable, variable_data in variables.items():
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
                                         _data = scan_text(_data, variable, variable_data.replace(",", ""))
-                                    elif variable != "name":
+                                    elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                        continue
+                                    elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
                                         _data = scan_text(_data, variable, variable_data)
                                 for dm, dd in default.items():
-                                    _data = scan_text(_data, dm, dd)
+                                    if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
+                                        continue
+                                    elif _method not in ["name", "summary"] or dm != "key_name":
+                                        _data = scan_text(_data, dm, dd)
                         except Failed:
                             if _debug:
                                 logger.trace(f"Failed {_method}: {_data}")
