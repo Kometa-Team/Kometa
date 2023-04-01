@@ -84,7 +84,7 @@ class GitHub:
         if translation_key not in self._translations:
             url = f"{self.translation_url}{translation_key}.yml"
             yaml = util.YAML(input_data=self.config.get(url).content).data
-            output = {"collections": {}, "key_name": {}, "variables": {}}
+            output = {"collections": {}, "key_names": {}, "variables": {}}
             for k in output:
                 if k in yaml:
                     output[k] = yaml[k]
