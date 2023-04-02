@@ -6,6 +6,9 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 Below are the available variables which can be used to customize the file.
 
+**NOTE:** `file`, `url`, `git`, `repo`, and `pmm` can all be used with `_<<key>>` 
+<br>For example, with the audio_codec overlay `file_dtsx: config/overlays/dtsx.png`
+
 | Variable                  | Description & Values                                                                                                                                                                                           |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `use_<<key>>`<sup>1</sup> | **Description:** Turns off individual Overlays in a Defaults file.<br>**Values:** `false` to turn off the overlay                                                                                              |
