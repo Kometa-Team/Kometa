@@ -53,6 +53,10 @@ external_templates:
               - IMAX
               - Remastered
               - Criterion
+              - Rich-Donner
+              - Black-And-Chrome
+              - Definitive
+              - Ulysses
       final_horizontal_offset:
         default: <<horizontal_offset>>
         conditions:
@@ -313,6 +317,18 @@ overlays:
   Criterion-Dovetail:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Rich-Donner-Dovetail:
+    variables: {key: richarddonner, weight: 9, search: Rich, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Black-And-Chrome-Dovetail:
+    variables: {key: blackchrome, weight: 8, search: Black, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Definitive-Dovetail:
+    variables: {key: definitive, weight: 7, search: Definitive, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Ulysses-Dovetail:
+    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
 
   4K-DV:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution}
@@ -423,6 +439,17 @@ overlays:
   Criterion:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
-    
+  Rich-Donner:
+    variables: {key: richdonner, weight: 9, search: Rich, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Black-And-Chrome:
+    variables: {key: blackchrome, weight: 8, search: Black, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Definitive:
+    variables: {key: definitive, weight: 7, search: Definitive, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Ulysses:
+    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
     
     
