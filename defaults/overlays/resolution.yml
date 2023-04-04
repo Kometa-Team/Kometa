@@ -15,6 +15,7 @@ external_templates:
         conditions:
           - type: edition_dovetail
             value:
+              - 4K-HDR10PLUS
               - 4K-DV
               - 4K-HDR
               - 4K
@@ -179,6 +180,10 @@ templates:
         conditions:
           - alt: hdr
             value: true
+      hdr10plus:
+        conditions:
+          - alt: hdr10plus
+            value: '(?i)HDR10\+|HDR10PLUS'
     optional:
       - all
       - use_<<key>>
@@ -201,9 +206,13 @@ templates:
         hdr: <<hdr>>
     filters:
       has_dolby_vision: <<dolby_vision>>
+      - filepath.regex: <<hdr10plus>>
 
 overlays:
 
+  4K-HDR10PLUS-Dovetail:
+    variables: {key: 4k, alt: hdr10plus, weight: 160, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   4K-DV-Dovetail:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -314,6 +323,9 @@ overlays:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
 
+  4K-HDR10PLUS:
+    variables: {key: 4k, alt: hdr10plus, weight: 160, type: resolution}
+    template: [name: resolution, name: standard]
   4K-DV:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution}
     template: [name: resolution, name: standard]
@@ -423,6 +435,3 @@ overlays:
   Criterion:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
-    
-    
-    
