@@ -280,7 +280,7 @@ Run with every network request printed to the Logs. **This can potentially have 
   <tr>
     <th>Example</th>
     <td><code>--log-requests</code></td>
-    <td><code>PMM_NETWORK=true</code></td>
+    <td><code>PMM_LOG_REQUESTS=true</code></td>
   </tr>
 </table>
 

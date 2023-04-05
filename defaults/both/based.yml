@@ -11,11 +11,11 @@ external_templates:
     collection_section: "085"
 
 collections:
-  Based On... Collections:
+  Based on... Collections:
     template:
       - name: separator
         separator: based
-        key_name: Based On...
+        key_name: Based on...
         translation_key: separator
 
 dynamic_collections:

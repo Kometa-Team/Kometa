@@ -67,18 +67,19 @@ The available attributes for editing artists, albums, and tracks are as follows
 ``
 ### General Attributes
 
-| Attribute              | Values                                                        | Artists  |  Album   |  Tracks  |
-|:-----------------------|:--------------------------------------------------------------|:--------:|:--------:|:--------:|
-| `title`                | Text to change Title                                          | &#10060; | &#10060; | &#9989;  |
-| `sort_title`           | Text to change Sort Title                                     | &#9989;  | &#9989;  | &#9989;  |
-| `user_rating`          | Number to change User Rating                                  | &#9989;  | &#9989;  | &#9989;  |
-| `critic_rating`        | Number to change Critic Rating                                | &#10060; | &#9989;  | &#10060; |
-| `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD | &#10060; | &#9989;  | &#10060; |
-| `record_label`         | Text to change Record Label                                   | &#10060; | &#9989;  | &#10060; |
-| `summary`              | Text to change Summary                                        | &#9989;  | &#9989;  | &#9989;  |
-| `track`                | Text to change Track                                          | &#10060; | &#10060; | &#9989;  |
-| `disc`                 | Text to change Disc                                           | &#10060; | &#10060; | &#9989;  |
-| `original_artist`      | Text to change Original Artist                                | &#10060; | &#10060; | &#9989;  |
+| Attribute              | Values                                                                                                                                                                                                                                          | Artists  |  Album   |  Tracks  |
+|:-----------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|
+| `title`                | Text to change Title                                                                                                                                                                                                                            | &#10060; | &#10060; | &#9989;  |
+| `sort_title`           | Text to change Sort Title                                                                                                                                                                                                                       | &#9989;  | &#9989;  | &#9989;  |
+| `user_rating`          | Number to change User Rating                                                                                                                                                                                                                    | &#9989;  | &#9989;  | &#9989;  |
+| `critic_rating`        | Number to change Critic Rating                                                                                                                                                                                                                  | &#10060; | &#9989;  | &#10060; |
+| `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD                                                                                                                                                                                   | &#10060; | &#9989;  | &#10060; |
+| `record_label`         | Text to change Record Label                                                                                                                                                                                                                     | &#10060; | &#9989;  | &#10060; |
+| `summary`              | Text to change Summary                                                                                                                                                                                                                          | &#9989;  | &#9989;  | &#9989;  |
+| `track`                | Text to change Track                                                                                                                                                                                                                            | &#10060; | &#10060; | &#9989;  |
+| `disc`                 | Text to change Disc                                                                                                                                                                                                                             | &#10060; | &#10060; | &#9989;  |
+| `original_artist`      | Text to change Original Artist                                                                                                                                                                                                                  | &#10060; | &#10060; | &#9989;  |
+| `run_definition`       | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false` | &#9989;  | &#10060; | &#10060; |
 
 ### Tag Attributes
 

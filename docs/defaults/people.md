@@ -14,10 +14,10 @@ This Default can use the `style` template variable to easily change the posters 
 
 ![](../images/person_signature.png)
 
-### Diivoy Style
+### Diiivoy Style
 
-![](../images/person_diivoy.png)
+![](../images/person_diiivoy.png)
 
-### Diivoy Color Style
+### Diiivoy Color Style
 
-![](../images/person_diivoycolor.png)
+![](../images/person_diiivoycolor.png)

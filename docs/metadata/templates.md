@@ -1,6 +1,6 @@
 # Templates
 
-Collection and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
+Collection, Playlist, Metadata, and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
 
 For example, an actor collection might look like this:
 

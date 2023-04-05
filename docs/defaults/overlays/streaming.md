@@ -70,18 +70,18 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
 ## Regional Variants
 
 Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
 
-| Region           | Key                              | Description                                                                                                                               |
-|:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| any besides `us` | `amazon`, `disney`, `netflix`    | These collections will use regional variant lists to ensure the lists populate with what is available in the region specified             |
-| any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These collections will not be created if the region is not `uk` as these streaming services are UK-focused                                |
-| any besides `ca` | `crave`                          | These collections will not be created if the region is not `ca` as these streaming services are Canada-focused                            |
-| `ca`             | `hbomax`, `showtime`             | These collections will not be created if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| Region           | Key                              | Description                                                                                                                         |
+|:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| any besides `us` | `amazon`, `disney`, `netflix`    | These overlays will use regional variant lists to ensure the overlays are applied to what is available in the region specified      |
+| any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `ca` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
+| `ca`             | `hbomax`, `showtime`             | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

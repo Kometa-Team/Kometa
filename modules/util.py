@@ -44,13 +44,13 @@ class NotScheduledRange(NotScheduled):
     pass
 
 class ImageData:
-    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True):
+    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True, compare=None):
         self.attribute = attribute
         self.location = location
         self.prefix = prefix
         self.is_poster = is_poster
         self.is_url = is_url
-        self.compare = location if is_url else os.stat(location).st_size
+        self.compare = compare if compare else location if is_url else os.stat(location).st_size
         self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):
@@ -211,8 +211,8 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
         if prioritize_assets and "asset_directory" in images:
             return images["asset_directory"]
         for attr in ["style_data", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
-                     "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory", "tmdb_person",
-                     "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details",
+                     "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory", f"pmm_{image_type}",
+                     "tmdb_person", "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details", "tmdb_director_details",
                      "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
                      "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
             if attr in images:
@@ -224,7 +224,7 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
                             return download_image(title, images[attr], item_dir, image_name)
                         except Failed as e:
                             logger.error(e)
-                if attr == "asset_directory":
+                if attr in ["asset_directory", f"pmm_{image_type}"]:
                     return images[attr]
                 return ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
 
@@ -738,7 +738,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         return []
     elif datatype == "listdict":
         final_list = []
-        for dict_data in get_list(value):
+        for dict_data in get_list(value, split=False):
             if isinstance(dict_data, dict):
                 final_list.append(dict_data)
             else:
@@ -816,16 +816,21 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         logger.warning(f"{error} Warning: {message} using {default} as default")
         return translation[default] if translation is not None else default
 
-def parse_cords(data, parent, required=False):
-    horizontal_align = parse("Overlay", "horizontal_align", data["horizontal_align"], parent=parent,
+def parse_cords(data, parent, required=False, err_type="Overlay", default=None):
+    dho, dha, dvo, dva = default if default else (None, None, None, None)
+    horizontal_align = parse(err_type, "horizontal_align", data["horizontal_align"], parent=parent,
                              options=["left", "center", "right"]) if "horizontal_align" in data else None
-    if required and horizontal_align is None:
-        raise Failed(f"Overlay Error: {parent} horizontal_align is required")
+    if horizontal_align is None:
+        if required:
+            raise Failed(f"{err_type} Error: {parent} horizontal_align is required")
+        horizontal_align = dha
 
-    vertical_align = parse("Overlay", "vertical_align", data["vertical_align"], parent=parent,
+    vertical_align = parse(err_type, "vertical_align", data["vertical_align"], parent=parent,
                            options=["top", "center", "bottom"]) if "vertical_align" in data else None
-    if required and vertical_align is None:
-        raise Failed(f"Overlay Error: {parent} vertical_align is required")
+    if vertical_align is None:
+        if required:
+            raise Failed(f"{err_type} Error: {parent} vertical_align is required")
+        vertical_align = dva
 
     horizontal_offset = None
     if "horizontal_offset" in data and data["horizontal_offset"] is not None:
@@ -835,7 +840,7 @@ def parse_cords(data, parent, required=False):
             x_off = x_off[:-1]
             per = True
         x_off = check_num(x_off)
-        error = f"Overlay Error: {parent} horizontal_offset: {data['horizontal_offset']} must be a number"
+        error = f"{err_type} Error: {parent} horizontal_offset: {data['horizontal_offset']} must be a number"
         if x_off is None:
             raise Failed(error)
         if horizontal_align != "center" and not per and x_off < 0:
@@ -845,8 +850,10 @@ def parse_cords(data, parent, required=False):
         elif horizontal_align == "center" and per and (x_off > 50 or x_off < -50):
             raise Failed(f"{error} between -50% and 50%")
         horizontal_offset = f"{x_off}%" if per else x_off
-    if required and horizontal_offset is None:
-        raise Failed(f"Overlay Error: {parent} horizontal_offset is required")
+    if horizontal_offset is None:
+        if required:
+            raise Failed(f"{err_type} Error: {parent} horizontal_offset is required")
+        horizontal_offset = dho
 
     vertical_offset = None
     if "vertical_offset" in data and data["vertical_offset"] is not None:
@@ -856,7 +863,7 @@ def parse_cords(data, parent, required=False):
             y_off = y_off[:-1]
             per = True
         y_off = check_num(y_off)
-        error = f"Overlay Error: {parent} vertical_offset: {data['vertical_offset']} must be a number"
+        error = f"{err_type} Error: {parent} vertical_offset: {data['vertical_offset']} must be a number"
         if y_off is None:
             raise Failed(error)
         if vertical_align != "center" and not per and y_off < 0:
@@ -866,8 +873,10 @@ def parse_cords(data, parent, required=False):
         elif vertical_align == "center" and per and (y_off > 50 or y_off < -50):
             raise Failed(f"{error} between -50% and 50%")
         vertical_offset = f"{y_off}%" if per else y_off
-    if required and vertical_offset is None:
-        raise Failed(f"Overlay Error: {parent} vertical_offset is required")
+    if vertical_offset is None:
+        if required:
+            raise Failed(f"{err_type} Error: {parent} vertical_offset is required")
+        vertical_offset = dvo
 
     return horizontal_offset, horizontal_align, vertical_offset, vertical_align
 

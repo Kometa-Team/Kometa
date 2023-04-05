@@ -88,7 +88,7 @@ The mapping name is the season number (use 0 for specials) or the season name.
 
 To edit the metadata of a particular Episode in a Season use the `episodes` attribute on its season.
 
-The mapping name is the episode number in that season or the title of the episode.
+The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.
 
 ## Metadata Edits
 
