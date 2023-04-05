@@ -163,5 +163,5 @@ dynamic_collections:
       image:
         default: seasonal/<<key>>
       translation_key:
-        default: season
+        default: seasonal
 
