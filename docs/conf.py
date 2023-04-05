@@ -177,6 +177,7 @@ html_theme_options = {
                 ("Mass Genre Update", "config/operations", "#mass-genre-update"),
                 ("Mass Content Rating Update", "config/operations", "#mass-content-rating-update"),
                 ("Mass Original Title Update", "config/operations", "#mass-original-title-update"),
+                ("Mass Studio Update", "config/operations", "#mass-studio-update"),
                 ("Mass Originally Available Update", "config/operations", "#mass-originally-available-update"),
                 ("Mass * Rating Update", "config/operations", "#mass--rating-update"),
                 ("Mass Episode * Rating Update", "config/operations", "#mass-episode--rating-update"),

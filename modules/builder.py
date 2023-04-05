@@ -4,6 +4,7 @@ from datetime import datetime
 from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
+from modules.poster import PMMImage
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show, Season, Episode
@@ -467,6 +468,19 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {self.data[methods['builder_level']]} builder_level invalid{options}")
         self.parts_collection = self.builder_level in plex.builder_level_options
 
+        self.posters = {}
+        self.backgrounds = {}
+        if "pmm_poster" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: pmm_poster")
+            if self.data[methods["pmm_poster"]] is None:
+                logger.error(f"{self.Type} Error: pmm_poster attribute is blank")
+            logger.debug(f"Value: {data[methods['pmm_poster']]}")
+            try:
+                self.posters["pmm_poster"] = PMMImage(self.config, self.data[methods["pmm_poster"]], "pmm_poster", playlist=self.playlist)
+            except Failed as e:
+                logger.error(e)
+
         if self.overlay:
             if "overlay" in methods:
                 overlay_data = data[methods["overlay"]]
@@ -578,8 +592,6 @@ class CollectionBuilder:
         self.notification_removals = []
         self.items = []
         self.remove_item_map = {}
-        self.posters = {}
-        self.backgrounds = {}
         self.schedule = ""
         self.beginning_count = 0
         self.default_percent = 50
@@ -3010,10 +3022,23 @@ class CollectionBuilder:
         self.collection_poster = util.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
         self.collection_background = util.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
 
+        clean_temp = False
+        if isinstance(self.collection_poster, PMMImage):
+            clean_temp = True
+            item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}
+            self.collection_poster = self.collection_poster.save(item_vars)
+
         if self.collection_poster or self.collection_background:
             pu, bu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
             if pu or bu:
                 updated_details.append("Image")
+
+        if clean_temp:
+            code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            posters_dir = os.path.join(code_base, "defaults", "posters")
+            for filename in os.listdir(posters_dir):
+                if "temp" in filename:
+                    os.remove(os.path.join(posters_dir, filename))
 
         if self.url_theme:  # TODO: cache theme path to not constantly upload
             self.library.upload_theme(self.obj, url=self.url_theme)

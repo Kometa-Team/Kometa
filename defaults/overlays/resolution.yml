@@ -189,10 +189,10 @@ templates:
         conditions:
           - alt: hdr
             value: true
-      hdr10plus:
+      plus:
         conditions:
-          - alt: hdr10plus
-            value: '(?i)\bHDR10(\+|P(lus)?\b)'
+          - alt: plus
+            value: '(?i)\bhdr10(\+|p(lus)?\b)'
     optional:
       - all
       - use_<<key>>
@@ -215,12 +215,12 @@ templates:
         hdr: <<hdr>>
     filters:
       has_dolby_vision: <<dolby_vision>>
-      - filepath.regex: <<hdr10plus>>
+      filepath.regex: <<plus>>
 
 overlays:
 
   4K-HDR10PLUS-Dovetail:
-    variables: {key: 4k, alt: hdr10plus, weight: 160, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 4k, alt: plus, weight: 160, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   4K-DV-Dovetail:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution_dovetail, allowed_libraries: movie}
@@ -232,7 +232,7 @@ overlays:
     variables: {key: 4k, alt: "", weight: 130, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   1080P-HDR10PLUS-Dovetail:
-    variables: {key: 1080p, alt: hdr10plus, weight: 125, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 1080p, alt: plus, weight: 125, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   1080P-DV-Dovetail:
     variables: {key: 1080p, alt: dv, weight: 120, type: resolution_dovetail, allowed_libraries: movie}
@@ -244,7 +244,7 @@ overlays:
     variables: {key: 1080p, alt: "", weight: 100, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   720P-HDR10PLUS-Dovetail:
-    variables: {key: 720p, alt: hdr10plus, weight: 95, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 720p, alt: plus, weight: 95, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   720P-DV-Dovetail:
     variables: {key: 720p, alt: dv, weight: 90, type: resolution_dovetail, allowed_libraries: movie}
@@ -256,7 +256,7 @@ overlays:
     variables: {key: 720p, alt: "", weight: 70, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   576P-HDR10PLUS-Dovetail:
-    variables: {key: 576p, alt: hdr10plus, weight: 65, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 576p, alt: plus, weight: 65, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   576P-DV-Dovetail:
     variables: {key: 576p, alt: dv, weight: 60, type: resolution_dovetail, allowed_libraries: movie}
@@ -268,7 +268,7 @@ overlays:
     variables: {key: 576p, alt: "", weight: 40, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   480P-HDR10PLUS-Dovetail:
-    variables: {key: 480p, alt: hdr10plus, weight: 35, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 480p, alt: plus, weight: 35, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   480P-DV-Dovetail:
     variables: {key: 480p, alt: dv, weight: 30, type: resolution_dovetail, allowed_libraries: movie}
@@ -280,7 +280,7 @@ overlays:
     variables: {key: 480p, alt: "", weight: 10, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   HDR10PLUS-Dovetail:
-    variables: {key: "", alt: hdr10plus, weight: 7, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: "", alt: plus, weight: 7, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   DV-Dovetail:
     variables: {key: "", alt: dv, weight: 5, type: resolution_dovetail, all: true, allowed_libraries: movie}
@@ -360,7 +360,7 @@ overlays:
     template: [name: edition, name: standard]
 
   4K-HDR10PLUS:
-    variables: {key: 4k, alt: hdr10plus, weight: 160, type: resolution}
+    variables: {key: 4k, alt: plus, weight: 160, type: resolution}
     template: [name: resolution, name: standard]
   4K-DV:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution}
@@ -372,7 +372,7 @@ overlays:
     variables: {key: 4k, alt: "", weight: 130, type: resolution}
     template: [name: resolution, name: standard]
   1080P-HDR10PLUS:
-    variables: {key: 1080p, alt: hdr10plus, weight: 125, type: resolution}
+    variables: {key: 1080p, alt: plus, weight: 125, type: resolution}
     template: [name: resolution, name: standard]
   1080P-DV:
     variables: {key: 1080p, alt: dv, weight: 120, type: resolution}
@@ -384,7 +384,7 @@ overlays:
     variables: {key: 1080p, alt: "", weight: 100, type: resolution}
     template: [name: resolution, name: standard]
   720P-HDR10PLUS:
-    variables: {key: 720p, alt: hdr10plus, weight: 95, type: resolution}
+    variables: {key: 720p, alt: plus, weight: 95, type: resolution}
     template: [name: resolution, name: standard]
   720P-DV:
     variables: {key: 720p, alt: dv, weight: 90, type: resolution}
@@ -396,7 +396,7 @@ overlays:
     variables: {key: 720p, alt: "", weight: 70, type: resolution}
     template: [name: resolution, name: standard]
   576P-HDR10PLUS:
-    variables: {key: 576p, alt: hdr10plus, weight: 65, type: resolution}
+    variables: {key: 576p, alt: plus, weight: 65, type: resolution}
     template: [name: resolution, name: standard]
   576P-DV:
     variables: {key: 576p, alt: dv, weight: 60, type: resolution}
@@ -408,7 +408,7 @@ overlays:
     variables: {key: 576p, alt: "", weight: 40, type: resolution}
     template: [name: resolution, name: standard]
   480P-HDR10PLUS:
-    variables: {key: 480p, alt: hdr10plus, weight: 35, type: resolution}
+    variables: {key: 480p, alt: plus, weight: 35, type: resolution}
     template: [name: resolution, name: standard]
   480P-DV:
     variables: {key: 480p, alt: dv, weight: 30, type: resolution}
@@ -420,7 +420,7 @@ overlays:
     variables: {key: 480p, alt: "", weight: 10, type: resolution}
     template: [name: resolution, name: standard]
   HDR10PLUS:
-    variables: {key: "", alt: hdr10plus, weight: 7, type: resolution}
+    variables: {key: "", alt: plus, weight: 7, type: resolution}
     template: [name: resolution, name: standard]
   DV:
     variables: {key: "", alt: dv, weight: 5, type: resolution, all: true}

@@ -490,7 +490,7 @@ class Plex(Library):
     def get_all_collections(self, label=None):
         args = "?type=18"
         if label:
-            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)
+            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None) # noqa
             if label_id:
                 args = f"{args}&label={label_id}"
             else:
@@ -677,12 +677,11 @@ class Plex(Library):
             item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False,
-                                   includeChapters=False, includeChildren=False, includeConcerts=False,
-                                   includeExternalMedia=False, includeExtras=False, includeFields=False,
-                                   includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                                   includeOnDeck=False, includePopularLeaves=False, includeRelated=False,
-                                   includeRelatedCount=0, includeReviews=False, includeStations=False)
+                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
+                            includeReviews=False, includeStations=False)
                 item._autoReload = False
                 self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
@@ -843,7 +842,7 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_check(self, label):
-        labels = [la.title for la in self.get_tags("label")]
+        labels = [la.title for la in self.get_tags("label")] # noqa
         if label in labels:
             return True
         logger.trace(f"Label not found in Plex. Options: {labels}")
@@ -878,7 +877,7 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def get_smart_filter_from_uri(self, uri):
-        smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0]
+        smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0] # noqa
         args = smart_filter[smart_filter.index("?"):]
         return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
 

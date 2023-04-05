@@ -1,17 +1,58 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.2
-Updated pillow requirement to 9.4.0
-Updated requests requirement to 2.28.2
+Updated pillow requirement to 9.5.0
+Updated plexapi requirement to 4.13.4
+New requirement GitPython version 3.1.31
 
 # New Features
-Added new collection_order `custom.desc` ([FR](https://features.metamanager.wiki/features/p/reverse-sort-collectionorder-custom))
-Added webp Image Support ([FR](https://features.metamanager.wiki/features/p/support-webp-image-extensions))
-Added Spanish Defaults Translation
-Added Delete Webhooks
-Added collection detail `delete_collections_named` to delete any collections listed while running this collection definition.
+Added `episode_year` as a dynamic collection option.
+Added `mass_studio_update` [library operation](https://metamanager.wiki/en/latest/config/operations.html#mass-studio-update).
+Changes Environment Variable/Run Argument list separator from `,` to `|`.
+Added `PMM_LOG_REQUESTS`/`--log-requests` Environment Variable/Run Argument which will log every single HTTP request in the log.
+Added EXIF Tags to Overlayed Images to be able to determine if they have an overlay or not.
+Added `anidb`, `anidb_3_0`, `anidb_2_5`, `anidb_2_0`, `anidb_1_5`, `anidb_1_0`, `anidb_0_5` options to the [`mass_genre_update` Library Operation](https://metamanager.wiki/en/latest/config/operations.html#mass-genre-update).
+Added `ignore_cache` to [`radarr`](https://metamanager.wiki/en/latest/config/radarr.html) and [`sonarr`](https://metamanager.wiki/en/latest/config/sonarr.html) Settings and `radarr_ignore_cache` and `sonarr_ignore_cache` to [Radarr/Sonarr Definition Settings](https://metamanager.wiki/en/latest/metadata/details/arr.html).
+Closes #1286 Updates Synology Walkthrough with DSM7 images.
+Closes #1159 Adds support for official trakt lists.
+Closes #1251 When resetting Overlays Seasons where theres no poster will use the show poster.
+Templates can now be used with metadata updates.
+`allowed_library_types` Definition Setting has been changed to `run_definition` the old attribute will still work in the same way.
+Added `mapping_id`, `run_definition`, `update_seasons`, and `update_episodes` to Metadata definitions.
+Added a [Ratings Explained](https://metamanager.wiki/en/latest/home/guides/ratings.html) page to the Wiki to help explain how PMM interacts with the various Ratings.
+Add more options to the [`mass_imdb_parental_labels` Library Operation](https://metamanager.wiki/en/latest/config/operations.html#mass-imdb-parental-labels).
+Added `imdb_keyword` as a [Tag Filter](https://metamanager.wiki/en/latest/metadata/filters.html#tag-filters).
+Added `has_edition` as a [Boolean Filter](https://metamanager.wiki/en/latest/metadata/filters.html#boolean-filters).
+Added `has_stinger` and `stinger_rating` as [Filters](https://metamanager.wiki/en/latest/metadata/filters.html) based on http://www.mediastinger.com
+When editing episode metadata the key can now be either episode number, episode title, or episodeoriginally released date.
+The Collectionless builder now can work with other builders.
+
+# New Defaults Features
+Removed Translations from the defaults directory and in to their own [repo](https://github.com/meisnate12/PMM-Translations) which is managed at [translations.metamanager.wiki](https://translations.metamanager.wiki/projects/plex-meta-manager/defaults/).
+Added `minimum_rating`, `fresh_rating`, and `maximum_rating` as template variable options to the [Ratings Overlays](https://metamanager.wiki/en/latest/defaults/overlays/ratings.html) to control which ratings get displayed.
+Added the ability to update Overlay Defaults Positioning with just setting the alignment variables.
+Added [Based On...](https://metamanager.wiki/en/latest/defaults/both/based.html) Collection Default.
+Added Signature Style, DIIIVOY Style, and DIIVOY Color Style to [`actor`](https://metamanager.wiki/en/latest/defaults/both/actor.html), [`directors`](https://metamanager.wiki/en/latest/defaults/movie/director.html), [`producers`](https://metamanager.wiki/en/latest/defaults/movie/producer.html), and [`writers`](https://metamanager.wiki/en/latest/defaults/movie/writer.html).
+Added new editions to the [editions Overlay File](https://metamanager.wiki/en/latest/defaults/overlays/resolution.html).
+Added `delete_playlist` and `delete_playlist_<<key>>` as template variable options to the [Playlist Default](https://metamanager.wiki/en/latest/defaults/playlist.html).
+Added `region` as a template variable options to the [`streaming` Overlay](https://metamanager.wiki/en/latest/defaults/overlays/streaming.html) and [`streaming` Collection](https://metamanager.wiki/en/latest/defaults/both/streaming.html) to allow these lists to show items in that region.
+Added AppleTV to te [FlixPatrol Default](https://metamanager.wiki/en/latest/defaults/overlays/flixpatrol.html).
+Added `radarr_search` and `sonarr_search` as template variable options to all Collection Defaults.
+Updated `network` and `franchise` defaults
 
 # Bug Fixes
-Fixes #1187 Franchise Defaults no longer ignore collection_section and sort_title
-Fixed Italian Defaults Translation
-Fixed TMDb Modified Filters
-Fixed ValueError from Anime IDs
+Fixes Bug with `--time` that caused the times not to display correctly.
+Fixes `mal_search` search bug.
+Fixes #1277 corrects bug setting TMDb region.
+Fixes a Bug where missing items items wouldn't be sent to radarr if no items were found in the library.
+Fixes a Bug with template conditionals causing them to sometimes use the wrong result.
+Fixes #1285 Wiki error.
+Fixes a Bug with the `mass_poster_update` and `mass_background_update` Library Operations where they would sometimes throw a 406 Error.
+Fixes a Bug with the `mass_poster_update` Library Operation where it would also update backgrounds in addition to posters.
+Fixes multiple unnecessary items loads from plex.
+Fixes a Bug with using year filters with no modifier.
+Fixes a Bug where the `dimensional_asset_rename` Setting would rename title cards and season posters to show posters.
+Fixes [`trakt_userlist` Builder](https://metamanager.wiki/en/latest/metadata/builders/trakt.html#trakt-userlist) where option `recommended` should have been `recommendations`.
+Fixes overlay remove/reset operations.
+Closes #1325 Fixes a Bug where `tmdb_vote_count` would be rejected as a filter.
+Closes #1189 Fixes a Bug in the Resolution Default where the position would be completely off when changed
+
+Various other Minor Fixes

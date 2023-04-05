@@ -12,7 +12,7 @@ Supported Library Types: Movie, Show
 
 | Collection                 | Key           | Description                                                                 |
 |:---------------------------|:--------------|:----------------------------------------------------------------------------|
-| `Based On...  Collections` | `separator`   | [Separator Collection](../separators) to denote the Section of Collections. |
+| `Based on...  Collections` | `separator`   | [Separator Collection](../separators) to denote the Section of Collections. |
 | `Based on a Book`          | `books`       | Collection of Movies/Shows based on or inspired by books                    |
 | `Based on a Comic`         | `comics`      | Collection of Movies/Shows based on or inspired by comics                   |
 | `Based on a True Story`    | `true_story`  | Collection of Movies/Shows based on or inspired by true stories             |
@@ -51,8 +51,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `sync_mode`                     | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>   |
 | `sync_mode_<<key>>`<sup>1</sup> | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>   |
 | `exclude`                       | **Description:** Exclude these Media Outlets from creating a Dynamic Collection.<br>**Values:** List of Media Outlet Keys                                                                                                                                                                          |
-| `based_name`                    | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Based on a <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                               |
-| `based_summary`                 | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s based on or inspired by <<translated_key_name>>s.`<br>**Values:** Any string.                                                                                                   |
+| `name_format`                   | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Based on a <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                               |
+| `summary_format`                | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s based on or inspired by <<translated_key_name>>s.`<br>**Values:** Any string.                                                                                                   |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
