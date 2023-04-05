@@ -709,7 +709,7 @@ class MetadataFile(DataFile):
                     raise Failed("Image Style Error: style file call attribute is blank")
                 style_dict = style_file[0] if isinstance(style_file, list) else style_file
                 if not isinstance(style_dict, dict):
-                    raise Failed("Image Style Error: style file call attribute is not a dictionary")
+                    raise Failed(f"Image Style Error: style file call attribute: {style_dict} is not a dictionary")
                 elif not style_dict:
                     raise Failed("Image Style Error: style file call attribute dictionary is empty")
                 style_data = self.get_style_data(style_dict, section_key, items_data=section_data[item_attr])
