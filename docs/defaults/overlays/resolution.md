@@ -45,6 +45,10 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | IMAX                | `imax`          | `30`   |
 | Remastered          | `remastered`    | `20`   |
 | Criterion           | `criterion`     | `10`   |
+| Richard Donner      | `richarddonner` | `9`    |
+| Black and Chrome    | `blackchrome`   | `8`    |
+| Definitive          | `definitive`    | `7`    |
+| Ulysses             | `ulysses`       | `6`    |
 
 ## Config
 
