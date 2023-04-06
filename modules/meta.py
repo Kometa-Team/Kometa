@@ -921,14 +921,19 @@ class MetadataFile(DataFile):
                         person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                         person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
                         lib_all = library.get_all()
+                        include_cols = []
                         for i, item in enumerate(lib_all, 1):
                             logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
                             try:
                                 item = self.library.reload(item)
                                 for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                    if person.id not in people:
-                                        people[person.id] = {"name": person.tag, "count": 0}
-                                    people[person.id]["count"] += 1
+                                    if person.tag in include:
+                                        if person.tag not in include_cols:
+                                            include_cols.append(person.tag)
+                                    else:
+                                        if person.id not in people:
+                                            people[person.id] = {"name": person.tag, "count": 0}
+                                        people[person.id]["count"] += 1
                             except Failed as e:
                                 logger.error(f"Plex Error: {e}")
                         roles = [data for _, data in people.items()]
@@ -938,6 +943,10 @@ class MetadataFile(DataFile):
                         if not person_limit:
                             person_limit = len(roles)
                         person_count = 0
+                        for inc in include_cols:
+                            auto_list[inc] = inc
+                            all_keys[inc] = inc
+                            person_count += 1
                         for role in roles:
                             if person_count < person_limit and role["count"] >= person_minimum and role["name"] not in exclude:
                                 auto_list[role["name"]] = role["name"]

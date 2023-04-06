@@ -824,7 +824,6 @@ class Plex(Library):
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
     def alter_collection(self, item, collection, smart_label_collection=False, add=True):
-        collection = str(collection)
         if smart_label_collection:
             self.query_data(item.addLabel if add else item.removeLabel, collection)
         else:
@@ -833,7 +832,15 @@ class Plex(Library):
             if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
                 field = next((f for f in item.fields if f.name == "collection"), None)
                 locked = field is not None
-            self.query_collection(item, collection, locked=locked, add=add)
+            try:
+                self.query_collection(item, collection, locked=locked, add=add)
+            except TypeError:
+                logger.info(item.collections)
+                for col in item.collections:
+                    logger.info(col.id)
+                    logger.info(col.key)
+                    logger.info(col.tag)
+                raise
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"

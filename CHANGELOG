@@ -37,6 +37,7 @@ Added `region` as a template variable options to the [`streaming` Overlay](https
 Added AppleTV to te [FlixPatrol Default](https://metamanager.wiki/en/latest/defaults/overlays/flixpatrol.html).
 Added `radarr_search` and `sonarr_search` as template variable options to all Collection Defaults.
 Updated `network` and `franchise` defaults
+Added `include` as a template variable options to the people collections ([`actor`](https://metamanager.wiki/en/latest/defaults/both/actor.html), [`director`](https://metamanager.wiki/en/latest/defaults/movie/director.html), [`producer`](https://metamanager.wiki/en/latest/defaults/movie/producer.html), [`writer`](https://metamanager.wiki/en/latest/defaults/movie/writer.html)) to specifically include the list of actors.
 
 # Bug Fixes
 Fixes Bug with `--time` that caused the times not to display correctly.
