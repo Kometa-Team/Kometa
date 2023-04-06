@@ -1045,13 +1045,13 @@ class Plex(Library):
             for col in good_collections:
                 logger.info(col.title)
             logger.info("")
-            collection_indexes = [c.title for c in good_collections]
+            collection_indexes = [str(c.title).lower() for c in good_collections]
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
                 for collection in item.collections:
-                    if collection.tag in collection_indexes:
+                    if str(collection.tag).lower() in collection_indexes:
                         add_item = False
                         break
                 if add_item:
