@@ -152,7 +152,7 @@ Tag filter can take multiple values as a **list or a comma-separated string**.
 | `season_collection`        | Uses the collection tags to match for season collections                    |      &#10060;      |      &#9989;      |      &#10060;      |
 | `episode_collection`       | Uses the collection tags to match for episode collections                   |      &#10060;      |      &#9989;      |      &#10060;      |
 | `content_rating`           | Uses the content rating tags to match                                       |      &#9989;       |      &#9989;      |      &#10060;      |
-| `country`                  | Uses the country tags to match                                              |      &#9989;       |     &#10060;      |      &#10060;      |
+| `country`                  | Uses the country tags to match                                              |      &#9989;       |      &#9989;      |      &#10060;      |
 | `decade`<sup>1</sup>       | Uses the year tag to match the decade                                       |      &#9989;       |     &#10060;      |      &#10060;      |
 | `director`                 | Uses the director tags to match                                             |      &#9989;       |     &#10060;      |      &#10060;      |
 | `genre`                    | Uses the genre tags to match                                                |      &#9989;       |      &#9989;      |      &#10060;      |
