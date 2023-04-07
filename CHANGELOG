@@ -24,6 +24,8 @@ Added `has_edition` as a [Boolean Filter](https://metamanager.wiki/en/latest/met
 Added `has_stinger` and `stinger_rating` as [Filters](https://metamanager.wiki/en/latest/metadata/filters.html) based on http://www.mediastinger.com
 When editing episode metadata the key can now be either episode number, episode title, or episodeoriginally released date.
 The Collectionless builder now can work with other builders.
+Added `country` as an option for Shows when using the builders `plex_search` and `smart_filter`.
+Added [Config Secrets](https://metamanager.wiki/en/latest/home/environmental.html#config-secrets) and the ability to load Environment Variables using a `.env` File inside your config folder.
 
 # New Defaults Features
 Removed Translations from the defaults directory and in to their own [repo](https://github.com/meisnate12/PMM-Translations) which is managed at [translations.metamanager.wiki](https://translations.metamanager.wiki/projects/plex-meta-manager/defaults/).

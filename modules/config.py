@@ -112,7 +112,7 @@ library_operations = {
 }
 
 class ConfigFile:
-    def __init__(self, default_dir, attrs):
+    def __init__(self, default_dir, attrs, secrets):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -124,6 +124,7 @@ class ConfigFile:
 
         self._mediastingers = None
         self.default_dir = default_dir
+        self.secrets = secrets
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
         self.branch = attrs["branch"] if "branch" in attrs else None
@@ -282,6 +283,25 @@ class ConfigFile:
             self.data["sonarr"] = temp
         if "trakt" in self.data:                       self.data["trakt"] = self.data.pop("trakt")
         if "mal" in self.data:                         self.data["mal"] = self.data.pop("mal")
+
+        def check_next(next_data):
+            if isinstance(next_data, dict):
+                for d in next_data:
+                    out = check_next(next_data[d])
+                    if out:
+                        next_data[d] = out
+            elif isinstance(next_data, list):
+                for d in next_data:
+                    check_next(d)
+            else:
+                for secret, secret_value in self.secrets.items():
+                    if f"<<{secret}>>" in str(next_data):
+                        return str(next_data).replace(f"<<{secret}>>", secret_value)
+                    elif f"<<{secret.upper()}>>" in str(next_data):
+                        return str(next_data).replace(f"<<{secret.upper()}>>", secret_value)
+                return next_data
+        if self.secrets:
+            check_next(self.data)
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0):
             endline = ""

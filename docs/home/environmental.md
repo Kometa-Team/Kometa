@@ -6,6 +6,8 @@ If you run into a race condition where you have set an Environment Variable with
 
 These docs are assuming you have a basic understanding of Docker concepts.  One place to get familiar with Docker would be the [official tutorial](https://www.docker.com/101-tutorial/).
 
+Environment Variables can also be placed inside a `.env` file inside your config folder.
+
 | Attribute                                             | Shell Command                                 | Environment Variable     |
 |:------------------------------------------------------|:----------------------------------------------|:-------------------------|
 | [Config](#config)                                     | `-c` or `--config`                            | `PMM_CONFIG`             |
@@ -38,6 +40,7 @@ These docs are assuming you have a basic understanding of Docker concepts.  One 
 | [ENV Plex Token](#env-plex-url--token)                | `-pt` or `--plex-token`                       | `PMM_PLEX_TOKEN`         |
 | [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                           | `PMM_DIVIDER`            |
 | [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                             | `PMM_WIDTH`              |
+| [Other Secrets](#config-secrets)                      | `--pmm-***`                                   | `PMM_***`                |
 
 Further explanation and examples of each command can be found below.
 
@@ -1071,3 +1074,45 @@ python plex_meta_manager.py --divider * --width 200
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --divider * --width 200
 ```
 ````
+
+### Config Secrets
+
+All Run Commands that start with `--pmm-***` and Environment Variables that start with `PMM_***` will be loaded in as Config Secrets.
+
+These Config Secrets can be loaded into the config by placing `<<***>>` in any field in the config, where `***` is whatever name you want to call the variable.  
+
+<table class="dualTable colwidths-auto align-default table">
+  <tr>
+    <th style="background-color: #1d1d1d;"></th>
+    <th>Shell</th>
+    <th>Environment</th>
+  </tr>
+  <tr>
+    <th>Flags</th>
+    <td><code>--pmm-***</code></td>
+    <td><code>PMM_***</code></td>
+  </tr>
+  <tr>
+    <th>Example</th>
+    <td><code>--pmm-mysecret 123456789</code></td>
+    <td><code>PMM_MYSECRET=123456789</code></td>
+  </tr>
+</table>
+
+````{tab} Local Environment
+```
+python plex_meta_manager.py --pmm-mysecret 123456789
+```
+````
+````{tab} Docker Environment
+```
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --pmm-mysecret 123456789
+```
+````
+
+#### Example Config Usage
+
+```yaml
+tmdb:
+  apikey: <<mysecret>>
+```
