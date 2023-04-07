@@ -10,6 +10,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 7:
 
 try:
     import plexapi, psutil, requests, schedule
+    from dotenv import load_dotenv
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
@@ -49,13 +50,18 @@ parser.add_argument("-pu", "--plex-url", dest="plex_url", help="Plex URL for Ple
 parser.add_argument("-pt", "--plex-token", dest="plex_token", help="Plex Token for Plex ENV Tokens", default="", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
 
+default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
+load_dotenv(os.path.join(default_dir, ".env"))
+
+static_envs = []
 test_value = None
 def get_arg(env_str, default, arg_bool=False, arg_int=False):
     global test_value
     env_vars = [env_str] if not isinstance(env_str, list) else env_str
     final_value = None
+    static_envs.extend(env_vars)
     for env_var in env_vars:
         env_value = os.environ.get(env_var)
         if env_var == "BRANCH_NAME":
@@ -83,7 +89,7 @@ def get_arg(env_str, default, arg_bool=False, arg_int=False):
 try:
     from git import Repo, InvalidGitRepositoryError
     try:
-        git_branch = Repo(path=".").head.ref.name
+        git_branch = Repo(path=".").head.ref.name # noqa
     except InvalidGitRepositoryError:
         git_branch = None
 except ImportError:
@@ -123,6 +129,18 @@ log_requests = get_arg("PMM_LOG_REQUESTS", args.log_requests, arg_bool=True)
 plex_url = get_arg("PMM_PLEX_URL", args.plex_url)
 plex_token = get_arg("PMM_PLEX_TOKEN", args.plex_token)
 
+secret_args = {}
+i = 0
+while i < len(unknown):
+    if str(unknown[i]).lower().startswith("--pmm-"):
+        secret_args[str(unknown[i]).lower()[6:]] = str(unknown[i + 1])
+        i += 1
+    i += 1
+
+for env_name, env_data in os.environ.items():
+    if str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
+        secret_args[str(env_name).lower()[4:]] = env_data
+
 if collections:
     collection_only = True
 
@@ -130,7 +148,6 @@ if screen_width < 90 or screen_width > 300:
     print(f"Argument Error: width argument invalid: {screen_width} must be an integer between 90 and 300 using the default 100")
     screen_width = 100
 
-default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 if config_file and os.path.exists(config_file):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(config_file)))
 elif config_file and not os.path.exists(config_file):
@@ -269,7 +286,7 @@ def start(attrs):
     config = None
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     try:
-        config = ConfigFile(default_dir, attrs)
+        config = ConfigFile(default_dir, attrs, secret_args)
     except Exception as e:
         logger.stacktrace()
         logger.critical(e)

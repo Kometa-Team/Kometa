@@ -34,8 +34,8 @@ templates:
       - imdb_list
       - trakt_list
       - mdblist_list
-      - summary_<<key>>
-      - name_<<key>>
+      - summary_format
+      - name_format
       - key_name
       - translation_key
       - limit
