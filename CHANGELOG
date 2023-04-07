@@ -54,6 +54,11 @@ Fixes a Bug where the `dimensional_asset_rename` Setting would rename title card
 Fixes [`trakt_userlist` Builder](https://metamanager.wiki/en/latest/metadata/builders/trakt.html#trakt-userlist) where option `recommended` should have been `recommendations`.
 Fixes overlay remove/reset operations.
 Closes #1325 Fixes a Bug where `tmdb_vote_count` would be rejected as a filter.
-Closes #1189 Fixes a Bug in the Resolution Default where the position would be completely off when changed
+Closes #1189 Fixes a Bug in the Resolution Default where the position would be completely off when changed.
+Closes #1336 Fixed "Mass Originally Available Update" attribute name within the wiki.
+Closes #1327 Fixed an issue where searching for item assets could take longer than expected.
+Closes #1346 Fixed an issue where using `PMM_TIME` with multiple times could ignore all but the last specified time.
+
+
 
 Various other Minor Fixes

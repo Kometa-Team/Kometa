@@ -99,6 +99,7 @@ search_translation = {
 }
 show_translation = {
     "title": "show.title",
+    "country": "show.country",
     "studio": "show.studio",
     "rating": "show.rating",
     "audienceRating": "show.audienceRating",
@@ -250,7 +251,7 @@ or_searches = [
     "writer", "decade", "resolution", "year", "episode_title", "episode_year"
 ]
 movie_only_searches = [
-    "country", "country.not", "director", "director.not", "producer", "producer.not", "writer", "writer.not",
+    "director", "director.not", "producer", "producer.not", "writer", "writer.not",
     "decade", "duplicate", "unplayed", "progress",
     "duration.gt", "duration.gte", "duration.lt", "duration.lte"
     "edition", "edition.not", "edition.is", "edition.isnot", "edition.begins", "edition.ends"
