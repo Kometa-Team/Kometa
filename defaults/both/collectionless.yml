@@ -35,7 +35,7 @@ templates:
     tmdb_list: <<tmdb_list>>
     tvdb_movie: <<tvdb_movie>>
     tvdb_show: <<tvdb_show>>
-    tvdb_list: <<tvmdb_list>>
+    tvdb_list: <<tvdb_list>>
     imdb_id: <<imdb_id>>
     imdb_list: <<imdb_list>>
     plex_search: <<plex_search>>
