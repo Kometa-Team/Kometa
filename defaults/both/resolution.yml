@@ -61,6 +61,8 @@ dynamic_collections:
         1080: 2_
         720: 3_
         480: 4_
+      dynamic:
+        default: true
     include:
       - 4k
       - 1080

@@ -67,3 +67,5 @@ dynamic_collections:
         default: award/golden/winner/<<key>>
       translation_key:
         default: golden_year
+      dynamic:
+        default: true

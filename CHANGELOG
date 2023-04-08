@@ -32,13 +32,13 @@ Removed Translations from the defaults directory and in to their own [repo](http
 Added `minimum_rating`, `fresh_rating`, and `maximum_rating` as template variable options to the [Ratings Overlays](https://metamanager.wiki/en/latest/defaults/overlays/ratings.html) to control which ratings get displayed.
 Added the ability to update Overlay Defaults Positioning with just setting the alignment variables.
 Added [Based On...](https://metamanager.wiki/en/latest/defaults/both/based.html) Collection Default.
-Added Signature Style, DIIIVOY Style, and DIIVOY Color Style to [`actor`](https://metamanager.wiki/en/latest/defaults/both/actor.html), [`directors`](https://metamanager.wiki/en/latest/defaults/movie/director.html), [`producers`](https://metamanager.wiki/en/latest/defaults/movie/producer.html), and [`writers`](https://metamanager.wiki/en/latest/defaults/movie/writer.html).
+Added Signature Style, DIIIVOY Style, and DIIIVOY Color Style to [`actor`](https://metamanager.wiki/en/latest/defaults/both/actor.html), [`directors`](https://metamanager.wiki/en/latest/defaults/movie/director.html), [`producers`](https://metamanager.wiki/en/latest/defaults/movie/producer.html), and [`writers`](https://metamanager.wiki/en/latest/defaults/movie/writer.html).
 Added new editions to the [editions Overlay File](https://metamanager.wiki/en/latest/defaults/overlays/resolution.html).
 Added `delete_playlist` and `delete_playlist_<<key>>` as template variable options to the [Playlist Default](https://metamanager.wiki/en/latest/defaults/playlist.html).
 Added `region` as a template variable options to the [`streaming` Overlay](https://metamanager.wiki/en/latest/defaults/overlays/streaming.html) and [`streaming` Collection](https://metamanager.wiki/en/latest/defaults/both/streaming.html) to allow these lists to show items in that region.
 Added AppleTV to te [FlixPatrol Default](https://metamanager.wiki/en/latest/defaults/overlays/flixpatrol.html).
 Added `radarr_search` and `sonarr_search` as template variable options to all Collection Defaults.
-Updated `network` and `franchise` defaults
+Updated `network` and `franchise` defaults.
 Added `include` as a template variable options to the people collections ([`actor`](https://metamanager.wiki/en/latest/defaults/both/actor.html), [`director`](https://metamanager.wiki/en/latest/defaults/movie/director.html), [`producer`](https://metamanager.wiki/en/latest/defaults/movie/producer.html), [`writer`](https://metamanager.wiki/en/latest/defaults/movie/writer.html)) to specifically include the list of actors.
 
 # Bug Fixes

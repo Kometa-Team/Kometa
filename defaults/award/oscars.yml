@@ -62,3 +62,5 @@ dynamic_collections:
         default: award/oscars/winner/<<key>>
       translation_key:
         default: oscars_year
+      dynamic:
+        default: true

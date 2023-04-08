@@ -111,3 +111,5 @@ dynamic_collections:
         crunchyroll: show
       translation_key:
         default: streaming
+      dynamic:
+        default: true

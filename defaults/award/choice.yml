@@ -40,3 +40,5 @@ dynamic_collections:
         2016: critics
         2015: critics
         2014: critics
+      dynamic:
+        default: true

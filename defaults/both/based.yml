@@ -38,3 +38,5 @@ dynamic_collections:
         default: based/<<key_name_encoded>>
       translation_key:
         default: based
+      dynamic:
+        default: true

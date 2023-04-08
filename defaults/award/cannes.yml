@@ -48,3 +48,5 @@ dynamic_collections:
         default: award/cannes/<<key>>
       translation_key:
         default: cannes_year
+      dynamic:
+        default: true

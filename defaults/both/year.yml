@@ -40,3 +40,5 @@ dynamic_collections:
         default: year/best/<<key>>
       translation_key:
         default: year
+      dynamic:
+        default: true

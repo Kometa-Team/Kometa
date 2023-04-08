@@ -39,6 +39,8 @@ dynamic_collections:
       translation_key:
         default: content_rating
         other: content_rating_other
+      dynamic:
+        default: true
     include:
       - TV-G
       - TV-Y

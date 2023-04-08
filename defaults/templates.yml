@@ -41,6 +41,15 @@ templates:
     name: <<name_<<key>>>>
 
   shared:
+    conditionals:
+      name_<<key>>:
+        conditions:
+          - dynamic: true
+            value: <<name_format>>
+      summary_<<key>>:
+        conditions:
+          - dynamic: true
+            value: <<summary_format>>
     default:
       collection_section: "00"
       key: <<mapping_name>>
@@ -55,8 +64,6 @@ templates:
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
       minimum_items_<<key>>: <<minimum_items>>
-      summary_<<key>>: <<summary_format>>
-      name_<<key>>: <<name_format>>
     optional:
       - use_<<key>>
       - allowed_libraries
