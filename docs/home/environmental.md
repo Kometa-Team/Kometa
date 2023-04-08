@@ -40,7 +40,7 @@ Environment Variables can also be placed inside a `.env` file inside your config
 | [ENV Plex Token](#env-plex-url--token)                | `-pt` or `--plex-token`                       | `PMM_PLEX_TOKEN`         |
 | [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                           | `PMM_DIVIDER`            |
 | [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                             | `PMM_WIDTH`              |
-| [Other Secrets](#config-secrets)                      | `--pmm-***`                                   | `PMM_***`                |
+| [Config Secrets](#config-secrets)                     | `--pmm-***`                                   | `PMM_***`                |
 
 Further explanation and examples of each command can be found below.
 

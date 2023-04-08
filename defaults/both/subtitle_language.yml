@@ -38,6 +38,8 @@ dynamic_collections:
       translation_key:
         default: subtitle_language
         other: subtitle_language_other
+      dynamic:
+        default: true
     include:
       - ab     # Abkhazian
       - aa     # Afar

@@ -43,3 +43,5 @@ dynamic_collections:
         default: director
       style:
         default: bw
+      dynamic:
+        default: true

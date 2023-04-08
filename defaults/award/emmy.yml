@@ -33,3 +33,5 @@ dynamic_collections:
         default: award/emmys/winner/<<key>>
       translation_key:
         default: emmy_year
+      dynamic:
+        default: true

@@ -48,3 +48,5 @@ dynamic_collections:
         default: award/bafta/<<key>>
       translation_key:
         default: bafta_year
+      dynamic:
+        default: true

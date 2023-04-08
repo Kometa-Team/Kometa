@@ -36,3 +36,5 @@ dynamic_collections:
         default: decade/best/<<key>>
       translation_key:
         default: decade
+      dynamic:
+        default: true

@@ -32,6 +32,8 @@ dynamic_collections:
         default: studio/<<key_encoded>>
       translation_key:
         default: studio
+      dynamic:
+        default: true
     include:
       - 8bit
       - A-1 Pictures

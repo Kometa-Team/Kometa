@@ -48,3 +48,5 @@ dynamic_collections:
         default: award/sundance/<<key>>
       translation_key:
         default: sundance_year
+      dynamic:
+        default: true

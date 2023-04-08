@@ -62,3 +62,5 @@ dynamic_collections:
         default: chart/<<key>>_top
       translation_key:
         default: flixpatrol
+      dynamic:
+        default: true

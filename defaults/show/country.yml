@@ -41,6 +41,8 @@ dynamic_collections:
       translation_key:
         default: country
         other: country_other
+      dynamic:
+        default: true
     include:
       # - af     # Afghanistan
       # - ax     # Åland Islands

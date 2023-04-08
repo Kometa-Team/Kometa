@@ -43,3 +43,5 @@ dynamic_collections:
         default: writer
       style:
         default: bw
+      dynamic:
+        default: true

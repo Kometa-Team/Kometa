@@ -58,6 +58,8 @@ dynamic_collections:
         16: "16_"
         17: "17_"
         18: "18_"
+      dynamic:
+        default: true
     include:
       - 1
       - 2

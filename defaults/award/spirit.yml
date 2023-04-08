@@ -34,3 +34,5 @@ dynamic_collections:
         default: award/spirit/<<key>>
       translation_key:
         default: spirit_year
+      dynamic:
+        default: true

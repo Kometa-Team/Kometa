@@ -32,6 +32,8 @@ dynamic_collections:
         default: network/<<key_encoded>>
       translation_key:
         default: network
+      dynamic:
+        default: true
     include:
       # TMDB Most Common & Most Watched Network Rankings
       - ABC # American Broadcasting Company
