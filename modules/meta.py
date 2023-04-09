@@ -18,7 +18,7 @@ auto = {
     "Video": ["country", "content_rating"] + all_auto
 }
 dynamic_attributes = [
-    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix",
+    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys",
     "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"
 ]
 auto_type_translation = {

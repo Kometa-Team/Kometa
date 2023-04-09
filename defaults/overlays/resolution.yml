@@ -59,7 +59,7 @@ external_templates:
               - IMAX
               - Remastered
               - Criterion
-              - Rich-Donner
+              - Richard-Donner
               - Black-And-Chrome
               - Definitive
               - Ulysses
@@ -346,7 +346,7 @@ overlays:
   Criterion-Dovetail:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
-  Rich-Donner-Dovetail:
+  Richard-Donner-Dovetail:
     variables: {key: richarddonner, weight: 9, search: Rich, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Black-And-Chrome-Dovetail:
@@ -486,8 +486,8 @@ overlays:
   Criterion:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
-  Rich-Donner:
-    variables: {key: richdonner, weight: 9, search: Rich, type: edition, allowed_libraries: movie}
+  Richard-Donner:
+    variables: {key: richarddonner, weight: 9, search: Rich, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Black-And-Chrome:
     variables: {key: blackchrome, weight: 8, search: Black, type: edition, allowed_libraries: movie}

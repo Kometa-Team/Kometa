@@ -2824,18 +2824,30 @@ class CollectionBuilder:
                 self.library.query(item.refresh)
 
         if self.library.Radarr and tmdb_paths:
-            if "item_radarr_tag" in self.item_details:
-                self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
-            if self.radarr_details["add_existing"]:
-                added = self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
-                self.added_to_radarr.extend([{"title": movie.title, "id": movie.tmdbId} for movie in added])
+            try:
+                if "item_radarr_tag" in self.item_details:
+                    self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
+                if self.radarr_details["add_existing"]:
+                    added = self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
+                    self.added_to_radarr.extend([{"title": movie.title, "id": movie.tmdbId} for movie in added])
+            except Failed as e:
+                logger.error(e)
+            except ArrException as e:
+                logger.stacktrace()
+                logger.error(f"Arr Error: {e}")
 
         if self.library.Sonarr and tvdb_paths:
-            if "item_sonarr_tag" in self.item_details:
-                self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
-            if self.sonarr_details["add_existing"]:
-                added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
-                self.added_to_sonarr.extend([{"title": show.title, "id": show.tvdbId} for show in added])
+            try:
+                if "item_sonarr_tag" in self.item_details:
+                    self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
+                if self.sonarr_details["add_existing"]:
+                    added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
+                    self.added_to_sonarr.extend([{"title": show.title, "id": show.tvdbId} for show in added])
+            except Failed as e:
+                logger.error(e)
+            except ArrException as e:
+                logger.stacktrace()
+                logger.error(f"Arr Error: {e}")
 
     def load_collection(self):
         if self.obj is None and self.smart_url:
