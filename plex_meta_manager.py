@@ -46,8 +46,6 @@ parser.add_argument("-nc", "--no-countdown", dest="no_countdown", help="Run with
 parser.add_argument("-nm", "--no-missing", dest="no_missing", help="Run without running the missing section", action="store_true", default=False)
 parser.add_argument("-nr", "--no-report", dest="no_report", help="Run without saving a report", action="store_true", default=False)
 parser.add_argument("-ro", "--read-only-config", dest="read_only_config", help="Run without writing to the config", action="store_true", default=False)
-parser.add_argument("-pu", "--plex-url", dest="plex_url", help="Plex URL for Plex ENV URLs", default="", type=str)
-parser.add_argument("-pt", "--plex-token", dest="plex_token", help="Plex Token for Plex ENV Tokens", default="", type=str)
 parser.add_argument("-d", "--divider", dest="divider", help="Character that divides the sections (Default: '=')", default="=", type=str)
 parser.add_argument("-w", "--width", dest="width", help="Screen Width (Default: 100)", default=100, type=int)
 args, unknown = parser.parse_known_args()
@@ -126,16 +124,25 @@ timeout = get_arg("PMM_TIMEOUT", args.timeout, arg_int=True)
 debug = get_arg("PMM_DEBUG", args.debug, arg_bool=True)
 trace = get_arg("PMM_TRACE", args.trace, arg_bool=True)
 log_requests = get_arg("PMM_LOG_REQUESTS", args.log_requests, arg_bool=True)
-plex_url = get_arg("PMM_PLEX_URL", args.plex_url)
-plex_token = get_arg("PMM_PLEX_TOKEN", args.plex_token)
 
 secret_args = {}
+plex_url = None
+plex_token = None
 i = 0
 while i < len(unknown):
-    if str(unknown[i]).lower().startswith("--pmm-"):
-        secret_args[str(unknown[i]).lower()[6:]] = str(unknown[i + 1])
+    test_var = str(unknown[i]).lower()
+    if test_var.startswith("--pmm-") or test_var in ["-pu", "--plex-url", "-pt", "--plex-token"]:
+        if test_var in ["-pu", "--plex-url"]:
+            plex_url = str(unknown[i + 1])
+        elif test_var in ["-pt", "--plex-token"]:
+            plex_token = str(unknown[i + 1])
+        else:
+            secret_args[test_var[6:]] = str(unknown[i + 1])
         i += 1
     i += 1
+
+plex_url = get_arg("PMM_PLEX_URL", plex_url)
+plex_token = get_arg("PMM_PLEX_TOKEN", plex_token)
 
 for env_name, env_data in os.environ.items():
     if str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
@@ -275,8 +282,6 @@ def start(attrs):
     logger.debug(f"--no-missing (PMM_NO_MISSING): {no_missing}")
     logger.debug(f"--no-report (PMM_NO_REPORT): {no_report}")
     logger.debug(f"--read-only-config (PMM_READ_ONLY_CONFIG): {read_only_config}")
-    logger.debug(f"--plex-url (PMM_PLEX_URL): {'Used' if plex_url else ''}")
-    logger.debug(f"--plex-token (PMM_PLEX_TOKEN): {'Used' if plex_token else ''}")
     logger.debug(f"--divider (PMM_DIVIDER): {divider}")
     logger.debug(f"--width (PMM_WIDTH): {screen_width}")
     logger.debug(f"--debug (PMM_DEBUG): {debug}")

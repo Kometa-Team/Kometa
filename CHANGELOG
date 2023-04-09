@@ -1,3 +1,12 @@
+# New Translation Portal
+
+New Translation Portal located at [translations.metamanager.wiki](https://translations.metamanager.wiki/projects/plex-meta-manager/defaults/). If anyone is willing to help fill in what we have or add your own language feel free to sign up. If you have questions either contact us on Discord or in the Discussions on GitHub.
+
+# New PMM Companion Scripts
+
+[PMM Overlay Reset](https://metamanager.wiki/en/latest/home/scripts/overlay-reset.html): Script to Hard Reset PMM Overlays back to Default.
+[Plex Image Cleanup](https://metamanager.wiki/en/latest/home/scripts/image-cleanup.html): Script to clean up Old Uploaded Images in Plex.
+
 # Requirements Update (requirements will need to be reinstalled)
 Updated pillow requirement to 9.5.0
 Updated plexapi requirement to 4.13.4
@@ -60,7 +69,5 @@ Closes #1189 Fixes a Bug in the Resolution Default where the position would be c
 Closes #1336 Fixed "Mass Originally Available Update" attribute name within the wiki.
 Closes #1327 Fixed an issue where searching for item assets could take longer than expected.
 Closes #1346 Fixed an issue where using `PMM_TIME` with multiple times could ignore all but the last specified time.
-
-
 
 Various other Minor Fixes
