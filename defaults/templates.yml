@@ -5,16 +5,14 @@ templates:
       sep_style: orig
       collection_section: "00"
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
-      summary_<<key>>: <<summary_format>>
-      name_<<key>>: <<name_format>>
     optional:
       - use_separator
       - collection_mode
       - placeholder_tmdb_movie
       - placeholder_tvdb_show
       - placeholder_imdb_id
-      - summary_format
-      - name_format
+      - summary_<<key>>
+      - name_<<key>>
       - key_name
       - translation_key
     conditionals:
@@ -45,10 +43,18 @@ templates:
       name_<<key>>:
         conditions:
           - dynamic: true
+            <<translation_key>>_name.exists: true
+            value: <<<<translation_key>>_name>>
+          - dynamic: true
+            key.not: other
             value: <<name_format>>
       summary_<<key>>:
         conditions:
           - dynamic: true
+            <<translation_key>>_summary.exists: true
+            value: <<<<translation_key>>_summary>>
+          - dynamic: true
+            key.not: other
             value: <<summary_format>>
     default:
       collection_section: "00"

@@ -367,7 +367,7 @@ class CollectionBuilder:
             delete_cols = []
             if (self.name and self.name != en_name) or (not self.name and en_name != trans_name):
                 delete_cols.append(en_name)
-            if self.name and self.name != trans_name:
+            if self.name and self.name != trans_name and en_name != trans_name:
                 delete_cols.append(trans_name)
 
             if delete_cols:
@@ -377,10 +377,11 @@ class CollectionBuilder:
                 elif not self.data[methods["delete_collections_named"]]:
                     self.data[methods["delete_collections_named"]] = delete_cols
                 elif not isinstance(self.data[methods["delete_collections_named"]], list):
-                    delete_cols.append(self.data[methods["delete_collections_named"]])
+                    if self.data[methods["delete_collections_named"]] not in delete_cols:
+                        delete_cols.append(self.data[methods["delete_collections_named"]])
                     self.data[methods["delete_collections_named"]] = delete_cols
                 else:
-                    self.data[methods["delete_collections_named"]].extend(delete_cols)
+                    self.data[methods["delete_collections_named"]].extend([d for d in delete_cols if d not in self.data[methods["delete_collections_named"]]])
 
             if not self.name:
                 self.name = trans_name if trans_name else en_name
