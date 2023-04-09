@@ -16,7 +16,6 @@ collections:
     template:
       - name: separator
         separator: country
-      - name: translation
         key_name: Country
         translation_key: separator
 
