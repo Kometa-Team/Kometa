@@ -469,7 +469,7 @@ class CollectionBuilder:
 
         self.posters = {}
         self.backgrounds = {}
-        if "pmm_poster" in methods:
+        if not self.overlay and "pmm_poster" in methods:
             logger.debug("")
             logger.debug("Validating Method: pmm_poster")
             if self.data[methods["pmm_poster"]] is None:

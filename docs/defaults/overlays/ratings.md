@@ -4,6 +4,8 @@ The `ratings` Default Overlay File is used to create an overlay based on the Cri
 
 This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info.
 
+**Please read [PMM Ratings Explained](../../home/guides/ratings) for more understanding on how PMM interacts with ratings.**
+
 ![](images/ratings_overlay.png)
 
 ## Requirements & Recommendations
