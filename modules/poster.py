@@ -11,7 +11,7 @@ class ImageBase:
         self.data = data
         self.methods = {str(m).lower(): m for m in self.data}
         self.code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.posters_dir = os.path.join(self.code_base, "defaults", "posters")
+        self.images_dir = os.path.join(self.code_base, "defaults", "images")
 
     def check_data(self, attr):
         if attr not in self.methods or not self.data[self.methods[attr]]:
@@ -60,13 +60,10 @@ class ImageBase:
         else:
             ext = "png"
         num = ""
-        image_path = os.path.join(self.posters_dir, f"temp{num}.{ext}")
+        image_path = os.path.join(self.images_dir, f"temp{num}.{ext}")
         while os.path.exists(image_path):
-            if not num:
-                num = 1
-            else:
-                num += 1
-            image_path = os.path.join(self.posters_dir, f"temp{num}.{ext}")
+            num = 1 if not num else num + 1
+            image_path = os.path.join(self.images_dir, f"temp{num}.{ext}")
         with open(image_path, "wb") as handler:
             handler.write(response.content)
         while util.is_locked(image_path):
@@ -107,8 +104,8 @@ class Component(ImageBase):
         self.has_back = True if self.back_color or self.back_line_color else False
         self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "component", err_type="Posters", default=(0, "center", 0, "center"))
 
-        self.images_dir = os.path.join(self.posters_dir, "images")
-        self.pmm_images = {k[:-4]: os.path.join(self.images_dir, k) for k in os.listdir(self.images_dir)}
+        old_images_dir = os.path.join(self.images_dir, "images")
+        self.pmm_images = {k[:-4]: os.path.join(old_images_dir, k) for k in os.listdir(old_images_dir)}
         self.image, self.image_compare = self.check_file("image", self.pmm_images)
         self.image_width = util.parse("Posters", "image_width", self.data, datatype="int", methods=self.methods, default=0, minimum=0, maximum=2000) if "image_width" in self.methods else 0
         self.image_color = self.check_color("image_color")
@@ -328,7 +325,7 @@ class PMMImage(ImageBase):
     def __init__(self, config, data, image_attr, playlist=False):
         super().__init__(config, data)
         self.image_attr = image_attr
-        self.backgrounds_dir = os.path.join(self.posters_dir, "backgrounds")
+        self.backgrounds_dir = os.path.join(self.images_dir, "backgrounds")
         self.playlist = playlist
         self.pmm_backgrounds = {k[:-4]: os.path.join(self.backgrounds_dir, k) for k in os.listdir(self.backgrounds_dir)}
 
@@ -350,7 +347,7 @@ class PMMImage(ImageBase):
         return output
 
     def save(self, item_vars):
-        image_path = os.path.join(self.posters_dir, "temp_poster.png")
+        image_path = os.path.join(self.images_dir, "temp_poster.png")
         if os.path.exists(image_path):
             os.remove(image_path)
         canvas_width = 1000
