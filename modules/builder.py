@@ -315,11 +315,9 @@ class CollectionBuilder:
                     trans_name = translations["collections"][translation_key]["name"]
                 if "summary" in translations["collections"][translation_key]:
                     trans_summary = translations["collections"][translation_key]["summary"]
-            if "translation_prefix" in methods:
+            if "translation_prefix" in methods and self.data[methods["translation_prefix"]]:
                 logger.debug("")
                 logger.debug("Validating Method: translation_prefix")
-                if not self.data[methods["translation_prefix"]]:
-                    raise Failed(f"{self.Type} Error: translation_prefix attribute is blank")
                 logger.debug(f"Value: {self.data[methods['translation_prefix']]}")
                 en_name = f"{self.data[methods['translation_prefix']]}{en_name}"
                 trans_name = f"{self.data[methods['translation_prefix']]}{trans_name}"
