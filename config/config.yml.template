@@ -29,6 +29,8 @@ libraries:                       # This is called out once within the config.yml
       - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
 playlist_files:
   - pmm: playlist                # This is a file within PMM's defaults folder
+    template_variables:
+      libraries: Movies, TV Shows   # list of libraries that you want the PMM Defaults playlists to look at
   # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
   cache: true
