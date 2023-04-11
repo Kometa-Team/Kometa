@@ -101,7 +101,7 @@ class Component(ImageBase):
                 self.back_height = "max"
             else:
                 self.back_height = util.parse("Posters", "back_height", self.data, methods=self.methods, datatype="int", minimum=0)
-        self.has_back = True if self.back_color or self.back_line_color else False
+        self.has_back = True if self.back_color or self.back_line_width else False
         self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "component", err_type="Posters", default=(0, "center", 0, "center"))
 
         old_images_dir = os.path.join(self.images_dir, "images")
