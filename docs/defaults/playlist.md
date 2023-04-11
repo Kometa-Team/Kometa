@@ -4,6 +4,7 @@ The `playlist` Default Metadata File is used to create playlists based on popula
 
 This Default file requires [Trakt Authentication](../config/trakt)
 
+This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries, use the `libraries` template variable which is outlined in the [Template Variables](#template-variables) table.
 ![](images/playlist.png)
 
 ## Playlists
