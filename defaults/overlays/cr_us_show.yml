@@ -1,0 +1,57 @@
+##############################################################################
+#                            cr_us_show Overlay                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/cr_us_show.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      key: <<overlay_name>>
+      color: c
+    horizontal_offset: 15
+    horizontal_align: left
+    vertical_offset: 270
+    vertical_align: bottom
+    pmm: cr/us<<overlay_name>><<color>>
+
+templates:
+  cr_us:
+    ignore_blank_results: true
+    plex_search:
+      validate: false
+      any:
+        content_rating: <<rating>>
+
+overlays:
+  tv-g:
+    template:
+      - name: standard
+      - {name: cr_us, rating: "TV-G, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, U, G, gb/U, gb/0+, G - All Ages, A, no/A"}
+
+  tv-y:
+    template:
+      - name: standard
+      - {name: cr_us, rating: "TV-Y, TV-Y7, TV-Y7-FV, 7, 07, 8, 08, 9, 09, no/5, no/05, no/6, no/06, no/7, no/07"}
+
+  tv-pg:
+    template:
+      - name: standard
+      - {name: cr_us, rating: "gb/PG, gb/9+, 10, 11, 12, 13, TV-PG, PG - Children, no/9, no/09, no/10, no/11, no/12"}
+
+  tv-14:
+    template:
+      - name: standard
+      - {name: cr_us, rating: "gb/12A, 12+, PG-13, TV-13, TV-14, 12, PG-13 - Teens 13 or older, gb/14+, gb/15, 14, 15, 16, 17, no/15, no/16"}
+
+  tv-ma:
+    template:
+      - name: standard
+      - {name: cr_us, rating: "18, gb/18, MA-17, NC-17, R, TV-MA, TVMA, R - 17+ (violence & profanity), R+ - Mild Nudity, Rx - Hentai, no/18"}
+
+  nr:
+    template:
+      - {name: standard, key: nr}
+      - {name: cr_us, rating: "None, NR, Not Rated, Unrated"}
