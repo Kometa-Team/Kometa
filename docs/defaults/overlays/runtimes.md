@@ -22,7 +22,7 @@ libraries:
       - pmm: runtimes
       - pmm: runtimes
         template_variables:
-          overlay_label: episode
+          overlay_level: episode
 ```
 
 ## Template Variables
@@ -62,6 +62,6 @@ libraries:
     overlay_path:
       - pmm: runtimes
         template_variables:
-          overlay_label: episode
+          overlay_level: episode
         font: fonts/Inter-Bold.ttf
 ```
