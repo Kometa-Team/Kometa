@@ -10,12 +10,17 @@ external_templates:
   template_variables:
     default:
       key: <<overlay_name>>
-      color: c
     horizontal_offset: 15
     horizontal_align: left
     vertical_offset: 270
     vertical_align: bottom
-    pmm: cr/uk<<overlay_name>><<color>>
+    conditionals:
+      inside_color:
+        default: "c"
+        conditions:
+          - color: false
+            value: ""
+    pmm: cr/uk<<overlay_name>><<inside_color>>
 
 templates:
   cr_uk:
