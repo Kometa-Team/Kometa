@@ -42,7 +42,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable            | Default  |
 |:--------------------|:---------|
-| `color`             | `c`      |
+| `color`             | ``       |
 | `horizontal_offset` | `15`     |
 | `horizontal_align`  | `left`   |
 | `vertical_offset`   | `270`    |
@@ -50,6 +50,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable         | Description & Values                                                                                                                                                |
 |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `color`          | **Description:** Color version of the content rating images<br>**Default:**`` Set to `false` if you want b&w version.                                               |
 | `back_color`     | **Description:** Choose the back color in RGBA for the overlay lozenge.<br>**Default:**`#00000099`                                                                  |
 | `back_radius`    | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                                                |
 | `back_width`     | **Description:** Choose the back width for the overlay lozenge.<br>**Default:**`305`                                                                                |
@@ -71,5 +72,5 @@ libraries:
     overlay_path:
       - pmm: content_rating_us_movie
         template_variables:
-          color: ""    # since it is blank, the black and white version will be applied
+          color: false
 ```

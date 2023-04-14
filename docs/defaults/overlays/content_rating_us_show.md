@@ -48,7 +48,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable            | Default  |
 |:--------------------|:---------|
-| `color`             | `c`      |
+| `color`             | ``       |
 | `horizontal_offset` | `15`     |
 | `horizontal_align`  | `left`   |
 | `vertical_offset`   | `270`    |
@@ -56,6 +56,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable         | Description & Values                                                                                                                                                |
 |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `color`          | **Description:** Color version of the content rating images<br>**Default:**`` Set to `false` if you want b&w version.                                               |
 | `back_color`     | **Description:** Choose the back color in RGBA for the overlay lozenge.<br>**Default:**`#00000099`                                                                  |
 | `back_radius`    | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                                                |
 | `back_width`     | **Description:** Choose the back width for the overlay lozenge.<br>**Default:**`305`                                                                                |
@@ -68,7 +69,6 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `stroke_color`   | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                          |
 | `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any Number greater then 0                                               |
 | `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                         |
-| `overlay_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                     |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
@@ -78,13 +78,13 @@ libraries:
     overlay_path:
       - pmm: content_rating_us_show
         template_variables:
-          color: ""    # since it is blank, the black and white version will be applied
+          color: false
       - pmm: content_rating_us_show
         template_variables:
-          color: ""    # since it is blank, the black and white version will be applied
+          color: false
           overlay_level: season
       - pmm: content_rating_us_show
         template_variables:
-          color: ""    # since it is blank, the black and white version will be applied
+          color: false
           overlay_level: episode
 ```
