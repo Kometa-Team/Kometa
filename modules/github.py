@@ -12,7 +12,7 @@ configs_raw_url = f"{raw_url}/meisnate12/Plex-Meta-Manager-Configs"
 class GitHub:
     def __init__(self, config):
         self.config = config
-        self.images_raw_url = f"{raw_url}/meisnate12/PMM-Image-Sets/master/"
+        self.images_raw_url = f"{raw_url}/meisnate12/PMM-Image-Sets/master/sets/"
         self.translation_url = f"{raw_url}/meisnate12/PMM-Translations/master/defaults/"
         self._configs_url = None
         self._config_tags = []
