@@ -1,9 +1,9 @@
-##############################################################################
-#                            cr_us_movie Overlay                             #
-#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#   https://metamanager.wiki/en/latest/defaults/overlays/cr_us_movie.html    #
-##############################################################################
+######################################################################################
+#                           US Content Rating Movie Overlay                          #
+#                      Created by Yozora, Bullmoose20, & Sohjiro                     #
+#               EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL              #
+#  https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_movie.html #
+######################################################################################
 
 external_templates:
   pmm: templates
@@ -30,6 +30,7 @@ overlays:
     template:
       - name: standard
       - {name: cr_us, rating: "1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, G - All Ages, U, gb/U, gb/0+, E, gb/E, A, no/A, TV-Y, TV-G"}
+
   pg:
     template:
       - name: standard
