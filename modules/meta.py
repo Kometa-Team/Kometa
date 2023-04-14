@@ -312,7 +312,7 @@ class DataFile:
                                         added_vars.pop(input_key)
                                 elif overwrite_call:
                                     variables[input_key] = input_value
-                                else:
+                                elif input_key not in added_vars:
                                     added_vars[input_key] = input_value
                     for k, v in added_vars.items():
                         if k not in variables:
