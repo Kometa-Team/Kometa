@@ -1,8 +1,8 @@
 ##############################################################################
-#                            cr_uk Overlay                                   #
+#                        UK Content Rating Overlay                           #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#   https://metamanager.wiki/en/latest/defaults/overlays/cr_uk.html          #
+# https://metamanager.wiki/en/latest/defaults/overlays/content_rating_uk.html#
 ##############################################################################
 
 external_templates:

@@ -1,9 +1,9 @@
-##############################################################################
-#                            cr_us_show Overlay                              #
-#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#   https://metamanager.wiki/en/latest/defaults/overlays/cr_us_show.html     #
-##############################################################################
+######################################################################################
+#                           US Content Rating Show Overlay                           #
+#                      Created by Yozora, Bullmoose20, & Sohjiro                     #
+#               EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL              #
+#  https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_show.html  #
+######################################################################################
 
 external_templates:
   pmm: templates
