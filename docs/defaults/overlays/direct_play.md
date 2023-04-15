@@ -2,9 +2,11 @@
 
 The `direct_play` Default Overlay File is used to create an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)
 
-**This file works with Movie and Show Libraries.**
-
 ![](images/direct_play.png)
+
+## Requirements & Recommendations
+
+Supported library types: Movie & Show
 
 ## Config
 
@@ -18,12 +20,6 @@ libraries:
   TV Shows:
     overlay_path:
       - pmm: direct_play
-      - pmm: direct_play
-        template_variables:
-          overlay_level: season
-      - pmm: direct_play
-        template_variables:
-          overlay_level: episode
 ```
 
 ## Template Variables

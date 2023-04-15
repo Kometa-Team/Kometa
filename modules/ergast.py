@@ -29,6 +29,7 @@ terms = {
     "pre": ["pre", "voorbeschouwing"],
     "post": ["post", "nabeschouwing"],
     "quali": ["quali", "kwalificatie"],
+    "notebook": ["notebook", "notitieboekje"],
     "preview": ["preview", "seizoensvoorbeschouwing"],
     "summary": ["summary", "samenvatting"],
     "highlight": ["highlight", "hoogtepunten"],
@@ -43,6 +44,7 @@ names = {
         "Pre-Sprint Build-up": "Sprint Voorbeschouwing",
         "Post-Sprint Analysis": "Sprint Nabeschouwing",
         "Sprint Qualifying": "Sprint Kwalificatie",
+        "Ted's Sprint Notebook": "Ted's Sprint Notitieboekje",
         "Pre-Qualifying Build-up": "Kwalificatie Voorbeschouwing",
         "Post-Qualifying Analysis": "Kwalificatie Nabeschouwing",
         "Qualifying Session": "Kwalificatie",
@@ -52,6 +54,7 @@ names = {
         "Live from the Grid": "Vanaf de grid",
         "Highlights": "Samenvatting",
         "Race Session": "Race",
+        "Ted's Race Notebook": "Ted's Race Notitieboekje",
     }
 }
 
@@ -93,12 +96,14 @@ class Race:
                 output = "Pre-Sprint Build-up"
             elif any([x in title for x in terms["post"]]):
                 output = "Post-Sprint Analysis"
+            elif any([x in title for x in terms["notebook"]]):
+                output = "Ted's Sprint Notebook"
             else:
                 output = "Sprint Qualifying"
         elif any([x in title for x in terms["quali"]]):
             if any([x in title for x in terms["pre"]]):
                 output = "Pre-Qualifying Build-up"
-            elif any([x in title for x in terms["post"]]):
+            elif any([x in title for x in terms["post"] + terms["notebook"]]):
                 output = "Post-Qualifying Analysis"
             else:
                 output = "Qualifying Session"
@@ -112,6 +117,8 @@ class Race:
             output = "Live from the Grid"
         elif any([x in title for x in terms["summary"] + terms["highlight"]]):
             output = "Highlights"
+        elif any([x in title for x in terms["notebook"]]):
+            output = "Ted's Race Notebook"
         else:
             output = "Race Session"
         if "2160" in title or "4K" in title:

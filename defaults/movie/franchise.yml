@@ -16,8 +16,7 @@ templates:
       movie_<<key>>: <<movie>>
       pre: "_"
       order_<<key>>: ""
-      sort: <<collection_name>>
-      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
       sort_title_<<key>>: <<sort_title>>
       radarr_add_missing_<<key>>: <<radarr_add_missing>>
       radarr_folder_<<key>>: <<radarr_folder>>
@@ -26,6 +25,7 @@ templates:
       radarr_monitor_<<key>>: <<radarr_monitor>>
       collection_order_<<key>>: <<collection_order>>
     optional:
+      - name_<<key>>
       - summary_<<key>>
       - movie
       - name_mapping
@@ -38,6 +38,7 @@ templates:
       - item_radarr_tag
       - radarr_monitor
       - url_poster_<<key>>
+    name: <<name_<<key>>>>
     summary: <<summary_<<key>>>>
     cache_builders: 1
     minimum_items: <<minimum_items>>

@@ -2,18 +2,20 @@
 
 The `status` Default Overlay File is used to create an overlay on a show detailing its Current Airing Status for all shows in your library.
 
-**This file only works with Show Libraries.**
-
 ![](images/status.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Show
 
 ## Supported Status
 
-| Audio Codec | Key         | Weight |
-|:------------|:------------|:-------|
-| AIRING      | `airing`    | `40`   |
-| RETURNING   | `returning` | `30`   |
-| CANCELED    | `canceled`  | `20`   |
-| ENDED       | `ended`     | `10`   |
+| Status    | Key         | Weight |
+|:----------|:------------|:-------|
+| AIRING    | `airing`    | `40`   |
+| RETURNING | `returning` | `30`   |
+| CANCELED  | `canceled`  | `20`   |
+| ENDED     | `ended`     | `10`   |
 
 ## Config
 
@@ -21,9 +23,6 @@ The below YAML in your config.yml will create the overlays:
 
 ```yaml
 libraries:
-  Movies:
-    overlay_path:
-      - pmm: status
   TV Shows:
     overlay_path:
       - pmm: status
@@ -60,15 +59,15 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `stroke_width`               | **Description:** Font Stroke Width for the Text Overlay.<br>**Values:** Any Number greater then 0                                                                                                                                                                                                                                                   |
 | `stroke_color`               | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                                                                                                                                                                          |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
 ```yaml
 libraries:
-  Movies:
+  TV Shows:
     overlay_path:
       - pmm: status
         template_variables:
-          text_canceled: CANCELLED
+          text_canceled: "C A N C E L L E D"
 ```

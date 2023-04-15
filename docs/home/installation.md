@@ -30,7 +30,7 @@ If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following ba
 
 ## Local Install Overview
 
-Plex Meta Manager is compatible with Python 3.7 through 3.10. Later versions may function but are untested.
+Plex Meta Manager is compatible with Python 3.7 through 3.11. Later versions may function but are untested.
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. For a detailed step-by-step walkthrough, refer to the [Local Walkthrough](guides/local) guide.
 
@@ -94,5 +94,27 @@ services:
       - /path/to/config:/config
     restart: unless-stopped
 ```
-## Dockerfile
+
+### Dockerfile
+
 A `Dockerfile` is included within the GitHub repository for those who require it, although this is only suggested for those with knowledge of dockerfiles. The official Plex Meta Manager build is available on the [Dockerhub Website](https://hub.docker.com/r/meisnate12/plex-meta-manager).
+
+## Runtime flags and ENV vars
+
+Plex Meta Manager's behavior can be modified in a variety of ways using either runtime flags or environnment variables.  These flags and vars are detailed [here](environmental).
+
+For example, this docker-compose would create a container that runs immediately upon start (rather than waiting until 5AM), uses a particular config file, processes only overlays on only one library, and exits when done:
+```yaml
+version: "2.1"
+services:
+  plex-meta-manager:
+    image: meisnate12/plex-meta-manager
+    container_name: plex-meta-manager
+    environment:
+      - PMM_RUN=true
+      - PMM_CONFIG=/config/special-config.yml
+      - PMM_OVERLAYS=true
+      - PMM_LIBRARIES=Movies
+    volumes:
+      - /path/to/config:/config
+```

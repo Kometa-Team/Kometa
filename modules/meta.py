@@ -13,17 +13,18 @@ ms_auto = [
 ]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
-    "Show": ["network", "origin_country"] + all_auto + ms_auto,
+    "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
 }
 dynamic_attributes = [
-    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix",
+    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys",
     "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"
 ]
 auto_type_translation = {
     "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
-    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood", "edition": "editionTitle"
+    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood",
+    "edition": "editionTitle", "episode_year": "episode.year"
 }
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -69,12 +70,15 @@ class DataFile:
         self.type = file_type
         self.path = path
         self.temp_vars = temp_vars
+        self.language = "en"
+        if "language" in self.temp_vars and self.temp_vars["language"]:
+            if self.temp_vars["language"].lower() not in self.config.GitHub.translation_keys:
+                logger.warning(f"Config Error: Language: {self.temp_vars['language'].lower()} Not Found using en. Options: {', '.join(self.config.GitHub.translation_keys)}")
+            else:
+                self.language = self.temp_vars["language"].lower()
         self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}
-        self.translations = {}
-        self.key_names = {}
-        self.translation_variables = {}
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -95,7 +99,7 @@ class DataFile:
         else:
             return data
 
-    def load_file(self, file_type, file_path, overlay=False, translation=False):
+    def load_file(self, file_type, file_path, overlay=False, translation=False, images=False, folder=""):
         if translation:
             if file_path.endswith(".yml"):
                 file_path = file_path[:-4]
@@ -103,10 +107,17 @@ class DataFile:
                 file_path = file_path[:-5]
         if not translation and not file_path.endswith((".yml", ".yaml")):
             file_path = f"{file_path}.yml"
-        if file_type in ["URL", "Git", "Repo"]:
+        if file_type in ["URL", "Git", "Repo"] or (images and file_type == "PMM Default"):
             if file_type == "Repo" and not self.config.custom_repo:
                 raise Failed("Config Error: No custom_repo defined")
-            content_path = file_path if file_type == "URL" else f"{self.config.custom_repo if file_type == 'Repo' else self.config.GitHub.configs_url}{file_path}"
+            if file_type == "URL":
+                content_path = file_path
+            elif file_type == "Repo":
+                content_path = f"{self.config.custom_repo}{file_path}"
+            elif file_type == "PMM Default":
+                content_path = f"{self.config.GitHub.images_raw_url}{folder}{file_path}"
+            else:
+                content_path = f"{self.config.GitHub.configs_url}{file_path}"
             dir_path = content_path
             if translation:
                 content_path = f"{content_path}/default.yml"
@@ -125,14 +136,14 @@ class DataFile:
                 defaults_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
                 if overlay:
                     defaults_path = os.path.join(defaults_path, "overlays")
-                if os.path.exists(os.path.abspath(os.path.join(defaults_path, file_path))):
-                    file_path = os.path.abspath(os.path.join(defaults_path, file_path))
+                if os.path.exists(os.path.join(defaults_path, file_path)):
+                    file_path = os.path.join(defaults_path, file_path)
                 elif self.library:
                     for default_folder in [self.library.type.lower(), "both", "chart", "award"]:
-                        if os.path.exists(os.path.abspath(os.path.join(defaults_path, default_folder, file_path))):
-                            file_path = os.path.abspath(os.path.join(defaults_path, default_folder, file_path))
+                        if os.path.exists(os.path.join(defaults_path, default_folder, file_path)):
+                            file_path = os.path.join(defaults_path, default_folder, file_path)
                             break
-            content_path = os.path.abspath(f"{file_path}/default.yml" if translation else file_path)
+            content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
                 if file_type == "PMM Default":
@@ -208,7 +219,7 @@ class DataFile:
 
                     remove_variables = []
                     optional = []
-                    for tm in original_variables:
+                    for tm in original_variables.copy():
                         if original_variables[tm] is None:
                             remove_variables.append(tm)
                             original_variables.pop(tm)
@@ -224,8 +235,12 @@ class DataFile:
                         name = mapping_name
 
                     name_var = f"{self.data_type.lower()}_name"
+                    now = datetime.now()
                     original_variables[name_var] = str(name)
                     original_variables["mapping_name"] = mapping_name
+                    original_variables["current_year"] = now.year
+                    original_variables["current_month"] = now.month
+                    original_variables["current_day"] = now.day
                     original_variables["library_type"] = self.library.type.lower() if self.library else "item"
                     original_variables["library_typeU"] = self.library.type if self.library else "Item"
                     original_variables["library_name"] = self.library.name if self.library else "playlist"
@@ -236,10 +251,11 @@ class DataFile:
                         return_item = input_item
                         for search_dict in search_dicts:
                             for rk, rv in search_dict.items():
-                                if f"<<{rk}>>" == str(return_item):
-                                    return_item = rv
-                                if f"<<{rk}>>" in str(return_item):
-                                    return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
+                                if rk not in ["name_format", "summary_format"]:
+                                    if f"<<{rk}>>" == str(return_item):
+                                        return_item = rv
+                                    if f"<<{rk}>>" in str(return_item):
+                                        return_item = str(return_item).replace(f"<<{rk}>>", str(rv))
                         return return_item
 
                     conditionals = {}
@@ -305,33 +321,22 @@ class DataFile:
                         if k not in variables:
                             conditionals[k] = v
 
-                    language = variables["language"] if "language" in variables else "default"
-                    translation_variables = {k: v[language if language in v else "default"] for k, v in self.translations.items() if k not in optional}
-                    translation_variables.update({k: v[language if language in v else "default"] for k, v in self.translation_variables.items() if (language in v or "default" in v) and k not in optional})
-                    key_name_variables = {}
-                    for var_key, var_value in self.key_names.items():
-                        if var_key == "library_type" and language in var_value:
-                            variables[var_key] = var_value[language].lower()
-                            variables[f"{var_key}U"] = var_value[language]
-                        elif language in var_value:
-                            key_name_variables[var_key] = var_value[language]
                     if "key_name" in variables:
                         variables["original_key_name"] = variables["key_name"]
                         first_letter = str(variables["key_name"]).upper()[0]
                         variables["key_name_first_letter"] = first_letter if first_letter.isalpha() else "#"
-                        if variables["key_name"] in key_name_variables:
-                            variables["key_name"] = key_name_variables[variables["key_name"]]
-                        variables["translated_key_name"] = variables["key_name"]
 
                     default = {}
                     if all_init_defaults:
                         var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in all_init_defaults.items() if dk not in variables}
                         for dkey, dvalue in var_default.items():
                             final_key = replace_var(dkey, var_default)
-                            final_value = replace_var(dvalue, var_default)
                             if final_key not in optional and final_key not in variables and final_key not in conditionals:
-                                default[final_key] = final_value
-                                default[f"{final_key}_encoded"] = requests.utils.quote(str(final_value))
+                                default[final_key] = dvalue
+                                if "<<" in str(dvalue):
+                                    default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', dvalue)
+                                else:
+                                    default[f"{final_key}_encoded"] = util.quote(dvalue)
 
                     if "optional" in template:
                         if template["optional"]:
@@ -374,53 +379,56 @@ class DataFile:
                             for var_key, var_value in condition.items():
                                 if var_key == "value":
                                     continue
+                                error_text = ""
+                                con_var_value = ""
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
-                                    var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
-                                    if (not var_value and var_key[:-7] in variables and variables[var_key[:-7]]) or (var_value and (var_key[:-7] not in variables or not variables[var_key[:-7]])):
-                                        logger.trace(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
-                                        condition_passed = False
+                                    con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                    if con_var_value:
+                                        if var_key[:-7] not in variables or not variables[var_key[:-7]]:
+                                            error_text = "- does not exist"
+                                    elif var_key[:-7] in variables and variables[var_key[:-7]]:
+                                        error_text = "- exists"
+                                    con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):
-                                    if (isinstance(var_value, list) and variables[var_key] in var_value) or \
-                                            (not isinstance(var_value, list) and str(variables[var_key]) == str(var_value)):
+                                    if var_key[:-4] in variables:
+                                        con_var_value = variables[var_key[:-4]]
                                         if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is "{var_value}"')
-                                        condition_passed = False
-                                elif var_key in variables:
-                                    if (isinstance(var_value, list) and variables[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and str(variables[var_key]) != str(var_value)):
-                                        if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" not in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{variables[var_key]}" is not "{var_value}"')
-                                        condition_passed = False
-                                elif var_key in default:
-                                    if (isinstance(var_value, list) and default[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and str(default[var_key]) != str(var_value)):
-                                        if isinstance(var_value, list):
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" not in {var_value}')
-                                        else:
-                                            logger.trace(f'Condition {i} Failed: {var_key} "{default[var_key]}" is not "{var_value}"')
-                                        condition_passed = False
+                                            if con_var_value in var_value:
+                                                error_text = f'in {var_value}'
+                                        elif str(con_var_value) == str(var_value):
+                                            error_text = f'is "{var_value}"'
+                                elif var_key in variables or var_key in default:
+                                    con_var_value = variables[var_key] if var_key in variables else default[var_key]
+                                    if isinstance(var_value, list):
+                                        if con_var_value not in var_value:
+                                            error_text = f'not in {var_value}'
+                                    elif str(con_var_value) != str(var_value):
+                                        error_text = f'is not "{var_value}"'
                                 else:
-                                    logger.trace(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                    error_text = " is not a variable provided or a default variable"
+                                if error_text:
+                                    if con_var_value:
+                                        error_text = f': "{con_var_value}" {error_text}'
+                                    logger.trace(f'Condition {i} Failed: {var_key}{error_text}')
                                     condition_passed = False
                             if condition_passed:
-                                logger.debug(f'Conditional Variable: {final_key} is "{condition["value"]}"')
+                                logger.trace(f'Conditional Variable: {final_key} is "{condition["value"]}"')
                                 condition_found = True
-                                variables[final_key] = condition["value"]
-                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(condition["value"]))
+                                if condition["value"] is not None:
+                                    variables[final_key] = condition["value"]
+                                    variables[f"{final_key}_encoded"] = util.quote(condition["value"])
+                                else:
+                                    optional.append(final_key)
                                 break
                         if not condition_found:
                             if "default" in con_value:
-                                logger.debug(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
+                                logger.trace(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
-                                variables[f"{final_key}_encoded"] = requests.utils.quote(str(con_value["default"]))
+                                variables[f"{final_key}_encoded"] = util.quote(con_value["default"])
                             else:
-                                logger.debug(f"Conditional Variable: {final_key} added as optional variable")
+                                logger.trace(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
                                 optional.append(f"{final_key}_encoded")
 
@@ -453,7 +461,7 @@ class DataFile:
                             if key not in variables:
                                 variables[key] = value
                     for key, value in variables.copy().items():
-                        variables[f"{key}_encoded"] = requests.utils.quote(str(value))
+                        variables[f"{key}_encoded"] = util.quote(value)
 
                     default = {k: v for k, v in default.items() if k not in variables}
                     optional = [o for o in optional if o not in variables and o not in default]
@@ -464,8 +472,6 @@ class DataFile:
                     logger.trace(f"Defaults: {default}")
                     logger.trace("")
                     logger.trace(f"Optional: {optional}")
-                    logger.trace("")
-                    logger.trace(f"Translation: {translation_variables}")
                     logger.trace("")
 
                     def check_for_var(_method, _data, _debug):
@@ -481,8 +487,9 @@ class DataFile:
                                     if match:
                                         try:
                                             final = final.replace(f"<<{match.group(1)}>>", str(int(actual_value) + (int(match.group(3)) * (-1 if match.group(2) == "-" else 1))))
-                                        except ValueError:
-                                            raise Failed(f"Template Error: {actual_value} must be a number to use {match.group(1)}")
+                                        except (ValueError, TypeError):
+                                            logger.error(f"Template Error: {actual_value} must be a number to use {match.group(1)}")
+                                            raise Failed
                                 return final
                             else:
                                 return og_txt
@@ -491,19 +498,22 @@ class DataFile:
                         try:
                             for i_check in range(8):
                                 for option in optional:
-                                    if option not in variables and option not in translation_variables and f"<<{option}>>" in str(_data):
+                                    if option not in variables and f"<<{option}>>" in str(_data):
                                         if _debug:
                                             logger.trace(f"Failed {_method}: {_data}")
                                         raise Failed
                                 for variable, variable_data in variables.items():
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
                                         _data = scan_text(_data, variable, variable_data.replace(",", ""))
-                                    elif variable != "name":
+                                    elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                        continue
+                                    elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
                                         _data = scan_text(_data, variable, variable_data)
-                                for variable, variable_data in translation_variables.items():
-                                    _data = scan_text(_data, variable, variable_data)
                                 for dm, dd in default.items():
-                                    _data = scan_text(_data, dm, dd)
+                                    if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
+                                        continue
+                                    elif _method not in ["name", "summary"] or dm != "key_name":
+                                        _data = scan_text(_data, dm, dd)
                         except Failed:
                             if _debug:
                                 logger.trace(f"Failed {_method}: {_data}")
@@ -547,6 +557,8 @@ class DataFile:
                                     new_attributes[new_name] = check_data(new_name, attr_data, debug_template)
                             except Failed:
                                 continue
+                    logger.trace(f"Current Final: {new_attributes}")
+                    logger.trace("")
             logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)
@@ -563,38 +575,182 @@ class DataFile:
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     self.templates.update({k: (v, temp_vars) for k, v in temp_data["templates"].items() if k not in self.templates})
 
-    def translation_files(self, data, overlay=False):
-        if data and "translations" in data and data["translations"]:
-            files = util.load_files(data["translations"], "translations")
-            if not files:
-                logger.error("Config Error: No Paths Found for translations")
-            for file_type, template_file, _, _ in files:
-                temp_data, key_data, variables = self.load_file(file_type, template_file, overlay=overlay, translation=True)
-                self.translations.update({k: v for k, v in temp_data.items() if k not in self.translations})
-                self.key_names.update({k: v for k, v in key_data.items() if k not in self.key_names})
-                self.translation_variables.update({k: v for k, v in variables.items() if k not in self.translation_variables})
-
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, image_set_file=False):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
+        self.image_set_file = image_set_file
+        self.type_str = "Images" if self.image_set_file else "Metadata"
         metadata_name = self.get_file_name()
         if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
             raise NotScheduled(metadata_name)
         self.data_type = "Collection"
         self.library = library
-        if file_type == "Data":
-            self.metadata = None
+        self.metadata = None
+        self.collections = None
+        self.templates = None
+        self.update_collections = True
+        self.update_seasons = True
+        self.update_episodes = True
+        self.set_collections = {}
+        self.style_priority = []
+        if image_set_file:
+            logger.info("")
+            logger.separator(f"Loading Images {file_type}: {path}")
+            logger.info("")
+            self.metadata = {}
+            if self.type == "PMM Default":
+                if self.path.endswith(".yml"):
+                    self.path = self.path[:-4]
+                elif self.path.endswith(".yaml"):
+                    self.path = self.path[:-5]
+                data = self.load_file(self.type, "set", images=True, folder=f"{self.path}/")
+            else:
+                data = self.load_file(self.type, self.path, images=True)
+            methods = {t.lower(): t for t in self.temp_vars}
+
+            use_all = True if "use_all" in methods and self.temp_vars[methods["use_all"]] else False
+            logger.info(f"Use All Sections: {use_all}")
+
+            exclude = []
+            if "exclude" in methods:
+                if not use_all:
+                    raise Failed(f"Image Set Error: exclude only works when use_all is true")
+                exclude = util.parse("Images", "exclude", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Exclude: {exclude}")
+
+            include = []
+            if "include" in methods:
+                if use_all:
+                    raise Failed(f"Image Set Error: include only works when use_all is false")
+                include = util.parse("Images", "include", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Include: {include}")
+
+            if "style_priority" in methods:
+                self.style_priority = util.parse("Images", "style_priority", self.temp_vars, datatype="list", methods=methods)
+                logger.info(f"Style Priority: {self.style_priority}")
+
+            if "update_collections" in methods:
+                self.update_collections = util.parse("Images", "update_collections", self.temp_vars, datatype="bool", methods=methods, default=True)
+            logger.info(f"Update Collections: {self.update_collections}")
+
+            if "update_seasons" in methods:
+                self.update_seasons = util.parse("Images", "update_seasons", self.temp_vars, datatype="bool", methods=methods, default=True)
+            logger.info(f"Update Seasons: {self.update_seasons}")
+
+            if "update_episodes" in methods:
+                self.update_episodes = util.parse("Images", "update_episodes", self.temp_vars, datatype="bool", methods=methods, default=True)
+            logger.info(f"Update Episodes: {self.update_episodes}")
+            item_attr = "movies" if self.library.is_movie else "shows"
+            for section_key, section_data in get_dict("sections", data).items():
+                if not isinstance(section_data, dict):
+                    raise Failed("Image Set Error: Section Data must be a dictionary")
+                if "builders" not in section_data or not section_data["builders"]:
+                    logger.trace(f"Skipping No Builder for Section: {section_key}")
+                    continue
+                elif item_attr not in section_data:
+                    raise Failed(f"Section Data must have the {item_attr} attribute")
+                elif not section_data[item_attr]:
+                    raise Failed(f"Section Data attribute {item_attr} is empty")
+                elif "styles" not in section_data:
+                    raise Failed("Image Section Error: Section Data must have the styles attribute")
+                styles = util.parse("Section Data", "styles", section_data["styles"], datatype="dictlist")
+                if not styles:
+                    raise Failed("Image Section Error: Section Data styles attribute is empty")
+                default_style = None
+                for sk, sv in styles.items():
+                    default_style = sk
+                    break
+                if not default_style:
+                    raise Failed(f"Image Section Error: No styles found for section: {section_key}")
+                use_key = None
+                if f"use_{section_key}" in methods:
+                    use_key = util.parse("Images", f"use_{section_key}", self.temp_vars, datatype="bool",methods=methods, default=False)
+                    logger.info(f"Use {section_key}: {use_key}")
+                if use_key is False:
+                    logger.trace(f"Skipped as use_{section_key} is false")
+                    continue
+                elif use_all and section_key in exclude:
+                    logger.trace(f"Skipped as {section_key} is in the exclude list")
+                    continue
+                elif not use_all and use_key is None and section_key not in include:
+                    logger.trace(f"Skipped as use_all is false and use_{section_key} is not set{f' and {section_key} not in the include list' if include else ''}")
+                    continue
+                prioritized_style = None
+                for ps in self.style_priority:
+                    if ps in styles:
+                        prioritized_style = ps
+                        break
+                if f"style_{section_key}" in methods:
+                    style_key = util.parse("Images", f"style_{section_key}", self.temp_vars, methods=methods, default=default_style)
+                    logger.info(f"Style {section_key}: {style_key}")
+                    if style_key not in styles:
+                        p_warning = f"Image Section Warning: {section_key} has no style: {style_key} using"
+                        if prioritized_style:
+                            logger.warning(f"{p_warning} Prioritized Style: {prioritized_style}")
+                            style_key = prioritized_style
+                        else:
+                            logger.warning(f"{p_warning} default: {default_style}. Options: {', '.join([s for s in styles])}")
+                            style_key = default_style
+                elif prioritized_style:
+                    logger.info(f"Using Prioritized Style: {prioritized_style}")
+                    style_key = prioritized_style
+                else:
+                    style_key = default_style
+                if self.update_collections and "collections" in section_data and section_data["collections"]:
+                    self.set_collections[section_key] = section_data["collections"]
+
+                if f"style_file_{section_key}" in methods:
+                    style_file = self.temp_vars[methods[f"style_file_{section_key}"]]
+                elif not styles[style_key]:
+                    style_file = [{"pmm": f"{section_key}/{style_key}"}]
+                else:
+                    style_file = styles[style_key]
+                if not style_file:
+                    raise Failed("Image Style Error: style file call attribute is blank")
+                style_dict = style_file[0] if isinstance(style_file, list) else style_file
+                if not isinstance(style_dict, dict):
+                    raise Failed(f"Image Style Error: style file call attribute: {style_dict} is not a dictionary")
+                elif not style_dict:
+                    raise Failed("Image Style Error: style file call attribute dictionary is empty")
+                style_data = self.get_style_data(style_dict, section_key, items_data=section_data[item_attr])
+                for item_name, item_data in section_data[item_attr].items():
+                    if item_name not in style_data or not style_data[item_name]:
+                        continue
+                    if isinstance(item_data, dict):
+                        if "mapping_id" not in item_data:
+                            raise Failed(f"Image Section Error: {section_key}: {item_name}: No mapping ID found")
+                        meta_data = item_data
+                    else:
+                        meta_data = {"mapping_id": item_data}
+                    meta_data["style_data"] = style_data[item_name]
+                    meta_data["section_key"] = section_key
+                    meta_data["style_key"] = style_key
+                    if "seasons" in style_data[item_name] and style_data[item_name]["seasons"]:
+                        season_dict = {}
+                        for season_num, season_data in style_data[item_name]["seasons"].items():
+                            season_dict[season_num] = {}
+                            if season_data and "episodes" in season_data:
+                                episode_dict = {}
+                                for episode_num in season_data["episodes"]:
+                                    episode_dict[episode_num] = {}
+                                season_dict[season_num]["episodes"] = episode_dict
+                        meta_data["seasons"] = season_dict
+                    self.metadata[item_name] = meta_data
+            if not self.metadata:
+                raise Failed(f"{self.type_str} Error: No metadata items added")
+            logger.info("")
+            logger.info(f"Images File Loaded Successfully")
+        elif file_type == "Data":
             self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
         else:
             logger.info("")
             logger.separator(f"Loading Metadata {file_type}: {path}")
-            logger.debug("")
+            logger.info("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
             self.templates = get_dict("templates", data)
             self.external_templates(data)
-            self.translation_files(data)
             self.collections = get_dict("collections", data, library.collections)
             self.dynamic_collections = get_dict("dynamic_collections", data)
             col_names = library.collections + [c for c in self.collections]
@@ -676,7 +832,7 @@ class MetadataFile(DataFile):
                         auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                         default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
                         default_title_format = "Best <<library_type>>s of <<key_name>>"
-                    elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                    elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "episode_year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                         search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                         if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                             tags = library.get_tags(f"episode.{search_tag}")
@@ -709,7 +865,7 @@ class MetadataFile(DataFile):
                             default_title_format = "<<key_name>> <<library_type>>s"
                         else:
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
-                            default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade"] else "Top <<key_name>> <<library_type>>s"
+                            default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade", "episode_year"] else "Top <<key_name>> <<library_type>>s"
                     elif auto_type == "tmdb_collection":
                         all_items = library.get_all()
                         for i, item in enumerate(all_items, 1):
@@ -765,14 +921,19 @@ class MetadataFile(DataFile):
                         person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                         person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
                         lib_all = library.get_all()
+                        include_cols = []
                         for i, item in enumerate(lib_all, 1):
                             logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
                             try:
                                 item = self.library.reload(item)
                                 for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                    if person.id not in people:
-                                        people[person.id] = {"name": person.tag, "count": 0}
-                                    people[person.id]["count"] += 1
+                                    if person.tag in include:
+                                        if person.tag not in include_cols:
+                                            include_cols.append(person.tag)
+                                    else:
+                                        if person.id not in people:
+                                            people[person.id] = {"name": person.tag, "count": 0}
+                                        people[person.id]["count"] += 1
                             except Failed as e:
                                 logger.error(f"Plex Error: {e}")
                         roles = [data for _, data in people.items()]
@@ -782,6 +943,10 @@ class MetadataFile(DataFile):
                         if not person_limit:
                             person_limit = len(roles)
                         person_count = 0
+                        for inc in include_cols:
+                            auto_list[inc] = inc
+                            all_keys[inc] = inc
+                            person_count += 1
                         for role in roles:
                             if person_count < person_limit and role["count"] >= person_minimum and role["name"] not in exclude:
                                 auto_list[role["name"]] = role["name"]
@@ -901,7 +1066,7 @@ class MetadataFile(DataFile):
                         for template_name in template_names:
                             if template_name not in self.templates:
                                 raise Failed(f"Config Error: {map_name} template: {template_name} not found")
-                            if any([a in str(self.templates[template_name][0]) for a in ["<<value>>", "<<key>>", f"<<{auto_type}>>"]]):
+                            if any([a in str(self.templates[template_name][0]) for a in ["<<value", "<<key", f"<<{auto_type}"]]):
                                 has_var = True
                         if not has_var:
                             raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
@@ -942,6 +1107,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Addons: {addons}")
                     logger.debug(f"Template: {template_names}")
                     logger.debug(f"Other Template: {other_templates}")
+                    logger.debug(f"Library Variables: {self.temp_vars}")
                     logger.debug(f"Template Variables: {template_variables}")
                     logger.debug(f"Remove Prefix: {remove_prefix}")
                     logger.debug(f"Remove Suffix: {remove_suffix}")
@@ -953,6 +1119,7 @@ class MetadataFile(DataFile):
                     logger.debug(f"Sync: {sync}")
                     logger.debug(f"Include: {include}")
                     logger.debug(f"Other Name: {other_name}")
+                    logger.debug(f"All Keys: {all_keys.keys()}")
                     if not auto_list:
                         raise Failed("No Keys found to create a set of Dynamic Collections")
                     logger.debug(f"Keys (Title):")
@@ -981,7 +1148,9 @@ class MetadataFile(DataFile):
                         used_keys.extend(key_value)
                         og_call = {"value": key_value, auto_type: key_value, "key_name": key_name, "key": key}
                         for k, v in template_variables.items():
-                            if key in v:
+                            if k in self.temp_vars:
+                                og_call[k] = self.temp_vars[k]
+                            elif key in v:
                                 og_call[k] = v[key]
                             elif "default" in v:
                                 og_call[k] = v["default"]
@@ -997,7 +1166,7 @@ class MetadataFile(DataFile):
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
-                            col = {"template": template_call, "label": str(map_name)}
+                            col = {"template": template_call, "append_label": str(map_name)}
                             if test:
                                 col["test"] = True
                             if collection_title in sync:
@@ -1012,6 +1181,10 @@ class MetadataFile(DataFile):
                             auto_type: other_keys, "key_name": other_name, "key": "other"
                         }
                         for k, v in template_variables.items():
+                            if k in self.temp_vars and "other" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["other"]
+                            elif k in self.temp_vars and "default" in self.temp_vars[k]:
+                                og_other[k] = self.temp_vars[k]["default"]
                             if "other" in v:
                                 og_other[k] = v["other"]
                             elif "default" in v:
@@ -1021,7 +1194,7 @@ class MetadataFile(DataFile):
                             new_call = og_other.copy()
                             new_call["name"] = other_template
                             other_call.append(new_call)
-                        col = {"template": other_call, "label": str(map_name)}
+                        col = {"template": other_call, "append_label": str(map_name)}
                         if test:
                             col["test"] = True
                         if other_name in sync:
@@ -1043,6 +1216,134 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info(f"Metadata File Loaded Successfully")
 
+    def get_style_data(self, style_file, section_key, items_data=None):
+        style_id = ""
+        for k, v in style_file.items():
+            style_id = f"{k}: {v}"
+            break
+        if style_id in self.library.image_styles:
+            return self.library.image_styles[style_id]
+        if "git_style" in style_file:
+            if not style_file["git_style"]:
+                raise Failed("Image Set Error: git_style cannot be blank")
+            if not items_data:
+                raise Failed("Image Set Error: items_data cannot be blank")
+            top_tree, repo = self.config.GitHub.get_top_tree(style_file["git_style"])
+            sub = style_file["git_subfolder"] if "git_subfolder" in style_file and style_file["git_subfolder"] else ""
+            sub = sub.replace("\\", "/")
+            if sub.startswith("/"):
+                sub = sub[1:]
+            if sub.endswith("/"):
+                sub = sub[:-1]
+            if sub:
+                sub_str = ""
+                for folder in sub.split("/"):
+                    folder_encode = util.quote(folder)
+                    sub_str += f"{folder_encode}/"
+                    if folder not in top_tree:
+                        raise Failed(f"Image Set Error: Subfolder {folder} Not Found at https://github.com{repo}tree/master/{sub_str}")
+                    top_tree = self.config.GitHub.get_tree(top_tree[folder]["url"])
+                sub = sub_str
+
+            def repo_url(u):
+                return f"https://raw.githubusercontent.com{repo}master/{sub}{u}"
+
+            def from_repo(u):
+                return self.config.get(repo_url(u)).content.decode().strip()
+
+            def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
+                attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
+                if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
+                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.tpdb'}")
+                elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
+                    return f"url_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.url'}")
+                elif git_name:
+                    if git_name in check_tree:
+                        return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(git_name)}")
+                else:
+                    for ct in check_tree:
+                        if ct.lower().startswith(attr_name):
+                            return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(ct)}")
+                return None, None
+
+            def init_set(check_key, check_tree):
+                _data = {}
+                attr, attr_data = check_for_definition(check_key, check_tree)
+                if attr:
+                    _data[attr] = attr_data
+                attr, attr_data = check_for_definition(check_key, check_tree, is_poster=False)
+                if attr:
+                    _data[attr] = attr_data
+                return _data
+
+            style_data = {}
+            for k in items_data:
+                if k not in top_tree:
+                    logger.info(f"Image Set Warning: {k} not found at https://github.com{repo}tree/master/{sub}")
+                    continue
+                k_encoded = util.quote(k)
+                item_folder = self.config.GitHub.get_tree(top_tree[k]["url"])
+                item_data = init_set(k_encoded, item_folder)
+                seasons = {}
+                for ik in item_folder:
+                    match = re.search(r"(\d+)", ik)
+                    if match:
+                        season_path = f"{k_encoded}/{util.quote(ik)}"
+                        season_num = int(match.group(1))
+                        season_folder = self.config.GitHub.get_tree(item_folder[ik]["url"])
+                        season_data = init_set(season_path, season_folder)
+                        episodes = {}
+                        for sk in season_folder:
+                            match = re.search(r"(\d+)(?!.*\d)", sk)
+                            if match:
+                                episode_num = int(match.group(1))
+                                if episode_num not in episodes:
+                                    episodes[episode_num] = {}
+                                    a, ad = check_for_definition(season_path, season_folder, git_name=sk)
+                                    if a:
+                                        episodes[episode_num][a] = ad
+                        if episodes:
+                            season_data["episodes"] = episodes
+                        seasons[season_num] = season_data
+                if seasons:
+                    item_data["seasons"] = seasons
+                style_data[k] = item_data
+
+            self.library.image_styles[style_id] = style_data
+
+            if section_key and section_key in self.set_collections and "collections" in top_tree:
+                collections_folder = self.config.GitHub.get_tree(top_tree["collections"]["url"])
+                for k, alts in self.set_collections[section_key].items():
+                    if k in collections_folder:
+                        collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]))
+                        self.library.collection_images[k] = collection_data
+                        for alt in alts:
+                            self.library.collection_images[alt] = collection_data
+        else:
+            files = util.load_files(style_file, "style_file", err_type=self.type_str, single=True)
+            if not files:
+                raise Failed(f"{self.type_str} Error: No Path Found for style_file")
+            file_type, style_path, _, _ = files[0]
+            temp_data = self.load_file(file_type, style_path, images=True, folder=f"{self.path}/styles/")
+            item_attr = "movies" if self.library.is_movie else "shows"
+            if not isinstance(temp_data, dict):
+                raise Failed("Image Style Error: base must be a dictionary")
+            if item_attr not in temp_data:
+                raise Failed(f"Image Style Error: Image Styles must use the base attribute {item_attr}")
+            if not temp_data[item_attr]:
+                raise Failed(f"Image Style Error: {item_attr} attribute is empty")
+            if not isinstance(temp_data[item_attr], dict):
+                raise Failed(f"Image Style Error: {item_attr} attribute must be a dictionary")
+            self.library.image_styles[style_id] = temp_data[item_attr]
+            if section_key and section_key in self.set_collections and "collections" in temp_data and temp_data["collections"]:
+                for k, alts in self.set_collections[section_key].items():
+                    if k in temp_data["collections"]:
+                        self.library.collection_images[k] = temp_data["collections"][k]
+                        if alts:
+                            for alt in alts:
+                                self.library.collection_images[alt] = temp_data["collections"][k]
+        return self.library.image_styles[style_id]
+
     def get_collections(self, requested_collections):
         if requested_collections:
             return {c: self.collections[c] for c in util.get_list(requested_collections) if c in self.collections}
@@ -1051,15 +1352,15 @@ class MetadataFile(DataFile):
 
     def edit_tags(self, attr, obj, group, alias, extra=None):
         if attr in alias and f"{attr}.sync" in alias:
-            logger.error(f"Metadata Error: Cannot use {attr} and {attr}.sync together")
+            logger.error(f"{self.type_str} Error: Cannot use {attr} and {attr}.sync together")
         elif f"{attr}.remove" in alias and f"{attr}.sync" in alias:
-            logger.error(f"Metadata Error: Cannot use {attr}.remove and {attr}.sync together")
+            logger.error(f"{self.type_str} Error: Cannot use {attr}.remove and {attr}.sync together")
         elif attr in alias and not group[alias[attr]]:
-            logger.warning(f"Metadata Error: {attr} attribute is blank")
+            logger.warning(f"{self.type_str} Error: {attr} attribute is blank")
         elif f"{attr}.remove" in alias and not group[alias[f"{attr}.remove"]]:
-            logger.warning(f"Metadata Error: {attr}.remove attribute is blank")
+            logger.warning(f"{self.type_str} Error: {attr}.remove attribute is blank")
         elif f"{attr}.sync" in alias and not group[alias[f"{attr}.sync"]]:
-            logger.warning(f"Metadata Error: {attr}.sync attribute is blank")
+            logger.warning(f"{self.type_str} Error: {attr}.sync attribute is blank")
         elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
             add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
             if extra:
@@ -1073,86 +1374,200 @@ class MetadataFile(DataFile):
         if not self.metadata:
             return None
         logger.info("")
-        logger.separator("Running Metadata")
+        logger.separator(f"Running {self.type_str}")
         logger.info("")
         next_year = datetime.now().year + 1
         for mapping_name, meta in self.metadata.items():
-            methods = {mm.lower(): mm for mm in meta}
+            try:
+                methods = {mm.lower(): mm for mm in meta}
 
-            logger.info("")
-            if (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
-                if isinstance(mapping_name, int):
-                    id_type = "TMDb" if self.library.is_movie else "TVDb"
-                else:
-                    id_type = "IMDb"
-                logger.separator(f"{id_type} ID: {mapping_name} Metadata", space=False, border=False)
                 logger.info("")
+                logger.separator(f"{mapping_name} {self.type_str}")
+
+                if "template" in methods:
+                    logger.debug("")
+                    logger.separator(f"Building Definition From Templates", space=False, border=False)
+                    logger.debug("")
+                    named_templates = []
+                    for original_variables in util.get_list(meta[methods["template"]], split=False):
+                        if not isinstance(original_variables, dict):
+                            raise Failed(f"{self.type_str} Error: template attribute is not a dictionary")
+                        elif "name" not in original_variables:
+                            raise Failed(f"{self.type_str} Error: template sub-attribute name is required")
+                        elif not original_variables["name"]:
+                            raise Failed(f"{self.type_str} Error: template sub-attribute name cannot be blank")
+                        named_templates.append(original_variables["name"])
+                    logger.debug(f"Templates Called: {', '.join(named_templates)}")
+                    new_variables = {}
+                    if "variables" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: variables")
+                        if not isinstance(meta[methods["variables"]], dict):
+                            raise Failed(f"{self.type_str} Error: variables must be a dictionary (key: value pairs)")
+                        logger.trace(meta[methods["variables"]])
+                        new_variables = meta[methods["variables"]]
+                    name = meta[methods["name"]] if "name" in methods else None
+                    new_attributes = self.apply_template(name, mapping_name, meta, meta[methods["template"]], new_variables)
+                    for attr in new_attributes:
+                        if attr.lower() not in methods:
+                            meta[attr] = new_attributes[attr]
+                            methods[attr.lower()] = attr
+
+                if "run_definition" in methods:
+                    logger.debug("")
+                    logger.debug("Validating Method: run_definition")
+                    if meta[methods["run_definition"]] is None:
+                        raise NotScheduled("Skipped because run_definition has no value")
+                    logger.debug(f"Value: {meta[methods['run_definition']]}")
+                    valid_options = ["true", "false"] + plex.library_types
+                    for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                        if library_type not in valid_options:
+                            raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
+                        elif library_type == "false":
+                            raise NotScheduled(f"Skipped because run_definition is false")
+                        elif library_type != "true" and self.library and library_type != self.library.Plex.type:
+                            raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
+
+                mapping_id = None
+                if "mapping_id" in methods and not self.library.is_music:
+                    logger.debug("")
+                    logger.debug("Validating Method: mapping_id")
+                    if not meta[methods["mapping_id"]]:
+                        raise Failed(f"{self.type_str} Error: mapping_id attribute is blank")
+                    logger.debug(f"Value: {meta[methods['mapping_id']]}")
+                    mapping_id = meta[methods["mapping_id"]]
+
+                if not mapping_id and (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
+                    mapping_id = mapping_name
+
                 item = []
-                if self.library.is_movie and mapping_name in self.library.movie_map:
-                    for item_id in self.library.movie_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
-                elif self.library.is_show and mapping_name in self.library.show_map:
-                    for item_id in self.library.show_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
-                elif mapping_name in self.library.imdb_map:
-                    for item_id in self.library.imdb_map[mapping_name]:
-                        item.append(self.library.fetchItem(item_id))
+                if not mapping_id:
+                    title = mapping_name
                 else:
-                    logger.error(f"Metadata Error: {id_type} ID not mapped")
-                    continue
-                title = None
+                    if str(mapping_id).startswith("tt"):
+                        id_type = "IMDb"
+                    else:
+                        id_type = "TMDb" if self.library.is_movie else "TVDb"
+                    logger.info("")
+                    logger.info(f"{id_type} ID Mapping: {mapping_id}")
+                    if self.library.is_movie and mapping_id in self.library.movie_map:
+                        for item_id in self.library.movie_map[mapping_id]:
+                            item.append(self.library.fetch_item(item_id))
+                    elif self.library.is_show and mapping_id in self.library.show_map:
+                        for item_id in self.library.show_map[mapping_id]:
+                            item.append(self.library.fetch_item(item_id))
+                    elif mapping_id in self.library.imdb_map:
+                        for item_id in self.library.imdb_map[mapping_id]:
+                            item.append(self.library.fetch_item(item_id))
+                    else:
+                        logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
+                        continue
+                    title = None
+
                 if "title" in methods:
                     if meta[methods["title"]] is None:
-                        logger.error("Metadata Error: title attribute is blank")
+                        logger.error(f"{self.type_str} Error: title attribute is blank")
                     else:
                         title = meta[methods["title"]]
-            else:
-                logger.separator(f"{mapping_name} Metadata", space=False, border=False)
-                logger.info("")
-                year = None
-                if "year" in methods and not self.library.is_music:
-                    if meta[methods["year"]] is None:
-                        raise Failed("Metadata Error: year attribute is blank")
+
+                blank_edition = False
+                edition_titles = []
+                edition_contains = []
+                if self.library.is_movie:
+                    if "blank_edition" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: blank_edition")
+                        logger.debug(f"Value: {meta[methods['blank_edition']]}")
+                        blank_edition = util.parse(self.type_str, "blank_edition", meta, datatype="bool", methods=methods, default=False)
+                    if "edition_filter" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: edition_filter")
+                        logger.debug(f"Value: {meta[methods['edition_filter']]}")
+                        edition_titles = util.parse(self.type_str, "edition_filter", meta, datatype="strlist", methods=methods)
+                    if "edition_contains" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: edition_contains")
+                        logger.debug(f"Value: {meta[methods['edition_contains']]}")
+                        edition_contains = util.parse(self.type_str, "edition_contains", meta, datatype="strlist", methods=methods)
+
+                if not item:
+                    year = None
+                    if "year" in methods and not self.library.is_music:
+                        if meta[methods["year"]] is None:
+                            raise Failed(f"{self.type_str} Error: year attribute is blank")
+                        try:
+                            year_value = int(str(meta[methods["year"]]))
+                            if 1800 <= year_value <= next_year:
+                                year = year_value
+                        except ValueError:
+                            pass
+                        if year is None:
+                            raise Failed(f"{self.type_str} Error: year attribute must be an integer between 1800 and {next_year}")
+                    item = self.library.search_item(title, year=year)
+
+                    if not item and "alt_title" in methods:
+                        if meta[methods["alt_title"]] is None:
+                            logger.error(f"{self.type_str} Error: alt_title attribute is blank")
+                        else:
+                            alt_title = meta[methods["alt_title"]]
+                            item = self.library.search_item(alt_title, year=year)
+                            if not item:
+                                item = self.library.search_item(alt_title)
+
+                    if not item:
+                        logger.error(f"Skipping {mapping_name}: Item {title} not found")
+                        continue
+                if not isinstance(item, list):
+                    item = [item]
+                if blank_edition or edition_titles or edition_contains:
+                    new_item = []
+                    logger.trace("")
+                    logger.trace("Edition Filtering: ")
+                    if not self.library.plex_pass:
+                        logger.warning("Plex Warning: Plex Pass is required to use the Edition Field scanning filenames instead")
+                    for i in item:
+                        i = self.library.reload(i)
+                        if self.library.plex_pass:
+                            check = i.editionTitle if i.editionTitle else ""
+                        else:
+                            values = [loc for loc in i.locations if loc]
+                            if not values:
+                                raise  Failed(f"Plex Error: No Filepaths found for {i.title}")
+                            res = re.search(r'(?i)[\[{]edition-([^}\]]*)', values[0])
+                            check = res.group(1) if res else ""
+                        if blank_edition and not check:
+                            logger.trace(f"  Found {i.title} with no Edition")
+                            new_item.append(i)
+                        elif edition_titles and check in edition_titles:
+                            logger.trace(f"  Found {i.title} with Edition: {check}")
+                            new_item.append(i)
+                        else:
+                            found = False
+                            if edition_contains:
+                                for ec in edition_contains:
+                                    if ec in check:
+                                        found = True
+                                        logger.trace(f"  Found {i.title} with Edition: {check} containing {ec}")
+                                        new_item.append(i)
+                                        break
+                            if not found:
+                                if check:
+                                    logger.trace(f"  {i.title} with Edition: {check} ignored")
+                                else:
+                                    logger.trace(f"  {i.title} with no Edition ignored")
+                    item = new_item
+                for i in item:
                     try:
-                        year_value = int(str(meta[methods["year"]]))
-                        if 1800 <= year_value <= next_year:
-                            year = year_value
-                    except ValueError:
-                        pass
-                    if year is None:
-                        raise Failed(f"Metadata Error: year attribute must be an integer between 1800 and {next_year}")
-
-                edition_title = None
-                if "edition_filter" in methods and self.library.is_movie:
-                    edition_title = str(meta[methods["edition_filter"]])
-                    if not edition_title:
-                        edition_title = ""
-
-                title = mapping_name
-                if "title" in methods:
-                    if meta[methods["title"]] is None:
-                        logger.error("Metadata Error: title attribute is blank")
-                    else:
-                        title = meta[methods["title"]]
-
-                item = self.library.search_item(title, year=year, edition=edition_title)
-
-                if item is None and "alt_title" in methods:
-                    if meta[methods["alt_title"]] is None:
-                        logger.error("Metadata Error: alt_title attribute is blank")
-                    else:
-                        alt_title = meta[methods["alt_title"]]
-                        item = self.library.search_item(alt_title, year=year, edition=edition_title)
-                        if item is None:
-                            item = self.library.search_item(alt_title, edition=edition_title)
-
-                if item is None:
-                    logger.error(f"Skipping {mapping_name}: Item {title} not found")
-                    continue
-            if not isinstance(item, list):
-                item = [item]
-            for i in item:
-                self.update_metadata_item(i, title, mapping_name, meta, methods)
+                        logger.info("")
+                        logger.separator(f"Updating {i.title}", space=False, border=False)
+                        logger.info("")
+                        self.update_metadata_item(i, title, mapping_name, meta, methods)
+                    except Failed as e:
+                        logger.error(e)
+            except NotScheduled as e:
+                logger.info(e)
+            except Failed as e:
+                logger.error(e)
 
     def update_metadata_item(self, item, title, mapping_name, meta, methods):
 
@@ -1178,14 +1593,14 @@ class MetadataFile(DataFile):
                             except ValueError:
                                 pass
                             if final_value is None:
-                                raise Failed(f"Metadata Error: {name} attribute must be a number between 0 and 10")
+                                raise Failed(f"{self.type_str} Error: {name} attribute must be a number between 0 and 10")
                         elif var_type == "int":
                             try:
                                 final_value = int(str(value))
                             except ValueError:
                                 pass
                             if final_value is None:
-                                raise Failed(f"Metadata Error: {name} attribute must be an integer")
+                                raise Failed(f"{self.type_str} Error: {name} attribute must be an integer")
                         else:
                             final_value = value
                         if current != str(final_value):
@@ -1198,13 +1613,13 @@ class MetadataFile(DataFile):
                     except Failed as ee:
                         logger.error(ee)
                 else:
-                    logger.error(f"Metadata Error: {name} attribute is blank")
+                    logger.error(f"{self.type_str} Error: {name} attribute is blank")
 
         def finish_edit(current_item, description):
             nonlocal updated
             if updated:
                 try:
-                    current_item.saveEdits()
+                    #current_item.saveEdits()
                     logger.info(f"{description} Details Update Successful")
                 except BadRequest:
                     logger.error(f"{description} Details Update Failed")
@@ -1212,20 +1627,20 @@ class MetadataFile(DataFile):
         tmdb_item = None
         tmdb_is_movie = None
         if not self.library.is_music and ("tmdb_show" in methods or "tmdb_id" in methods) and "tmdb_movie" in methods:
-            logger.error("Metadata Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
+            logger.error(f"{self.type_str} Error: Cannot use tmdb_movie and tmdb_show when editing the same metadata item")
 
         if not self.library.is_music and "tmdb_show" in methods or "tmdb_id" in methods or "tmdb_movie" in methods:
             try:
                 if "tmdb_show" in methods or "tmdb_id" in methods:
                     data = meta[methods["tmdb_show" if "tmdb_show" in methods else "tmdb_id"]]
                     if data is None:
-                        logger.error("Metadata Error: tmdb_show attribute is blank")
+                        logger.error(f"{self.type_str} Error: tmdb_show attribute is blank")
                     else:
                         tmdb_is_movie = False
                         tmdb_item = self.config.TMDb.get_show(util.regex_first_int(data, "Show"))
                 elif "tmdb_movie" in methods:
                     if meta[methods["tmdb_movie"]] is None:
-                        logger.error("Metadata Error: tmdb_movie attribute is blank")
+                        logger.error(f"{self.type_str} Error: tmdb_movie attribute is blank")
                     else:
                         tmdb_is_movie = True
                         tmdb_item = self.config.TMDb.get_movie(util.regex_first_int(meta[methods["tmdb_movie"]], "Movie"))
@@ -1250,12 +1665,15 @@ class MetadataFile(DataFile):
             summary = tmdb_item.overview
             genres = tmdb_item.genres
 
-        item.batchEdits()
+        #item.batchEdits()
         if title:
             add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
-            add_edit("edition", item, meta, methods, key="editionTitle")
+            if "edition" in methods and not self.library.plex_pass:
+                logger.error("Plex Error: Plex Pass is Required to edit Edition")
+            else:
+                add_edit("edition", item, meta, methods, key="editionTitle")
         add_edit("user_rating", item, meta, methods, key="userRating", var_type="float")
         if not self.library.is_music:
             add_edit("originally_available", item, meta, methods, key="originallyAvailableAt", value=originally_available, var_type="date")
@@ -1273,21 +1691,23 @@ class MetadataFile(DataFile):
 
         if self.library.type in util.advance_tags_to_edit:
             advance_edits = {}
-            prefs = [p.id for p in item.preferences()]
+            prefs = None
             for advance_edit in util.advance_tags_to_edit[self.library.type]:
                 if advance_edit in methods:
                     if advance_edit in ["metadata_language", "use_original_title"] and self.library.agent not in plex.new_plex_agents:
-                        logger.error(f"Metadata Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                        logger.error(f"{self.type_str} Error: {advance_edit} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
                     elif meta[methods[advance_edit]]:
                         ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
                         method_data = str(meta[methods[advance_edit]]).lower()
+                        if prefs is None:
+                            prefs = [p.id for p in item.preferences()]
                         if method_data not in options:
-                            logger.error(f"Metadata Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
+                            logger.error(f"{self.type_str} Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
                         elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:
                             advance_edits[ad_key] = options[method_data]
                             logger.info(f"Detail: {advance_edit} updated to {method_data}")
                     else:
-                        logger.error(f"Metadata Error: {advance_edit} attribute is blank")
+                        logger.error(f"{self.type_str} Error: {advance_edit} attribute is blank")
             if advance_edits:
                 if self.library.edit_advance(item, advance_edits):
                     updated = True
@@ -1295,16 +1715,49 @@ class MetadataFile(DataFile):
                 else:
                     logger.error(f"{mapping_name} Advanced Details Update Failed")
 
-        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None)
+        style_data = None
+        if "style_data" in methods:
+            style_data = meta[methods["style_data"]]
+            logger.trace(f"Style Data: {style_data}")
+
+        asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
         logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        if "seasons" in methods and self.library.is_show:
+        update_seasons = self.update_seasons
+        if "update_seasons" in methods and self.library.is_show:
+            logger.debug("")
+            logger.debug("Validating Method: update_seasons")
+            if not meta[methods["update_seasons"]]:
+                logger.warning(f"{self.type_str} Warning: update_seasons has no value and season updates will be performed")
+            else:
+                logger.debug(f"Value: {meta[methods['update_seasons']]}")
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                    if library_type not in ["true", "false"]:
+                        raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true or false")
+                    elif library_type == "false":
+                        update_seasons = False
+
+        update_episodes = self.update_episodes
+        if "update_episodes" in methods and self.library.is_show:
+            logger.debug("")
+            logger.debug("Validating Method: update_episodes")
+            if not meta[methods["update_episodes"]]:
+                logger.warning(f"{self.type_str} Warning: update_episodes has no value and episode updates will be performed")
+            else:
+                logger.debug(f"Value: {meta[methods['update_episodes']]}")
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                    if library_type not in ["true", "false"]:
+                        raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true or false")
+                    elif library_type == "false":
+                        update_episodes = False
+
+        if "seasons" in methods and self.library.is_show and (update_seasons or update_episodes):
             if not meta[methods["seasons"]]:
-                logger.error("Metadata Error: seasons attribute is blank")
+                logger.error(f"{self.type_str} Error: seasons attribute is blank")
             elif not isinstance(meta[methods["seasons"]], dict):
-                logger.error("Metadata Error: seasons attribute must be a dictionary")
+                logger.error(f"{self.type_str} Error: seasons attribute must be a dictionary")
             else:
                 seasons = {}
                 for season in item.seasons():
@@ -1317,44 +1770,56 @@ class MetadataFile(DataFile):
                     if season_id in seasons:
                         season = seasons[season_id]
                     else:
-                        logger.error(f"Metadata Error: Season: {season_id} not found")
+                        logger.error(f"{self.type_str} Error: Season: {season_id} not found")
                         continue
                     season_methods = {sm.lower(): sm for sm in season_dict}
-                    season.batchEdits()
-                    add_edit("title", season, season_dict, season_methods)
-                    add_edit("summary", season, season_dict, season_methods)
-                    add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
-                    if self.edit_tags("label", season, season_dict, season_methods):
-                        updated = True
-                    finish_edit(season, f"Season: {season_id}")
-                    _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
-                                                         title=f"{item.title} Season {season.seasonNumber}",
-                                                         image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
-                    if ups:
-                        updated = True
-                    logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                    season_style_data = None
+                    if update_seasons:
+                        #season.batchEdits()
+                        add_edit("title", season, season_dict, season_methods)
+                        add_edit("summary", season, season_dict, season_methods)
+                        add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
+                        if self.edit_tags("label", season, season_dict, season_methods):
+                            updated = True
+                        finish_edit(season, f"Season: {season_id}")
+                        if style_data and "seasons" in style_data and style_data["seasons"] and season_id in style_data["seasons"]:
+                            season_style_data = style_data["seasons"][season_id]
+                        _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
+                                                             title=f"{item.title} Season {season.seasonNumber}",
+                                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
+                                                             folder_name=folder_name, style_data=season_style_data)
+                        if ups:
+                            updated = True
+                        logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-                    if "episodes" in season_methods and self.library.is_show:
+                    if "episodes" in season_methods and update_episodes and self.library.is_show:
                         if not season_dict[season_methods["episodes"]]:
-                            logger.error("Metadata Error: episodes attribute is blank")
+                            logger.error(f"{self.type_str} Error: episodes attribute is blank")
                         elif not isinstance(season_dict[season_methods["episodes"]], dict):
-                            logger.error("Metadata Error: episodes attribute must be a dictionary")
+                            logger.error(f"{self.type_str} Error: episodes attribute must be a dictionary")
                         else:
                             episodes = {}
                             for episode in season.episodes():
                                 episodes[episode.title] = episode
-                                episodes[int(episode.index)] = episode
-                            for episode_str, episode_dict in season_dict[season_methods["episodes"]].items():
+                                if episode.index:
+                                    episodes[int(episode.index)] = episode
+                                elif episode.originallyAvailableAt:
+                                    available = episode.originallyAvailableAt
+                                    episodes[f"{available.month:02}/{available.day:02}"] = episode
+                                    episodes[f"{available.month}/{available.day}"] = episode
+                                    episodes[f"{available.month:02}-{available.day:02}"] = episode
+                                    episodes[f"{available.month}-{available.day}"] = episode
+                            for episode_id, episode_dict in season_dict[season_methods["episodes"]].items():
                                 updated = False
                                 logger.info("")
-                                logger.info(f"Updating episode {episode_str} in {season_id} of {mapping_name}...")
-                                if episode_str in episodes:
-                                    episode = episodes[episode_str]
+                                logger.info(f"Updating episode {episode_id} in {season_id} of {mapping_name}...")
+                                if episode_id in episodes:
+                                    episode = episodes[episode_id]
                                 else:
-                                    logger.error(f"Metadata Error: Episode {episode_str} in Season {season_id} not found")
+                                    logger.error(f"{self.type_str} Error: Episode {episode_id} in Season {season_id} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
-                                episode.batchEdits()
+                                #episode.batchEdits()
                                 add_edit("title", episode, episode_dict, episode_methods)
                                 add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                                 add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -1366,26 +1831,30 @@ class MetadataFile(DataFile):
                                 for tag_edit in ["director", "writer", "label"]:
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
-                                finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
+                                finish_edit(episode, f"Episode: {episode_id} in Season: {season_id}")
+                                episode_style_data = None
+                                if season_style_data and "episodes" in season_style_data and season_style_data["episodes"] and episode_id in season_style_data["episodes"]:
+                                    episode_style_data = season_style_data["episodes"][episode_id]
                                 _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
                                                                      title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name,
+                                                                     style_data=episode_style_data)
                                 if ups:
                                     updated = True
-                                logger.info(f"Episode {episode_str} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
 
-        if "episodes" in methods and self.library.is_show:
+        if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:
-                logger.error("Metadata Error: episodes attribute is blank")
+                logger.error(f"{self.type_str} Error: episodes attribute is blank")
             elif not isinstance(meta[methods["episodes"]], dict):
-                logger.error("Metadata Error: episodes attribute must be a dictionary")
+                logger.error(f"{self.type_str} Error: episodes attribute must be a dictionary")
             else:
                 for episode_str, episode_dict in meta[methods["episodes"]].items():
                     updated = False
                     logger.info("")
                     match = re.search("[Ss]\\d+[Ee]\\d+", episode_str)
                     if not match:
-                        logger.error(f"Metadata Error: episode {episode_str} invalid must have S##E## format")
+                        logger.error(f"{self.type_str} Error: episode {episode_str} invalid must have S##E## format")
                         continue
                     output = match.group(0)[1:].split("E" if "E" in match.group(0) else "e")
                     season_id = int(output[0])
@@ -1394,10 +1863,10 @@ class MetadataFile(DataFile):
                     try:
                         episode = item.episode(season=season_id, episode=episode_id)
                     except NotFound:
-                        logger.error(f"Metadata Error: episode {episode_id} of season {season_id} not found")
+                        logger.error(f"{self.type_str} Error: episode {episode_id} of season {season_id} not found")
                         continue
                     episode_methods = {em.lower(): em for em in episode_dict}
-                    episode.batchEdits()
+                    #episode.batchEdits()
                     add_edit("title", episode, episode_dict, episode_methods)
                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                     add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -1419,9 +1888,9 @@ class MetadataFile(DataFile):
 
         if "albums" in methods and self.library.is_music:
             if not meta[methods["albums"]]:
-                logger.error("Metadata Error: albums attribute is blank")
+                logger.error(f"{self.type_str} Error: albums attribute is blank")
             elif not isinstance(meta[methods["albums"]], dict):
-                logger.error("Metadata Error: albums attribute must be a dictionary")
+                logger.error(f"{self.type_str} Error: albums attribute must be a dictionary")
             else:
                 albums = {album.title: album for album in item.albums()}
                 for album_name, album_dict in meta[methods["albums"]].items():
@@ -1436,9 +1905,9 @@ class MetadataFile(DataFile):
                         album = albums[album_dict[album_methods["alt_title"]]]
                         title = album_name
                     else:
-                        logger.error(f"Metadata Error: Album: {album_name} not found")
+                        logger.error(f"{self.type_str} Error: Album: {album_name} not found")
                         continue
-                    album.batchEdits()
+                    #album.batchEdits()
                     add_edit("title", album, album_dict, album_methods, value=title)
                     add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
                     add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
@@ -1460,9 +1929,9 @@ class MetadataFile(DataFile):
 
                     if "tracks" in album_methods:
                         if not album_dict[album_methods["tracks"]]:
-                            logger.error("Metadata Error: tracks attribute is blank")
+                            logger.error(f"{self.type_str} Error: tracks attribute is blank")
                         elif not isinstance(album_dict[album_methods["tracks"]], dict):
-                            logger.error("Metadata Error: tracks attribute must be a dictionary")
+                            logger.error(f"{self.type_str} Error: tracks attribute must be a dictionary")
                         else:
                             tracks = {}
                             for track in album.tracks():
@@ -1480,10 +1949,10 @@ class MetadataFile(DataFile):
                                     track = tracks[track_dict[track_methods["alt_title"]]]
                                     title = track_num
                                 else:
-                                    logger.error(f"Metadata Error: Track: {track_num} not found")
+                                    logger.error(f"{self.type_str} Error: Track: {track_num} not found")
                                     continue
 
-                                track.batchEdits()
+                                #track.batchEdits()
                                 add_edit("title", track, track_dict, track_methods, value=title)
                                 add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
                                 add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
@@ -1501,7 +1970,7 @@ class MetadataFile(DataFile):
             f1_season = None
             current_year = datetime.now().year
             if meta[methods["f1_season"]] is None:
-                raise Failed("Metadata Error: f1_season attribute is blank")
+                raise Failed(f"{self.type_str} Error: f1_season attribute is blank")
             try:
                 year_value = int(str(meta[methods["f1_season"]]))
                 if 1950 <= year_value <= current_year:
@@ -1509,26 +1978,26 @@ class MetadataFile(DataFile):
             except ValueError:
                 pass
             if f1_season is None:
-                raise Failed(f"Metadata Error: f1_season attribute must be an integer between 1950 and {current_year}")
+                raise Failed(f"{self.type_str} Error: f1_season attribute must be an integer between 1950 and {current_year}")
             round_prefix = False
             if "round_prefix" in methods:
                 if meta[methods["round_prefix"]] is True:
                     round_prefix = True
                 else:
-                    logger.error("Metadata Error: round_prefix must be true to do anything")
+                    logger.error(f"{self.type_str} Error: round_prefix must be true to do anything")
             shorten_gp = False
             if "shorten_gp" in methods:
                 if meta[methods["shorten_gp"]] is True:
                     shorten_gp = True
                 else:
-                    logger.error("Metadata Error: shorten_gp must be true to do anything")
+                    logger.error(f"{self.type_str} Error: shorten_gp must be true to do anything")
             f1_language = None
             if "f1_language" in methods:
                 if str(meta[methods["f1_language"]]).lower() in ergast.translations:
                     f1_language = str(meta[methods["f1_language"]]).lower()
                 else:
-                    logger.error(f"Metadata Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
-            logger.info(f"Setting Metadata of {item.title} to F1 Season {f1_season}")
+                    logger.error(f"{self.type_str} Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
+            logger.info(f"Setting {self.type_str} of {item.title} to F1 Season {f1_season}")
             races = self.config.Ergast.get_races(f1_season, f1_language)
             race_lookup = {r.round: r for r in races}
             for season in item.seasons():
@@ -1543,7 +2012,7 @@ class MetadataFile(DataFile):
                     race = race_lookup[season.seasonNumber]
                     title = race.format_name(round_prefix, shorten_gp)
                     updated = False
-                    season.batchEdits()
+                    #season.batchEdits()
                     add_edit("title", season, value=title)
                     finish_edit(season, f"Season: {title}")
                     _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=title,
@@ -1554,7 +2023,7 @@ class MetadataFile(DataFile):
                     for episode in season.episodes():
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
-                            episode.batchEdits()
+                            #episode.batchEdits()
                             add_edit("title", episode, value=ep_title)
                             add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                             finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
@@ -1572,12 +2041,11 @@ class PlaylistFile(DataFile):
         self.data_type = "Playlist"
         logger.info("")
         logger.info(f"Loading Playlist {file_type}: {path}")
-        logger.debug("")
+        logger.info("")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
         self.external_templates(data)
-        self.translation_files(data)
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info(f"Playlist File Loaded Successfully")
@@ -1590,7 +2058,7 @@ class OverlayFile(DataFile):
         self.file_num = len(library.overlay_files)
         logger.info("")
         logger.info(f"Loading Overlay {self.file_num} {file_type}: {path}")
-        logger.debug("")
+        logger.info("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)
@@ -1712,7 +2180,6 @@ class OverlayFile(DataFile):
             self.queue_names[queue_name] = queue_current
             queue_current += 1
         self.external_templates(data, overlay=True)
-        self.translation_files(data, overlay=True)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")
         logger.info(f"Overlay File Loaded Successfully")

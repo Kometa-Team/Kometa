@@ -8,6 +8,14 @@
 external_templates:
   pmm: templates
   template_variables:
+    default:
+      key: <<overlay_name>>
+      pre_text: ""
+      post_text: "+"
+      pre_nr_text: ""
+      post_nr_text: ""
+      horizontal_align: left
+      vertical_align: bottom
     conditionals:
       pre:
         default: <<pre_text>>
@@ -19,20 +27,34 @@ external_templates:
         conditions:
           - overlay_name: NR
             value: <<post_nr_text>>
-    default:
-      key: <<overlay_name>>
-      pre_text: ""
-      post_text: "+"
-      pre_nr_text: ""
-      post_nr_text: ""
-    horizontal_offset: 15
-    horizontal_align: left
-    vertical_offset: 270
-    vertical_align: bottom
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 270
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: Commonsense
     back_color: "#00000099"
     back_width: 305
     back_height: 105
-    pmm: Commonsense
     addon_position: left
     addon_offset: 15
     final_name: text(<<pre>><<overlay_name>><<post>>)

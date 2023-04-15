@@ -2,9 +2,11 @@
 
 The `mediastinger` Default Overlay File is used to create an overlay based on if there's an after/during credit scene on each movie within your library.
 
-**This file only works with Movie Libraries.**
-
 ![](images/mediastinger.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie
 
 ## Config
 

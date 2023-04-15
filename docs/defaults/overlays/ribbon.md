@@ -2,9 +2,11 @@
 
 The `ribbon` Default Overlay File is used to create a ribbon overlay based on the Top Lists of various sites on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](images/ribbon.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show
 
 ## Supported Ribbon
 
@@ -49,7 +51,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:-------------------------------|:-------------------------------------------------------------------------------------------------------------|
 | `weight_<<key>>`<sup>1</sup>   | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

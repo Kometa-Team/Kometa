@@ -8,16 +8,12 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 16
-
-translations:
-  pmm: translations
+    collection_section: 130
 
 collections:
   Award Collections:
     template:
       - name: separator
         separator: award
-      - name: translation
         key_name: Award
         translation_key: separator

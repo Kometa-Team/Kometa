@@ -1,9 +1,10 @@
-import os
+import os, time
 from abc import ABC, abstractmethod
 from modules import util, operations
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.util import Failed, NotScheduled, YAML
+from PIL import Image
 
 logger = util.logger
 
@@ -17,11 +18,15 @@ class Library(ABC):
         self.Overlays = None
         self.Notifiarr = None
         self.collections = []
+        self.collection_names = []
         self.metadatas = []
         self.queues = {}
+        self.image_styles = {}
+        self.collection_images = {}
         self.queue_current = 0
         self.metadata_files = []
         self.overlay_files = []
+        self.images_files = []
         self.movie_map = {}
         self.show_map = {}
         self.imdb_map = {}
@@ -29,6 +34,7 @@ class Library(ABC):
         self.mal_map = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
+        self.imdb_rating_key_map = {}
         self.cached_items = {}
         self.run_again = []
         self.type = ""
@@ -37,6 +43,7 @@ class Library(ABC):
         self.original_mapping_name = params["mapping_name"]
         self.metadata_path = params["metadata_path"]
         self.overlay_path = params["overlay_path"]
+        self.image_sets = params["image_sets"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
@@ -74,6 +81,7 @@ class Library(ABC):
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
         self.delete_collections = params["delete_collections"]
+        self.mass_studio_update = params["mass_studio_update"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -85,6 +93,7 @@ class Library(ABC):
         self.mass_original_title_update = params["mass_original_title_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
+        self.mass_episode_imdb_parental_labels = params["mass_episode_imdb_parental_labels"]
         self.mass_poster_update = params["mass_poster_update"]
         self.mass_background_update = params["mass_background_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
@@ -112,12 +121,13 @@ class Library(ABC):
                                        or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                        or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
                                        or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
-                                       or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper \
+                                       or self.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
                                        or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
         self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
                                  or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
                                  or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [i for i in [getattr(self, o) for o in operations.meta_operations] if i]
+        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels else False
 
         if self.asset_directory:
             logger.info("")
@@ -140,7 +150,7 @@ class Library(ABC):
                     self.metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
-                    logger.info(f"Metadata File Failed To Load")
+                    logger.info("Metadata File Failed To Load")
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Metadata File")
@@ -154,7 +164,15 @@ class Library(ABC):
                         self.queue_current += 1
                 except Failed as e:
                     logger.error(e)
-                    logger.info(f"Overlay File Failed To Load")
+                    logger.info("Overlay File Failed To Load")
+        if not operations_only and not overlays_only:
+            for file_type, images_file, temp_vars, asset_directory in self.image_sets:
+                try:
+                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, image_set_file=True)
+                    self.images_files.append(images_obj)
+                except Failed as e:
+                    logger.error(e)
+                    logger.info("Images File Failed To Load")
 
     def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False
@@ -164,12 +182,10 @@ class Library(ABC):
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
                 if not image_compare or str(poster.compare) != str(image_compare):
-                    if hasattr(item, "labels"):
-                        test = [la.tag for la in self.item_labels(item)]
-                        if overlay and "Overlay" in test:
+                    if overlay:
+                        self.reload(item, force=True)
+                        if overlay and "Overlay" in [la.tag for la in self.item_labels(item)]:
                             item.removeLabel("Overlay")
-                            if isinstance(item._edits, dict):
-                                item.saveEdits()
                     self._upload_image(item, poster)
                     poster_uploaded = True
                     logger.info(f"Detail: {poster.attribute} updated {poster.message}")
@@ -225,6 +241,16 @@ class Library(ABC):
     def upload_poster(self, item, image, url=False):
         pass
 
+    def poster_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title)
+
+    def background_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False)
+
+    @abstractmethod
+    def image_update(self, item, image, tmdb=None, title=None, poster=True):
+        pass
+
     @abstractmethod
     def reload(self, item, force=False):
         pass
@@ -235,6 +261,28 @@ class Library(ABC):
 
     @abstractmethod
     def item_labels(self, item):
+        pass
+
+    @abstractmethod
+    def find_poster_url(self, item):
+        pass
+
+    def check_image_for_overlay(self, image_url, image_path, remove=False):
+        image_path = util.download_image("", image_url, image_path).location
+        while util.is_locked(image_path):
+            time.sleep(1)
+        with Image.open(image_path) as image:
+            exif_tags = image.getexif()
+        if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
+            os.remove(image_path)
+            raise Failed("Poster already has an Overlay")
+        if remove:
+            os.remove(image_path)
+        else:
+            return image_path
+
+    @abstractmethod
+    def item_posters(self, item, providers=None):
         pass
 
     @abstractmethod
@@ -315,6 +363,7 @@ class Library(ABC):
                         self.show_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.show_map)
                 if imdb_id:
+                    self.imdb_rating_key_map[key] = imdb_id[0]
                     util.add_dict_list(imdb_id, key, self.imdb_map)
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")

@@ -19,6 +19,7 @@ class Webhooks:
         logger.trace("")
         logger.separator("Webhooks", space=False, border=False, trace=True)
         logger.trace("")
+        json["library_mapping_name"] = self.library.mapping_name if self.library else ""
         logger.trace(f"JSON: {json}")
         for webhook in list(set(webhooks)):
             response = None
@@ -109,7 +110,7 @@ class Webhooks:
 
     def delete_hooks(self, message, server=None, library=None):
         if self.delete_webhooks:
-            json = {"event": "delete", "message": message}
+            json = {"event": "delete", "message": str(message)}
             if server:          json["server_name"] = str(server)
             if library:         json["library_name"] = str(library)
             self._request(self.delete_webhooks, json)
@@ -301,7 +302,7 @@ class Webhooks:
             "embeds": [
                 {
                     "title": title,
-                    "color": 844716
+                    "color": 0x00bc8c
                 }
             ],
             "username": "Metabot",

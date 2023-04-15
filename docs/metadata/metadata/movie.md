@@ -103,14 +103,19 @@ The available attributes for editing movies are as follows
 
 ### Special Attributes
 
-| Attribute        | Allowed Values                                                                                                                                                                                    |
-|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `title`          | Title if different from the mapping value useful when you have multiple movies with the same name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works. |
-| `alt_title`      | Alternative title to look for and then change to the mapping name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                 |
-| `year`           | Year of movie for better identification. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                           |
-| `edition_filter` | Edition of movie for better identification. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                        |
-| `tmdb_show`      | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie. **This is not used to say this show is the given ID.**                                               |
-| `tmdb_movie`     | TMDb Movie ID to use for metadata useful for movies that have been split into segments **This is not used to say this show is the given ID.**                                                     |
+| Attribute                      | Allowed Values                                                                                                                                                                                                                                  |
+|:-------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `title`                        | Title if different from the mapping value useful when you have multiple movies with the same name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                               |
+| `alt_title`                    | Alternative title to look for and then change to the mapping name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                                               |
+| `year`                         | Year of movie for better identification. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                                                                         |
+| `blank_edition`<sup>1</sup>    | Movie has no Edition. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                                                                                            |
+| `edition_filter`<sup>1</sup>   | Edition of movie for better identification. Can be a list (only one needs to match). See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                             |
+| `edition_contains`<sup>1</sup> | Edition of movie must contain the given string for better identification. Can be a list (only one needs to match). See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                               |
+| `tmdb_show`                    | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie. **This is not used to say this show is the given ID.**                                                                                             |
+| `tmdb_movie`                   | TMDb Movie ID to use for metadata useful for movies that have been split into segments **This is not used to say this show is the given ID.**                                                                                                   |
+| `run_definition`               | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false` |
+
+1. If the server does not have a Plex Pass then the Edition Field is not accessible. In this case PMM will check the movies filepath for `{edition-MOVIES EDITION}` to determine what the edition is.
 
 ### General Attributes
 

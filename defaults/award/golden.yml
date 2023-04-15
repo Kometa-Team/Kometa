@@ -9,10 +9,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 16
-
-translations:
-  pmm: translations
+    collection_section: 130
 
 collections:
   Golden Globes Best Picture Winners:
@@ -23,11 +20,10 @@ collections:
         sort: Golden Globes !1
         allowed_libraries: movie
         image: award/golden/best_picture_winner
+        translation_key: golden_picture
       - name: arr
       - name: custom
         collection_order: release.desc
-      - name: translation
-        translation_key: golden_best
     delete_collections_named:
       - Golden Globe Best Motion Pictures
     tmdb_list: 
@@ -43,10 +39,9 @@ collections:
         sort: Golden Globes !2
         allowed_libraries: movie
         image: award/golden/best_director_winner
+        translation_key: golden_director
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: golden_director
     tmdb_list: 8235502
     
 dynamic_collections:
@@ -60,7 +55,6 @@ dynamic_collections:
     template:
       - use_year_collections
       - imdb
-      - translation
       - shared
       - arr
       - custom
@@ -73,3 +67,5 @@ dynamic_collections:
         default: award/golden/winner/<<key>>
       translation_key:
         default: golden_year
+      dynamic:
+        default: true

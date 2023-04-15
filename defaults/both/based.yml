@@ -1,0 +1,42 @@
+##############################################################################
+#                         "Based On..." Collections                          #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#        https://metamanager.wiki/en/latest/defaults/both/based.html         #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "085"
+
+collections:
+  Based on... Collections:
+    template:
+      - name: separator
+        separator: based
+        key_name: Based on...
+        translation_key: separator
+
+dynamic_collections:
+  Based:
+    type: custom
+    data:
+      books: Book
+      comics: Comic
+      true_story: True Story
+      video_games: Video Game
+    title_format: Based on a <<key_name>>
+    template:
+      - mdb_smart
+      - shared
+      - arr
+    template_variables:
+      mdblist_list:
+        default: https://mdblist.com/lists/plexmetamanager/based_on_<<key>>_<<library_type>>s
+      image:
+        default: based/<<key_name_encoded>>
+      translation_key:
+        default: based
+      dynamic:
+        default: true

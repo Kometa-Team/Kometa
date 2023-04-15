@@ -15,6 +15,7 @@ urls = {
     "tag": f"{base_url}/tag",
     "login": f"{base_url}/perl-bin/animedb.pl"
 }
+weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
 
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
@@ -22,29 +23,31 @@ class AniDBObj:
         self.anidb_id = anidb_id
         self._data = data
 
-        def _parse(attr, xpath, is_list=False, is_dict=False, is_float=False, is_date=False, fail=False):
+        def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
                 if isinstance(data, dict):
                     if is_list:
                         return data[attr].split("|") if data[attr] else []
                     elif is_dict:
                         return json.loads(data[attr])
-                    elif is_float:
-                        return util.check_num(data[attr], is_int=False)
+                    elif is_int or is_float:
+                        return util.check_num(data[attr], is_int=is_int)
                     elif is_date:
                         return datetime.strptime(data[attr], "%Y-%m-%d")
                     else:
                         return data[attr]
                 parse_results = data.xpath(xpath)
-                if len(parse_results) > 0:
+                if attr == "tags":
+                    return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
+                elif attr == "titles":
+                    return {ta.get("xml:lang"): ta.text_content() for ta in parse_results}
+                elif len(parse_results) > 0:
                     parse_results = [r.strip() for r in parse_results if len(r) > 0]
                 if parse_results:
                     if is_list:
                         return parse_results
-                    elif is_dict:
-                        return {ta.get("xml:lang"): ta.text_content() for ta in parse_results}
-                    elif is_float:
-                        return float(parse_results[0])
+                    elif is_int or is_float:
+                        return util.check_num(parse_results[0], is_int=is_int)
                     elif is_date:
                         return datetime.strptime(parse_results[0], "%Y-%m-%d")
                     else:
@@ -63,11 +66,26 @@ class AniDBObj:
         self.main_title = _parse("main_title", "//anime/titles/title[@type='main']/text()", fail=True)
         self.titles = _parse("titles", "//anime/titles/title[@type='official']", is_dict=True)
         self.official_title = self.titles[self._anidb.language] if self._anidb.language in self.titles else self.main_title
+        self.studio = _parse("studio", "//anime/creators/name[@type='Animation Work']/text()")
         self.rating = _parse("rating", "//anime/ratings/permanent/text()", is_float=True)
         self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
         self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
         self.released = _parse("released", "//anime/startdate/text()", is_date=True)
-        self.tags = _parse("tags", "//anime/tags/tag[@infobox='true']/name/text()", is_list=True)
+        self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
+        self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
+        self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
+        if isinstance(data, dict):
+            self.tmdb_id = _parse("tmdb_id", "", is_int=True)
+            self.tmdb_type = _parse("tmdb_type", "")
+        else:
+            tmdb = _parse("tmdb", "//anime/resources/resource[@type='44']/externalentity/identifier/text()", is_list=True)
+            self.tmdb_id = None
+            self.tmdb_type = None
+            for i in tmdb:
+                try:
+                    self.tmdb_id = int(i)
+                except ValueError:
+                    self.tmdb_type = i
 
 
 class AniDB:

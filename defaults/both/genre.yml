@@ -8,17 +8,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "06"
-
-translations:
-  pmm: translations
+    collection_section: "060"
 
 collections:
   Genre Collections:
     template:
       - name: separator
         separator: genre
-      - name: translation
         key_name: Genre
         translation_key: separator
 
@@ -28,7 +24,6 @@ dynamic_collections:
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -37,6 +32,8 @@ dynamic_collections:
         default: genre/<<original_key_name_encoded>>
       translation_key:
         default: genre
+      dynamic:
+        default: true
     addons:
       Action:
         - Action/Adventure

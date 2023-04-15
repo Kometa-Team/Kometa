@@ -2,11 +2,13 @@
 
 The `studio_anime` Default Metadata File is used to dynamically create collections based on the studios available in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/studio_anime.png)
 
-## Collections Section 07
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+## Collections Section 070
 
 | Collection                                           | Key                                                  | Description                                                                 |
 |:-----------------------------------------------------|:-----------------------------------------------------|:----------------------------------------------------------------------------|
@@ -48,8 +50,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Studios found in your library |
 | `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Studios found in your library                                                                                                                                  |
 | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Studios found in your library                                                                                                                   |
-| `resolution_name`             | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                             |
-| `resolution_summary`          | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the resolution <<key_name>>.`<br>**Values:** Any string.                                                                           |
+| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                             |
+| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the resolution <<key_name>>.`<br>**Values:** Any string.                                                                           |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 

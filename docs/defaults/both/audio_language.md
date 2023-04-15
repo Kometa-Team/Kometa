@@ -2,11 +2,13 @@
 
 The `audio_language` Default Metadata File is used to dynamically create collections based on the audio languages available in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/audio_language.png)
 
-## Collections Section 10
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+## Collections Section 090
 
 | Collection                                            | Key                                       | Description                                                                 |
 |:------------------------------------------------------|:------------------------------------------|:----------------------------------------------------------------------------|
@@ -47,10 +49,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `include`                      | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                              |
 | `exclude`                      | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                   |
 | `append_include`               | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                             |
-| `audio_language_name`          | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                      |
-| `audio_language_other_name`    | **Description:** Changes the Other Collection name.<br>**Default:** `Other Audio`<br>**Values:** Any string.                                                                                                         |
-| `audio_language_summary`       | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                  |
-| `audio_language_other_summary` | **Description:** Changes the Other Collection summary.<br>**Default:** `<<library_translationU>>s filmed in other uncommon Languages.`<br>**Values:** Any string.                                                    |
+| `name_format`                  | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                      |
+| `summary_format`               | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                  |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 

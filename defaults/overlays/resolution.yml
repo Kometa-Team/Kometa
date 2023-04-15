@@ -15,52 +15,73 @@ external_templates:
         conditions:
           - type: edition_dovetail
             value:
+              - 4K-Plus
               - 4K-DV
               - 4K-HDR
               - 4K
+              - 1080P-Plus
               - 1080P-DV
               - 1080P-HDR
               - 1080P
+              - 720P-Plus
               - 720P-DV
               - 720P-HDR
               - 720P
+              - 576P-Plus
               - 576P-DV
               - 576P-HDR
               - 576P
+              - 480P-Plus
               - 480P-DV
               - 480P-HDR
               - 480P
+              - Plus
               - DV
               - HDR
           - type: resolution_dovetail
             value:
-              - Directors-Cut
               - Extended-Edition
               - Uncut-Edition
               - Unrated-Edition
               - Special-Edition
-              - Final-Cut
               - Anniversary-Edition
               - Collectors-Edition
+              - Diamond-Edition
+              - Platinum-Edition
+              - Directors-Cut
+              - Final-Cut
               - International-Cut
               - Theatrical-Cut
               - Ultimate-Cut
-              - IMAX-E
+              - Alternate-Cut
+              - Coda-Cut
+              - IMAX-Enhanced
               - IMAX
               - Remastered
               - Criterion
-      horizontal_offset:
-        default: 15
+              - Richard-Donner
+              - Black-And-Chrome
+              - Definitive
+              - Ulysses
+      final_horizontal_offset:
+        default: <<horizontal_offset>>
         conditions:
           - type: resolution_dovetail
-            value: 45
-      vertical_offset:
-        default: 15
+            value: <<horizontal_offset+30>>
+      final_vertical_offset:
+        default: <<vertical_offset>>
         conditions:
           - type: edition_dovetail
-            value: 79
+            vertical_align: bottom
+            key: [remastered, coda]
+            value: <<vertical_offset-10>>
+          - type: edition_dovetail
+            vertical_align: bottom
+            value: <<vertical_offset>>
+          - type: edition_dovetail
+            value: <<vertical_offset+64>>
           - type: resolution_dovetail
-            value: 45
+            value: <<vertical_offset+30>>
       back_width:
         conditions:
           - type: [edition, resolution, edition_dovetail]
@@ -90,8 +111,16 @@ external_templates:
       pmm:
         conditions:
           - type: [edition, edition_dovetail]
+            file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
             value: edition/<<key>>
           - type: [resolution, resolution_dovetail]
+            file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
             value: resolution/<<key>><<alt>>
       group:
         conditions:
@@ -99,6 +128,8 @@ external_templates:
             value: edition
           - type: [resolution, resolution_dovetail]
             value: resolution
+    horizontal_offset: 15
+    vertical_offset: 15
     horizontal_align: left
     vertical_align: top
 
@@ -122,7 +153,7 @@ templates:
       - use_<<key>>
       - use_edition
       - allowed_libraries
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_edition>>
       - <<allowed_libraries>>
@@ -158,15 +189,21 @@ templates:
         conditions:
           - alt: hdr
             value: true
+      plus:
+        conditions:
+          - alt: plus
+            value: '(?i)\bhdr10(\+|p(lus)?\b)'
     optional:
       - all
       - use_<<key>>
+      - use_<<key>>_<<alt>>
       - use_<<alt>>
       - use_resolution
       - allowed_libraries
-    allowed_library_types:
+    run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
+      - <<use_<<key>>_<<alt>>>>
       - <<allowed_libraries>>
       - <<use_resolution>>
     ignore_blank_results: true
@@ -178,9 +215,13 @@ templates:
         hdr: <<hdr>>
     filters:
       has_dolby_vision: <<dolby_vision>>
+      filepath.regex: <<plus>>
 
 overlays:
 
+  4K-Plus-Dovetail:
+    variables: {key: 4k, alt: plus, weight: 160, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   4K-DV-Dovetail:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -189,6 +230,9 @@ overlays:
     template: [name: resolution, name: standard]
   4K-Dovetail:
     variables: {key: 4k, alt: "", weight: 130, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
+  1080P-Plus-Dovetail:
+    variables: {key: 1080p, alt: plus, weight: 125, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   1080P-DV-Dovetail:
     variables: {key: 1080p, alt: dv, weight: 120, type: resolution_dovetail, allowed_libraries: movie}
@@ -199,6 +243,9 @@ overlays:
   1080P-Dovetail:
     variables: {key: 1080p, alt: "", weight: 100, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
+  720P-Plus-Dovetail:
+    variables: {key: 720p, alt: plus, weight: 95, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   720P-DV-Dovetail:
     variables: {key: 720p, alt: dv, weight: 90, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -207,6 +254,9 @@ overlays:
     template: [name: resolution, name: standard]
   720P-Dovetail:
     variables: {key: 720p, alt: "", weight: 70, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
+  576P-Plus-Dovetail:
+    variables: {key: 576p, alt: plus, weight: 65, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   576P-DV-Dovetail:
     variables: {key: 576p, alt: dv, weight: 60, type: resolution_dovetail, allowed_libraries: movie}
@@ -217,6 +267,9 @@ overlays:
   576P-Dovetail:
     variables: {key: 576p, alt: "", weight: 40, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
+  480P-Plus-Dovetail:
+    variables: {key: 480p, alt: plus, weight: 35, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   480P-DV-Dovetail:
     variables: {key: 480p, alt: dv, weight: 30, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -226,6 +279,9 @@ overlays:
   480P-Dovetail:
     variables: {key: 480p, alt: "", weight: 10, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
+  Plus-Dovetail:
+    variables: {key: "", alt: plus, weight: 7, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   DV-Dovetail:
     variables: {key: "", alt: dv, weight: 5, type: resolution_dovetail, all: true, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -233,44 +289,56 @@ overlays:
     variables: {key: "", alt: hdr, weight: 1, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
 
-  Directors-Cut-Dovetail:
-    variables: {key: directorscut, weight: 150, search: Director, type: edition_dovetail, allowed_libraries: movie}
-    template: [name: edition, name: standard]
   Extended-Edition-Dovetail:
-    variables: {key: extended, weight: 140, search: Extend, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: extended, weight: 190, search: Extend, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Uncut-Edition-Dovetail:
-    variables: {key: uncut, weight: 130, search: Uncut, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: uncut, weight: 180, search: Uncut, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Unrated-Edition-Dovetail:
-    variables: {key: unrated, weight: 120, search: Unrat, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: unrated, weight: 170, search: Unrat, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Special-Edition-Dovetail:
-    variables: {key: special, weight: 110, search: Special, type: edition_dovetail, allowed_libraries: movie}
-    template: [name: edition, name: standard]
-  Final-Cut-Dovetail:
-    variables: {key: finalcut, weight: 100, search: Final, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: special, weight: 160, search: Special, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Anniversary-Edition-Dovetail:
-    variables: {key: anniversary, weight: 90, search: Anniversary, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: anniversary, weight: 150, search: Anniversary, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Collectors-Edition-Dovetail:
-    variables: {key: collector, weight: 80, search: Collector, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: collector, weight: 140, search: Collector, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Diamond-Edition-Dovetail:
+    variables: {key: diamond, weight: 130, search: Diamond, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Platinum-Edition-Dovetail:
+    variables: {key: platinum, weight: 120, search: Platinum, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Directors-Cut-Dovetail:
+    variables: {key: directors, weight: 110, search: Director, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Final-Cut-Dovetail:
+    variables: {key: final, weight: 100, search: Final, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   International-Cut-Dovetail:
-    variables: {key: international, weight: 70, search: International, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: international, weight: 90, search: International, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Theatrical-Cut-Dovetail:
-    variables: {key: theatrical, weight: 60, search: Theatrical, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: theatrical, weight: 80, search: Theatrical, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Ultimate-Cut-Dovetail:
-    variables: {key: ultimate, weight: 50, search: Ultimate, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: ultimate, weight: 70, search: Ultimate, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
-  IMAX-E-Dovetail:
-    variables: {key: enhanced, weight: 40, type: edition_dovetail, allowed_libraries: movie}
+  Alternate-Cut-Dovetail:
+    variables: {key: alternate, weight: 60, search: Alternate, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Coda-Cut-Dovetail:
+    variables: {key: coda, weight: 50, search: Coda, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  IMAX-Enhanced-Dovetail:
+    variables: {key: enhanced, weight: 40, search: IMAX Enhanced, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   IMAX-Dovetail:
-    variables: {key: imax, weight: 30, search: Imax, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: imax, weight: 30, search: IMAX, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Remastered-Dovetail:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition_dovetail, allowed_libraries: movie}
@@ -278,7 +346,22 @@ overlays:
   Criterion-Dovetail:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Richard-Donner-Dovetail:
+    variables: {key: richarddonner, weight: 9, search: Rich, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Black-And-Chrome-Dovetail:
+    variables: {key: blackchrome, weight: 8, search: Black, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Definitive-Dovetail:
+    variables: {key: definitive, weight: 7, search: Definitive, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Ulysses-Dovetail:
+    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
 
+  4K-Plus:
+    variables: {key: 4k, alt: plus, weight: 160, type: resolution}
+    template: [name: resolution, name: standard]
   4K-DV:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution}
     template: [name: resolution, name: standard]
@@ -287,6 +370,9 @@ overlays:
     template: [name: resolution, name: standard]
   4K:
     variables: {key: 4k, alt: "", weight: 130, type: resolution}
+    template: [name: resolution, name: standard]
+  1080P-Plus:
+    variables: {key: 1080p, alt: plus, weight: 125, type: resolution}
     template: [name: resolution, name: standard]
   1080P-DV:
     variables: {key: 1080p, alt: dv, weight: 120, type: resolution}
@@ -297,6 +383,9 @@ overlays:
   1080P:
     variables: {key: 1080p, alt: "", weight: 100, type: resolution}
     template: [name: resolution, name: standard]
+  720P-Plus:
+    variables: {key: 720p, alt: plus, weight: 95, type: resolution}
+    template: [name: resolution, name: standard]
   720P-DV:
     variables: {key: 720p, alt: dv, weight: 90, type: resolution}
     template: [name: resolution, name: standard]
@@ -305,6 +394,9 @@ overlays:
     template: [name: resolution, name: standard]
   720P:
     variables: {key: 720p, alt: "", weight: 70, type: resolution}
+    template: [name: resolution, name: standard]
+  576P-Plus:
+    variables: {key: 576p, alt: plus, weight: 65, type: resolution}
     template: [name: resolution, name: standard]
   576P-DV:
     variables: {key: 576p, alt: dv, weight: 60, type: resolution}
@@ -315,6 +407,9 @@ overlays:
   576P:
     variables: {key: 576p, alt: "", weight: 40, type: resolution}
     template: [name: resolution, name: standard]
+  480P-Plus:
+    variables: {key: 480p, alt: plus, weight: 35, type: resolution}
+    template: [name: resolution, name: standard]
   480P-DV:
     variables: {key: 480p, alt: dv, weight: 30, type: resolution}
     template: [name: resolution, name: standard]
@@ -324,6 +419,9 @@ overlays:
   480P:
     variables: {key: 480p, alt: "", weight: 10, type: resolution}
     template: [name: resolution, name: standard]
+  Plus:
+    variables: {key: "", alt: plus, weight: 7, type: resolution}
+    template: [name: resolution, name: standard]
   DV:
     variables: {key: "", alt: dv, weight: 5, type: resolution, all: true}
     template: [name: resolution, name: standard]
@@ -331,48 +429,72 @@ overlays:
     variables: {key: "", alt: hdr, weight: 1, type: resolution}
     template: [name: resolution, name: standard]
 
-  Directors-Cut:
-    variables: {key: directorscut, weight: 150, search: Director, type: edition, allowed_libraries: movie}
-    template: [name: edition, name: standard]
   Extended-Edition:
-    variables: {key: extended, weight: 140, search: Extend, type: edition, allowed_libraries: movie}
+    variables: {key: extended, weight: 190, search: Extend, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Uncut-Edition:
-    variables: {key: uncut, weight: 130, search: Uncut, type: edition, allowed_libraries: movie}
+    variables: {key: uncut, weight: 180, search: Uncut, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Unrated-Edition:
-    variables: {key: unrated, weight: 120, search: Unrat, type: edition, allowed_libraries: movie}
+    variables: {key: unrated, weight: 170, search: Unrat, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Special-Edition:
-    variables: {key: special, weight: 110, search: Special, type: edition, allowed_libraries: movie}
-    template: [name: edition, name: standard]
-  Final-Cut:
-    variables: {key: finalcut, weight: 100, search: Final, type: edition, allowed_libraries: movie}
+    variables: {key: special, weight: 160, search: Special, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Anniversary-Edition:
-    variables: {key: anniversary, weight: 90, search: Anniversary, type: edition, allowed_libraries: movie}
+    variables: {key: anniversary, weight: 150, search: Anniversary, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Collectors-Edition:
-    variables: {key: collector, weight: 80, search: Collector, type: edition, allowed_libraries: movie}
+    variables: {key: collector, weight: 140, search: Collector, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Diamond-Edition:
+    variables: {key: diamond, weight: 130, search: Diamond, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Platinum-Edition:
+    variables: {key: platinum, weight: 120, search: Platinum, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Directors-Cut:
+    variables: {key: directors, weight: 110, search: Director, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Final-Cut:
+    variables: {key: final, weight: 100, search: Final, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   International-Cut:
-    variables: {key: international, weight: 70, search: International, type: edition, allowed_libraries: movie}
+    variables: {key: international, weight: 90, search: International, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Theatrical-Cut:
-    variables: {key: theatrical, weight: 60, search: Theatrical, type: edition, allowed_libraries: movie}
+    variables: {key: theatrical, weight: 80, search: Theatrical, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Ultimate-Cut:
-    variables: {key: ultimate, weight: 50, search: Ultimate, type: edition, allowed_libraries: movie}
+    variables: {key: ultimate, weight: 70, search: Ultimate, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
-  IMAX-E:
-    variables: {key: enhanced, weight: 40, type: edition, allowed_libraries: movie}
+  Alternate-Cut:
+    variables: {key: alternate, weight: 60, search: Alternate, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Coda-Cut:
+    variables: {key: coda, weight: 50, search: Coda, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  IMAX-Enhanced:
+    variables: {key: enhanced, weight: 40, search: IMAX Enhanced, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   IMAX:
-    variables: {key: imax, weight: 30, type: edition, allowed_libraries: movie}
+    variables: {key: imax, weight: 30, search: IMAX, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Remastered:
     variables: {key: remastered, weight: 20, search: Remaster, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
   Criterion:
     variables: {key: criterion, weight: 10, search: Criterion, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Richard-Donner:
+    variables: {key: richarddonner, weight: 9, search: Rich, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Black-And-Chrome:
+    variables: {key: blackchrome, weight: 8, search: Black, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Definitive:
+    variables: {key: definitive, weight: 7, search: Definitive, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Ulysses:
+    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]

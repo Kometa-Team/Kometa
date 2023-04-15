@@ -2,11 +2,11 @@
 
 The `language_count` Default Overlay File is used to create an overlay based on the number of audio/subtitle languages available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/language_count.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Season, Episode
 
 ## Supported Audio/Subtitle Languages
 
@@ -61,7 +61,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                  |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

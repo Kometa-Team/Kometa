@@ -8,9 +8,6 @@
 external_templates:
   pmm: templates
 
-translations:
-  pmm: translations
-
 templates:
   holiday:
     default:
@@ -25,8 +22,9 @@ templates:
       imdb_list_<<key>>: <<imdb_list>>
       trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
-      summary_<<key>>: <<seasonal_summary>>
-      name_<<key>>: <<seasonal_name>>
+      summary_<<key>>: <<summary_format>>
+      name_<<key>>: <<name_format>>
+      emoji: ""
       emoji_<<key>>: <<emoji>>
     optional:
       - schedule
@@ -36,6 +34,11 @@ templates:
       - imdb_list
       - trakt_list
       - mdblist_list
+      - summary_format
+      - name_format
+      - key_name
+      - translation_key
+      - limit
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -50,8 +53,12 @@ templates:
     trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     cache_builders: 1
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
     summary: <<summary_<<key>>>>
-    name: <<emoji_<<key>>>><<name_<<key>>>>
+    name: <<name_<<key>>>>
+    limit: <<limit_<<key>>>>
+    translation_prefix: <<emoji_<<key>>>>
 
 collections:
   Seasonal Collections:
@@ -59,7 +66,6 @@ collections:
       - name: separator
         separator: seasonal
         use_separator: false
-      - name: translation
         key_name: Seasonal
         translation_key: separator
 
@@ -157,5 +163,5 @@ dynamic_collections:
       image:
         default: seasonal/<<key>>
       translation_key:
-        default: season
+        default: seasonal
 

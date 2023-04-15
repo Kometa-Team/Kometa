@@ -8,17 +8,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 10
-
-translations:
-  pmm: translations
+    collection_section: "090"
 
 collections:
   Audio Language Collections:
     template:
       - name: separator
         separator: audio_language
-      - name: translation
         key_name: Audio Language
         translation_key: separator
 
@@ -29,12 +25,10 @@ dynamic_collections:
     other_name: Other Audio
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -44,6 +38,8 @@ dynamic_collections:
       translation_key:
         default: audio_language
         other: audio_language_other
+      dynamic:
+        default: true
     include:
       - ab     # Abkhazian
       - aa     # Afar

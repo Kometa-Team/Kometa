@@ -8,11 +8,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
-    image: chart/<<collection_name_encoded>>
-
-translations:
-  pmm: translations
+    collection_section: "020"
+    image: chart/<<mapping_name_encoded>>
 
 templates:
   tautulli:
@@ -34,10 +31,9 @@ collections:
       - name: tautulli
         type: popular
       - name: shared
+        translation_key: tautulli_popular
       - name: custom
         cache_builders: 0
-      - name: translation
-        translation_key: tautulli_popular
 
   Plex Watched:
     variables:
@@ -46,7 +42,6 @@ collections:
       - name: tautulli
         type: watched
       - name: shared
+        translation_key: tautulli_watched
       - name: custom
         cache_builders: 0
-      - name: translation
-        translation_key: tautulli_watched

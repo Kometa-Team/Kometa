@@ -2,11 +2,15 @@
 
 The `decade` Default Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
 
-**This file works with Movie Libraries, but has a Show Library [Counterpart](../show/decade).**
+**This file works has a Show Library [Counterpart](../show/decade).**
 
 ![](../images/decade.png)
 
-## Collections Section 12
+## Requirements & Recommendations
+
+Supported Library Types: Movie
+
+## Collections Section 100
 
 | Collection                                           | Key                               | Description                                                                 |
 |:-----------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|
@@ -41,8 +45,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `critic_rating.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options) |
 | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                 |
 | `exclude`                     | **Description:** Exclude these Decades from creating a Dynamic Collection.<br>**Values:** List of Decades found in your library                                                                                            |
-| `decade_name`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Best of <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                          |
-| `decade_summary`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `Top <<limit>> <<library_translation>>s of the <<key_name>>.`<br>**Values:** Any string.                                           |
+| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Best of <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                          |
+| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `Top <<limit>> <<library_translation>>s of the <<key_name>>.`<br>**Values:** Any string.                                           |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
