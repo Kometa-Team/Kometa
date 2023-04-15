@@ -379,6 +379,86 @@ table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable 
 table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
 }
+.images-index-table {
+    padding: 0;
+}
+.images-index-table li {
+    display: inline-block;
+}
+.images-inline-link {
+    padding: 8px 10px;
+    display: inline-block;
+    background-color: #181818;
+    border-radius: 10px;
+    margin: 0 5px 5px 0;
+    text-align: center;
+    line-height: 20px;
+}
+.images-inline-link code {
+    font-size: 60%;
+}
+.image-accordion {
+    border-radius: 15px;
+    background-color: #1D1D1D;
+    color: #0ce3ac;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 20px;
+    transition: 0.4s;
+    margin: 5px 0 0 0;
+}
+.image-active {
+    border-radius: 15px 15px 0 0 !important;
+    background-color: #181818;
+}
+.image-accordion:hover {
+    background-color: #181818;
+}
+.image-panel {
+  background-color: #181818;
+  max-height: 0;
+  overflow: auto hidden;
+  border-radius: 0 0 15px 15px;
+  transition: max-height 0.2s ease-out;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.image-accordion:after {
+  content: '\25BC';
+  font-size: 13px;
+  color: #777;
+  float: right;
+  margin-left: 5px;
+}
+.image-active:after {
+  content: "\25B2";
+}
+table.image-table {
+  /* margin: 0 auto; */
+  border-collapse: separate;
+}
+table.image-table div {
+    margin: 0 10px 0 0;
+    border-radius: 15px;
+    padding: 10px 10px 0 10px;
+    text-align: center;
+    background-color: #1D1D1D;
+    line-height: 15px;
+}
+table.image-table td:last-child div {
+    margin: 0;
+}
+table.image-table, table.image-table tbody, table.image-table tr, table.image-table th {
+  background-color: rgba(0, 0, 0, 0.0) !important;
+}
+table.image-table img {
+  border-radius: 15px;
+  margin: 0 0 15px 0;
+}
 details {
   margin-bottom: 5px;
   border-color: #7c4dff;

@@ -39,10 +39,10 @@ var_mods = {
     "audience_rating": ["", "%", "#", "/"],
     "originally_available": ["", "["],
     "runtime": ["", "H", "M"],
-    "season_number": ["", "W", "0", "00"],
-    "episode_number": ["", "W", "0", "00"],
-    "episode_count": ["", "W", "0", "00"],
-    "versions": ["", "W", "0", "00"],
+    "season_number": ["", "W", "WU", "WL", "0", "00"],
+    "episode_number": ["", "W", "WU", "WL", "0", "00"],
+    "episode_count": ["", "W", "WU", "WL", "0", "00"],
+    "versions": ["", "W", "WU", "WL", "0", "00"],
 }
 single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
 double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
@@ -74,12 +74,8 @@ class Overlay:
         self.keys = []
         self.updated = False
         self.image = None
-        self.landscape = None
-        self.landscape_box = None
-        self.portrait = None
-        self.portrait_box = None
-        self.square = None
-        self.square_box = None
+        self.backdrop_box = None
+        self.backdrop_text = None
         self.group = None
         self.queue = None
         self.queue_name = None
@@ -142,7 +138,7 @@ class Overlay:
         self.back_radius = util.parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay") if "back_radius" in self.data and self.data["back_radius"] else None
         self.back_line_width = util.parse("Overlay", "back_line_width", self.data["back_line_width"], datatype="int", parent="overlay") if "back_line_width" in self.data and self.data["back_line_width"] else None
         self.back_line_color = color("back_line_color")
-        self.back_padding = util.parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", default=0) if "back_padding" in self.data else 0
+        self.back_padding = util.parse("Overlay", "back_padding", self.data["back_padding"], datatype="int", parent="overlay", minimum=0, default=0) if "back_padding" in self.data else 0
         self.back_align = util.parse("Overlay", "back_align", self.data["back_align"], parent="overlay", default="center", options=["left", "right", "center", "top", "bottom"]) if "back_align" in self.data else "center"
         self.back_box = None
         back_width = util.parse("Overlay", "back_width", self.data["back_width"], datatype="int", parent="overlay", minimum=0) if "back_width" in self.data else -1
@@ -231,7 +227,7 @@ class Overlay:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
             text = f"{match.group(1)}"
-            code_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             font_base = os.path.join(code_base, "fonts")
             self.font_name = os.path.join(font_base, "Roboto-Medium.ttf")
             if "font_size" in self.data:
@@ -285,13 +281,10 @@ class Overlay:
                     except ValueError:
                         raise Failed("Overlay Error: originally_available date format not valid")
             box = self.image.size if self.image else None
-            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=box, text=self.name[5:-1])
-            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=box, text=self.name[5:-1])
-            self.square, self.square_box = self.get_backdrop(square_dim, box=box, text=self.name[5:-1])
+            self.backdrop_box = box
+            self.backdrop_text = self.name[5:-1]
         elif self.name.startswith("backdrop"):
-            self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.back_box)
-            self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.back_box)
-            self.square, self.square_box = self.get_backdrop(square_dim, box=self.back_box)
+            self.backdrop_box = self.back_box
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)
@@ -306,9 +299,7 @@ class Overlay:
             try:
                 self.image = Image.open(self.path).convert("RGBA")
                 if self.has_coordinates():
-                    self.portrait, self.portrait_box = self.get_backdrop(portrait_dim, box=self.image.size)
-                    self.landscape, self.landscape_box = self.get_backdrop(landscape_dim, box=self.image.size)
-                    self.square, self.square_box = self.get_backdrop(square_dim, box=self.image.size)
+                    self.backdrop_box = self.image.size
                 if self.config.Cache:
                     self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
@@ -438,8 +429,9 @@ class Overlay:
 
     def get_canvas(self, item):
         if isinstance(item, Episode):
-            return self.landscape, self.landscape_box
+            canvas_size = landscape_dim
         elif isinstance(item, Album):
-            return self.square, self.square_box
+            canvas_size = square_dim
         else:
-            return self.portrait, self.portrait_box
+            canvas_size = portrait_dim
+        return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)

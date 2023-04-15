@@ -8,10 +8,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 16
-
-translations:
-  pmm: translations
+    collection_section: 130
 
 dynamic_collections:
   Emmy Awards:
@@ -36,3 +33,5 @@ dynamic_collections:
         default: award/emmys/winner/<<key>>
       translation_key:
         default: emmy_year
+      dynamic:
+        default: true

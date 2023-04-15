@@ -8,17 +8,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 14
-
-translations:
-  pmm: translations
+    collection_section: "110"
 
 collections:
   Ratings Collections:
     template:
       - name: separator
         separator: content_rating
-      - name: translation
         key_name: Ratings
         translation_key: separator
 
@@ -29,12 +25,10 @@ dynamic_collections:
     other_name: Not Rated <<library_typeU>>s
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -64,6 +58,8 @@ dynamic_collections:
         16: "16_"
         17: "17_"
         18: "18_"
+      dynamic:
+        default: true
     include:
       - 1
       - 2

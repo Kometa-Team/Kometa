@@ -46,11 +46,14 @@ extensions = [
     'myst_parser',
     'sphinx_inline_tabs',
     'sphinx_copybutton',
-    'sphinx_reredirects'
+    'sphinx_reredirects',
+    'sphinx_design',
+    'notfound.extension'
 ]
 
 source_suffix = ['.rst', '.md']
 myst_heading_anchors = 4
+myst_enable_extensions = ["colon_fence"]
 
 # -- Napoleon Settings -----------------------------------------------------
 napoleon_google_docstring = True
@@ -103,6 +106,10 @@ redirects = {
     "home/guides/defaults": "../../defaults/guide.html",
     "metadata/details/setting": "definition.html",
     "metadata/details/details": "update.html",
+    "malauth": "https://replit.com/@chazlarson/MALAuth",
+    "traktauth": "https://replit.com/@chazlarson/TraktAuth",
+    "defaults/movie/universe": "../../both/universe.html",
+    "discord": "https://discord.gg/FNqqw5jRSz",
 }
 
 # Theme options are theme-specific and customize the look and feel of a
@@ -138,8 +145,15 @@ html_theme_options = {
             ("Log Files", "home/logs"),
             ("Run Commands & Environment Variables", "home/environmental"),
             ("Knowledgebase/FAQ", "home/kb"),
+            ("_menu", "Companion Scripts", "home/scripts", [
+                ("Companion Scripts", "home/scripts"),
+                ("_divider", ),
+                ("PMM Overlay Reset", "home/scripts/overlay-reset"),
+                ("Plex Image Cleanup", "home/scripts/image-cleanup"),
+            ]),
             ("_divider", ),
             ("YAML File Guide", "home/guides/yaml"),
+            ("Ratings Explained", "home/guides/ratings"),
             ("Scheduling Guide", "home/guides/scheduling"),
             ("Image Asset Directory Guide", "home/guides/assets"),
             ("Formula 1 Metadata Guide", "home/guides/formula"),
@@ -163,6 +177,7 @@ html_theme_options = {
                 ("Mass Genre Update", "config/operations", "#mass-genre-update"),
                 ("Mass Content Rating Update", "config/operations", "#mass-content-rating-update"),
                 ("Mass Original Title Update", "config/operations", "#mass-original-title-update"),
+                ("Mass Studio Update", "config/operations", "#mass-studio-update"),
                 ("Mass Originally Available Update", "config/operations", "#mass-originally-available-update"),
                 ("Mass * Rating Update", "config/operations", "#mass--rating-update"),
                 ("Mass Episode * Rating Update", "config/operations", "#mass-episode--rating-update"),
@@ -206,20 +221,20 @@ html_theme_options = {
                 ("Shared Variables", "defaults/collection_variables"),
                 ("_divider", ),
                 ("Separators", "defaults/separators"),
-                ("_menu", "Award", "defaults/defaults", "#award-collections", [
+                ("_menu", "Award", "defaults/collections", "#award-collections", [
                     ("Awards Separator", "defaults/award/separator"),
                     ("_divider",),
                     ("Academy Awards (Oscars)", "defaults/award/oscars"),
                     ("British Academy of Film Awards", "defaults/award/bafta"),
-                    ("Cannes File Festival Awards", "defaults/award/cannes"),
+                    ("Cannes Film Festival Awards", "defaults/award/cannes"),
                     ("Critics Choice Awards", "defaults/award/choice"),
                     ("Emmy Awards", "defaults/award/emmy"),
                     ("Golden Globe Awards", "defaults/award/golden"),
                     ("Independent Spirit Awards", "defaults/award/spirit"),
-                    ("Sundance File Festival Awards", "defaults/award/sundance"),
+                    ("Sundance Film Festival Awards", "defaults/award/sundance"),
                     ("Other Awards", "defaults/award/other"),
                 ]),
-                ("_menu", "Chart", "defaults/defaults", "#chart-collections", [
+                ("_menu", "Chart", "defaults/collections", "#chart-collections", [
                     ("Chart Separator", "defaults/chart/separator"),
                     ("_divider",),
                     ("Basic Charts", "defaults/chart/basic"),
@@ -232,9 +247,10 @@ html_theme_options = {
                     ("Trakt Charts", "defaults/chart/trakt"),
                     ("Other Charts", "defaults/chart/other"),
                 ]),
-                ("_menu", "Movie", "defaults/defaults", "#general-collections", [
+                ("_menu", "Movie", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
+                    ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),
@@ -252,13 +268,14 @@ html_theme_options = {
                     ("Studios", "defaults/both/studio"),
                     ("Anime Studios", "defaults/both/studio_anime"),
                     ("Subtitle Languages", "defaults/both/subtitle_language"),
-                    ("Universes", "defaults/movie/universe"),
+                    ("Universes", "defaults/both/universe"),
                     ("Writers", "defaults/movie/writer"),
                     ("Years", "defaults/both/year"),
                 ]),
-                ("_menu", "Show", "defaults/defaults", "#general-collections", [
+                ("_menu", "Show", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
                     ("Audio Languages", "defaults/both/audio_language"),
+                    ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
                     ("Common Sense Media Content Ratings", "defaults/both/content_rating_cs"),
                     ("MyAnimeList Content Ratings", "defaults/both/content_rating_mal"),
@@ -274,6 +291,7 @@ html_theme_options = {
                     ("Studios", "defaults/both/studio"),
                     ("Anime Studios", "defaults/both/studio_anime"),
                     ("Subtitle Languages", "defaults/both/subtitle_language"),
+                    ("Universes", "defaults/both/universe"),
                     ("Years", "defaults/both/year"),
                 ]),
             ]),
@@ -543,7 +561,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_css_files = ["custom.css"]
+html_css_files = [
+    "custom.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+]
 
 def setup(app):
     app.add_css_file("custom.css")

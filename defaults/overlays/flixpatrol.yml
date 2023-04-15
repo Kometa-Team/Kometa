@@ -13,6 +13,14 @@ external_templates:
       style: round
       limit: 10
       limit_<<key>>: <<limit>>
+    conditionals:
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: logo/<<style>>/<<key>>
     queue: position
     back_color: "#00000099"
     back_width: 160
@@ -21,7 +29,6 @@ external_templates:
     addon_position: top
     addon_offset: 30
     back_padding: 15
-    pmm: logo/<<style>>/<<key>>
     final_name: text(<<pre_text>><<limit_<<key>>>>)
 
 queues:
@@ -49,10 +56,16 @@ templates:
       location_<<key>>: <<location>>
       limit: 10
       limit_<<key>>: <<limit>>
+    conditionals:
+      actual_location:
+        default: <<location_<<key>>>>
+        conditions:
+          - key: apple
+            value: world
     ignore_blank_results: true
     flixpatrol_top:
       platform: <<slug>>
-      location: <<location_<<key>>>>
+      location: <<actual_location>>
       time_window: <<time_window_<<key>>>>
       limit: <<limit_<<key>>>>
 
@@ -80,4 +93,8 @@ overlays:
     
   Prime:
     variables: {key: prime, weight: 10, slug: amazon_prime}
+    template: [name: standard, name: flixpatrol]
+    
+  Apple:
+    variables: {key: apple, weight: 9, slug: apple_tv}
     template: [name: standard, name: flixpatrol]

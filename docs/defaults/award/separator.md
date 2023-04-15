@@ -2,11 +2,13 @@
 
 The `separator_award` Default Metadata File is used to create a seperator collection for Awards.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/awardseparator.png)
 
-## Collections Section 16
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+## Collections Section 130
 
 | Collection          | Key         | Description                                                                 |
 |:--------------------|:------------|:----------------------------------------------------------------------------|

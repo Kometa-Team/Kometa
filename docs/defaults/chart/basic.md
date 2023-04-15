@@ -2,11 +2,13 @@
 
 The `basic` Default Metadata File is used to create collections based on recently released media in your library.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/basic.png)
 
-## Collections Section 01
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+## Collections Section 010
 
 | Collection       | Key        | Description                                                    |
 |:-----------------|:-----------|:---------------------------------------------------------------|

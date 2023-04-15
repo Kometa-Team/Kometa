@@ -9,10 +9,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 16
-
-translations:
-  pmm: translations
+    collection_section: 130
 
 collections:
   Sundance Grand Jury Winners:
@@ -23,10 +20,9 @@ collections:
         sort: Sundance !1
         allowed_libraries: movie
         image: award/sundance/grand_jury_winner
+        translation_key: sundance_best
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: sundance_best
     trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/sundance-film-festival-grand-jury-prize
 
 dynamic_collections:
@@ -40,7 +36,6 @@ dynamic_collections:
     template:
       - use_year_collections
       - trakt
-      - translation
       - shared
       - arr
       - custom
@@ -53,3 +48,5 @@ dynamic_collections:
         default: award/sundance/<<key>>
       translation_key:
         default: sundance_year
+      dynamic:
+        default: true

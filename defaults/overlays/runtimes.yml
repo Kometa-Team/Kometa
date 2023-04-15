@@ -8,17 +8,27 @@
 external_templates:
   pmm: templates
   template_variables:
-    conditionals:
-      overlay_level:
-        conditions:
-          - library_type: show
-            value: episode
     default:
       text: "Runtime: "
-    horizontal_offset: 15
-    horizontal_align: right
-    vertical_offset: 30
-    vertical_align: bottom
+      horizontal_align: right
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
     back_color: "#00000099"
     back_width: 600
     back_height: 105

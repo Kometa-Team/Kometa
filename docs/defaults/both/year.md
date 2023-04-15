@@ -2,11 +2,13 @@
 
 The `year` Default Metadata File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/year.png)
 
-## Collections Section 13
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+## Collections Section 105
 
 | Collection                                        | Key                               | Description                                                                 |
 |:--------------------------------------------------|:----------------------------------|:----------------------------------------------------------------------------|

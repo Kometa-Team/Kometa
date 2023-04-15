@@ -29,13 +29,14 @@ _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
 
 
 class MyLogger:
-    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace):
+    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests):
         self.logger_name = logger_name
         self.default_dir = default_dir
         self.screen_width = screen_width
         self.separating_character = separating_character
         self.is_debug = is_debug
         self.is_trace = is_trace
+        self.log_requests = log_requests
         self.ignore_ghost = ignore_ghost
         self.log_dir = os.path.join(default_dir, LOG_DIR)
         self.playlists_dir = os.path.join(self.log_dir, PLAYLIST_DIR)
@@ -51,7 +52,7 @@ class MyLogger:
         self.spacing = 0
         self.playlists_log = os.path.join(self.playlists_dir, PLAYLISTS_LOG)
         os.makedirs(self.log_dir, exist_ok=True)
-        self._logger = logging.getLogger(self.logger_name)
+        self._logger = logging.getLogger(None if self.log_requests else self.logger_name)
         self._logger.setLevel(logging.DEBUG)
 
         cmd_handler = logging.StreamHandler()
@@ -213,11 +214,10 @@ class MyLogger:
     def ghost(self, text):
         if not self.ignore_ghost:
             try:
-                final_text = f"| {text}"
+                print(self._space(f"| {text}"), end="\r")
             except UnicodeEncodeError:
                 text = text.encode("utf-8")
-                final_text = f"| {text}"
-            print(self._space(final_text), end="\r")
+                print(self._space(f"| {text}"), end="\r")
             self.spacing = len(text) + 2
 
     def exorcise(self):

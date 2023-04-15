@@ -3,3 +3,6 @@ sphinx_bootstrap_theme
 sphinx_inline_tabs
 sphinx-copybutton
 sphinx-reredirects
+sphinx_design
+sphinx-reload
+sphinx-notfound-page

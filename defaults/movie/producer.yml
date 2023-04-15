@@ -8,17 +8,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 19
-
-translations:
-  pmm: translations
+    collection_section: "160"
 
 collections:
   Producers Collections:
     template:
       - name: separator
         separator: producer
-      - name: translation
         key_name: Producers
         translation_key: separator
 
@@ -30,12 +26,14 @@ dynamic_collections:
       depth: 5
       limit: 25
     template:
+      - tmdb_person
       - smart_filter
-      - translation
       - shared
     template_variables:
       tmdb_person:
         default: <<value>>
+      tmdb_person_offset:
+        default: 0
       search_term:
         default: producer
       search_value:
@@ -44,5 +42,5 @@ dynamic_collections:
         default: producer
       style:
         default: bw
-      url_poster:
-        default: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>>.jpg
+      dynamic:
+        default: true

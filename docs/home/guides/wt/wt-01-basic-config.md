@@ -19,7 +19,7 @@ Click to generate a new API key under "Request an API Key".  If there is already
 
 There will be a form to fill out; the answers are arbitrary.  The URL can be your personal website, or probably even google.com or the like.
 
-Once you’ve done that there should be an API Key available on this screen.
+Once you’ve done that there should be an API Key available on this screen.  If you see v3 and v4, you want the v3 key.
 
 Copy that value, you’ll need it for the config file.
 

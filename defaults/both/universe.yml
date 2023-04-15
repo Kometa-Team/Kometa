@@ -1,0 +1,93 @@
+##############################################################################
+#                            Universe Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/both/universe.html       #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "040"
+
+templates:
+  universe:
+    conditionals:
+      mdblist_list:
+        conditions:
+          - trakt_list_<<key>>.exists: false
+            imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            value: <<mdblist_url>>
+    default:
+      mdblist_list_<<key>>: <<mdblist_list>>
+      name_mapping_<<key>>: <<name_mapping>>
+      minimum_items: 2
+    optional:
+      - name_mapping
+      - trakt_list_<<key>>
+      - imdb_list_<<key>>
+    minimum_items: <<minimum_items>>
+    name_mapping: <<name_mapping_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
+    trakt_list: <<trakt_list_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
+
+collections:
+  Universe Collections:
+    template:
+      - name: separator
+        separator: universe
+        key_name: Universe
+        translation_key: separator
+
+dynamic_collections:
+  Universe Collections:
+    type: custom
+    data:
+      avp: Alien / Predator
+      arrow: Arrowverse
+      askew: View Askewniverse
+      dca: DC Animated Universe
+      dcu: DC Extended Universe
+      fast: Fast & Furious
+      marvel: In Association With Marvel
+      mcu: Marvel Cinematic Universe
+      middle: Middle Earth
+      rocky: Rocky / Creed
+      trek: Star Trek
+      star: Star Wars Universe
+      mummy: The Mummy Universe
+      wizard: Wizarding World
+      xmen: X-Men Universe
+    template:
+      - universe
+      - arr
+      - custom
+      - shared
+    template_variables:
+      allowed_libraries:
+        avp: movie
+        wizard: movie
+        fast: movie
+        rocky: movie
+        mummy: movie
+        middle: movie
+      mdblist_url:
+        avp: https://mdblist.com/lists/plexmetamanager/external/9243
+        arrow: https://mdblist.com/lists/plexmetamanager/external/15113
+        dca: https://mdblist.com/lists/plexmetamanager/external/15405
+        dcu: https://mdblist.com/lists/plexmetamanager/external/15107
+        fast: https://mdblist.com/lists/plexmetamanager/external/9246
+        marvel: https://mdblist.com/lists/plexmetamanager/external/15110
+        mcu: https://mdblist.com/lists/plexmetamanager/external/15109
+        middle: https://mdblist.com/lists/plexmetamanager/external/15199
+        mummy: https://mdblist.com/lists/plexmetamanager/external/9249
+        rocky: https://mdblist.com/lists/plexmetamanager/external/9248
+        trek: https://mdblist.com/lists/plexmetamanager/external/15354
+        star: https://mdblist.com/lists/plexmetamanager/external/15105
+        askew: https://mdblist.com/lists/plexmetamanager/external/15362
+        wizard: https://mdblist.com/lists/plexmetamanager/external/9242
+        xmen: https://mdblist.com/lists/plexmetamanager/external/9244
+      image:
+        default: universe/<<key>>

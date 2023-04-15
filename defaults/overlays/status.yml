@@ -10,10 +10,28 @@ external_templates:
   template_variables:
     text_<<key>>: <<text>>
     group: status
-    horizontal_offset: 15
-    horizontal_align: left
-    vertical_offset: 330
-    vertical_align: top
+    default:
+      horizontal_align: left
+      vertical_align: top
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 330
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
     font_size: 50
     back_color: "#00000099"
     back_width: 305
@@ -34,10 +52,15 @@ templates:
         conditions:
           - key: [ended, returning, canceled]
             value: <<key>>
+      last_days:
+        conditions:
+          - key: airing
+            last.exists: true
+            value: <<last>>
     ignore_blank_results: true
     plex_search:
       any:
-        episode_air_date: <<last>>
+        episode_air_date: <<last_days>>
     plex_all: <<all>>
     filters:
       tmdb_status: <<tmdb>>

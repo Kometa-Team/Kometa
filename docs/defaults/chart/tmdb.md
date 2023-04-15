@@ -2,11 +2,15 @@
 
 The `tmdb` Default Metadata File is used to create collections based on TMDb Charts.
 
-**The `TMDb Airing Today` and `TMDb On The Air` Collections only work with Show Libraries but the rest of the collections work with both Movie and Show libraries.**
-
 ![](../images/tmdb.png)
 
-## Collections Section 01
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Recommendations: The `TMDb Airing Today` and `TMDb On The Air` Collections only work with Show Libraries
+
+## Collections Section 020
 
 | Collection          | Key        | Description                                          |
 |:--------------------|:-----------|:-----------------------------------------------------|

@@ -2,13 +2,15 @@
 
 The `tautulli` Default Metadata File is used to create collections based on Tautulli/Plex Charts.
 
-This Default file requires [Tautulli Authentication](../../config/tautulli)
-
-**This file works with Movie and Show Libraries.**
-
 ![](../images/tautulli.png)
 
-## Collections Section 01
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Requirements: [Tautulli Authentication](../../config/tautulli)
+
+## Collections Section 020
 
 | Collection     | Key       | Description                                          |
 |:---------------|:----------|:-----------------------------------------------------|

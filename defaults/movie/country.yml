@@ -9,17 +9,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "09"
-
-translations:
-  pmm: translations
+    collection_section: "080"
 
 collections:
   Country Collections:
     template:
       - name: separator
         separator: country
-      - name: translation
         key_name: Country
         translation_key: separator
 
@@ -30,12 +26,10 @@ dynamic_collections:
     other_name: Other Countries
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -47,6 +41,8 @@ dynamic_collections:
       translation_key:
         default: country
         other: country_other
+      dynamic:
+        default: true
     include:
       # - Afghanistan                   # af
       # - Åland Islands                 # ax

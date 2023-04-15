@@ -42,29 +42,78 @@ This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container
 
    ![](synology/synology-06.png)
 
-5. You can name the Container whatever you want using the "Container Name" text Box. Then click "Advance Settings".
+<br>
 
-   ![](synology/synology-07.png)
+**From this point on the setup looks a little different depending on if the Synology is running DiskStation Manager 7 or DiskStation Manager 6.**
 
-6. Select the "Volume" Tab, click "Add Folder", and select from your Synology File System where you want to store your PMM config files.
+````{tab} DiskStation Manager 7
 
-   ![](synology/synology-08.png)
+5. Specify your docker network type. Then click "Next".
+
+   ![](synology/dsm7-01.png)
+
+6. You can name the Container whatever you want using the "Container Name" text Box.
+
+   ![](synology/dsm7-02.png)
+
+7. To add Environment Variables and Command Line Arguments click "Advanced Settings". (Optional)
+
+   Information on available Command Line Arguments and Environment Variables can be found [here](../environmental)
+
+   To add an Environment Variable click "Environment" then click Add" and then fill in the Variable and Value.
+
+   ![](synology/dsm7-03.png)
+
+   To use Command Line Arguments click "Execution Command" put the arguments in the "Command" text field.
+
+   ![](synology/dsm7-04.png)
+
+   Click "Save" to save the settings and go back to the General Settings Screen.
+
+8. Click "Next" from the General Settings Screen to get to the Port Settings Screen where you just want to click "Next" as PMM has no Ports.
+
+   ![](synology/dsm7-05.png)
+
+9. Next we need to add you config folder to the container. From the Volume Settings Screen click "Add Folder".
+
+   ![](synology/dsm7-06.png)
+
+9. Select from your Synology File System where you want to store your PMM config files and then enter `/config` as the "Mount path". Then click "Next" to go to the Summary Page.
+
+   ![](synology/dsm7-07.png)
+
+9. From the Summary Page select "Done" to finish and creating the container.
+
+   ![](synology/dsm7-08.png)
+
+````
+````{tab} DiskStation Manager 6
+
+5. You can name the Container whatever you want using the "Container Name" text Box. Then click "Advanced Settings".
+
+   ![](synology/dsm6-01.png)
+
+6. Next we need to add you config folder to the container. Select the "Volume" Tab, click "Add Folder", and select from your Synology File System where you want to store your PMM config files.
+
+   ![](synology/dsm6-02.png)
 
 7. Enter `/config` as the "Mount Point".
 
-   ![](synology/synology-09.png)
+   ![](synology/dsm6-03.png)
 
 8. Select the "Environment" Tab. (Optional)
    
-   Environment Variables and Command line arguments can be added here.
+   Environment Variables and Command Line Arguments can be added here.
 
-   - To add an Environment Variable Click "Add".
-   - To use Command line arguments put the arguments in the "Command" text field.
+   - To add an Environment Variable Click "Add" and then fill in the Variable and Value.
+   - To use Command Line Arguments put the arguments in the "Command" text field.
 
-   Information on available command line argument and Environment Variables can be found [here](../environmental)
+   Information on available Command Line Arguments and Environment Variables can be found [here](../environmental)
 
-   ![](synology/synology-10.png)
+   ![](synology/dsm6-04.png)
 
-9. Select "Apply" to save the "Advance Settings", select "Next" to go to the Summary, and select "Done" to finish and creating the container.
+9. Select "Apply" to save the "Advanced Settings", select "Next" to go to the Summary, and select "Done" to finish and creating the container.
 
-   ![](synology/synology-11.png)
+   ![](synology/dsm6-05.png)
+   
+````

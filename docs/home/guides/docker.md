@@ -230,7 +230,7 @@ Note that I show the example path there.
 <details>
   <summary>Why did we create that `config' directory?</summary>
 
-  This was done so that from here on in the instructions match between this walkthrough and the [Local walkthrough](local) are the same.
+  This was done so that from here on in the instructions match between this walkthrough and the [Local walkthrough](local).
 
 </details>
 
@@ -356,7 +356,7 @@ Save the file:
 
 Then run the script again:
 
-```{include} wt/wt-run-shell.md
+```{include} wt/wt-run-docker.md
 ```
 
 ```{include} wt/wt-08-overlay-after.md

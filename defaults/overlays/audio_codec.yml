@@ -9,23 +9,46 @@
 external_templates:
   pmm: templates
   template_variables:
+    default:
+      standard_value: 105
+      style: compact
+      horizontal_align: center
+      vertical_align: top
     conditionals:
       back_height:
         default: 105
         conditions:
           - style: standard
             value: <<standard_value>>
-    default:
-      standard_value: 105
-      style: compact
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 150
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: audio_codec/<<style>>/<<key>>
     group: audio_codec
-    horizontal_offset: 0
-    horizontal_align: center
     vertical_offset: 15
-    vertical_align: top
     back_color: "#00000099"
     back_width: 305
-    pmm: audio_codec/<<style>>/<<key>>
 
 templates:
   audio_codec:

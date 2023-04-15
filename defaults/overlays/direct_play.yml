@@ -9,14 +9,40 @@
 external_templates:
   pmm: templates
   template_variables:
+    default:
+      horizontal_align: center
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 150
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: <<overlay_name>>
     horizontal_offset: 0
     horizontal_align: center
-    vertical_offset: 150
-    vertical_align: bottom
     back_color: "#00000099"
     back_width: 305
     back_height: 170
-    pmm: <<overlay_name>>
 
 overlays:
   Direct-Play:

@@ -8,11 +8,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
-    image: chart/<<collection_name_encoded>>
-
-translations:
-  pmm: translations
+    collection_section: "020"
+    image: chart/<<mapping_name_encoded>>
 
 templates:
   mal:
@@ -38,10 +35,9 @@ collections:
     template:
       - name: mal
       - name: shared
+        translation_key: mal_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: mal_popular
 
   MyAnimeList Favorited:
     variables:
@@ -50,10 +46,9 @@ collections:
       - name: mal
         chart: favorite
       - name: shared
+        translation_key: mal_favorited
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: mal_favorited
 
   MyAnimeList Top Rated:
     variables:
@@ -62,10 +57,9 @@ collections:
       - name: mal
         chart: all
       - name: shared
+        translation_key: mal_top
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: mal_top
 
   MyAnimeList Top Airing:
     variables:
@@ -73,10 +67,9 @@ collections:
     template:
       - name: mal
       - name: shared
+        translation_key: mal_airing
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: mal_airing
 
   MyAnimeList Season:
     variables:
@@ -84,7 +77,6 @@ collections:
     template:
       - name: season
       - name: shared
+        translation_key: mal_season
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: mal_season

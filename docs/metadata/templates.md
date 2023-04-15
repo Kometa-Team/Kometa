@@ -1,6 +1,6 @@
 # Templates
 
-Collection and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
+Collection, Playlist, Metadata, and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
 
 For example, an actor collection might look like this:
 
@@ -11,10 +11,12 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 19429
-    sort_title: !_Bruce Lee
+    sort_title: "!_Bruce Lee"
     sync_mode: sync
     collection_order: release
 ```
+
+Note: The `sort_title` in these examples is wrapped in quotes because it contains a character [`!`] which has [syntactic meaning in YAML files](../home/guides/yaml.md#string-literals).  This "quoting special characters" is a general YAML requirement, not something specific to `sort_title`.
 
 Then you add another:
 
@@ -25,7 +27,7 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 19429
-    sort_title: !_Bruce Lee
+    sort_title: "!_Bruce Lee"
     sync_mode: sync
     collection_order: release
   Chris Pratt:
@@ -33,7 +35,7 @@ collections:
       all:
         actor: tmdb
     tmdb_person: 73457
-    sort_title: !_Chris Pratt
+    sort_title: "!_Chris Pratt"
     sync_mode: sync
     collection_order: release
 ```
@@ -55,7 +57,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     sync_mode: sync
     collection_order: release
 ```
@@ -97,7 +99,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     sync_mode: sync
     collection_order: release
 collections:
@@ -120,7 +122,7 @@ templates:
       all:
         actor: tmdb
     tmdb_person: <<person>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
   Common:
     summary: "Movies that <<collection_name>> (TMDb ID: <<person>>) are in"
     sync_mode: sync
@@ -195,7 +197,7 @@ templates:
             value: -335         # If side is 'top' or 'bottom' and no previous conditions are meet
 ```
 
-## Advance Example
+## Advanced Example
 
 Here's an example IMDb Genre template and two different ways to call it.
 
@@ -212,7 +214,7 @@ templates:
       limit: <<limit>>
     - url: https://www.imdb.com/search/title/?title_type=<<title>>&release_date=1990-01-01,&user_rating=5.0,10.0&num_votes=100000,&genres=<<genre>>&sort=user_rating,desc
       limit: <<limit>>
-    sort_title: !_<<collection_name>>
+    sort_title: "!_<<collection_name>>"
     url_poster: https://theposterdb.com/api/assets/<<poster_id>>
     sync_mode: sync
     collection_order: alpha

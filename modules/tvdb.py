@@ -106,7 +106,6 @@ class TVDb:
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_request(self, tvdb_url):
         return self.config.get_html(tvdb_url, headers=util.header(self.language))

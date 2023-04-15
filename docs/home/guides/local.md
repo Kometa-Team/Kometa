@@ -88,6 +88,14 @@ Describing a python install for any arbitrary linux is out of scope here, but if
 Follow the instructions here: [Installing Python 3 on Mac OS X](https://docs.python-guide.org/starting/install3/osx/)
 ````
 ````{tab} Windows
+
+Before installing Python, try again without the `3`:
+
+```
+python --version
+```
+Depending on the version of Python, you may need to use one or the other.  If this works, you're ready to go, jsut substitute `python` for `python3` in the couple places it appears below.
+
 Go to http://www.python.org/download and download the next-to-latest minor version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10, while the latest is 3.11.
 
 #### Why the next-to-latest?

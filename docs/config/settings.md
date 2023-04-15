@@ -41,6 +41,7 @@ The available setting attributes which can be set at each level are outlined bel
 | [`run_again_delay`](#run-again-delay)                         |   &#9989;    |   &#10060;    |         &#10060;          |
 | [`missing_only_released`](#missing-only-released)             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_unmanaged`](#show-unmanaged-collections)               |   &#9989;    |    &#9989;    |         &#10060;          |
+| [`show_unconfigured`](#show-unconfigured-collections)         |   &#9989;    |    &#9989;    |         &#10060;          |
 | [`show_filtered`](#show-filtered)                             |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_options`](#show-options)                               |   &#9989;    |    &#9989;    |          &#9989;          |
 | [`show_missing`](#show-missing)                               |   &#9989;    |    &#9989;    |          &#9989;          |
@@ -137,8 +138,16 @@ and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are b
 </table>
 
 ## Create Asset Folders
-Whilst searching for assets, if an asset folder cannot be found within the `asset_directory`, create one. This only applies to library items utilized in a Metadata/Playlist file (i.e. Star Wars Collection)
-* This may create hundreds/thousands of folders if `plex_all` is used, which can cause performance issues when loading the directory. 
+
+Whilst searching for assets, if an asset folder cannot be found within the `asset_directory` one will be created.
+
+Asset Searches can happen in a number of ways.
+* Any Collection specified under the `collections` header in a Metadata File.
+* Any Item specified under the `metadata` header in a Metadata File.
+* Any Playlist specified under the `playlists` header in a Playlist File.
+* Any Item in a library that is running the `assets_for_all` Library Operation.
+* Any Item that has an Overlay applied to it.
+* Any Item found by a Builder while the definition also has `item_assets: true` specified. 
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -420,7 +429,7 @@ While `show_missing` is true items missing from collections will be displayed.
 </table>
 
 ## Only Filter Missing
-Only items missing from a collection will be filtered
+Only items missing from a collection will be filtered. **Only specific filters can filter missing. See [Filters](../metadata/filters) for more information.** 
 * this can be used to filter which missing media items get sent to Sonarr/Radarr
 
 <table class="dualTable colwidths-auto align-default table">
@@ -569,7 +578,7 @@ Set `playlist_report` to true to print out a playlist report at the end of the l
 </table>
 
 ## Custom Repo
-Specify where the `repo` attribute's base is when defining `metadata_paths` and `playlist_files`.
+Specify where the `repo` attribute's base is when defining `metadata_path`, `playlist_file` and `overlay_path`.
 * Ensure you are using the raw GitHub link (i.e. https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
 
 <table class="dualTable colwidths-auto align-default table">

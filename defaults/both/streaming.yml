@@ -8,17 +8,71 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "03"
+    collection_section: "030"
 
-translations:
-  pmm: translations
+templates:
+  mdb_streaming:
+    optional:
+      - use_<<key>>
+      - allowed_libraries
+    conditionals:
+      allowed_streaming:
+        conditions:
+          - region.not: uk
+            key: [all4, britbox, hayu, now]
+            value: False
+          - region.not: ca
+            key: [crave]
+            value: False
+          - region: ca
+            key: [hbomax, showtime]
+            value: False
+      watch_region:
+        default: ""
+        conditions:
+          - region: ca
+            key: [amazon, disney, netflix]
+            value: "-ca"
+          - region: da
+            key: [amazon, disney, netflix]
+            value: "-da"
+          - region: de
+            key: [amazon, disney, netflix]
+            value: "-de"
+          - region: es
+            key: [amazon, disney, netflix]
+            value: "-es"
+          - region: fr
+            key: [amazon, disney, netflix]
+            value: "-fr"
+          - region: it
+            key: [amazon, disney, netflix]
+            value: "-it"
+          - region: pt-br
+            key: [amazon, disney, netflix]
+            value: "-pt-br"
+          - region: uk
+            key: [amazon, disney, netflix]
+            value: "-uk"
+    default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
+      sort_by: release.desc
+      sort_by_<<key>>: <<sort_by>>
+    run_definition:
+      - <<use_<<key>>>>
+      - <<allowed_libraries>>
+      - <<allowed_streaming>>
+    cache_builders: 1
+    smart_label: <<sort_by_<<key>>>>
+    sync_mode: <<sync_mode_<<key>>>>
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s<<watch_region>>
 
 collections:
   Streaming Collections:
     template:
       - name: separator
         separator: streaming
-      - name: translation
         key_name: Streaming
         translation_key: separator
 
@@ -30,7 +84,9 @@ dynamic_collections:
       appletv: Apple TV+
       bet: BET+
       britbox: BritBox
+      crave: Crave
       crunchyroll: Crunchyroll
+      discovery: discovery+
       disney: Disney+
       hayu: hayu
       hbomax: HBO Max
@@ -43,17 +99,17 @@ dynamic_collections:
       showtime: Showtime
     title_format: <<key_name>> <<library_typeU>>s
     template:
-      - mdb_smart
-      - translation
+      - mdb_streaming
       - shared
       - arr
     template_variables:
-      mdblist_list:
-        default: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s
       image:
         default: streaming/<<key_name_encoded>>
       allowed_libraries:
         hayu: show
+        discovery: show
         crunchyroll: show
       translation_key:
         default: streaming
+      dynamic:
+        default: true

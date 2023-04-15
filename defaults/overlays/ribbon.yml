@@ -8,8 +8,15 @@
 external_templates:
   pmm: templates
   template_variables:
+    conditionals:
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: ribbon/<<key>>
     group: ribbon
-    pmm: ribbon/<<key>>
     horizontal_offset: 0
     horizontal_align: right
     vertical_offset: 0

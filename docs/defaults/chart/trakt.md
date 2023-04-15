@@ -2,11 +2,15 @@
 
 The `trakt` Default Metadata File is used to create collections based on Trakt Charts.
 
-**This file works with Movie and Show Libraries.**
-
 ![](../images/trakt.png)
 
-## Collections Section 01
+## Requirements & Recommendations
+
+Supported Library Types: Movie, Show
+
+Requirements: [Trakt Authentication](../../config/trakt)
+
+## Collections Section 020
 
 | Collection          | Key           | Description                                             |
 |:--------------------|:--------------|:--------------------------------------------------------|

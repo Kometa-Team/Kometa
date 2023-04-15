@@ -2,11 +2,13 @@
 
 The `video_format` Default Overlay File is used to create an overlay based on the video format available on each item within your library.
 
-**This file works with Movie and Show Libraries.**
-
-**Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme.**
-
 ![](images/video_format.png)
+
+## Requirements & Recommendations
+
+Supported Overlay Level: Movie, Show, Season, Episode
+
+Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 
 ## Supported Video Formats
 
@@ -27,7 +29,7 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_path:
-      - pmm: audio_codec
+      - pmm: video_format
   TV Shows:
     overlay_path:
       - pmm: video_format
@@ -71,7 +73,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                 |
 | `regex_<<key>>`<sup>1</sup>  | **Description:** Controls the regex of the Overlay Search.<br>**Values:** Any Proper Regex                                                                                                                                                                                                                                                                                                                   |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
@@ -79,7 +81,7 @@ The below is an example config.yml extract with some Template Variables added in
 libraries:
   Movies:
     overlay_path:
-      - pmm: audio_codec
+      - pmm: video_format
         template_variables:
           text_bluray: BLURAY
           use_sdtv: false

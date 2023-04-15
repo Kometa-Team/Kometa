@@ -8,17 +8,13 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "07"
-
-translations:
-  pmm: translations
+    collection_section: "070"
 
 collections:
   Anime Collections:
     template:
       - name: separator
         separator: studio
-      - name: translation
         key_name: Studio
         translation_key: separator
 
@@ -28,7 +24,6 @@ dynamic_collections:
     title_format: <<key_name>>
     template:
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -37,6 +32,8 @@ dynamic_collections:
         default: studio/<<key_encoded>>
       translation_key:
         default: studio
+      dynamic:
+        default: true
     include:
       - 8bit
       - A-1 Pictures

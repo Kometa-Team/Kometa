@@ -8,11 +8,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
-    image: chart/<<collection_name_encoded>>
-
-translations:
-  pmm: translations
+    collection_section: "020"
+    image: chart/<<mapping_name_encoded>>
 
 templates:
   tmdb:
@@ -29,10 +26,9 @@ collections:
     template:
       - name: tmdb
       - name: shared
+        translation_key: tmdb_popular
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: tmdb_popular
 
   TMDb Top Rated:
     variables:
@@ -41,10 +37,9 @@ collections:
       - name: tmdb
         chart: top_rated
       - name: shared
+        translation_key: tmdb_top
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: tmdb_top
 
   TMDb Trending:
     variables:
@@ -53,10 +48,9 @@ collections:
       - name: tmdb
         chart: trending_weekly
       - name: shared
+        translation_key: tmdb_trending
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: tmdb_trending
 
   TMDb Airing Today:
     variables:
@@ -66,10 +60,9 @@ collections:
         chart: airing_today
       - name: shared
         allowed_libraries: show
+        translation_key: tmdb_airing
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: tmdb_airing
 
   TMDb On The Air:
     variables:
@@ -79,7 +72,6 @@ collections:
         chart: on_the_air
       - name: shared
         allowed_libraries: show
+        translation_key: tmdb_air
       - name: arr
       - name: custom
-      - name: translation
-        translation_key: tmdb_air

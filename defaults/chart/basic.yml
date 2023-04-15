@@ -8,14 +8,10 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
-    image: chart/<<collection_name_encoded>>
-
-translations:
-  pmm: translations
+    collection_section: "010"
+    image: chart/<<mapping_name_encoded>>
 
 collections:
-
   Newly Released:
     variables:
       key: released
@@ -25,7 +21,6 @@ collections:
         search_value: <<in_the_last_released>>
         in_the_last_released: 90
       - name: shared
-      - name: translation
         translation_key: basic_released
 
   New Episodes:
@@ -39,5 +34,4 @@ collections:
         type: episodes
       - name: shared
         allowed_libraries: show
-      - name: translation
         translation_key: basic_episodes

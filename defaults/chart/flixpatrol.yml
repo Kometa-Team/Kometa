@@ -8,11 +8,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: "01"
+    collection_section: "020"
     pre: "_#"
-
-translations:
-  pmm: translations
 
 templates:
   flixpatrol:
@@ -23,9 +20,16 @@ templates:
       time_window_<<key>>: <<time_window>>
       limit: 10
       limit_<<key>>: <<limit>>
+    conditionals:
+      actual_location:
+        default: <<location_<<key>>>>
+        conditions:
+          - key: apple
+            value: world
+    limit: <<limit>>
     flixpatrol_top:
       platform: <<platform>>
-      location: <<location_<<key>>>>
+      location: <<actual_location>>
       time_window: <<time_window_<<key>>>>
       limit: <<limit_<<key>>>>
 
@@ -39,10 +43,10 @@ dynamic_collections:
       hulu: Hulu
       paramount: Paramount+
       prime: Prime Video
+      apple: Apple TV+
     title_format: <<key_name>> Top <<limit>>
     template:
       - flixpatrol
-      - translation
       - shared
       - arr
       - custom
@@ -53,7 +57,10 @@ dynamic_collections:
         default: <<key>>
         paramount: paramount_plus
         prime: amazon_prime
+        apple: apple_tv
       image:
         default: chart/<<key>>_top
       translation_key:
         default: flixpatrol
+      dynamic:
+        default: true

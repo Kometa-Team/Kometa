@@ -9,10 +9,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 16
-
-translations:
-  pmm: translations
+    collection_section: 130
 
 dynamic_collections:
   Independent Spirit Awards Awards:
@@ -25,7 +22,6 @@ dynamic_collections:
     template:
       - use_year_collections
       - trakt
-      - translation
       - shared
       - arr
       - custom
@@ -38,3 +34,5 @@ dynamic_collections:
         default: award/spirit/<<key>>
       translation_key:
         default: spirit_year
+      dynamic:
+        default: true

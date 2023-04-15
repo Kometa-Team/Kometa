@@ -8,7 +8,7 @@
 external_templates:
   pmm: templates
   template_variables:
-    collection_section: 15
+    collection_section: "120"
     conditionals:
       image:
         default: resolution/<<key>>
@@ -30,15 +30,11 @@ external_templates:
             key: 4k
             value: Ultra HD
 
-translations:
-  pmm: translations
-
 collections:
   Resolution Collections:
     template:
       - name: separator
         separator: resolution
-      - name: translation
         key_name: Resolution
         translation_key: separator
 
@@ -49,12 +45,10 @@ dynamic_collections:
     other_name: Other Resolutions <<library_typeU>>s
     template:
       - smart_filter
-      - translation
       - shared
     other_template:
       - other_collection
       - smart_filter
-      - translation
       - shared
     template_variables:
       search_term:
@@ -67,6 +61,8 @@ dynamic_collections:
         1080: 2_
         720: 3_
         480: 4_
+      dynamic:
+        default: true
     include:
       - 4k
       - 1080

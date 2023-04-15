@@ -11,6 +11,10 @@ templates:
       - placeholder_tmdb_movie
       - placeholder_tvdb_show
       - placeholder_imdb_id
+      - summary_<<key>>
+      - name_<<key>>
+      - key_name
+      - translation_key
     conditionals:
       use_blank:
         default: true
@@ -21,20 +25,40 @@ templates:
             value: false
           - placeholder_imdb_id.exists: true
             value: false
-    allowed_library_types: <<use_separator>>
+    run_definition: <<use_separator>>
     collection_mode: <<collection_mode>>
-    sort_title: "!<<collection_section>>_!<<collection_name>>"
+    sort_title: "!<<collection_section>>_!<<title>>"
     tmdb_movie: <<placeholder_tmdb_movie>>
     tvdb_show: <<placeholder_tvdb_show>>
     imdb_id: <<placeholder_imdb_id>>
     blank_collection: <<use_blank>>
     url_poster: <<url_poster_<<key>>>>
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
 
   shared:
+    conditionals:
+      name_<<key>>:
+        conditions:
+          - dynamic: true
+            <<translation_key>>_name.exists: true
+            value: <<<<translation_key>>_name>>
+          - dynamic: true
+            key.not: other
+            value: <<name_format>>
+      summary_<<key>>:
+        conditions:
+          - dynamic: true
+            <<translation_key>>_summary.exists: true
+            value: <<<<translation_key>>_summary>>
+          - dynamic: true
+            key.not: other
+            value: <<summary_format>>
     default:
       collection_section: "00"
-      sort: <<collection_name>>
-      key: <<collection_name>>
+      key: <<mapping_name>>
       pre: "_"
       order: ""
       order_<<key>>: <<order>>
@@ -60,9 +84,19 @@ templates:
       - ignore_ids
       - ignore_imdb_ids
       - minimum_items
-    allowed_library_types:
+      - summary_format
+      - name_format
+      - key_name
+      - translation_key
+      - limit
+    run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
+    limit: <<limit>>
     ignore_ids: <<ignore_ids>>
     ignore_imdb_ids: <<ignore_imdb_ids>>
     trakt_list: <<trakt_list>>
@@ -73,7 +107,7 @@ templates:
     visible_shared: <<visible_shared_<<key>>>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
-    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"
+    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
     url_poster: <<url_poster_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
 
@@ -87,6 +121,24 @@ templates:
       - imdb_list
     imdb_list: <<imdb_list>>
 
+  tmdb_person:
+    default:
+      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
+      url_poster_<<key>>: <<url_poster>>
+    optional:
+      - tmdb_person
+      - tmdb_person_offset
+    tmdb_person: <<tmdb_person>>
+    tmdb_person_offset: <<tmdb_person_offset>>
+    url_poster: <<url_poster_<<key>>>>
+    conditionals:
+      extra:
+        default: ""
+        conditions:
+          - tmdb_person_offset.exists: true
+            tmdb_person_offset.not: 0
+            value: " (<<tmdb_person_offset>>)"
+
   smart_filter:
     default:
       sort_by: release.desc
@@ -94,12 +146,10 @@ templates:
       limit_<<key>>: <<limit>>
       search_value: <<value>>
     optional:
-      - tmdb_person
       - search_term2
       - search_value2
       - limit
       - type
-    tmdb_person: <<tmdb_person>>
     smart_filter:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -140,7 +190,7 @@ templates:
 
   arr:
     default:
-      key: <<collection_name>>
+      key: <<mapping_name>>
       radarr_add_missing_<<key>>: <<radarr_add_missing>>
       sonarr_add_missing_<<key>>: <<sonarr_add_missing>>
       radarr_folder_<<key>>: <<radarr_folder>>
@@ -149,6 +199,8 @@ templates:
       sonarr_tag_<<key>>: <<sonarr_tag>>
       radarr_monitor_<<key>>: <<radarr_monitor>>
       sonarr_monitor_<<key>>: <<sonarr_monitor>>
+      radarr_search_<<key>>: <<radarr_search>>
+      sonarr_search_<<key>>: <<sonarr_search>>
     optional:
       - radarr_add_missing
       - sonarr_add_missing
@@ -158,6 +210,8 @@ templates:
       - sonarr_tag
       - radarr_monitor
       - sonarr_monitor
+      - radarr_search
+      - sonarr_search
     radarr_add_missing: <<radarr_add_missing_<<key>>>>
     sonarr_add_missing: <<sonarr_add_missing_<<key>>>>
     radarr_folder: <<radarr_folder_<<key>>>>
@@ -166,6 +220,8 @@ templates:
     sonarr_tag: <<sonarr_tag_<<key>>>>
     radarr_monitor: <<radarr_monitor_<<key>>>>
     sonarr_monitor: <<sonarr_monitor_<<key>>>>
+    radarr_search: <<radarr_search_<<key>>>>
+    sonarr_search: <<sonarr_search_<<key>>>>
 
   custom:
     default:
@@ -181,24 +237,13 @@ templates:
   other_collection:
     default:
       collection_section: "00"
-      sort: <<collection_name>>
       pre: "_~"
     optional:
       - use_other
-    allowed_library_types: <<use_other>>
-    sort_title: "!<<collection_section>><<pre>><<sort>>"
+    run_definition: <<use_other>>
+    sort_title: "!<<collection_section>><<pre>><<title>>"
 
   use_year_collections:
     optional:
       - use_year_collections
-    allowed_library_types: <<use_year_collections>>
-
-  translation:
-    default:
-      summary_<<key>>: <<<<translation_key>>_summary>>
-      name_<<key>>: <<<<translation_key>>_name>>
-    optional:
-      - <<translation_key>>_summary
-      - <<translation_key>>_name
-    summary: <<summary_<<key>>>>
-    name: <<name_<<key>>>>
+    run_definition: <<use_year_collections>>
