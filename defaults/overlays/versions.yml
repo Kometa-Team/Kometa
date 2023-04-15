@@ -22,7 +22,7 @@ external_templates:
         conditions:
           - vertical_align.exists: false
             overlay_level.not: episode
-            value: 1050
+            value: 1060
           - vertical_align: center
             value: 0
           - vertical_align: top
