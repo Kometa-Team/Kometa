@@ -60,7 +60,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 Separators are enabled by default, but can be disabled/enabled per-file and per-library.
 
-An example of disabling separators at the library-level cam be seen here
+An example of disabling separators at the library-level can be seen here
 
 ```yaml
 libraries:
@@ -100,9 +100,7 @@ This image shows an example separator in each of the above styles
 
 ![](images/separators2.jpg)
 
-The style of separator can be defined per-file and per-library.
-
-An example of disabling separators at the library-level cam be seen here
+An example of changing the separator style at the library-level cam be seen here
 
 ```yaml
 libraries:
