@@ -100,7 +100,7 @@ This image shows an example separator in each of the above styles
 
 ![](images/separators2.jpg)
 
-An example of changing the separator style at the library-level cam be seen here
+An example of changing the separator style at the library-level can be seen here
 
 ```yaml
 libraries:
