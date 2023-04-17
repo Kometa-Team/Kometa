@@ -1533,9 +1533,7 @@ class CollectionBuilder:
                     if "min_score" in final_attributes and "max_score"  in final_attributes and final_attributes["max_score"] <= final_attributes["min_score"]:
                         raise Failed(f"{self.Type} Error: mal_search score.lte/score.lt attribute must be greater than score.gte/score.gt")
                     if "sfw" in dict_methods:
-                        sfw = util.parse(self.Type, "sfw", dict_data, datatype="bool", methods=dict_methods, parent=method_name)
-                        if sfw:
-                            final_attributes["sfw"] = 1
+                        final_attributes["sfw"] = util.parse(self.Type, "sfw", dict_data, datatype="bool", methods=dict_methods, parent=method_name)
                         final_text += f"\nSafe for Work: {final_attributes['sfw']}"
                     if not final_attributes:
                         raise Failed(f"{self.Type} Error: no mal_search attributes found")
