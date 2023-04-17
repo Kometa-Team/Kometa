@@ -1536,7 +1536,7 @@ class CollectionBuilder:
                         sfw = util.parse(self.Type, "sfw", dict_data, datatype="bool", methods=dict_methods, parent=method_name)
                         if sfw:
                             final_attributes["sfw"] = 1
-                        final_text += f"\nSafe for Work: {final_attributes['sfw']}"
+                            final_text += f"\nSafe for Work: {final_attributes['sfw']}"
                     if not final_attributes:
                         raise Failed(f"{self.Type} Error: no mal_search attributes found")
                     self.builders.append((method_name, (final_attributes, final_text, limit)))
@@ -3069,9 +3069,9 @@ class CollectionBuilder:
             plex_search = {"sort_by": self.custom_sort}
             if self.builder_level in ["season", "episode"]:
                 plex_search["type"] = f"{self.builder_level}s"
-                plex_search["any"] = {f"{self.builder_level}_collection": self.name} # noqa
+                plex_search["any"] = {f"{self.builder_level}_collection": [self.name]} # noqa
             else:
-                plex_search["any"] = {"collection": self.name}
+                plex_search["any"] = {"collection": [self.name]}
             try:
                 search_data = self.build_filter("plex_search", plex_search)
             except FilterFailed as e:
