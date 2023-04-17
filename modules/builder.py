@@ -1790,8 +1790,8 @@ class CollectionBuilder:
                         logger.error(message)
             if current_filters:
                 self.filters.append(current_filters)
-        self.has_tmdb_filters = any([k in tmdb_filters for f in self.filters for k, v in f])
-        self.has_imdb_filters = any([k in imdb_filters for f in self.filters for k, v in f])
+        self.has_tmdb_filters = any([str(k).split(".")[0] in tmdb_filters for f in self.filters for k, v in f])
+        self.has_imdb_filters = any([str(k).split(".")[0] in imdb_filters for f in self.filters for k, v in f])
 
     def gather_ids(self, method, value):
         expired = None
