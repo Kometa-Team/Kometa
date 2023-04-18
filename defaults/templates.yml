@@ -125,11 +125,12 @@ templates:
     default:
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
       url_poster_<<key>>: <<url_poster>>
+      tmdb_person_offset_<<key>>: <<tmdb_person_offset>>
     optional:
       - tmdb_person
       - tmdb_person_offset
     tmdb_person: <<tmdb_person>>
-    tmdb_person_offset: <<tmdb_person_offset>>
+    tmdb_person_offset: <<tmdb_person_offset_<<key>>>>
     url_poster: <<url_poster_<<key>>>>
     conditionals:
       extra:
@@ -137,7 +138,7 @@ templates:
         conditions:
           - tmdb_person_offset.exists: true
             tmdb_person_offset.not: 0
-            value: " (<<tmdb_person_offset>>)"
+            value: " (<<tmdb_person_offset_<<key>>>>)"
 
   smart_filter:
     default:
