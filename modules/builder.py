@@ -289,6 +289,7 @@ class CollectionBuilder:
                 if key_name_key and key_name_key in translations["key_names"]:
                     trans_key = translations["key_names"][key_name_key]
             logger.debug(f"Value: {trans_key}")
+        self.key_name = trans_key
 
         en_name = None
         en_summary = None
@@ -768,7 +769,8 @@ class CollectionBuilder:
             parsed_methods = {m.lower(): m for m in parsed_birthday}
             self.tmdb_birthday = {
                 "before": util.parse(self.Type, "before", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0),
-                "after": util.parse(self.Type, "after", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0)
+                "after": util.parse(self.Type, "after", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "this_month": util.parse(self.Type, "this_month", parsed_birthday, datatype="bool", methods=parsed_methods, default=False)
             }
 
         first_person = None
@@ -841,7 +843,13 @@ class CollectionBuilder:
                     after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, 28)
             days_after = (now - after_delta).days
             days_before = (before_delta - now).days
-            if days_before > self.tmdb_birthday["before"] and days_after > self.tmdb_birthday["after"]:
+            msg = ""
+            if self.tmdb_birthday["this_month"]:
+                if now.month != self.tmdb_person_birthday.month:
+                    msg = f"Skipped because Birthday Month: {self.tmdb_person_birthday.month} is not {now.month}"
+            elif days_before > self.tmdb_birthday["before"] and days_after > self.tmdb_birthday["after"]:
+                msg = f"Skipped because days until {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_before} > {self.tmdb_birthday['before']} and days after {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_after} > {self.tmdb_birthday['after']}"
+            if msg:
                 suffix = ""
                 if self.details["delete_not_scheduled"]:
                     try:
@@ -851,7 +859,7 @@ class CollectionBuilder:
                         suffix = f" and was deleted"
                     except Failed:
                         suffix = f" and could not be found to delete"
-                raise NotScheduled(f"Skipped because days until {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_before} > {self.tmdb_birthday['before']} and days after {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_after} > {self.tmdb_birthday['after']}{suffix}")
+                raise NotScheduled(f"{msg}{suffix}")
 
         self.smart_url = None
         self.smart_type_key = None
@@ -1130,7 +1138,7 @@ class CollectionBuilder:
 
     def _summary(self, method_name, method_data):
         if method_name == "summary":
-            self.summaries[method_name] = method_data
+            self.summaries[method_name] = str(method_data).replace("<<key_name>>", self.key_name) if self.key_name else method_data
         elif method_name == "tmdb_summary":
             self.summaries[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, "TMDb ID"), self.library.is_movie).overview
         elif method_name == "tmdb_description":

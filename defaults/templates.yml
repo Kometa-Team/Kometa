@@ -133,6 +133,7 @@ templates:
     tmdb_person: <<tmdb_person>>
     tmdb_birthday: <<tmdb_birthday>>
     tmdb_person_offset: <<tmdb_person_offset_<<key>>>>
+    delete_not_scheduled: true
     url_poster: <<url_poster_<<key>>>>
     conditionals:
       extra:
