@@ -409,6 +409,7 @@ def time_window(tw):
 
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
     files = []
+    had_scheduled = False
     if not lib_vars:
         lib_vars = {}
     files_to_load = get_list(files_to_load, split=False)
@@ -471,6 +472,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     if not ignore_schedules:
                         err = e
                 if err:
+                    had_scheduled = True
                     logger.info(f"Metadata Schedule:{err}\n")
                     for file_type, file_path, temp_vars, asset_directory in current:
                         logger.warning(f"{file_type}: {file_path} not scheduled to run")
@@ -482,7 +484,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                 files.append(("File", file, {}, None))
             else:
                 logger.error(f"{err_type} Error: Path not found: {file}")
-    return files
+    return files, had_scheduled
 
 def check_num(num, is_int=True):
     try:

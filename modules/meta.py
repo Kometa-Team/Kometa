@@ -567,7 +567,7 @@ class DataFile:
 
     def external_templates(self, data, overlay=False):
         if data and "external_templates" in data and data["external_templates"]:
-            files = util.load_files(data["external_templates"], "external_templates")
+            files, _ = util.load_files(data["external_templates"], "external_templates")
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
             for file_type, template_file, temp_vars, _ in files:
@@ -1320,7 +1320,7 @@ class MetadataFile(DataFile):
                         for alt in alts:
                             self.library.collection_images[alt] = collection_data
         else:
-            files = util.load_files(style_file, "style_file", err_type=self.type_str, single=True)
+            files, _ = util.load_files(style_file, "style_file", err_type=self.type_str, single=True)
             if not files:
                 raise Failed(f"{self.type_str} Error: No Path Found for style_file")
             file_type, style_path, _, _ = files[0]
