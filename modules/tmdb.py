@@ -440,6 +440,8 @@ class TMDb:
             attr = None
             if filter_attr == "tmdb_vote_count":
                 attr = item.vote_count
+            elif filter_attr == "tmdb_vote_average":
+                attr = item.vote_average
             elif filter_attr == "tmdb_year":
                 attr = item.release_date.year if is_movie else item.first_air_date.year
             if util.is_number_filter(attr, modifier, filter_data):
