@@ -36,38 +36,37 @@ class Webhooks:
                 elif webhook.startswith("https://hooks.slack.com/services"):
                     json = self.slack(json)
                 response = self.config.post(webhook, json=json)
-            if response:
-                try:
-                    response_json = response.json()
-                    logger.trace(f"Response: {response_json}")
-                    if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
-                        def remove_from_config(text, hook_cat):
-                            if response_json["details"]["response"] == text:
-                                yaml = YAML(self.config.config_path)
-                                changed = False
-                                if hook_cat in yaml.data and yaml.data["webhooks"][hook_cat]:
-                                    if isinstance(yaml.data["webhooks"][hook_cat], list) and "notifiarr" in yaml.data["webhooks"][hook_cat]:
-                                        changed = True
-                                        yaml.data["webhooks"][hook_cat].pop("notifiarr")
-                                    elif yaml.data["webhooks"][hook_cat] == "notifiarr":
-                                        changed = True
-                                        yaml.data["webhooks"][hook_cat] = None
-                                if changed:
-                                    yaml.save()
-                        remove_from_config("PMM updated trigger is not enabled", "changes")
-                        remove_from_config("PMM created trigger is not enabled", "changes")
-                        remove_from_config("PMM deleted trigger is not enabled", "changes")
-                        remove_from_config("PMM failure trigger is not enabled", "error")
-                        remove_from_config("PMM start/complete trigger is not enabled", "run_start")
-                        remove_from_config("PMM start/complete trigger is not enabled", "run_end")
-                        remove_from_config("PMM app updates trigger is not enabled", "version")
-                    if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
-                        raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
-                    if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
-                        raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
-                except JSONDecodeError:
-                    if response.status_code >= 400:
-                        raise Failed(f"({response.status_code} [{response.reason}])")
+            try:
+                response_json = response.json()
+                logger.trace(f"Response: {response_json}")
+                if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
+                    def remove_from_config(text, hook_cat):
+                        if response_json["details"]["response"] == text:
+                            yaml = YAML(self.config.config_path)
+                            changed = False
+                            if hook_cat in yaml.data and yaml.data["webhooks"][hook_cat]:
+                                if isinstance(yaml.data["webhooks"][hook_cat], list) and "notifiarr" in yaml.data["webhooks"][hook_cat]:
+                                    changed = True
+                                    yaml.data["webhooks"][hook_cat].pop("notifiarr")
+                                elif yaml.data["webhooks"][hook_cat] == "notifiarr":
+                                    changed = True
+                                    yaml.data["webhooks"][hook_cat] = None
+                            if changed:
+                                yaml.save()
+                    remove_from_config("PMM updated trigger is not enabled", "changes")
+                    remove_from_config("PMM created trigger is not enabled", "changes")
+                    remove_from_config("PMM deleted trigger is not enabled", "changes")
+                    remove_from_config("PMM failure trigger is not enabled", "error")
+                    remove_from_config("PMM start/complete trigger is not enabled", "run_start")
+                    remove_from_config("PMM start/complete trigger is not enabled", "run_end")
+                    remove_from_config("PMM app updates trigger is not enabled", "version")
+                if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
+                    raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
+                if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
+                    raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            except JSONDecodeError:
+                if response.status_code >= 400:
+                    raise Failed(f"({response.status_code} [{response.reason}])")
 
     def start_time_hooks(self, start_time):
         if self.run_start_webhooks:
@@ -245,7 +244,11 @@ class Webhooks:
             rows = [
                 [("Start Time", json["start_time"]), ("End Time", json["end_time"]), ("Run Time", json["run_time"])],
                 [("Collections", None)],
-                [("Created", json["collections_created"]), ("Modified", json["collections_modified"]), ("Deleted", json["collections_deleted"])]
+                [
+                    ("Created", json["collections_created"] if json["collections_created"] else "0"),
+                    ("Modified", json["collections_modified"] if json["collections_modified"] else "0"),
+                    ("Deleted", json["collections_deleted"] if json["collections_deleted"] else "0")
+                ]
             ]
             if json["added_to_radarr"]:
                 rows.append([(f"{json['added_to_radarr']} Movies Added To Radarr", None)])
@@ -316,9 +319,7 @@ class Webhooks:
             for row in rows:
                 for col in row:
                     col_name, col_value = col
-                    field = {"name": col_name}
-                    if col_value:
-                        field["value"] = col_value
+                    field = {"name": col_name, "value": col_value if col_value else ""}
                     if len(row) > 1:
                         field["inline"] = True
                     fields.append(field)
