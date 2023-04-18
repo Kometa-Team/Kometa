@@ -45,7 +45,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay", "pmm_poster",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name", "limit",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix"
+    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "url_theme",
@@ -757,6 +757,22 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['tmdb_person_offset']]}")
             self.tmdb_person_offset = util.parse(self.Type, "tmdb_person_offset", self.data, datatype="int", methods=methods, default=0, minimum=0)
 
+        self.tmdb_birthday = None
+        if "tmdb_birthday" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_birthday")
+            logger.debug(f"Value: {data[methods['tmdb_birthday']]}")
+            if not self.data[methods["tmdb_birthday"]]:
+                raise Failed(f"{self.Type} Error: tmdb_birthday attribute is blank")
+            parsed_birthday = util.parse(self.Type, "tmdb_birthday", self.data, datatype="dict", methods=methods)
+            parsed_methods = {m.lower(): m for m in parsed_birthday}
+            self.tmdb_birthday = {
+                "before": util.parse(self.Type, "before", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "after": util.parse(self.Type, "after", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0)
+            }
+
+        first_person = None
+        self.tmdb_person_birthday = None
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
@@ -767,12 +783,16 @@ class CollectionBuilder:
                 valid_names = []
                 for tmdb_person in util.get_list(self.data[methods["tmdb_person"]]):
                     try:
+                        if not first_person:
+                            first_person = tmdb_person
                         person = self.config.TMDb.get_person(util.regex_first_int(tmdb_person, "TMDb Person ID"))
                         valid_names.append(person.name)
                         if person.biography:
                             self.summaries["tmdb_person"] = person.biography
                         if person.profile_url:
                             self.posters["tmdb_person"] = person.profile_url
+                        if person.birthday and not self.tmdb_person_birthday:
+                            self.tmdb_person_birthday = person.birthday
                     except Failed as e:
                         if str(e).startswith("TMDb Error"):
                             logger.error(e)
@@ -786,12 +806,52 @@ class CollectionBuilder:
                                         self.summaries["tmdb_person"] = results[result_index].biography
                                     if results[result_index].profile_url:
                                         self.posters["tmdb_person"] = results[result_index].profile_url
+                                    if results[result_index].birthday and not self.tmdb_person_birthday:
+                                        self.tmdb_person_birthday = results[result_index].birthday
                             except Failed as ee:
                                 logger.error(ee)
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
+
+        if self.tmdb_birthday:
+            if "tmdb_person" not in methods:
+                raise NotScheduled("Skipped because tmdb_person is required when using tmdb_birthday")
+            if not self.tmdb_person_birthday:
+                raise NotScheduled(f"Skipped because No Birthday was found for {first_person}")
+            now = datetime(self.current_time.year, self.current_time.month, self.current_time.day)
+
+            try:
+                delta = datetime(now.year, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
+            except ValueError:
+                delta = datetime(now.year, self.tmdb_person_birthday.month, 28)
+
+            before_delta = delta
+            after_delta = delta
+            if delta < now:
+                try:
+                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
+                except ValueError:
+                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, 28)
+            elif delta > now:
+                try:
+                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
+                except ValueError:
+                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, 28)
+            days_after = (now - after_delta).days
+            days_before = (before_delta - now).days
+            if days_before > self.tmdb_birthday["before"] and days_after > self.tmdb_birthday["after"]:
+                suffix = ""
+                if self.details["delete_not_scheduled"]:
+                    try:
+                        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+                        logger.info(self.delete())
+                        self.deleted = True
+                        suffix = f" and was deleted"
+                    except Failed:
+                        suffix = f" and could not be found to delete"
+                raise NotScheduled(f"Skipped because days until {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_before} > {self.tmdb_birthday['before']} and days after {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_after} > {self.tmdb_birthday['after']}{suffix}")
 
         self.smart_url = None
         self.smart_type_key = None

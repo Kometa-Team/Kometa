@@ -129,7 +129,9 @@ templates:
     optional:
       - tmdb_person
       - tmdb_person_offset
+      - tmdb_birthday
     tmdb_person: <<tmdb_person>>
+    tmdb_birthday: <<tmdb_birthday>>
     tmdb_person_offset: <<tmdb_person_offset_<<key>>>>
     url_poster: <<url_poster_<<key>>>>
     conditionals:
