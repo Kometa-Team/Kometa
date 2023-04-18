@@ -631,8 +631,8 @@ class ConfigFile:
                     default_playlist_file = os.path.abspath(os.path.join(self.default_dir, "playlists.yml"))
                     logger.warning(f"Config Warning: playlist_files attribute is blank using default: {default_playlist_file}")
                     paths_to_check = [default_playlist_file]
-                files = util.load_files(paths_to_check, "playlist_files", schedule=(current_time, self.run_hour, self.ignore_schedules))
-                if not files:
+                files, had_scheduled = util.load_files(paths_to_check, "playlist_files", schedule=(current_time, self.run_hour, self.ignore_schedules))
+                if not files and not had_scheduled:
                     raise Failed("Config Error: No Paths Found for playlist_files")
                 for file_type, playlist_file, temp_vars, asset_directory in files:
                     try:
@@ -831,10 +831,11 @@ class ConfigFile:
                     if lib and "metadata_path" in lib:
                         if not lib["metadata_path"]:
                             raise Failed("Config Error: metadata_path attribute is blank")
-                        files = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
-                        if not files:
+                        files, had_scheduled = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
+                        if files:
+                            params["metadata_path"] = files
+                        elif not had_scheduled:
                             raise Failed("Config Error: No Paths Found for metadata_path")
-                        params["metadata_path"] = files
                     elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
                         params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
                 except Failed as e:
@@ -860,7 +861,7 @@ class ConfigFile:
                     try:
                         if not lib["overlay_path"]:
                             raise Failed("Config Error: overlay_path attribute is blank")
-                        files = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
+                        files, _ = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
                         for file in util.get_list(lib["overlay_path"], split=False):
                             if isinstance(file, dict):
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
@@ -920,7 +921,7 @@ class ConfigFile:
                     if lib and "image_sets" in lib:
                         if not lib["image_sets"]:
                             raise Failed("Config Error: image_sets attribute is blank")
-                        files = util.load_files(lib["image_sets"], "image_sets")
+                        files, _ = util.load_files(lib["image_sets"], "image_sets")
                         if not files:
                             raise Failed("Config Error: No Paths Found for image_sets")
                         params["image_sets"] = files
