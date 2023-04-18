@@ -79,7 +79,7 @@ filters_by_type = {
     "movie_show_episode_track": ["duration"],
     "movie_show_artist_album": ["genre"],
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
-    "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword", "imdb_keyword"],
+    "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_vote_average", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword", "imdb_keyword"],
     "movie_episode": ["director", "producer", "writer"],
     "movie_artist": ["country"],
     "show_artist": ["folder"],
@@ -100,7 +100,7 @@ filters = {
     "track": [item for check, sub in filters_by_type.items() for item in sub if "track" in check]
 }
 tmdb_filters = [
-    "original_language", "origin_country", "tmdb_vote_count", "tmdb_year", "tmdb_keyword", "tmdb_genre",
+    "original_language", "origin_country", "tmdb_vote_count", "tmdb_vote_average", "tmdb_year", "tmdb_keyword", "tmdb_genre",
     "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
 imdb_filters = ["imdb_keyword"]
@@ -118,7 +118,7 @@ boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vi
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = [
-    "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "plays", "duration",
+    "year", "tmdb_year", "critic_rating", "audience_rating", "user_rating", "tmdb_vote_count", "tmdb_vote_average", "plays", "duration",
     "channels", "height", "width", "aspect", "versions", "stinger_rating"]
 number_modifiers = ["", ".not", ".gt", ".gte", ".lt", ".lte"]
 special_filters = [
@@ -135,7 +135,7 @@ year_attributes = plex.year_attributes + ["tmdb_year"]
 number_attributes = plex.number_attributes + ["channels", "height", "width", "tmdb_vote_count"]
 tag_attributes = plex.tag_attributes
 string_attributes = plex.string_attributes + string_filters
-float_attributes = plex.float_attributes + ["aspect"]
+float_attributes = plex.float_attributes + ["aspect", "tmdb_vote_average"]
 boolean_attributes = plex.boolean_attributes + boolean_filters
 smart_invalid = ["collection_order", "builder_level"]
 smart_only = ["collection_filtering"]
