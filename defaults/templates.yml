@@ -66,6 +66,9 @@ templates:
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
       url_poster_<<key>>: <<url_poster>>
+      file_poster_<<key>>: <<file_poster>>
+      url_background_<<key>>: <<url_background>>
+      file_background_<<key>>: <<file_background>>
       visible_library_<<key>>: <<visible_library>>
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
@@ -88,6 +91,9 @@ templates:
       - name_format
       - key_name
       - translation_key
+      - file_poster
+      - url_background
+      - file_background
       - limit
     run_definition:
       - <<use_<<key>>>>
@@ -109,6 +115,9 @@ templates:
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
     url_poster: <<url_poster_<<key>>>>
+    file_poster: <<file_poster_<<key>>>>
+    url_background: <<url_background_<<key>>>>
+    file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
 
   trakt:
