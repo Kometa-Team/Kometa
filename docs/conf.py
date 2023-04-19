@@ -309,6 +309,7 @@ html_theme_options = {
                 ("Audio/Subtitle Language Flags", "defaults/overlays/languages"),
                 ("Languages", "defaults/overlays/languages"),
                 ("MediaStinger", "defaults/overlays/mediastinger"),
+                ("Networks", "defaults/overlays/network"),
                 ("Ratings", "defaults/overlays/ratings"),
                 ("Resolution/Edition", "defaults/overlays/resolution"),
                 ("Ribbon", "defaults/overlays/ribbon"),
