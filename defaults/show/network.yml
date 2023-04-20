@@ -192,7 +192,7 @@ dynamic_collections:
       - Shudder # 18 shows
       - Sky # a lot
       - Smithsonian # 125 shows across networks
-      - Spike TV # 139 shows
+      - Spike # 139 shows
       - Stan # 24 shows
       - Sundance TV # 33 shows
       - Turner Classic Movies # 5 shows
@@ -369,6 +369,8 @@ dynamic_collections:
       Smithsonian:
         - Smithsonian Channel
         - Smithsonian Earth
+      Spike:
+        - Spike TV
       Starz:
         - Starz Encore
       TBS:
