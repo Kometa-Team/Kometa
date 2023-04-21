@@ -15,9 +15,19 @@ templates:
     optional:
       - use_<<key>>
       - allowed_libraries
+      - originals_only
     conditionals:
+      library_type:
+      default: <<library_type>>
+        conditions:
+          - originals_only: true
+          - key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock]
+          - value: "original"
       allowed_streaming:
         conditions:
+          - originals: true
+          - key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, amazon, showtime]
+          - value: False
           - region.not: uk
             key: [all4, britbox, hayu, now]
             value: False
@@ -105,6 +115,7 @@ dynamic_collections:
     template_variables:
       image:
         default: streaming/<<key_name_encoded>>
+      originals_only: false
       allowed_libraries:
         hayu: show
         discovery: show
