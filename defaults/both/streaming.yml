@@ -17,17 +17,17 @@ templates:
       - allowed_libraries
       - originals_only
     conditionals:
-      library_type:
-      default: <<library_type>>
+      url_part:
+        default: <<library_type>>
         conditions:
           - originals_only: true
-          - key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock]
-          - value: "original"
+            key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock]
+            value: "original"
       allowed_streaming:
         conditions:
           - originals: true
-          - key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, amazon, showtime]
-          - value: False
+            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, amazon, showtime]
+            value: False
           - region.not: uk
             key: [all4, britbox, hayu, now]
             value: False
@@ -40,6 +40,8 @@ templates:
       watch_region:
         default: ""
         conditions:
+          - originals: true
+            value: ""
           - region: ca
             key: [amazon, disney, netflix]
             value: "-ca"
@@ -76,7 +78,7 @@ templates:
     cache_builders: 1
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<library_type>>s<<watch_region>>
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<url_part>>s<<watch_region>>
 
 collections:
   Streaming Collections:
@@ -115,7 +117,8 @@ dynamic_collections:
     template_variables:
       image:
         default: streaming/<<key_name_encoded>>
-      originals_only: false
+      originals_only:
+        default: false
       allowed_libraries:
         hayu: show
         discovery: show
