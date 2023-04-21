@@ -116,6 +116,10 @@ data:
 ### Default `mdblist_list`
 
 ```yaml
+trakt_list:
+    mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+    middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
+    trek: https://trakt.tv/users/wdvhucb/lists/star-trek
 mdblist_list:
     avp: https://mdblist.com/lists/plexmetamanager/external/9243
     arrow: https://mdblist.com/lists/plexmetamanager/external/15113
@@ -123,11 +127,8 @@ mdblist_list:
     dcu: https://mdblist.com/lists/plexmetamanager/external/15107
     fast: https://mdblist.com/lists/plexmetamanager/external/9246
     marvel: https://mdblist.com/lists/plexmetamanager/external/15110
-    mcu: https://mdblist.com/lists/plexmetamanager/external/15109
-    middle: https://mdblist.com/lists/plexmetamanager/external/15199
     mummy: https://mdblist.com/lists/plexmetamanager/external/9249
     rocky: https://mdblist.com/lists/plexmetamanager/external/9248
-    trek: https://mdblist.com/lists/plexmetamanager/external/15354
     star: https://mdblist.com/lists/plexmetamanager/external/15105
     askew: https://mdblist.com/lists/plexmetamanager/external/15362
     wizard: https://mdblist.com/lists/plexmetamanager/external/9242
