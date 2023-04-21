@@ -5,6 +5,8 @@ templates:
       sep_style: orig
       collection_section: "00"
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+      sort_prefix: "!"
+      sort_title: <<sort_prefix>><<collection_section>>_!<<title>>
     optional:
       - use_separator
       - collection_mode
@@ -27,7 +29,7 @@ templates:
             value: false
     run_definition: <<use_separator>>
     collection_mode: <<collection_mode>>
-    sort_title: "!<<collection_section>>_!<<title>>"
+    sort_title: <<sort_title>>
     tmdb_movie: <<placeholder_tmdb_movie>>
     tvdb_show: <<placeholder_tvdb_show>>
     imdb_id: <<placeholder_imdb_id>>
