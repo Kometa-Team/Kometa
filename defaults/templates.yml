@@ -62,6 +62,8 @@ templates:
       pre: "_"
       order: ""
       order_<<key>>: <<order>>
+      sort_prefix: "!"
+      sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
@@ -113,7 +115,7 @@ templates:
     visible_shared: <<visible_shared_<<key>>>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
-    sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
+    sort_title: <<sort_title>>
     url_poster: <<url_poster_<<key>>>>
     file_poster: <<file_poster_<<key>>>>
     url_background: <<url_background_<<key>>>>
