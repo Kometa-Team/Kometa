@@ -25,7 +25,7 @@ templates:
             value: "original"
       allowed_streaming:
         conditions:
-          - originals: true
+          - originals_only: true
             key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, amazon, showtime]
             value: False
           - region.not: uk
@@ -40,7 +40,7 @@ templates:
       watch_region:
         default: ""
         conditions:
-          - originals: true
+          - originals_only: true
             value: ""
           - region: ca
             key: [amazon, disney, netflix]
