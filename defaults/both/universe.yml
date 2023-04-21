@@ -73,9 +73,10 @@ dynamic_collections:
         fast: movie
         rocky: movie
         mummy: movie
-        middle: movie
       trakt_list:
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+        trek: https://trakt.tv/users/wdvhucb/lists/star-trek
+        middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
       mdblist_url:
         avp: https://mdblist.com/lists/plexmetamanager/external/16872
         arrow: https://mdblist.com/lists/plexmetamanager/external/15113
@@ -83,10 +84,8 @@ dynamic_collections:
         dcu: https://mdblist.com/lists/plexmetamanager/external/15107
         fast: https://mdblist.com/lists/plexmetamanager/external/9246
         marvel: https://mdblist.com/lists/plexmetamanager/external/15110
-        middle: https://mdblist.com/lists/plexmetamanager/external/15199
         mummy: https://mdblist.com/lists/plexmetamanager/external/9249
         rocky: https://mdblist.com/lists/plexmetamanager/external/9248
-        trek: https://mdblist.com/lists/plexmetamanager/external/15354
         star: https://mdblist.com/lists/plexmetamanager/external/15105
         askew: https://mdblist.com/lists/plexmetamanager/external/15362
         wizard: https://mdblist.com/lists/plexmetamanager/external/9242
