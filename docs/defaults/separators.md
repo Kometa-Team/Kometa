@@ -46,7 +46,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 | Variable                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                  |
 |:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `use_separator`          | **Description:** Turn the [Separator Collection](#use-separators) off.<br>**Values:** `false` to turn of the collection                                                                                                                                                                                                                                                               |
-| `sep_style`              | **Description:** Choose the [Separator Style](#separator-styles).<br>**Default:** `orig`<br>**Values:** `orig`, `red`, `blue`, `green`, `gray`, `purple`, or `stb`                                                                                                                                                                                                                    |         
+| `sep_style`              | **Description:** Choose the [Separator Style](#separator-styles).<br>**Default:** `orig`<br>**Values:** `amethyst`, `aqua`, `blue`, `forest`, `fuchsia`, `gold`, `gray`, `green`, `navy`, `ocean`, `olive`, `orchid`, `orig`, `pink`, `plum`, `purple`, `red`, `rust`, `salmon`, `sand`, `stb`, or `tan`                                                                              |         
 | `sort_prefix`            | **Description:** Changes the prefix of the sort title.<br>**Default:** `!`<br>**Values:** Any String                                                                                                                                                                                                                                                                                  |
 | `sort_title`             | **Description:** Changes the sort title of all collections.<br>**Default:** `<<sort_prefix>><<collection_section>>_!<<title>>`<br>**Values:** Any String                                                                                                                                                                                                                              |
 | `placeholder_tmdb_movie` | **Description:** Add a placeholder Movie to the Separator.<br>**Values:** TMDb Movie ID                                                                                                                                                                                                                                                                                               |
@@ -88,15 +88,30 @@ Multiple styles are available for Separators, to match Plex's "categories" featu
 
 The available styles available are:
 
-| Style    | Value    |
-|:---------|:---------|
-| Original | `orig`   |  
-| Blue     | `blue`   |  
-| Brown    | `stb`    |   
-| Gray     | `gray`   |  
-| Green    | `green`  | 
-| Purple   | `purple` |
-| Red      | `red`    |   
+| Style    | Value      |
+|:---------|:-----------|
+| Original | `orig`     |  
+| Amethyst | `amethyst` |  
+| Aqua     | `aqua`     |   
+| Blue     | `blue`     |  
+| Forest   | `green`    | 
+| Fuchsia  | `fuchsia`  |
+| Gold     | `gold`     |   
+| Gray     | `gray`     |  
+| Green    | `green`    |   
+| Navy     | `navy`     |  
+| Ocean    | `ocean`    | 
+| Olive    | `olive`    |
+| Orchid   | `orchid`   |   
+| Pink     | `pink`     |  
+| Plum     | `plum`     |   
+| Purple   | `purple`   |  
+| Red      | `red`      | 
+| Rust     | `rust`     |
+| Salmon   | `salmon`   |   
+| Sand     | `sand`     |  
+| Brown    | `brown`    |   
+| Tan      | `tan`      |  
 
 This image shows an example separator in each of the above styles
 
