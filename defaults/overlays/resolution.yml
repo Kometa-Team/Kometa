@@ -280,7 +280,7 @@ overlays:
     variables: {key: 480p, alt: "", weight: 10, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   Plus-Dovetail:
-    variables: {key: "", alt: plus, weight: 7, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: "", alt: plus, weight: 7, type: resolution_dovetail, all: true, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   DV-Dovetail:
     variables: {key: "", alt: dv, weight: 5, type: resolution_dovetail, all: true, allowed_libraries: movie}
@@ -420,7 +420,7 @@ overlays:
     variables: {key: 480p, alt: "", weight: 10, type: resolution}
     template: [name: resolution, name: standard]
   Plus:
-    variables: {key: "", alt: plus, weight: 7, type: resolution}
+    variables: {key: "", alt: plus, weight: 7, type: resolution, all: true}
     template: [name: resolution, name: standard]
   DV:
     variables: {key: "", alt: dv, weight: 5, type: resolution, all: true}
