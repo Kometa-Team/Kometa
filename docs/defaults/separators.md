@@ -110,7 +110,7 @@ The available styles available are:
 | Rust     | `rust`     |
 | Salmon   | `salmon`   |   
 | Sand     | `sand`     |  
-| Brown    | `brown`    |   
+| Brown    | `stb`      |   
 | Tan      | `tan`      |  
 
 This image shows an example separator in each of the above styles
