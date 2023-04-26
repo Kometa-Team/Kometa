@@ -35,7 +35,8 @@ class Convert:
                     self._imdb_to_anidb[im_id] = anidb_id
             if "tvdb_id" in ids:
                 self._anidb_to_tvdb[anidb_id] = int(ids["tvdb_id"])
-                self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
+                if "tvdb_season" in ids and ids["tvdb_season"] == 1:
+                    self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
 
     def imdb_to_anidb(self, imdb_id):
         if imdb_id in self._imdb_to_anidb:
