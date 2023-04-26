@@ -1042,8 +1042,16 @@ class MetadataFile(DataFile):
                         methods["title_override"] = methods.pop("post_format_override")
                     if "pre_format_override" in methods:
                         methods["key_name_override"] = methods.pop("pre_format_override")
-                    title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "title_override" in methods else {}
-                    key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict") if "key_name_override" in methods else {}
+                    title_override = {}
+                    if "title_override" in self.temp_vars:
+                        title_override = util.parse("Config", "title_override", self.temp_vars["title_override"], parent="template_variables", datatype="strdict")
+                    elif "title_override" in methods:
+                        title_override = util.parse("Config", "title_override", dynamic, parent=map_name, methods=methods, datatype="strdict")
+                    key_name_override = {}
+                    if "key_name_override" in self.temp_vars:
+                        key_name_override = util.parse("Config", "key_name_override", self.temp_vars["key_name_override"], parent="template_variables", datatype="strdict")
+                    elif "key_name_override" in methods:
+                        key_name_override = util.parse("Config", "key_name_override", dynamic, parent=map_name, methods=methods, datatype="strdict")
                     test_override = []
                     for k, v in key_name_override.items():
                         if v in test_override:
