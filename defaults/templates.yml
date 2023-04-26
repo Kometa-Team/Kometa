@@ -99,11 +99,11 @@ templates:
       - url_background
       - file_background
       - limit
-      - mapping_name
+      - name_mapping
     run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
-    mapping_name: <<mapping_name>>
+    name_mapping: <<name_mapping>>
     translation_key: <<translation_key>>
     key_name: <<key_name>>
     summary: <<summary_<<key>>>>
