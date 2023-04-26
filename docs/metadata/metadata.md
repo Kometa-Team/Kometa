@@ -131,7 +131,7 @@ metadata:
 
 ### Alt Title
 
-To define an alternative title that the item may be called when searching use `alt_title`. When a title is found matching `alt_title` then the name of the itme will be changed to match the mapping name or `title` if specified.
+To define an alternative title that the item may be called when searching use `alt_title`. When a title is found matching `alt_title` then the name of the item will be changed to match the mapping name or `title` if specified.
 
 For Example, the 2007 movie Halloween shares a name with another movie in the Halloween franchise so this changes the title to `Halloween (Rob Zombie)` if the title is currently Halloween.
 
