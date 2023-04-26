@@ -21,12 +21,12 @@ templates:
         default: <<library_type>>
         conditions:
           - originals_only: true
-            key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock]
+            key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock, amazon]
             value: "original"
       allowed_streaming:
         conditions:
           - originals_only: true
-            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, amazon, showtime]
+            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, showtime]
             value: False
           - region.not: uk
             key: [all4, britbox, hayu, now]
