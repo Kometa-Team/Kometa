@@ -43,8 +43,11 @@ metadata:
           21:
             summary: The Epic Series Final of Avatar The Last Airbender
   "Avatar: The Legend of Korra":
+    match:
+      title: 
+        - "Avatar: The Legend of Korra"
+        - The Legend of Korra
     sort_title: Avatar 02
-    alt_title: The Legend of Korra
     original_title: The Legend of Korra
     seasons:
       1:
@@ -57,14 +60,48 @@ metadata:
         title: "Book Four: Balance"
 ```
 
-## Shows
+## Matching Shows
 
-Each metadata definition is defined by the mapping name which can link to a show in multiple ways.
+The `match` attribute is used to match shows within Plex to that definition within the Metadata file. One definition can match and edit multiple shows. The available matching options are outlined below.
 
-* Mapping name must match the show name in Plex exactly unless an `alt_title` is specified.
-* Mapping name must match the TVDb ID or IMDb ID mapped to the show.
+| Attribute                      | Allowed Values                                                                                                    |
+|:-------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| `title`<sup>1</sup>            | Only matches shows that exactly match the show's Title. Can be a list (only one needs to match).                  |
+| `year`                         | Only matches shows that were released in the given year.                                                          |
+| `mapping_id`<sup>2</sup>       | Only matches shows that have the given TVDb or IMDb ID.                                                           |
 
-**Note:** to search for a show titled with a number surround the number in quotes like in the example below.
+1. When `title` is not provided and the mapping name was not specified as an ID, the default behaviour is to use the mapping name as `title` for matching.
+2. When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the mapping name as `mapping_id` for matching.
+
+### Examples
+
+Below are some examples on how shows can be matched.
+
+#### Example 1 - `title` and `mapping_id` 
+
+The below example shows how `title` and `mapping_id` can be used to match shows.
+
+```yaml
+metadata:
+  show1:                   # Matches via the title "Game of Thrones"
+    match:
+      title: Game of Thrones
+    edits...
+  show2:                   # Matches via TVDb ID: 366524
+    match:
+      mapping_id: 366524
+    edits...
+  show3:                   # Matches via IMDb ID: tt10234724
+    match:
+      mapping_id: tt10234724
+    edits...
+  show4:                   # Matches via the title "24" 
+    match:
+      title: 24
+    edits...
+```
+
+The Mapping Name can also be used to reduce line-count, as shown here:
 
 ```yaml
 metadata:
@@ -78,17 +115,27 @@ metadata:
     edits...
 ```
 
-### Seasons
+**Note:** to search for a show titled with a number from the mapping name you must surround the number in quotes like in the example below. Otherwise, it will look for the show associated with that TVDb ID.
 
-To edit the metadata of a particular Season in a Show use the `seasons` attribute on its show.
+#### Example 2 - `title` and `year`
 
-The mapping name is the season number (use 0 for specials) or the season name.
+The below example shows how `title` and `year` can be used to match shows. 
 
-### Episodes
+In this example, there are two shows in the library called "Vikings", so the `year` attribute is used to identify which show is being matched.
 
-To edit the metadata of a particular Episode in a Season use the `episodes` attribute on its season.
-
-The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.
+```yaml
+metadata:
+  Vikings (2012):                   # Matches via the title "Vikings" released in 2012
+    match:
+      title: Vikings
+      year: 2012
+    edits...
+  Vikings (2013):                   # Matches via the title "Vikings" released in 2013
+    match:
+      title: Vikings
+      year: 2013
+    edits...
+```
 
 ## Metadata Edits
 
@@ -96,37 +143,32 @@ The available attributes for editing shows, seasons, and episodes are as follows
 
 ### Special Attributes
 
-| Attribute         | Values                                                                                                                                                                                                                                          |  Shows   | Seasons  | Episodes |
+| Attribute         | Description                                                                                                                                                                                                                                     |  Shows   | Seasons  | Episodes |
 |:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|
-| `title`           | Title if different from the mapping value useful when you have multiple shows with the same name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                | &#9989;  | &#9989;  | &#9989;  |
-| `alt_title`       | Alternative title to look for and then change to the mapping name. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                                               | &#9989;  | &#10060; | &#10060; |
-| `year`            | Year of show for better identification. See the [Metadata Page](../metadata.md#metadata-attributes) for how searching for files works.                                                                                                          | &#9989;  | &#10060; | &#10060; |
-| `tmdb_show`       | TMDb Show ID to use for metadata useful for miniseries that have been compiled into a movie                                                                                                                                                     | &#9989;  | &#10060; | &#10060; |
-| `tmdb_movie`      | TMDb Movie ID to use for metadata useful for movies that have been split into segments                                                                                                                                                          | &#9989;  | &#10060; | &#10060; |
 | `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../../home/guides/formula) for more information.                                                                                                 | &#9989;  | &#10060; | &#10060; |
-| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`                                                                                               | &#9989;  | &#10060; | &#10060; |
-| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`                                                                                                         | &#9989;  | &#10060; | &#10060; |
-| `seasons`         | Mapping to define Seasons                                                                                                                                                                                                                       | &#9989;  | &#10060; | &#10060; |
-| `episodes`        | Mapping to define Episodes                                                                                                                                                                                                                      | &#10060; | &#9989;  | &#10060; |
+| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                              | &#9989;  | &#10060; | &#10060; |
+| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                        | &#9989;  | &#10060; | &#10060; |
+| `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                          | &#9989;  | &#10060; | &#10060; |
+| `episodes`        | Attribute used to edit episode metadata. The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.                                                               | &#10060; | &#9989;  | &#10060; |
 | `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false` | &#9989;  | &#10060; | &#10060; |
 | `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                            | &#9989;  | &#10060; | &#10060; |
 | `update_episodes` | Used to specify if this definition's episodes metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                           | &#9989;  | &#10060; | &#10060; |
 
 ### General Attributes
 
-| Attribute              | Values                                                        |  Shows   | Seasons  | Episodes |
-|:-----------------------|:--------------------------------------------------------------|:--------:|:--------:|:--------:|
-| `title`                | Text to change Title                                          | &#10060; | &#9989;  | &#9989;  |
-| `sort_title`           | Text to change Sort Title                                     | &#9989;  | &#10060; | &#9989;  |
-| `original_title`       | Text to change Original Title                                 | &#9989;  | &#10060; | &#10060; |
-| `originally_available` | Date to change Originally Available<br>**Format:** YYYY-MM-DD | &#9989;  | &#10060; | &#9989;  |
-| `content_rating`       | Text to change Content Rating                                 | &#9989;  | &#10060; | &#9989;  |
-| `user_rating`          | Number to change User Rating                                  | &#9989;  | &#9989;  | &#9989;  |
-| `audience_rating`      | Number to change Audience Rating                              | &#9989;  | &#10060; | &#9989;  |
-| `critic_rating`        | Number to change Critic Rating                                | &#9989;  | &#10060; | &#9989;  |
-| `studio`               | Text to change Studio                                         | &#9989;  | &#10060; | &#10060; |
-| `tagline`              | Text to change Tagline                                        | &#9989;  | &#10060; | &#10060; |
-| `summary`              | Text to change Summary                                        | &#9989;  | &#9989;  | &#9989;  |
+| Attribute              | Allowed Values                                                 |  Shows  | Seasons  | Episodes |
+|:-----------------------|:---------------------------------------------------------------|:-------:|:--------:|:--------:|
+| `title`                | Text to change Title.                                          | &#9989; | &#9989;  | &#9989;  |
+| `sort_title`           | Text to change Sort Title.                                     | &#9989; | &#10060; | &#9989;  |
+| `original_title`       | Text to change Original Title.                                 | &#9989; | &#10060; | &#10060; |
+| `originally_available` | Date to change Originally Available.<br>**Format:** YYYY-MM-DD | &#9989; | &#10060; | &#9989;  |
+| `content_rating`       | Text to change Content Rating.                                 | &#9989; | &#10060; | &#9989;  |
+| `user_rating`          | Number to change User Rating.                                  | &#9989; | &#9989;  | &#9989;  |
+| `audience_rating`      | Number to change Audience Rating.                              | &#9989; | &#10060; | &#9989;  |
+| `critic_rating`        | Number to change Critic Rating.                                | &#9989; | &#10060; | &#9989;  |
+| `studio`               | Text to change Studio.                                         | &#9989; | &#10060; | &#10060; |
+| `tagline`              | Text to change Tagline.                                        | &#9989; | &#10060; | &#10060; |
+| `summary`              | Text to change Summary.                                        | &#9989; | &#9989;  | &#9989;  |
 
 ### Tag Attributes
 
@@ -134,28 +176,28 @@ You can add `.remove` to any tag attribute to only remove those tags i.e. `genre
 
 You can add `.sync` to any tag attribute to sync all tags vs just appending the new ones i.e. `genre.sync`.
 
-| Attribute    | Values                                              |  Shows   | Seasons  | Episodes |
-|:-------------|:----------------------------------------------------|:--------:|:--------:|:--------:|
-| `director`   | List or comma-separated text of each Director Tag   | &#10060; | &#10060; | &#9989;  |
-| `genre`      | List or comma-separated text of each Genre Tag      | &#9989;  | &#10060; | &#10060; |
-| `writer`     | List or comma-separated text of each Writer Tag     | &#10060; | &#10060; | &#9989;  |
-| `collection` | List or comma-separated text of each Collection Tag | &#9989;  | &#9989;  | &#9989;  |
-| `label`      | List or comma-separated text of each Label Tag      | &#9989;  | &#9989;  | &#9989;  |
+| Attribute    | Allowed Values                                       |  Shows   | Seasons  | Episodes |
+|:-------------|:-----------------------------------------------------|:--------:|:--------:|:--------:|
+| `director`   | List or comma-separated text of each Director Tag.   | &#10060; | &#10060; | &#9989;  |
+| `genre`      | List or comma-separated text of each Genre Tag.      | &#9989;  | &#10060; | &#10060; |
+| `writer`     | List or comma-separated text of each Writer Tag.     | &#10060; | &#10060; | &#9989;  |
+| `collection` | List or comma-separated text of each Collection Tag. | &#9989;  | &#9989;  | &#9989;  |
+| `label`      | List or comma-separated text of each Label Tag.      | &#9989;  | &#9989;  | &#9989;  |
 
 ### Image Attributes
 
-| Attribute         | Values                                          |  Shows  | Seasons | Episodes |
-|:------------------|:------------------------------------------------|:-------:|:-------:|:--------:|
-| `url_poster`      | URL of image publicly available on the internet | &#9989; | &#9989; | &#9989;  |
-| `file_poster`     | Path to image in the file system                | &#9989; | &#9989; | &#9989;  |
-| `url_background`  | URL of image publicly available on the internet | &#9989; | &#9989; | &#9989;  |
-| `file_background` | Path to image in the file system                | &#9989; | &#9989; | &#9989;  |
+| Attribute         | Allowed Values                                   |  Shows  | Seasons | Episodes |
+|:------------------|:-------------------------------------------------|:-------:|:-------:|:--------:|
+| `url_poster`      | URL of image publicly available on the internet. | &#9989; | &#9989; | &#9989;  |
+| `file_poster`     | Path to image in the file system.                | &#9989; | &#9989; | &#9989;  |
+| `url_background`  | URL of image publicly available on the internet. | &#9989; | &#9989; | &#9989;  |
+| `file_background` | Path to image in the file system.                | &#9989; | &#9989; | &#9989;  |
 
 ### Advanced Attributes
 
 All these attributes only work with Shows.
 
-| Attribute                        | Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Attribute                        | Allowed Values                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:---------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `episode_sorting`                | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`oldest`</td><td>Oldest first</td></tr><tr><td>`newest`</td><td>Newest first</td></tr></tbody></table>                                                                                                                                                                                                                                                                        |
 | `keep_episodes`                  | <table class="clearTable"><tbody><tr><td>`all`</td><td>All episodes</td></tr><tr><td>`5_latest`</td><td>5 latest episodes</td></tr><tr><td>`3_latest`</td><td>3 latest episodes</td></tr><tr><td>`latest`</td><td>Latest episodes</td></tr><tr><td>`past_3`</td><td>Episodes added in the past 3 days</td></tr><tr><td>`past_7`</td><td>Episodes added in the past 7 days</td></tr><tr><td>`past_30`</td><td>Episodes added in the past 30 days</td></tr></tbody></table> |
@@ -165,4 +207,4 @@ All these attributes only work with Shows.
 | `metadata_language`<sup>1</sup>  | `default`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                       |
 | `use_original_title`<sup>1</sup> | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  |
 
-<sup>1</sup> Must be using the **New Plex TV Agent**
+1. Must be using the **New Plex TV Agent**

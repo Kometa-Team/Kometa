@@ -1436,22 +1436,29 @@ class MetadataFile(DataFile):
                         elif library_type != "true" and self.library and library_type != self.library.Plex.type:
                             raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
+                match_data = None
+                match_methods = {}
+                if "match" in methods:
+                    logger.debug("")
+                    logger.debug("Validating Method: match")
+                    match_data = meta[methods["match"]]
+                    match_methods = {mm.lower(): mm for mm in match_data}
+
                 mapping_id = None
-                if "mapping_id" in methods and not self.library.is_music:
+                item = []
+                if ("mapping_id" in match_methods or "mapping_id" in methods) and not self.library.is_music:
                     logger.debug("")
                     logger.debug("Validating Method: mapping_id")
-                    if not meta[methods["mapping_id"]]:
+                    value = match_data[match_methods["mapping_id"]] if "mapping_id" in match_methods else meta[methods["mapping_id"]]
+                    if not value:
                         raise Failed(f"{self.type_str} Error: mapping_id attribute is blank")
-                    logger.debug(f"Value: {meta[methods['mapping_id']]}")
-                    mapping_id = meta[methods["mapping_id"]]
+                    logger.debug(f"Value: {value}")
+                    mapping_id = value
 
-                if not mapping_id and (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
+                if mapping_id is None and (isinstance(mapping_name, int) or mapping_name.startswith("tt")) and not self.library.is_music:
                     mapping_id = mapping_name
 
-                item = []
-                if not mapping_id:
-                    title = mapping_name
-                else:
+                if mapping_id is not None:
                     if str(mapping_id).startswith("tt"):
                         id_type = "IMDb"
                     else:
@@ -1470,61 +1477,69 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
                         continue
-                    title = None
-
-                if "title" in methods:
-                    if meta[methods["title"]] is None:
-                        logger.error(f"{self.type_str} Error: title attribute is blank")
-                    else:
-                        title = meta[methods["title"]]
 
                 blank_edition = False
                 edition_titles = []
                 edition_contains = []
                 if self.library.is_movie:
-                    if "blank_edition" in methods:
+                    if "blank_edition" in match_methods or "blank_edition" in methods:
                         logger.debug("")
                         logger.debug("Validating Method: blank_edition")
-                        logger.debug(f"Value: {meta[methods['blank_edition']]}")
-                        blank_edition = util.parse(self.type_str, "blank_edition", meta, datatype="bool", methods=methods, default=False)
-                    if "edition_filter" in methods:
+                        value = match_data[match_methods["blank_edition"]] if "blank_edition" in match_methods else meta[methods["blank_edition"]]
+                        logger.debug(f"Value: {value}")
+                        blank_edition = util.parse(self.type_str, "blank_edition", value, datatype="bool", default=False)
+                    if "edition" in match_methods or "edition_filter" in methods:
                         logger.debug("")
                         logger.debug("Validating Method: edition_filter")
-                        logger.debug(f"Value: {meta[methods['edition_filter']]}")
-                        edition_titles = util.parse(self.type_str, "edition_filter", meta, datatype="strlist", methods=methods)
-                    if "edition_contains" in methods:
+                        value = match_data[match_methods["edition"]] if "edition" in match_methods else meta[methods["edition_filter"]]
+                        logger.debug(f"Value: {value}")
+                        edition_titles = util.parse(self.type_str, "edition", value, datatype="strlist")
+                    if "edition_contains" in match_methods or "edition_contains" in methods:
                         logger.debug("")
                         logger.debug("Validating Method: edition_contains")
-                        logger.debug(f"Value: {meta[methods['edition_contains']]}")
-                        edition_contains = util.parse(self.type_str, "edition_contains", meta, datatype="strlist", methods=methods)
+                        value = match_data[match_methods["edition_contains"]] if "edition_contains" in match_methods else meta[methods["edition_contains"]]
+                        logger.debug(f"Value: {value}")
+                        edition_contains = util.parse(self.type_str, "edition_contains", value, datatype="strlist")
 
                 if not item:
-                    year = None
-                    if "year" in methods and not self.library.is_music:
-                        if meta[methods["year"]] is None:
-                            raise Failed(f"{self.type_str} Error: year attribute is blank")
-                        try:
-                            year_value = int(str(meta[methods["year"]]))
-                            if 1800 <= year_value <= next_year:
-                                year = year_value
-                        except ValueError:
-                            pass
-                        if year is None:
-                            raise Failed(f"{self.type_str} Error: year attribute must be an integer between 1800 and {next_year}")
-                    item = self.library.search_item(title, year=year)
+                    titles = []
+                    if "title" in match_methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: title")
+                        value = match_data[match_methods["title"]]
+                        if not value:
+                            raise Failed(f"{self.type_str} Error: title attribute is blank")
+                        titles.extend(util.parse(self.type_str, "title", value, datatype="strlist"))
 
-                    if not item and "alt_title" in methods:
-                        if meta[methods["alt_title"]] is None:
-                            logger.error(f"{self.type_str} Error: alt_title attribute is blank")
-                        else:
-                            alt_title = meta[methods["alt_title"]]
-                            item = self.library.search_item(alt_title, year=year)
-                            if not item:
-                                item = self.library.search_item(alt_title)
+                    if not titles:
+                        titles.append(mapping_name)
+
+                    if "alt_title" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: alt_title")
+                        value = meta[methods["alt_title"]]
+                        if not value:
+                            raise Failed(f"{self.type_str} Error: alt_title attribute is blank")
+                        titles.append(value)
+
+                    year = None
+                    if "year" in match_methods or "year" in methods:
+                        logger.debug("")
+                        logger.debug("Validating Method: year")
+                        value = match_data[match_methods["year"]] if "year" in match_methods else meta[methods["year"]]
+                        if not year:
+                            raise Failed(f"{self.type_str} Error: year attribute is blank")
+                        logger.debug(f"Value: {value}")
+                        year = util.parse(self.type_str, "year", value, datatype="int", minimum=1800, maximum=next_year)
+
+                    for title in titles:
+                        temp_items = self.library.search_item(title, year=year)
+                        item.extend(temp_items)
 
                     if not item:
-                        logger.error(f"Skipping {mapping_name}: Item {title} not found")
+                        logger.error(f"Skipping {mapping_name}: Item not found")
                         continue
+
                 if not isinstance(item, list):
                     item = [item]
                 if blank_edition or edition_titles or edition_contains:
@@ -1569,7 +1584,7 @@ class MetadataFile(DataFile):
                         logger.info("")
                         logger.separator(f"Updating {i.title}", space=False, border=False)
                         logger.info("")
-                        self.update_metadata_item(i, title, mapping_name, meta, methods)
+                        self.update_metadata_item(i, mapping_name, meta, methods)
                     except Failed as e:
                         logger.error(e)
             except NotScheduled as e:
@@ -1577,7 +1592,7 @@ class MetadataFile(DataFile):
             except Failed as e:
                 logger.error(e)
 
-    def update_metadata_item(self, item, title, mapping_name, meta, methods):
+    def update_metadata_item(self, item, mapping_name, meta, methods):
 
         updated = False
 
@@ -1674,8 +1689,7 @@ class MetadataFile(DataFile):
             genres = tmdb_item.genres
 
         #item.batchEdits()
-        if title:
-            add_edit("title", item, meta, methods, value=title)
+        add_edit("title", item, meta, methods)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
             if "edition" in methods and not self.library.plex_pass:
