@@ -5,14 +5,14 @@ Updated tmdbapis requirement to 1.2.0
 Updated requests requirement to 2.29.0
 
 # New Features
-Added `tmdb_vote_average` as a [Filter](https://metamanager.wiki/en/nightly/metadata/filters.html#id7). thanks @tenshiak
-Added `tmdb_birthday` [Detail](https://metamanager.wiki/en/nightly/metadata/details/metadata.html) which controls if a collection is visible based on a `tmdb_person`'s birthday.
+Added `tmdb_vote_average` as a [Filter](https://metamanager.wiki/en/latest/metadata/filters.html#id7). thanks @tenshiak
+Added `tmdb_birthday` [Detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html) which controls if a collection is visible based on a `tmdb_person`'s birthday.
 
 # New Defaults Features
 New Default Translations of Danish, Dutch, Italian, Norwegian Bokmål, Portuguese (Brazil), and Spanish.
-New [Network](https://metamanager.wiki/en/nightly/defaults/overlays/network.html) Default Overlay.
-New [Content Rating US]() and [Content Rating UK]() Default Overlay.
-Add `file_poster`, `file_poster_<<key>>`, `url_background`, `url_background_<<key>>`, `file_background`, `file_background_<<key>>`, `sort_prefix`, `sort_title`, and `name_mapping` as [Collection Variables](https://metamanager.wiki/en/nightly/defaults/collection_variables.html).
+New [Network](https://metamanager.wiki/en/latest/defaults/overlays/network.html) Default Overlay.
+New Content Rating US [Movies](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_movie.html)/[Shows](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_show.html) and [Content Rating UK](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_uk.html) Default Overlay.
+Add `file_poster`, `file_poster_<<key>>`, `url_background`, `url_background_<<key>>`, `file_background`, `file_background_<<key>>`, `sort_prefix`, `sort_title`, and `name_mapping` as [Collection Variables](https://metamanager.wiki/en/latest/defaults/collection_variables.html).
 Added new Separator Color Styles.
 
 # Bug Fixes
