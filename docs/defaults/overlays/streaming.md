@@ -55,20 +55,19 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            | Default     |
-|:--------------------|:------------|
-| `horizontal_offset` | `15`        |
-| `horizontal_align`  | `left`      |
-| `vertical_offset`   | `150`       |
-| `vertical_align`    | `bottom`    |
-| `back_color`        | `#00000099` |
-| `back_radius`       | `30`        |
-| `back_width`        | `305`       |
-| `back_height`       | `105`       |
-
-| Variable                     | Description & Values                                                                                         |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+| Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                     |
+|:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `horizontal_offset`          | **Description:** Change the horizontal offset.<br>**Default Value:** `15`                                                                                                                                                                                                                                                                |
+| `horizontal_align`           | **Description:** Change the horizontal alignment.<br>**Default Value:** `left`                                                                                                                                                                                                                                                           |
+| `vertical_offset`            | **Description:** Change the vertical offset.<br>**Default Value:** `150`                                                                                                                                                                                                                                                                 |
+| `vertical_align`             | **Description:** Change the vertical alignment.<br>**Default Value:** `bottom`                                                                                                                                                                                                                                                           |
+| `back_color`                 | **Description:** Change the back color.<br>**Default Value:** `#00000099`                                                                                                                                                                                                                                                                |
+| `back_radius`                | **Description:** Change the back (lozenge) radius .<br>**Default Value:** `30`                                                                                                                                                                                                                                                           |
+| `back_width`                 | **Description:** Change the back (lozenge) width.<br>**Default Value:** `305`                                                                                                                                                                                                                                                            |
+| `back_height`                | **Description:** Change the back (lozenge) height.<br>**Default Value:** `105`                                                                                                                                                                                                                                                           |
+| `region`                     | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                              |
+| `originals_only`             | **Description:** Changes Streaming Service overlays to only apply to original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces overlays for `amazon`, `appletv`, `disney`, `hbomax`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false`       |
+| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                             |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
@@ -91,8 +90,7 @@ libraries:
     overlay_path:
       - pmm: streaming
         template_variables:
-          region: ca
+          originals_only: true
           use_peacock: false
-          use_youtube: false
-          weight_youtube: 5
+          weight_netflix: 100
 ```
