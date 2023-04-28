@@ -1512,7 +1512,7 @@ class MetadataFile(DataFile):
                         titles.extend(util.parse(self.type_str, "title", value, datatype="strlist"))
 
                     if not titles:
-                        titles.append(mapping_name)
+                        titles.append(str(mapping_name))
 
                     if "alt_title" in methods:
                         logger.debug("")
