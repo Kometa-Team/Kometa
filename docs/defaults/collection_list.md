@@ -60,7 +60,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Producer](movie/producer)                                                          | `producer`           | James Cameron (Producer), Reese Witherspoon (Producer) |      &#9989;      |     &#10060;     |
 | [Resolution](both/resolution)                                                       | `resolution`         | 4K Movies, 1080p Movies, 720p Movies                   |      &#9989;      |     &#9989;      |
 | [Seasonal](movie/seasonal)                                                          | `seasonal`           | Easter, Christmas                                      |      &#9989;      |     &#10060;     |
-| [Streaming](both/streaming)                                                         | `streaming`          | Disney+ Movies, HBO Max Shows                          |      &#9989;      |     &#9989;      |
+| [Streaming](both/streaming)                                                         | `streaming`          | Disney+ Movies, Max Shows                          |      &#9989;      |     &#9989;      |
 | [Studio](both/studio)                                                               | `studio`             | DreamWorks Studios, Walt Disney Pictures               |      &#9989;      |     &#9989;      |
 | [Anime Studio](both/studio_anime)                                                   | `studio_anime`       | Bones, Studio Ghibli, Toei Animation                   |      &#9989;      |     &#9989;      |
 | [Subtitle Language](both/subtitle_language)                                         | `subtitle_language`  | German Subtitles, Swedish Subtitles                    |      &#9989;      |     &#9989;      |

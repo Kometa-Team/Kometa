@@ -22,7 +22,7 @@ Supported Library Types: Movie, Show
 | `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.                                |
 | `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.                            |
 | `hayu Shows`               | `hayu`        | Collection of Shows Streaming on hayu.                                      |
-| `HBO Max Movies/Shows`     | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.                            |
+| `Max Movies/Shows`     | `hbomax`      | Collection of Movies/Shows Streaming on Max.                            |
 | `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.                               |
 | `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.                            |
 | `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.                                |

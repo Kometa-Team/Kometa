@@ -2083,7 +2083,7 @@ dynamic_collections:
       bet: BET+
       britbox: BritBox
       disney: Disney+
-      hbo-max: HBO Max
+      hbo-max: Max
       hulu: Hulu
       netflix: Netflix
       now: NOW
