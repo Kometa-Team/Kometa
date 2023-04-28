@@ -134,6 +134,8 @@ class AniDB:
 
     def _request(self, url, params=None, data=None):
         logger.trace(f"URL: {url}")
+        if params:
+            logger.trace(f"Params: {params}")
         if data:
             return self.config.post_html(url, data=data, headers=util.header(self.language))
         else:

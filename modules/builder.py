@@ -1664,13 +1664,19 @@ class CollectionBuilder:
     def _tautulli(self, method_name, method_data):
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
-            self.builders.append((method_name, {
+            final_dict = {
                 "list_type": "popular" if method_name == "tautulli_popular" else "watched",
                 "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, default=30, parent=method_name),
                 "list_size": util.parse(self.Type, "list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
-                "list_buffer": util.parse(self.Type, "list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name),
                 "list_minimum": util.parse(self.Type, "list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
-            }))
+            }
+            if self.library.Tautulli.has_section:
+                final_dict["list_buffer"] = 0
+            elif "list_buffer" in dict_methods:
+                final_dict["list_buffer"] = util.parse(self.Type, "list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name)
+            else:
+                final_dict["list_buffer"] = final_dict["list_size"] * 3
+            self.builders.append((method_name, final_dict))
 
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
