@@ -89,8 +89,8 @@ overlays:
     variables: {key: ABS-CBN, weight: 10}
     template: [name: networks]
 
-  AcornTV:
-    variables: {key: AcornTV, weight: 10}
+  Acorn TV:
+    variables: {key: Acorn TV, weight: 10}
     template: [name: networks]
 
   Adult Swim:
