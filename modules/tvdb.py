@@ -87,7 +87,7 @@ class TVDbObj:
                 released = parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]")
 
             try:
-                self.release_date = datetime.strptime(released, "%B %d, %Y") if released else released
+                self.release_date = datetime.strptime(released, "%B %d, %Y") if released else released # noqa
             except ValueError:
                 self.release_date = None
 

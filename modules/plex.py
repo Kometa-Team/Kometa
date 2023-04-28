@@ -764,9 +764,9 @@ class Plex(Library):
             try:
                 tag = next(f for f in self.Plex.listFilters(libtype) if f.filter == tag)
             except StopIteration:
-                availableFilters = [f.filter for f in self.Plex.listFilters(libtype)]
+                available_filters = [f.filter for f in self.Plex.listFilters(libtype)]
                 raise NotFound(f'Unknown filter field "{tag}" for libtype "{libtype}". '
-                               f'Available filters: {availableFilters}') from None
+                               f'Available filters: {available_filters}') from None
         items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
         if tag.key.endswith("/collection?type=4"):
             keys = [k.key for k in items]

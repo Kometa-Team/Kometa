@@ -23,7 +23,7 @@ class Radarr:
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
-            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"]) # noqa
             self.profiles = self.api.quality_profile()
         except ArrException as e:
             raise Failed(e)

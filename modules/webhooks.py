@@ -232,9 +232,9 @@ class Webhooks:
                         for col in row:
                             section["fields"].append({"type": "mrkdwn", "text": col[0]})
                             section["fields"].append({"type": "plain_text", "text": col[1]})
-                        new_json["blocks"].append(section)
+                        new_json["blocks"].append(section) # noqa
                 else:
-                    new_json["blocks"].append({"type": "divider"})
+                    new_json["blocks"].append({"type": "divider"}) # noqa
         return new_json
 
     def discord(self, json):

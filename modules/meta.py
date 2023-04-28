@@ -1,4 +1,4 @@
-import math, operator, os, re, requests
+import math, operator, os, re
 from datetime import datetime
 from modules import plex, ergast, util
 from modules.util import Failed, NotScheduled, YAML
@@ -329,14 +329,14 @@ class DataFile:
                     default = {}
                     if all_init_defaults:
                         var_default = {replace_var(dk, variables): replace_var(dv, variables) for dk, dv in all_init_defaults.items() if dk not in variables}
-                        for dkey, dvalue in var_default.items():
-                            final_key = replace_var(dkey, var_default)
+                        for d_key, d_value in var_default.items():
+                            final_key = replace_var(d_key, var_default)
                             if final_key not in optional and final_key not in variables and final_key not in conditionals:
-                                default[final_key] = dvalue
-                                if "<<" in str(dvalue):
-                                    default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', dvalue)
+                                default[final_key] = d_value
+                                if "<<" in str(d_value):
+                                    default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', d_value)
                                 else:
-                                    default[f"{final_key}_encoded"] = util.quote(dvalue)
+                                    default[f"{final_key}_encoded"] = util.quote(d_value)
 
                     if "optional" in template:
                         if template["optional"]:
@@ -483,7 +483,7 @@ class DataFile:
                             elif f"<<{var}" in str(og_txt):
                                 final = str(og_txt).replace(f"<<{var}>>", str(actual_value)) if f"<<{var}>>" in str(og_txt) else str(og_txt)
                                 if f"<<{var}" in final:
-                                    match = re.search(f"<<({var}([+-])(\d+))>>", final)
+                                    match = re.search(f"<<({var}([+-])(\\d+))>>", final)
                                     if match:
                                         try:
                                             final = final.replace(f"<<{match.group(1)}>>", str(int(actual_value) + (int(match.group(3)) * (-1 if match.group(2) == "-" else 1))))
@@ -664,7 +664,7 @@ class MetadataFile(DataFile):
                     raise Failed(f"Image Section Error: No styles found for section: {section_key}")
                 use_key = None
                 if f"use_{section_key}" in methods:
-                    use_key = util.parse("Images", f"use_{section_key}", self.temp_vars, datatype="bool",methods=methods, default=False)
+                    use_key = util.parse("Images", f"use_{section_key}", self.temp_vars, datatype="bool", methods=methods, default=False)
                     logger.info(f"Use {section_key}: {use_key}")
                 if use_key is False:
                     logger.trace(f"Skipped as use_{section_key} is false")
@@ -842,7 +842,7 @@ class MetadataFile(DataFile):
                             all_keys = {}
                             auto_list = {}
                             for i in tags:
-                                final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title)
+                                final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title) # noqa
                                 all_keys[str(i.key)] = final_title
                                 if all([x not in exclude for x in [final_title, str(i.title), str(i.key)]]):
                                     auto_list[str(i.key)] = final_title
@@ -1555,7 +1555,7 @@ class MetadataFile(DataFile):
                         else:
                             values = [loc for loc in i.locations if loc]
                             if not values:
-                                raise  Failed(f"Plex Error: No Filepaths found for {i.title}")
+                                raise Failed(f"Plex Error: No Filepaths found for {i.title}")
                             res = re.search(r'(?i)[\[{]edition-([^}\]]*)', values[0])
                             check = res.group(1) if res else ""
                         if blank_edition and not check:

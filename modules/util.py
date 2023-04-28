@@ -14,7 +14,7 @@ except ModuleNotFoundError:
     windows = False
 
 
-logger: MyLogger = None
+logger: MyLogger = None # noqa
 
 class TimeoutExpired(Exception):
     pass
@@ -308,7 +308,7 @@ def windows_input(prompt, timeout=5):
     sys.stdout.write(f"| {prompt}: ")
     sys.stdout.flush()
     result = []
-    start_time = time.time()
+    s_time = time.time()
     while True:
         if msvcrt.kbhit():
             char = msvcrt.getwche()
@@ -319,7 +319,7 @@ def windows_input(prompt, timeout=5):
                 return out
             elif ord(char) >= 32: #space_char
                 result.append(char)
-        if (time.time() - start_time) > timeout:
+        if (time.time() - s_time) > timeout:
             print("")
             raise TimeoutExpired
 
@@ -977,5 +977,3 @@ class YAML:
         if self.path:
             with open(self.path, 'w', encoding="utf-8") as fp:
                 self.yaml.dump(self.data, fp)
-
-

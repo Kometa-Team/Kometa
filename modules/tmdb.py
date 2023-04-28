@@ -153,9 +153,9 @@ class TMDbShow(TMDBObj):
         self.type = data["type"] if isinstance(data, dict) else data.type
         self.studio = data["studio"] if isinstance(data, dict) else data.networks[0].name if data.networks else None
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
-        loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else []
+        loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else [] # noqa
         self.countries = [TMDbCountry(c) for c in loop]
-        loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("|") if data["seasons"] else []
+        loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("|") if data["seasons"] else [] # noqa
         self.seasons = [TMDbSeason(s) for s in loop]
 
         if self._tmdb.config.Cache and not ignore_cache:
@@ -180,7 +180,7 @@ class TMDb:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
-        self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()}
+        self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()} # noqa
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
         item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
