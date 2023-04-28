@@ -20,7 +20,7 @@ class Tautulli:
             response = self._request("get_tautulli_info")
         except Exception:
             logger.stacktrace()
-            raise Failed("Tautulli Error: Invalid url")
+            raise Failed("Tautulli Error: Invalid URL")
         if response["response"]["result"] != "success":
             raise Failed(f"Tautulli Error: {response['response']['message']}")
         self.has_section = True if int(response["response"]["data"]["tautulli_version"].split(".")[1]) > 11 else False

@@ -151,6 +151,7 @@ class Overlays:
 
                     has_original = None
                     new_backup = None
+                    changed_image = False
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
@@ -185,7 +186,7 @@ class Overlays:
                     poster_compare = None
                     if poster is None and has_original is None:
                         logger.error(f"  Overlay Error: No poster found")
-                    elif self.library.reapply_overlays or new_backup or overlay_change:
+                    elif self.library.reapply_overlays or new_backup or overlay_change or changed_image:
                         try:
                             if not self.library.reapply_overlays and new_backup:
                                 logger.trace("  Overlay Reason: New image detected")
