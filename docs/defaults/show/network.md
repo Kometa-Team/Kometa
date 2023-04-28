@@ -176,7 +176,7 @@ include:
   - Canal+ # 296 shows across networks
   - Disney+ # 285 shows
   - Globoplay # 118 shows
-  - HBO Max # 206 shows
+  - Max # 206 shows
   - Hulu # 258 shows
   - Paramount+ # 125 shows
   - Peacock # 124 shows
@@ -348,7 +348,7 @@ addons:
     - HBO Canada
     - HBO Family
     - HBO Mundi
-  HBO Max:
+  Max:
     - HBO Go
   HGTV:
     - HGTV Canada

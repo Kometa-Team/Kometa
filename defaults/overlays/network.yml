@@ -357,10 +357,6 @@ overlays:
     variables: {key: Hallmark, weight: 10}
     template: [name: networks]
 
-  HBO Max:
-    variables: {key: HBO Max, weight: 10}
-    template: [name: networks]
-
   HBO:
     variables: {key: HBO, weight: 10}
     template: [name: networks]
@@ -419,6 +415,10 @@ overlays:
 
   MasterClass:
     variables: {key: MasterClass, weight: 10}
+    template: [name: networks]
+
+  Max:
+    variables: {key: Max, weight: 10}
     template: [name: networks]
 
   MBC:
