@@ -88,9 +88,13 @@ class MyAnimeList:
         self.expiration = params["cache_expiration"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
-        if not self._save(self.authorization):
-            if not self._refresh():
-                self._authorization()
+        try:
+            if not self._save(self.authorization):
+                if not self._refresh():
+                    self._authorization()
+        except Exception:
+            logger.stacktrace()
+            raise Failed("Tautulli Error: Failed to Connect")
         self._genres = {}
         self._studios = {}
         self._delay = None
