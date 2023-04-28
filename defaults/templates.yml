@@ -100,6 +100,7 @@ templates:
       - file_background
       - limit
       - name_mapping
+      - delete_collections_named
     run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
@@ -125,7 +126,7 @@ templates:
     url_background: <<url_background_<<key>>>>
     file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
-
+    delete_collections_named: <<delete_collections_named>>
   trakt:
     optional:
       - trakt_list
