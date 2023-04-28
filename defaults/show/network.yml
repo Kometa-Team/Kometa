@@ -135,8 +135,8 @@ dynamic_collections:
       - Canal+ # 296 shows across networks
       - Disney+ # 285 shows
       - Globoplay # 118 shows
-      - HBO Max # 206 shows
       - Hulu # 258 shows
+      - Max # 206 shows
       - Paramount+ # 125 shows
       - Peacock # 124 shows
       - Shahid # 193 shows
@@ -276,6 +276,7 @@ dynamic_collections:
         - ESPN.com
         - ESPN Deportes
       FOX:
+        - Fox
         - Fox News Channel
         - Fox Sports
         - Fox Reality Channel
@@ -303,14 +304,16 @@ dynamic_collections:
         - HBO Canada
         - HBO Family
         - HBO Mundi
-      HBO Max:
-        - HBO Go
       HGTV:
         - HGTV Canada
       History:
         - History Channel Italia
       Lifetime:
         - Lifetime Movies
+      Max:
+        - HBO Go
+        - MAX
+        - HBO Max
       MTV:
         - MTV2
         - MTV3

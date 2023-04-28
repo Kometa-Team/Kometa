@@ -16,7 +16,7 @@ Supported Overlay Level: Movie, Show
 | Netflix           | `netflix`      | `160`  |
 | Prime Video       | `amazon`       | `150`  |
 | Disney+           | `disney`       | `140`  |
-| HBO Max           | `hbomax`       | `130`  |
+| Max           | `hbomax`       | `130`  |
 | Crunchyroll       | `Crunchyroll`  | `120`  |
 | YouTube           | `youtube`      | `110`  |
 | Hulu              | `hulu`         | `100`  |
