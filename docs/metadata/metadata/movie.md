@@ -3,6 +3,7 @@
 You can have the script edit the metadata of Movies by adding them to the `metadata` mapping of a Metadata File.
 
 An example of multiple metadata edits in a movie library is below:
+
 ```yaml
 metadata:
   Godzilla (1954):
@@ -210,7 +211,7 @@ The available attributes for editing movies are as follows
 |:-----------------------|:---------------------------------------------------------------|
 | `title`                | Text to change Title.                                          |
 | `sort_title`           | Text to change Sort Title.                                     |
-| `edition`              | Text to change Edition.                                        |
+| `edition`<sup>1</sup>  | Text to change Edition.                                        |
 | `original_title`       | Text to change Original Title.                                 |
 | `originally_available` | Date to change Originally Available.<br>**Format:** YYYY-MM-DD |
 | `content_rating`       | Text to change Content Rating.                                 |
@@ -220,6 +221,8 @@ The available attributes for editing movies are as follows
 | `studio`               | Text to change Studio.                                         |
 | `tagline`              | Text to change Tagline.                                        |
 | `summary`              | Text to change Summary.                                        |
+
+1. Requires Plex Pass
 
 ### Tag Attributes
 

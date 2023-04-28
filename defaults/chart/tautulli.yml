@@ -21,7 +21,6 @@ templates:
     tautulli_<<type>>:
       list_days: <<list_days_<<key>>>>
       list_size: <<list_size_<<key>>>>
-      list_buffer: 20
 
 collections:
   Plex Popular:

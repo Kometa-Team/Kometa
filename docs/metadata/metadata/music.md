@@ -49,13 +49,13 @@ The below example shows how `title` can be used to match artists.
 
 ```yaml
 metadata:
-  artist1:                   # Matches via the title "Game of Thrones"
+  artist1:                   # Matches via the title "Ke$ha"
     match:
-      title: Game of Thrones
+      title: Ke$ha
     edits...
-  artist2:                   # Matches via the title "24" 
+  artist2:                   # Matches via the title "311" 
     match:
-      title: 24
+      title: 311
     edits...
 ```
 
@@ -63,13 +63,11 @@ The Mapping Name can also be used to reduce line-count, as shown here:
 
 ```yaml
 metadata:
-  Ke$ha:  # Matches via the Name "Game of Thrones"
+  Ke$ha:             # Matches via the Name "Ke$ha"
     edits...
   "311":             # Matches via the Name "311" 
     edits...
 ```
-
-**Note:** to search for an artist titled with a number from the mapping name you must surround the number in quotes like in the example below. Otherwise, it will look for the artist associated with that TVDb ID.
 
 ## Metadata Edits
 
