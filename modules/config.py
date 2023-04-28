@@ -166,12 +166,12 @@ class ConfigFile:
 
         self.data = YAML(self.config_path).data
 
-        def replace_attr(all_data, attr, par):
+        def replace_attr(all_data, in_attr, par):
             if "settings" not in all_data:
                 all_data["settings"] = {}
-            if par in all_data and all_data[par] and attr in all_data[par] and attr not in all_data["settings"]:
-                all_data["settings"][attr] = all_data[par][attr]
-                del all_data[par][attr]
+            if par in all_data and all_data[par] and in_attr in all_data[par] and in_attr not in all_data["settings"]:
+                all_data["settings"][in_attr] = all_data[par][in_attr]
+                del all_data[par][in_attr]
         if "libraries" not in self.data:
             self.data["libraries"] = {}
         if "settings" not in self.data:
@@ -228,9 +228,9 @@ class ConfigFile:
                             self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] = "mild"
                 if "webhooks" in self.data["libraries"][library] and self.data["libraries"][library]["webhooks"] and "collection_changes" not in self.data["libraries"][library]["webhooks"]:
                     changes = []
-                    def hooks(attr):
-                        if attr in self.data["libraries"][library]["webhooks"]:
-                            changes.extend([w for w in util.get_list(self.data["libraries"][library]["webhooks"].pop(attr), split=False) if w not in changes])
+                    def hooks(hook_attr):
+                        if hook_attr in self.data["libraries"][library]["webhooks"]:
+                            changes.extend([w for w in util.get_list(self.data["libraries"][library]["webhooks"].pop(hook_attr), split=False) if w not in changes])
                     hooks("collection_creation")
                     hooks("collection_addition")
                     hooks("collection_removal")
@@ -251,9 +251,9 @@ class ConfigFile:
             temp = self.data.pop("webhooks")
             if "changes" not in temp:
                 changes = []
-                def hooks(attr):
-                    if attr in temp:
-                        items = util.get_list(temp.pop(attr), split=False)
+                def hooks(hook_attr):
+                    if hook_attr in temp:
+                        items = util.get_list(temp.pop(hook_attr), split=False)
                         if items:
                             changes.extend([w for w in items if w not in changes])
                 hooks("collection_creation")
@@ -377,10 +377,10 @@ class ConfigFile:
                 raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
             options = ""
             if test_list:
-                for option, description in test_list.items():
+                for test_option, test_description in test_list.items():
                     if len(options) > 0:
                         options = f"{options}\n"
-                    options = f"{options}    {option} ({description})"
+                    options = f"{options}    {test_option} ({test_description})"
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
@@ -873,16 +873,13 @@ class ConfigFile:
                                     params["reapply_overlays"] = True
                                 if "reset_overlays" in file or "reset_overlay" in file:
                                     attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                    if file[attr] and not isinstance(file[attr], list):
-                                        test_list = [file[attr]]
-                                    else:
-                                        test_list = file[attr]
+                                    reset_options = file[attr] if isinstance(file[attr], list) else [file[attr]]
                                     final_list = []
-                                    for test_item in test_list:
-                                        if test_item and test_item in reset_overlay_options:
-                                            final_list.append(test_item)
+                                    for reset_option in reset_options:
+                                        if reset_option and reset_option in reset_overlay_options:
+                                            final_list.append(reset_option)
                                         else:
-                                            final_text = f"Config Error: reset_overlays attribute {test_item} invalid. Options: "
+                                            final_text = f"Config Error: reset_overlays attribute {reset_option} invalid. Options: "
                                             for option, description in reset_overlay_options.items():
                                                 final_text = f"{final_text}\n    {option} ({description})"
                                             logger.error(final_text)

@@ -123,7 +123,7 @@ class IMDb:
         imdb_ids = []
         parsed_url = urlparse(imdb_url)
         params = parse_qs(parsed_url.query)
-        imdb_base = parsed_url._replace(query=None).geturl()
+        imdb_base = parsed_url._replace(query=None).geturl() # noqa
         params.pop("start", None) # noqa
         params.pop("count", None) # noqa
         params.pop("page", None) # noqa

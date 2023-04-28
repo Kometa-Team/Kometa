@@ -1282,7 +1282,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: Cannot use item_genre.remove and item_genre.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "item_edition":
-            self.item_details[method_final] = str(method_data) if method_data else ""
+            self.item_details[method_final] = str(method_data) if method_data else "" # noqa
         elif method_name == "non_item_remove_label":
             if not method_data:
                 raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
@@ -1312,7 +1312,7 @@ class CollectionBuilder:
             elif str(method_data).lower() not in options:
                 logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
             else:
-                self.item_details[method_name] = str(method_data).lower()
+                self.item_details[method_name] = str(method_data).lower() # noqa
 
     def _radarr(self, method_name, method_data):
         if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
@@ -1670,12 +1670,12 @@ class CollectionBuilder:
                 "list_size": util.parse(self.Type, "list_size", dict_data, datatype="int", methods=dict_methods, default=10, parent=method_name),
                 "list_minimum": util.parse(self.Type, "list_minimum", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
             }
+            buff = final_dict["list_size"] * 3
             if self.library.Tautulli.has_section:
-                final_dict["list_buffer"] = 0
+                buff = 0
             elif "list_buffer" in dict_methods:
-                final_dict["list_buffer"] = util.parse(self.Type, "list_buffer", dict_data, datatype="int", methods=dict_methods, default=20, parent=method_name)
-            else:
-                final_dict["list_buffer"] = final_dict["list_size"] * 3
+                buff = util.parse(self.Type, "list_buffer", dict_data, datatype="int", methods=dict_methods, default=buff, parent=method_name)
+            final_dict["list_buffer"] = buff
             self.builders.append((method_name, final_dict))
 
     def _tmdb(self, method_name, method_data):

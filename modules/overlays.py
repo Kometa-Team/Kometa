@@ -5,7 +5,7 @@ from modules.builder import CollectionBuilder
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled
 from num2words import num2words
 from plexapi.exceptions import BadRequest
-from plexapi.video import Movie, Show, Season, Episode
+from plexapi.video import Season, Episode
 from PIL import Image, ImageFilter
 
 logger = util.logger
@@ -122,17 +122,17 @@ class Overlays:
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
                                     if not hasattr(item, actual):
                                         continue
-                                    actual_value = getattr(item, actual)
-                                    if cache_value is None or actual_value is None:
+                                    real_value = getattr(item, actual)
+                                    if cache_value is None or real_value is None:
                                         continue
                                     if cache_key in overlay.float_vars:
                                         cache_value = float(cache_value)
                                     if cache_key in overlay.int_vars:
                                         cache_value = int(cache_value)
                                     if cache_key in overlay.date_vars:
-                                        actual_value = actual_value.strftime("%Y-%m-%d")
-                                    if actual_value != cache_value:
-                                        overlay_change = f"Special Text Changed from {cache_value} to {actual_value}"
+                                        real_value = real_value.strftime("%Y-%m-%d")
+                                    if real_value != cache_value:
+                                        overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
                         poster, background, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:

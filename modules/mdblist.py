@@ -189,7 +189,7 @@ class Mdblist:
                 logger.info(f"Limit: {data['limit']} items")
                 params["limit"] = data["limit"]
             parsed_url = urlparse(data["url"])
-            url_base = str(parsed_url._replace(query=None).geturl())
+            url_base = str(parsed_url._replace(query=None).geturl()) # noqa
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
             try:

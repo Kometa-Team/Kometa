@@ -39,7 +39,7 @@ class Sonarr:
         try:
             self.api = SonarrAPI(self.url, self.token, session=self.config.session)
             self.api.respect_list_exclusions_when_adding()
-            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"]) # noqa
             self.profiles = self.api.quality_profile()
         except ArrException as e:
             raise Failed(e)
@@ -80,7 +80,7 @@ class Sonarr:
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
         quality_profile = options["quality"] if "quality" in options else self.quality_profile
         language_profile = options["language"] if "language" in options else self.language_profile
-        language_profile = language_profile if self.api._raw.v3 else 1
+        language_profile = language_profile if self.api._raw.v3 else 1 # noqa
         series_type = options["series"] if "series" in options else self.series_type
         season = options["season"] if "season" in options else self.season_folder
         tags = options["tag"] if "tag" in options else self.tag
