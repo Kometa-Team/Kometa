@@ -26,6 +26,8 @@ dynamic_collections:
       - smart_filter
       - shared
     template_variables:
+      delete_collections_named:
+        Max: HBO Max
       search_term:
         default: network
       image:
