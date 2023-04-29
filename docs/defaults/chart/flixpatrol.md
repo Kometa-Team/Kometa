@@ -14,7 +14,7 @@ Supported Library Types: Movie, Show
 |:--------------------------------- |:------------|:---------------------------------------------------------------------------|
 | `Netflix Top 10 Movies/Shows`     | `netflix`   | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.     |
 | `Disney+ Top 10 Movies/Shows`     | `disney`    | Collection of the Top Movies/Shows on Disney+ according to FlixPatrol.     |
-| `HBO Top 10 Movies/Shows`         | `hbo`       | Collection of the Top Movies/Shows on HBO according to FlixPatrol.         |
+| `MAX Top 10 Movies/Shows`         | `max`       | Collection of the Top Movies/Shows on MAX according to FlixPatrol.         |
 | `Hulu Top 10 Movies/Shows`        | `hulu`      | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.        |
 | `Paramount+ Top 10 Movies/Shows`  | `paramount` | Collection of the Top Movies/Shows on Paramount+ according to FlixPatrol.  |
 | `Prime Video Top 10 Movies/Shows` | `prime`     | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol. |

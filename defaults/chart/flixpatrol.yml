@@ -39,7 +39,7 @@ dynamic_collections:
     data:
       netflix: Netflix
       disney: Disney+
-      hbo: HBO
+      max: MAX
       hulu: Hulu
       paramount: Paramount+
       prime: Prime Video
@@ -55,6 +55,7 @@ dynamic_collections:
         default: 10
       platform:
         default: <<key>>
+        max: hbo
         paramount: paramount_plus
         prime: amazon_prime
         apple: apple_tv
