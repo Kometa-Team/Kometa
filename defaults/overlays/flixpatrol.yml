@@ -79,8 +79,8 @@ overlays:
     variables: {key: disney, weight: 50}
     template: [name: standard, name: flixpatrol]
 
-  HBO:
-    variables: {key: hbo, weight: 40}
+  Max:
+    variables: {key: max, weight: 40, slug: hbo}
     template: [name: standard, name: flixpatrol]
 
   Hulu:
