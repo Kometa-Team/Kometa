@@ -14,7 +14,7 @@ Supported Overlay Level: Movie, Show
 |:------------|:------------|:-------|
 | Netflix     | `netflix`   | `60`   |
 | Disney+     | `disney`    | `50`   |
-| HBO         | `hbo`       | `40`   |
+| MAX         | `max`       | `40`   |
 | Hulu        | `hulu`      | `30`   |
 | Paramount+  | `paramount` | `20`   |
 | Prime Video | `prime`     | `10`   |
