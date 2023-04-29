@@ -21,7 +21,7 @@ templates:
         default: <<library_type>>
         conditions:
           - originals_only: true
-            key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock, amazon]
+            key: [appletv, disney, max, hulu, netflix, paramount, peacock, amazon]
             value: "original"
       allowed_streaming:
         conditions:
@@ -35,7 +35,7 @@ templates:
             key: [crave]
             value: False
           - region: ca
-            key: [hbomax, showtime]
+            key: [max, showtime]
             value: False
       watch_region:
         default: ""
@@ -101,7 +101,7 @@ dynamic_collections:
       discovery: discovery+
       disney: Disney+
       hayu: hayu
-      hbomax: Max
+      max: Max
       hulu: Hulu
       netflix: Netflix
       now: NOW
