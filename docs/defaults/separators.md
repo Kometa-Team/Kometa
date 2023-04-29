@@ -35,7 +35,7 @@ These are all the files that contain a separator
 | Writers Collections           | `writer`            |
 | Based On... Collections       | `based`             |
 
-## Shared Separator Variables 
+## Shared Separator Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 

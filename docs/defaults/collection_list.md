@@ -28,7 +28,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Chart Separator](chart/separator) | `separator_chart` | Chart Collections                          |       &#9989;       |       &#9989;       |
 | [AniList](chart/anilist)           | `anilist`         | AniList Popular, AniList Season            |       &#9989;       |       &#9989;       |
 | [Basic](chart/basic)               | `basic`           | Newly Released, New Episodes               |       &#9989;       |       &#9989;       |
-| [FlixPatrol](chart/flixpatrol)     | `flixpatrol`      | Top Disney, Top Hbo, Top Hulu, Top Netflix |       &#9989;       |       &#9989;       |
+| [FlixPatrol](chart/flixpatrol)     | `flixpatrol`      | Top Disney, Top Max, Top Hulu, Top Netflix |       &#9989;       |       &#9989;       |
 | [IMDb](chart/imdb)                 | `imdb`            | IMDb Popular, IMDb Top 250                 |       &#9989;       |       &#9989;       |
 | [MyAnimeList](chart/myanimelist)   | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated |       &#9989;       |       &#9989;       |
 | [Other](chart/other)               | `other_chart`     | AniDB Popular, Common Sense Selection      |       &#9989;       |       &#9989;       |
@@ -60,7 +60,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Producer](movie/producer)                                                          | `producer`           | James Cameron (Producer), Reese Witherspoon (Producer) |      &#9989;      |     &#10060;     |
 | [Resolution](both/resolution)                                                       | `resolution`         | 4K Movies, 1080p Movies, 720p Movies                   |      &#9989;      |     &#9989;      |
 | [Seasonal](movie/seasonal)                                                          | `seasonal`           | Easter, Christmas                                      |      &#9989;      |     &#10060;     |
-| [Streaming](both/streaming)                                                         | `streaming`          | Disney+ Movies, Max Shows                          |      &#9989;      |     &#9989;      |
+| [Streaming](both/streaming)                                                         | `streaming`          | Disney+ Movies, Max Shows                              |      &#9989;      |     &#9989;      |
 | [Studio](both/studio)                                                               | `studio`             | DreamWorks Studios, Walt Disney Pictures               |      &#9989;      |     &#9989;      |
 | [Anime Studio](both/studio_anime)                                                   | `studio_anime`       | Bones, Studio Ghibli, Toei Animation                   |      &#9989;      |     &#9989;      |
 | [Subtitle Language](both/subtitle_language)                                         | `subtitle_language`  | German Subtitles, Swedish Subtitles                    |      &#9989;      |     &#9989;      |

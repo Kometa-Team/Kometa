@@ -60,7 +60,7 @@ templates:
         default: <<library_type>>
         conditions:
           - originals_only: true
-            key: [appletv, disney, hbomax, hulu, netflix, paramount, peacock, amazon]
+            key: [appletv, disney, max, hulu, netflix, paramount, peacock, amazon]
             value: "original"
       allowed_streaming:
         conditions:
@@ -74,7 +74,7 @@ templates:
             key: [crave]
             value: False
           - region: ca
-            key: [hbomax, showtime]
+            key: [max, showtime]
             value: False
       watch_region:
         default: ""
@@ -121,7 +121,7 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   Max:
-    variables: {key: hbomax, weight: 130}
+    variables: {key: max, weight: 130}
     template: [name: standard, name: mdb_streaming]
 
   Crunchyroll:
