@@ -1527,7 +1527,7 @@ class MetadataFile(DataFile):
                         logger.debug("")
                         logger.debug("Validating Method: year")
                         value = match_data[match_methods["year"]] if "year" in match_methods else meta[methods["year"]]
-                        if not year:
+                        if not value:
                             raise Failed(f"{self.type_str} Error: year attribute is blank")
                         logger.debug(f"Value: {value}")
                         year = util.parse(self.type_str, "year", value, datatype="int", minimum=1800, maximum=next_year)
