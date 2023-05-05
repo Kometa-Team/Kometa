@@ -47,10 +47,9 @@ templates:
   studios:
     ignore_blank_results: true
     plex_search:
-      validate: false
       all:
         studio: <<overlay>>
-      
+
 overlays:
   8bit:
     variables: {key: 8bit}
