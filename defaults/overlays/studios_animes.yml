@@ -45,59 +45,35 @@ external_templates:
 
 templates:
   studios:
+    default:
+      key: <<overlay_name>>
+      search: <<key>>
     ignore_blank_results: true
     plex_search:
       validate: false
       all:
-        studio: <<overlay>>
-
+        studio: <<search>>
+      
 overlays:
   8bit:
-    variables: {key: 8bit}
     template: [name: standard, name: studios]
 
   A-1 Pictures:
-    variables: {key: A-1 Pictures}
     template: [name: standard, name: studios]
 
   Actas:
-    variables: {key: Actas}
-    template: [name: standard, name: studios]
-
-  AIC:
-    variables: {key: AIC Spirits}
-    template: [name: standard, name: studios]
-
-  AIC ASTA:
-    variables: {key: AIC Spirits}
-    template: [name: standard, name: studios]
-
-  AIC Build:
-    variables: {key: AIC Spirits}
-    template: [name: standard, name: studios]
-
-  AAIC PLUS+:
-    variables: {key: AIC Spirits}
-    template: [name: standard, name: studios]
-
-  AIC RIGHTS:
-    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   AIC Spirits:
-    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   Ajia-Do:
-    variables: {key: Ajia-Do}
     template: [name: standard, name: studios]
 
   Arms:
-    variables: {key: Arms}
     template: [name: standard, name: studios]
 
   Asahi Production:
-    variables: {key: Asahi Production}
     template: [name: standard, name: studios]
 
   Ashi Productions:
@@ -105,10 +81,6 @@ overlays:
     template: [name: standard, name: studios]
 
   asread.:
-    variables: {key: asread.}
-    template: [name: standard, name: studios]
-
-  Asread:
     variables: {key: asread.}
     template: [name: standard, name: studios]
 
@@ -168,10 +140,6 @@ overlays:
     variables: {key: Connect}
     template: [name: standard, name: studios]
 
-  Cygames Pictures:
-    variables: {key: CygamesPictures}
-    template: [name: standard, name: studios]
-
   CygamesPictures:
     variables: {key: CygamesPictures}
     template: [name: standard, name: studios]
@@ -212,10 +180,6 @@ overlays:
     variables: {key: feel.}
     template: [name: standard, name: studios]
 
-  FEEL:
-    variables: {key: feel.}
-    template: [name: standard, name: studios]
-
   Gallop:
     variables: {key: Gallop}
     template: [name: standard, name: studios]
@@ -236,23 +200,11 @@ overlays:
     variables: {key: GoHands}
     template: [name: standard, name: studios]
 
-  Go Hands:
-    variables: {key: GoHands}
-    template: [name: standard, name: studios]
-
   Gonzo:
     variables: {key: Gonzo}
     template: [name: standard, name: studios]
 
-  Gonzo Digimation:
-    variables: {key: Gonzo}
-    template: [name: standard, name: studios]
-
   Haoliners Animation League:
-    variables: {key: Haoliners Animation League}
-    template: [name: standard, name: studios]
-
-  Haoliners Huimeng Animation:
     variables: {key: Haoliners Animation League}
     template: [name: standard, name: studios]
 
@@ -293,10 +245,6 @@ overlays:
     template: [name: standard, name: studios]
 
   LIDENFILMS:
-    variables: {key: LIDENFILMS}
-    template: [name: standard, name: studios]
-
-  Liden Films:
     variables: {key: LIDENFILMS}
     template: [name: standard, name: studios]
 
@@ -364,15 +312,7 @@ overlays:
     variables: {key: Pierrot}
     template: [name: standard, name: studios]
 
-  Pierrot Plus:
-    variables: {key: Pierrot}
-    template: [name: standard, name: studios]
-
   Platinum Vision:
-    variables: {key: Platinum Vision}
-    template: [name: standard, name: studios]
-
-  Platinumvision:
     variables: {key: Platinum Vision}
     template: [name: standard, name: studios]
 
@@ -424,15 +364,7 @@ overlays:
     variables: {key: Satelight}
     template: [name: standard, name: studios]
 
-  Seven:
-    variables: {key: Seven Arcs}
-    template: [name: standard, name: studios]
-
   Seven Arcs:
-    variables: {key: Seven Arcs}
-    template: [name: standard, name: studios]
-
-  Seven Arcs Pictures:
     variables: {key: Seven Arcs}
     template: [name: standard, name: studios]
 
@@ -452,15 +384,7 @@ overlays:
     variables: {key: SILVER LINK.}
     template: [name: standard, name: studios]
 
-  Silver Link:
-    variables: {key: SILVER LINK.}
-    template: [name: standard, name: studios]
-
   Signal.MD:
-    variables: {key: Signal.MD}
-    template: [name: standard, name: studios]
-
-  Signal MD:
     variables: {key: Signal.MD}
     template: [name: standard, name: studios]
 
@@ -514,10 +438,6 @@ overlays:
 
   Studio Palette:
     variables: {key: Studio Palette}
-    template: [name: standard, name: studios]
-
-  Studio Pierrot:
-    variables: {key: Pierrot}
     template: [name: standard, name: studios]
 
   Studio Rikka:
