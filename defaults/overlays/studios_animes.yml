@@ -38,10 +38,10 @@ external_templates:
             git.exists: false
             repo.exists: false
             value: studio/<<key>>
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 305
-      back_height: 105
+    back_color: "#00000099"
+    back_radius: 30
+    back_width: 305
+    back_height: 105
 
 templates:
   studios:
