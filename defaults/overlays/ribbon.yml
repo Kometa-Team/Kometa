@@ -53,3 +53,17 @@ overlays:
     variables: {key: common, weight: 10, mdb_key: cssfamilies}
     template: [name: standard, name: ribbon]
 
+  Golden Globe Winner:
+    variables: {key: golden, weight: 6}
+    template: [name: standard, name: ribbon]
+    imdb_list: https://www.imdb.com/search/title/?groups=golden_globe_winner
+
+  Emmys Winner:
+    variables: {key: emmys, weight: 4}
+    template: [name: standard, name: ribbon]
+    imdb_list: https://www.imdb.com/search/title/?groups=emmy_winner
+
+  Razzies Winner:
+    variables: {key: razzie, weight: 2}
+    template: {name: standard, allowed_libraries: movie}
+    imdb_list: https://www.imdb.com/search/title/?groups=razzie_winner
