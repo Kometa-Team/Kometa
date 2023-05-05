@@ -65,32 +65,27 @@ overlays:
     template: [name: standard, name: studios]
 
   AIC:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   AIC ASTA:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   AIC Build:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   AAIC PLUS+:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   AIC RIGHTS:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
-
-  A.C.G.T.:
-    variables: {key: A.C.G.T.}
-    template: [name: standard, name: studios]
-
 
   AIC Spirits:
-    variables: {key: AIC}
+    variables: {key: AIC Spirits}
     template: [name: standard, name: studios]
 
   Ajia-Do:
