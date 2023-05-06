@@ -59,5 +59,5 @@ libraries:
     overlay_path:
       - pmm: versions
         template_variables:
-          font_color: "#FFFFFF99"
+          back_color: "#FFFFFF99"
 ```
