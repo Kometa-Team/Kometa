@@ -65,6 +65,7 @@ overlays:
     template: [name: standard, name: studios]
 
   AIC Spirits:
+    variables: {key: AIC, search: [AIC, AIC ASTA, AIC A.S.T.A, AIC Build, AAIC PLUS+, AIC RIGHTS, AIC Spirits]}
     template: [name: standard, name: studios]
 
   Ajia-Do:
@@ -81,441 +82,344 @@ overlays:
     template: [name: standard, name: studios]
 
   asread.:
-    variables: {key: asread.}
+    variables: {key: asread., search: [asread., Asread]}
     template: [name: standard, name: studios]
 
   AtelierPontdarc:
-    variables: {key: AtelierPontdarc}
     template: [name: standard, name: studios]
 
   B.CMAY PICTURES:
-    variables: {key: B.CMAY PICTURES}
     template: [name: standard, name: studios]
 
   Bandai Namco Pictures:
-    variables: {key: Bandai Namco Pictures}
     template: [name: standard, name: studios]
 
   Bones:
-    variables: {key: Bones}
     template: [name: standard, name: studios]
 
   Brain's Base:
-    variables: {key: Brain's Base}
     template: [name: standard, name: studios]
 
   Bridge:
-    variables: {key: Bridge}
     template: [name: standard, name: studios]
 
   C-Station:
-    variables: {key: C-Station}
     template: [name: standard, name: studios]
 
   C2C:
-    variables: {key: C2C}
     template: [name: standard, name: studios]
 
   Children's Playground Entertainment:
-    variables: {key: Children's Playground Entertainment}
     template: [name: standard, name: studios]
 
   Cloud Hearts:
-    variables: {key: Cloud Hearts}
     template: [name: standard, name: studios]
 
   CloverWorks:
-    variables: {key: CloverWorks}
     template: [name: standard, name: studios]
 
   Colored Pencil Animation:
-    variables: {key: Colored Pencil Animation}
     template: [name: standard, name: studios]
 
   CoMix Wave Films:
-    variables: {key: CoMix Wave Films}
     template: [name: standard, name: studios]
 
   Connect:
-    variables: {key: Connect}
     template: [name: standard, name: studios]
 
   CygamesPictures:
-    variables: {key: CygamesPictures}
+    variables: {key: CygamesPictures, search: [CygamesPictures, Cygames Pictures]}
     template: [name: standard, name: studios]
 
   David Production:
-    variables: {key: David Production}
     template: [name: standard, name: studios]
 
   Diomedéa:
-    variables: {key: Diomedéa}
     template: [name: standard, name: studios]
 
   Doga Kobo:
-    variables: {key: Doga Kobo}
     template: [name: standard, name: studios]
 
   domerica:
-    variables: {key: domerica}
     template: [name: standard, name: studios]
 
   Drive:
-    variables: {key: Drive}
     template: [name: standard, name: studios]
 
   Encourage Films:
-    variables: {key: Encourage Films}
     template: [name: standard, name: studios]
 
   EMT Squared:
-    variables: {key: EMT Squared}
     template: [name: standard, name: studios]
 
   ENGI:
-    variables: {key: ENGI}
     template: [name: standard, name: studios]
 
   feel.:
-    variables: {key: feel.}
+    variables: {key: feel., search: [feel., Feel]}
     template: [name: standard, name: studios]
 
   Gallop:
-    variables: {key: Gallop}
     template: [name: standard, name: studios]
 
   Geek Toys:
-    variables: {key: Geek Toys}
     template: [name: standard, name: studios]
 
   Gekkou:
-    variables: {key: Gekkou}
     template: [name: standard, name: studios]
 
   Geno Studio:
-    variables: {key: Geno Studio}
     template: [name: standard, name: studios]
 
   GoHands:
-    variables: {key: GoHands}
+    variables: {key: GoHands, search: [GoHands, Go Hands]}
     template: [name: standard, name: studios]
 
   Gonzo:
-    variables: {key: Gonzo}
+    variables: {key: Gonzo, search: [Gonzo, Gonzo Digimation]}
     template: [name: standard, name: studios]
 
   Haoliners Animation League:
-    variables: {key: Haoliners Animation League}
+    variables: {key: Haoliners Animation League, search: [Haoliners Animation League, Haoliners Huimeng Animation]}
     template: [name: standard, name: studios]
 
   Hotline:
-    variables: {key: Hotline}
     template: [name: standard, name: studios]
 
   Imagin:
-    variables: {key: Imagin}
-    template: [name: standard, name: studios]
-
-  Lay-duce:
-    variables: {key: Lay-duce}
-    template: [name: standard, name: studios]
-
-  Lerche:
-    variables: {key: Lerche}
     template: [name: standard, name: studios]
 
   J.C.Staff:
-    variables: {key: J.C.Staff}
     template: [name: standard, name: studios]
 
   Kadokawa:
-    variables: {key: Kadokawa}
     template: [name: standard, name: studios]
 
   Khara:
-    variables: {key: Khara}
     template: [name: standard, name: studios]
 
   Kinema Citrus:
-    variables: {key: Kinema Citrus}
     template: [name: standard, name: studios]
 
   Kyoto Animation:
-    variables: {key: Kyoto Animation}
+    template: [name: standard, name: studios]
+
+  Lay-duce:
+    template: [name: standard, name: studios]
+
+  Lerche:
     template: [name: standard, name: studios]
 
   LIDENFILMS:
-    variables: {key: LIDENFILMS}
+    variables: {key: LIDENFILMS, search: [LIDENFILMS, Liden Films]}
     template: [name: standard, name: studios]
 
   Madhouse:
-    variables: {key: Madhouse}
     template: [name: standard, name: studios]
 
   Magic Bus:
-    variables: {key: Magic Bus}
     template: [name: standard, name: studios]
 
   Maho Film:
-    variables: {key: Maho Film}
     template: [name: standard, name: studios]
 
   MAPPA:
-    variables: {key: MAPPA}
     template: [name: standard, name: studios]
 
   Millepensee:
-    variables: {key: Millepensee}
     template: [name: standard, name: studios]
 
   Namu Animation:
-    variables: {key: Namu Animation}
     template: [name: standard, name: studios]
 
   NAZ:
-    variables: {key: NAZ}
     template: [name: standard, name: studios]
 
   Nexus:
-    variables: {key: Nexus}
     template: [name: standard, name: studios]
 
   Nippon Animation:
-    variables: {key: Nippon Animation}
     template: [name: standard, name: studios]
 
   Nut:
-    variables: {key: Nut}
     template: [name: standard, name: studios]
 
   Okuruto Noboru:
-    variables: {key: Okuruto Noboru}
     template: [name: standard, name: studios]
 
   OLM:
-    variables: {key: OLM}
     template: [name: standard, name: studios]
 
   Orange:
-    variables: {key: Orange}
     template: [name: standard, name: studios]
 
   OZ:
-    variables: {key: OZ}
     template: [name: standard, name: studios]
 
   P.A. Works:
-    variables: {key: P.A. Works}
     template: [name: standard, name: studios]
 
   Pierrot:
-    variables: {key: Pierrot}
+    variables: {key: Pierrot, search: [Pierrot, Pierrot Plus, Studio Pierrot]}
     template: [name: standard, name: studios]
 
   Platinum Vision:
-    variables: {key: Platinum Vision}
+    variables: {key: Platinum Vision, search: [Platinum Vision, Platinumvision]}
     template: [name: standard, name: studios]
 
   Passione:
-    variables: {key: Passione}
     template: [name: standard, name: studios]
 
   Polygon Pictures:
-    variables: {key: Polygon Pictures}
     template: [name: standard, name: studios]
 
   Production +h.:
-    variables: {key: Production +h.}
     template: [name: standard, name: studios]
 
   Production I.G:
-    variables: {key: Production I.G}
     template: [name: standard, name: studios]
 
   Production IMS:
-    variables: {key: Production IMS}
     template: [name: standard, name: studios]
 
   Production Reed:
-    variables: {key: Production Reed}
     template: [name: standard, name: studios]
 
   Project No.9:
-    variables: {key: Project No.9}
     template: [name: standard, name: studios]
 
   Quad:
-    variables: {key: Quad}
     template: [name: standard, name: studios]
 
   Radix:
-    variables: {key: Radix}
     template: [name: standard, name: studios]
 
   Revoroot:
-    variables: {key: Revoroot}
     template: [name: standard, name: studios]
 
   SANZIGEN:
-    variables: {key: SANZIGEN}
     template: [name: standard, name: studios]
 
   Satelight:
-    variables: {key: Satelight}
     template: [name: standard, name: studios]
 
   Seven Arcs:
-    variables: {key: Seven Arcs}
+    variables: {key: Seven Arcs, search: [Seven Arcs, Seven, Seven Arcs Pictures]}
     template: [name: standard, name: studios]
 
   Shaft:
-    variables: {key: Shaft}
     template: [name: standard, name: studios]
 
   Shin-Ei Animation:
-    variables: {key: Shin-Ei Animation}
     template: [name: standard, name: studios]
 
   Shuka:
-    variables: {key: Shuka}
     template: [name: standard, name: studios]
 
   SILVER LINK.:
-    variables: {key: SILVER LINK.}
+    variables: {key: SILVER LINK., search: [SILVER LINK., Silver Link]}
     template: [name: standard, name: studios]
 
   Signal.MD:
-    variables: {key: Signal.MD}
+    variables: {key: Signal.MD, search: [Signal.MD, Signal MD]}
     template: [name: standard, name: studios]
 
   Staple Entertainment:
-    variables: {key: Staple Entertainment}
     template: [name: standard, name: studios]
 
   Studio A-CAT:
-    variables: {key: Studio A-CAT}
     template: [name: standard, name: studios]
 
   Studio Bind:
-    variables: {key: Studio Bind}
     template: [name: standard, name: studios]
 
   Studio Blanc.:
-    variables: {key: Studio Blanc.}
     template: [name: standard, name: studios]
 
   Studio Chizu:
-    variables: {key: Studio Chizu}
     template: [name: standard, name: studios]
 
   Studio Comet:
-    variables: {key: Studio Comet}
     template: [name: standard, name: studios]
 
   Studio Deen:
-    variables: {key: Studio Deen}
     template: [name: standard, name: studios]
 
   Studio Elle:
-    variables: {key: Studio Elle}
     template: [name: standard, name: studios]
 
   Studio Ghibli:
-    variables: {key: Studio Ghibli}
     template: [name: standard, name: studios]
 
   Studio Hibari:
-    variables: {key: Studio Hibari}
     template: [name: standard, name: studios]
 
   Studio Kai:
-    variables: {key: Studio Kai}
     template: [name: standard, name: studios]
 
   studio MOTHER:
-    variables: {key: studio MOTHER}
     template: [name: standard, name: studios]
 
   Studio Palette:
-    variables: {key: Studio Palette}
     template: [name: standard, name: studios]
 
   Studio Rikka:
-    variables: {key: Studio Rikka}
     template: [name: standard, name: studios]
 
   Studio VOLN:
-    variables: {key: Studio VOLN}
     template: [name: standard, name: studios]
 
   Sunrise:
-    variables: {key: Sunrise}
     template: [name: standard, name: studios]
 
   SynergySP:
-    variables: {key: SynergySP}
     template: [name: standard, name: studios]
 
   Tatsunoko Production:
-    variables: {key: Tatsunoko Production}
     template: [name: standard, name: studios]
 
   Telecom Animation Film:
-    variables: {key: Telecom Animation Film}
     template: [name: standard, name: studios]
 
   Tezuka Productions:
-    variables: {key: Tezuka Productions}
     template: [name: standard, name: studios]
 
   TMS Entertainment:
-    variables: {key: TMS Entertainment}
+    variables: {key: TMS Entertainment, search: [TMS Entertainment, Tokyo Movie Shinsha]}
     template: [name: standard, name: studios]
 
   Toei Animation:
-    variables: {key: Toei Animation}
-    template: [name: standard, name: studios]
-
-  Tokyo Movie Shinsha:
-    variables: {key: TMS Entertainment}
     template: [name: standard, name: studios]
 
   Topcraft:
-    variables: {key: Topcraft}
     template: [name: standard, name: studios]
 
   TROYCA:
-    variables: {key: TROYCA}
     template: [name: standard, name: studios]
 
   Trigger:
-    variables: {key: Trigger}
     template: [name: standard, name: studios]
 
   TYO Animations:
-    variables: {key: TYO Animations}
     template: [name: standard, name: studios]
 
   ufotable:
-    variables: {key: ufotable}
     template: [name: standard, name: studios]
 
   White Fox:
-    variables: {key: White Fox}
     template: [name: standard, name: studios]
 
   Wit Studio:
-    variables: {key: Wit Studio}
     template: [name: standard, name: studios]
 
   Yokohama Animation Lab:
-    variables: {key: Yokohama Animation Lab}
     template: [name: standard, name: studios]
 
   Yostar Pictures:
-    variables: {key: Yostar Pictures}
+    template: [name: standard, name: studios]
+
+  Yumeta Company:
     template: [name: standard, name: studios]
 
   Zero-G:
-    variables: {key: Zero-G}
     template: [name: standard, name: studios]
