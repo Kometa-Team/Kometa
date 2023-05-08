@@ -11,7 +11,7 @@ external_templates:
     default:
       key: <<overlay_name>>
       horizontal_align: left
-      vertical_align: bottom
+      vertical_align: top
     conditionals:
       vertical_offset:
         default: 15
@@ -59,9 +59,6 @@ overlays:
     template: [name: standard, name: studios]
 
   A-1 Pictures:
-    template: [name: standard, name: studios]
-
-  A-Real:
     template: [name: standard, name: studios]
 
   A.C.G.T.:
@@ -157,11 +154,11 @@ overlays:
     template: [name: standard, name: studios]
 
   Bandai Visual:
-    variables: {key: Bandai Visual}
+    variables: {key: Bandai Namco Pictures}
     template: [name: standard, name: studios]
 
   Bandai Visual Company:
-    variables: {key: Bandai Visual}
+    variables: {key: Bandai Namco Pictures}
     template: [name: standard, name: studios]
 
   Bardel Entertainment:
