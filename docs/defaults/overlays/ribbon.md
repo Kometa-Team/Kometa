@@ -17,7 +17,9 @@ Supported Overlay Level: Movie, Show
 | Rotten Tomatoes Certified Fresh | `rotten`     | `30`   |
 | Metacritic Must See             | `metacritic` | `20`   |
 | Commonsense Selection           | `common`     | `10`   |
-
+| Golden Globe Winner             | `golden`     | `6`    |
+| Emmys Winner                    | `emmys`      | `4`    |
+| Razzies Winner                  | `razzie`     | `2`    |
 ## Config
 
 The below YAML in your config.yml will create the overlays:
