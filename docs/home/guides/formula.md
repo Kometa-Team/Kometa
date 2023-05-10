@@ -42,6 +42,28 @@ Formula                                   -> Library Folder
 │       ├── 02x10 - Bahrein GP - Highlights.mkv
 ```
 
+For weekends with a Sprint race (this example also includes Ted's Notebook segments), the format looks like this:
+```
+Formula                                   -> Library Folder
+├── Season 2023                           -> Folder for each F1 Season
+│   ├── 04 - Azerbaijan GP                -> Folder for each Race in a season
+│       ├── 04x01 - Azerbaijan GP - Pre-Qualifying Buildup.mkv
+│       ├── 04x02 - Azerbaijan GP - Qualifying Session.mkv
+│       ├── 04x03 - Azerbaijan GP - Post-Qualifying Analysis.mkv
+│       ├── 04x04 - Azerbaijan GP - Ted's Qualifying Notebook.mkv
+│       ├── 04x05 - Azerbaijan GP - Pre-Sprint Shootout Buildup.mkv
+│       ├── 04x06 - Azerbaijan GP - Sprint Shootout Session.mkv
+│       ├── 04x07 - Azerbaijan GP - Post-Sprint Shootout Analysis.mkv
+│       ├── 04x08 - Azerbaijan GP - Pre-Sprint Race Buildup.mkv
+│       ├── 04x09 - Azerbaijan GP - Sprint Race Session.mkv
+│       ├── 04x10 - Azerbaijan GP - Post-Sprint Race Analysis.mkv
+│       ├── 04x11 - Azerbaijan GP - Ted's Sprint Notebook.mkv
+│       ├── 04x12 - Azerbaijan GP - Pre-Race Buildup.mkv
+│       ├── 04x13 - Azerbaijan GP - Race Session.mkv
+│       ├── 04x14 - Azerbaijan GP - Post-Race Analysis.mkv
+│       ├── 04x15 - Azerbaijan GP - Ted's Race Notebook.mkv
+```
+
 What matters for plex and for pmm.
 * The show name can be whatever you want it to be but the pre created metadata file will only work if you use just the year numbers.
 * The season folder can be called whatever you want as long as plex scans it in with the Season Number matching the race number.
