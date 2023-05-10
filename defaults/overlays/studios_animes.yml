@@ -8,18 +8,8 @@
 external_templates:
   pmm: templates
   template_variables:
-    run_definition:
-      - <<use_<<key>>>>
-      - <<use_<<alt>>>>
-      - <<allowed_libraries>>
-
-templates:
-  animes_studios:
-    ignore_blank_results: true
-    optional:
-      - overlay_level
     default:
-      overlay: <<overlay_name>>
+      key: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
     conditionals:
@@ -41,494 +31,608 @@ templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-    builder_level: <<overlay_level>>
+      pmm:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: studio/<<key>>
+    back_color: "#00000099"
+    back_radius: 30
+    back_width: 305
+    back_height: 105
+
+templates:
+  studios:
+    default:
+      key: <<overlay_name>>
+      search: <<key>>
+    ignore_blank_results: true
     plex_search:
       validate: false
-      all:
-        studio: <<overlay>>
-    overlay:
-      name: <<overlay_name>>
-      pmm: studio/<<key>>
-      group: animes_studios
-      weight: <<weight>>
-      back_color: "#00000099"
-      back_radius: 30
-      back_width: 305
-      back_height: 105
-      horizontal_offset: <<horizontal_offset>>
-      horizontal_align: <<horizontal_align>>
-      vertical_offset: <<vertical_offset>>
-      vertical_align: <<vertical_align>>
-      
+      any:
+        studio.is: <<search>>
+
 overlays:
   8bit:
-    variables: {key: 8bit, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   A-1 Pictures:
-    variables: {key: A-1 Pictures, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  A.C.G.T.:
+    template: [name: standard, name: studios]
+
+  Acca effe:
+    template: [name: standard, name: studios]
 
   Actas:
-    variables: {key: Actas, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
-  AIC Spirits:
-    variables: {key: AIC Spirits, weight: 10}
-    template: [name: animes_studios]
+  AIC:
+    variables: {key: AIC, search: [AIC, AIC ASTA, AIC A.S.T.A, AIC Build, AAIC PLUS+, AIC RIGHTS, AIC Spirits]}
+    template: [name: standard, name: studios]
 
   Ajia-Do:
-    variables: {key: Ajia-Do, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Akatsuki:
+    template: [name: standard, name: studios]
+
+  Animation Do:
+    template: [name: standard, name: studios]
+
+  Ankama:
+    template: [name: standard, name: studios]
+
+  APPP:
+    variables: {key: APPP, search: [APPP, A.P.P.P.]}
+    template: [name: standard, name: studios]
 
   Arms:
-    variables: {key: Arms, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Artland:
+    template: [name: standard, name: studios]
+
+  Artmic:
+    template: [name: standard, name: studios]
+
+  Arvo Animation:
+    template: [name: standard, name: studios]
 
   Asahi Production:
-    variables: {key: Asahi Production, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Ashi Productions:
-    variables: {key: Ashi Productions, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   asread.:
-    variables: {key: asread., weight: 10}
-    template: [name: animes_studios]
+    variables: {key: asread., search: [asread., Asread]}
+    template: [name: standard, name: studios]
 
   AtelierPontdarc:
-    variables: {key: AtelierPontdarc, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   B.CMAY PICTURES:
-    variables: {key: B.CMAY PICTURES, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Bakken Record:
+    template: [name: standard, name: studios]
 
   Bandai Namco Pictures:
-    variables: {key: Bandai Namco Pictures, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: Bandai Namco Pictures, search: [Bandai Namco Pictures, Bandai Visual, Bandai Visual Company]}
+    template: [name: standard, name: studios]
+
+  Bardel Entertainment:
+    template: [name: standard, name: studios]
+
+  Bee Train:
+    template: [name: standard, name: studios]
+
+  Bibury Animation Studios:
+    variables: {key: Bibury Animation Studios, search: [Bibury Animation Studios, Bibury Animation CG]}
+    template: [name: standard, name: studios]
+
+  bilibili:
+    template: [name: standard, name: studios]
+
+  Blade:
+    template: [name: standard, name: studios]
 
   Bones:
-    variables: {key: Bones, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Brain's Base:
-    variables: {key: Brain's Base, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Bridge:
-    variables: {key: Bridge, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   C-Station:
-    variables: {key: C-Station, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   C2C:
-    variables: {key: C2C, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Children's Playground Entertainment:
-    variables: {key: Children's Playground Entertainment, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Cloud Hearts:
-    variables: {key: Cloud Hearts, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   CloverWorks:
-    variables: {key: CloverWorks, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Colored Pencil Animation:
-    variables: {key: Colored Pencil Animation, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   CoMix Wave Films:
-    variables: {key: CoMix Wave Films, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Connect:
-    variables: {key: Connect, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Craftar Studios:
+    variables: {key: Craftar Studios, search: [Craftar Studios, Craftar Studios]}
+    template: [name: standard, name: studios]
+
+  Creators in Pack:
+    template: [name: standard, name: studios]
 
   CygamesPictures:
-    variables: {key: CygamesPictures, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: CygamesPictures, search: [CygamesPictures, Cygames Pictures]}
+    template: [name: standard, name: studios]
 
   David Production:
-    variables: {key: David Production, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Diomedéa:
-    variables: {key: Diomedéa, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  DLE:
+    template: [name: standard, name: studios]
 
   Doga Kobo:
-    variables: {key: Doga Kobo, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   domerica:
-    variables: {key: domerica, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Drive:
-    variables: {key: Drive, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Encourage Films:
-    variables: {key: Encourage Films, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   EMT Squared:
-    variables: {key: EMT Squared, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   ENGI:
-    variables: {key: ENGI, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   feel.:
-    variables: {key: feel., weight: 10}
-    template: [name: animes_studios]
+    variables: {key: feel., search: [feel., Feel]}
+    template: [name: standard, name: studios]
+
+  Felix Film:
+    template: [name: standard, name: studios]
+
+  Fenz:
+    template: [name: standard, name: studios]
+
+  Fortiche Production:
+    template: [name: standard, name: studios]
+
+  Frederator Studios:
+    template: [name: standard, name: studios]
 
   Gallop:
-    variables: {key: Gallop, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  GAINAX:
+    template: [name: standard, name: studios]
 
   Geek Toys:
-    variables: {key: Geek Toys, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Gekkou:
-    variables: {key: Gekkou, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Gemba:
+    template: [name: standard, name: studios]
+
+  GENCO:
+    template: [name: standard, name: studios]
 
   Geno Studio:
-    variables: {key: Geno Studio, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   GoHands:
-    variables: {key: GoHands, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: GoHands, search: [GoHands, Go Hands]}
+    template: [name: standard, name: studios]
 
   Gonzo:
-    variables: {key: Gonzo, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: Gonzo, search: [Gonzo, Gonzo Digimation]}
+    template: [name: standard, name: studios]
+
+  Graphinica:
+    template: [name: standard, name: studios]
+
+  Group Tac:
+    template: [name: standard, name: studios]
+
+  Hal Film Maker:
+    template: [name: standard, name: studios]
 
   Haoliners Animation League:
-    variables: {key: Haoliners Animation League, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: Haoliners Animation League, search: [Haoliners Animation League,  Haoliners Huimeng Animation]}
+    template: [name: standard, name: studios]
+
+  Hoods Entertainment:
+    template: [name: standard, name: studios]
 
   Hotline:
-    variables: {key: Hotline, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Imagin:
-    variables: {key: Imagin, weight: 10}
-    template: [name: animes_studios]
-
-  Lay-duce:
-    variables: {key: Lay-duce, weight: 10}
-    template: [name: animes_studios]
-
-  Lerche:
-    variables: {key: Lerche, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   J.C.Staff:
-    variables: {key: J.C.Staff, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Jumondou:
+    template: [name: standard, name: studios]
 
   Kadokawa:
-    variables: {key: Kadokawa, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Khara:
-    variables: {key: Khara, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Kinema Citrus:
-    variables: {key: Kinema Citrus, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Kyoto Animation:
-    variables: {key: Kyoto Animation, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Lan Studio:
+    variables: {key: Lan Studio, search: [Lan Studio, Studio LAN]}
+    template: [name: standard, name: studios]
+
+  LandQ Studio:
+    template: [name: standard, name: studios]
+
+  Lay-duce:
+    template: [name: standard, name: studios]
+
+  Legendary Television:
+    template: [name: standard, name: studios]
+
+  Lerche:
+    template: [name: standard, name: studios]
 
   LIDENFILMS:
-    variables: {key: LIDENFILMS, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: LIDENFILMS, search: [LIDENFILMS, Liden Films]}
+    template: [name: standard, name: studios]
+
+  M.S.C:
+    template: [name: standard, name: studios]
+
+  Manglobe:
+    template: [name: standard, name: studios]
 
   Madhouse:
-    variables: {key: Madhouse, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Magic Bus:
-    variables: {key: Magic Bus, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Maho Film:
-    variables: {key: Maho Film, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   MAPPA:
-    variables: {key: MAPPA, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Millepensee:
-    variables: {key: Millepensee, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Namu Animation:
-    variables: {key: Namu Animation, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   NAZ:
-    variables: {key: NAZ, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Nexus:
-    variables: {key: Nexus, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Nickelodeon Animation Studio:
+    template: [name: standard, name: studios]
 
   Nippon Animation:
-    variables: {key: Nippon Animation, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Nomad:
+    template: [name: standard, name: studios]
 
   Nut:
-    variables: {key: Nut, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Okuruto Noboru:
-    variables: {key: Okuruto Noboru, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   OLM:
-    variables: {key: OLM, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Orange:
-    variables: {key: Orange, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Ordet:
+    template: [name: standard, name: studios]
 
   OZ:
-    variables: {key: OZ, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   P.A. Works:
-    variables: {key: P.A. Works, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
-  Pierrot:
-    variables: {key: Pierrot, weight: 10}
-    template: [name: animes_studios]
-
-  Platinum Vision:
-    variables: {key: Platinum Vision, weight: 10}
-    template: [name: animes_studios]
+  P.I.C.S.:
+    template: [name: standard, name: studios]
 
   Passione:
-    variables: {key: Passione, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Pb Animation Co. Ltd:
+    template: [name: standard, name: studios]
+
+  Pierrot:
+    variables: {key: Pierrot, search: [Pierrot, Pierrot Plus, Studio Pierrot]}
+    template: [name: standard, name: studios]
+
+  Pine Jam:
+    template: [name: standard, name: studios]
+
+  Platinum Vision:
+    variables: {key: Platinum Vision, search: [Platinum Vision, PlatinumVision]}
+    template: [name: standard, name: studios]
 
   Polygon Pictures:
-    variables: {key: Polygon Pictures, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Pony Canyon:
+    template: [name: standard, name: studios]
+
+  Powerhouse Animation Studios:
+    template: [name: standard, name: studios]
+
+  PRA:
+    template: [name: standard, name: studios]
 
   Production +h.:
-    variables: {key: Production +h., weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Production I.G:
-    variables: {key: Production I.G, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Production IMS:
-    variables: {key: Production IMS, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Production Reed:
-    variables: {key: Production Reed, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Project No.9:
-    variables: {key: Project No.9, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Quad:
-    variables: {key: Quad, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Radix:
-    variables: {key: Radix, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Red Dog Culture House:
+    template: [name: standard, name: studios]
 
   Revoroot:
-    variables: {key: Revoroot, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Saetta:
+    template: [name: standard, name: studios]
 
   SANZIGEN:
-    variables: {key: SANZIGEN, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Satelight:
-    variables: {key: Satelight, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Science SARU:
+    variables: {key: Science SARU, search: [Science SARU, Science Saru]}
+    template: [name: standard, name: studios]
+
+  Sentai Filmworks:
+    template: [name: standard, name: studios]
 
   Seven Arcs:
-    variables: {key: Seven Arcs, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: Seven Arcs, search: [Seven Arcs, Seven, even Arcs Pictures]}
+    template: [name: standard, name: studios]
 
   Shaft:
-    variables: {key: Shaft, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Shin-Ei Animation:
-    variables: {key: Shin-Ei Animation, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Shogakukan:
+    variables: {key: Shogakukan, search: [Shogakukan, Shogakukan Production]}
+    template: [name: standard, name: studios]
 
   Shuka:
-    variables: {key: Shuka, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   SILVER LINK.:
-    variables: {key: SILVER LINK., weight: 10}
-    template: [name: animes_studios]
+    variables: {key: SILVER LINK., search: [SILVER LINK., Silver Link]}
+    template: [name: standard, name: studios]
 
   Signal.MD:
-    variables: {key: Signal.MD, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: Signal.MD, search: [Signal.MD, Signal MD]}
+    template: [name: standard, name: studios]
 
   Staple Entertainment:
-    variables: {key: Staple Entertainment, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio 3Hz:
+    template: [name: standard, name: studios]
 
   Studio A-CAT:
-    variables: {key: Studio A-CAT, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Bind:
-    variables: {key: Studio Bind, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Blanc.:
-    variables: {key: Studio Blanc., weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Chizu:
-    variables: {key: Studio Chizu, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Comet:
-    variables: {key: Studio Comet, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Deen:
-    variables: {key: Studio Deen, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio Dragon:
+    template: [name: standard, name: studios]
 
   Studio Elle:
-    variables: {key: Studio Elle, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio Flad:
+    template: [name: standard, name: studios]
 
   Studio Ghibli:
-    variables: {key: Studio Ghibli, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio Guts:
+    template: [name: standard, name: studios]
+
+  Studio Gokumi:
+    template: [name: standard, name: studios]
 
   Studio Hibari:
-    variables: {key: Studio Hibari, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Kai:
-    variables: {key: Studio Kai, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio Kafka:
+    template: [name: standard, name: studios]
+
+  Studio Mir:
+    template: [name: standard, name: studios]
 
   studio MOTHER:
-    variables: {key: studio MOTHER, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Palette:
-    variables: {key: Studio Palette, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Studio Rikka:
-    variables: {key: Studio Rikka, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Studio Signpost:
+    template: [name: standard, name: studios]
 
   Studio VOLN:
-    variables: {key: Studio VOLN, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  STUDIO4°C:
+    template: [name: standard, name: studios]
 
   Sunrise:
-    variables: {key: Sunrise, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Sunrise Beyond:
+    template: [name: standard, name: studios]
 
   SynergySP:
-    variables: {key: SynergySP, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Tatsunoko Production:
-    variables: {key: Tatsunoko Production, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Telecom Animation Film:
-    variables: {key: Telecom Animation Film, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Tezuka Productions:
-    variables: {key: Tezuka Productions, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Titmouse:
+    template: [name: standard, name: studios]
 
   TMS Entertainment:
-    variables: {key: TMS Entertainment, weight: 10}
-    template: [name: animes_studios]
+    variables: {key: TMS Entertainment, search: [TMS Entertainment, okyo Movie Shinsha]}
+    template: [name: standard, name: studios]
+
+  TNK:
+    template: [name: standard, name: studios]
 
   Toei Animation:
-    variables: {key: Toei Animation, weight: 10}
-    template: [name: animes_studios]
-
-  Tokyo Movie Shinsha:
-    variables: {key: TMS Entertainment, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Topcraft:
-    variables: {key: Topcraft, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Triangle Staff:
+    template: [name: standard, name: studios]
 
   TROYCA:
-    variables: {key: TROYCA, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Trigger:
-    variables: {key: Trigger, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   TYO Animations:
-    variables: {key: TYO Animations, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Typhoon Graphics:
+    template: [name: standard, name: studios]
 
   ufotable:
-    variables: {key: ufotable, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  V1 Studio:
+    template: [name: standard, name: studios]
+
+  Wawayu Animation:
+    template: [name: standard, name: studios]
 
   White Fox:
-    variables: {key: White Fox, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Wit Studio:
-    variables: {key: Wit Studio, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Wolfsbane:
+    template: [name: standard, name: studios]
+
+  W-Toon Studio:
+    template: [name: standard, name: studios]
+
+  Xebec:
+    template: [name: standard, name: studios]
 
   Yokohama Animation Lab:
-    variables: {key: Yokohama Animation Lab, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
 
   Yostar Pictures:
-    variables: {key: Yostar Pictures, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
+
+  Yumeta Company:
+    template: [name: standard, name: studios]
+
+  Zexcs:
+    template: [name: standard, name: studios]
 
   Zero-G:
-    variables: {key: Zero-G, weight: 10}
-    template: [name: animes_studios]
+    template: [name: standard, name: studios]
