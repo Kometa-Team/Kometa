@@ -533,7 +533,8 @@ class CollectionBuilder:
                 if str(self.sync_to_users) == "all":
                     self.valid_users = [p for p in plex_users if p not in self.exclude_users]
                 else:
-                    for user in util.get_list(self.sync_to_users):
+                    user_list = self.sync_to_users if isinstance(self.sync_to_users, list) else util.get_list(self.sync_to_users)
+                    for user in user_list:
                         if user not in plex_users:
                             raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
                         if user not in self.exclude_users:
