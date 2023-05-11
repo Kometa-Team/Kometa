@@ -94,7 +94,7 @@ class MyAnimeList:
                     self._authorization()
         except Exception:
             logger.stacktrace()
-            raise Failed("Tautulli Error: Failed to Connect")
+            raise Failed("MyAnimeList Error: Failed to Connect")
         self._genres = {}
         self._studios = {}
         self._delay = None
