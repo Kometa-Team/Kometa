@@ -56,6 +56,7 @@ templates:
 
 overlays:
   8bit:
+    variables: {key: 8bit, search: [8bit, 8-bit]}
     template: [name: standard, name: studios]
 
   A-1 Pictures:
@@ -75,6 +76,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Ajia-Do:
+    variables: {key: Ajia-Do, search: [Ajia-Do, Ajiado]}
     template: [name: standard, name: studios]
 
   Akatsuki:
@@ -113,9 +115,11 @@ overlays:
     template: [name: standard, name: studios]
 
   AtelierPontdarc:
+    variables: {key: AtelierPontdarc, search: [AtelierPontdarc, Atelier Pontdarc]}
     template: [name: standard, name: studios]
 
   B.CMAY PICTURES:
+    variables: {key: B.CMAY PICTURES, search: [B.CMAY PICTURES, G.CMay Animation & Film]}
     template: [name: standard, name: studios]
 
   Bakken Record:
@@ -235,6 +239,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Geek Toys:
+    variables: {key: Geek Toys, search: [Geek Toys, GEEKTOYS]}
     template: [name: standard, name: studios]
 
   Gekkou:
@@ -267,7 +272,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Haoliners Animation League:
-    variables: {key: Haoliners Animation League, search: [Haoliners Animation League,  Haoliners Huimeng Animation]}
+    variables: {key: Haoliners Animation League, search: [Haoliners Animation League, Haoliners Huimeng Animation, Haoliners Animation]}
     template: [name: standard, name: studios]
 
   Hoods Entertainment:
@@ -280,6 +285,7 @@ overlays:
     template: [name: standard, name: studios]
 
   J.C.Staff:
+    variables: {key: J.C.Staff, search: [J.C.Staff, J.C. Staff]}
     template: [name: standard, name: studios]
 
   Jumondou:
@@ -410,6 +416,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Production +h.:
+    variables: {key: Production +h., search: [Production +h., Production +h]}
     template: [name: standard, name: studios]
 
   Production I.G:
@@ -490,6 +497,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Studio Blanc.:
+    variables: {key: Studio Blanc., search: [Studio Blanc., Studio Blanc]}
     template: [name: standard, name: studios]
 
   Studio Chizu:
