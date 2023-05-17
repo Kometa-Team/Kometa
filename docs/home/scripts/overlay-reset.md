@@ -5,7 +5,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/meisnate12/pmm-overlay-reset?style=plastic)](https://hub.docker.com/r/meisnate12/pmm-overlay-reset)
 [![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/PMM-Overlay-Reset/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/PMM-Overlay-Reset/tree/develop)
 
-[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/NfH6mGFuAB)
+[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/plexmetamanager)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
 [![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki/en/latest/home/scripts/overlay-reset.html)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)

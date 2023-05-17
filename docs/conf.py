@@ -161,7 +161,7 @@ html_theme_options = {
             ("Feature Requests", "https://features.metamanager.wiki/"),
             ("Bugs/Issues", "https://github.com/meisnate12/Plex-Meta-Manager/issues"),
             ("User Configs Repository", "https://github.com/meisnate12/Plex-Meta-Manager-Configs"),
-            ("Discord Server", "https://discord.gg/NfH6mGFuAB"),
+            ("Discord Server", "https://discord.gg/plexmetamanager"),
             ("Donate/Sponsor", "https://github.com/sponsors/meisnate12"),
             ("Acknowledgements", "home/acknowledgements"),
         ]),
