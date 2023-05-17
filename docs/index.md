@@ -6,7 +6,7 @@
 [![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
 [![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
 
-[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/NfH6mGFuAB)
+[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/plexmetamanager)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
 [![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
 [![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/projects/plex-meta-manager/#languages)
@@ -144,7 +144,7 @@ git checkout master
 ```
 ````
 
-As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
+As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager).
 </details>
 
 ## Defaults and User Metadata/Overlay Files
@@ -156,13 +156,13 @@ To see user submitted Metadata configuration files, and you to even add your own
 Plex Meta Manager can manage the metadata fields for movies, shows, seasons, episodes, artists, albums, tracks, and collections, which can allow you to have a full backup of your customizations in case of a database loss.
 
 ## Discord Support Server
-Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB). we have a dedicated support thread system so that your query can be dealt with efficiently by our team and community.
+Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager). we have a dedicated support thread system so that your query can be dealt with efficiently by our team and community.
 
 ## Feature Requests
 If you have an idea for how to enhance Plex Meta Manager or just want to vote on what should be added next please visit the [Feature Request](https://features.metamanager.wiki/features) Page.
 
 ## Errors and Configuration Questions
-If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB), please follow this guidance:
+If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager), please follow this guidance:
 * If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) if the error persists.
 * If you see a mistake/typo with the [Plex Meta Manager Wiki](https://metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
 * If you have a metadata configuration query please post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).

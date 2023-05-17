@@ -469,7 +469,7 @@ class ConfigFile:
                     logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
-            logger.warning("notifiarr attribute not found")
+            logger.info("notifiarr attribute not found")
 
         self.webhooks = {
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
@@ -524,7 +524,7 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
-                logger.warning("omdb attribute not found")
+                logger.info("omdb attribute not found")
 
             logger.separator()
 
@@ -544,7 +544,7 @@ class ConfigFile:
                         logger.error(e)
                     logger.info("Mdblist Connection Failed")
             else:
-                logger.warning("mdblist attribute not found")
+                logger.info("mdblist attribute not found")
 
             logger.separator()
 
@@ -566,7 +566,7 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
             else:
-                logger.warning("trakt attribute not found")
+                logger.info("trakt attribute not found")
 
             logger.separator()
 
@@ -589,7 +589,7 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
             else:
-                logger.warning("mal attribute not found")
+                logger.info("mal attribute not found")
 
             self.AniDB = AniDB(self, {"language": check_for_attribute(self.data, "language", parent="anidb", default="en")})
             if "anidb" in self.data:
@@ -643,7 +643,7 @@ class ConfigFile:
                         logger.info(f"Playlist File Failed To Load")
                         logger.error(e)
             else:
-                logger.warning("playlist_files attribute not found")
+                logger.info("playlist_files attribute not found")
 
             self.TVDb = TVDb(self, self.general["tvdb_language"], self.general["cache_expiration"])
             self.IMDb = IMDb(self)
