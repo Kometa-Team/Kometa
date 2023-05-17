@@ -164,6 +164,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Cloud Hearts:
+    variables: {key: Cloud Hearts, search: [Cloud Hearts, CLOUDHEARTS]}
     template: [name: standard, name: studios]
 
   CloverWorks:
@@ -233,6 +234,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Gallop:
+    variables: {key: Gallop, search: [Gallop, Studio Gallop]}
     template: [name: standard, name: studios]
 
   GAINAX:
