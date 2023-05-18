@@ -391,6 +391,9 @@ class CollectionBuilder:
         if not self.name:
             self.name = self.mapping_name
 
+        if self.library and self.name not in self.library.collections:
+            self.library.collections.append(self.name)
+
         if self.playlist:
             if "libraries" not in methods:
                 raise Failed("Playlist Error: libraries attribute is required")
