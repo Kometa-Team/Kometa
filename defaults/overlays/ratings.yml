@@ -8,6 +8,7 @@
 templates:
   Rating:
     default:
+      builder_level: <<overlay_level>>
       rating<<rating_num>>_file: <<file>>
       rating<<rating_num>>_url: <<url>>
       rating<<rating_num>>_git: <<git>>
@@ -89,6 +90,9 @@ templates:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star]
+            value: false
+          - image_level: Top
+            builder_level: episode
             value: false
           - image_level: Top
             overlay_level: episode
@@ -441,7 +445,7 @@ templates:
         <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
-    overlay_level: <<overlay_level>>
+    builder_level: <<builder_level>>
     run_definition: <<run_this>>
     ignore_blank_results: true
     overlay:

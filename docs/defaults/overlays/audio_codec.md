@@ -51,10 +51,10 @@ libraries:
       - pmm: audio_codec
       - pmm: audio_codec
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: audio_codec
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -79,7 +79,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | Variable                     | Description & Values                                                                                         |
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
 | `style`                      | **Description:** Choose the Overlay Style.<br>**Default:** `compact`<br>**Values:** `compact` or `standard`  |
-| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
+| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
 | `regex_<<key>>`<sup>1</sup>  | **Description:** Controls the regex of the Overlay Search.<br>**Values:** Any Proper Regex                   |
 

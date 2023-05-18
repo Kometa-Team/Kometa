@@ -15,11 +15,16 @@ external_templates:
       horizontal_align:
         default: right
         conditions:
+          - builder_level: episode
+            value: center
           - overlay_level: episode
             value: center
       vertical_offset:
         default: 15
         conditions:
+          - vertical_align.exists: false
+            builder_level.not: episode
+            value: 1060
           - vertical_align.exists: false
             overlay_level.not: episode
             value: 1060
@@ -32,6 +37,9 @@ external_templates:
       horizontal_offset:
         default: 15
         conditions:
+          - horizontal_align.exists: false
+            builder_level: episode
+            value: 235
           - horizontal_align.exists: false
             overlay_level: episode
             value: 235

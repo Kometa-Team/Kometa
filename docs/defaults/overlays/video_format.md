@@ -35,10 +35,10 @@ libraries:
       - pmm: video_format
       - pmm: video_format
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: video_format
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -62,7 +62,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                         |
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
+| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
 | `font`                       | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                                                                                                                                                                                                                                                                  |
 | `font_style`                 | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                                                                                                                                                                                                                                                           |
 | `font_size`                  | **Description:** Choose the font size for the Overlay.<br>**Default:** `55`<br>**Values:** Any Number greater then 0                                                                                                                                                                                                                                                                                         |

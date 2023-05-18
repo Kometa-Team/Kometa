@@ -22,6 +22,7 @@ templates:
       overlay: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
+      builder_level: <<overlay_level>>
     conditionals:
       vertical_offset:
         default: 15
@@ -41,7 +42,7 @@ templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-    builder_level: <<overlay_level>>
+    builder_level: <<builder_level>>
     plex_search:
       validate: false
       all:

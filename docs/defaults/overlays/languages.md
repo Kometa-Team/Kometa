@@ -100,10 +100,10 @@ libraries:
       - pmm: languages
       - pmm: languages
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: languages
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -132,7 +132,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `languages`                   | **Description:** Controls which Languages will be active.<br>**Default:** `["en", "de", "fr", "es", "pt", "ja"]` <br>**Values:** List of [ISO 639-1 Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the Languages desired                                                                                   |
 | `use_subtitles`               | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
-| `overlay_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
+| `builder_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
 | `horizontal_position`         | **Description:** Choose the horizontal position for the flag group.<br>**Default:** `left`<br>**Values:** `left`, `left2`, `center`, `center_left`, `center_right`, `right` or `right2`                                                                                                                                       |
 | `vertical_position`           | **Description:** Choose the vertical position for the flag group.<br>**Default:** `top`<br>**Values:** `top`, `top2`, `top3`, `center`, `center_top`, `center_bottom`, `bottom`, `bottom2` or `bottom3`                                                                                                                       |
 | `overlay_limit`               | **Description:** Choose the number of overlay this queue displays.<br>**Default:** `3`<br>**Values:** `1`, `2`, `3`, `4`, or `5`                                                                                                                                                                                              |

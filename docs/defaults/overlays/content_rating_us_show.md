@@ -32,10 +32,10 @@ libraries:
       - pmm: content_rating_us_show
       - pmm: content_rating_us_show
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: content_rating_us_show
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -82,9 +82,9 @@ libraries:
       - pmm: content_rating_us_show
         template_variables:
           color: false
-          overlay_level: season
+          builder_level: season
       - pmm: content_rating_us_show
         template_variables:
           color: false
-          overlay_level: episode
+          builder_level: episode
 ```

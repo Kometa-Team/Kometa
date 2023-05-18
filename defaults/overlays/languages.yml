@@ -122,6 +122,8 @@ queues:
         vertical_position:
           default: top3
           conditions:
+            - builder_level: episode
+              value: top2
             - overlay_level: episode
               value: top2
       position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
