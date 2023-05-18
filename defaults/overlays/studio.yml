@@ -56,7 +56,7 @@ templates:
 
 overlays:
   8bit:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [8bit, 8-bit]}]
 
   A-1 Pictures:
     template: [name: standard, name: studios]
@@ -71,11 +71,10 @@ overlays:
     template: [name: standard, name: studios]
 
   AIC:
-    variables: {key: AIC, search: [AIC, AIC ASTA, AIC A.S.T.A, AIC Build, AAIC PLUS+, AIC RIGHTS, AIC Spirits]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [AIC, AIC ASTA, AIC A.S.T.A, AIC Build, AAIC PLUS+, AIC RIGHTS, AIC Spirits]}]
 
   Ajia-Do:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Ajia-Do, Ajiado]}]
 
   Akatsuki:
     template: [name: standard, name: studios]
@@ -87,8 +86,7 @@ overlays:
     template: [name: standard, name: studios]
 
   APPP:
-    variables: {key: APPP, search: [APPP, A.P.P.P.]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [APPP, A.P.P.P.]}]
 
   Arms:
     template: [name: standard, name: studios]
@@ -109,21 +107,19 @@ overlays:
     template: [name: standard, name: studios]
 
   asread.:
-    variables: {key: asread., search: [asread., Asread]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [asread., Asread]}]
 
   AtelierPontdarc:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [AtelierPontdarc, Atelier Pontdarc]}]
 
   B.CMAY PICTURES:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [B.CMAY PICTURES, G.CMay Animation & Film]}]
 
   Bakken Record:
     template: [name: standard, name: studios]
 
   Bandai Namco Pictures:
-    variables: {key: Bandai Namco Pictures, search: [Bandai Namco Pictures, Bandai Visual, Bandai Visual Company]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Bandai Namco Pictures, Bandai Visual, Bandai Visual Company]}]
 
   Bardel Entertainment:
     template: [name: standard, name: studios]
@@ -132,8 +128,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Bibury Animation Studios:
-    variables: {key: Bibury Animation Studios, search: [Bibury Animation Studios, Bibury Animation CG]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Bibury Animation Studios, Bibury Animation CG]}]
 
   bilibili:
     template: [name: standard, name: studios]
@@ -160,7 +155,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Cloud Hearts:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Cloud Hearts, CLOUDHEARTS]}]
 
   CloverWorks:
     template: [name: standard, name: studios]
@@ -175,15 +170,13 @@ overlays:
     template: [name: standard, name: studios]
 
   Craftar Studios:
-    variables: {key: Craftar Studios, search: [Craftar Studios, Craftar Studios]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Craftar Studios, Craftar Studios]}]
 
   Creators in Pack:
     template: [name: standard, name: studios]
 
   CygamesPictures:
-    variables: {key: CygamesPictures, search: [CygamesPictures, Cygames Pictures]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [CygamesPictures, Cygames Pictures]}]
 
   David Production:
     template: [name: standard, name: studios]
@@ -213,8 +206,7 @@ overlays:
     template: [name: standard, name: studios]
 
   feel.:
-    variables: {key: feel., search: [feel., Feel]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [feel., Feel]}]
 
   Felix Film:
     template: [name: standard, name: studios]
@@ -229,13 +221,13 @@ overlays:
     template: [name: standard, name: studios]
 
   Gallop:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Gallop, Studio Gallop]}]
 
   GAINAX:
     template: [name: standard, name: studios]
 
   Geek Toys:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Geek Toys, GEEKTOYS]}]
 
   Gekkou:
     template: [name: standard, name: studios]
@@ -250,12 +242,10 @@ overlays:
     template: [name: standard, name: studios]
 
   GoHands:
-    variables: {key: GoHands, search: [GoHands, Go Hands]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [GoHands, Go Hands]}]
 
   Gonzo:
-    variables: {key: Gonzo, search: [Gonzo, Gonzo Digimation]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Gonzo, Gonzo Digimation]}]
 
   Graphinica:
     template: [name: standard, name: studios]
@@ -267,8 +257,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Haoliners Animation League:
-    variables: {key: Haoliners Animation League, search: [Haoliners Animation League,  Haoliners Huimeng Animation]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Haoliners Animation League, Haoliners Huimeng Animation, Haoliners Animation]}]
 
   Hoods Entertainment:
     template: [name: standard, name: studios]
@@ -280,7 +269,7 @@ overlays:
     template: [name: standard, name: studios]
 
   J.C.Staff:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [J.C.Staff, J.C. Staff]}]
 
   Jumondou:
     template: [name: standard, name: studios]
@@ -298,8 +287,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Lan Studio:
-    variables: {key: Lan Studio, search: [Lan Studio, Studio LAN]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Lan Studio, Studio LAN]}]
 
   LandQ Studio:
     template: [name: standard, name: studios]
@@ -314,8 +302,7 @@ overlays:
     template: [name: standard, name: studios]
 
   LIDENFILMS:
-    variables: {key: LIDENFILMS, search: [LIDENFILMS, Liden Films]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [LIDENFILMS, Liden Films]}]
 
   M.S.C:
     template: [name: standard, name: studios]
@@ -387,15 +374,13 @@ overlays:
     template: [name: standard, name: studios]
 
   Pierrot:
-    variables: {key: Pierrot, search: [Pierrot, Pierrot Plus, Studio Pierrot]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Pierrot, Pierrot Plus, Studio Pierrot]}]
 
   Pine Jam:
     template: [name: standard, name: studios]
 
   Platinum Vision:
-    variables: {key: Platinum Vision, search: [Platinum Vision, PlatinumVision]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Platinum Vision, PlatinumVision]}]
 
   Polygon Pictures:
     template: [name: standard, name: studios]
@@ -410,7 +395,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Production +h.:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Production +h., Production +h]}]
 
   Production I.G:
     template: [name: standard, name: studios]
@@ -446,15 +431,13 @@ overlays:
     template: [name: standard, name: studios]
 
   Science SARU:
-    variables: {key: Science SARU, search: [Science SARU, Science Saru]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Science SARU, Science Saru]}]
 
   Sentai Filmworks:
     template: [name: standard, name: studios]
 
   Seven Arcs:
-    variables: {key: Seven Arcs, search: [Seven Arcs, Seven, even Arcs Pictures]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Seven Arcs, Seven, even Arcs Pictures]}]
 
   Shaft:
     template: [name: standard, name: studios]
@@ -463,19 +446,16 @@ overlays:
     template: [name: standard, name: studios]
 
   Shogakukan:
-    variables: {key: Shogakukan, search: [Shogakukan, Shogakukan Production]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Shogakukan, Shogakukan Production]}]
 
   Shuka:
     template: [name: standard, name: studios]
 
   SILVER LINK.:
-    variables: {key: SILVER LINK., search: [SILVER LINK., Silver Link]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [SILVER LINK., Silver Link]}]
 
   Signal.MD:
-    variables: {key: Signal.MD, search: [Signal.MD, Signal MD]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Signal.MD, Signal MD]}]
 
   Staple Entertainment:
     template: [name: standard, name: studios]
@@ -490,7 +470,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Studio Blanc.:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Studio Blanc., Studio Blanc]}]
 
   Studio Chizu:
     template: [name: standard, name: studios]
@@ -571,8 +551,7 @@ overlays:
     template: [name: standard, name: studios]
 
   TMS Entertainment:
-    variables: {key: TMS Entertainment, search: [TMS Entertainment, okyo Movie Shinsha]}
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [TMS Entertainment, okyo Movie Shinsha]}]
 
   TNK:
     template: [name: standard, name: studios]

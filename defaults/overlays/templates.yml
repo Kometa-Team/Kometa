@@ -33,6 +33,7 @@ templates:
       back_line_color_<<key>>: <<back_line_color>>
       back_line_width_<<key>>: <<back_line_width>>
       final_name: <<overlay_name>>
+      builder_level: <<overlay_level>>
     optional:
       - overlay_level
       - use_<<key>>
@@ -63,7 +64,7 @@ templates:
       - back_line_width
       - addon_offset
       - addon_position
-    overlay_level: <<overlay_level>>
+    builder_level: <<builder_level>>
     run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>

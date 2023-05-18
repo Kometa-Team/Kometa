@@ -80,10 +80,10 @@ libraries:
       - pmm: resolution
       - pmm: resolution
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: resolution
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -109,7 +109,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
 | `use_resolution`             | **Description:** Turns off all Resolution Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                       |
 | `use_edition`                | **Description:** Turns off all Edition Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                          |
-| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                |
+| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority. **Only works with Edition keys.**<br>**Values:** Any Number |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.

@@ -47,7 +47,7 @@ The below YAML in your config.yml will create the overlays:
           rating3_image: tmdb
       - pmm: ratings
         template_variables:
-          overlay_level: episode
+          builder_level: episode
           rating1: critic
           rating2: audience
           rating1_image: imdb
@@ -106,7 +106,7 @@ All [Shared Overlay Variables](../overlay_variables) can be appended by `rating1
 | `stroke_color`<sup>1</sup>   | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                      |
 | `addon_offset`<sup>1</sup>   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any Number greater then 0                                                                           |
 | `addon_position`<sup>1</sup> | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                                                     |
-| `overlay_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                             |
+| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                             |
 
 1. These Variables can be appended by `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
@@ -161,7 +161,7 @@ The below is an example config.yml extract with some Template Variables added in
           horizontal_position: right
       - pmm: ratings
         template_variables:
-          overlay_level: episode
+          builder_level: episode
           
           rating1: critic
           rating1_image: imdb

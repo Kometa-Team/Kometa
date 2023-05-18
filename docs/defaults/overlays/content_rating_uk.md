@@ -37,10 +37,10 @@ libraries:
       - pmm: content_rating_uk
       - pmm: content_rating_uk
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: content_rating_uk
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -74,7 +74,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `stroke_color`    | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                          |
 | `addon_offset`    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any Number greater then 0                                               |
 | `addon_position`  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                         |
-| `overlay_level`   | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                     |
+| `builder_level`   | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                     |
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

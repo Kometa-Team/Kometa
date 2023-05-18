@@ -19,10 +19,10 @@ libraries:
       - pmm: network
       - pmm: network
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: network
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 ## Template Variables
@@ -57,9 +57,9 @@ libraries:
       - pmm: network
         template_variables:
           vertical_offset: 390
-          overlay_level: season
+          builder_level: season
       - pmm: network
         template_variables:
           vertical_offset: 390
-          overlay_level: episode
+          builder_level: episode
 ```
