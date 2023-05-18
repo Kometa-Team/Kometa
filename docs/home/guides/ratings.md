@@ -4,7 +4,7 @@ How do ratings and ratings overlays work in PMM? This Guide will walk through so
 
 <h4>Basics</h4>
 
-Each thing in Plex that can have a rating [movie, show, episode, album, track] has three ratings "boxes" or "fields".  Critic, Audience, and User.
+Each thing in Plex that can have a rating [movie, show, episode, album, track] has three ratings "boxes" or "fields".  Critic, Audience, and User.  "Box" refers to a conceptual "box" representing a place for Plex to store a value [a "field" in Plex' database]; it does not represent a text box in the UI.
 
 The Critic and Audience ratings are typically managed by Plex, pulling from whatever you specify as the ratings source for the library; this is what determines the images that are displayed in the Plex UI.  The User rating is the star rating assigned by you to the item.
 
