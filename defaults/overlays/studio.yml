@@ -164,7 +164,7 @@ overlays:
     template: [name: standard, name: studios]
 
   CoMix Wave Films:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [CoMix Wave Films, CoMix Wave]}]
 
   Connect:
     template: [name: standard, name: studios]
@@ -278,7 +278,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Khara:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Khara, Studio Khara]}]
 
   Kinema Citrus:
     template: [name: standard, name: studios]
@@ -551,7 +551,7 @@ overlays:
     template: [name: standard, name: studios]
 
   TMS Entertainment:
-    template: [name: standard, {name: studios, search: [TMS Entertainment, okyo Movie Shinsha]}]
+    template: [name: standard, {name: studios, search: [TMS Entertainment, Tokyo Movie Shinsha]}]
 
   TNK:
     template: [name: standard, name: studios]
