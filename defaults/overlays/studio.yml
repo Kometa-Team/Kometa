@@ -55,6 +55,10 @@ templates:
         studio.is: <<search>>
 
 overlays:
+
+  20th Century Studios:
+    template: [name: standard, {name: studios, search: [20th Century, 20th Century Animation, 20th Century Fox]}]
+
   8bit:
     template: [name: standard, {name: studios, search: [8bit, 8-bit]}]
 
@@ -77,6 +81,12 @@ overlays:
     template: [name: standard, {name: studios, search: [Ajia-Do, Ajiado]}]
 
   Akatsuki:
+    template: [name: standard, name: studios]
+
+  Amazon Studios:
+    template: [name: standard, {name: studios, search: [Amazon]}]
+
+  Amblin Entertainment:
     template: [name: standard, name: studios]
 
   Animation Do:
@@ -136,6 +146,12 @@ overlays:
   Blade:
     template: [name: standard, name: studios]
 
+  Blue Sky Studios:
+    template: [name: standard, {name: studios, search: [Blue Sky Films]}]
+
+  Blumhouse Productions:
+    template: [name: standard, name: studios]
+
   Bones:
     template: [name: standard, name: studios]
 
@@ -151,6 +167,9 @@ overlays:
   C2C:
     template: [name: standard, name: studios]
 
+  Chernin Entertainment:
+    template: [name: standard, name: studios]
+
   Children's Playground Entertainment:
     template: [name: standard, name: studios]
 
@@ -163,10 +182,16 @@ overlays:
   Colored Pencil Animation:
     template: [name: standard, name: studios]
 
+  Columbia Pictures:
+    template: [name: standard, {name: studios, search: [Columbia TriStar, TriStar]}]
+
   CoMix Wave Films:
     template: [name: standard, {name: studios, search: [CoMix Wave Films, CoMix Wave]}]
 
   Connect:
+    template: [name: standard, name: studios]
+
+  Constantin Film:
     template: [name: standard, name: studios]
 
   Craftar Studios:
@@ -192,6 +217,9 @@ overlays:
 
   domerica:
     template: [name: standard, name: studios]
+
+  DreamWorks Studios:
+    template: [name: standard, {name: studios, search: [DreamWorks, DreamWorks Animation]}]
 
   Drive:
     template: [name: standard, name: studios]
@@ -250,6 +278,9 @@ overlays:
   Graphinica:
     template: [name: standard, name: studios]
 
+  Grindstone Entertainment Group:
+    template: [name: standard, name: studios]
+
   Group Tac:
     template: [name: standard, name: studios]
 
@@ -259,13 +290,22 @@ overlays:
   Haoliners Animation League:
     template: [name: standard, {name: studios, search: [Haoliners Animation League, Haoliners Huimeng Animation, Haoliners Animation]}]
 
+  Happy Madison Productions:
+    template: [name: standard, name: studios]
+
   Hoods Entertainment:
     template: [name: standard, name: studios]
 
   Hotline:
     template: [name: standard, name: studios]
 
+  Illumination Entertainment:
+    template: [name: standard, {name: studios, search: [Illumination Films]}]
+
   Imagin:
+    template: [name: standard, name: studios]
+
+  Ingenious Media:
     template: [name: standard, name: studios]
 
   J.C.Staff:
@@ -295,6 +335,9 @@ overlays:
   Lay-duce:
     template: [name: standard, name: studios]
 
+  Legendary Pictures:
+    template: [name: standard, name: studios]
+
   Legendary Television:
     template: [name: standard, name: studios]
 
@@ -304,10 +347,13 @@ overlays:
   LIDENFILMS:
     template: [name: standard, {name: studios, search: [LIDENFILMS, Liden Films]}]
 
-  M.S.C:
+  Lionsgate:
     template: [name: standard, name: studios]
 
-  Manglobe:
+  Lucasfilm Ltd:
+    template: [name: standard, {name: studios, search: [Lucasfilm]}]
+
+  M.S.C:
     template: [name: standard, name: studios]
 
   Madhouse:
@@ -319,10 +365,28 @@ overlays:
   Maho Film:
     template: [name: standard, name: studios]
 
+  Malevolent Films:
+    template: [name: standard, name: studios]
+
+  Manglobe:
+    template: [name: standard, name: studios]
+
   MAPPA:
     template: [name: standard, name: studios]
 
+  Marvel Studios:
+    template: [name: standard, {name: studios, search: [Marvel Animation, Marvel Enterprises, Marvel Entertainment, Marvel]}]
+
+  Metro-Goldwyn-Mayer:
+    template: [name: standard, {name: studios, search: [MGM]}]
+
+  Millennium Films:
+    template: [name: standard, name: studios]
+
   Millepensee:
+    template: [name: standard, name: studios]
+
+  Miramax:
     template: [name: standard, name: studios]
 
   Namu Animation:
@@ -330,6 +394,9 @@ overlays:
 
   NAZ:
     template: [name: standard, name: studios]
+
+  New Line Cinema:
+    template: [name: standard, {name: studios, search: [New Line]}]
 
   Nexus:
     template: [name: standard, name: studios]
@@ -358,6 +425,12 @@ overlays:
   Ordet:
     template: [name: standard, name: studios]
 
+  Original Film:
+    template: [name: standard, name: studios]
+
+  Orion Pictures:
+    template: [name: standard, name: studios]
+
   OZ:
     template: [name: standard, name: studios]
 
@@ -366,6 +439,9 @@ overlays:
 
   P.I.C.S.:
     template: [name: standard, name: studios]
+
+  Paramount Pictures:
+    template: [name: standard, {name: studios, search: [Paramount, Paramount Animation]}]
 
   Passione:
     template: [name: standard, name: studios]
@@ -377,6 +453,12 @@ overlays:
     template: [name: standard, {name: studios, search: [Pierrot, Pierrot Plus, Studio Pierrot]}]
 
   Pine Jam:
+    template: [name: standard, name: studios]
+
+  Pixar:
+    template: [name: standard, {name: studios, search: [Pixar Animation Studios]}]
+
+  PlanB Entertainment:
     template: [name: standard, name: studios]
 
   Platinum Vision:
@@ -457,6 +539,9 @@ overlays:
   Signal.MD:
     template: [name: standard, {name: studios, search: [Signal.MD, Signal MD]}]
 
+  Sony Pictures:
+    template: [name: standard, {name: studios, search: [Sony, Sony Pictures Animation]}]
+
   Staple Entertainment:
     template: [name: standard, name: studios]
 
@@ -529,6 +614,9 @@ overlays:
   STUDIO4°C:
     template: [name: standard, name: studios]
 
+  Summit Entertainment:
+    template: [name: standard, name: studios]
+
   Sunrise:
     template: [name: standard, name: studios]
 
@@ -580,8 +668,20 @@ overlays:
   ufotable:
     template: [name: standard, name: studios]
 
+  Universal Pictures:
+    template: [name: standard, {name: studios, search: [Universal, Universal Animation Studios]}]
+
   V1 Studio:
     template: [name: standard, name: studios]
+
+  Village Roadshow Pictures:
+    template: [name: standard, name: studios]
+
+  Walt Disney Pictures:
+    template: [name: standard, {name: studios, search: [Disney, Walt Disney Animation Studios]}]
+
+  Warner Bros. Pictures:
+    template: [name: standard, {name: studios, search: [Warner, Warner Animation Group]}]
 
   Wawayu Animation:
     template: [name: standard, name: studios]
@@ -615,107 +715,3 @@ overlays:
 
   Zero-G:
     template: [name: standard, name: studios]
-
-# non-Anime Studios
-
-  20th Century Studios:
-    template: [name: standard, {name: studios, search: [20th Century, 20th Century Animation, 20th Century Fox]}]
-
-  Amazon Studios:
-    template: [name: standard, {name: studios, search: [Amazon]}]
-
-  Amblin Entertainment:
-    template: [name: standard, name: studios]
-
-  Blue Sky Studios:
-    template: [name: standard, {name: studios, search: [Blue Sky Films]}]
-
-  Blumhouse Productions:
-    template: [name: standard, name: studios]
-
-  Chernin Entertainment:
-    template: [name: standard, name: studios]
-
-  Columbia Pictures:
-    template: [name: standard, {name: studios, search: [Columbia TriStar, TriStar]}]
-
-  Constantin Film:
-    template: [name: standard, name: studios]
-
-  DreamWorks Studios:
-    template: [name: standard, {name: studios, search: [DreamWorks, DreamWorks Animation]}]
-
-  Grindstone Entertainment Group:
-    template: [name: standard, name: studios]
-
-  Happy Madison Productions:
-    template: [name: standard, name: studios]
-
-  Illumination Entertainment:
-    template: [name: standard, {name: studios, search: [Illumination Films]}]
-
-  Ingenious Media:
-    template: [name: standard, name: studios]
-
-  Legendary Pictures:
-    template: [name: standard, name: studios]
-
-  Lionsgate:
-    template: [name: standard, name: studios]
-
-  Lucasfilm Ltd:
-    template: [name: standard, {name: studios, search: [Lucasfilm]}]
-
-  Malevolent Films:
-    template: [name: standard, name: studios]
-
-  Marvel Studios:
-    template: [name: standard, {name: studios, search: [Marvel Animation, Marvel Enterprises, Marvel Entertainment, Marvel]}]
-
-  Metro-Goldwyn-Mayer:
-    template: [name: standard, {name: studios, search: [MGM]}]
-
-  Millennium Films:
-    template: [name: standard, name: studios]
-
-  Miramax:
-    template: [name: standard, name: studios]
-
-  New Line Cinema:
-    template: [name: standard, {name: studios, search: [New Line]}]
-
-  Original Film:
-    template: [name: standard, name: studios]
-
-  Orion Pictures:
-    template: [name: standard, name: studios]
-
-  Paramount Pictures:
-    template: [name: standard, {name: studios, search: [Paramount, Paramount Animation]}]
-
-  Pixar:
-    template: [name: standard, {name: studios, search: [Pixar Animation Studios]}]
-
-  PlanB Entertainment:
-    template: [name: standard, name: studios]
-
-  Sony Pictures:
-    template: [name: standard, {name: studios, search: [Sony, Sony Pictures Animation]}]
-
-  Studio Ghibli:
-    template: [name: standard, name: studios]
-
-  Summit Entertainment:
-    template: [name: standard, name: studios]
-
-  Universal Pictures:
-    template: [name: standard, {name: studios, search: [Universal, Universal Animation Studios]}]
-
-  Village Roadshow Pictures:
-    template: [name: standard, name: studios]
-
-  Walt Disney Pictures:
-    template: [name: standard, {name: studios, search: [Disney, Walt Disney Animation Studios]}]
-
-  Warner Bros. Pictures:
-    template: [name: standard, {name: studios, search: [Warner, Warner Animation Group]}]
