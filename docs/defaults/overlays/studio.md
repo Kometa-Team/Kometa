@@ -34,7 +34,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:--------------------|:------------|
 | `horizontal_offset` | `15`        |
 | `horizontal_align`  | `left`      |
-| `vertical_offset`   | `370`       |
+| `vertical_offset`   | `150`       |
 | `vertical_align`    | `bottom`    |
 | `back_color`        | `#00000099` |
 | `back_radius`       | `30`        |
@@ -59,12 +59,14 @@ libraries:
     overlay_path:
       - pmm: studio
         template_variables:
+          builder_level: season
           vertical_align: bottom
           vertical_offset: 15
           horizontal_align: left
           horizontal_offset: 15
       - pmm: studio
         template_variables:
+          builder_level: episode
           vertical_align: top
           vertical_offset: 15
 ```
