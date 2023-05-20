@@ -37,7 +37,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 |:--------------------|:------------|
 | `horizontal_offset` | `15`        |
 | `horizontal_align`  | `left`      |
-| `vertical_offset`   | `370`       |
+| `vertical_offset`   | `510`       |
 | `vertical_align`    | `bottom`    |
 | `back_color`        | `#00000099` |
 | `back_radius`       | `30`        |

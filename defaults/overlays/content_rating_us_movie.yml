@@ -14,6 +14,10 @@ external_templates:
     horizontal_align: left
     vertical_offset: 270
     vertical_align: bottom
+    back_width: 305
+    back_height: 105
+    back_radius: 30
+    back_color: '#00000099'
     conditionals:
       inside_color:
         default: "c"
