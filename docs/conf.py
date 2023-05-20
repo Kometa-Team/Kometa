@@ -319,6 +319,7 @@ html_theme_options = {
                 ("Runtimes", "defaults/overlays/runtimes"),
                 ("Status", "defaults/overlays/status"),
                 ("Streaming", "defaults/overlays/streaming"),
+                ("Studios", "defaults/overlays/studio"),
                 ("Versions", "defaults/overlays/versions"),
                 ("Video Format", "defaults/overlays/video_format"),
             ]),
