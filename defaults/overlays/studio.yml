@@ -681,7 +681,7 @@ overlays:
     template: [name: standard, {name: studios, search: [Walt Disney Pictures, Disney, Walt Disney Animation Studios]}]
 
   Warner Bros. Pictures:
-    template: [name: standard, {name: studios, search: [Warner Bros. Pictures, Warner, Warner Animation Group]}]
+    template: [name: standard, {name: studios, search: [Warner Bros. Television, Warner Bros. Pictures, Warner, Warner Animation Group]}]
 
   Wawayu Animation:
     template: [name: standard, name: studios]
