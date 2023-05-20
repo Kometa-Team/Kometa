@@ -58,6 +58,7 @@ libraries:
   TV Shows:
     overlay_path:
       - pmm: studio
+      - pmm: studio
         template_variables:
           builder_level: season
           vertical_align: bottom
