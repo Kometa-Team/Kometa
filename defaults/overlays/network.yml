@@ -28,7 +28,7 @@ templates:
         default: 15
         conditions:
           - vertical_align.exists: false
-            value: 370
+            value: 510
           - vertical_align: center
             value: 0
           - vertical_align: top

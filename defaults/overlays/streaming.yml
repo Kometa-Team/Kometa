@@ -24,7 +24,7 @@ external_templates:
         default: 15
         conditions:
           - vertical_align.exists: false
-            value: 150
+            value: 390
           - vertical_align: center
             value: 0
           - vertical_align: top
