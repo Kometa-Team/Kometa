@@ -995,6 +995,9 @@ overlays:
   ufotable:
     template: [name: standard, name: studios]
 
+  Universal Animation Studios:
+    template: [name: standard, name: studios]
+
   Universal Pictures:
     template: [name: standard, {name: studios, search: [Universal Pictures, Universal, Universal Animation Studios]}]
 
