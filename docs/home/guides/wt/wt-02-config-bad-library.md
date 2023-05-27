@@ -48,11 +48,16 @@ libraries:                       # This is called out once within the config.yml
   Music:
     metadata_path:
       - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
+playlist_files:
+  - pmm: playlist                # This is a file within PMM's defaults folder
+  # see the wiki for how to use local files, folders, URLs, or files from git
 ```
 
 You will ultimately need an entry here for each of the libraries on which you want PMM to act.  Those top-level elements [Movies, TV Shows, Anime, Music] are names of libraries on your Plex server.
 
-For now, delete the “TV Shows”, “Anime”, and "Music" sections and change the name of the “Movies” section to “Movies-NOSUCHLIBRARY":
+For now, delete the “TV Shows”, “Anime”, and "Music" sections from the config file and change the name of the “Movies” section to “Movies-NOSUCHLIBRARY":
+
+The top bit of your config file should now looke like this:
 
 ```yaml
 libraries:
@@ -61,6 +66,12 @@ libraries:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
+playlist_files:
+  - pmm: playlist                # This is a file within PMM's defaults folder
+  # see the wiki for how to use local files, folders, URLs, or files from git
 ```
 
 This is intended to cause an error for illustration that you will then fix.
+
+Be very careful with the indentation and ensure it looks exactly like the above; each line indented using two spaces, NOT TABS, with `playlist_files:` all teh way over on the left.  Indentation is significant in YAML.
+
