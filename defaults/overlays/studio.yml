@@ -162,7 +162,7 @@ overlays:
     template: [name: standard, {name: studios, search: [asread., Asread]}]
 
   AtelierPontdarc:
-    template: [name: standard, {name: studios, search: [AtelierPontdarc, Atelier Pontdarc]}]
+    template: [name: standard, {name: studios, search: [AtelierPontdarc, AtelierPontdarc]}]
 
   B.CMAY PICTURES:
     template: [name: standard, {name: studios, search: [B.CMAY PICTURES, G.CMay Animation & Film]}]
@@ -294,7 +294,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Craftar Studios:
-    template: [name: standard, {name: studios, search: [Craftar Studios, Craftar Studios]}]
+    template: [name: standard, {name: studios, search: [Craftar Studios, Craftar]}]
 
   Creators in Pack:
     template: [name: standard, name: studios]
@@ -774,7 +774,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Seven Arcs:
-    template: [name: standard, {name: studios, search: [Seven Arcs, Seven, even Arcs Pictures]}]
+    template: [name: standard, {name: studios, search: [Seven Arcs, Seven, Seven Arcs Pictures]}]
 
   Shaft:
     template: [name: standard, name: studios]
@@ -846,7 +846,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Studio Deen:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Studio Deen, Studio DEEN]}]
 
   Studio Dragon:
     template: [name: standard, name: studios]
