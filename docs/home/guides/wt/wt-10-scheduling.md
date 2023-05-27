@@ -10,6 +10,6 @@ Plex Meta Manager also features multiple layers of scheduling, which you can lev
 
    Details on setting this up are found [here](../../../home/guides/scheduling.md).
 
- - In addition, individual items *within* the configuration can be scheduled to take place at certain times *provided PMM is running at that time*.  For example, you can tell PMM only to apply overlays on Tuesdays or the like.  YOu can then schedule manual runs every day at noon and overlays will only get processed when it runs on Tuesday.  This sort of schedule *will not* make PMM start up if it is not already running.  If you don't arrange for PMM to be run on Tuesday, your overlays would never be processed in this example.
+ - In addition, individual items *within* the configuration can be scheduled to take place at certain times *provided PMM is running at that time*.  For example, you can tell PMM only to apply overlays on Tuesdays or the like.  You can then schedule manual runs every day at noon and overlays will only get processed when it runs on Tuesday.  This sort of schedule *will not* make PMM start up if it is not already running.  If you don't arrange for PMM to be run on Tuesday, your overlays would never be processed in this example.
 
    Details on this level of scheduling are found [here](../../../metadata/details/schedule.md)
