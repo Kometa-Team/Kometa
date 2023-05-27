@@ -26,11 +26,11 @@ You can see there that PMM found its config file, was able to connect to TMDb, w
 
 Open the config file again and change "Movies-NOSUCHLIBRARY" to reflect *your own* Movie library in Plex.
 
-My Movies library is called “Main Movies", so mine looks like this:
+Say my Movies library is called “All The Movies", so mine looks like this:
 
 ```yaml
 libraries:
-  Main Movies:                            ## <<< CHANGE THIS LINE
+  All The Movies:                            ## <<< CHANGE THIS LINE
     metadata_path:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
@@ -50,4 +50,6 @@ playlist_files:
   # see the wiki for how to use local files, folders, URLs, or files from git
 ```
 
-Where `THE_NAME_OF_YOUR_MOVIE_LIBRARY` has been replaced by the name of your movie library as shown in Plex:
+Where `THE_NAME_OF_YOUR_MOVIE_LIBRARY` has been replaced by the name of your movie library as shown in Plex ["All The Movies" here]:
+
+![movie-lib-name](movie-lib-name.png)
