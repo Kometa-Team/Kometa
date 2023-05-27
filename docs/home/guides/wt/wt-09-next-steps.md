@@ -12,7 +12,7 @@ If you want to remove those collections, open the config file, remove or comment
 
 ```yaml
 libraries:
-  Main Movies:
+  All The Movies:
     metadata_path:
       # - pmm: basic               # This is a file within the defaults folder in the Repository
       # - pmm: imdb                # This is a file within the defaults folder in the Repository
