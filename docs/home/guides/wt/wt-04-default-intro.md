@@ -2,11 +2,16 @@ Plex-Meta-Manager provides an extensive collection of "default" metadata files.
 
 These files provide a simple way for you to create collections based on franchises or awards or actors, etc.
 
-The default config links to two of them:
+The default config links to two of them, thse two lines in your config file:
 
-```
-      - pmm: basic
-      - pmm: imdb
+```yaml
+libraries:
+  THE_NAME_OF_YOUR_MOVIE_LIBRARY:
+    metadata_path:
+      - pmm: basic               # <<< THIS LINE
+      - pmm: imdb                # <<< THIS LINE
+playlist_files:
+  - pmm: playlist
 ```
 
 The first will create:
