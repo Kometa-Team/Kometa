@@ -38,7 +38,8 @@ libraries:
 ```
 
 At this point, the top bit of your config file should look like this:
-```
+
+```yaml
 libraries:
   THE_NAME_OF_YOUR_MOVIE_LIBRARY:         ## <<< CHANGE THIS LINE
     metadata_path:
