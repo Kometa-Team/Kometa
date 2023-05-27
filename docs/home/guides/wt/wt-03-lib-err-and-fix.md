@@ -36,3 +36,18 @@ libraries:
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
 ```
+
+At this point, the top bit of your config file should look like this:
+```
+libraries:
+  THE_NAME_OF_YOUR_MOVIE_LIBRARY:         ## <<< CHANGE THIS LINE
+    metadata_path:
+      - pmm: basic               # This is a file within the defaults folder in the Repository
+      - pmm: imdb                # This is a file within the defaults folder in the Repository
+      # see the wiki for how to use local files, folders, URLs, or files from git
+playlist_files:
+  - pmm: playlist                # This is a file within PMM's defaults folder
+  # see the wiki for how to use local files, folders, URLs, or files from git
+```
+
+Where `THE_NAME_OF_YOUR_MOVIE_LIBRARY` has been replaced by the name of your movie library as shown in Plex:
