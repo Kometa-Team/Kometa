@@ -6,4 +6,4 @@ On my test library, this created four collections.  You may see fewer depending 
 
 ![default-collections](default-collections.png)
 
-Perhaps you can do everything you want with the defaults.  You can investigate what they can provide under the "Defaults" heading at the top.
+Perhaps you can do everything you want in terms of collections [award collections, actor collections, genre collections, franchise collections, etc] with the defaults.  You can investigate what they can provide under the "Defaults" heading at the top of this wiki.
