@@ -162,7 +162,7 @@ overlays:
     template: [name: standard, {name: studios, search: [asread., Asread]}]
 
   AtelierPontdarc:
-    template: [name: standard, {name: studios, search: [AtelierPontdarc, AtelierPontdarc]}]
+    template: [name: standard, {name: studios, search: [AtelierPontdarc, Atelier Pontdarc]}]
 
   B.CMAY PICTURES:
     template: [name: standard, {name: studios, search: [B.CMAY PICTURES, G.CMay Animation & Film]}]
