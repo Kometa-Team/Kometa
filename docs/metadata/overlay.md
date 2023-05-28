@@ -64,14 +64,13 @@ Each overlay definition needs to specify what overlay to use. This can happen in
     ```
    
 3. Using a dictionary for more overlay location options.
-
-```yaml
-overlays:
-  IMDb Top 250:
-    overlay:
-      name: IMDb Top 250
-    imdb_chart: top_movies
-```
+    ```yaml
+    overlays:
+      IMDb Top 250:
+        overlay:
+          name: IMDb Top 250
+        imdb_chart: top_movies
+    ```
 
 There are many attributes available when using overlays to edit how they work.
 
