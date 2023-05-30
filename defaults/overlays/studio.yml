@@ -525,10 +525,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Legendary Pictures:
-    template: [name: standard, name: studios]
-
-  Legendary Television:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Legendary Pictures, Legendary Television]}]
 
   Lerche:
     template: [name: standard, name: studios]
