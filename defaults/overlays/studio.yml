@@ -345,7 +345,7 @@ overlays:
     template: [name: standard, name: studios]
 
   EMT Squared:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [EMT Squared, EMT²]}]
 
   Encourage Films:
     template: [name: standard, name: studios]
@@ -411,7 +411,7 @@ overlays:
     template: [name: standard, {name: studios, search: [Geek Toys, GEEKTOYS]}]
 
   Gekkou:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Gekkou, GEKKOU Production]}]
 
   Gemba:
     template: [name: standard, name: studios]
@@ -606,7 +606,7 @@ overlays:
     template: [name: standard, {name: studios, search: [New Line Cinema, New Line]}]
 
   Nexus:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Nexus, Nexus Factory]}]
 
   Nickelodeon Animation Studio:
     template: [name: standard, name: studios]
@@ -642,7 +642,7 @@ overlays:
     template: [name: standard, name: studios]
 
   P.A. Works:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [P.A. Works, P.A.WORKS]}]
 
   P.I.C.S.:
     template: [name: standard, name: studios]
@@ -1050,7 +1050,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Yokohama Animation Lab:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Yokohama Animation Lab, Yokohama Animation Laboratory]}]
 
   Yostar Pictures:
     template: [name: standard, name: studios]

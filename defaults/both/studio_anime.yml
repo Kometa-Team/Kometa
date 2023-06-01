@@ -256,12 +256,16 @@ dynamic_collections:
         - Craftar
       CygamesPictures:
         - Cygames Pictures
+      EMT Squared:
+        - EMT²
       feel.:
         - Feel
       Gallop:
         - Studio Gallop
       Geek Toys:
         - GEEKTOYS
+      Gekkou:
+        - GEKKOU Production
       GoHands:
         - Go Hands
       Gonzo:
@@ -278,6 +282,10 @@ dynamic_collections:
         - Studio LAN
       LIDENFILMS:
         - Liden Films
+      Nexus:
+        - Nexus Factory
+      P.A. Works:
+        - P.A.WORKS
       Pierrot:
         - Pierrot Plus
         - Studio Pierrot
@@ -302,3 +310,5 @@ dynamic_collections:
         - Studio DEEN
       TMS Entertainment:
         - Tokyo Movie Shinsha
+      Yokohama Animation Lab:
+        - Yokohama Animation Laboratory
