@@ -107,7 +107,6 @@ All [Shared Overlay Variables](../overlay_variables) can be appended by `rating1
 | `addon_offset`<sup>1</sup>   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any Number greater then 0                                                                           |
 | `addon_position`<sup>1</sup> | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                                                     |
 | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                             |
-| `rating#_style: "/"` | Replace # with the rating number 1, 2 or 3 to use a 5 point system like letterboxd |
 
 1. These Variables can be appended by `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
