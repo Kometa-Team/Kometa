@@ -1,6 +1,6 @@
 ##############################################################################
 #                               Studio Overlay                               #
-#              Created by Yozora, Bullmoose20, Arialz & Sohjiro              #
+#              Created by Yozora, Bullmoose20, Arial-Z & Sohjiro             #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #     https://metamanager.wiki/en/latest/defaults/overlays/studios.html      #
 ##############################################################################
@@ -17,7 +17,7 @@ external_templates:
         default: 15
         conditions:
           - vertical_align.exists: false
-            value: 370
+            value: 150
           - vertical_align: center
             value: 0
           - vertical_align: top
@@ -57,7 +57,7 @@ templates:
 overlays:
 
   20th Century Studios:
-    template: [name: standard, {name: studios, search: [20th Century, 20th Century Animation, 20th Century Fox]}]
+    template: [name: standard, {name: studios, search: [20th Century Studios, 20th Century, 20th Century Animation, 20th Century Fox]}]
 
   8bit:
     template: [name: standard, {name: studios, search: [8bit, 8-bit]}]
@@ -84,7 +84,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Amazon Studios:
-    template: [name: standard, {name: studios, search: [Amazon]}]
+    template: [name: standard, {name: studios, search: [Amazon Studios, Amazon]}]
 
   Amblin Entertainment:
     template: [name: standard, name: studios]
@@ -147,7 +147,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Blue Sky Studios:
-    template: [name: standard, {name: studios, search: [Blue Sky Films]}]
+    template: [name: standard, {name: studios, search: [Blue Sky Studios, Blue Sky Films]}]
 
   Blumhouse Productions:
     template: [name: standard, name: studios]
@@ -183,7 +183,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Columbia Pictures:
-    template: [name: standard, {name: studios, search: [Columbia TriStar, TriStar]}]
+    template: [name: standard, {name: studios, search: [Columbia Pictures, Columbia TriStar, TriStar]}]
 
   CoMix Wave Films:
     template: [name: standard, {name: studios, search: [CoMix Wave Films, CoMix Wave]}]
@@ -219,7 +219,7 @@ overlays:
     template: [name: standard, name: studios]
 
   DreamWorks Studios:
-    template: [name: standard, {name: studios, search: [DreamWorks, DreamWorks Animation]}]
+    template: [name: standard, {name: studios, search: [DreamWorks Studios, DreamWorks, DreamWorks Animation]}]
 
   Drive:
     template: [name: standard, name: studios]
@@ -300,7 +300,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Illumination Entertainment:
-    template: [name: standard, {name: studios, search: [Illumination Films]}]
+    template: [name: standard, {name: studios, search: [Illumination Entertainment, Illumination Films]}]
 
   Imagin:
     template: [name: standard, name: studios]
@@ -351,7 +351,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Lucasfilm Ltd:
-    template: [name: standard, {name: studios, search: [Lucasfilm]}]
+    template: [name: standard, {name: studios, search: [Lucasfilm Ltd, Lucasfilm]}]
 
   M.S.C:
     template: [name: standard, name: studios]
@@ -375,10 +375,10 @@ overlays:
     template: [name: standard, name: studios]
 
   Marvel Studios:
-    template: [name: standard, {name: studios, search: [Marvel Animation, Marvel Enterprises, Marvel Entertainment, Marvel]}]
+    template: [name: standard, {name: studios, search: [Marvel Studios, Marvel Animation, Marvel Enterprises, Marvel Entertainment, Marvel]}]
 
   Metro-Goldwyn-Mayer:
-    template: [name: standard, {name: studios, search: [MGM]}]
+    template: [name: standard, {name: studios, search: [Metro-Goldwyn-Mayer, MGM]}]
 
   Millennium Films:
     template: [name: standard, name: studios]
@@ -396,7 +396,7 @@ overlays:
     template: [name: standard, name: studios]
 
   New Line Cinema:
-    template: [name: standard, {name: studios, search: [New Line]}]
+    template: [name: standard, {name: studios, search: [New Line Cinema, New Line]}]
 
   Nexus:
     template: [name: standard, name: studios]
@@ -441,7 +441,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Paramount Pictures:
-    template: [name: standard, {name: studios, search: [Paramount, Paramount Animation]}]
+    template: [name: standard, {name: studios, search: [Paramount Pictures, Paramount, Paramount Animation]}]
 
   Passione:
     template: [name: standard, name: studios]
@@ -456,7 +456,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Pixar:
-    template: [name: standard, {name: studios, search: [Pixar Animation Studios]}]
+    template: [name: standard, {name: studios, search: [Pixar, Pixar Animation Studios]}]
 
   PlanB Entertainment:
     template: [name: standard, name: studios]
@@ -540,7 +540,7 @@ overlays:
     template: [name: standard, {name: studios, search: [Signal.MD, Signal MD]}]
 
   Sony Pictures:
-    template: [name: standard, {name: studios, search: [Sony, Sony Pictures Animation]}]
+    template: [name: standard, {name: studios, search: [Sony Pictures, Sony, Sony Pictures Animation]}]
 
   Staple Entertainment:
     template: [name: standard, name: studios]
@@ -669,7 +669,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Universal Pictures:
-    template: [name: standard, {name: studios, search: [Universal, Universal Animation Studios]}]
+    template: [name: standard, {name: studios, search: [Universal Pictures, Universal, Universal Animation Studios]}]
 
   V1 Studio:
     template: [name: standard, name: studios]
@@ -678,10 +678,10 @@ overlays:
     template: [name: standard, name: studios]
 
   Walt Disney Pictures:
-    template: [name: standard, {name: studios, search: [Disney, Walt Disney Animation Studios]}]
+    template: [name: standard, {name: studios, search: [Walt Disney Pictures, Disney, Walt Disney Animation Studios]}]
 
   Warner Bros. Pictures:
-    template: [name: standard, {name: studios, search: [Warner, Warner Animation Group]}]
+    template: [name: standard, {name: studios, search: [Warner Bros. Television, Warner Bros. Pictures, Warner, Warner Animation Group]}]
 
   Wawayu Animation:
     template: [name: standard, name: studios]
