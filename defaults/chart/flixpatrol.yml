@@ -39,7 +39,7 @@ dynamic_collections:
     data:
       netflix: Netflix
       disney: Disney+
-      max: MAX
+      max: Max
       hulu: Hulu
       paramount: Paramount+
       prime: Prime Video

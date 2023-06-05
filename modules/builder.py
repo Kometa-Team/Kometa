@@ -1132,7 +1132,9 @@ class CollectionBuilder:
                     self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
         else:
             self.obj = None
-            self.sync = False
+            if self.sync:
+                logger.warning(f"{self.Type} Error: Sync Mode can only be append when using build_collection: false")
+                self.sync = False
             self.run_again = False
         if self.non_existing is not False and self.obj:
             raise NotScheduled(self.non_existing)
