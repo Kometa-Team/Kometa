@@ -23,6 +23,7 @@ Supported Library Types: Movie
 | `🎆 Independence Day Movies` | `independence` | Collection of Movies related to Independence Day.                           |
 | `⚒ Labor Day Movies`         | `labor`        | Collection of Movies related to Labor Day.                                  |
 | `🎃 Halloween Movies`        | `halloween`    | Collection of Movies related to Halloween.                                  |
+| `🎖 Veteran's Day Movies`    | `veteran`      | Collection of Movies related to Veteran's Day.                              |
 | `🦃 Thanksgiving Movies`     | `thanksgiving` | Collection of Movies related to Thanksgiving.                               |
 | `🎅 Christmas Movies`        | `christmas`    | Collection of Movies related to Christmas.                                  |
 
@@ -89,7 +90,7 @@ libraries:
           append_data:
             veteran: Veteran's Day
           schedule_veteran: range(11/01-11/30)
-          imdb_list_veteran: https://www.imdb.com/list/ls002014923/
+          imdb_list_veteran: https://www.imdb.com/list/ls565595526/
           emoji_veteran: "🪖 "
 ```
 
@@ -111,6 +112,7 @@ data:
   independence: Independence Day
   labor: Labor Day
   halloween: Halloween
+  veteran: Veteran's Day
   thanksgiving: Thanksgiving
   christmas: Christmas
 ```
@@ -154,7 +156,7 @@ imdb_list:
     - https://www.imdb.com/list/ls062665509/
     - https://www.imdb.com/list/ls051733651/
   mother: https://www.imdb.com/list/ls072551197/
-  memorial: https://www.imdb.com/list/ls002014923/
+  memorial: https://www.imdb.com/list/ls561621160/
   father: https://www.imdb.com/list/ls020471057/
   independence:
     - https://www.imdb.com/list/ls068664510/
@@ -163,6 +165,8 @@ imdb_list:
   halloween:
     - https://www.imdb.com/list/ls023118929/
     - https://www.imdb.com/list/ls000099714/
+  veteran:
+    - https://www.imdb.com/list/ls565595526/
   thanksgiving:
     - https://www.imdb.com/list/ls000835734/
     - https://www.imdb.com/list/ls091597850/
@@ -183,6 +187,7 @@ schedule:
   independence: range(06/23-07/11)
   labor: range(09/01-09/10)
   halloween: range(10/01-10/31)
+  veteran: range(11/01-11/30)
   thanksgiving: range(11/01-11/30)
   christmas: range(12/01-12/31)
 ```
