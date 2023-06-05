@@ -2,13 +2,13 @@ arrapi==1.4.2
 GitPython==3.1.31
 lxml==4.9.2
 num2words==0.5.12
-pathvalidate==2.5.2
+pathvalidate==3.0.0
 pillow==9.5.0
-PlexAPI==4.13.4
+PlexAPI==4.14.0
 psutil==5.9.5
 python-dotenv==1.0.0
 requests==2.31.0
 retrying==1.3.4
-ruamel.yaml==0.17.27
+ruamel.yaml==0.17.31
 schedule==1.2.0
 tmdbapis==1.2.0
