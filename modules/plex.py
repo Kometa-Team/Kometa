@@ -540,11 +540,22 @@ class Plex(Library):
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
         results = []
-        while self.Plex._totalViewSize is None or container_start <= self.Plex._totalViewSize:
-            results.extend(self.fetchItems(key, container_start, container_size))
-            logger.ghost(f"Loaded: {container_start}/{self.Plex._totalViewSize}")
+        total_size = 1
+        while total_size > len(results) and container_start <= total_size:
+            data = self.Plex._server.query(key, headers={"X-Plex-Container-Start": str(container_start), "X-Plex-Container-Size": str(container_size)})
+            subresults = self.Plex.findItems(data, initpath=key)
+            total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
+
+            librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+            if librarySectionID:
+                for item in subresults:
+                    item.librarySectionID = librarySectionID
+
+            results.extend(subresults)
             container_start += container_size
-        logger.info(f"Loaded {self.Plex._totalViewSize} {builder_level.capitalize()}s")
+            logger.ghost(f"Loaded: {total_size if container_start > total_size else container_start}/{total_size}")
+
+        logger.info(f"Loaded {total_size} {builder_level.capitalize()}s")
         if builder_level in [None, "show", "artist", "movie"]:
             self._all_items = results
         return results
@@ -559,10 +570,6 @@ class Plex(Library):
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def create_playlist(self, name, items):
         return self.PlexServer.createPlaylist(name, items=items)
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
-    def fetchItems(self, key, container_start, container_size):
-        return self.Plex.fetchItems(key, container_start=container_start, container_size=container_size)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def moveItem(self, obj, item, after):
