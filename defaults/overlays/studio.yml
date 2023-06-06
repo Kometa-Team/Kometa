@@ -443,7 +443,7 @@ overlays:
   Hal Film Maker:
     template: [name: standard, name: studios]
 
-  Hallmark Channel:
+  Hallmark:
     template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
 
   Haoliners Animation League:

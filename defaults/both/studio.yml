@@ -168,7 +168,7 @@ dynamic_collections:
       - Grindstone Entertainment Group
       - Group Tac
       - Hal Film Maker
-      - Hallmark Channel
+      - Hallmark
       - Haoliners Animation League
       - Happy Madison Productions
       - Hartswood Films
@@ -445,7 +445,8 @@ dynamic_collections:
         - Go Hands
       Gonzo:
         - Gonzo Digimation
-      Hallmark Channel:
+      Hallmark:
+        - Hallmark Channel
         - Hallmark Entertainment
         - Hallmark Media
         - Hallmark Movies & Mysteries
