@@ -496,7 +496,7 @@ class Plex(Library):
                 args = f"{args}&label={label_id}"
             else:
                 return []
-        return self.get_filter_items(args)
+        return self.fetchItems(args)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
@@ -526,6 +526,10 @@ class Plex(Library):
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
+    def fetchItems(self, uri_args):
+        return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{uri_args}")
 
     def get_all(self, builder_level=None, load=False):
         if load and builder_level in [None, "show", "artist", "movie"]:
@@ -865,7 +869,7 @@ class Plex(Library):
 
     def test_smart_filter(self, uri_args):
         logger.debug(f"Smart Collection Test: {uri_args}")
-        test_items = self.get_filter_items(uri_args)
+        test_items = self.fetchItems(uri_args)
         if len(test_items) < 1:
             raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
 
@@ -1035,7 +1039,7 @@ class Plex(Library):
         elif method == "plex_search":
             logger.info(f"Processing {data[1]}")
             logger.trace(data[2])
-            items = self.get_filter_items(data[2])
+            items = self.fetchItems(data[2])
         elif method == "plex_collectionless":
             good_collections = []
             logger.info(f"Processing Plex Collectionless")
@@ -1084,15 +1088,11 @@ class Plex(Library):
             return self.search(label=collection.title if isinstance(collection, Collection) else str(collection))
         elif isinstance(collection, (Collection, Playlist)):
             if collection.smart:
-                return self.get_filter_items(self.smart_filter(collection))
+                return self.fetchItems(self.smart_filter(collection))
             else:
                 return self.query(collection.items)
         else:
             return []
-
-    def get_filter_items(self, uri_args):
-        key = f"/library/sections/{self.Plex.key}/all{uri_args}"
-        return self.Plex._search(key, None, 0, plexapi.X_PLEX_CONTAINER_SIZE)
 
     def get_collection_name_and_items(self, collection, smart_label_collection):
         name = collection.title if isinstance(collection, (Collection, Playlist)) else str(collection)
