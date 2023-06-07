@@ -124,6 +124,6 @@ playlists:
       key: dragonball
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/qamazi/lists/dragon-ball-binged-out
+        trakt_list: https://trakt.tv/users/jamespgriffith/lists/everything-of-dragon-ball-ever-made-recommended-order
         summary_dragonball: Dragon Ball follows the adventures of an extraordinarily strong young boy named Goku as he searches for the seven dragon balls. These balls, when combined, can grant the owner any one wish he desires. Along the way he makes many new friends, and enemies, and he trains to become the strongest fighter in the world.
       - name: arr
