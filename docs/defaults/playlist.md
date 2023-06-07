@@ -94,7 +94,7 @@ The below Trakt lists are used to populate the playlists associated with the key
 trakt_list:
   arrow: https://trakt.tv/users/donxy/lists/arrowverse
   dcau: https://trakt.tv/users/donxy/lists/dc-animated-series-universe
-  dragonball: https://trakt.tv/users/qamazi/lists/dragon-ball-binged-out
+  dragonball: https://trakt.tv/users/jamespgriffith/lists/everything-of-dragon-ball-ever-made-recommended-order
   mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
   pokemon: https://trakt.tv/users/munch54/lists/pokemon-watching-order
   startrek: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
