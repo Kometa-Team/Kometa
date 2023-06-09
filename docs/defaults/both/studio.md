@@ -120,6 +120,7 @@ include:
   - AtelierPontdarc
   - B.CMAY PICTURES
   - Bad Hat Harry Productions
+  - Bad Robot
   - Bad Wolf
   - Bakken Record
   - Bandai Namco Pictures
@@ -505,7 +506,6 @@ addons:
     - Illumination Films
   J.C.Staff:
     - J.C. Staff
-    - Studio Khara
   Khara:
     - Studio Khara
   Lan Studio:

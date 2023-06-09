@@ -170,6 +170,9 @@ overlays:
   Bad Hat Harry Productions:
     template: [name: standard, name: studios]
 
+  Bad Robot:
+    template: [name: standard, name: studios]
+
   Bad Wolf:
     template: [name: standard, name: studios]
 
