@@ -170,6 +170,9 @@ overlays:
   Bad Hat Harry Productions:
     template: [name: standard, name: studios]
 
+  Bad Robot:
+    template: [name: standard, name: studios]
+
   Bad Wolf:
     template: [name: standard, name: studios]
 
@@ -442,6 +445,9 @@ overlays:
 
   Hal Film Maker:
     template: [name: standard, name: studios]
+
+  Hallmark:
+    template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
 
   Haoliners Animation League:
     template: [name: standard, {name: studios, search: [Haoliners Animation League, Haoliners Huimeng Animation, Haoliners Animation]}]
@@ -1023,7 +1029,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Warner Bros. Pictures:
-    template: [name: standard, {name: studios, search: [Warner Bros. Pictures, Warner, Warner Animation Group]}]
+    template: [name: standard, {name: studios, search: [Warner Bros. Pictures, Warner]}]
 
   Warner Bros. Television:
     template: [name: standard, name: studios]
