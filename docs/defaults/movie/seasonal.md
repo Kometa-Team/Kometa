@@ -26,6 +26,12 @@ Supported Library Types: Movie
 | `🎖 Veteran's Day Movies`    | `veteran`      | Collection of Movies related to Veteran's Day.                              |
 | `🦃 Thanksgiving Movies`     | `thanksgiving` | Collection of Movies related to Thanksgiving.                               |
 | `🎅 Christmas Movies`        | `christmas`    | Collection of Movies related to Christmas.                                  |
+| `🌊🌺 Asian American Pacific Islander Movies` | `aapi`    | Collection of Movies related to Asian American Pacific Islander Month |
+| `♿ Disability Month Movies     | `disabilities` | Collection of Movies related to Disability Month                          |
+| `✊ 🏿 Black History Month Movies  | `black_history` | Collection of Movies related to Black History Month                   | 
+| `🏳️‍🌈 LGBTQ Month Movies`         | `lgbtq`        | Collection of Movies related to LGBTQ Month                             | 
+| `🪅 National Hispanic Heritage Movies` | `latinx` | Collection of Movies related to National Hispanic Heritage Month        |
+| `🚺 Women's History Month Movies` | `women`       | Collection of Movies related to Women's History Month                    |
 
 ## Config
 
@@ -115,6 +121,12 @@ data:
   veteran: Veteran's Day
   thanksgiving: Thanksgiving
   christmas: Christmas
+  aapi: Asian American & Pacific Islander Heritage Month
+  disabilities: Day of Persons with Disabilities
+  black_history: Black History Month
+  lgbtq: LGBTQ+ Pride Month
+  latinx: Latinx Heritage Month
+  women: Women's History Month
 ```
 
 ### Default `tmdb_collection`
@@ -171,6 +183,33 @@ imdb_list:
     - https://www.imdb.com/list/ls000835734/
     - https://www.imdb.com/list/ls091597850/
   christmas: https://www.imdb.com/list/ls000096828/
+  women:
+    - https://www.imdb.com/search/keyword/?keywords=women-in-film&ref_=fn_kw_kw_9
+    - https://www.imdb.com/search/keyword/?keywords=women%27s-rights&ref_=fn_kw_kw_2
+    - https://www.imdb.com/search/keyword/?keywords=women%27s-suffrage&ref_=fn_kw_kw_13
+```
+
+### Default `mdblist`
+
+```yaml
+mdblist_list:
+  aapi:
+    - https://mdblist.com/lists/plexmetamanager/asian-american-pacific-islander-heritage-month
+  disabilities:
+    - https://mdblist.com/lists/plexmetamanager/day-of-persons-with-disabilities
+  lgbtq:
+    - https://mdblist.com/lists/plexmetamanager/lgbtq-pride-month
+  latinx:
+    - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
+```
+
+### Default `track_list`
+
+```yaml
+trakt_list:
+  black_history:
+    - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
+    - https://trakt.tv/users/bluephi8/lists/black-history?display=movie&sort=title,asc
 ```
 
 ### Default `schedule`
@@ -190,4 +229,10 @@ schedule:
   veteran: range(11/01-11/30)
   thanksgiving: range(11/01-11/30)
   christmas: range(12/01-12/31)
+  aapi: range(04/30-05/31)
+  disabilities: range(12/02-12/04)
+  black_history: range(02/01-03/01)
+  lgbtq: range(05/31-06/30)
+  latinx: range(09/15-10/15)
+  women: range(02/28-03/31)
 ```
