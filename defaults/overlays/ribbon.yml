@@ -27,6 +27,7 @@ templates:
     optional:
       - mdb_key
       - imdb_key
+      - use_<<key>>
     mdblist_list: https://mdblist.com/lists/plexmetamanager/<<mdb_key>><<library_type>>s
     imdb_chart: <<imdb_key>>_<<library_type>>s
 
@@ -34,7 +35,7 @@ overlays:
 
   Oscars Best Picture:
     variables: {key: oscars, weight: 50}
-    template: {name: standard, allowed_libraries: movie}
+    template: [name: standard, allowed_libraries: movie]
     imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
 
   IMDb Top 250:
@@ -65,5 +66,5 @@ overlays:
 
   Razzies Winner:
     variables: {key: razzie, weight: 2}
-    template: {name: standard, allowed_libraries: movie}
+    template: [name: standard, allowed_libraries: movie]
     imdb_list: https://www.imdb.com/search/title/?groups=razzie_winner
