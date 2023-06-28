@@ -64,6 +64,6 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Studio](both/studio)                                                               | `studio`             | DreamWorks Studios, Walt Disney Pictures               |      &#9989;      |     &#9989;      |
 | [Anime Studio](both/studio_anime)                                                   | `studio_anime`       | Bones, Studio Ghibli, Toei Animation                   |      &#9989;      |     &#9989;      |
 | [Subtitle Language](both/subtitle_language)                                         | `subtitle_language`  | German Subtitles, Swedish Subtitles                    |      &#9989;      |     &#9989;      |
-| [Universe](both/universe)                                                           | `universe`           | Marvel Cinematic Universal, Wizarding World            |      &#9989;      |     &#10060;     |
+| [Universe](both/universe)                                                           | `universe`           | Marvel Cinematic Universal, Wizarding World            |      &#9989;      |     &#9989;     |
 | [Year](both/year)                                                                   | `year`               | Best of 2010, Best of 2019                             |      &#9989;      |     &#9989;      |
 | [Writer](movie/writer)                                                              | `writer`             | James Cameron (Writer), Lilly Wachowski (Writer)       |      &#9989;      |     &#10060;     |
