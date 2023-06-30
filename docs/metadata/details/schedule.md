@@ -4,6 +4,10 @@ Plex Meta Manager allows you to schedule certain libraries/files so that runs ca
 
 This is particularly handy for users who have a lot of libraries or run a lot of Metadata/Operations on their libraries.
 
+### IMPORTANT:
+
+These schedules do not trigger PMM to run; they control what PMM will do if it happens to be running at the scheduled time.  `weekly(sunday)`, for example, does not mean "run PMM on Sunday to do this thing"; it means "If PMM is running, and it's Sunday, do this thing".
+
 The scheduling options are:
 
 | Name         | Description                                                                                      | Format                | Example                           |
