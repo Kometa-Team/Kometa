@@ -1223,10 +1223,10 @@ overlays:
   Triage Entertainment:
     template: [name: standard, name: studios]
 
-  Tribeca Productions:
+  Triangle Staff:
     template: [name: standard, name: studios]
 
-  Triangle Staff:
+  Tribeca Productions:
     template: [name: standard, name: studios]
 
   Trigger:
