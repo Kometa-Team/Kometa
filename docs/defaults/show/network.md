@@ -348,7 +348,6 @@ addons:
     - HBO Canada
     - HBO Family
     - HBO Mundi
-    - HBO Max
   Max:
     - HBO Go
   HGTV:
