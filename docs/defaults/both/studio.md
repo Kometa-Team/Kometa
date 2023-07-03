@@ -82,66 +82,445 @@ These are lists provided for reference to show what values will be in use if you
 
 ```yaml
 include:
+  - 3 Arts Entertainment
+  - 6th & Idaho
+  - 8bit
+  - 20th Century Animation
   - 20th Century Studios
+  - 20th Century Fox Television
+  - 21 Laps Entertainment
+  - 87North Productions
+  - 101 Studios
+  - A+E Studios
+  - A-1 Pictures
+  - A.C.G.T.
+  - A24
+  - ABC Signature
+  - ABC Studios
+  - Acca effe
+  - Actas
+  - AGBO
+  - AIC
+  - Ajia-Do
+  - Akatsuki
   - Amazon Studios
   - Amblin Entertainment
+  - AMC Studios
+  - Animation Do
+  - Ankama
+  - APPP
+  - Ardustry Entertainment
+  - Arms
+  - Artland
+  - Artmic
+  - Arvo Animation
+  - Asahi Production
+  - Ashi Productions
+  - asread.
+  - AtelierPontdarc
+  - B.CMAY PICTURES
+  - Bad Hat Harry Productions
+  - Bad Robot
+  - Bad Wolf
+  - Bakken Record
+  - Bandai Namco Pictures
+  - Bardel Entertainment
+  - BBC Studios
+  - Bee Train
+  - Berlanti Productions
+  - Bibury Animation Studios
+  - bilibili
+  - Blade
+  - Blown Deadline Productions
   - Blue Sky Studios
   - Blumhouse Productions
+  - Blur Studio
+  - Bones
+  - Bosque Ranch Productions
+  - Box to Box Films
+  - Brain's Base
+  - Brandywine Productions
+  - Bridge
+  - C-Station
+  - C2C
+  - Calt Production
+  - Canal+
+  - Carnival Films
+  - Castle Rock Entertainment
+  - CBS Productions
+  - CBS Studios
+  - Centropolis Entertainment
   - Chernin Entertainment
+  - Children's Playground Entertainment
+  - Chimp Television
+  - Cinergi Pictures Entertainment
+  - Cloud Hearts
+  - CloverWorks
+  - Colored Pencil Animation
   - Columbia Pictures
+  - CoMix Wave Films
+  - Connect
   - Constantin Film
+  - Cowboy Films
+  - Craftar Studios
+  - Creators in Pack
+  - CygamesPictures
+  - Dark Horse Entertainment
+  - David Production
+  - DC Comics
+  - Dino De Laurentiis Company
+  - Diomedéa
+  - DLE
+  - Doga Kobo
+  - domerica
+  - Doozer
+  - Dreams Salon Entertainment Culture
   - DreamWorks Studios
+  - DreamWorks Pictures
+  - Drive
+  - Eleventh Hour Films
+  - EMT Squared
+  - Encourage Films
+  - Endeavor Content
+  - ENGI
+  - Entertainment One
+  - Eon Productions
+  - Expectation Entertainment
+  - Fandango
+  - feel.
+  - Felix Film
+  - Fenz
+  - FilmDistrict
+  - FilmNation Entertainment
+  - Fortiche Production
+  - Frederator Studios
+  - Fuqua Films
+  - GAINAX
+  - Gallop
+  - Gallagher Films Ltd
+  - Gary Sanchez Productions
+  - Gaumont
+  - Geek Toys
+  - Gekkou
+  - Gemba
+  - GENCO
+  - Generator Entertainment
+  - Geno Studio
+  - GoHands
+  - Gonzo
+  - Graphinica
   - Grindstone Entertainment Group
+  - Group Tac
+  - Hal Film Maker
+  - Hallmark Channel
+  - Haoliners Animation League
   - Happy Madison Productions
+  - Hartswood Films
+  - HBO
+  - Hoods Entertainment
+  - Hotline
   - Illumination Entertainment
+  - Imagin
+  - Imperative Entertainment
   - Ingenious Media
+  - J.C.Staff
+  - Jerry Bruckheimer Films
+  - Jumondou
+  - Kadokawa
+  - Kazak Productions
+  - Kennedy Miller Productions
+  - Khara
+  - Kilter Films
+  - Kinema Citrus
+  - Kjam Media
+  - Kudos
+  - Kyoto Animation
+  - Lan Studio
+  - LandQ Studio
+  - Landscape Entertainment
+  - Laura Ziskin Productions
+  - Lay-duce
   - Legendary Pictures
+  - Lerche
+  - Let's Not Turn This Into a Whole Big Production
+  - LIDENFILMS
   - Lionsgate
+  - Lord Miller Productions
   - Lucasfilm Ltd
+  - M.S.C
+  - Madhouse
+  - Magic Bus
+  - Maho Film
   - Malevolent Films
+  - Mandarin
+  - Mandarin Motion Pictures Limited
+  - Manglobe
+  - MAPPA
+  - Marvel Animation
   - Marvel Studios
+  - Maximum Effort
+  - Media Res
   - Metro-Goldwyn-Mayer
   - Millennium Films
+  - Millepensee
   - Miramax
+  - Namu Animation
+  - NAZ
   - New Line Cinema
+  - Nexus
+  - Nickelodeon Animation Studio
+  - Nippon Animation
+  - Nomad
+  - Nut
+  - Okuruto Noboru
+  - OLM
+  - Orange
+  - Ordet
   - Original Film
   - Orion Pictures
+  - OZ
+  - P.A. Works
+  - P.I.C.S.
+  - Paramount Animation
   - Paramount Pictures
+  - Paramount Television Studios
+  - Passione
+  - Pb Animation Co. Ltd
+  - Pierrot
+  - Piki Films
+  - Pine Jam
   - Pixar
-  - PlanB Entertainment
+  - Plan B Entertainment
+  - Platinum Vision
+  - PlayStation Productions
+  - Plum Pictures
+  - Polygon Pictures
+  - Pony Canyon
+  - Powerhouse Animation Studios
+  - PRA
+  - Production +h.
+  - Production I.G
+  - Production IMS
+  - Production Reed
+  - Project No.9
+  - Prospect Park
+  - Pulse Films
+  - Quad
+  - Radix
+  - RatPac Entertainment
+  - Red Dog Culture House
+  - Regency Pictures
+  - Reveille Productions
+  - Revoroot
+  - RocketScience
+  - Saetta
+  - SANZIGEN
+  - Satelight
+  - Science SARU
+  - Scott Free Productions
+  - Sean Daniel Company
+  - Secret Hideout
+  - See-Saw Films
+  - Sentai Filmworks
+  - Seven Arcs
+  - Shaft
+  - Shin-Ei Animation
+  - Shogakukan
+  - Showtime Networks
+  - Shuka
+  - Signal.MD
+  - Sil-Metropole Organisation
+  - SILVER LINK.
+  - SISTER
+  - Sixteen String Jack Productions
+  - Sky studios
+  - Skydance
+  - Sony Pictures Animation
   - Sony Pictures
+  - Spyglass Entertainment
+  - Staple Entertainment
+  - Studio 3Hz
+  - Studio A-CAT
+  - Studio Babelsberg
+  - Studio Bind
+  - Studio Blanc.
+  - Studio Chizu
+  - Studio Comet
+  - Studio Deen
+  - Studio Dragon
+  - Studio Elle
+  - Studio Flad
   - Studio Ghibli
+  - Studio Gokumi
+  - Studio Guts
+  - Studio Hibari
+  - Studio Kafka
+  - Studio Kai
+  - Studio Mir
+  - studio MOTHER
+  - Studio Palette
+  - Studio Rikka
+  - Studio Signpost
+  - Studio VOLN
+  - STUDIO4°C
   - Summit Entertainment
+  - Sunrise Beyond
+  - Sunrise
+  - Syfy
+  - Syncopy
+  - SynergySP
+  - Tall Ship Productions
+  - Tatsunoko Production
+  - Team Downey
+  - Telecom Animation Film
+  - Tezuka Productions
+  - The Donners' Company
+  - The Kennedy-Marshall Company
+  - The Linson Company
+  - The Littlefield Company
+  - The Mark Gordon Company
+  - The Weinstein Company
+  - Titmouse
+  - TMS Entertainment
+  - TNK
+  - Toei Animation
+  - Tomorrow Studios
+  - Topcraft
+  - Touchstone Pictures
+  - Touchstone Television
+  - Triangle Staff
+  - Trigger
+  - TriStar Pictures
+  - TROYCA
+  - TYO Animations
+  - Typhoon Graphics
+  - UCP
+  - ufotable
+  - Universal Animation Studios
   - Universal Pictures
+  - Universal Television
+  - V1 Studio
   - Village Roadshow Pictures
+  - W-Toon Studio
+  - W. Chump and Sons
+  - Walt Disney Animation Studios
   - Walt Disney Pictures
+  - Warner Animation Group
   - Warner Bros. Pictures
+  - Warner Bros. Television
+  - Wawayu Animation
+  - Wayfare Entertainment
+  - White Fox
+  - Wiedemann & Berg Television
+  - Wit Studio
+  - Wolfsbane
+  - Xebec
+  - Yokohama Animation Lab
+  - Yostar Pictures
+  - Yumeta Company
+  - Zero-G
+  - Zexcs
 ```
 
 ### Default `addons`
 
 ```yaml
 addons:
+  8bit:
+    - 8-bit
   20th Century Studios:
     - 20th Century
     - 20th Century Animation
     - 20th Century Fox
+  AIC:
+    - AIC ASTA
+    - AIC A.S.T.A
+    - AIC Build
+    - AAIC PLUS+
+    - AIC RIGHTS
+    - AIC Spirits
+  Ajia-Do:
+    - Ajiado
   Amazon Studios:
     - Amazon
+  Amblin Entertainment:
+    - Amblin Television
+  APPP:
+    - A.P.P.P.
+  asread.:
+    - Asread
+  AtelierPontdarc:
+    - Atelier Pontdarc
+  B.CMAY PICTURES:
+    - G.CMay Animation & Film
+  Bandai Namco Pictures:
+    - Bandai Visual
+    - Bandai Visual Company
+  BBC Studios:
+    - BBC
+    - BBC Studios Natural History Unit
+  Bibury Animation Studios:
+    - Bibury Animation CG
   Blue Sky Studios:
     - Blue Sky Films
+  Cloud Hearts:
+    - CLOUDHEARTS
   Columbia Pictures:
     - Columbia TriStar
-    - TriStar
+  CoMix Wave Films:
+    - CoMix Wave
+  Craftar Studios:
+    - Craftar
+  CygamesPictures:
+    - Cygames Pictures
   DreamWorks Studios:
     - DreamWorks
     - DreamWorks Animation
+    - DreamWorks Animation Television
+    - DreamWorks Classics
+  EMT Squared:
+    - EMT²0
+  feel.:
+    - Feel
+  Gallop:
+    - Studio Gallop
+  Gaumont:
+    - Gaumont International Television
+  Geek Toys:
+    - GEEKTOYS
+  Gekkou:
+    - GEKKOU Production
+  GoHands:
+    - Go Hands
+  Gonzo:
+    - Gonzo Digimation
+  Hallmark Channel:
+    - Hallmark Entertainment
+    - Hallmark Media
+    - Hallmark Movies & Mysteries
+    - The Hallmark Channel
+  Haoliners Animation League:
+    - Haoliners Huimeng Animation
+    - Haoliners Animation
   Illumination Entertainment:
     - Illumination Films
+  J.C.Staff:
+    - J.C. Staff
+  Khara:
+    - Studio Khara
+  Lan Studio:
+    - Studio LAN
+  Legendary Pictures:
+    - Legendary Television
+  LIDENFILMS:
+    - Liden Films
   Lucasfilm Ltd:
     - Lucasfilm
+    - Lucasfilm Animation
+  Mandarin:
+    - Mandarin Films
+    - Mandarin Television
   Marvel Studios:
-    - Marvel Animation
     - Marvel Enterprises
     - Marvel Entertainment
     - Marvel
@@ -149,21 +528,67 @@ addons:
     - MGM
   New Line Cinema:
     - New Line
+  Nexus:
+    - Nexus Factory
+  P.A. Works:
+    - P.A.WORKS
   Paramount Pictures:
     - Paramount
-    - Paramount Animation
+  Pierrot:
+    - Pierrot Plus
+    - Studio Pierrot
   Pixar:
     - Pixar Animation Studios
+  Plan B Entertainment:
+    - PlanB Entertainment
+  Platinum Vision:
+    - PlatinumVision
+  Production +h.:
+    - Production +h
+  RatPac Entertainment:
+    - Dune Entertainment
+  Regency Pictures:
+    - Regency Enterprises
+    - New Regency Pictures
+    - Monarchy Enterprises S.a.r.l.
+  Science SARU:
+    - Science Saru
+  Seven Arcs:
+    - Seven
+    - Seven Arcs Pictures
+  Shogakukan:
+    - Shogakukan Production
+  Signal.MD:
+    - Signal MD
+  SILVER LINK.:
+    - Silver Link
+  Sky studios:
+    - British Sky Broadcasting
+    - British Sky Broadcasting(BSkyB)
   Sony Pictures:
     - Sony
     - Sony Pictures Animation
+    - Sony Pictures Television Studios
+  Studio Blanc.:
+    - Studio Blanc
+  Studio Deen:
+    - Studio DEEN
+  The Kennedy-Marshall Company:
+    - The Kennedy/Marshall Company
+  The Mark Gordon Company:
+    - Tiger Aspect Productions
+  TMS Entertainment:
+    - Tokyo Movie Shinsha
+  TriStar Pictures:
+  - TriStar
   Universal Pictures:
     - Universal
     - Universal Animation Studios
   Walt Disney Pictures:
     - Disney
-    - Walt Disney Animation Studios
   Warner Bros. Pictures:
     - Warner
     - Warner Animation Group
+  Yokohama Animation Lab:
+    - Yokohama Animation Laboratory
 ```
