@@ -41,9 +41,14 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `back_width`        | `305`       |
 | `back_height`       | `105`       |
 
-| Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                         |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                      |                                                                                                                                                                                                                                    
+| Variable            | Description & Values                                                                    |
+|:--------------------|:----------------------------------------------------------------------------------------|
+| `builder_level`     | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`         |
+| `style`             | **Description:** Choose between the standard size or the **bigger** one.<br>**Values:** or `bigger` |
+
+Preview of the bigger style
+
+![](images/studio_bigger.jpg)
 
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
@@ -65,6 +70,7 @@ libraries:
           vertical_offset: 15
           horizontal_align: left
           horizontal_offset: 15
+          style: bigger
       - pmm: studio
         template_variables:
           builder_level: episode
