@@ -1,6 +1,6 @@
 ##############################################################################
 #                               Studio Overlay                               #
-#              Created by Yozora, Bullmoose20, Arial-Z & Sohjiro             #
+#       Created by Yozora, Bullmoose20, anon_fawkes Arial-Z & Sohjiro        #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #     https://metamanager.wiki/en/latest/defaults/overlays/studios.html      #
 ##############################################################################
@@ -9,7 +9,7 @@ external_templates:
   pmm: templates
   template_variables:
     default:
-      width_value: 465
+      width_value: 470
       height_value: 120
       key: <<overlay_name>>
       horizontal_align: left
