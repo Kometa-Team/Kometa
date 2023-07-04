@@ -9,10 +9,23 @@ external_templates:
   pmm: templates
   template_variables:
     default:
+      width_value: 465
+      height_value: 120
       key: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
+      style: standard
     conditionals:
+      back_height:
+        default: 105
+        conditions:
+          - style: bigger
+            value: <<height_value>>
+      back_width:
+        default: 305
+        conditions:
+          - style: bigger
+            value: <<width_value>>
       vertical_offset:
         default: 15
         conditions:
@@ -31,17 +44,14 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
+      url:
         conditions:
           - file.exists: false
-            url.exists: false
             git.exists: false
             repo.exists: false
-            value: studio/<<key>>
+            value: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/mmaster/studio/overlays/<<style>>/<<key>>.png
     back_color: "#00000099"
     back_radius: 30
-    back_width: 305
-    back_height: 105
 
 templates:
   studios:
