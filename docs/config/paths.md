@@ -11,7 +11,35 @@ The path types are outlined as follows:
 * `- url:` refers to a metadata file which is hosted publicly on the internet. 
 * `- git:` refers to a metadata file which is hosted on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
 * `- repo:` refers to a metadata file which is hosted on a custom repository specified by the user with the [`custom_repo` Setting Attribute](settings.md#custom-repo).
-* `- pmm:` refers to a metadata file which is part of the built-in [default metadta files](../defaults/guide.md).
+* `- pmm:` refers to a metadata file which is part of the built-in [default metadata files](../defaults/guide.md).
+
+## Examples
+
+```yaml
+libraries:
+  Movies:
+    metadata_path:
+      - file: config/path/to/file.yml
+      - folder: config/path/to/folder
+```
+File and folder paths need to be accessible to PMM at those paths; this is typically only something you need to consider when using Docker.
+```
+      - url: https://example.com/path/to/file.yml
+```
+This needs to point directly to the YAML file.  A common error is using a github link that points to the *page displaying the YAML*.  In github, for instance, click on the "Raw" button and use *that* link.
+```
+      - git: meisnate12/People # this links to https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/meisnate12/People.yml
+```
+Note that you enter the bits of the items path relative to the top level of the repo [`meisnate12/People`] and you don't need the `.yml` extension.
+```
+      - repo: People
+```
+This is assuming the `custom_repo` setting is `https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12`
+Note that as with `- git:` you enter the bits of the items path relative to repo [`meisnate12/People`] and you don't need the `.yml` extension.
+```
+      - pmm: oscars
+```
+The values you'd enter here are listed in the [default metadata guide](../defaults/guide.md).
 
 ## YAML Controls
 
