@@ -437,7 +437,7 @@ overlays:
     template: [name: flags, name: standard]
 
   filipino:
-    variables: {key: fl, text: FL, weight: 270, country: ph}
+    variables: {key: tl, text: FL, weight: 270, country: ph}
     template: [name: flags, name: standard]
 
   galician:
