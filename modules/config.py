@@ -1076,10 +1076,13 @@ class ConfigFile:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
 
-    def get_html(self, url, headers=None, params=None):
+    def default_headers():
+        return {"User-Agent": "Mozilla/5.0 Firefox/102.0"}
+    
+    def get_html(self, url, headers=default_headers(), params=None):
         return html.fromstring(self.get(url, headers=headers, params=params).content)
 
-    def get_json(self, url, json=None, headers=None, params=None):
+    def get_json(self, url, json=None, headers=default_headers(), params=None):
         response = self.get(url, json=json, headers=headers, params=params)
         try:
             return response.json()
@@ -1088,16 +1091,16 @@ class ConfigFile:
             raise
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def get(self, url, json=None, headers=None, params=None):
+    def get(self, url, json=None, headers=default_headers(), params=None):
         return self.session.get(url, json=json, headers=headers, params=params)
 
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode('utf-8')
 
-    def post_html(self, url, data=None, json=None, headers=None):
+    def post_html(self, url, data=None, json=None, headers=default_headers()):
         return html.fromstring(self.post(url, data=data, json=json, headers=headers).content)
 
-    def post_json(self, url, data=None, json=None, headers=None):
+    def post_json(self, url, data=None, json=None, headers=default_headers()):
         response = self.post(url, data=data, json=json, headers=headers)
         try:
             return response.json()
@@ -1106,7 +1109,7 @@ class ConfigFile:
             raise
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def post(self, url, data=None, json=None, headers=None):
+    def post(self, url, data=None, json=None, headers=default_headers()):
         return self.session.post(url, data=data, json=json, headers=headers)
 
     @property
