@@ -46,7 +46,7 @@ Supported library types: Movie & Show
 | Estonian                 | `et` | `300`  | `ee`         |  &#10060;   |
 | Basque                   | `eu` | `290`  | `es`         |  &#10060;   |
 | Finnish                  | `fi` | `280`  | `fi`         |  &#10060;   |
-| Filipino                 | `fl` | `270`  | `ph`         |  &#10060;   |
+| Filipino                 | `tl` | `270`  | `ph`         |  &#10060;   |
 | Galician                 | `gl` | `260`  | `es`         |  &#10060;   |
 | Hebrew                   | `he` | `250`  | `il`         |  &#10060;   |
 | Croatian                 | `hr` | `240`  | `hr`         |  &#10060;   |
