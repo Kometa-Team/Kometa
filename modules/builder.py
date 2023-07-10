@@ -2605,7 +2605,7 @@ class CollectionBuilder:
                 return False
             if self.has_imdb_filters and tmdb_item and tmdb_item.imdb_id:
                 try:
-                    imdb_info = self.config.IMDb.keywords(tmdb_item.imdb_id)
+                    imdb_info = self.config.IMDb.keywords(tmdb_item.imdb_id, self.language)
                 except Failed as e:
                     logger.error(e)
                     return False
@@ -2678,7 +2678,7 @@ class CollectionBuilder:
                             or_result = False
                         else:
                             try:
-                                imdb_info = self.config.IMDb.keywords(self.library.imdb_rating_key_map[item.ratingKey])
+                                imdb_info = self.config.IMDb.keywords(self.library.imdb_rating_key_map[item.ratingKey], self.language)
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
