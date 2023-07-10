@@ -361,6 +361,10 @@ overlays:
   HBO:
     variables: {key: HBO, weight: 10}
     template: [name: networks]
+ 
+  HBO Max:
+    variables: {key: HBO Max, weight: 10}
+    template: [name: networks]
 
   HGTV:
     variables: {key: HGTV, weight: 10}
@@ -440,6 +444,10 @@ overlays:
 
   Netflix:
     variables: {key: Netflix, weight: 10}
+    template: [name: networks]
+
+  Network 10:
+    variables: {key: Network 10, weight: 10}
     template: [name: networks]
 
   Nick Jr:
