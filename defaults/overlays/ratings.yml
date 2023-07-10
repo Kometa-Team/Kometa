@@ -449,7 +449,7 @@ templates:
     run_definition: <<run_this>>
     ignore_blank_results: true
     overlay:
-      name: text(<<<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>>>)
+      name: text(<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>)
       file: <<rating<<rating_num>>_file>>
       url: <<rating<<rating_num>>_url>>
       git: <<rating<<rating_num>>_git>>

@@ -286,6 +286,7 @@ class Overlays:
                                             full_text = re.sub(sub_value, str(final_value), full_text)
                                         else:
                                             full_text = full_text.replace(f"<<{format_var}{mod}>>", str(final_value))
+                                        break
                                     return str(full_text)
 
                                 for over_name in applied_names:
