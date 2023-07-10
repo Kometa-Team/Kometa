@@ -34,6 +34,14 @@ class IMDb:
         self._genres = None
         self._episode_ratings = None
 
+    def _request(self, url, language=None, xpath=None, params=None):
+        logger.trace(f"URL: {url}")
+        if params:
+            logger.trace(f"Params: {params}")
+        headers = util.header(language) if language else util.header()
+        response = self.config.get_html(url, headers=headers, params=params)
+        return response.xpath(xpath) if xpath else response
+
     def validate_imdb_lists(self, err_type, imdb_lists, language):
         valid_lists = []
         for imdb_dict in util.get_list(imdb_lists, split=False):
@@ -85,8 +93,7 @@ class IMDb:
 
     def _watchlist(self, user, language):
         imdb_url = f"{base_url}/user/{user}/watchlist"
-        response = self.config.get_html(imdb_url, headers=util.header(language))
-        group = response.xpath("//span[@class='ab_widget']/script[@type='text/javascript']/text()")
+        group = self._request(imdb_url, language=language, xpath="//span[@class='ab_widget']/script[@type='text/javascript']/text()")
         if group:
             return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
         raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
@@ -104,7 +111,7 @@ class IMDb:
         else:
             xpath_total = "//div[@class='desc']/text()"
             per_page = 50
-        results = self.config.get_html(imdb_url, headers=util.header(language)).xpath(xpath_total)
+        results = self._request(imdb_url, language=language, xpath=xpath_total)
         total = 0
         for result in results:
             if "title" in result:
@@ -119,7 +126,6 @@ class IMDb:
 
     def _ids_from_url(self, imdb_url, language, limit):
         total, item_count = self._total(imdb_url, language)
-        headers = util.header(language)
         imdb_ids = []
         parsed_url = urlparse(imdb_url)
         params = parse_qs(parsed_url.query)
@@ -146,8 +152,7 @@ class IMDb:
                 params["start"] = start_num # noqa
             else:
                 params["page"] = i # noqa
-            response = self.config.get_html(imdb_base, headers=headers, params=params)
-            ids_found = response.xpath("//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst")
+            ids_found = self._request(imdb_base, language=language, xpath="//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst", params=params)
             if not search_url and i == num_of_pages:
                 ids_found = ids_found[:remainder]
             imdb_ids.extend(ids_found)
@@ -157,15 +162,14 @@ class IMDb:
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
 
-    def keywords(self, imdb_id, ignore_cache=False):
+    def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
         expired = None
         if self.config.Cache and not ignore_cache:
             imdb_keywords, expired = self.config.Cache.query_imdb_keywords(imdb_id, self.config.Cache.expiration)
             if imdb_keywords and expired is False:
                 return imdb_keywords
-        response = self.config.get_html(f"https://www.imdb.com/title/{imdb_id}/keywords")
-        keywords = response.xpath("//td[@class='soda sodavote']")
+        keywords = self._request(f"https://www.imdb.com/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
             raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
         for k in keywords:
@@ -187,7 +191,7 @@ class IMDb:
             parental_dict, expired = self.config.Cache.query_imdb_parental(imdb_id, self.config.Cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        response = self.config.get_html(f"https://www.imdb.com/title/{imdb_id}/parentalguide")
+        response = self._request(f"https://www.imdb.com/title/{imdb_id}/parentalguide")
         for ptype in util.parental_types:
             results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
             if results:
@@ -198,7 +202,7 @@ class IMDb:
             self.config.Cache.update_imdb_parental(expired, imdb_id, parental_dict, self.config.Cache.expiration)
         return parental_dict
 
-    def _ids_from_chart(self, chart):
+    def _ids_from_chart(self, chart, language):
         if chart == "box_office":
             url = "chart/boxoffice"
         elif chart == "popular_movies":
@@ -217,7 +221,7 @@ class IMDb:
             url = "chart/bottom"
         else:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        return self.config.get_html(f"https://www.imdb.com/{url}").xpath("//div[@class='wlb_ribbon']/@data-tconst")
+        return self._request(f"https://www.imdb.com/{url}", language=language, xpath="//div[@class='wlb_ribbon']/@data-tconst")
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
@@ -229,7 +233,7 @@ class IMDb:
             return [(i, "imdb") for i in self._ids_from_url(data["url"], language, data["limit"])]
         elif method == "imdb_chart":
             logger.info(f"Processing IMDb Chart: {charts[data]}")
-            return [(_i, "imdb") for _i in self._ids_from_chart(data)]
+            return [(_i, "imdb") for _i in self._ids_from_chart(data, language)]
         elif method == "imdb_watchlist":
             logger.info(f"Processing IMDb Watchlist: {data}")
             return [(_i, "imdb") for _i in self._watchlist(data, language)]
