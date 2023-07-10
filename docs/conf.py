@@ -249,6 +249,7 @@ html_theme_options = {
                 ]),
                 ("_menu", "Movie", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
+                    ("Aspect Ratio", "defaults/both/aspect"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
@@ -274,6 +275,7 @@ html_theme_options = {
                 ]),
                 ("_menu", "Show", "defaults/collections", "#general-collections", [
                     ("Actors", "defaults/both/actor"),
+                    ("Aspect Ratio", "defaults/both/aspect"),
                     ("Audio Languages", "defaults/both/audio_language"),
                     ("Based On...", "defaults/both/based"),
                     ("Collectionless", "defaults/both/collectionless"),
@@ -300,6 +302,7 @@ html_theme_options = {
                 ("Overlays", "defaults/overlays"),
                 ("Shared Variables", "defaults/overlay_variables"),
                 ("_divider", ),
+                ("Aspect Ratio", "defaults/overlays/aspect"),
                 ("Audio Codec", "defaults/overlays/audio_codec"),
                 ("Common Sense Age Ratings", "defaults/overlays/commonsense"),
                 ("Content Ratings (UK)", "defaults/overlays/content_rating_uk"),
