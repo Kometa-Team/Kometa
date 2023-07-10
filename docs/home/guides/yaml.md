@@ -141,7 +141,7 @@ The first item in the list is `config/movie assets` and the second is `config/tv
 
 ### In-Line Lists
 
-you can represent a dictionary on a single line by using `[` and `]`
+you can represent a list on a single line by using `[` and `]`
 
 ```yaml
 settings:
