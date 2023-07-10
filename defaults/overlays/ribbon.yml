@@ -37,6 +37,11 @@ overlays:
     template: {name: standard, allowed_libraries: movie}
     imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
 
+  Oscars Best Director:
+    variables: {key: oscars_director, weight: 45}
+    template: {name: standard, allowed_libraries: movie}
+    imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
+
   IMDb Top 250:
     variables: {key: imdb, weight: 40, imdb_key: top}
     template: [name: standard, name: ribbon]
