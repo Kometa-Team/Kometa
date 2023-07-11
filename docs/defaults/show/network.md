@@ -190,7 +190,7 @@ include:
   ## Addtional Thoughts
   - ABC Family # 92 shows - addon to ABC or Freeform depending on user pref
   - BET+ # 19 shows
-
+  - Network 10
   ## Networks with posters already made
   - ABC Kids # Should be ABC TV addon
   - Acorn TV # 17 shows
