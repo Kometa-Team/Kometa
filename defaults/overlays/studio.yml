@@ -50,7 +50,7 @@ external_templates:
             url.exists: false
             git.exists: false
             repo.exists: false
-            value: studio/overlays/<<style>>/<<key>>
+            value: studio/<<style>>/<<key>>
     back_color: "#00000099"
     back_radius: 30
 
