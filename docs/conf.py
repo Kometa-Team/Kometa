@@ -313,7 +313,6 @@ html_theme_options = {
                 ("FlixPatrol Top", "defaults/overlays/flixpatrol"),
                 ("Audio/Subtitle Language Count", "defaults/overlays/language_count"),
                 ("Audio/Subtitle Language Flags", "defaults/overlays/languages"),
-                ("Languages", "defaults/overlays/languages"),
                 ("MediaStinger", "defaults/overlays/mediastinger"),
                 ("Networks", "defaults/overlays/network"),
                 ("Ratings", "defaults/overlays/ratings"),
