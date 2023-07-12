@@ -964,6 +964,9 @@ overlays:
   Savoy Pictures:
     template: [name: standard, name: studios]
 
+  Scenic Labs:
+    template: [name: standard, name: studios]
+
   Science SARU:
     template: [name: standard, {name: studios, search: [Science SARU, Science Saru]}]
 
