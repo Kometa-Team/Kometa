@@ -221,7 +221,8 @@ class IMDb:
             url = "chart/bottom"
         else:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        return self._request(f"https://www.imdb.com/{url}", language=language, xpath="//div[@class='wlb_ribbon']/@data-tconst")
+        links = self._request(f"https://www.imdb.com/{url}", language=language, xpath="//li//a[@class='ipc-title-link-wrapper']/@href")
+        return [re.search("(tt\\d+)", l).group(1) for l in links]
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
