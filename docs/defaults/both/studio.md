@@ -381,6 +381,7 @@ include:
   - SANZIGEN
   - Satelight
   - Savoy Pictures
+  - Scenic Labs
   - Science SARU
   - Scion Films
   - Scott Free Productions
