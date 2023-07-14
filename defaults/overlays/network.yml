@@ -582,8 +582,8 @@ overlays:
     variables: {key: TNT, weight: 10}
     template: [name: networks]
 
-  TOKYO MX:
-    variables: {key: TOKYO MX, weight: 10}
+  Tokyo MX:
+    variables: {key: Tokyo MX, weight: 10}
     template: [name: networks]
 
   Travel Channel:
