@@ -226,7 +226,7 @@ Tag search can take multiple values as a **list or a comma-separated string**.
 | `season_label`             | Uses the label tags to match for season collections                         |      &#10060;      |      &#9989;      |      &#10060;      |
 | `episode_label`            | Uses the label tags to match for episode collections                        |      &#10060;      |      &#9989;      |      &#10060;      |
 | `network`                  | Uses the network tags to match<br>**Only works with the New Plex TV Agent** |      &#10060;      |      &#9989;      |      &#10060;      |
-| `producer`                 | Uses the actor tags to match                                                |      &#9989;       |     &#10060;      |      &#10060;      |
+| `producer`                 | Uses the producer tags to match                                             |      &#9989;       |     &#10060;      |      &#10060;      |
 | `resolution`               | Uses the resolution tags to match                                           |      &#9989;       |      &#9989;      |      &#10060;      |
 | `subtitle_language`        | Uses the subtitle language tags to match                                    |      &#9989;       |      &#9989;      |      &#10060;      |
 | `writer`                   | Uses the writer tags to match                                               |      &#9989;       |     &#10060;      |      &#10060;      |
