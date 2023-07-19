@@ -62,6 +62,10 @@ templates:
       vertical_align: <<vertical_align>>
 
 overlays:
+  "#0":
+    variables: {key: "#0", weight: 10}
+    template: [name: networks]
+
   A&E:
     variables: {key: A&E, weight: 10}
     template: [name: networks]
@@ -96,6 +100,14 @@ overlays:
 
   Adult Swim:
     variables: {key: Adult Swim, weight: 10}
+    template: [name: networks]
+
+  AHC:
+    variables: {key: AHC, weight: 10}
+    template: [name: networks]
+
+  Alibi:
+    variables: {key: Alibi, weight: 10}
     template: [name: networks]
 
   ALTBalaji:
@@ -138,12 +150,32 @@ overlays:
     variables: {key: AT-X, weight: 10}
     template: [name: networks]
 
+  Atresplayer Premium:
+    variables: {key: Atresplayer Premium, weight: 10}
+    template: [name: networks]
+
+  Audience:
+    variables: {key: Audience, weight: 10}
+    template: [name: networks]
+
+  AXN:
+    variables: {key: AXN, weight: 10}
+    template: [name: networks]
+
+  Azteca Uno:
+    variables: {key: Azteca Uno, weight: 10}
+    template: [name: networks]
+
   BBC America:
     variables: {key: BBC America, weight: 10}
     template: [name: networks]
 
   BBC Four:
     variables: {key: BBC Four, weight: 10}
+    template: [name: networks]
+
+  BBC iPlayer:
+    variables: {key: BBC iPlayer, weight: 10}
     template: [name: networks]
 
   BBC One:
@@ -186,8 +218,16 @@ overlays:
     variables: {key: BritBox, weight: 10}
     template: [name: networks]
 
+  C More:
+    variables: {key: C More, weight: 10}
+    template: [name: networks]
+
   Canal+:
     variables: {key: Canal+, weight: 10}
+    template: [name: networks]
+
+  Canale 5:
+    variables: {key: Canale 5, weight: 10}
     template: [name: networks]
 
   Cartoon Network:
@@ -222,6 +262,10 @@ overlays:
     variables: {key: Channel 5, weight: 10}
     template: [name: networks]
 
+  CHCH-DT:
+    variables: {key: CHCH-DT, weight: 10}
+    template: [name: networks]
+
   Cinemax:
     variables: {key: Cinemax, weight: 10}
     template: [name: networks]
@@ -242,6 +286,10 @@ overlays:
     variables: {key: Cooking Channel, weight: 10}
     template: [name: networks]
 
+  Crackle:
+    variables: {key: Crackle, weight: 10}
+    template: [name: networks]
+
   Criterion Channel:
     variables: {key: Criterion Channel, weight: 10}
     template: [name: networks]
@@ -254,12 +302,20 @@ overlays:
     variables: {key: CTV, weight: 10}
     template: [name: networks]
 
+  Cuatro:
+    variables: {key: Cuatro, weight: 10}
+    template: [name: networks]
+
   Curiosity Stream:
     variables: {key: Curiosity Stream, weight: 10}
     template: [name: networks]
 
   Dave:
     variables: {key: Dave, weight: 10}
+    template: [name: networks]
+
+  DC Universe:
+    variables: {key: DC Universe, weight: 10}
     template: [name: networks]
 
   Discovery Kids:
@@ -290,20 +346,48 @@ overlays:
     variables: {key: Disney+, weight: 10}
     template: [name: networks]
 
+  DR1:
+    variables: {key: DR1, weight: 10}
+    template: [name: networks]
+
   E!:
     variables: {key: E!, weight: 10}
+    template: [name: networks]
+
+  Eden:
+    variables: {key: Eden, weight: 10}
     template: [name: networks]
 
   Epix:
     variables: {key: Epix, weight: 10}
     template: [name: networks]
 
+  Elisa Viihde:
+    variables: {key: Elisa Viihde, weight: 10}
+    template: [name: networks]
+
+  Elisa Viihde Viaplay:
+    variables: {key: Elisa Viihde Viaplay, weight: 10}
+    template: [name: networks]
+
   ESPN:
     variables: {key: ESPN, weight: 10}
     template: [name: networks]
 
+  Facebook Watch:
+    variables: {key: Facebook Watch, weight: 10}
+    template: [name: networks]
+
   Family Channel:
     variables: {key: FOX, weight: 10}
+    template: [name: networks]
+
+  Ficción Producciones:
+    variables: {key: Ficción Producciones, weight: 10}
+    template: [name: networks]
+
+  Flooxer:
+    variables: {key: Flooxer, weight: 10}
     template: [name: networks]
 
   Food Network:
@@ -316,6 +400,10 @@ overlays:
 
   FOX:
     variables: {key: FOX, weight: 10}
+    template: [name: networks]
+
+  France 2:
+    variables: {key: France 2, weight: 10}
     template: [name: networks]
 
   Freeform:
@@ -342,6 +430,10 @@ overlays:
     variables: {key: Game Show Network, weight: 10}
     template: [name: networks]
 
+  GAİN:
+    variables: {key: GAİN, weight: 10}
+    template: [name: networks]
+
   Global TV:
     variables: {key: Global TV, weight: 10}
     template: [name: networks]
@@ -361,7 +453,7 @@ overlays:
   HBO:
     variables: {key: HBO, weight: 10}
     template: [name: networks]
- 
+
   HBO Max:
     variables: {key: HBO Max, weight: 10}
     template: [name: networks]
@@ -374,8 +466,16 @@ overlays:
     variables: {key: History, weight: 10}
     template: [name: networks]
 
+  HOT3:
+    variables: {key: HOT3, weight: 10}
+    template: [name: networks]
+
   Hulu:
     variables: {key: Hulu, weight: 10}
+    template: [name: networks]
+
+  ICTV:
+    variables: {key: ICTV, weight: 10}
     template: [name: networks]
 
   IFC:
@@ -402,6 +502,14 @@ overlays:
     variables: {key: ITV, weight: 10}
     template: [name: networks]
 
+  joyn:
+    variables: {key: joyn, weight: 10}
+    template: [name: networks]
+
+  Kan 11:
+    variables: {key: Kan 11, weight: 10}
+    template: [name: networks]
+
   KBS2:
     variables: {key: KBS2, weight: 10}
     template: [name: networks]
@@ -410,12 +518,32 @@ overlays:
     variables: {key: Kids WB, weight: 10}
     template: [name: networks]
 
+  La 1:
+    variables: {key: La 1, weight: 10}
+    template: [name: networks]
+
+  La Une:
+    variables: {key: La Une, weight: 10}
+    template: [name: networks]
+
   Las Estrellas:
     variables: {key: Las Estrellas, weight: 10}
     template: [name: networks]
 
   Lifetime:
     variables: {key: Lifetime, weight: 10}
+    template: [name: networks]
+
+  Lionsgate+:
+    variables: {key: Lionsgate+, weight: 10}
+    template: [name: networks]
+
+  Logo:
+    variables: {key: Logo, weight: 10}
+    template: [name: networks]
+
+  M-Net:
+    variables: {key: M-Net, weight: 10}
     template: [name: networks]
 
   MasterClass:
@@ -428,6 +556,10 @@ overlays:
 
   MBC:
     variables: {key: MBC, weight: 10}
+    template: [name: networks]
+
+  mitele:
+    variables: {key: mitele, weight: 10}
     template: [name: networks]
 
   MTV:
@@ -450,6 +582,10 @@ overlays:
     variables: {key: Network 10, weight: 10}
     template: [name: networks]
 
+  NHK:
+    variables: {key: NHK, weight: 10}
+    template: [name: networks]
+
   Nick Jr:
     variables: {key: Nick Jr, weight: 10}
     template: [name: networks]
@@ -466,12 +602,36 @@ overlays:
     variables: {key: Nicktoons, weight: 10}
     template: [name: networks]
 
+  Nine Network:
+    variables: {key: Nine Network, weight: 10}
+    template: [name: networks]
+
   Nippon TV:
     variables: {key: Nippon TV, weight: 10}
     template: [name: networks]
 
+  NRK1:
+    variables: {key: NRK1, weight: 10}
+    template: [name: networks]
+
+  OCS City:
+    variables: {key: OCS City, weight: 10}
+    template: [name: networks]
+
+  OCS Max:
+    variables: {key: OCS Max, weight: 10}
+    template: [name: networks]
+
+  ORF:
+    variables: {key: ORF, weight: 10}
+    template: [name: networks]
+
   Oxygen:
     variables: {key: Oxygen, weight: 10}
+    template: [name: networks]
+
+  Pantaya:
+    variables: {key: Pantaya, weight: 10}
     template: [name: networks]
 
   Paramount Network:
@@ -494,16 +654,56 @@ overlays:
     variables: {key: Peacock, weight: 10}
     template: [name: networks]
 
+  Planète+ A&E:
+    variables: {key: Planète+ A&E, weight: 10}
+    template: [name: networks]
+
   Prime Video:
     variables: {key: Prime Video, weight: 10}
+    template: [name: networks]
+
+  Rai 1:
+    variables: {key: Rai 1, weight: 10}
+    template: [name: networks]
+
+  ReelzChannel:
+    variables: {key: ReelzChannel, weight: 10}
+    template: [name: networks]
+
+  RTÉ One:
+    variables: {key: RTÉ One, weight: 10}
+    template: [name: networks]
+
+  RTL Télé:
+    variables: {key: RTL Télé, weight: 10}
     template: [name: networks]
 
   RTL:
     variables: {key: RTL, weight: 10}
     template: [name: networks]
 
+  RTP1:
+    variables: {key: RTP1, weight: 10}
+    template: [name: networks]
+
+  RÚV:
+    variables: {key: RÚV, weight: 10}
+    template: [name: networks]
+
+  S4C:
+    variables: {key: S4C, weight: 10}
+    template: [name: networks]
+
+  SAT.1:
+    variables: {key: SAT.1, weight: 10}
+    template: [name: networks]
+
   SBS:
     variables: {key: SBS, weight: 10}
+    template: [name: networks]
+
+  Science:
+    variables: {key: Science, weight: 10}
     template: [name: networks]
 
   Shahid:
@@ -512,6 +712,10 @@ overlays:
 
   Showcase:
     variables: {key: Showcase, weight: 10}
+    template: [name: networks]
+
+  Showmax:
+    variables: {key: Showmax, weight: 10}
     template: [name: networks]
 
   Showtime:
@@ -530,12 +734,24 @@ overlays:
     variables: {key: Smithsonian, weight: 10}
     template: [name: networks]
 
+  Space:
+    variables: {key: Space, weight: 10}
+    template: [name: networks]
+
+  Spectrum:
+    variables: {key: Spectrum, weight: 10}
+    template: [name: networks]
+
   Spike TV:
     variables: {key: Spike TV, weight: 10}
     template: [name: networks]
 
   Stan:
     variables: {key: Stan, weight: 10}
+    template: [name: networks]
+
+  STAR+:
+    variables: {key: STAR+, weight: 10}
     template: [name: networks]
 
   Starz:
@@ -554,12 +770,32 @@ overlays:
     variables: {key: Syfy, weight: 10}
     template: [name: networks]
 
+  Syndication:
+    variables: {key: Syndication, weight: 10}
+    template: [name: networks]
+
   TBS:
     variables: {key: TBS, weight: 10}
     template: [name: networks]
 
+  Telecinco:
+    variables: {key: Telecinco, weight: 10}
+    template: [name: networks]
+
+  Telefe:
+    variables: {key: Telefe, weight: 10}
+    template: [name: networks]
+
   Telemundo:
     variables: {key: Telemundo, weight: 10}
+    template: [name: networks]
+
+  Televisión de Galicia:
+    variables: {key: Televisión de Galicia, weight: 10}
+    template: [name: networks]
+
+  Televisión Pública Argentina:
+    variables: {key: Televisión Pública Argentina, weight: 10}
     template: [name: networks]
 
   Tencent Video:
@@ -582,8 +818,8 @@ overlays:
     variables: {key: TNT, weight: 10}
     template: [name: networks]
 
-  TOKYO MX:
-    variables: {key: TOKYO MX, weight: 10}
+  Tokyo MX:
+    variables: {key: Tokyo MX, weight: 10}
     template: [name: networks]
 
   Travel Channel:
@@ -622,6 +858,10 @@ overlays:
     variables: {key: TV3, weight: 10}
     template: [name: networks]
 
+  TV4:
+    variables: {key: TV4, weight: 10}
+    template: [name: networks]
+
   TVB Jade:
     variables: {key: TVB Jade, weight: 10}
     template: [name: networks]
@@ -634,6 +874,14 @@ overlays:
     variables: {key: tvN, weight: 10}
     template: [name: networks]
 
+  TVNZ 1 :
+    variables: {key: TVNZ 1 , weight: 10}
+    template: [name: networks]
+
+  TVP1:
+    variables: {key: TVP1, weight: 10}
+    template: [name: networks]
+
   UKTV:
     variables: {key: UKTV, weight: 10}
     template: [name: networks]
@@ -644,6 +892,10 @@ overlays:
 
   Universal Kids:
     variables: {key: Universal Kids, weight: 10}
+    template: [name: networks]
+
+  Universal TV:
+    variables: {key: Universal TV, weight: 10}
     template: [name: networks]
 
   Univision:
@@ -678,8 +930,32 @@ overlays:
     variables: {key: ViuTV, weight: 10}
     template: [name: networks]
 
+  Virgin Media One:
+    variables: {key: Virgin Media One, weight: 10}
+    template: [name: networks]
+
+  ViX+:
+    variables: {key: ViX+, weight: 10}
+    template: [name: networks]
+
   Warner Bros.:
     variables: {key: Warner Bros., weight: 10}
+    template: [name: networks]
+
+  VRT 1 :
+    variables: {key: VRT 1 , weight: 10}
+    template: [name: networks]
+
+  VTM:
+    variables: {key: VTM, weight: 10}
+    template: [name: networks]
+
+  W:
+    variables: {key: W, weight: 10}
+    template: [name: networks]
+
+  YLE:
+    variables: {key: YLE, weight: 10}
     template: [name: networks]
 
   Youku:
