@@ -65,6 +65,7 @@ dynamic_collections:
       Antarctica:
         - Bouvet Island
       China:
+        - Afghanistan
         - Kazakhstan
         - Kyrgyzstan
         - Tajikistan
@@ -141,6 +142,7 @@ dynamic_collections:
         - Guyana
         - Suriname
       United Kingdom:
+        - Armenia
         - Azerbaijan
         - Georgia
         - Belgium
@@ -202,6 +204,7 @@ dynamic_collections:
         - Anguilla
         - Antigua
         - Aruba
+        - Bahamas
         - Barbados
         - Bermuda
         - Bonaire
@@ -225,6 +228,7 @@ dynamic_collections:
         - Turks and Caicos
 
       South Africa:
+        - Chad
         - Angola
         - Cameroon
         - Central African Republic

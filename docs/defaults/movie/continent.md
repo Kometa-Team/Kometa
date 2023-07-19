@@ -115,6 +115,7 @@ The following yml is provided for reference to show what values will be in use i
         - Bouvet Island
 		
       China:
+        - Afghanistan
         - Kazakhstan
         - Kyrgyzstan
         - Tajikistan
@@ -193,6 +194,7 @@ The following yml is provided for reference to show what values will be in use i
         - Suriname
 		
       United Kingdom:
+        - Armenia
         - Azerbaijan
         - Georgia
         - Belgium
@@ -255,6 +257,7 @@ The following yml is provided for reference to show what values will be in use i
         - Anguilla
         - Antigua
         - Aruba
+        - Bahamas
         - Barbados
         - Bermuda
         - Bonaire
@@ -278,6 +281,7 @@ The following yml is provided for reference to show what values will be in use i
         - Turks and Caicos
 
       South Africa:
+        - Chad
         - Angola
         - Cameroon
         - Central African Republic
