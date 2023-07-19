@@ -1,0 +1,307 @@
+##############################################################################
+#                        Continent Collections                               #
+#          Created by Adam Pope, bartolomesorianol, & Bullmoose20            #
+#         Artwork Credit to Duhniel, Bullmoose20, and Wiki Commons           #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/movie/continent.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "082"
+
+collections:
+  Continent Collections:
+    template:
+      - name: separator
+        separator: continent
+        key_name: Continent
+        translation_key: separator
+
+dynamic_collections:
+  Continent:
+    type: country
+    title_format: <<key_name>>
+    other_name: Other Continents
+    template:
+      - smart_filter
+      - shared
+    other_template:
+      - other_collection
+      - smart_filter
+      - shared
+    template_variables:
+      search_term:
+        default: country
+      image:
+        default: country/<<style>>/<<original_key_name_encoded>>
+      style:
+        default: white
+      translation_key:
+        default: country
+        other: country_other
+      dynamic:
+        default: true
+        
+    include:
+      - Antarctica
+      - New Zealand
+      - Brazil
+      - China
+      - South Africa
+      - United Kingdom
+      - United States of America
+
+    key_name_override:
+      New Zealand: Oceania
+      Brazil: South America
+      China: Asia
+      South Africa: Africa
+      United Kingdom: Europe
+      United States of America: North America
+
+    addons:
+      Antarctica:
+        - Bouvet Island
+      China:
+        - Kazakhstan
+        - Kyrgyzstan
+        - Tajikistan
+        - Turkmenistan
+        - Uzbekistan
+        - Japan
+        - Hong Kong
+        - Macao
+        - India
+        - Mongolia
+        - Pakistan
+        - Bhutan
+        - Bangladesh
+        - Nepal
+        - Sri Lanka
+        - Maldives
+        - Thailand
+        - Brunei
+        - Cambodia
+        - Indonesia
+        - Lao
+        - Malaysia
+        - Myanmar
+        - Philippines
+        - Singapore
+        - Vietnam
+        - Viet Nam              # Duplicating smart filter functionality
+        - Turkey
+        - Bahrain
+        - Cyprus
+        - Egypt
+        - Iran
+        - Iraq
+        - Israel
+        - Jordan
+        - Kuwait
+        - Lebanon
+        - Oman
+        - Palestine
+        - Qatar
+        - Saudi Arabia
+        - Syria
+        - United Arab Emirates
+        - Yemen
+        - Islamic Republic of Iran           # Duplicating smart filter functionality
+        - Taiwan
+        - Taiwan, Province of China          # Duplicating smart filter functionality
+        - Korea
+        - Democratic People's Republic of Korea
+        - North Korea
+        - Republic of Korea 
+        - South Korea 
+      Brazil:
+        - Argentina
+        - Chile
+        - Paraguay             
+        - Uruguay
+        - Falkland Islands    
+        - Costa Rica
+        - Belize
+        - El Salvador
+        - Guatemala
+        - Honduras
+        - Nicaragua
+        - Panama
+        - Peru
+        - Bolivarian Republic of Venezuela    # Duplicating smart filter functionality
+        - Bolivia
+        - Colombia
+        - Ecuador
+        - Plurinational State of Bolivia      # Duplicating smart filter functionality
+        - Venezuela
+        - French Guiana
+        - Guyana
+        - Suriname
+      United Kingdom:
+        - Azerbaijan
+        - Georgia
+        - Belgium
+        - Luxembourg
+        - Netherlands
+        - Croatia
+        - Albania
+        - Bosnia and Herzegovina
+        - Bulgaria
+        - Macedonia
+        - Montenegro
+        - Republic of North Macedonia         # Duplicating smart filter functionality
+        - Romania
+        - Serbia
+        - Slovenia
+        - Denmark
+        - Åland Islands
+        - Faroe Islands
+        - Finland
+        - Greenland
+        - Iceland
+        - Norway
+        - Svalbard and Jan Mayen
+        - Sweden
+        - Ireland
+        - Greece
+        - Poland
+        - Belarus
+        - Czech Republic
+        - Estonia
+        - Hungary
+        - Latvia
+        - Lithuania
+        - Moldova
+        - Slovakia
+        - Ukraine
+        - Spain
+        - Andorra
+        - Gibraltar 
+        - Portugal
+        - Austria
+        - Switzerland
+        - Liechtenstein
+        - Russia
+        - Russian Federation        # Duplicating smart filter functionality
+        - Guernsey
+        - Gibraltar 
+        - Isle of Man
+        - Jersey
+        - Malta
+        - Germany
+        - France
+        - Monaco
+        - Italy
+        - Holy See
+        - Malta
+        - San Marino
+      United States of America:
+        - Anguilla
+        - Antigua
+        - Aruba
+        - Barbados
+        - Bermuda
+        - Bonaire
+        - Canada
+        - Cayman Islands
+        - Cuba
+        - Curaçao
+        - Dominica
+        - Dominican Republic
+        - Grenada
+        - Guadeloupe
+        - Haiti
+        - Jamaica
+        - Martinique
+        - Mexico
+        - Montserrat
+        - Puerto Rico
+        - Saint Barthélemy
+        - Saint Lucia
+        - Trinidad and Tobago
+        - Turks and Caicos
+
+      South Africa:
+        - Angola
+        - Cameroon
+        - Central African Republic
+        - Congo
+        - Democratic Republic of the Congo    # Duplicating smart filter functionality
+        - Equatorial Guinea
+        - Gabon
+        - Republic of the Congo
+        - Sao Tome and Principe
+        - Kenya
+        - Burundi
+        - Comoros
+        - Djibouti
+        - Eritrea
+        - Ethiopia
+        - Madagascar
+        - Malawi
+        - Mauritius
+        - Mayotte
+        - Mozambique
+        - Réunion
+        - Rwanda
+        - Seychelles
+        - Somalia
+        - South Sudan
+        - Tanzania
+        - Uganda
+        - Zambia
+        - Zimbabwe           
+        - Morocco
+        - Algeria
+        - Egypt
+        - Libya       
+        - Sudan
+        - Tunisia
+        - Nigeria
+        - Benin
+        - Burkina Faso
+        - Cabo Verde
+        - Côte d'Ivoire
+        - Gambia
+        - Ghana
+        - Guinea
+        - Guinea-Bissau
+        - Liberia
+        - Mali
+        - Mauritania
+        - Niger
+        - Senegal
+        - Sierra Leone
+        - Togo
+        - Botswana
+        - Eswatini
+        - Lesotho
+        - Namibia
+      New Zealand:
+        - Australia
+        - Christmas Island
+        - Cocos (Keeling) Islands
+        - New Guinea 
+        - Timor-Leste 
+        - Cook Islands
+        - Fiji
+        - French Polynesia
+        - Guam
+        - Kiribati
+        - Marshall Islands
+        - Micronesia
+        - Nauru
+        - New Caledonia
+        - Niue
+        - Norfolk Island
+        - Palau
+        - Pitcairn
+        - Samoa
+        - Solomon Islands
+        - Tokelau
+        - Tonga
+        - Tuvalu
+        - Vanuatu

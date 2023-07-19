@@ -1,0 +1,383 @@
+##############################################################################
+#                         Region Collections                                 #
+#          Created by Adam Pope, bartolomesorianol, & Bullmoose20            #
+#         Artwork Credit to Duhniel, Bullmoose20, and Wiki Commons           #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/movie/region.html        #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "081"
+
+collections:
+  Region Collections:
+    template:
+      - name: separator
+        separator: region
+        key_name: Region
+        translation_key: separator
+
+dynamic_collections:
+  Region:
+    type: country
+    title_format: <<key_name>>
+    other_name: Other Regions
+    template:
+      - smart_filter
+      - shared
+    other_template:
+      - other_collection
+      - smart_filter
+      - shared
+    template_variables:
+      search_term:
+        default: country
+      image:
+        default: country/<<style>>/<<original_key_name_encoded>>
+      style:
+        default: white
+      translation_key:
+        default: country
+        other: country_other
+      dynamic:
+        default: true
+        
+    include:
+     - Afghanistan
+     - Antarctica
+     - Argentina
+     - Armenia
+     - Australia
+     - Bahamas
+     - Belgium
+     - Brazil
+     - Canada
+     - Chad
+     - China
+     - Costa Rica
+     - Croatia
+     - Denmark
+     - France
+     - Germany
+     - Greece
+     - Hong Kong
+     - India
+     - Ireland
+     - Italy
+     - Japan
+     - Kenya
+     - Korea
+     - Mexico
+     - Morocco
+     - New Zealand
+     - Nigeria
+     - Peru
+     - Poland
+     - Russia
+     - South Africa
+     - Spain
+     - Switzerland
+     - Taiwan
+     - Thailand
+     - Turkey
+     - United Kingdom
+     - United States of America
+
+    key_name_override:
+      Afghanistan: Central Asian
+      Antarctica: Antarctica Region
+      Argentina: Southern Cone
+      Armenia: Caucasian
+      Australia: Australian
+      Bahamas: Caribbean
+      Belgium: Benelux
+      Brazil: Brazilian
+      Canada: Canadian
+      Chad: Central African               # Based on UN geoscheme 
+      China: Chinese and Mongolian
+      Costa Rica: Central American
+      Croatia: Balkan
+      Denmark: Nordic
+      France: French
+      Germany: German
+      Greece: Greek
+      Hong Kong: Hong Kong and Macao
+      India: South Asian
+      Ireland: Irish
+      Italy: Italian
+      Japan: Japanese
+      Kenya: Eastern African              # Based on UN geoscheme 
+      Korea: Korean
+      Mexico: Mexican
+      Morocco: Northern African           # Based on UN geoscheme 
+      New Zealand: Pacific Island
+      Nigeria: Western African           # Based on UN geoscheme 
+      Peru: Andean
+      Poland: Eastern European             # Eastern Europe generally considerd to be ex-USSR countries of Russia, Belarus, and Ukraine. This grouping is more ex-iron curtain European countries excluding Russia and Balkans
+      Russia: Russian
+      South Africa: Southern African
+      Spain: Iberian
+      Switzerland: Central European
+      Taiwan: Taiwanese
+      Thailand: South-East Asia
+      Turkey: Middle Eastern
+      United Kingdom: UK
+      United States of America: USA
+      
+
+    addons:
+
+# Grouping of countries into sub-regions. Some license has been taken here to ensure all countries are included, and the groupings won't fit well with everyone's collections. 
+# Western, Southern, and Central Europe, Oceania, and North America could be useful groupings for those libraries with more of an Asian focus, for instance
+# Comments added where a decision point might seen as controversial
+
+      Afghanistan:                     # Afghanistan rarely included as part of Central Asia, the 'stans', but often in South Asia
+        - Kazakhstan
+        - Kyrgyzstan
+        - Tajikistan
+        - Turkmenistan
+        - Uzbekistan
+      Argentina:
+        - Chile
+        - Paraguay                     # Not always included as part of Southern Cone
+        - Uruguay
+        - Falkland Islands             # Also in United Kingdom
+      Armenia:
+        - Azerbaijan
+        - Georgia
+      Bahamas:
+        - Anguilla
+        - Antigua
+        - Aruba
+        - Barbados
+        - Bermuda
+        - Bonaire
+        - Cayman Islands
+        - Cuba
+        - Curaçao
+        - Dominica
+        - Dominican Republic
+        - Grenada
+        - Guadeloupe
+        - Haiti
+        - Jamaica
+        - Martinique
+        - Montserrat
+        - Puerto Rico
+        - Saint Barthélemy
+        - Saint Lucia
+        - Trinidad and Tobago
+        - Turks and Caicos
+      Belgium:
+        - Luxembourg
+        - Netherlands
+      Chad:
+        - Angola
+        - Cameroon
+        - Central African Republic
+        - Congo
+        - Democratic Republic of the Congo    # Duplicating smart filter functionality
+        - Equatorial Guinea
+        - Gabon
+        - Republic of the Congo
+        - Sao Tome and Principe
+      China:
+        - Mongolia      
+      Costa Rica:
+        - Belize
+        - El Salvador
+        - Guatemala
+        - Honduras
+        - Nicaragua
+        - Panama
+      Croatia:
+        - Albania
+        - Bosnia and Herzegovina
+        - Bulgaria
+        - Macedonia
+        - Montenegro
+        - Republic of North Macedonia         # Duplicating smart filter functionality
+        - Romania
+        - Serbia
+        - Slovenia
+      Denmark:
+        - Åland Islands
+        - Faroe Islands
+        - Finland
+        - Greenland
+        - Iceland
+        - Norway
+        - Svalbard and Jan Mayen
+        - Sweden
+      Hong Kong:
+        - Macao      
+      India:
+        - Pakistan
+        - Bhutan
+        - Bangladesh
+        - Nepal
+        - Sri Lanka
+        - Maldives
+      Kenya:
+        - Burundi
+        - Comoros
+        - Djibouti
+        - Eritrea
+        - Ethiopia
+        - Madagascar
+        - Malawi
+        - Mauritius
+        - Mayotte
+        - Mozambique
+        - Réunion
+        - Rwanda
+        - Seychelles
+        - Somalia
+        - South Sudan
+        - Tanzania
+        - Uganda
+        - Zambia
+        - Zimbabwe           
+      Morocco:
+        - Algeria
+        - Egypt                 # Also in Middle Eastern
+        - Libya       
+        - Sudan
+        - Tunisia
+      New Zealand:
+        - Cook Islands
+        - Fiji
+        - French Polynesia
+        - Guam
+        - Kiribati
+        - Marshall Islands
+        - Micronesia
+        - Nauru
+        - New Caledonia
+        - Niue
+        - Norfolk Island
+        - Palau
+        - Pitcairn
+        - Samoa
+        - Solomon Islands
+        - Tokelau
+        - Tonga
+        - Tuvalu
+        - Vanuatu
+      Nigeria:
+        - Benin
+        - Burkina Faso
+        - Cabo Verde
+        - Côte d'Ivoire
+        - Gambia
+        - Ghana
+        - Guinea
+        - Guinea-Bissau
+        - Liberia
+        - Mali
+        - Mauritania
+        - Niger
+        - Senegal
+        - Sierra Leone
+        - Togo
+      Peru:
+        - Bolivarian Republic of Venezuela    # Duplicating smart filter functionality
+        - Bolivia
+        - Colombia
+        - Ecuador
+        - Plurinational State of Bolivia      # Duplicating smart filter functionality
+        - Venezuela
+      Poland:
+        - Belarus
+        - Czech Republic
+        - Estonia
+        - Hungary
+        - Latvia
+        - Lithuania
+        - Moldova
+        - Slovakia
+        - Ukraine
+      South Africa:
+        - Botswana
+        - Eswatini
+        - Lesotho
+        - Namibia
+      Spain:
+        - Andorra              # Also in French
+        - Gibraltar            # Also in United Kingdom
+        - Portugal
+      Switzerland:
+        - Austria
+        - Liechtenstein            
+      Thailand:
+        - Brunei
+        - Cambodia
+        - Indonesia
+        - Lao
+        - Malaysia
+        - Myanmar
+        - Philippines
+        - Singapore
+        - Vietnam
+        - Viet Nam              # Duplicating smart filter functionality
+      Turkey:
+        - Bahrain
+        - Cyprus
+        - Egypt                 # Also in Northern African
+        - Iran
+        - Iraq
+        - Israel
+        - Jordan
+        - Kuwait
+        - Lebanon
+        - Oman
+        - Palestine
+        - Qatar
+        - Saudi Arabia
+        - Syria
+        - United Arab Emirates
+        - Yemen
+        - Islamic Republic of Iran           # Duplicating smart filter functionality
+
+# Grouping of micro-states into existing countries. Some are obviously right, others added as they've nowhere else fitting to go. 
+
+      Antarctica:
+        - Bouvet Island             # Also in Nordic
+      Australia:
+        - Christmas Island
+        - Cocos (Keeling) Islands
+        - New Guinea                # Also in Pacific Islands 
+        - Timor-Leste               # Also in Pacific Islands  
+      Brazil:
+        - French Guiana
+        - Guyana
+        - Suriname           
+      France:
+        - Monaco
+        - Andorra            # Also in Iberian
+      Italy:
+        - Holy See
+        - Malta              # Also in United Kingdom and Northern Africa
+        - San Marino
+      Korea:
+        - Democratic People's Republic of Korea
+        - North Korea
+        - Republic of Korea         # Added as default addon for Korea overridden
+        - South Korea               # Added as default addon for Korea overridden
+
+      United Kingdom:
+        - Falkland Islands          # Also in Southern Cone
+        - Guernsey
+        - Gibraltar          # Also in Iberian
+        - Isle of Man
+        - Jersey
+        - Malta              # Also in Italy and Northern African
+
+# Duplicating smart filter functionality
+
+      Taiwan:
+        - Taiwan, Province of China
+      Russia:
+        - Russian Federation
