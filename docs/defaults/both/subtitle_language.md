@@ -10,11 +10,11 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 095
 
-| Collection                                               | Key                                       | Description                                                                 |
-|:---------------------------------------------------------|:------------------------------------------|:----------------------------------------------------------------------------|
-| `Subtitle Language Collections`                          | `separator`                               | [Separator Collection](../separators) to denote the Section of Collections. |
-| `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` | Collection of Movies/Shows that have this Subtitle Language.                |
-| `Other Subtitles`                                        | `other`                                   | Collection of Movies/Shows that are less common Languages.                  |
+| Collection                                               | Key                                                                                       | Description                                                                 |
+|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|
+| `Subtitle Language Collections`                          | `separator`                                                                               | [Separator Collection](../separators) to denote the Section of Collections. |
+| `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn`  | Collection of Movies/Shows that have this Subtitle Language.                |
+| `Other Subtitles`                                        | `other`                                                                                   | Collection of Movies/Shows that are less common Languages.                  |
 
 ## Config
 
@@ -40,17 +40,17 @@ All [Shared Collection Variables](../collection_variables) are available as well
 
 This file contains a [Separator](../separators) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
-| Variable                      | Description & Values                                                                                                                                                                                                 |
-|:------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                              |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                           |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options) |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)           |
-| `include`                     | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                              |
-| `exclude`                     | **Description:** Exclude these Subtitle Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                |
-| `append_include`              | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)                                             |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Subtitles`<br>**Values:** Any string with `<<key_name>>` in it.                                                  |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s with <<key_name>> Subtitles.`<br>**Values:** Any string.                                          |
+| Variable                      | Description & Values                                                                                                                                                                                                                                                               |
+|:------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                                            |
+| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                                         |
+| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                               |
+| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                                         |
+| `include`                     | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)            |
+| `exclude`                     | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) |
+| `append_include`              | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)           |
+| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Subtitles`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                |
+| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s with <<key_name>> Subtitles.`<br>**Values:** Any string.                                                                                                        |
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
@@ -182,6 +182,7 @@ include:
   - mi     # Maori
   - mr     # Marathi
   - mh     # Marshallese
+  - myn    # Mayan
   - mn     # Mongolian
   - na     # Nauru
   - nv     # Navajo, Navaho
@@ -206,6 +207,7 @@ include:
   - qu     # Quechua
   - ro     # Romanian, Moldavian, Moldovan
   - rm     # Romansh
+  - rom    # Romany
   - rn     # Rundi
   - ru     # Russian
   - sm     # Samoan
@@ -229,6 +231,7 @@ include:
   - sv     # Swedish
   - tl     # Tagalog
   - ty     # Tahitian
+  - tai    # Tai
   - tg     # Tajik
   - ta     # Tamil
   - tt     # Tatar
