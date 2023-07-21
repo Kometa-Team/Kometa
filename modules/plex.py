@@ -441,13 +441,18 @@ class Plex(Library):
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
             plexapi.server.TIMEOUT = self.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
+            logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
+            logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
         except Unauthorized:
+            logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
+            logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
+            logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Plex Error: Plex url is invalid")
+            raise Failed("Plex Error: Plex URL is probably invalid")
         self.Plex = None
         library_names = []
         for s in self.PlexServer.library.sections():
