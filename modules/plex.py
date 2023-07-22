@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
 from modules.util import Failed, ImageData
+from pathlib import Path
 from PIL import Image
 from plexapi import utils
 from plexapi.audio import Artist, Track, Album
@@ -1384,7 +1385,8 @@ class Plex(Library):
 
         if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
-                if file.lower().endswith((".png", ".jpg", ".jpeg", "webp")) and not re.match(r"s\d+e\d+|season\d+", file.lower()):
+                p_file = Path(file).name
+                if p_file.lower().endswith((".png", ".jpg", ".jpeg", "webp")) and not re.match(r"s\d+e\d+|season\d+", p_file.lower()):
                     try:
                         with Image.open(file) as image:
                             _w, _h = image.size
