@@ -49,7 +49,7 @@ dynamic_collections:
       - TBS
 
       ## TMDB Most Common & Top Streaming Service
-      - Amazon
+      - Prime Video # Amazon
       - discovery+
       - iQiyi
       - Netflix
@@ -220,6 +220,7 @@ dynamic_collections:
       - Logo # 36 shows
       - M-Net # 22 shows
       - mitele # 48 shows
+      - MGM+ # 9 shows
       - NHK # 354 shows
       - Nick Jr # 35 shows
       - Nicktoons # 27 shows
@@ -257,6 +258,8 @@ dynamic_collections:
       - Telefe # 106 shows
       - Televisión de Galicia # 16 shows
       - Televisión Pública Argentina # 28 shows
+      - The Roku Channel # 38 shows
+      - The WB # 143 shows
       - Turner Classic Movies # 5 shows
       - truTV # 99 shows
       - TV4 # 168 shows
@@ -361,6 +364,8 @@ dynamic_collections:
         - Fox Sports 1
         - fox.com
         - Fox Sports Detroit
+      Freevee:
+        - Amazon Freevee
       Hallmark:
         - Hallmark Channel
         - Hallmark Drama
@@ -380,6 +385,11 @@ dynamic_collections:
         - HGTV Canada
       History:
         - History Channel Italia
+        - H2
+      ITV:
+        - ITV1
+        - ITVX
+        - ITV Encore
       Lifetime:
         - Lifetime Movies
       Max:
@@ -418,6 +428,8 @@ dynamic_collections:
         - Nick at Nite
       Paramount+:
         - CBS All Access # Rebranded on Mar 4, 2021
+      ReelzChannel:
+        - Reelz
       Sky:
         - Sky One
         - Sky Atlantic
@@ -441,6 +453,7 @@ dynamic_collections:
         - sky Travel
         - Sky Vision
         - Sky News Weather Channel
+        - SkyShowtime
       Smithsonian:
         - Smithsonian Channel
         - Smithsonian Earth
@@ -448,6 +461,8 @@ dynamic_collections:
         - Spike TV
       Starz:
         - Starz Encore
+      Sundance TV:
+        - SundanceTV
       TBS:
         - TBS.com
         - TBS Brasil
