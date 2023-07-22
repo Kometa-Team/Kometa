@@ -466,6 +466,14 @@ overlays:
     variables: {key: History, weight: 10}
     template: [name: networks]
 
+  History Channel Italia:
+    variables: {key: History, weight: 10}
+    template: [name: networks]
+
+  H2:
+    variables: {key: History, weight: 10}
+    template: [name: networks]
+
   HOT3:
     variables: {key: HOT3, weight: 10}
     template: [name: networks]
@@ -556,6 +564,10 @@ overlays:
 
   MBC:
     variables: {key: MBC, weight: 10}
+    template: [name: networks]
+
+  MGM+:
+    variables: {key: MGM+, weight: 10}
     template: [name: networks]
 
   mitele:
@@ -666,8 +678,12 @@ overlays:
     variables: {key: Rai 1, weight: 10}
     template: [name: networks]
 
-  ReelzChannel:
+  Reelz:
     variables: {key: ReelzChannel, weight: 10}
+    template: [name: networks]
+
+  The Roku Channel:
+    variables: {key: The Roku Channel, weight: 10}
     template: [name: networks]
 
   RTÉ One:
@@ -762,6 +778,10 @@ overlays:
     variables: {key: Sundance TV, weight: 10}
     template: [name: networks]
 
+  SundanceTV:
+    variables: {key: Sundance TV, weight: 10}
+    template: [name: networks]
+
   SVT1:
     variables: {key: SVT1, weight: 10}
     template: [name: networks]
@@ -808,6 +828,10 @@ overlays:
 
   The CW:
     variables: {key: The CW, weight: 10}
+    template: [name: networks]
+
+  The WB:
+    variables: {key: The WB, weight: 10}
     template: [name: networks]
 
   TLC:
