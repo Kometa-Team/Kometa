@@ -99,7 +99,7 @@ mass_rating_options = {
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 library_operations = {
     "assets_for_all": "bool", "split_duplicates": "bool", "update_blank_track_titles": "bool", "remove_title_parentheses": "bool",
-    "radarr_add_all_existing": "bool", "radarr_remove_by_tag": "bool", "sonarr_add_all_existing": "bool", "sonarr_remove_by_tag": "bool",
+    "radarr_add_all_existing": "bool", "radarr_remove_by_tag": "str", "sonarr_add_all_existing": "bool", "sonarr_remove_by_tag": "str",
     "mass_genre_update": mass_genre_options, "mass_content_rating_update": mass_content_options, "mass_studio_update": mass_studio_options,
     "mass_audience_rating_update": mass_rating_options, "mass_episode_audience_rating_update": mass_episode_rating_options,
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
