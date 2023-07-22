@@ -2853,7 +2853,12 @@ class CollectionBuilder:
             if "item_edition" in self.item_details and item.editionTitle != self.item_details["item_edition"]:
                 self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
                 logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
-            path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
+            path = None
+            if self.library.is_movie:
+                path = os.path.dirname(str(item.locations[0]))
+            elif self.library.is_show:
+                path = str(item.locations[0])
+
             if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
