@@ -1,8 +1,8 @@
-# Github Attributes
+# GitHub Attributes
 
-Configuring [Github](https://github.com/) is optional but can allow you to avoid rate limits when requesting data from github.
+Configuring [GitHub](https://github.com/) is optional but can allow you to avoid rate limits when requesting data from GitHub.
 
-Requests made with a github token have a higher rate limit than anonymous requests.
+Requests made with a GitHub token have a higher rate limit than anonymous requests.
 
 A `github` mapping is in the root of the config file.
 
@@ -14,6 +14,6 @@ github:
 
 | Attribute          | Allowed Values                                                             | Default | Required |
 |:-------------------|:---------------------------------------------------------------------------|:--------|:--------:|
-| `token`            | Github Personal Access Token                                               | N/A     | &#9989;  |
+| `token`            | GitHub Personal Access Token                                               | N/A     | &#9989;  |
 
-* The Github Personal Access Token can be generated [here](https://github.com/settings/tokens).
+* The GitHub Personal Access Token can be generated [here](https://github.com/settings/tokens).
