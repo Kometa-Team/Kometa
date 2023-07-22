@@ -228,4 +228,6 @@ dynamic_collections:
       - yo     # Yoruba
       - za     # Zhuang, Chuang
       - zu     # Zulu
+    key_name_override:
+      myn: Mayan  
 
