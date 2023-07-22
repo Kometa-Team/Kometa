@@ -443,6 +443,17 @@ class Plex(Library):
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
+            myAcct = self.PlexServer.myPlexAccount()
+            pp_str = "No PlexPass"
+            if 'plexpass' in myAcct.roles:
+                pp_str = f"PlexPass is active"
+            srv_settings = self.PlexServer.settings
+            uc_str = f"Unknown update channel."
+            if srv_settings.get("butlerUpdateChannel").value == '16':
+                uc_str = f"Public update channel."
+            elif srv_settings.get("butlerUpdateChannel").value == '8':
+                uc_str = f"PlexPass update channel."
+            logger.info(f"{pp_str} on {uc_str}")
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
