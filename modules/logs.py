@@ -252,6 +252,10 @@ class MyLogger:
                 msg = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", msg)
             if "HTTPSConnectionPool" in msg:
                 msg = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", msg)
+            if "--pmm-plexurl" in msg:
+                msg = re.sub("--pmm-plexurl [\S]+", "--pmm-plexurl (redacted)", msg)
+            if "--pmm-plextoken" in msg:
+                msg = re.sub("--pmm-plextoken [\S]+", "--pmm-plextoken (redacted) ", msg)
             try:
                 if not _srcfile:
                     raise ValueError
