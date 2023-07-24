@@ -1,22 +1,48 @@
 
 # Requirements Update (requirements will need to be reinstalled)
+Updated GitPython requirement to 3.1.32
+Updated lxml requirement to 4.9.3
+Updated pathvalidate requirement to 3.1.0
+Updated pillow requirement to 10.0.0
+Updated PlexAPI requirement to 4.14.0
+Updated psutil requirement to 5.9.5
+Updated requests requirement to 2.31.0
+Updated ruamel.yaml requirement to 0.17.32
 Updated schedule requirement to 1.2.0
 Updated tmdbapis requirement to 1.2.0
-Updated requests requirement to 2.29.0
 
 # New Features
-Added `tmdb_vote_average` as a [Filter](https://metamanager.wiki/en/latest/metadata/filters.html#id7). thanks @tenshiak
-Added `tmdb_birthday` [Detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html) which controls if a collection is visible based on a `tmdb_person`'s birthday.
+Add `tmdb_vote_average` as a [Filter](https://metamanager.wiki/en/latest/metadata/filters.html#id7). thanks @tenshiak
+Add `tmdb_birthday` [Detail](https://metamanager.wiki/en/latest/metadata/details/metadata.html) which controls if a collection is visible based on a `tmdb_person`'s birthday.
+Add `match` [attribute](https://metamanager.wiki/en/latest/metadata/metadata/movie.html#matching-movies) to match movies within Plex to items within the Metadata file.
+Add `delete_collections_named` to [Shared Collection Variables](https://metamanager.wiki/en/latest/defaults/collection_variables.html)
+Add support for (GitHub Personal Access Tokens)[https://metamanager.wiki/en/latest/config/github.html] in config files. thanks @chazlarson
 
 # New Defaults Features
 New Default Translations of Danish, Dutch, Italian, Norwegian Bokmål, Portuguese (Brazil), and Spanish.
-New [Network](https://metamanager.wiki/en/latest/defaults/overlays/network.html) Default Overlay.
+New [Network](https://metamanager.wiki/en/latest/defaults/overlays/network.html) Default Overlay. thanks @bullmoose20, @JohnFawkes and @arial-Z
 New Content Rating US [Movies](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_movie.html)/[Shows](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_show.html) and [Content Rating UK](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_uk.html) Default Overlay.
 Add `file_poster`, `file_poster_<<key>>`, `url_background`, `url_background_<<key>>`, `file_background`, `file_background_<<key>>`, `sort_prefix`, `sort_title`, and `name_mapping` as [Collection Variables](https://metamanager.wiki/en/latest/defaults/collection_variables.html).
-Added new Separator Color Styles.
+Add new Separator Color Styles.
+Standardized overlay sizes for `- pmm: networks` and `- pmm: streaming`
+Rebrand HBO Max to Max.
+Add additional studios and networks
+Add Heritage Months to [Seasonal Defaults File](https://metamanager.wiki/en/latest/defaults/movie/seasonal.html)
 
 # Bug Fixes
+Fixes #1496 Fixes issue with IMDb Collections not building due to HTML structure changes.
+Fixes #1445 Fixes FlixPatrol failed to parse error for most users.
 Fixes #1379 Fixes a Docstring.
+Fixes #1478 Fixes issue with percent sign not appearing on some rating overlays.
+Fixes #1490 Fixes incorrect language code for Philippines  in Languages Defaults file.
+Fixes #1378 Fixes incorrect default value for starting attribute in "Year" collections.
+Fixes #1379 #1380 #1472 Fixes various docs issues and typos
+Fixes #1518 `radarr_remove_by_tag` and `sonarr_remove_by_tag` being validated as bool instead of strings. thanks @chazlarson
+Fixes #1531 Fixes secrets not being redacted from Run Command in log files
+Fixes issue with validating filenames as part of `dimensional_asset_rename`. thanks @chazlarson
+Fixes an issue where renamed collections could be incorrectly deleted.
+Fixes bug when defining users for `sync_to_users` for Playlists.
+Fixes bug where using mdb or metacritic as rating source on Ratings Overlay would not work correctly.
 Fixes bug where TMDb Filters using a modifier were ignored.
 Fixes bug with `mal_search` when using the `sfw` attribute
 Fixes bug where sorting a collection would fail if the collection name had a `,` in it.
