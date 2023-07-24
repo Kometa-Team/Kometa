@@ -151,7 +151,7 @@ for env_name, env_data in os.environ.items():
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 for _, v in secret_args.items():
     if v in run_arg:
-        run_arg.replace(v, "(redacted)")
+        run_arg = run_arg.replace(v, "(redacted)")
 
 if collections:
     collection_only = True
