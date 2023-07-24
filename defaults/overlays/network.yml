@@ -590,8 +590,8 @@ overlays:
     variables: {key: Netflix, weight: 10}
     template: [name: networks]
 
-  Network 10:
-    variables: {key: Network 10, weight: 10}
+  Network Ten:
+    variables: {key: Network Ten, weight: 10}
     template: [name: networks]
 
   NHK:
