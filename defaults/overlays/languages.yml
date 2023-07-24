@@ -531,6 +531,10 @@ overlays:
   swahili:
     variables: {key: sw, text: SW, weight: 40, country: tz}
     template: [name: flags, name: standard]
+  
+  somali:
+    variables: {key: so, text: SO, weight: 35, country: so}
+    template: [name: flags, name: standard]
 
   tamil:
     variables: {key: ta, text: TA, weight: 30, country: in}
@@ -541,5 +545,17 @@ overlays:
     template: [name: flags, name: standard]
 
   vietnamese:
-    variables: {key: vi, text: VI, weight: 10, country: vn}
+    variables: {key: vi, text: VI, weight: 15, country: vn}
+    template: [name: flags, name: standard]
+
+  wolof:
+    variables: {key: wo, text: WO, weight: 10, country: sn}
+    template: [name: flags, name: standard]
+
+  mayan:
+    variables: {key: myn, text: MA, weight: 8, country: mx}
+    template: [name: flags, name: standard]
+
+  inuktitut:
+    variables: {key: iu, text: IK, weight: 5, country: ca}
     template: [name: flags, name: standard]
