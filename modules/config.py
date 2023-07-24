@@ -296,7 +296,7 @@ class ConfigFile:
                     check_next(d)
             else:
                 for secret, secret_value in self.secrets.items():
-                    for test in [secret, secret.upper()]:
+                    for test in [secret, secret.upper().replace("-", "_")]:
                         if f"<<{test}>>" in str(next_data):
                             return str(next_data).replace(f"<<{test}>>", secret_value)
                 return next_data
