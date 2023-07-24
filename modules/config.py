@@ -296,10 +296,9 @@ class ConfigFile:
                     check_next(d)
             else:
                 for secret, secret_value in self.secrets.items():
-                    if f"<<{secret}>>" in str(next_data):
-                        return str(next_data).replace(f"<<{secret}>>", secret_value)
-                    elif f"<<{secret.upper()}>>" in str(next_data):
-                        return str(next_data).replace(f"<<{secret.upper()}>>", secret_value)
+                    for test in [secret, secret.upper()]:
+                        if f"<<{test}>>" in str(next_data):
+                            return str(next_data).replace(f"<<{test}>>", secret_value)
                 return next_data
         if self.secrets:
             check_next(self.data)
@@ -453,7 +452,7 @@ class ConfigFile:
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
-        self.GitHub = GitHub(self)
+        self.GitHub = GitHub(self, {"token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)})
 
         logger.separator()
 

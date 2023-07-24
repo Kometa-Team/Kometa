@@ -95,7 +95,6 @@ except ImportError:
 env_version = get_arg("BRANCH_NAME", "master")
 is_docker = get_arg("PMM_DOCKER", False, arg_bool=True)
 is_linuxserver = get_arg("PMM_LINUXSERVER", False, arg_bool=True)
-run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 config_file = get_arg("PMM_CONFIG", args.config)
 times = get_arg("PMM_TIME", args.times)
 run = get_arg("PMM_RUN", args.run, arg_bool=True)
@@ -130,7 +129,7 @@ plex_url = None
 plex_token = None
 i = 0
 while i < len(unknown):
-    test_var = str(unknown[i]).lower()
+    test_var = str(unknown[i]).lower().replace("_", "-")
     if test_var.startswith("--pmm-") or test_var in ["-pu", "--plex-url", "-pt", "--plex-token"]:
         if test_var in ["-pu", "--plex-url"]:
             plex_url = str(unknown[i + 1])
@@ -144,9 +143,15 @@ while i < len(unknown):
 plex_url = get_arg("PMM_PLEX_URL", plex_url)
 plex_token = get_arg("PMM_PLEX_TOKEN", plex_token)
 
+env_secrets = []
 for env_name, env_data in os.environ.items():
     if str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
-        secret_args[str(env_name).lower()[4:]] = env_data
+        secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
+
+run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
+for _, v in secret_args.items():
+    if v in run_arg:
+        run_arg.replace(v, "(redacted)")
 
 if collections:
     collection_only = True
@@ -286,6 +291,10 @@ def start(attrs):
     logger.debug(f"--width (PMM_WIDTH): {screen_width}")
     logger.debug(f"--debug (PMM_DEBUG): {debug}")
     logger.debug(f"--trace (PMM_TRACE): {trace}")
+    logger.debug("")
+    logger.debug("PMM Secrets Read:")
+    for sec in secret_args:
+        logger.debug(f"--pmm-{sec} (PMM_{sec.upper().replace('-', '_')}): (redacted)")
     logger.debug("")
     logger.separator(f"Starting {start_type}Run")
     config = None
