@@ -399,7 +399,7 @@ class Overlays:
                         logger.info("")
                         try:
                             builder.filter_and_save_items(builder.gather_ids(method, value))
-                        except NonExisting as e:
+                        except Failed as e:
                             if builder.ignore_blank_results:
                                 logger.warning("")
                                 logger.warning(e)
