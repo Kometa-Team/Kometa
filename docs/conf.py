@@ -209,6 +209,7 @@ html_theme_options = {
             ("Trakt", "config/trakt"),
             ("MdbList", "config/mdblist"),
             ("OMDb", "config/omdb"),
+            ("GitHub", "config/github"),
             ("AniDB", "config/anidb"),
             ("MyAnimeList", "config/myanimelist"),
         ]),
