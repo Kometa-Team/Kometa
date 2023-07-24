@@ -441,13 +441,27 @@ class Plex(Library):
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.config.session, timeout=self.timeout)
             plexapi.server.TIMEOUT = self.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
+            logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
+            logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
+            pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
+            srv_settings = self.PlexServer.settings
+            uc_str = f"Unknown update channel."
+            if srv_settings.get("butlerUpdateChannel").value == '16':
+                uc_str = f"Public update channel."
+            elif srv_settings.get("butlerUpdateChannel").value == '8':
+                uc_str = f"PlexPass update channel."
+            logger.info(f"{pp_str} on {uc_str}")
+            logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
         except Unauthorized:
+            logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
+            logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
+            logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Plex Error: Plex url is invalid")
+            raise Failed("Plex Error: Plex URL is probably invalid")
         self.Plex = None
         library_names = []
         for s in self.PlexServer.library.sections():
@@ -468,6 +482,10 @@ class Plex(Library):
         self._all_items = []
         self._account = None
         self.agent = self.Plex.agent
+        self.scanner = self.Plex.scanner
+        for stg in self.Plex.settings():
+            if stg.id == 'ratingsSource':
+                self.ratings_source = stg.value
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
         self.is_music = self.type == "Artist"
@@ -477,6 +495,9 @@ class Plex(Library):
         if not self.is_music and self.update_blank_track_titles:
             self.update_blank_track_titles = False
             logger.error(f"update_blank_track_titles library operation only works with music libraries")
+        logger.info(f"Connected to library {params['name']}")
+        logger.info(f"Agent: {self.agent}; Scanner: {self.scanner}; ratings source: {self.ratings_source}")
+        exit()
 
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
