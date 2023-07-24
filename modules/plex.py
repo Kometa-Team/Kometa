@@ -497,7 +497,6 @@ class Plex(Library):
             logger.error(f"update_blank_track_titles library operation only works with music libraries")
         logger.info(f"Connected to library {params['name']}")
         logger.info(f"Agent: {self.agent}; Scanner: {self.scanner}; ratings source: {self.ratings_source}")
-        exit()
 
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
