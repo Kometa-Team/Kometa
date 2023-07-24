@@ -2,7 +2,7 @@
 
 ## Plex Meta Manager Team
 
-| Github                                        | Discord     | Role                                                                                                                                                              |
+| GitHub                                        | Discord     | Role                                                                                                                                                              |
 |:----------------------------------------------|:------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [meisnate12](https://github.com/meisnate12/)  | Sohjiro     | Main PMM Developer                                                                                                                                                |
 | [YozoraXCII](https://github.com/YozoraXCII)   | Yozora      | PMM Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs) Maintainer |

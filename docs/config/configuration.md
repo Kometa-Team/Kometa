@@ -16,6 +16,7 @@ This table outlines the third-party services that Plex Meta Manager can make use
 | [`webhooks`](webhooks)        | &#10060;                                |
 | [`plex`](plex)                | &#9989; <br/>Either here or per library |
 | [`tmdb`](tmdb)                | &#9989;                                 |
+| [`github`](github)            | &#10060;                                |
 | [`tautulli`](tautulli)        | &#10060;                                |
 | [`omdb`](omdb)                | &#10060;                                |
 | [`notifiarr`](notifiarr)      | &#10060;                                |

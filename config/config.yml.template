@@ -89,6 +89,8 @@ tmdb:                            # REQUIRED for the script to run
 tautulli:                        # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
+github:
+  token: ################################
 omdb:
   apikey: ########
   cache_expiration: 60

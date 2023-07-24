@@ -262,6 +262,7 @@ class ConfigFile:
                 hooks("collection_changes")
                 temp["changes"] = None if not changes else changes if len(changes) > 1 else changes[0]
             self.data["webhooks"] = temp
+        if "github" in self.data:                      self.data["github"] = self.data.pop("github")
         if "plex" in self.data:                        self.data["plex"] = self.data.pop("plex")
         if "tmdb" in self.data:                        self.data["tmdb"] = self.data.pop("tmdb")
         if "tautulli" in self.data:                    self.data["tautulli"] = self.data.pop("tautulli")
