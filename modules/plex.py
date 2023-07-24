@@ -483,7 +483,8 @@ class Plex(Library):
         self._account = None
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
-        self.ratings_source = next((s.label for s in self.Plex.settings() if s.id in ["ratings", "ratingsSource"]), "N/A")
+        source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)
+        self.ratings_source = source_setting.enumValues[source_setting.value] if source_setting else "N/A"
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
         self.is_music = self.type == "Artist"
