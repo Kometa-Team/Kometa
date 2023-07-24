@@ -73,6 +73,8 @@ This is the default PMM collection ordering:
 | `studio`            | `070`              |
 | `studio_anime`      | `070`              |
 | `country`           | `080`              |
+| `region`            | `081`              |
+| `continent`         | `082`              |
 | `based`             | `085`              |
 | `audio_language`    | `090`              |
 | `subtitle_language` | `095`              |

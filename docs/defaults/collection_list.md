@@ -52,6 +52,8 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Content Rating (UK)](both/content_rating_uk)                                       | `content_rating_uk`  | U, PG, 12A                                             |      &#9989;      |     &#9989;      |
 | Content Rating (US) [Movie](movie/content_rating_us)/[Show](show/content_rating_us) | `content_rating_us`  | G, PG, NC-17                                           |      &#9989;      |     &#9989;      |
 | Country [Movie](movie/country)/[Show](show/country)                                 | `country`            | Belgium, India                                         |      &#9989;      |     &#9989;      |
+| Region [Movie](movie/region)/[Show](show/region)                                    | `region`             | Iberia, Balkans                                        |      &#9989;      |     &#9989;      |
+| Continent [Movie](movie/continent)/[Show](show/continent)                           | `continent`          | Asia, North America                                    |      &#9989;      |     &#9989;      |
 | Decade [Movie](movie/decade)/[Show](show/decade)                                    | `decade`             | Best of 2012, Best of 2022                             |      &#9989;      |     &#9989;      |
 | [Director](movie/director)                                                          | `director`           | Steven Spielberg (Director), Olivia Wilde (Director)   |      &#9989;      |     &#10060;     |
 | Franchise [Movie](movie/franchise)/[Show](show/franchise)                           | `franchise`          | Star Wars: Skywalker Saga, Godzilla (Anime)            |      &#9989;      |     &#9989;      |
