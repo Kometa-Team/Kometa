@@ -292,10 +292,11 @@ def start(attrs):
     logger.debug(f"--debug (PMM_DEBUG): {debug}")
     logger.debug(f"--trace (PMM_TRACE): {trace}")
     logger.debug("")
-    logger.debug("PMM Secrets Read:")
-    for sec in secret_args:
-        logger.debug(f"--pmm-{sec} (PMM_{sec.upper().replace('-', '_')}): (redacted)")
-    logger.debug("")
+    if secret_args:
+        logger.debug("PMM Secrets Read:")
+        for sec in secret_args:
+            logger.debug(f"--pmm-{sec} (PMM_{sec.upper().replace('-', '_')}): (redacted)")
+        logger.debug("")
     logger.separator(f"Starting {start_type}Run")
     config = None
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
