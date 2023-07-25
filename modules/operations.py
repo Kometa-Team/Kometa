@@ -516,7 +516,7 @@ class Operations:
                         tmdb_backdrop_url = tmdb_item.backdrop_url
                         if(len(tmdb_item.backdrops) > 0):
                             tmdb_backdrop_url = tmdb_item.backdrops[0].url
-                    print(tmdb_item)
+
                     if self.library.mass_poster_update:
                         self.library.poster_update(item, new_poster, tmdb=tmdb_backdrop_url if tmdb_item else None)
                     if self.library.mass_background_update:
