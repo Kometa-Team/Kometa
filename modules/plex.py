@@ -1169,7 +1169,7 @@ class Plex(Library):
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr == "tmdb" and tmdb:
+                if attr.startswith("tmdb") and tmdb:
                     image = tmdb
                     location = "TMDb"
                 if not image:
