@@ -512,7 +512,7 @@ class Operations:
                         new_poster = None
                         new_background = None
                     
-                    if self.library.mass_background_update && self.library.mass_background_update in ["tmdb_text", "tmdb_text_no_episode"] && tmdb_item:
+                    if self.library.mass_background_update and self.library.mass_background_update in ["tmdb_text", "tmdb_text_no_episode"] and tmdb_item:
                         tmdb_backdrop_url = tmdb_item.backdrop_url
                         if(len(tmdb_item.backdrops) > 0):
                             tmdb_backdrop_url = tmdb_item.backdrops[0].url
