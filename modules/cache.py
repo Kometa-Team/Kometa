@@ -628,7 +628,7 @@ class Cache:
                     tmdb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else ""
                     tmdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tmdb_dict["backdrop_url"] = row["backdrop_url"] if row["backdrop_url"] else ""
-                    tmdb_dict["backdrops"] = row["backdrops"] if row["backdrops"] else ""
+                    tmdb_dict["backdrops"] = json.loads(row["backdrops"]) if row["backdrops"] else ""
                     tmdb_dict["vote_count"] = row["vote_count"] if row["vote_count"] else 0
                     tmdb_dict["vote_average"] = row["vote_average"] if row["vote_average"] else 0
                     tmdb_dict["language_iso"] = row["language_iso"] if row["language_iso"] else None
@@ -677,7 +677,7 @@ class Cache:
                     tmdb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else ""
                     tmdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tmdb_dict["backdrop_url"] = row["backdrop_url"] if row["backdrop_url"] else ""
-                    tmdb_dict["backdrops"] = row["backdrops"] if row["backdrops"] else ""
+                    tmdb_dict["backdrops"] = json.loads(row["backdrops"]) if row["backdrops"] else ""
                     tmdb_dict["vote_count"] = row["vote_count"] if row["vote_count"] else 0
                     tmdb_dict["vote_average"] = row["vote_average"] if row["vote_average"] else 0
                     tmdb_dict["language_iso"] = row["language_iso"] if row["language_iso"] else None
