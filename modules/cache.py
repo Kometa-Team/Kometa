@@ -172,6 +172,7 @@ class Cache:
                     imdb_id TEXT,
                     poster_url TEXT,
                     backdrop_url TEXT,
+                    backdrops TEXT,
                     vote_count INTEGER,
                     vote_average REAL,
                     language_iso TEXT,
@@ -195,6 +196,7 @@ class Cache:
                     imdb_id TEXT,
                     poster_url TEXT,
                     backdrop_url TEXT,
+                    backdrops TEXT,
                     vote_count INTEGER,
                     vote_average REAL,
                     language_iso TEXT,
@@ -626,6 +628,7 @@ class Cache:
                     tmdb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else ""
                     tmdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tmdb_dict["backdrop_url"] = row["backdrop_url"] if row["backdrop_url"] else ""
+                    tmdb_dict["backdrops"] = row["backdrops"] if row["backdrops"] else ""
                     tmdb_dict["vote_count"] = row["vote_count"] if row["vote_count"] else 0
                     tmdb_dict["vote_average"] = row["vote_average"] if row["vote_average"] else 0
                     tmdb_dict["language_iso"] = row["language_iso"] if row["language_iso"] else None
@@ -647,11 +650,11 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO tmdb_movie_data(tmdb_id) VALUES(?)", (obj.tmdb_id,))
                 update_sql = "UPDATE tmdb_movie_data SET title = ?, original_title = ?, studio = ?, overview = ?, tagline = ?, imdb_id = ?, " \
-                             "poster_url = ?, backdrop_url = ?, vote_count = ?, vote_average = ?, language_iso = ?, " \
+                             "poster_url = ?, backdrop_url = ?, backdrops = ?, vote_count = ?, vote_average = ?, language_iso = ?, " \
                              "language_name = ?, genres = ?, keywords = ?, release_date = ?, collection_id = ?, " \
                              "collection_name = ?, expiration_date = ? WHERE tmdb_id = ?"
                 cursor.execute(update_sql, (
-                    obj.title, obj.original_title, obj.studio, obj.overview, obj.tagline, obj.imdb_id, obj.poster_url, obj.backdrop_url,
+                    obj.title, obj.original_title, obj.studio, obj.overview, obj.tagline, obj.imdb_id, obj.poster_url, obj.backdrop_url, json.dumps(obj.backdrops),
                     obj.vote_count, obj.vote_average, obj.language_iso, obj.language_name, "|".join(obj.genres), "|".join(obj.keywords),
                     obj.release_date.strftime("%Y-%m-%d") if obj.release_date else None, obj.collection_id, obj.collection_name,
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id
@@ -674,6 +677,7 @@ class Cache:
                     tmdb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else ""
                     tmdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tmdb_dict["backdrop_url"] = row["backdrop_url"] if row["backdrop_url"] else ""
+                    tmdb_dict["backdrops"] = row["backdrops"] if row["backdrops"] else ""
                     tmdb_dict["vote_count"] = row["vote_count"] if row["vote_count"] else 0
                     tmdb_dict["vote_average"] = row["vote_average"] if row["vote_average"] else 0
                     tmdb_dict["language_iso"] = row["language_iso"] if row["language_iso"] else None
@@ -699,11 +703,11 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO tmdb_show_data(tmdb_id) VALUES(?)", (obj.tmdb_id,))
                 update_sql = "UPDATE tmdb_show_data SET title = ?, original_title = ?, studio = ?, overview = ?, tagline = ?, imdb_id = ?, " \
-                             "poster_url = ?, backdrop_url = ?, vote_count = ?, vote_average = ?, language_iso = ?, " \
+                             "poster_url = ?, backdrop_url = ?, backdrops = ?, vote_count = ?, vote_average = ?, language_iso = ?, " \
                              "language_name = ?, genres = ?, keywords = ?, first_air_date = ?, last_air_date = ?, status = ?, " \
                              "type = ?, tvdb_id = ?, countries = ?, seasons = ?, expiration_date = ? WHERE tmdb_id = ?"
                 cursor.execute(update_sql, (
-                    obj.title, obj.original_title, obj.studio, obj.overview, obj.tagline, obj.imdb_id, obj.poster_url, obj.backdrop_url,
+                    obj.title, obj.original_title, obj.studio, obj.overview, obj.tagline, obj.imdb_id, obj.poster_url, obj.backdrop_url, json.dumps(obj.backdrops),
                     obj.vote_count, obj.vote_average, obj.language_iso, obj.language_name, "|".join(obj.genres), "|".join(obj.keywords),
                     obj.first_air_date.strftime("%Y-%m-%d") if obj.first_air_date else None,
                     obj.last_air_date.strftime("%Y-%m-%d") if obj.last_air_date else None,

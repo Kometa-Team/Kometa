@@ -257,12 +257,14 @@ Updates every item's background to the chosen sites background. Will fallback to
 
 **Values:**
 
-| Value    | Description         |
-|:---------|:--------------------|
-| `tmdb`   | Use TMDb Background |
-| `plex`   | Use Plex Background |
-| `lock`   | Lock Background     |
-| `unlock` | Unlock Background   |
+| Value                  | Description                                     |
+|:-----------------------|:------------------------------------------------|
+| `tmdb`                 | Use TMDb Background                             |
+| `tmdb_text`            | Use TMDb Background with text                   |
+| `tmdb_text_no_episode` | Use TMDb Background with text but skip episodes |
+| `plex`                 | Use Plex Background                             |
+| `lock`                 | Lock Background                                 |
+| `unlock`               | Unlock Background                               |
 
 ## Mass IMDb Parental Labels
 
