@@ -2857,12 +2857,14 @@ class CollectionBuilder:
             if self.library.is_movie:
                 path = os.path.dirname(str(item.locations[0]))
             elif self.library.is_show:
-                str(item.locations[0])
-            if self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
+                path = str(item.locations[0])
+            if not path:
+                logger.error(f"Plex Error: No location found for {item.title}: {item.locations}")
+            if path and self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tmdb_paths.append((self.library.movie_rating_key_map[item.ratingKey], path))
-            if self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
+            if path and self.library.Sonarr and item.ratingKey in self.library.show_rating_key_map:
                 path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
                 tvdb_paths.append((self.library.show_rating_key_map[item.ratingKey], path))
