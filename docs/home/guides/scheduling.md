@@ -19,7 +19,7 @@ There's a [Docker Walkthrough](docker) with more detailed instructions on settin
 ```
 docker run -d \
   --restart=unless-stopped \
-  -e TZ=<TIMEZONE>
+  -e TZ=<TIMEZONE> \
   -v /path/to/config:/config:rw \
   meisnate12/plex-meta-manager
 ```
