@@ -747,7 +747,7 @@ overlays:
 
   Sky:
     variables: { key: Sky, weight: 10 }
-    template: [name: standard, name: networks, search: [Sky, Sky Atlantic]]
+    template: [name: standard, { name: networks, search: [Sky, Sky Atlantic] }]
 
   Smithsonian:
     variables: { key: Smithsonian, weight: 10 }
