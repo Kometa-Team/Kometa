@@ -59,49 +59,15 @@ templates:
     default:
       key: <<overlay_name>>
       search: <<key>>
-    ignore_blank_results: true
     plex_search:
       validate: false
       any:
         studio.is: <<search>>
 
 overlays:
-
-  3 Arts Entertainment:
-    template: [name: standard, name: studios]
-
-  6th & Idaho:
-    template: [name: standard, name: studios]
-
+#### ANIMES ########################################################################################################
   8bit:
     template: [name: standard, {name: studios, search: [8-bit, 8bit]}]
-
-  20th Century Animation:
-    template: [name: standard, name: studios]
-
-  20th Century Studios:
-    template: [name: standard, {name: studios, search: [20th Century, 20th Century Fox, 20th Century Studios]}]
-
-  20th Century Fox Television:
-    template: [name: standard, name: studios]
-
-  21 Laps Entertainment:
-    template: [name: standard, name: studios]
-
-  87Eleven:
-    template: [name: standard, name: studios]
-
-  87North Productions:
-    template: [name: standard, name: studios]
-
-  101 Studios:
-    template: [name: standard, name: studios]
-
-  1492 Pictures:
-    template: [name: standard, name: studios]
-
-  A+E Studios:
-    template: [name: standard, name: studios]
 
   A-1 Pictures:
     template: [name: standard, name: studios]
@@ -109,28 +75,10 @@ overlays:
   A.C.G.T.:
     template: [name: standard, name: studios]
 
-  A24:
-    template: [name: standard, name: studios]
-
-  Aamir Khan Productions:
-    template: [name: standard, name: studios]
-
-  ABC Signature:
-    template: [name: standard, name: studios]
-
-  ABC Studios:
-    template: [name: standard, name: studios]
-
   Acca effe:
     template: [name: standard, name: studios]
 
-  Ace Entertainment:
-    template: [name: standard, name: studios]
-
   Actas:
-    template: [name: standard, name: studios]
-
-  AGBO:
     template: [name: standard, name: studios]
 
   AIC:
@@ -142,49 +90,22 @@ overlays:
   Akatsuki:
     template: [name: standard, name: studios]
 
-  Amazon Studios:
-    template: [name: standard, {name: studios, search: [Amazon, Amazon Studios]}]
-
-  Amblin Entertainment:
-    template: [name: standard, {name: studios, search: [Amblin Entertainment, Amblin Television]}]
-
-  AMC Studios:
-    template: [name: standard, name: studios]
-
   Animation Do:
     template: [name: standard, name: studios]
 
   Ankama:
     template: [name: standard, name: studios]
 
-  Annapurna Pictures:
-    template: [name: standard, name: studios]
-
   APPP:
     template: [name: standard, {name: studios, search: [A.P.P.P., APPP]}]
 
-  Ardustry Entertainment:
-    template: [name: standard, name: studios]
-
   Arms:
-    template: [name: standard, name: studios]
-
-  Artisan Entertainment:
-    template: [name: standard, name: studios]
-
-  Artists First:
     template: [name: standard, name: studios]
 
   Artland:
     template: [name: standard, name: studios]
 
   Artmic:
-    template: [name: standard, name: studios]
-
-  Atlas Entertainment:
-    template: [name: standard, name: studios]
-
-  Atresmedia:
     template: [name: standard, name: studios]
 
   Arvo Animation:
@@ -205,29 +126,8 @@ overlays:
   B.CMAY PICTURES:
     template: [name: standard, {name: studios, search: [B.CMAY PICTURES, G.CMay Animation & Film]}]
 
-  Bad Hat Harry Productions:
-    template: [name: standard, name: studios]
-
-  Bad Robot:
-    template: [name: standard, name: studios]
-
-  Bad Wolf:
-    template: [name: standard, name: studios]
-
-  Barunson E&A:
-    template: [name: standard, name: studios]
-
-  Bakken Record:
-    template: [name: standard, name: studios]
-
   Bandai Namco Pictures:
     template: [name: standard, {name: studios, search: [Bandai Namco Pictures, Bandai Visual, Bandai Visual Company]}]
-
-  Bardel Entertainment:
-    template: [name: standard, name: studios]
-
-  BBC Studios:
-    template: [name: standard, {name: studios, search: [BBC, BBC Film, BBC Studios, BBC Studios Natural History Unit]}]
 
   Bee Train:
     template: [name: standard, name: studios]
@@ -241,64 +141,16 @@ overlays:
   bilibili:
     template: [name: standard, name: studios]
 
-  Bill Melendez Productions:
-    template: [name: standard, name: studios]
-
-  Blade:
-    template: [name: standard, name: studios]
-
-  Blown Deadline Productions:
-    template: [name: standard, name: studios]
-
-  Blue Ice Pictures:
-    template: [name: standard, name: studios]
-
-  Blue Sky Studios:
-    template: [name: standard, {name: studios, search: [Blue Sky Films, Blue Sky Studios]}]
-
-  Bluegrass Films:
-    template: [name: standard, name: studios]
-
-  Blueprint Pictures:
-    template: [name: standard, name: studios]
-
-  Blumhouse Productions:
-    template: [name: standard, name: studios]
-
-  Blur Studio:
-    template: [name: standard, name: studios]
-
-  Bold Films:
-    template: [name: standard, name: studios]
-
-  Bona Film Group:
-    template: [name: standard, name: studios]
-
-  Bonanza Productions:
-    template: [name: standard, name: studios]
-
   Bones:
-    template: [name: standard, name: studios]
-
-  Boo Pictures:
-    template: [name: standard, name: studios]
-
-  Bosque Ranch Productions:
-    template: [name: standard, name: studios]
-
-  Box to Box Films:
     template: [name: standard, name: studios]
 
   Brain's Base:
     template: [name: standard, name: studios]
 
-  Brandywine Productions:
-    template: [name: standard, name: studios]
-
   Bridge:
     template: [name: standard, name: studios]
 
-  Broken Road Productions:
+  BUG FILMS:
     template: [name: standard, name: studios]
 
   C-Station:
@@ -307,40 +159,7 @@ overlays:
   C2C:
     template: [name: standard, name: studios]
 
-  Calt Production:
-    template: [name: standard, name: studios]
-
-  Canal+:
-    template: [name: standard, {name: studios, search: [Canal+, Canal+ Polska]}]
-
-  Carnival Films:
-    template: [name: standard, name: studios]
-
-  Castle Rock Entertainment:
-    template: [name: standard, name: studios]
-
-  CBS Productions:
-    template: [name: standard, name: studios]
-
-  CBS Studios:
-    template: [name: standard, name: studios]
-
-  Centropolis Entertainment:
-    template: [name: standard, name: studios]
-
-  Chernin Entertainment:
-    template: [name: standard, name: studios]
-
   Children's Playground Entertainment:
-    template: [name: standard, name: studios]
-
-  Chimp Television:
-    template: [name: standard, name: studios]
-
-  Chris Morgan Productions:
-    template: [name: standard, name: studios]
-
-  Cinergi Pictures Entertainment:
     template: [name: standard, name: studios]
 
   Cloud Hearts:
@@ -352,19 +171,10 @@ overlays:
   Colored Pencil Animation:
     template: [name: standard, name: studios]
 
-  Columbia Pictures:
-    template: [name: standard, {name: studios, search: [Columbia Pictures, Columbia TriStar]}]
-
   CoMix Wave Films:
     template: [name: standard, {name: studios, search: [CoMix Wave Films, CoMix Wave]}]
 
   Connect:
-    template: [name: standard, name: studios]
-
-  Constantin Film:
-    template: [name: standard, name: studios]
-
-  Cowboy Films:
     template: [name: standard, name: studios]
 
   Craftar Studios:
@@ -373,25 +183,10 @@ overlays:
   Creators in Pack:
     template: [name: standard, name: studios]
 
-  Cross Creek Pictures:
-    template: [name: standard, name: studios]
-
   CygamesPictures:
     template: [name: standard, {name: studios, search: [CygamesPictures, Cygames Pictures]}]
 
-  Dark Horse Entertainment:
-    template: [name: standard, name: studios]
-
   David Production:
-    template: [name: standard, name: studios]
-
-  Davis Entertainment:
-    template: [name: standard, name: studios]
-
-  DC Comics:
-    template: [name: standard, {name: studios, search: [DC Comics, DC Films]}]
-
-  Dino De Laurentiis Company:
     template: [name: standard, name: studios]
 
   Diomedéa:
@@ -406,28 +201,7 @@ overlays:
   domerica:
     template: [name: standard, name: studios]
 
-  Don Simpson Jerry Bruckheimer Films:
-    template: [name: standard, name: studios]
-
-  Doozer:
-    template: [name: standard, name: studios]
-
-  Dreams Salon Entertainment Culture:
-    template: [name: standard, name: studios]
-
-  DreamWorks Studios:
-    template: [name: standard, {name: studios, search: [DreamWorks Studios, DreamWorks, DreamWorks Animation, DreamWorks Animation Television, DreamWorks Classics]}]
-
-  DreamWorks Pictures:
-    template: [name: standard, name: studios]
-
   Drive:
-    template: [name: standard, name: studios]
-
-  Eleventh Hour Films:
-    template: [name: standard, name: studios]
-
-  EMJAG Productions:
     template: [name: standard, name: studios]
 
   EMT Squared:
@@ -436,31 +210,7 @@ overlays:
   Encourage Films:
     template: [name: standard, name: studios]
 
-  Endeavor Content:
-    template: [name: standard, name: studios]
-
   ENGI:
-    template: [name: standard, name: studios]
-
-  Entertainment 360:
-    template: [name: standard, name: studios]
-
-  Entertainment One:
-    template: [name: standard, name: studios]
-
-  Eon Productions:
-    template: [name: standard, name: studios]
-
-  Everest Entertainment:
-    template: [name: standard, name: studios]
-
-  Expectation Entertainment:
-    template: [name: standard, name: studios]
-
-  Exposure Labs:
-    template: [name: standard, name: studios]
-
-  Fandango:
     template: [name: standard, name: studios]
 
   feel.:
@@ -472,50 +222,11 @@ overlays:
   Fenz:
     template: [name: standard, name: studios]
 
-  Fields Entertainment:
-    template: [name: standard, name: studios]
-
-  FilmDistrict:
-    template: [name: standard, name: studios]
-
-  FilmNation Entertainment:
-    template: [name: standard, name: studios]
-
-  Flynn Picture Company:
-    template: [name: standard, name: studios]
-
-  Focus Features:
-    template: [name: standard, name: studios]
-
-  Fortiche Production:
-    template: [name: standard, name: studios]
-
-  Freckle Films:
-    template: [name: standard, name: studios]
-
-  Frederator Studios:
-    template: [name: standard, name: studios]
-
-  FremantleMedia:
-    template: [name: standard, name: studios]
-
-  Fuqua Films:
-    template: [name: standard, name: studios]
-
   GAINAX:
     template: [name: standard, name: studios]
 
   Gallop:
     template: [name: standard, {name: studios, search: [Gallop, Studio Gallop]}]
-
-  Gallagher Films Ltd:
-    template: [name: standard, name: studios]
-
-  Gary Sanchez Productions:
-    template: [name: standard, name: studios]
-
-  Gaumont:
-    template: [name: standard, {name: studios, search: [Gaumont, Gaumont International Television]}]
 
   Geek Toys:
     template: [name: standard, {name: studios, search: [Geek Toys, GEEKTOYS]}]
@@ -527,9 +238,6 @@ overlays:
     template: [name: standard, name: studios]
 
   GENCO:
-    template: [name: standard, name: studios]
-
-  Generator Entertainment:
     template: [name: standard, name: studios]
 
   Geno Studio:
@@ -544,38 +252,14 @@ overlays:
   Graphinica:
     template: [name: standard, name: studios]
 
-  Green Hat Films:
-    template: [name: standard, name: studios]
-
-  Grindstone Entertainment Group:
-    template: [name: standard, name: studios]
-
   Group Tac:
     template: [name: standard, name: studios]
 
   Hal Film Maker:
     template: [name: standard, name: studios]
 
-  Hallmark:
-    template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
-
   Haoliners Animation League:
     template: [name: standard, {name: studios, search: [Haoliners Animation League, Haoliners Huimeng Animation, Haoliners Animation]}]
-
-  Happy Madison Productions:
-    template: [name: standard, name: studios]
-
-  HartBeat Productions:
-    template: [name: standard, name: studios]
-
-  Hartswood Films:
-    template: [name: standard, name: studios]
-
-  Heyday Films:
-    template: [name: standard, name: studios]
-
-  HBO:
-    template: [name: standard, name: studios]
 
   Hoods Entertainment:
     template: [name: standard, name: studios]
@@ -583,44 +267,8 @@ overlays:
   Hotline:
     template: [name: standard, name: studios]
 
-  Hurwitz & Schlossberg Productions:
-    template: [name: standard, name: studios]
-
-  Hyperobject Industries:
-    template: [name: standard, name: studios]
-
-  Icon Entertainment International:
-    template: [name: standard, name: studios]
-
-  Illumination Entertainment:
-    template: [name: standard, {name: studios, search: [Illumination Entertainment, Illumination Films]}]
-
-  Imagin:
-    template: [name: standard, name: studios]
-
-  Imperative Entertainment:
-    template: [name: standard, name: studios]
-
-  Impossible Factual:
-    template: [name: standard, name: studios]
-
-  Ingenious Media:
-    template: [name: standard, name: studios]
-
-  Irwin Entertainment:
-    template: [name: standard, name: studios]
-
   J.C.Staff:
     template: [name: standard, {name: studios, search: [J.C.Staff, J.C. Staff]}]
-
-  Jerry Bruckheimer Films:
-    template: [name: standard, name: studios]
-
-  Jessie Films:
-    template: [name: standard, name: studios]
-
-  Jinks-Cohen Company:
-    template: [name: standard, name: studios]
 
   Jumondou:
     template: [name: standard, name: studios]
@@ -628,28 +276,10 @@ overlays:
   Kadokawa:
     template: [name: standard, name: studios]
 
-  Kazak Productions:
-    template: [name: standard, name: studios]
-
-  Kennedy Miller Productions:
-    template: [name: standard, name: studios]
-
   Khara:
     template: [name: standard, {name: studios, search: [Khara, Studio Khara]}]
 
-  Kilter Films:
-    template: [name: standard, name: studios]
-
   Kinema Citrus:
-    template: [name: standard, name: studios]
-
-  Kjam Media:
-    template: [name: standard, name: studios]
-
-  Kudos:
-    template: [name: standard, name: studios]
-
-  Kurtzman Orci:
     template: [name: standard, name: studios]
 
   Kyoto Animation:
@@ -661,47 +291,14 @@ overlays:
   LandQ Studio:
     template: [name: standard, name: studios]
 
-  Landscape Entertainment:
-    template: [name: standard, name: studios]
-
-  Laura Ziskin Productions:
-    template: [name: standard, name: studios]
-
   Lay-duce:
     template: [name: standard, name: studios]
-
-  Leftfield Pictures:
-    template: [name: standard, name: studios]
-
-  Legendary Pictures:
-    template: [name: standard, {name: studios, search: [Legendary Pictures, Legendary Television]}]
 
   Lerche:
     template: [name: standard, name: studios]
 
-  Let's Not Turn This Into a Whole Big Production:
-    template: [name: standard, name: studios]
-
-  Levity Entertainment Group:
-    template: [name: standard, name: studios]
-
   LIDENFILMS:
     template: [name: standard, {name: studios, search: [LIDENFILMS, Liden Films]}]
-
-  Likely Story:
-    template: [name: standard, name: studios]
-
-  Lionsgate:
-    template: [name: standard, name: studios]
-
-  Live Entertainment:
-    template: [name: standard, name: studios]
-
-  Lord Miller Productions:
-    template: [name: standard, name: studios]
-
-  Lucasfilm Ltd:
-    template: [name: standard, {name: studios, search: [Lucasfilm Ltd, Lucasfilm Ltd., Lucasfilm, Lucasfilm Animation]}]
 
   M.S.C:
     template: [name: standard, name: studios]
@@ -712,19 +309,7 @@ overlays:
   Magic Bus:
     template: [name: standard, name: studios]
 
-  Magnolia Pictures:
-    template: [name: standard, name: studios]
-
   Maho Film:
-    template: [name: standard, name: studios]
-
-  Malevolent Films:
-    template: [name: standard, name: studios]
-
-  Mandarin:
-    template: [name: standard, {name: studios, search: [Mandarin, Mandarin Films, Mandarin Television]}]
-
-  Mandarin Motion Pictures Limited:
     template: [name: standard, name: studios]
 
   Manglobe:
@@ -733,37 +318,7 @@ overlays:
   MAPPA:
     template: [name: standard, name: studios]
 
-  marv:
-    template: [name: standard, name: studios]
-
-  Marvel Animation:
-    template: [name: standard, name: studios]
-
-  Marvel Studios:
-    template: [name: standard, {name: studios, search: [Marvel Studios, Marvel Enterprises, Marvel Entertainment, Marvel]}]
-
-  Matt Tolmach Productions:
-    template: [name: standard, name: studios]
-
-  Maximum Effort:
-    template: [name: standard, name: studios]
-
-  Media Res:
-    template: [name: standard, name: studios]
-
-  Metro-Goldwyn-Mayer:
-    template: [name: standard, {name: studios, search: [Metro-Goldwyn-Mayer, MGM]}]
-
-  Michael Patrick King Productions:
-    template: [name: standard, name: studios]
-
-  Millennium Films:
-    template: [name: standard, name: studios]
-
   Millepensee:
-    template: [name: standard, name: studios]
-
-  Miramax:
     template: [name: standard, name: studios]
 
   Namu Animation:
@@ -772,14 +327,8 @@ overlays:
   NAZ:
     template: [name: standard, name: studios]
 
-  New Line Cinema:
-    template: [name: standard, {name: studios, search: [New Line Cinema, New Line]}]
-
   Nexus:
     template: [name: standard, {name: studios, search: [Nexus, Nexus Factory]}]
-
-  Nickelodeon Animation Studio:
-    template: [name: standard, name: studios]
 
   Nippon Animation:
     template: [name: standard, name: studios]
@@ -787,16 +336,7 @@ overlays:
   Nomad:
     template: [name: standard, name: studios]
 
-  NorthSouth Productions:
-    template: [name: standard, name: studios]
-
-  Nu Boyana Film Studios:
-    template: [name: standard, name: studios]
-
   Nut:
-    template: [name: standard, name: studios]
-
-  O2 Filmes:
     template: [name: standard, name: studios]
 
   Okuruto Noboru:
@@ -805,19 +345,10 @@ overlays:
   OLM:
     template: [name: standard, name: studios]
 
-  Open Road Films:
-    template: [name: standard, name: studios]
-
   Orange:
     template: [name: standard, name: studios]
 
   Ordet:
-    template: [name: standard, name: studios]
-
-  Original Film:
-    template: [name: standard, name: studios]
-
-  Orion Pictures:
     template: [name: standard, name: studios]
 
   OZ:
@@ -829,70 +360,25 @@ overlays:
   P.I.C.S.:
     template: [name: standard, name: studios]
 
-  Palomar:
-    template: [name: standard, name: studios]
-
-  Paramount Animation:
-    template: [name: standard, name: studios]
-
-  Paramount Pictures:
-    template: [name: standard, {name: studios, search: [Paramount Pictures, Paramount]}]
-
-  Paramount Television Studios:
-    template: [name: standard, name: studios]
-
-  Participant:
-    template: [name: standard, name: studios]
-
   Passione:
     template: [name: standard, name: studios]
 
   Pb Animation Co. Ltd:
     template: [name: standard, name: studios]
 
-  Phoenix Pictures:
-    template: [name: standard, name: studios]
-
   Pierrot:
     template: [name: standard, {name: studios, search: [Pierrot, Pierrot Plus, Studio Pierrot]}]
-
-  Piki Films:
-    template: [name: standard, name: studios]
 
   Pine Jam:
     template: [name: standard, name: studios]
 
-  Pixar:
-    template: [name: standard, {name: studios, search: [Pixar, Pixar Animation Studios]}]
-
-  Plan B Entertainment:
-    template: [name: standard, {name: studios, search: [Plan B Entertainment, PlanB Entertainment]}]
-
   Platinum Vision:
     template: [name: standard, {name: studios, search: [Platinum Vision, PlatinumVision]}]
-
-  PlayStation Productions:
-    template: [name: standard, name: studios]
-
-  Playtone:
-    template: [name: standard, name: studios]
-
-  Plum Pictures:
-    template: [name: standard, name: studios]
 
   Polygon Pictures:
     template: [name: standard, name: studios]
 
   Pony Canyon:
-    template: [name: standard, name: studios]
-
-  Powerhouse Animation Studios:
-    template: [name: standard, name: studios]
-
-  PRA:
-    template: [name: standard, name: studios]
-
-  Prescience:
     template: [name: standard, name: studios]
 
   Production +h.:
@@ -910,46 +396,13 @@ overlays:
   Project No.9:
     template: [name: standard, name: studios]
 
-  Prospect Park:
-    template: [name: standard, name: studios]
-
-  Pulse Films:
-    template: [name: standard, name: studios]
-
   Quad:
-    template: [name: standard, name: studios]
-
-  Radar Pictures:
-    template: [name: standard, name: studios]
-
-  RadicalMedia:
     template: [name: standard, name: studios]
 
   Radix:
     template: [name: standard, name: studios]
 
-  Railsplitter Pictures:
-    template: [name: standard, name: studios]
-
-  RatPac Entertainment:
-    template: [name: standard, {name: studios, search: [Dune Entertainment, RatPac Entertainment]}]
-
-  Red Dog Culture House:
-    template: [name: standard, name: studios]
-
-  Regency Pictures:
-    template: [name: standard, {name: studios, search: [Monarchy Enterprises S.a.r.l., New Regency Pictures, New Regency Productions, Regency Enterprises, Regency Pictures]}]
-
-  Reveille Productions:
-    template: [name: standard, name: studios]
-
   Revoroot:
-    template: [name: standard, name: studios]
-
-  Rip Cord Productions:
-    template: [name: standard, name: studios]
-
-  RocketScience:
     template: [name: standard, name: studios]
 
   Saetta:
@@ -961,32 +414,8 @@ overlays:
   Satelight:
     template: [name: standard, name: studios]
 
-  Savoy Pictures:
-    template: [name: standard, name: studios]
-
-  Scenic Labs:
-    template: [name: standard, name: studios]
-
   Science SARU:
     template: [name: standard, {name: studios, search: [Science SARU, Science Saru]}]
-
-  Scion Films:
-    template: [name: standard, name: studios]
-
-  Scott Free Productions:
-    template: [name: standard, name: studios]
-
-  Sculptor Media:
-    template: [name: standard, name: studios]
-
-  Sean Daniel Company:
-    template: [name: standard, name: studios]
-
-  Secret Hideout:
-    template: [name: standard, name: studios]
-
-  See-Saw Films:
-    template: [name: standard, name: studios]
 
   Sentai Filmworks:
     template: [name: standard, name: studios]
@@ -1003,76 +432,22 @@ overlays:
   Shogakukan:
     template: [name: standard, {name: studios, search: [Shogakukan, Shogakukan Production]}]
 
-  Show East:
-    template: [name: standard, name: studios]
-
-  Showtime Networks:
-    template: [name: standard, name: studios]
-
   Shuka:
     template: [name: standard, name: studios]
 
   Signal.MD:
     template: [name: standard, {name: studios, search: [Signal.MD, Signal MD]}]
 
-  Sil-Metropole Organisation:
-    template: [name: standard, name: studios]
-
   SILVER LINK.:
     template: [name: standard, {name: studios, search: [SILVER LINK., Silver Link]}]
 
-  Silverback Films:
-    template: [name: standard, name: studios]
-
-  Siren Pictures:
-    template: [name: standard, name: studios]
-
-  SISTER:
-    template: [name: standard, name: studios]
-
-  Sixteen String Jack Productions:
-    template: [name: standard, name: studios]
-
-  SKA Films:
-    template: [name: standard, name: studios]
-
-  Sky studios:
-    template: [name: standard, {name: studios, search: [British Sky Broadcasting, British Sky Broadcasting(BSkyB)]}]
-
-  Skydance:
-    template: [name: standard, {name: studios, search: [Skydance, Skydance Media]}]
-
-  Sony Pictures Animation:
-    template: [name: standard, name: studios]
-
-  Sony Pictures:
-    template: [name: standard, {name: studios, search: [Sony, Sony Pictures, Sony Pictures Animation, Sony Pictures Television Studios]}]
-
-  Sphère Média Plus:
-    template: [name: standard, name: studios]
-
-  Spyglass Entertainment:
-    template: [name: standard, name: studios]
-
   Staple Entertainment:
-    template: [name: standard, name: studios]
-
-  Star Thrower Entertainment:
-    template: [name: standard, name: studios]
-
-  Stark Raving Black Productions:
     template: [name: standard, name: studios]
 
   Studio 3Hz:
     template: [name: standard, name: studios]
 
-  Studio 8:
-    template: [name: standard, name: studios]
-
   Studio A-CAT:
-    template: [name: standard, name: studios]
-
-  Studio Babelsberg:
     template: [name: standard, name: studios]
 
   Studio Bind:
@@ -1090,16 +465,13 @@ overlays:
   Studio Deen:
     template: [name: standard, {name: studios, search: [Studio Deen, Studio DEEN]}]
 
-  Studio Dragon:
-    template: [name: standard, name: studios]
-
   Studio Elle:
     template: [name: standard, name: studios]
 
-  Studio Flad:
+  Studio Ghibli:
     template: [name: standard, name: studios]
 
-  Studio Ghibli:
+  Studio Flad:
     template: [name: standard, name: studios]
 
   Studio Gokumi:
@@ -1138,13 +510,723 @@ overlays:
   STUDIO4°C:
     template: [name: standard, name: studios]
 
-  Summit Entertainment:
-    template: [name: standard, name: studios]
-
   Sunrise Beyond:
     template: [name: standard, name: studios]
 
   Sunrise:
+    template: [name: standard, name: studios]
+
+  SynergySP:
+    template: [name: standard, name: studios]
+
+  Tatsunoko Production:
+    template: [name: standard, name: studios]
+
+  Telecom Animation Film:
+    template: [name: standard, name: studios]
+
+  Tezuka Productions:
+    template: [name: standard, name: studios]
+
+  TMS Entertainment:
+    template: [name: standard, {name: studios, search: [TMS Entertainment, Tokyo Movie Shinsha]}]
+
+  TNK:
+    template: [name: standard, name: studios]
+
+  Toei Animation:
+    template: [name: standard, name: studios]
+
+  Topcraft:
+    template: [name: standard, name: studios]
+
+  Triangle Staff:
+    template: [name: standard, name: studios]
+
+  Trigger:
+    template: [name: standard, name: studios]
+
+  TROYCA:
+    template: [name: standard, name: studios]
+
+  TYO Animations:
+    template: [name: standard, name: studios]
+
+  Typhoon Graphics:
+    template: [name: standard, name: studios]
+
+  ufotable:
+    template: [name: standard, name: studios]
+
+  V1 Studio:
+    template: [name: standard, name: studios]
+
+  W-Toon Studio:
+    template: [name: standard, name: studios]
+
+  Wawayu Animation:
+    template: [name: standard, name: studios]
+
+  White Fox:
+    template: [name: standard, name: studios]
+
+  Wit Studio:
+    template: [name: standard, name: studios]
+
+  Wolfsbane:
+    template: [name: standard, name: studios]
+
+  Xebec:
+    template: [name: standard, name: studios]
+
+  Yokohama Animation Lab:
+    template: [name: standard, {name: studios, search: [Yokohama Animation Lab, Yokohama Animation Laboratory]}]
+
+  Yostar Pictures:
+    template: [name: standard, name: studios]
+
+  Yumeta Company:
+    template: [name: standard, name: studios]
+
+  Zero-G:
+    template: [name: standard, name: studios]
+
+  Zexcs:
+    template: [name: standard, name: studios]
+
+
+#### MOVIES & TV SHOWS ###############################################################################################
+  3 Arts Entertainment:
+    template: [name: standard, name: studios]
+
+  6th & Idaho:
+    template: [name: standard, name: studios]
+
+  20th Century Animation:
+    template: [name: standard, name: studios]
+
+  20th Century Studios:
+    template: [name: standard, {name: studios, search: [20th Century, 20th Century Fox, 20th Century Studios]}]
+
+  20th Century Fox Television:
+    template: [name: standard, name: studios]
+
+  21 Laps Entertainment:
+    template: [name: standard, name: studios]
+
+  87Eleven:
+    template: [name: standard, name: studios]
+
+  87North Productions:
+    template: [name: standard, name: studios]
+
+  101 Studios:
+    template: [name: standard, name: studios]
+
+  1492 Pictures:
+    template: [name: standard, name: studios]
+
+  A+E Studios:
+    template: [name: standard, name: studios]
+
+  A24:
+    template: [name: standard, name: studios]
+
+  Aamir Khan Productions:
+    template: [name: standard, name: studios]
+
+  ABC Signature:
+    template: [name: standard, name: studios]
+
+  ABC Studios:
+    template: [name: standard, name: studios]
+
+  Ace Entertainment:
+    template: [name: standard, name: studios]
+
+  AGBO:
+    template: [name: standard, name: studios]
+
+  Amazon Studios:
+    template: [name: standard, {name: studios, search: [Amazon, Amazon Studios]}]
+
+  Amblin Entertainment:
+    template: [name: standard, {name: studios, search: [Amblin Entertainment, Amblin Television]}]
+
+  AMC Studios:
+    template: [name: standard, name: studios]
+
+  Annapurna Pictures:
+    template: [name: standard, name: studios]
+
+  Ardustry Entertainment:
+    template: [name: standard, name: studios]
+
+  Artisan Entertainment:
+    template: [name: standard, name: studios]
+
+  Artists First:
+    template: [name: standard, name: studios]
+
+  Atlas Entertainment:
+    template: [name: standard, name: studios]
+
+  Atresmedia:
+    template: [name: standard, name: studios]
+
+  Bad Hat Harry Productions:
+    template: [name: standard, name: studios]
+
+  Bad Robot:
+    template: [name: standard, name: studios]
+
+  Bad Wolf:
+    template: [name: standard, name: studios]
+
+  Barunson E&A:
+    template: [name: standard, name: studios]
+
+  Bakken Record:
+    template: [name: standard, name: studios]
+
+  Bardel Entertainment:
+    template: [name: standard, name: studios]
+
+  BBC Studios:
+    template: [name: standard, {name: studios, search: [BBC, BBC Film, BBC Studios, BBC Studios Natural History Unit]}]
+
+  Bill Melendez Productions:
+    template: [name: standard, name: studios]
+
+  Blade:
+    template: [name: standard, name: studios]
+
+  Blown Deadline Productions:
+    template: [name: standard, name: studios]
+
+  Blue Ice Pictures:
+    template: [name: standard, name: studios]
+
+  Blue Sky Studios:
+    template: [name: standard, {name: studios, search: [Blue Sky Films, Blue Sky Studios]}]
+
+  Bluegrass Films:
+    template: [name: standard, name: studios]
+
+  Blueprint Pictures:
+    template: [name: standard, name: studios]
+
+  Blumhouse Productions:
+    template: [name: standard, name: studios]
+
+  Blur Studio:
+    template: [name: standard, name: studios]
+
+  Bold Films:
+    template: [name: standard, name: studios]
+
+  Bona Film Group:
+    template: [name: standard, name: studios]
+
+  Bonanza Productions:
+    template: [name: standard, name: studios]
+
+  Boo Pictures:
+    template: [name: standard, name: studios]
+
+  Bosque Ranch Productions:
+    template: [name: standard, name: studios]
+
+  Box to Box Films:
+    template: [name: standard, name: studios]
+
+  Brandywine Productions:
+    template: [name: standard, name: studios]
+
+  Broken Road Productions:
+    template: [name: standard, name: studios]
+
+  Calt Production:
+    template: [name: standard, name: studios]
+
+  Canal+:
+    template: [name: standard, {name: studios, search: [Canal+, Canal+ Polska]}]
+
+  Carnival Films:
+    template: [name: standard, name: studios]
+
+  Castle Rock Entertainment:
+    template: [name: standard, name: studios]
+
+  CBS Productions:
+    template: [name: standard, name: studios]
+
+  CBS Studios:
+    template: [name: standard, name: studios]
+
+  Centropolis Entertainment:
+    template: [name: standard, name: studios]
+
+  Chernin Entertainment:
+    template: [name: standard, name: studios]
+
+  Chimp Television:
+    template: [name: standard, name: studios]
+
+  Chris Morgan Productions:
+    template: [name: standard, name: studios]
+
+  Cinergi Pictures Entertainment:
+    template: [name: standard, name: studios]
+
+  Columbia Pictures:
+    template: [name: standard, {name: studios, search: [Columbia Pictures, Columbia TriStar]}]
+
+  Constantin Film:
+    template: [name: standard, name: studios]
+
+  Cowboy Films:
+    template: [name: standard, name: studios]
+
+  Cross Creek Pictures:
+    template: [name: standard, name: studios]
+
+  Dark Horse Entertainment:
+    template: [name: standard, name: studios]
+
+  Davis Entertainment:
+    template: [name: standard, name: studios]
+
+  DC Comics:
+    template: [name: standard, {name: studios, search: [DC Comics, DC Films]}]
+
+  Dino De Laurentiis Company:
+    template: [name: standard, name: studios]
+
+  Don Simpson Jerry Bruckheimer Films:
+    template: [name: standard, name: studios]
+
+  Doozer:
+    template: [name: standard, name: studios]
+
+  Dreams Salon Entertainment Culture:
+    template: [name: standard, name: studios]
+
+  DreamWorks Studios:
+    template: [name: standard, {name: studios, search: [DreamWorks Studios, DreamWorks, DreamWorks Animation, DreamWorks Animation Television, DreamWorks Classics]}]
+
+  DreamWorks Pictures:
+    template: [name: standard, name: studios]
+
+  Eleventh Hour Films:
+    template: [name: standard, name: studios]
+
+  EMJAG Productions:
+    template: [name: standard, name: studios]
+
+  Endeavor Content:
+    template: [name: standard, name: studios]
+
+  Entertainment 360:
+    template: [name: standard, name: studios]
+
+  Entertainment One:
+    template: [name: standard, name: studios]
+
+  Eon Productions:
+    template: [name: standard, name: studios]
+
+  Everest Entertainment:
+    template: [name: standard, name: studios]
+
+  Expectation Entertainment:
+    template: [name: standard, name: studios]
+
+  Exposure Labs:
+    template: [name: standard, name: studios]
+
+  Fandango:
+    template: [name: standard, name: studios]
+
+  Fields Entertainment:
+    template: [name: standard, name: studios]
+
+  FilmDistrict:
+    template: [name: standard, name: studios]
+
+  FilmNation Entertainment:
+    template: [name: standard, name: studios]
+
+  Flynn Picture Company:
+    template: [name: standard, name: studios]
+
+  Focus Features:
+    template: [name: standard, name: studios]
+
+  Fortiche Production:
+    template: [name: standard, name: studios]
+
+  Freckle Films:
+    template: [name: standard, name: studios]
+
+  Frederator Studios:
+    template: [name: standard, name: studios]
+
+  FremantleMedia:
+    template: [name: standard, name: studios]
+
+  Fuqua Films:
+    template: [name: standard, name: studios]
+
+  Gallagher Films Ltd:
+    template: [name: standard, name: studios]
+
+  Gary Sanchez Productions:
+    template: [name: standard, name: studios]
+
+  Gaumont:
+    template: [name: standard, {name: studios, search: [Gaumont, Gaumont International Television]}]
+
+  Generator Entertainment:
+    template: [name: standard, name: studios]
+
+  Green Hat Films:
+    template: [name: standard, name: studios]
+
+  Grindstone Entertainment Group:
+    template: [name: standard, name: studios]
+
+  Hallmark:
+    template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
+
+  Happy Madison Productions:
+    template: [name: standard, name: studios]
+
+  HartBeat Productions:
+    template: [name: standard, name: studios]
+
+  Hartswood Films:
+    template: [name: standard, name: studios]
+
+  Heyday Films:
+    template: [name: standard, name: studios]
+
+  HBO:
+    template: [name: standard, name: studios]
+
+  Hurwitz & Schlossberg Productions:
+    template: [name: standard, name: studios]
+
+  Hyperobject Industries:
+    template: [name: standard, name: studios]
+
+  Icon Entertainment International:
+    template: [name: standard, name: studios]
+
+  Illumination Entertainment:
+    template: [name: standard, {name: studios, search: [Illumination Entertainment, Illumination Films]}]
+
+  Imagin:
+    template: [name: standard, name: studios]
+
+  Imperative Entertainment:
+    template: [name: standard, name: studios]
+
+  Impossible Factual:
+    template: [name: standard, name: studios]
+
+  Ingenious Media:
+    template: [name: standard, name: studios]
+
+  Irwin Entertainment:
+    template: [name: standard, name: studios]
+
+  Jerry Bruckheimer Films:
+    template: [name: standard, name: studios]
+
+  Jessie Films:
+    template: [name: standard, name: studios]
+
+  Jinks-Cohen Company:
+    template: [name: standard, name: studios]
+
+  Kazak Productions:
+    template: [name: standard, name: studios]
+
+  Kennedy Miller Productions:
+    template: [name: standard, name: studios]
+
+  Kilter Films:
+    template: [name: standard, name: studios]
+
+  Kjam Media:
+    template: [name: standard, name: studios]
+
+  Kudos:
+    template: [name: standard, name: studios]
+
+  Kurtzman Orci:
+    template: [name: standard, name: studios]
+
+  Landscape Entertainment:
+    template: [name: standard, name: studios]
+
+  Laura Ziskin Productions:
+    template: [name: standard, name: studios]
+
+  Leftfield Pictures:
+    template: [name: standard, name: studios]
+
+  Legendary Pictures:
+    template: [name: standard, {name: studios, search: [Legendary Pictures, Legendary Television]}]
+
+  Let's Not Turn This Into a Whole Big Production:
+    template: [name: standard, name: studios]
+
+  Levity Entertainment Group:
+    template: [name: standard, name: studios]
+
+  Likely Story:
+    template: [name: standard, name: studios]
+
+  Lionsgate:
+    template: [name: standard, name: studios]
+
+  Live Entertainment:
+    template: [name: standard, name: studios]
+
+  Lord Miller Productions:
+    template: [name: standard, name: studios]
+
+  Lucasfilm Ltd:
+    template: [name: standard, {name: studios, search: [Lucasfilm Ltd, Lucasfilm Ltd., Lucasfilm, Lucasfilm Animation]}]
+
+  Magnolia Pictures:
+    template: [name: standard, name: studios]
+
+  Malevolent Films:
+    template: [name: standard, name: studios]
+
+  Mandarin:
+    template: [name: standard, {name: studios, search: [Mandarin, Mandarin Films, Mandarin Television]}]
+
+  Mandarin Motion Pictures Limited:
+    template: [name: standard, name: studios]
+
+  marv:
+    template: [name: standard, name: studios]
+
+  Marvel Animation:
+    template: [name: standard, name: studios]
+
+  Marvel Studios:
+    template: [name: standard, {name: studios, search: [Marvel Studios, Marvel Enterprises, Marvel Entertainment, Marvel]}]
+
+  Matt Tolmach Productions:
+    template: [name: standard, name: studios]
+
+  Maximum Effort:
+    template: [name: standard, name: studios]
+
+  Media Res:
+    template: [name: standard, name: studios]
+
+  Metro-Goldwyn-Mayer:
+    template: [name: standard, {name: studios, search: [Metro-Goldwyn-Mayer, MGM]}]
+
+  Michael Patrick King Productions:
+    template: [name: standard, name: studios]
+
+  Millennium Films:
+    template: [name: standard, name: studios]
+
+  Miramax:
+    template: [name: standard, name: studios]
+
+  New Line Cinema:
+    template: [name: standard, {name: studios, search: [New Line Cinema, New Line]}]
+
+  Nickelodeon Animation Studio:
+    template: [name: standard, name: studios]
+
+  NorthSouth Productions:
+    template: [name: standard, name: studios]
+
+  Nu Boyana Film Studios:
+    template: [name: standard, name: studios]
+
+  O2 Filmes:
+    template: [name: standard, name: studios]
+
+  Open Road Films:
+    template: [name: standard, name: studios]
+
+  Original Film:
+    template: [name: standard, name: studios]
+
+  Orion Pictures:
+    template: [name: standard, name: studios]
+
+  Palomar:
+    template: [name: standard, name: studios]
+
+  Paramount Animation:
+    template: [name: standard, name: studios]
+
+  Paramount Pictures:
+    template: [name: standard, {name: studios, search: [Paramount Pictures, Paramount]}]
+
+  Paramount Television Studios:
+    template: [name: standard, name: studios]
+
+  Participant:
+    template: [name: standard, name: studios]
+
+  Phoenix Pictures:
+    template: [name: standard, name: studios]
+
+  Piki Films:
+    template: [name: standard, name: studios]
+
+  Pixar:
+    template: [name: standard, {name: studios, search: [Pixar, Pixar Animation Studios]}]
+
+  Plan B Entertainment:
+    template: [name: standard, {name: studios, search: [Plan B Entertainment, PlanB Entertainment]}]
+
+  PlayStation Productions:
+    template: [name: standard, name: studios]
+
+  Playtone:
+    template: [name: standard, name: studios]
+
+  Plum Pictures:
+    template: [name: standard, name: studios]
+
+  Powerhouse Animation Studios:
+    template: [name: standard, name: studios]
+
+  PRA:
+    template: [name: standard, name: studios]
+
+  Prescience:
+    template: [name: standard, name: studios]
+
+  Prospect Park:
+    template: [name: standard, name: studios]
+
+  Pulse Films:
+    template: [name: standard, name: studios]
+
+  Radar Pictures:
+    template: [name: standard, name: studios]
+
+  RadicalMedia:
+    template: [name: standard, name: studios]
+
+  Railsplitter Pictures:
+    template: [name: standard, name: studios]
+
+  RatPac Entertainment:
+    template: [name: standard, {name: studios, search: [Dune Entertainment, RatPac Entertainment]}]
+
+  Red Dog Culture House:
+    template: [name: standard, name: studios]
+
+  Regency Pictures:
+    template: [name: standard, {name: studios, search: [Monarchy Enterprises S.a.r.l., New Regency Pictures, New Regency Productions, Regency Enterprises, Regency Pictures]}]
+
+  Reveille Productions:
+    template: [name: standard, name: studios]
+
+  Rip Cord Productions:
+    template: [name: standard, name: studios]
+
+  RocketScience:
+    template: [name: standard, name: studios]
+
+  Savoy Pictures:
+    template: [name: standard, name: studios]
+
+  Scenic Labs:
+    template: [name: standard, name: studios]
+
+  Scion Films:
+    template: [name: standard, name: studios]
+
+  Scott Free Productions:
+    template: [name: standard, name: studios]
+
+  Sculptor Media:
+    template: [name: standard, name: studios]
+
+  Sean Daniel Company:
+    template: [name: standard, name: studios]
+
+  Secret Hideout:
+    template: [name: standard, name: studios]
+
+  See-Saw Films:
+    template: [name: standard, name: studios]
+
+  Show East:
+    template: [name: standard, name: studios]
+
+  Showtime Networks:
+    template: [name: standard, name: studios]
+
+  Sil-Metropole Organisation:
+    template: [name: standard, name: studios]
+
+  Silverback Films:
+    template: [name: standard, name: studios]
+
+  Siren Pictures:
+    template: [name: standard, name: studios]
+
+  SISTER:
+    template: [name: standard, name: studios]
+
+  Sixteen String Jack Productions:
+    template: [name: standard, name: studios]
+
+  SKA Films:
+    template: [name: standard, name: studios]
+
+  Sky studios:
+    template: [name: standard, {name: studios, search: [British Sky Broadcasting, British Sky Broadcasting(BSkyB)]}]
+
+  Skydance:
+    template: [name: standard, {name: studios, search: [Skydance, Skydance Media]}]
+
+  Sony Pictures Animation:
+    template: [name: standard, name: studios]
+
+  Sony Pictures:
+    template: [name: standard, {name: studios, search: [Sony, Sony Pictures, Sony Pictures Animation, Sony Pictures Television Studios]}]
+
+  Sphère Média Plus:
+    template: [name: standard, name: studios]
+
+  Spyglass Entertainment:
+    template: [name: standard, name: studios]
+
+  Star Thrower Entertainment:
+    template: [name: standard, name: studios]
+
+  Stark Raving Black Productions:
+    template: [name: standard, name: studios]
+
+  Studio 8:
+    template: [name: standard, name: studios]
+
+  Studio Babelsberg:
+    template: [name: standard, name: studios]
+
+  Studio Dragon:
+    template: [name: standard, name: studios]
+
+  Summit Entertainment:
     template: [name: standard, name: studios]
 
   Syfy:
@@ -1153,28 +1235,16 @@ overlays:
   Syncopy:
     template: [name: standard, name: studios]
 
-  SynergySP:
-    template: [name: standard, name: studios]
-
   T-Street Productions:
     template: [name: standard, name: studios]
 
   Tall Ship Productions:
     template: [name: standard, name: studios]
 
-  Tatsunoko Production:
-    template: [name: standard, name: studios]
-
   Team Downey:
     template: [name: standard, name: studios]
 
-  Telecom Animation Film:
-    template: [name: standard, name: studios]
-
   Temple Street Productions:
-    template: [name: standard, name: studios]
-
-  Tezuka Productions:
     template: [name: standard, name: studios]
 
   The Cat in the Hat Productions:
@@ -1210,19 +1280,7 @@ overlays:
   Titmouse:
     template: [name: standard, name: studios]
 
-  TMS Entertainment:
-    template: [name: standard, {name: studios, search: [TMS Entertainment, Tokyo Movie Shinsha]}]
-
-  TNK:
-    template: [name: standard, name: studios]
-
-  Toei Animation:
-    template: [name: standard, name: studios]
-
   Tomorrow Studios:
-    template: [name: standard, name: studios]
-
-  Topcraft:
     template: [name: standard, name: studios]
 
   Touchstone Pictures:
@@ -1237,31 +1295,13 @@ overlays:
   Triage Entertainment:
     template: [name: standard, name: studios]
 
-  Triangle Staff:
-    template: [name: standard, name: studios]
-
   Tribeca Productions:
-    template: [name: standard, name: studios]
-
-  Trigger:
     template: [name: standard, name: studios]
 
   TriStar Pictures:
     template: [name: standard, {name: studios, search: [TriStar, TriStar Pictures]}]
 
-  TROYCA:
-    template: [name: standard, name: studios]
-
-  TYO Animations:
-    template: [name: standard, name: studios]
-
-  Typhoon Graphics:
-    template: [name: standard, name: studios]
-
   UCP:
-    template: [name: standard, name: studios]
-
-  ufotable:
     template: [name: standard, name: studios]
 
   United Artists:
@@ -1276,9 +1316,6 @@ overlays:
   Universal Television:
     template: [name: standard, name: studios]
 
-  V1 Studio:
-    template: [name: standard, name: studios]
-
   Vancouver Media:
     template: [name: standard, name: studios]
 
@@ -1289,9 +1326,6 @@ overlays:
     template: [name: standard, name: studios]
 
   Village Roadshow Pictures:
-    template: [name: standard, name: studios]
-
-  W-Toon Studio:
     template: [name: standard, name: studios]
 
   W. Chump and Sons:
@@ -1321,16 +1355,10 @@ overlays:
   Waverly Films:
     template: [name: standard, name: studios]
 
-  Wawayu Animation:
-    template: [name: standard, name: studios]
-
   Wayfare Entertainment:
     template: [name: standard, name: studios]
 
   Whitaker Entertainment:
-    template: [name: standard, name: studios]
-
-  White Fox:
     template: [name: standard, name: studios]
 
   Wiedemann & Berg Television:
@@ -1339,29 +1367,5 @@ overlays:
   Winkler Films:
     template: [name: standard, name: studios]
 
-  Wit Studio:
-    template: [name: standard, name: studios]
-
-  Wolfsbane:
-    template: [name: standard, name: studios]
-
   Working Title Films:
-    template: [name: standard, name: studios]
-
-  Xebec:
-    template: [name: standard, name: studios]
-
-  Yokohama Animation Lab:
-    template: [name: standard, {name: studios, search: [Yokohama Animation Lab, Yokohama Animation Laboratory]}]
-
-  Yostar Pictures:
-    template: [name: standard, name: studios]
-
-  Yumeta Company:
-    template: [name: standard, name: studios]
-
-  Zero-G:
-    template: [name: standard, name: studios]
-
-  Zexcs:
     template: [name: standard, name: studios]
