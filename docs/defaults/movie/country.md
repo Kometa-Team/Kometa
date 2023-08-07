@@ -322,8 +322,28 @@ include:
 ### Default `addons`
 
 ```yaml
-addons:
-  Korea:
-    - Republic of Korea
-    - South Korea
+    addons:
+      Korea:
+        - Democratic People's Republic of Korea
+        - North Korea
+        - Republic of Korea
+        - South Korea
+      Taiwan:
+        - Taiwan, Province of China
+      Russia:
+        - Russian Federation
+      Iran:
+        - Islamic Republic of Iran
+      Vietnam:
+        - Viet Nam
+      Bolivia:
+        - Plurinational State of Bolivia
+      Venezuela:
+        - Bolivarian Republic of Venezuela
+      Macedonia:
+        - Republic of North Macedonia
+      Congo:
+        - Democratic Republic of the Congo
+      Palestine:
+        - State of Palestine
 ```

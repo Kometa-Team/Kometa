@@ -377,6 +377,7 @@ The following yaml is provided for reference to show what values will be in use 
         - Lebanon
         - Oman
         - Palestine
+        - State of Palestine
         - Qatar
         - Saudi Arabia
         - Syria
