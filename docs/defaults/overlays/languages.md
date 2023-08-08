@@ -69,10 +69,14 @@ Supported library types: Movie & Show
 | Slovenian                | `sl` | `70`   | `si`         |  &#10060;   |
 | Albanian                 | `sq` | `60`   | `al`         |  &#10060;   |
 | Serbian                  | `sr` | `50`   | `rs`         |  &#10060;   |
+| Somali                   | `so` | `45`   | `so`         |  &#10060;   |
 | Swahili                  | `sw` | `40`   | `tz`         |  &#10060;   |
 | Tamil                    | `ta` | `30`   | `in`         |  &#10060;   |
 | Urdu                     | `ur` | `20`   | `pk`         |  &#10060;   |
-| Vietnamese               | `vi` | `10`   | `vn`         |  &#10060;   |
+| Vietnamese               | `vi` | `15`   | `vn`         |  &#10060;   |
+| Wolof                    | `wo` | `10`   | `sn`         |  &#10060;   |
+| Mayan                    | `myn`| `8`    | `mx`         |  &#10060;   |
+| Inuktitut                | `iu` | `5`    | `ca`         |  &#10060;   |
 
 ### Square Style
 
