@@ -259,13 +259,11 @@ class Overlays:
                                             else:
                                                 final_value = int(actual_value / 60000)
                                         elif mod == "%":
-                                            final_value = f"{int(actual_value * 10)}%"
+                                            final_value = int(actual_value * 10)
                                         elif mod == "#":
                                             final_value = str(actual_value)[:-2] if str(actual_value).endswith(".0") else actual_value
                                         elif mod == "/":
                                             final_value = f"{float(actual_value) / 2:.1f}"
-                                        elif mod == "0" and format_var in ["audience_rating", "critic_rating", "user_rating"]:
-                                            final_value = int(actual_value * 10)
                                         elif mod == "W":
                                             final_value = num2words(int(actual_value))
                                         elif mod == "WU":
