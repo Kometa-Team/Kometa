@@ -102,12 +102,15 @@ templates:
       rating<<rating_num>>_style:
         default: ""
         conditions:
-          - rating<<rating_num>>_image: [rt_popcorn, rt_tomato, tmdb]
+          - rating<<rating_num>>_image: [rt_popcorn, rt_tomato, tmdb, metacritic, mdb]
             value: "%"
-          - rating<<rating_num>>_image: [metacritic, mdb]
-            value: "0"
           - rating<<rating_num>>_image: [letterboxd]
             value: "/"
+      rating<<rating_num>>_extra:
+        default: ""
+        conditions:
+          - rating<<rating_num>>_image: [rt_popcorn, rt_tomato, tmdb]
+            value: "%"
       image_extra:
         default: ""
         conditions:
@@ -451,7 +454,7 @@ templates:
     run_definition: <<run_this>>
     ignore_blank_results: true
     overlay:
-      name: text(<<<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>>>)
+      name: text(<<<<rating<<rating_num>>>>_rating<<rating<<rating_num>>_style>>>><<rating<<rating_num>>_extra>>)
       file: <<rating<<rating_num>>_file>>
       url: <<rating<<rating_num>>_url>>
       git: <<rating<<rating_num>>_git>>
