@@ -155,6 +155,7 @@ The following yml is provided for reference to show what values will be in use i
         - Lebanon
         - Oman
         - Palestine
+        - State of Palestine
         - Qatar
         - Saudi Arabia
         - Syria
