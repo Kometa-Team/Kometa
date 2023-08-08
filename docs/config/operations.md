@@ -240,14 +240,25 @@ Updates every item's poster to the chosen sites poster. Will fallback to `plex` 
 
 **Attribute:** `mass_poster_update`
 
-**Values:**
+**Values:** There are a few different options to determine how the `mass_poster_update` works.
 
-| Value    | Description     |
-|:---------|:----------------|
-| `tmdb`   | Use TMDb Poster |
-| `plex`   | Use Plex Poster |
-| `lock`   | Lock Poster     |
-| `unlock` | Unlock Poster   |
+| Attribute           | Description                                                                                         |
+|:--------------------|:----------------------------------------------------------------------------------------------------|
+| `source`            | Source of the poster update<br>**Values:** `tmdb`, `plex`, `lock`, or `unlock`                      |
+| `seasons`           | Update season posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
+| `episodes`          | Update episode posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
+
+**Example:**
+
+```yaml
+library:
+  TV Shows:
+    operations:
+      mass_poster_update:
+        source: tmdb
+        seasons: false
+        episodes: false
+```
 
 ## Mass Background Update
 
@@ -255,14 +266,25 @@ Updates every item's background to the chosen sites background. Will fallback to
 
 **Attribute:** `mass_background_update`
 
-**Values:**
+**Values:** There are a few different options to determine how the `mass_background_update` works.
 
-| Value    | Description         |
-|:---------|:--------------------|
-| `tmdb`   | Use TMDb Background |
-| `plex`   | Use Plex Background |
-| `lock`   | Lock Background     |
-| `unlock` | Unlock Background   |
+| Attribute           | Description                                                                                             |
+|:--------------------|:--------------------------------------------------------------------------------------------------------|
+| `source`            | Source of the background update<br>**Values:** `tmdb`, `plex`, `lock`, or `unlock`                      |
+| `seasons`           | Update season backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
+| `episodes`          | Update episode backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
+
+**Example:**
+
+```yaml
+library:
+  TV Shows:
+    operations:
+      mass_background_update:
+        source: tmdb
+        seasons: false
+        episodes: false
+```
 
 ## Mass IMDb Parental Labels
 

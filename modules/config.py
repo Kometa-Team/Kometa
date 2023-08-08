@@ -41,34 +41,34 @@ imdb_label_options = {
     "severe": "Add IMDb Parental Labels for Severe"
 }
 mass_genre_options = {
-    "lock": "Unlock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
+    "lock": "Lock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
     "tmdb": "Use TMDb Genres", "imdb": "Use IMDb Genres", "omdb": "Use IMDb Genres through OMDb", "tvdb": "Use TVDb Genres",
     "anidb": "Use AniDB Main Tags", "anidb_all": "Use All AniDB Tags", "mal": "Use MyAnimeList Genres"
 }
 mass_content_options = {
-    "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList",
     "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDbList", "mal": "Use MyAnimeList Rating"
 }
 mass_studio_options = {
-    "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Studio", "anidb": "Use AniDB Animation Work", "mal": "Use MyAnimeList Studio"
 }
 mass_original_title_options = {
-    "lock": "Unlock Original Title", "unlock": "Unlock Original Title", "remove": "Remove and Lock Original Title", "reset": "Remove and Unlock Original Title",
+    "lock": "Lock Original Title", "unlock": "Unlock Original Title", "remove": "Remove and Lock Original Title", "reset": "Remove and Unlock Original Title",
     "anidb": "Use AniDB Main Title", "anidb_official": "Use AniDB Official Title based on the language attribute in the config file",
     "mal": "Use MyAnimeList Main Title", "mal_english": "Use MyAnimeList English Title", "mal_japanese": "Use MyAnimeList Japanese Title",
 }
 mass_available_options = {
-    "lock": "Unlock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
+    "lock": "Lock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
     "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release",
     "anidb": "Use AniDB Release", "mal": "Use MyAnimeList Release"
 }
 mass_image_options = {
-    "plex": "Use Plex Images", "tmdb": "Use TMDb Images"
+    "lock": "Lock Image", "unlock": "Unlock Image", "plex": "Use Plex Images", "tmdb": "Use TMDb Images"
 }
 mass_episode_rating_options = {
-    "lock": "Unlock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"
 }
 mass_rating_options = {
@@ -106,9 +106,8 @@ library_operations = {
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
     "mass_imdb_parental_labels": imdb_label_options, "mass_episode_imdb_parental_labels": imdb_label_options,
-    "mass_poster_update": mass_image_options, "mass_background_update": mass_image_options,
-    "mass_collection_mode": "mass_collection_mode", "metadata_backup": "metadata_backup", "delete_collections": "delete_collections",
-    "genre_mapper": "mapper", "content_rating_mapper": "mapper",
+    "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
+    "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
 
 class ConfigFile:
@@ -769,37 +768,47 @@ class ConfigFile:
                         for op, data_type in library_operations.items():
                             if op not in lib["operations"]:
                                 continue
-                            elif isinstance(data_type, list):
+                            if isinstance(data_type, list):
                                 params[op] = check_for_attribute(lib["operations"], op, test_list=data_type, default_is_none=True, save=False)
-                            elif data_type == "mass_collection_mode":
+                            elif op == "mass_collection_mode":
                                 params[op] = util.check_collection_mode(lib["operations"][op])
-                            elif data_type in ["metadata_backup", "mapper", "delete_collections"]:
-                                if not lib["operations"][op] or not isinstance(lib["operations"][op], dict):
+                            elif data_type == "dict":
+                                input_dict = lib["operations"][op]
+                                if op in ["mass_poster_update", "mass_background_update"] and input_dict and not isinstance(input_dict, dict):
+                                    input_dict = {"source": input_dict}
+
+                                if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
-                                if data_type == "metadata_backup":
+                                if op in ["mass_poster_update", "mass_background_update"]:
+                                    params[op] = {
+                                        "source": check_for_attribute(input_dict, "source", test_list=mass_image_options, default_is_none=True, save=False),
+                                        "seasons": check_for_attribute(input_dict, "seasons", var_type="bool", default=True, save=False),
+                                        "episodes": check_for_attribute(input_dict, "episodes", var_type="bool", default=True, save=False),
+                                    }
+                                if op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     try:
-                                        default_path = check_for_attribute(lib["operations"][op], "path", var_type="path", save=False)
+                                        default_path = check_for_attribute(input_dict, "path", var_type="path", save=False)
                                     except Failed as e:
                                         logger.debug(f"{e} using default {default_path}")
                                     params[op] = {
                                         "path": default_path,
-                                        "exclude": check_for_attribute(lib["operations"][op], "exclude", var_type="comma_list", default_is_none=True, save=False),
-                                        "sync_tags": check_for_attribute(lib["operations"][op], "sync_tags", var_type="bool", default=False, save=False),
-                                        "add_blank_entries": check_for_attribute(lib["operations"][op], "add_blank_entries", var_type="bool", default=True, save=False)
+                                        "exclude": check_for_attribute(input_dict, "exclude", var_type="comma_list", default_is_none=True, save=False),
+                                        "sync_tags": check_for_attribute(input_dict, "sync_tags", var_type="bool", default=False, save=False),
+                                        "add_blank_entries": check_for_attribute(input_dict, "add_blank_entries", var_type="bool", default=True, save=False)
                                     }
-                                if data_type == "mapper":
-                                    params[op] = lib["operations"][op]
-                                    for old_value, new_value in lib["operations"][op].items():
+                                if "mapper" in op:
+                                    params[op] = input_dict
+                                    for old_value, new_value in input_dict.items():
                                         if old_value == new_value:
                                             logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
                                             params[op][old_value] = new_value if new_value else None
-                                if data_type == "delete_collections":
+                                if op == "delete_collections":
                                     params[op] = {
-                                        "managed": check_for_attribute(lib["operations"][op], "managed", var_type="bool", default_is_none=True, save=False),
-                                        "configured": check_for_attribute(lib["operations"][op], "configured", var_type="bool", default_is_none=True, save=False),
-                                        "less": check_for_attribute(lib["operations"][op], "less", var_type="int", default_is_none=True, save=False, int_min=1),
+                                        "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
+                                        "configured": check_for_attribute(input_dict, "configured", var_type="bool", default_is_none=True, save=False),
+                                        "less": check_for_attribute(input_dict, "less", var_type="int", default_is_none=True, save=False, int_min=1),
                                     }
                             else:
                                 params[op] = check_for_attribute(lib["operations"], op, var_type=data_type, default=False, save=False)
