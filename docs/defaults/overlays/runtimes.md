@@ -1,12 +1,12 @@
 # Runtimes Overlay
 
-The `runtimes` Default Overlay File is used to create an overlay on of the movie or episodes runtime for all items in your library.
+The `runtimes` Default Overlay File is used to create an overlay of the movie runtime, episode runtime, or average episode runtime for all items in your library.
 
 ![](images/runtimes.png)
 
 ## Requirements & Recommendations
 
-Supported Overlay Level: Movie, Show, Episode
+Supported Overlay Level: Movie, Show, Season, Episode
 
 ## Config
 

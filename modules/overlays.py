@@ -235,6 +235,13 @@ class Overlays:
                                                     actual_value = current
                                                 elif mod == "L" and current < actual_value:
                                                     actual_value = current
+                                        elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
+                                            if hasattr(item, "duration") and item.duration:
+                                                actual_value = item.duration
+                                            else:
+                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
+                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                                actual_value = sum(sub_items) / len(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
                                                 raise Failed(f"Overlay Warning: No {full_text} found")

@@ -16,11 +16,11 @@ float_vars = ["audience_rating", "critic_rating", "user_rating"]
 int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
 types_for_var = {
-    "movie_show_season_episode_artist_album": ["user_rating", "title"],
+    "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
     "movie_show_episode": ["audience_rating", "content_rating"],
     "movie_show": ["original_title"],
-    "movie_episode": ["runtime", "versions", "bitrate"],
+    "movie_episode": ["versions", "bitrate"],
     "season_episode": ["show_title", "season_number"],
     "show_season": ["episode_count"],
     "movie": ["edition"],
