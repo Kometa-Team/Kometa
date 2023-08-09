@@ -49,12 +49,11 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 | `horizontal_align`  | `right`   |
 | `vertical_offset`   | `0`       |
 | `vertical_align`    | `bottom`  |
-| `style`             | `yellow`  |
 
-| Variable                     | Description & Values                                                                                         |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
-| `style`                      | **Description:** Controls the color of the ribbon. <br>**Values:** `yellow, gray, black, red`                |
+| Variable                     | Description & Values                                                                                                    |
+|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
+| `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 

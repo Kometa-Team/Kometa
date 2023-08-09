@@ -24,6 +24,7 @@ New [Network](https://metamanager.wiki/en/latest/defaults/overlays/network.html)
 New Content Rating US [Movies](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_movie.html)/[Shows](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_us_show.html) and [Content Rating UK](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_uk.html) Default Overlay.
 Add `file_poster`, `file_poster_<<key>>`, `url_background`, `url_background_<<key>>`, `file_background`, `file_background_<<key>>`, `sort_prefix`, `sort_title`, and `name_mapping` as [Collection Variables](https://metamanager.wiki/en/latest/defaults/collection_variables.html).
 Add new Separator Color Styles.
+Closes #1461 Adds Runtime for Shows, Seasons, Artists, and Albums
 Standardized overlay sizes for `- pmm: networks` and `- pmm: streaming`
 Rebrand HBO Max to Max.
 Add additional studios and networks
@@ -32,8 +33,10 @@ Add Heritage Months to [Seasonal Defaults File](https://metamanager.wiki/en/late
 # Bug Fixes
 Fixes #1496 Fixes issue with IMDb Collections not building due to HTML structure changes.
 Fixes #1445 Fixes FlixPatrol failed to parse error for most users.
+Fixes #1457 Fixes issue with renaming assets
 Fixes #1379 Fixes a Docstring.
 Fixes #1478 Fixes issue with percent sign not appearing on some rating overlays.
+Fixes #1480 Fixes albums not having locations
 Fixes #1490 Fixes incorrect language code for Philippines  in Languages Defaults file.
 Fixes #1378 Fixes incorrect default value for starting attribute in "Year" collections.
 Fixes #1379 #1380 #1472 Fixes various docs issues and typos
