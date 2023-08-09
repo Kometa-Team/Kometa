@@ -43,16 +43,18 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-| Variable            | Default  |
-|:--------------------|:---------|
-| `horizontal_offset` | `0`      |
-| `horizontal_align`  | `right`  |
-| `vertical_offset`   | `0`      |
-| `vertical_align`    | `bottom` |
+| Variable            | Default   |
+|:--------------------|:----------|
+| `horizontal_offset` | `0`       |
+| `horizontal_align`  | `right`   |
+| `vertical_offset`   | `0`       |
+| `vertical_align`    | `bottom`  |
+| `style`             | `yellow`  |
 
-| Variable                       | Description & Values                                                                                         |
-|:-------------------------------|:-------------------------------------------------------------------------------------------------------------|
-| `weight_<<key>>`<sup>1</sup>   | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+| Variable                     | Description & Values                                                                                         |
+|:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |
+| `style`                      | **Description:** Controls the color of the ribbon. <br>**Values:** `yellow, gray, black, red`                |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
@@ -64,6 +66,7 @@ libraries:
     overlay_path:
       - pmm: ribbon
         template_variables:
+          style: black
           weight_metacritic: 35
           use_common: false
 ```
