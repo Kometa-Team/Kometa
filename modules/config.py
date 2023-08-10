@@ -820,15 +820,18 @@ class ConfigFile:
                     params[err_attr] = None
 
                 for mass_key in operations.meta_operations:
-                    if params[mass_key] == "omdb" and self.OMDb is None:
+                    if not params[mass_key]:
+                        continue
+                    source = params[mass_key]["source"] if isinstance(params[mass_key], dict) else params[mass_key]
+                    if source == "omdb" and self.OMDb is None:
                         error_check(mass_key, "OMDb")
-                    if params[mass_key] and params[mass_key].startswith("mdb") and not self.Mdblist.has_key:
+                    if source and source.startswith("mdb") and not self.Mdblist.has_key:
                         error_check(mass_key, "MdbList")
-                    if params[mass_key] and params[mass_key].startswith("anidb") and not self.AniDB.is_authorized:
+                    if source and source.startswith("anidb") and not self.AniDB.is_authorized:
                         error_check(mass_key, "AniDB")
-                    if params[mass_key] and params[mass_key].startswith("mal") and self.MyAnimeList is None:
+                    if source and source.startswith("mal") and self.MyAnimeList is None:
                         error_check(mass_key, "MyAnimeList")
-                    if params[mass_key] and params[mass_key].startswith("trakt") and self.Trakt is None:
+                    if source and source.startswith("trakt") and self.Trakt is None:
                         error_check(mass_key, "Trakt")
 
                 lib_vars = {}
