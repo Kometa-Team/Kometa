@@ -96,12 +96,12 @@ overlays:
   Critics Choice Winners:
     variables: {key: choice, weight: 80}
     template: {name: standard, allowed_libraries: movie}
-    mdblist_list: https://mdblist.com/lists/chazlarson/critics-choice
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/critics-choice
 
   Spirit Winners:
     variables: {key: spirit, weight: 70}
     template: {name: standard, allowed_libraries: movie}
-    mdblist_list: https://mdblist.com/lists/chazlarson/independent-spirit
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/independent-spirit
 
   Cesar Winners:
     variables: {key: cesar, weight: 60}
