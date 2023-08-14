@@ -35,13 +35,9 @@ external_templates:
       pmm_<<key>>:
         conditions:
           - file.exists: false
-            file_<<key>>.exists: false
             url.exists: false
-            url_<<key>>.exists: false
             git.exists: false
-            git_<<key>>.exists: false
             repo.exists: false
-            repo_<<key>>.exists: false
             value: flag/<<final_style>>/<<country_<<key>>>>
     default:
       style: round
@@ -440,9 +436,13 @@ overlays:
     variables: {key: fi, text: FI, weight: 280}
     template: [name: flags, name: standard]
 
-  filipino:
+  tagalog:
     variables: {key: tl, text: FL, weight: 270, country: ph}
     template: [name: flags, name: standard]
+    
+  filipino:
+    variables: {key: fil, text: FIL, weight: 265, country: ph}
+    template: [name: flags, name: standard]  
 
   galician:
     variables: {key: gl, text: GL, weight: 260, country: es}
@@ -561,5 +561,23 @@ overlays:
     template: [name: flags, name: standard]
 
   inuktitut:
-    variables: {key: iu, text: IK, weight: 5, country: ca}
+    variables: {key: iu, text: IK, weight: 7, country: ca}
     template: [name: flags, name: standard]
+    
+  romany:
+    variables: {key: rom, text: ROM, weight: 6, country: ro}
+    template: [name: flags, name: standard]    
+    
+  amharic:
+    variables: {key: am, text: AM, weight: 5, country: et}
+    template: [name: flags, name: standard]    
+  
+  sundanese:
+    variables: {key: su, text: SU, weight: 4, country: id}
+    template: [name: flags, name: standard]    
+
+  zulu:
+    variables: {key: zu, text: ZU, weight: 3, country: za}
+    template: [name: flags, name: standard]    
+
+    

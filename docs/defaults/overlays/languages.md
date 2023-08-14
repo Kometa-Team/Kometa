@@ -46,7 +46,8 @@ Supported library types: Movie & Show
 | Estonian                 | `et` | `300`  | `ee`         |  &#10060;   |
 | Basque                   | `eu` | `290`  | `es`         |  &#10060;   |
 | Finnish                  | `fi` | `280`  | `fi`         |  &#10060;   |
-| Filipino                 | `tl` | `270`  | `ph`         |  &#10060;   |
+| Tagalog                  | `tl` | `270`  | `ph`         |  &#10060;   |
+| Filipino                 | `fil`| `265`  | `ph`         |  &#10060;   |
 | Galician                 | `gl` | `260`  | `es`         |  &#10060;   |
 | Hebrew                   | `he` | `250`  | `il`         |  &#10060;   |
 | Croatian                 | `hr` | `240`  | `hr`         |  &#10060;   |
@@ -76,7 +77,11 @@ Supported library types: Movie & Show
 | Vietnamese               | `vi` | `15`   | `vn`         |  &#10060;   |
 | Wolof                    | `wo` | `10`   | `sn`         |  &#10060;   |
 | Mayan                    | `myn`| `8`    | `mx`         |  &#10060;   |
-| Inuktitut                | `iu` | `5`    | `ca`         |  &#10060;   |
+| Inuktitut                | `iu` | `7`    | `ca`         |  &#10060;   |
+| Romany                   | `rom`| `6`    | `ro`         |  &#10060;   |
+| Amharic                  | `am` | `5`    | `et`         |  &#10060;   |
+| Sundanese                | `su` | `4`    | `id`         |  &#10060;   |
+| Zulu                     | `zu` | `3`    | `za`         |  &#10060;   |
 
 ### Square Style
 
