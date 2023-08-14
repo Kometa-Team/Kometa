@@ -77,10 +77,10 @@ Supported library types: Movie & Show
 | Vietnamese               | `vi` | `15`   | `vn`         |  &#10060;   |
 | Wolof                    | `wo` | `10`   | `sn`         |  &#10060;   |
 | Mayan                    | `myn`| `8`    | `mx`         |  &#10060;   |
-| Inuktitut                | `iu` | `5`    | `ca`         |  &#10060;   |
+| Inuktitut                | `iu` | `7`    | `ca`         |  &#10060;   |
 | Romany                   | `rom`| `6`    | `ro`         |  &#10060;   |
-| Sundanese                | `su` | `4`    | `id`         |  &#10060;   |
 | Amharic                  | `am` | `5`    | `et`         |  &#10060;   |
+| Sundanese                | `su` | `4`    | `id`         |  &#10060;   |
 | Zulu                     | `zu` | `3`    | `za`         |  &#10060;   |
 
 ### Square Style
