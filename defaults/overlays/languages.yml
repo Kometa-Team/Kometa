@@ -44,11 +44,12 @@ external_templates:
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
+      width: 190
     queue: flags
     addon_position: <<final_align>>
     addon_offset: <<offset>>
     back_color: "#00000099"
-    back_width: 190
+    back_width: <<width>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
     font_size: 50
@@ -441,7 +442,7 @@ overlays:
     template: [name: flags, name: standard]
     
   filipino:
-    variables: {key: fil, text: FIL, weight: 265, country: ph}
+    variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
     template: [name: flags, name: standard]  
 
   galician:
@@ -564,8 +565,8 @@ overlays:
     variables: {key: iu, text: IK, weight: 7, country: ca}
     template: [name: flags, name: standard]
     
-  romany:
-    variables: {key: rom, text: ROM, weight: 6, country: ro}
+  romani:
+    variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
     template: [name: flags, name: standard]    
     
   amharic:

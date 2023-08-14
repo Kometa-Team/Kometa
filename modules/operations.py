@@ -517,8 +517,10 @@ class Operations:
                         self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None)
 
                     if self.library.is_show and (
-                            self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"] or
-                            self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]
+                            (self.library.mass_poster_update and
+                                (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"])) or
+                            (self.library.mass_background_update and
+                                (self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]))
                     ):
                         real_show = None
                         try:
@@ -527,7 +529,8 @@ class Operations:
                             logger.error(e)
                         tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
                         for season in self.library.query(item.seasons):
-                            if self.library.mass_poster_update["seasons"] or self.library.mass_background_update["seasons"]:
+                            if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or \
+                                    (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
                                 try:
                                     season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                                 except Failed:
@@ -539,7 +542,8 @@ class Operations:
                                 if self.library.mass_background_update:
                                     self.library.background_update(season, season_background, title=season.title if season else None)
 
-                            if self.library.mass_poster_update["episodes"] or self.library.mass_background_update["episodes"]:
+                            if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or \
+                                    (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
                                 tmdb_episodes = {}
                                 if season.seasonNumber in tmdb_seasons:
                                     for episode in tmdb_seasons[season.seasonNumber].episodes:
