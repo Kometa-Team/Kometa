@@ -8,7 +8,7 @@ This article will walk you through getting Plex-Meta-Manager [PMM] set up and ru
 4. Setting up a metadata file and creating a couple sample collections.
 
 The specific steps you will be taking:
-1. Verify that Python 3.7 or better is installed and install it if not
+1. Verify that Python 3.8 or better is installed and install it if not
 2. Verify that the Git tools are installed and install them if not
 3. Use `git` to retrieve the code
 4. Install requirements [extra bits of code required for PMM]
@@ -79,7 +79,7 @@ First let's check if it's installed already [type this into your terminal]:
 python3 --version
 ```
 
-If this doesn't return `3.7.0` or higher, you'll need to get Python 3 installed.
+If this doesn't return `3.8.0` or higher, you'll need to get Python 3 installed.
 
 ````{tab} Linux
 Describing a python install for any arbitrary linux is out of scope here, but if you're using Ubuntu, [this](https://techviewleo.com/how-to-install-python-on-ubuntu-linux/) might be useful.
