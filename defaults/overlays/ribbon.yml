@@ -48,43 +48,87 @@ templates:
 overlays:
 
   Oscars Best Picture:
-    variables: {key: oscars, weight: 50}
+    variables: {key: oscars, weight: 180}
     template: {name: standard, allowed_libraries: movie}
     imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
 
   Oscars Best Director:
-    variables: {key: oscars_director, weight: 45}
+    variables: {key: oscars_director, weight: 170}
     template: {name: standard, allowed_libraries: movie}
     imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
 
-  IMDb Top 250:
-    variables: {key: imdb, weight: 40, imdb_key: top}
-    template: [name: standard, name: ribbon]
-    tmdb_movie: 665251
-
-  Rotten Tomatoes Certified Fresh:
-    variables: {key: rotten, weight: 30, mdb_key: certifiedfresh}
-    template: [name: standard, name: ribbon]
-
-  Metacritic Must See:
-    variables: {key: metacritic, weight: 20, mdb_key: metacriticmustsee}
-    template: [name: standard, name: ribbon]
-
-  Commonsense Selection:
-    variables: {key: common, weight: 10, mdb_key: cssfamilies}
-    template: [name: standard, name: ribbon]
-
   Golden Globe Winner:
-    variables: {key: golden, weight: 6}
+    variables: {key: golden, weight: 160}
     template: [name: standard, name: ribbon]
     imdb_list: https://www.imdb.com/search/title/?groups=golden_globe_winner
 
+  Golden Globe Best Director:
+    variables: {key: golden_director, weight: 150}
+    template: {name: standard, allowed_libraries: movie}
+    tmdb_list: https://www.themoviedb.org/list/8235502
+
+  BAFTA Winners:
+    variables: {key: bafta, weight: 140}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
+
+  Cannes Winners:
+    variables: {key: cannes, weight: 130}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
+
+  Berlinale Winners:
+    variables: {key: berlinale, weight: 120}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
+
+  Venice Winners:
+    variables: {key: venice, weight: 110}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion
+
+  Sundance Winners:
+    variables: {key: sundance, weight: 100}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/sundance-film-festival-grand-jury-prize
+
   Emmys Winner:
-    variables: {key: emmys, weight: 4}
+    variables: {key: emmys, weight: 90}
     template: [name: standard, name: ribbon]
     imdb_list: https://www.imdb.com/search/title/?groups=emmy_winner
 
+  Critics Choice Winners:
+    variables: {key: choice, weight: 80}
+    template: {name: standard, allowed_libraries: movie}
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/critics-choice
+
+  Spirit Winners:
+    variables: {key: spirit, weight: 70}
+    template: {name: standard, allowed_libraries: movie}
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/independent-spirit
+
+  Cesar Winners:
+    variables: {key: cesar, weight: 60}
+    template: {name: standard, allowed_libraries: movie}
+    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
+
+  IMDb Top 250:
+    variables: {key: imdb, weight: 50, imdb_key: top}
+    template: [name: standard, name: ribbon]
+
+  Rotten Tomatoes Certified Fresh:
+    variables: {key: rotten, weight: 40, mdb_key: certifiedfresh}
+    template: [name: standard, name: ribbon]
+
+  Metacritic Must See:
+    variables: {key: metacritic, weight: 30, mdb_key: metacriticmustsee}
+    template: [name: standard, name: ribbon]
+
+  Commonsense Selection:
+    variables: {key: common, weight: 20, mdb_key: cssfamilies}
+    template: [name: standard, name: ribbon]
+
   Razzies Winner:
-    variables: {key: razzie, weight: 2}
+    variables: {key: razzie, weight: 10}
     template: {name: standard, allowed_libraries: movie}
     imdb_list: https://www.imdb.com/search/title/?groups=razzie_winner
