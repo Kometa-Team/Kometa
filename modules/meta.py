@@ -551,8 +551,8 @@ class DataFile:
                                 debug_template = False
                                 new_name = check_for_var(method_name, method_name, debug_template)
                                 if new_name in new_attributes:
-                                    logger.info("")
-                                    logger.warning(f"Template Warning: template attribute: {new_name} from {variables['name']} skipped")
+                                    logger.trace("")
+                                    logger.trace(f"Template Warning: template attribute: {new_name} from {variables['name']} skipped")
                                 else:
                                     new_attributes[new_name] = check_data(new_name, attr_data, debug_template)
                             except Failed:
@@ -781,6 +781,9 @@ class MetadataFile(DataFile):
                         og_exclude = util.parse("Config", "exclude", dynamic, parent=map_name, methods=methods, datatype="strlist")
                     if "append_exclude" in self.temp_vars:
                         og_exclude.extend(util.parse("Config", "append_exclude", self.temp_vars["append_exclude"], parent="template_variables", datatype="strlist"))
+                    if "remove_exclude" in self.temp_vars:
+                        for word in util.parse("Config", "remove_exclude", self.temp_vars["remove_exclude"], parent="template_variables", datatype="strlist"):
+                            og_exclude.remove(word)
                     include = []
                     if "include" in self.temp_vars:
                         include = util.parse("Config", "include", self.temp_vars["include"], parent="template_variables", datatype="strlist")
@@ -788,6 +791,9 @@ class MetadataFile(DataFile):
                         include = [i for i in util.parse("Config", "include", dynamic, parent=map_name, methods=methods, datatype="strlist") if i not in og_exclude]
                     if "append_include" in self.temp_vars:
                         include.extend(util.parse("Config", "append_include", self.temp_vars["append_include"], parent="template_variables", datatype="strlist"))
+                    if "remove_include" in self.temp_vars:
+                        for word in util.parse("Config", "remove_include", self.temp_vars["remove_include"], parent="template_variables", datatype="strlist"):
+                            include.remove(word)
                     addons = {}
                     if "addons" in self.temp_vars:
                         addons = util.parse("Config", "addons", self.temp_vars["addons"], parent="template_variables", datatype="dictliststr")
@@ -799,6 +805,13 @@ class MetadataFile(DataFile):
                             if k not in addons:
                                 addons[k] = []
                             addons[k].extend(v)
+                    if "remove_addons" in self.temp_vars:
+                        remove_addons = util.parse("Config", "remove_addons", self.temp_vars["remove_addons"], parent=map_name, methods=methods, datatype="dictliststr")
+                        for k, v in remove_addons.items():
+                            if k in addons:
+                                for word in v:
+                                    addons[k].remove(word)
+
                     exclude = [str(e) for e in og_exclude]
                     for k, v in addons.items():
                         if k in v:
@@ -1026,7 +1039,7 @@ class MetadataFile(DataFile):
                                 auto_list[add_key] = add_key
                                 addons[add_key] = final_keys
                             elif custom_keys:
-                                logger.warning(f"Config Warning: {add_key} Custom Key must have at least one Key")
+                                logger.trace(f"Config Warning: {add_key} Custom Key must have at least one Key")
                             else:
                                 for final_key in final_keys:
                                     auto_list[final_key] = all_keys[final_key]
@@ -1174,6 +1187,7 @@ class MetadataFile(DataFile):
                         if collection_title in col_names:
                             logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                         else:
+                            logger.info(template_call)
                             col = {"template": template_call, "append_label": str(map_name)}
                             if test:
                                 col["test"] = True
