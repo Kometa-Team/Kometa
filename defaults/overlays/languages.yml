@@ -35,9 +35,13 @@ external_templates:
       pmm_<<key>>:
         conditions:
           - file.exists: false
+            file_<<key>>.exists: false
             url.exists: false
+            url_<<key>>.exists: false
             git.exists: false
+            git_<<key>>.exists: false
             repo.exists: false
+            repo_<<key>>.exists: false
             value: flag/<<final_style>>/<<country_<<key>>>>
     default:
       style: round
