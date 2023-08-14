@@ -24,7 +24,17 @@ external_templates:
         conditions:
           - color: false
             value: ""
-    pmm: cr/uk<<overlay_name>><<inside_color>>
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: cr/uk<<overlay_name>><<inside_color>>
 
 templates:
   cr_uk:

@@ -41,9 +41,13 @@ external_templates:
       pmm:
         conditions:
           - file.exists: false
+            file_<<key>>.exists: false
             url.exists: false
+            url_<<key>>.exists: false
             git.exists: false
+            git_<<key>>.exists: false
             repo.exists: false
+            repo_<<key>>.exists: false
             value: audio_codec/<<style>>/<<key>>
     group: audio_codec
     vertical_offset: 15

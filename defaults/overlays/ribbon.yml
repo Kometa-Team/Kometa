@@ -23,9 +23,13 @@ external_templates:
       pmm:
         conditions:
           - file.exists: false
+            file_<<key>>.exists: false
             url.exists: false
+            url_<<key>>.exists: false
             git.exists: false
+            git_<<key>>.exists: false
             repo.exists: false
+            repo_<<key>>.exists: false
             value: ribbon/<<final_style>>/<<key>>
     group: ribbon
     horizontal_offset: 0
@@ -56,6 +60,7 @@ overlays:
   IMDb Top 250:
     variables: {key: imdb, weight: 40, imdb_key: top}
     template: [name: standard, name: ribbon]
+    tmdb_movie: 665251
 
   Rotten Tomatoes Certified Fresh:
     variables: {key: rotten, weight: 30, mdb_key: certifiedfresh}

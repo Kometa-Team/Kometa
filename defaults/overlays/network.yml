@@ -44,9 +44,13 @@ external_templates:
       pmm:
         conditions:
           - file.exists: false
+            file_<<key>>.exists: false
             url.exists: false
+            url_<<key>>.exists: false
             git.exists: false
+            git_<<key>>.exists: false
             repo.exists: false
+            repo_<<key>>.exists: false
             value: network/<<key>>
     group: networks
     vertical_offset: 15

@@ -47,9 +47,13 @@ external_templates:
       pmm:
         conditions:
           - file.exists: false
+            file_<<key>>.exists: false
             url.exists: false
+            url_<<key>>.exists: false
             git.exists: false
+            git_<<key>>.exists: false
             repo.exists: false
+            repo_<<key>>.exists: false
             value: studio/<<style>>/<<key>>
     back_color: "#00000099"
     back_radius: 30
