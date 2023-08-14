@@ -12,15 +12,24 @@ Supported Overlay Level: Movie, Show
 
 | Ribbon                          | Key               | Weight |
 |:--------------------------------|:------------------|:-------|
-| Oscars Best Picture             | `oscars`          | `50`   |
-| Oscars Best Director            | `oscars_director` | `45`   |
-| IMDb Top 250                    | `imdb`            | `40`   |
-| Rotten Tomatoes Certified Fresh | `rotten`          | `30`   |
-| Metacritic Must See             | `metacritic`      | `20`   |
-| Commonsense Selection           | `common`          | `10`   |
-| Golden Globe Winner             | `golden`          | `6`    |
-| Emmys Winner                    | `emmys`           | `4`    |
-| Razzies Winner                  | `razzie`          | `2`    |
+| Oscars Best Picture             | `oscars`          | `180`  |
+| Oscars Best Director            | `oscars_director` | `170`  |
+| Golden Globe Winner             | `golden`          | `160`  |
+| Golden Globe Director           | `golden_director` | `150`  |
+| BAFTA Winner                    | `bafta`           | `140`  |
+| Cannes Winner                   | `cabbes`          | `130`  |
+| Berlinale Winner                | `berlinLe`        | `120`  |
+| Venice Winner                   | `venice`          | `110`  |
+| Sundance Winner                 | `sundance`        | `100`  |
+| Emmys Winner                    | `emmys`           | `90`   |
+| Critic's Choice Winner          | `choice`          | `80`   |
+| Independent Spirit Award Winner | `spirit`          | `70`   |
+| César Winner                    | `cesar`           | `60`   |
+| IMDb Top 250                    | `imdb`            | `50`   |
+| Rotten Tomatoes Certified Fresh | `rotten`          | `40`   |
+| Metacritic Must See             | `metacritic`      | `30`   |
+| Commonsense Selection           | `common`          | `20`   |
+| Razzies Winner                  | `razzie`          | `10`   |
 ## Config
 
 The below YAML in your config.yml will create the overlays:
