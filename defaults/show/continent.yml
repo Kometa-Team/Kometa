@@ -92,6 +92,7 @@ dynamic_collections:
         - td                    # Chad
         - cg                    # Republic of the Congo [Congo]
         - cd                    # Democratic Republic of the Congo
+        - zr                    # Zaire
         - gq                    # Equatorial Guinea
         - ga                    # Gabon
         - st                    # Sao Tome and Principe
@@ -149,7 +150,7 @@ dynamic_collections:
         - sx                    # Sint Maarten
         - tt                    # Trinidad and Tobago
         - tc                    # Turks and Caicos Islands
-        - vi                    # United States Virgin Islands
+        - vi                    # U.S. Virgin Islands [United States Virgin Islands]
       # Central America:
         - bz                    # Belize
         - cr                    # Costa Rica
@@ -254,6 +255,7 @@ dynamic_collections:
         - md                    # Republic of Moldova [Moldova]
         - ro                    # Romania
         - ru                    # Russian Federation [Russia]
+        - su                    # Soviet Union
         - sk                    # Slovakia
         - ua                    # Ukraine
       # Northern Europe:
@@ -281,6 +283,7 @@ dynamic_collections:
         - hr                    # Croatia
         - gi                    # Gibraltar
         - gr                    # Greece
+        - xk                    # Kosovo
         - va                    # Holy See [Vatican City]
         - it                    # Italy
         - mt                    # Malta
@@ -297,6 +300,7 @@ dynamic_collections:
         - be                    # Belgium
         - fr                    # France [French Republic]
         - de                    # Germany
+        - dd                    # East Germany
         - li                    # Liechtenstein
         - lu                    # Luxembourg
         - mc                    # Monaco
