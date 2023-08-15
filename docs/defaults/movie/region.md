@@ -56,7 +56,9 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `exclude`                     | **Description:** Exclude these Countries from creating a Dynamic Collection.<br>**Values:** List of Countries found in your library                                                                                                                               |
 | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Countries found in your library |
 | `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Countries found in your library                                                                                                                                  |
+| `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Countries found in your library                                                                                                                                |
 | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Countries found in your library                                                                                                                   |
+| `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Countries found in your library                                                                                                                 |
 | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                         |
 | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in <<key_name>>.`<br>**Values:** Any string.                                                                                            |
 
@@ -86,121 +88,127 @@ The following yaml is provided for reference to show what values will be in use 
 ### Default `include`
 
 ```yaml
-      
-# List of countries other countries will be grouped into
-
     include:
-     - Afghanistan
-     - Antarctica
-     - Argentina
-     - Armenia
-     - Australia
-     - Bahamas
-     - Belgium
-     - Brazil
-     - Canada
-     - Chad
-     - China
-     - Costa Rica
-     - Croatia
-     - Denmark
-     - France
-     - Germany
-     - Greece
-     - Hong Kong
-     - India
-     - Ireland
-     - Italy
-     - Japan
-     - Kenya
-     - Korea
-     - Mexico
-     - Morocco
-     - New Zealand
-     - Nigeria
-     - Peru
-     - Poland
-     - Russia
-     - South Africa
-     - Spain
-     - Switzerland
-     - Taiwan
-     - Thailand
-     - Turkey
-     - United Kingdom
-     - United States of America
+      - Northern Africa
+      - Eastern Africa
+      - Middle Africa
+      - Southern Africa
+      - Western Africa
+      - Caribbean
+      - Central America
+      - South America
+      - North America
+      - Antarctica
+      - Central Asia
+      - Eastern Asia
+      - South-Eastern Asia
+      - Southern Asia
+      - Western Asia
+      - Eastern Europe
+      - Northern Europe
+      - Southern Europe
+      - Western Europe
+      - Australia and New Zealand
+      - Melanesia
+      - Micronesia
+      - Polynesia
+```
 
-# renaming of the above countries
+### Default `addons`
 
-    key_name_override:
-      Afghanistan: Central Asian
-      Antarctica: Antarctica Region
-      Argentina: Southern Cone
-      Armenia: Caucasian
-      Australia: Australian
-      Bahamas: Caribbean
-      Belgium: Benelux
-      Brazil: Brazilian
-      Canada: Canadian
-      Chad: Central African               # Based on UN geoscheme 
-      China: Chinese and Mongolian
-      Costa Rica: Central American
-      Croatia: Balkan
-      Denmark: Nordic
-      France: French
-      Japan: Japanese
-      Germany: German
-      Greece: Greek
-      Hong Kong: Hong Kong and Macao
-      India: South Asian
-      Ireland: Irish
-      Italy: Italian
-      Kenya: Eastern African              # Based on UN geoscheme 
-      Korea: Korean
-      Mexico: Mexican
-      Morocco: Northern African           # Based on UN geoscheme 
-      New Zealand: Pacific Island
-      Nigeria: Western African           # Based on UN geoscheme 
-      Peru: Andean
-      Poland: Eastern European             # Eastern European generally considerd to be ex-USSR countries of Russia, Belarus, and Ukraine. This grouping is more ex-iron curtain European countries excluding Russia and Balkans
-      Russia: Russian
-      South Africa: Southern African
-      Spain: Iberian
-      Switzerland: Central European
-      Taiwan: Taiwanese
-      Thailand: South-East Asia
-      Turkey: Middle Eastern
-      United Kingdom: UK
-      United States of America: USA
-      
-
+```yaml
     addons:
-
-# Grouping of countries into sub-regions. Some license has been taken here to ensure all countries are included, and the groupings won't fit well with everyone's collections. 
-# Western, Southern, and Central Europe, Oceania, and North America could be useful groupings for those libraries with more of an Asian focus, for instance
-# Comments added where a decision point might seen as controversial
-
-      Afghanistan:                     # Afghanistan rarely included as part of Central Asian, the 'stans', but often in South Asian
-        - Kazakhstan
-        - Kyrgyzstan
-        - Tajikistan
-        - Turkmenistan
-        - Uzbekistan
-      Argentina:
-        - Chile
-        - Paraguay                     # Not always included as part of Southern Cone
-        - Uruguay
-        - Falkland Islands             # Also in UK
-      Armenia:
-        - Azerbaijan
-        - Georgia
-      Bahamas:
+      Northern Africa:
+        - Algeria
+        - Egypt
+        - Libya
+        - Morocco
+        - Sudan
+        - Tunisia
+        - Western Sahara
+      Eastern Africa:
+        - British Indian Ocean Territory
+        - Burundi
+        - Comoros
+        - Djibouti
+        - Eritrea
+        - Ethiopia
+        - French Southern Territories
+        - Kenya
+        - Madagascar
+        - Malawi
+        - Mauritius
+        - Mayotte
+        - Mozambique
+        - Réunion
+        - Rwanda
+        - Seychelles
+        - Somalia
+        - South Sudan
+        - Uganda
+        - United Republic of Tanzania
+        - Tanzania # United Republic of Tanzania
+        - Zambia
+        - Zimbabwe
+      Middle Africa:
+        - Angola
+        - Cameroon
+        - Central African Republic
+        - Chad
+        - Republic of the Congo
+        - Congo # Republic of the Congo
+        - Democratic Republic of the Congo
+        - Zaire # Democratic Republic of the Congo
+        - Equatorial Guinea
+        - Gabon
+        - Sao Tome and Principe
+        - São Tomé and Príncipe # Sao Tome and Principe
+      Southern Africa:
+        - Botswana
+        - Eswatini
+        - Swaziland # Eswatini
+        - Lesotho
+        - Namibia
+        - South Africa
+      Western Africa:
+        - Benin
+        - Burkina Faso
+        - Cabo Verde
+        - Cape Verde # Cabo Verde
+        - Côte d'Ivoire
+        - Côte d’Ivoire # Côte d'Ivoire
+        - Ivory Coast # Côte d'Ivoire
+        - Gambia
+        - Ghana
+        - Guinea
+        - Guinea-Bissau
+        - Liberia
+        - Mali
+        - Mauritania
+        - Niger
+        - Nigeria
+        - Saint Helena, Ascension and Tristan da Cunha
+        - Saint Helena # Saint Helena, Ascension and Tristan da Cunha
+        - St. Helena # Saint Helena, Ascension and Tristan da Cunha
+        - Ascension # Saint Helena, Ascension and Tristan da Cunha
+        - Tristan da Cunha # Saint Helena, Ascension and Tristan da Cunha
+        - Senegal
+        - Sierra Leone
+        - Togo
+      Caribbean:
         - Anguilla
-        - Antigua
+        - Antigua and Barbuda
+        - Antigua # Antigua and Barbuda
+        - Barbuda # Antigua and Barbuda
         - Aruba
+        - Bahamas
         - Barbados
-        - Bermuda
-        - Bonaire
+        - Bonaire, Sint Eustatius and Saba
+        - Bonaire # Bonaire, Sint Eustatius and Saba
+        - Sint Eustatius # Bonaire, Sint Eustatius and Saba
+        - Saba # Bonaire, Sint Eustatius and Saba
+        - Netherlands Antilles
+        - British Virgin Islands
         - Cayman Islands
         - Cuba
         - Curaçao
@@ -214,217 +222,243 @@ The following yaml is provided for reference to show what values will be in use 
         - Montserrat
         - Puerto Rico
         - Saint Barthélemy
+        - Saint Kitts and Nevis
+        - St. Kitts and Nevis # Saint Kitts and Nevis
         - Saint Lucia
+        - St. Lucia # Saint Lucia
+        - Saint Martin
+        - Saint Vincent and the Grenadines
+        - Saint Vincent and Grenadines # Saint Vincent and the Grenadines
+        - St. Vincent and the Grenadines # Saint Vincent and the Grenadines
+        - St. Vincent and Grenadines # Saint Vincent and the Grenadines
+        - Sint Maarten
         - Trinidad and Tobago
-        - Turks and Caicos
-      Belgium:
-        - Luxembourg
-        - Netherlands
-      Chad:
-        - Angola
-        - Cameroon
-        - Central African Republic
-        - Congo
-        - Democratic Republic of the Congo    # Duplicating smart filter functionality
-        - Equatorial Guinea
-        - Gabon
-        - Republic of the Congo
-        - Sao Tome and Principe
-      Costa Rica:
+        - Turks and Caicos Islands
+        - U.S. Virgin Islands
+        - United States Virgin Islands # U.S. Virgin Islands
+      Central America:
         - Belize
+        - Costa Rica
         - El Salvador
         - Guatemala
         - Honduras
+        - Mexico
         - Nicaragua
         - Panama
-      Croatia:
-        - Albania
-        - Bosnia and Herzegovina
-        - Bulgaria
-        - Macedonia
-        - Montenegro
-        - Republic of North Macedonia         # Duplicating smart filter functionality
-        - Romania
-        - Serbia
-        - Slovenia
-      Denmark:
-        - Åland Islands
-        - Faroe Islands
-        - Finland
-        - Greenland
-        - Iceland
-        - Norway
-        - Svalbard and Jan Mayen
-        - Sweden
-      India:
-        - Pakistan
-        - Bhutan
-        - Bangladesh
-        - Nepal
-        - Sri Lanka
-        - Maldives
-      Kenya:
-        - Burundi
-        - Comoros
-        - Djibouti
-        - Eritrea
-        - Ethiopia
-        - Madagascar
-        - Malawi
-        - Mauritius
-        - Mayotte
-        - Mozambique
-        - Réunion
-        - Rwanda
-        - Seychelles
-        - Somalia
-        - South Sudan
-        - Tanzania
-        - Uganda
-        - Zambia
-        - Zimbabwe           
-      Morocco:
-        - Algeria
-        - Egypt                 # Also in Middle Eastern
-        - Libya       
-        - Sudan
-        - Tunisia
-      New Zealand:
-        - Cook Islands
-        - Fiji
-        - French Polynesia
-        - Guam
-        - Kiribati
-        - Marshall Islands
-        - Micronesia
-        - Nauru
-        - New Caledonia
-        - Niue
-        - Norfolk Island
-        - Palau
-        - Pitcairn
-        - Samoa
-        - Solomon Islands
-        - Tokelau
-        - Tonga
-        - Tuvalu
-        - Vanuatu
-      Nigeria:
-        - Benin
-        - Burkina Faso
-        - Cabo Verde
-        - Côte d'Ivoire
-        - Gambia
-        - Ghana
-        - Guinea
-        - Guinea-Bissau
-        - Liberia
-        - Mali
-        - Mauritania
-        - Niger
-        - Senegal
-        - Sierra Leone
-        - Togo
-      Peru:
-        - Bolivarian Republic of Venezuela    # Duplicating smart filter functionality
-        - Bolivia
+      South America:
+        - Argentina
+        - Plurinational State of Bolivia
+        - Bolivia # Plurinational State of Bolivia
+        - Bouvet Island
+        - Brazil
+        - Chile
         - Colombia
         - Ecuador
-        - Plurinational State of Bolivia      # Duplicating smart filter functionality
-        - Venezuela
-      Poland:
-        - Belarus
-        - Czech Republic
-        - Estonia
-        - Hungary
-        - Latvia
-        - Lithuania
-        - Moldova
-        - Slovakia
-        - Ukraine
-      South Africa:
-        - Botswana
-        - Eswatini
-        - Lesotho
-        - Namibia
-      Spain:
-        - Andorra              # Also in French
-        - Gibraltar            # Also in UK
-        - Portugal
-      Switzerland:
-        - Austria
-        - Liechtenstein            
-      Thailand:
+        - Falkland Islands
+        - Malvinas # Falkland Islands
+        - French Guiana
+        - Guyana
+        - Paraguay
+        - Peru
+        - South Georgia and the South Sandwich Islands
+        - South Georgia and South Sandwich Islands # South Georgia and the South Sandwich Islands
+        - South Georgia # South Georgia and the South Sandwich Islands
+        - South Sandwich Islands # South Georgia and the South Sandwich Islands
+        - Suriname
+        - Uruguay
+        - Bolivarian Republic of Venezuela
+        - Venezuela # Bolivarian Republic of Venezuela
+      North America:
+        - Bermuda
+        - Canada
+        - Greenland
+        - Saint Pierre and Miquelon
+        - St. Pierre and Miquelon # Saint Pierre and Miquelon
+        - United States of America
+        - United States # United States of America
+      Antarctica:
+        - Antarctica
+      Central Asia:
+        - Kazakhstan
+        - Kyrgyzstan
+        - Tajikistan
+        - Turkmenistan
+        - Uzbekistan
+      Eastern Asia:
+        - China
+        - Hong Kong
+        - Hong Kong SAR China # Hong Kong
+        - Macao
+        - Macau # Macao
+        - Macau SAR China # Macao
+        - Democratic People's Republic of Korea
+        - North Korea # Democratic People's Republic of Korea
+        - Japan
+        - Mongolia
+        - Republic of Korea
+        - South Korea # Republic of Korea
+        - Korea # Republic of Korea
+        - Taiwan
+        - Taiwan, Province of China # Taiwan
+      South-Eastern Asia:
         - Brunei
+        - Brunei Darussalam # Brunei
         - Cambodia
         - Indonesia
-        - Lao
+        - Lao People's Democratic Republic
+        - Lao # Lao People's Democratic Republic
+        - Laos # Lao People's Democratic Republic
         - Malaysia
         - Myanmar
+        - Burma # Myanmar
         - Philippines
         - Singapore
+        - Thailand
+        - Timor-Leste
+        - East Timor # Timor-Leste
         - Vietnam
-        - Viet Nam              # Duplicating smart filter functionality
-      Turkey:
+        - Viet Nam # Vietnam
+      Southern Asia:
+        - Afghanistan
+        - Bangladesh
+        - Bhutan
+        - India
+        - Islamic Republic of Iran
+        - Iran # Islamic Republic of Iran
+        - Maldives
+        - Nepal
+        - Pakistan
+        - Sri Lanka
+      Western Asia:
+        - Armenia
+        - Azerbaijan
         - Bahrain
         - Cyprus
-        - Egypt                 # Also in Northern African
-        - Iran
+        - Georgia
         - Iraq
         - Israel
         - Jordan
         - Kuwait
         - Lebanon
         - Oman
-        - Palestine
-        - State of Palestine
         - Qatar
         - Saudi Arabia
-        - Syria
+        - State of Palestine
+        - Palestine # State of Palestine
+        - Syrian Arab Republic
+        - Syria # Syrian Arab Republic
+        - Türkiye
+        - Turkey # Türkiye
         - United Arab Emirates
         - Yemen
-        - Islamic Republic of Iran           # Duplicating smart filter functionality
-
-# Grouping of micro-states into existing countries. Some are obviously right, others added as they've nowhere else fitting to go. 
-
-      Antarctica:
-        - Bouvet Island             # Also in Nordic
-      Australia:
+      Eastern Europe:
+        - Belarus
+        - Bulgaria
+        - Czech Republic
+        - Czechia # Czech Republic
+        - Czechoslovakia
+        - Hungary
+        - Poland
+        - Republic of Moldova
+        - Moldova # Republic of Moldova
+        - Romania
+        - Russian Federation
+        - Russia # Russian Federation
+        - Soviet Union
+        - Slovakia
+        - Ukraine
+      Northern Europe:
+        - Åland Islands
+        - Guernsey
+        - Jersey
+        - Sark
+        - Denmark
+        - Estonia
+        - Faroe Islands
+        - Finland
+        - Iceland
+        - Ireland
+        - Northern Ireland
+        - Isle of Man
+        - Latvia
+        - Lithuania
+        - Norway
+        - Svalbard and Jan Mayen Islands
+        - Svalbard and Jan Mayen # Svalbard and Jan Mayen Islands
+        - Sweden
+        - United Kingdom
+      Southern Europe:
+        - Albania
+        - Andorra
+        - Bosnia and Herzegovina
+        - Croatia
+        - Gibraltar
+        - Greece
+        - Kosovo
+        - Holy See
+        - Vatican City # Holy See
+        - Italy
+        - Malta
+        - Montenegro
+        - North Macedonia
+        - Macedonia # North Macedonia
+        - Republic of North Macedonia # North Macedonia
+        - Portugal
+        - San Marino
+        - Serbia
+        - Serbia and Montenegro
+        - Slovenia
+        - Spain
+        - Yugoslavia
+      Western Europe:
+        - Austria
+        - Belgium
+        - France
+        - French Republic # France
+        - Germany
+        - East Germany
+        - Liechtenstein
+        - Luxembourg
+        - Monaco
+        - Netherlands
+        - Switzerland
+      Australia and New Zealand:
+        - Australia
         - Christmas Island
         - Cocos (Keeling) Islands
-        - New Guinea                # Also in Pacific Island
-        - Timor-Leste               # Also in Pacific Island
-      Brazil:
-        - French Guiana
-        - Guyana
-        - Suriname           
-      France:
-        - Monaco
-        - Andorra            # Also in Iberian
-      Italy:
-        - Holy See
-        - Malta              # Also in UK and Northern African
-        - San Marino
-      Korea:
-        - Democratic People's Republic of Korea
-        - North Korea
-        - Republic of Korea         # Added as default addon for Korea overridden
-        - South Korea               # Added as default addon for Korea overridden
-
-      United Kingdom:
-        - Falkland Islands          # Also in Southern Cone
-        - Guernsey
-        - Gibraltar          # Also in Iberian
-        - Isle of Man
-        - Jersey
-        - Malta              # Also in Italian and Northern African
-
-# Duplicating smart filter functionality
-
-      Taiwan:
-        - Taiwan, Province of China
-      Russia:
-        - Russian Federation
-
+        - Heard Island and McDonald Islands
+        - Heard and McDonald Islands # Heard Island and McDonald Islands
+        - New Zealand
+        - Norfolk Island
+      Melanesia:
+        - Fiji
+        - New Caledonia
+        - Papua New Guinea
+        - New Guinea # Papua New Guinea
+        - Solomon Islands
+        - Vanuatu
+      Micronesia:
+        - Guam
+        - Kiribati
+        - Marshall Islands
+        - Federated States of Micronesia
+        - Micronesia # Federated States of Micronesia
+        - Nauru
+        - Northern Mariana Islands
+        - Palau
+        - United States Minor Outlying Islands
+        - U.S. Outlying Islands # United States Minor Outlying Islands
+      Polynesia:
+        - American Samoa
+        - Cook Islands
+        - French Polynesia
+        - Niue
+        - Pitcairn
+        - Pitcairn Islands # Pitcairn
+        - Samoa
+        - Tokelau
+        - Tonga
+        - Tuvalu
+        - Wallis and Futuna Islands
+        - Wallis and Futuna # Wallis and Futuna Islands
 ```
-
