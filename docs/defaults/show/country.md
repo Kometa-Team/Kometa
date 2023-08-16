@@ -120,20 +120,19 @@ include:
         - so                    # Somalia
         - ss                    # South Sudan
         - ug                    # Uganda
-        - tz                    # United Republic of Tanzania [Tanzania]
+        - tz                    # Tanzania [United Republic of Tanzania]
         - zm                    # Zambia
         - zw                    # Zimbabwe
-      # Middle Africa:
+      # Central Africa:
         - ao                    # Angola
         - cm                    # Cameroon
         - cf                    # Central African Republic
         - td                    # Chad
         - cg                    # Republic of the Congo [Congo]
         - cd                    # Democratic Republic of the Congo
-        - zr                    # Zaire
         - gq                    # Equatorial Guinea
         - ga                    # Gabon
-        - st                    # Sao Tome and Principe
+        - st                    # São Tomé and Príncipe [Sao Tome and Principe]
       # Southern Africa:
         - bw                    # Botswana
         - sz                    # Eswatini [Swaziland]
@@ -143,8 +142,8 @@ include:
       # Western Africa:
         - bj                    # Benin
         - bf                    # Burkina Faso
-        - cv                    # Cabo Verde [Cape Verde]
-        - ci                    # Côte d'Ivoire [Ivory Coast]
+        - cv                    # Cape Verde [Cabo Verde]
+        - ci                    # Côte d'Ivoire [Côte d’Ivoire] [Ivory Coast]
         - gm                    # Gambia
         - gh                    # Ghana
         - gn                    # Guinea
@@ -187,7 +186,7 @@ include:
         - sx                    # Sint Maarten
         - tt                    # Trinidad and Tobago
         - tc                    # Turks and Caicos Islands
-        - vi                    # U.S. Virgin Islands [United States Virgin Islands]
+        - vi                    # US Virgin Islands [U.S. Virgin Islands] [United States Virgin Islands]
       # Central America:
         - bz                    # Belize
         - cr                    # Costa Rica
@@ -199,7 +198,7 @@ include:
         - pa                    # Panama
       # South America:
         - ar                    # Argentina
-        - bo                    # Plurinational State of Bolivia [Bolivia]
+        - bo                    # Bolivia [Plurinational State of Bolivia]
         - bv                    # Bouvet Island
         - br                    # Brazil
         - cl                    # Chile
@@ -213,13 +212,13 @@ include:
         - gs                    # South Georgia and the South Sandwich Islands [South Georgia] [South Sandwich Islands]
         - sr                    # Suriname
         - uy                    # Uruguay
-        - ve                    # Bolivarian Republic of Venezuela [Venezuela]
+        - ve                    # Venezuela [Bolivarian Republic of Venezuela]
       # North America:
         - bm                    # Bermuda
         - ca                    # Canada
         - gl                    # Greenland
         - pm                    # Saint Pierre and Miquelon
-        - us                    # United States of America [United States]
+        - us                    # United States [United States of America]
       # Antarctica:
         - aq                    # Antarctica
       # Central Asia:
@@ -232,23 +231,21 @@ include:
         - cn                    # China
         - hk                    # Hong Kong
         - mo                    # Macao
-        - kp                    # Democratic People's Republic of Korea [North Korea]
+        - kp                    # North Korea [Democratic People's Republic of Korea]
         - jp                    # Japan
         - mn                    # Mongolia
-        - kr                    # Republic of Korea [South Korea] [Korea]
+        - kr                    # South Korea [Republic of Korea] [Korea]
         - tw                    # Taiwan [Taiwan, Province of China]
       # South-Eastern Asia:
         - bn                    # Brunei [Brunei Darussalam]
         - kh                    # Cambodia
         - id                    # Indonesia
-        - la                    # Lao People's Democratic Republic [Lao]
+        - la                    # Laos [Lao People's Democratic Republic] [Lao]
         - my                    # Malaysia
         - mm                    # Myanmar
-        - bu                    # Burma
         - ph                    # Philippines
         - sg                    # Singapore
         - th                    # Thailand
-        - tl                    # Timor-Leste
         - tp                    # East Timor
         - vn                    # Vietnam [Viet Nam]
       # Southern Asia:
@@ -256,7 +253,7 @@ include:
         - bd                    # Bangladesh
         - bt                    # Bhutan
         - in                    # India
-        - ir                    # Islamic Republic of Iran [Iran]
+        - ir                    # Iran [Islamic Republic of Iran]
         - mv                    # Maldives
         - np                    # Nepal
         - pk                    # Pakistan
@@ -275,22 +272,20 @@ include:
         - om                    # Oman
         - qa                    # Qatar
         - sa                    # Saudi Arabia
-        - ps                    # State of Palestine [Palestine]
-        - sy                    # Syrian Arab Republic [Syria]
-        - tr                    # Türkiye [Turkey]
+        - ps                    # Palestine [State of Palestine]
+        - sy                    # Syria [Syrian Arab Republic]
+        - tr                    # Turkey [Türkiye]
         - ae                    # United Arab Emirates
         - ye                    # Yemen
       # Eastern Europe:
         - by                    # Belarus
         - bg                    # Bulgaria
         - cz                    # Czech Republic [Czechia]
-        - cs                    # Czechoslovakia
         - hu                    # Hungary
         - pl                    # Poland
-        - md                    # Republic of Moldova [Moldova]
+        - md                    # Moldova [Republic of Moldova]
         - ro                    # Romania
-        - ru                    # Russian Federation [Russia]
-        - su                    # Soviet Union
+        - ru                    # Russia [Russian Federation]
         - sk                    # Slovakia
         - ua                    # Ukraine
       # Northern Europe:
@@ -319,7 +314,7 @@ include:
         - gi                    # Gibraltar
         - gr                    # Greece
         - xk                    # Kosovo
-        - va                    # Holy See [Vatican City]
+        - va                    # Vatican City [Holy See]
         - it                    # Italy
         - mt                    # Malta
         - me                    # Montenegro
@@ -335,7 +330,6 @@ include:
         - be                    # Belgium
         - fr                    # France [French Republic]
         - de                    # Germany
-        - dd                    # East Germany
         - li                    # Liechtenstein
         - lu                    # Luxembourg
         - mc                    # Monaco
@@ -358,11 +352,11 @@ include:
         - gu                    # Guam
         - ki                    # Kiribati
         - mh                    # Marshall Islands
-        - fm                    # Federated States of Micronesia [Micronesia]
+        - fm                    # Micronesia [Federated States of Micronesia]
         - nr                    # Nauru
         - mp                    # Northern Mariana Islands
         - pw                    # Palau
-        - um                    # United States Minor Outlying Islands
+        - um                    # US Minor Outlying Islands
       # Polynesia:
         - as                    # American Samoa
         - ck                    # Cook Islands
@@ -374,4 +368,22 @@ include:
         - to                    # Tonga
         - tv                    # Tuvalu
         - wf                    # Wallis and Futuna Islands
+```
+
+### Default `addons`
+
+```yaml
+    addons:
+      cd:                       # Democratic Republic of the Congo
+        - zr                    # Zaire
+      mm:                       # Myanmar
+        - bu                    # Burma
+      tp:                       # East Timor
+        - tl                    # Timor-Leste
+      cz:                       # Czech Republic
+        - cs                    # Czechoslovakia
+      ru:                       # Russia
+        - su                    # Soviet Union
+      de:                       # Germany
+        - dd                    # East Germany
 ```
