@@ -56,7 +56,9 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 | `exclude`                     | **Description:** Exclude these Countries from creating a Dynamic Collection.<br>**Values:** List of Countries found in your library                                                                                                                               |
 | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Countries found in your library |
 | `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Countries found in your library                                                                                                                                  |
+| `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Countries found in your library                                                                                                                                |
 | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Countries found in your library                                                                                                                   |
+| `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Countries found in your library                                                                                                                 |
 | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                         |
 | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in <<key_name>>.`<br>**Values:** Any string.                                                                                            |
 
@@ -86,218 +88,37 @@ The following yml is provided for reference to show what values will be in use i
 ### Default `include`
 
 ```yaml
-        
-# List of countries other countries will be grouped into
-
     include:
+      - Africa
+      - Americas
       - Antarctica
-      - New Zealand
-      - Brazil
-      - China
-      - South Africa
-      - United Kingdom
-      - United States of America
+      - Asia
+      - Europe
+      - Oceania
+```
 
-# renaming of the above countries to continents
+### Default `addons`
 
-    key_name_override:
-      New Zealand: Oceania
-      Brazil: South America
-      China: Asia
-      South Africa: Africa
-      United Kingdom: Europe
-      United States of America: North America
-
-# Grouping of countries into continents
-
+```yaml
     addons:
-      Antarctica:
-        - Bouvet Island
-		
-      China:
-        - Afghanistan
-        - Kazakhstan
-        - Kyrgyzstan
-        - Tajikistan
-        - Turkmenistan
-        - Uzbekistan
-        - Japan
-        - Hong Kong
-        - Macao
-        - India
-        - Mongolia
-        - Pakistan
-        - Bhutan
-        - Bangladesh
-        - Nepal
-        - Sri Lanka
-        - Maldives
-        - Thailand
-        - Brunei
-        - Cambodia
-        - Indonesia
-        - Lao
-        - Malaysia
-        - Myanmar
-        - Philippines
-        - Singapore
-        - Vietnam
-        - Viet Nam              # Duplicating smart filter functionality
-        - Turkey
-        - Bahrain
-        - Cyprus
+      Africa:
+      # Northern Africa:
+        - Algeria
         - Egypt
-        - Iran
-        - Iraq
-        - Israel
-        - Jordan
-        - Kuwait
-        - Lebanon
-        - Oman
-        - Palestine
-        - State of Palestine
-        - Qatar
-        - Saudi Arabia
-        - Syria
-        - United Arab Emirates
-        - Yemen
-        - Islamic Republic of Iran           # Duplicating smart filter functionality
-        - Taiwan
-        - Taiwan, Province of China          # Duplicating smart filter functionality
-        - Korea
-        - Democratic People's Republic of Korea
-        - North Korea
-        - Republic of Korea 
-        - South Korea 
-		
-      Brazil:
-        - Argentina
-        - Chile
-        - Paraguay             
-        - Uruguay
-        - Falkland Islands    
-        - Costa Rica
-        - Belize
-        - El Salvador
-        - Guatemala
-        - Honduras
-        - Nicaragua
-        - Panama
-        - Peru
-        - Bolivarian Republic of Venezuela    # Duplicating smart filter functionality
-        - Bolivia
-        - Colombia
-        - Ecuador
-        - Plurinational State of Bolivia      # Duplicating smart filter functionality
-        - Venezuela
-        - French Guiana
-        - Guyana
-        - Suriname
-		
-      United Kingdom:
-        - Armenia
-        - Azerbaijan
-        - Georgia
-        - Belgium
-        - Luxembourg
-        - Netherlands
-        - Croatia
-        - Albania
-        - Bosnia and Herzegovina
-        - Bulgaria
-        - Macedonia
-        - Montenegro
-        - Republic of North Macedonia         # Duplicating smart filter functionality
-        - Romania
-        - Serbia
-        - Slovenia
-        - Denmark
-        - Åland Islands
-        - Faroe Islands
-        - Finland
-        - Greenland
-        - Iceland
-        - Norway
-        - Svalbard and Jan Mayen
-        - Sweden
-        - Ireland
-        - Greece
-        - Poland
-        - Belarus
-        - Czech Republic
-        - Estonia
-        - Hungary
-        - Latvia
-        - Lithuania
-        - Moldova
-        - Slovakia
-        - Ukraine
-        - Spain
-        - Andorra
-        - Gibraltar 
-        - Portugal
-        - Austria
-        - Switzerland
-        - Liechtenstein
-        - Russia
-        - Russian Federation        # Duplicating smart filter functionality
-        - Guernsey
-        - Gibraltar 
-        - Isle of Man
-        - Jersey
-        - Malta
-        - Germany
-        - France
-        - Monaco
-        - Italy
-        - Holy See
-        - Malta
-        - San Marino
-		
-      United States of America:
-        - Anguilla
-        - Antigua
-        - Aruba
-        - Bahamas
-        - Barbados
-        - Bermuda
-        - Bonaire
-        - Canada
-        - Cayman Islands
-        - Cuba
-        - Curaçao
-        - Dominica
-        - Dominican Republic
-        - Grenada
-        - Guadeloupe
-        - Haiti
-        - Jamaica
-        - Martinique
-        - Mexico
-        - Montserrat
-        - Puerto Rico
-        - Saint Barthélemy
-        - Saint Lucia
-        - Trinidad and Tobago
-        - Turks and Caicos
-
-      South Africa:
-        - Chad
-        - Angola
-        - Cameroon
-        - Central African Republic
-        - Congo
-        - Democratic Republic of the Congo    # Duplicating smart filter functionality
-        - Equatorial Guinea
-        - Gabon
-        - Republic of the Congo
-        - Sao Tome and Principe
-        - Kenya
+        - Libya
+        - Morocco
+        - Sudan
+        - Tunisia
+        - Western Sahara
+      # Eastern Africa:
+        - British Indian Ocean Territory
         - Burundi
         - Comoros
         - Djibouti
         - Eritrea
         - Ethiopia
+        - French Southern Territories
+        - Kenya
         - Madagascar
         - Malawi
         - Mauritius
@@ -308,21 +129,39 @@ The following yml is provided for reference to show what values will be in use i
         - Seychelles
         - Somalia
         - South Sudan
-        - Tanzania
         - Uganda
+        - United Republic of Tanzania
+        - Tanzania # United Republic of Tanzania
         - Zambia
-        - Zimbabwe           
-        - Morocco
-        - Algeria
-        - Egypt
-        - Libya       
-        - Sudan
-        - Tunisia
-        - Nigeria
+        - Zimbabwe
+      # Middle Africa:
+        - Angola
+        - Cameroon
+        - Central African Republic
+        - Chad
+        - Republic of the Congo
+        - Congo # Republic of the Congo
+        - Democratic Republic of the Congo
+        - Zaire # Democratic Republic of the Congo
+        - Equatorial Guinea
+        - Gabon
+        - Sao Tome and Principe
+        - São Tomé and Príncipe # Sao Tome and Principe
+      # Southern Africa:
+        - Botswana
+        - Eswatini
+        - Swaziland # Eswatini
+        - Lesotho
+        - Namibia
+        - South Africa
+      # Western Africa:
         - Benin
         - Burkina Faso
         - Cabo Verde
+        - Cape Verde # Cabo Verde
         - Côte d'Ivoire
+        - Côte d’Ivoire # Côte d'Ivoire
+        - Ivory Coast # Côte d'Ivoire
         - Gambia
         - Ghana
         - Guinea
@@ -331,37 +170,283 @@ The following yml is provided for reference to show what values will be in use i
         - Mali
         - Mauritania
         - Niger
+        - Nigeria
+        - Saint Helena, Ascension and Tristan da Cunha
+        - Saint Helena # Saint Helena, Ascension and Tristan da Cunha
+        - St. Helena # Saint Helena, Ascension and Tristan da Cunha
+        - Ascension # Saint Helena, Ascension and Tristan da Cunha
+        - Tristan da Cunha # Saint Helena, Ascension and Tristan da Cunha
         - Senegal
         - Sierra Leone
         - Togo
-        - Botswana
-        - Eswatini
-        - Lesotho
-        - Namibia
-		
-      New Zealand:
+      Americas:
+      # Caribbean:
+        - Anguilla
+        - Antigua and Barbuda
+        - Antigua # Antigua and Barbuda
+        - Barbuda # Antigua and Barbuda
+        - Aruba
+        - Bahamas
+        - Barbados
+        - Bonaire, Sint Eustatius and Saba
+        - Bonaire # Bonaire, Sint Eustatius and Saba
+        - Sint Eustatius # Bonaire, Sint Eustatius and Saba
+        - Saba # Bonaire, Sint Eustatius and Saba
+        - Netherlands Antilles
+        - British Virgin Islands
+        - Cayman Islands
+        - Cuba
+        - Curaçao
+        - Dominica
+        - Dominican Republic
+        - Grenada
+        - Guadeloupe
+        - Haiti
+        - Jamaica
+        - Martinique
+        - Montserrat
+        - Puerto Rico
+        - Saint Barthélemy
+        - Saint Kitts and Nevis
+        - St. Kitts and Nevis # Saint Kitts and Nevis
+        - Saint Lucia
+        - St. Lucia # Saint Lucia
+        - Saint Martin
+        - Saint Vincent and the Grenadines
+        - Saint Vincent and Grenadines # Saint Vincent and the Grenadines
+        - St. Vincent and the Grenadines # Saint Vincent and the Grenadines
+        - St. Vincent and Grenadines # Saint Vincent and the Grenadines
+        - Sint Maarten
+        - Trinidad and Tobago
+        - Turks and Caicos Islands
+        - U.S. Virgin Islands
+        - United States Virgin Islands # U.S. Virgin Islands
+      # Central America:
+        - Belize
+        - Costa Rica
+        - El Salvador
+        - Guatemala
+        - Honduras
+        - Mexico
+        - Nicaragua
+        - Panama
+      # South America:
+        - Argentina
+        - Plurinational State of Bolivia
+        - Bolivia # Plurinational State of Bolivia
+        - Bouvet Island
+        - Brazil
+        - Chile
+        - Colombia
+        - Ecuador
+        - Falkland Islands
+        - Malvinas # Falkland Islands
+        - French Guiana
+        - Guyana
+        - Paraguay
+        - Peru
+        - South Georgia and the South Sandwich Islands
+        - South Georgia and South Sandwich Islands # South Georgia and the South Sandwich Islands
+        - South Georgia # South Georgia and the South Sandwich Islands
+        - South Sandwich Islands # South Georgia and the South Sandwich Islands
+        - Suriname
+        - Uruguay
+        - Bolivarian Republic of Venezuela
+        - Venezuela # Bolivarian Republic of Venezuela
+      # North America:
+        - Bermuda
+        - Canada
+        - Greenland
+        - Saint Pierre and Miquelon
+        - St. Pierre and Miquelon # Saint Pierre and Miquelon
+        - United States of America
+        - United States # United States of America
+      Antarctica:
+        - Antarctica
+      Asia:
+      # Central Asia:
+        - Kazakhstan
+        - Kyrgyzstan
+        - Tajikistan
+        - Turkmenistan
+        - Uzbekistan
+      # Eastern Asia:
+        - China
+        - Hong Kong
+        - Hong Kong SAR China # Hong Kong
+        - Macao
+        - Macau # Macao
+        - Macau SAR China # Macao
+        - Democratic People's Republic of Korea
+        - North Korea # Democratic People's Republic of Korea
+        - Japan
+        - Mongolia
+        - Republic of Korea
+        - South Korea # Republic of Korea
+        - Korea # Republic of Korea
+        - Taiwan
+        - Taiwan, Province of China # Taiwan
+      # South-Eastern Asia:
+        - Brunei
+        - Brunei Darussalam # Brunei
+        - Cambodia
+        - Indonesia
+        - Lao People's Democratic Republic
+        - Lao # Lao People's Democratic Republic
+        - Laos # Lao People's Democratic Republic
+        - Malaysia
+        - Myanmar
+        - Burma # Myanmar
+        - Philippines
+        - Singapore
+        - Thailand
+        - Timor-Leste
+        - East Timor # Timor-Leste
+        - Vietnam
+        - Viet Nam # Vietnam
+      # Southern Asia:
+        - Afghanistan
+        - Bangladesh
+        - Bhutan
+        - India
+        - Islamic Republic of Iran
+        - Iran # Islamic Republic of Iran
+        - Maldives
+        - Nepal
+        - Pakistan
+        - Sri Lanka
+      # Western Asia:
+        - Armenia
+        - Azerbaijan
+        - Bahrain
+        - Cyprus
+        - Georgia
+        - Iraq
+        - Israel
+        - Jordan
+        - Kuwait
+        - Lebanon
+        - Oman
+        - Qatar
+        - Saudi Arabia
+        - State of Palestine
+        - Palestine # State of Palestine
+        - Syrian Arab Republic
+        - Syria # Syrian Arab Republic
+        - Türkiye
+        - Turkey # Türkiye
+        - United Arab Emirates
+        - Yemen
+      Europe:
+      # Eastern Europe:
+        - Belarus
+        - Bulgaria
+        - Czech Republic
+        - Czechia # Czech Republic
+        - Czechoslovakia
+        - Hungary
+        - Poland
+        - Republic of Moldova
+        - Moldova # Republic of Moldova
+        - Romania
+        - Russian Federation
+        - Russia # Russian Federation
+        - Soviet Union
+        - Slovakia
+        - Ukraine
+      # Northern Europe:
+        - Åland Islands
+        - Guernsey
+        - Jersey
+        - Sark
+        - Denmark
+        - Estonia
+        - Faroe Islands
+        - Finland
+        - Iceland
+        - Ireland
+        - Northern Ireland
+        - Isle of Man
+        - Latvia
+        - Lithuania
+        - Norway
+        - Svalbard and Jan Mayen Islands
+        - Svalbard and Jan Mayen # Svalbard and Jan Mayen Islands
+        - Sweden
+        - United Kingdom
+      # Southern Europe:
+        - Albania
+        - Andorra
+        - Bosnia and Herzegovina
+        - Croatia
+        - Gibraltar
+        - Greece
+        - Kosovo
+        - Holy See
+        - Vatican City # Holy See
+        - Italy
+        - Malta
+        - Montenegro
+        - North Macedonia
+        - Macedonia # North Macedonia
+        - Republic of North Macedonia # North Macedonia
+        - Portugal
+        - San Marino
+        - Serbia
+        - Serbia and Montenegro
+        - Slovenia
+        - Spain
+        - Yugoslavia
+      # Western Europe:
+        - Austria
+        - Belgium
+        - France
+        - French Republic # France
+        - Germany
+        - East Germany
+        - Liechtenstein
+        - Luxembourg
+        - Monaco
+        - Netherlands
+        - Switzerland
+      Oceania:
+      # Australia and New Zealand:
         - Australia
         - Christmas Island
         - Cocos (Keeling) Islands
-        - New Guinea 
-        - Timor-Leste 
-        - Cook Islands
+        - Heard Island and McDonald Islands
+        - Heard and McDonald Islands # Heard Island and McDonald Islands
+        - New Zealand
+        - Norfolk Island
+      # Melanesia:
         - Fiji
-        - French Polynesia
+        - New Caledonia
+        - Papua New Guinea
+        - New Guinea # Papua New Guinea
+        - Solomon Islands
+        - Vanuatu
+      # Micronesia:
         - Guam
         - Kiribati
         - Marshall Islands
-        - Micronesia
+        - Federated States of Micronesia
+        - Micronesia # Federated States of Micronesia
         - Nauru
-        - New Caledonia
-        - Niue
-        - Norfolk Island
+        - Northern Mariana Islands
         - Palau
+        - United States Minor Outlying Islands
+        - U.S. Outlying Islands # United States Minor Outlying Islands
+      # Polynesia:
+        - American Samoa
+        - Cook Islands
+        - French Polynesia
+        - Niue
         - Pitcairn
+        - Pitcairn Islands # Pitcairn
         - Samoa
-        - Solomon Islands
         - Tokelau
         - Tonga
         - Tuvalu
-        - Vanuatu
+        - Wallis and Futuna Islands
+        - Wallis and Futuna # Wallis and Futuna Islands
 ```
