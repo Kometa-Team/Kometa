@@ -17,8 +17,8 @@ Supported Overlay Level: Movie, Show
 | Golden Globe Winner             | `golden`          | `160`  |
 | Golden Globe Director           | `golden_director` | `150`  |
 | BAFTA Winner                    | `bafta`           | `140`  |
-| Cannes Winner                   | `cabbes`          | `130`  |
-| Berlinale Winner                | `berlinLe`        | `120`  |
+| Cannes Winner                   | `cannes`          | `130`  |
+| Berlinale Winner                | `berlinale`       | `120`  |
 | Venice Winner                   | `venice`          | `110`  |
 | Sundance Winner                 | `sundance`        | `100`  |
 | Emmys Winner                    | `emmys`           | `90`   |

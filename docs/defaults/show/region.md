@@ -94,7 +94,7 @@ These are lists provided for reference to show what values will be in use if you
     include:
       - Northern Africa
       - Eastern Africa
-      - Middle Africa
+      - Central Africa
       - Southern Africa
       - Western Africa
       - Caribbean
@@ -149,10 +149,10 @@ These are lists provided for reference to show what values will be in use if you
         - so                    # Somalia
         - ss                    # South Sudan
         - ug                    # Uganda
-        - tz                    # United Republic of Tanzania [Tanzania]
+        - tz                    # Tanzania [United Republic of Tanzania]
         - zm                    # Zambia
         - zw                    # Zimbabwe
-      Middle Africa:
+      Central Africa:
         - ao                    # Angola
         - cm                    # Cameroon
         - cf                    # Central African Republic
@@ -162,7 +162,7 @@ These are lists provided for reference to show what values will be in use if you
         - zr                    # Zaire
         - gq                    # Equatorial Guinea
         - ga                    # Gabon
-        - st                    # Sao Tome and Principe
+        - st                    # São Tomé and Príncipe [Sao Tome and Principe]
       Southern Africa:
         - bw                    # Botswana
         - sz                    # Eswatini [Swaziland]
@@ -172,8 +172,8 @@ These are lists provided for reference to show what values will be in use if you
       Western Africa:
         - bj                    # Benin
         - bf                    # Burkina Faso
-        - cv                    # Cabo Verde [Cape Verde]
-        - ci                    # Côte d'Ivoire [Ivory Coast]
+        - cv                    # Cape Verde [Cabo Verde]
+        - ci                    # Côte d'Ivoire [Côte d’Ivoire] [Ivory Coast]
         - gm                    # Gambia
         - gh                    # Ghana
         - gn                    # Guinea
@@ -216,7 +216,7 @@ These are lists provided for reference to show what values will be in use if you
         - sx                    # Sint Maarten
         - tt                    # Trinidad and Tobago
         - tc                    # Turks and Caicos Islands
-        - vi                    # U.S. Virgin Islands [United States Virgin Islands]
+        - vi                    # US Virgin Islands [U.S. Virgin Islands] [United States Virgin Islands]
       Central America:
         - bz                    # Belize
         - cr                    # Costa Rica
@@ -228,7 +228,7 @@ These are lists provided for reference to show what values will be in use if you
         - pa                    # Panama
       South America:
         - ar                    # Argentina
-        - bo                    # Plurinational State of Bolivia [Bolivia]
+        - bo                    # Bolivia [Plurinational State of Bolivia]
         - bv                    # Bouvet Island
         - br                    # Brazil
         - cl                    # Chile
@@ -242,13 +242,13 @@ These are lists provided for reference to show what values will be in use if you
         - gs                    # South Georgia and the South Sandwich Islands [South Georgia] [South Sandwich Islands]
         - sr                    # Suriname
         - uy                    # Uruguay
-        - ve                    # Bolivarian Republic of Venezuela [Venezuela]
+        - ve                    # Venezuela [Bolivarian Republic of Venezuela]
       North America:
         - bm                    # Bermuda
         - ca                    # Canada
         - gl                    # Greenland
         - pm                    # Saint Pierre and Miquelon
-        - us                    # United States of America [United States]
+        - us                    # United States [United States of America]
       Antarctica:
         - aq                    # Antarctica
       Central Asia:
@@ -261,31 +261,31 @@ These are lists provided for reference to show what values will be in use if you
         - cn                    # China
         - hk                    # Hong Kong
         - mo                    # Macao
-        - kp                    # Democratic People's Republic of Korea [North Korea]
+        - kp                    # North Korea [Democratic People's Republic of Korea]
         - jp                    # Japan
         - mn                    # Mongolia
-        - kr                    # Republic of Korea [South Korea] [Korea]
+        - kr                    # South Korea [Republic of Korea] [Korea]
         - tw                    # Taiwan [Taiwan, Province of China]
       South-Eastern Asia:
         - bn                    # Brunei [Brunei Darussalam]
         - kh                    # Cambodia
         - id                    # Indonesia
-        - la                    # Lao People's Democratic Republic [Lao]
+        - la                    # Laos [Lao People's Democratic Republic] [Lao]
         - my                    # Malaysia
         - mm                    # Myanmar
         - bu                    # Burma
         - ph                    # Philippines
         - sg                    # Singapore
         - th                    # Thailand
-        - tl                    # Timor-Leste
         - tp                    # East Timor
+        - tl                    # Timor-Leste
         - vn                    # Vietnam [Viet Nam]
       Southern Asia:
         - af                    # Afghanistan
         - bd                    # Bangladesh
         - bt                    # Bhutan
         - in                    # India
-        - ir                    # Islamic Republic of Iran [Iran]
+        - ir                    # Iran [Islamic Republic of Iran]
         - mv                    # Maldives
         - np                    # Nepal
         - pk                    # Pakistan
@@ -304,9 +304,9 @@ These are lists provided for reference to show what values will be in use if you
         - om                    # Oman
         - qa                    # Qatar
         - sa                    # Saudi Arabia
-        - ps                    # State of Palestine [Palestine]
-        - sy                    # Syrian Arab Republic [Syria]
-        - tr                    # Türkiye [Turkey]
+        - ps                    # Palestine [State of Palestine]
+        - sy                    # Syria [Syrian Arab Republic]
+        - tr                    # Turkey [Türkiye]
         - ae                    # United Arab Emirates
         - ye                    # Yemen
       Eastern Europe:
@@ -316,9 +316,9 @@ These are lists provided for reference to show what values will be in use if you
         - cs                    # Czechoslovakia
         - hu                    # Hungary
         - pl                    # Poland
-        - md                    # Republic of Moldova [Moldova]
+        - md                    # Moldova [Republic of Moldova]
         - ro                    # Romania
-        - ru                    # Russian Federation [Russia]
+        - ru                    # Russia [Russian Federation]
         - su                    # Soviet Union
         - sk                    # Slovakia
         - ua                    # Ukraine
@@ -348,7 +348,7 @@ These are lists provided for reference to show what values will be in use if you
         - gi                    # Gibraltar
         - gr                    # Greece
         - xk                    # Kosovo
-        - va                    # Holy See [Vatican City]
+        - va                    # Vatican City [Holy See]
         - it                    # Italy
         - mt                    # Malta
         - me                    # Montenegro
@@ -387,11 +387,11 @@ These are lists provided for reference to show what values will be in use if you
         - gu                    # Guam
         - ki                    # Kiribati
         - mh                    # Marshall Islands
-        - fm                    # Federated States of Micronesia [Micronesia]
+        - fm                    # Micronesia [Federated States of Micronesia]
         - nr                    # Nauru
         - mp                    # Northern Mariana Islands
         - pw                    # Palau
-        - um                    # United States Minor Outlying Islands
+        - um                    # US Minor Outlying Islands
       Polynesia:
         - as                    # American Samoa
         - ck                    # Cook Islands
