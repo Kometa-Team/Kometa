@@ -127,6 +127,7 @@ templates:
     file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
     delete_collections_named: <<delete_collections_named>>
+
   trakt:
     optional:
       - trakt_list
@@ -264,6 +265,21 @@ templates:
     sort_title: "!<<collection_section>><<pre>><<title>>"
 
   use_year_collections:
+    conditionals:
+      final_collection_section:
+        default: <<collection_section>>
+        conditions:
+          - year_collection_section.exists: true
+            value: <<year_collection_section>>
+    default:
+      collection_section: "00"
+      key: <<mapping_name>>
+      pre: "_"
+      order: ""
+      order_<<key>>: <<order>>
+      sort_prefix: "!"
+      sort_title: <<sort_prefix>><<final_collection_section>><<pre>><<order_<<key>>>><<title>>
     optional:
       - use_year_collections
     run_definition: <<use_year_collections>>
+    sort_title: <<sort_title>>
