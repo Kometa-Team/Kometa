@@ -558,7 +558,7 @@ overlays:
     template: [name: flags, name: standard]
 
   mayan:
-    variables: {key: myn, text: MA, weight: 8, country: mx}
+    variables: {key: myn, text: MYN, weight: 8, country: mx, width: 230}
     template: [name: flags, name: standard]
 
   inuktitut:
@@ -582,9 +582,9 @@ overlays:
     template: [name: flags, name: standard]
 
   luxembourgish:
-    variables: {key: lb, text: LB, weight: 3, country: lu}
+    variables: {key: lb, text: LB, weight: 2, country: lu}
     template: [name: flags, name: standard]  
 
   mossi:
-    variables: {key: mos, text: MOS, weight: 1, country: bf}
+    variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
     template: [name: flags, name: standard]
