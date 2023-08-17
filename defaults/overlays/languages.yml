@@ -579,6 +579,12 @@ overlays:
 
   zulu:
     variables: {key: zu, text: ZU, weight: 3, country: za}
-    template: [name: flags, name: standard]    
+    template: [name: flags, name: standard]
 
-    
+  luxembourgish:
+    variables: {key: lb, text: LB, weight: 3, country: lu}
+    template: [name: flags, name: standard]  
+
+  mossi:
+    variables: {key: mos, text: MOS, weight: 1, country: bf}
+    template: [name: flags, name: standard]
