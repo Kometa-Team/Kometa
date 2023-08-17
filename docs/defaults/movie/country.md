@@ -250,7 +250,7 @@ These are lists provided for reference to show what values will be in use if you
         - Bangladesh
         - Bhutan
         - India
-        - Islamic Republic of Iran
+        - Iran
         - Maldives
         - Nepal
         - Pakistan
