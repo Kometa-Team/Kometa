@@ -43,6 +43,7 @@ dynamic_collections:
         other: country_other
       dynamic:
         default: true
+
     include:
       # Northern Africa:
         - Algeria
@@ -205,7 +206,7 @@ dynamic_collections:
         - Bangladesh
         - Bhutan
         - India
-        - Islamic Republic of Iran
+        - Iran
         - Maldives
         - Nepal
         - Pakistan

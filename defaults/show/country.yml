@@ -43,6 +43,7 @@ dynamic_collections:
         other: country_other
       dynamic:
         default: true
+
     include:
       # Northern Africa:
         - dz                    # Algeria
