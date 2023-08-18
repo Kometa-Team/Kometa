@@ -43,6 +43,7 @@ dynamic_collections:
         other: country_other
       dynamic:
         default: true
+
     include:
       # Northern Africa:
         - Algeria
@@ -72,10 +73,10 @@ dynamic_collections:
         - Somalia
         - South Sudan
         - Uganda
-        - United Republic of Tanzania
+        - Tanzania
         - Zambia
         - Zimbabwe
-      # Middle Africa:
+      # Central Africa:
         - Angola
         - Cameroon
         - Central African Republic
@@ -84,7 +85,7 @@ dynamic_collections:
         - Democratic Republic of the Congo
         - Equatorial Guinea
         - Gabon
-        - Sao Tome and Principe
+        - São Tomé and Príncipe
       # Southern Africa:
         - Botswana
         - Eswatini
@@ -94,7 +95,7 @@ dynamic_collections:
       # Western Africa:
         - Benin
         - Burkina Faso
-        - Cabo Verde
+        - Cape Verde
         - Côte d'Ivoire
         - Gambia
         - Ghana
@@ -138,7 +139,7 @@ dynamic_collections:
         - Sint Maarten
         - Trinidad and Tobago
         - Turks and Caicos Islands
-        - U.S. Virgin Islands
+        - US Virgin Islands
       # Central America:
         - Belize
         - Costa Rica
@@ -150,7 +151,7 @@ dynamic_collections:
         - Panama
       # South America:
         - Argentina
-        - Plurinational State of Bolivia
+        - Bolivia
         - Bouvet Island
         - Brazil
         - Chile
@@ -164,13 +165,13 @@ dynamic_collections:
         - South Georgia and the South Sandwich Islands
         - Suriname
         - Uruguay
-        - Bolivarian Republic of Venezuela
+        - Venezuela
       # North America:
         - Bermuda
         - Canada
         - Greenland
         - Saint Pierre and Miquelon
-        - United States of America
+        - United States
       # Antarctica:
         - Antarctica
       # Central Asia:
@@ -183,29 +184,29 @@ dynamic_collections:
         - China
         - Hong Kong
         - Macao
-        - Democratic People's Republic of Korea
+        - North Korea
         - Japan
         - Mongolia
-        - Republic of Korea
+        - South Korea
         - Taiwan
       # South-Eastern Asia:
         - Brunei
         - Cambodia
         - Indonesia
-        - Lao People's Democratic Republic
+        - Laos
         - Malaysia
         - Myanmar
         - Philippines
         - Singapore
         - Thailand
-        - Timor-Leste
-        - Viet Nam
+        - East Timor
+        - Vietnam
       # Southern Asia:
         - Afghanistan
         - Bangladesh
         - Bhutan
         - India
-        - Islamic Republic of Iran
+        - Iran
         - Maldives
         - Nepal
         - Pakistan
@@ -224,9 +225,9 @@ dynamic_collections:
         - Oman
         - Qatar
         - Saudi Arabia
-        - State of Palestine
-        - Syrian Arab Republic
-        - Türkiye
+        - Palestine
+        - Syria
+        - Turkey
         - United Arab Emirates
         - Yemen
       # Eastern Europe:
@@ -235,9 +236,9 @@ dynamic_collections:
         - Czech Republic
         - Hungary
         - Poland
-        - Republic of Moldova
+        - Moldova
         - Romania
-        - Russian Federation
+        - Russia
         - Slovakia
         - Ukraine
       # Northern Europe:
@@ -267,7 +268,7 @@ dynamic_collections:
         - Gibraltar
         - Greece
         - Kosovo
-        - Holy See
+        - Vatican City
         - Italy
         - Malta
         - Montenegro
@@ -284,7 +285,6 @@ dynamic_collections:
         - Belgium
         - France
         - Germany
-        - East Germany
         - Liechtenstein
         - Luxembourg
         - Monaco
@@ -295,40 +295,34 @@ dynamic_collections:
         - Christmas Island
         - Cocos (Keeling) Islands
         - Heard Island and McDonald Islands
-        - Heard and McDonald Islands # Heard Island and McDonald Islands
         - New Zealand
         - Norfolk Island
       # Melanesia:
         - Fiji
         - New Caledonia
         - Papua New Guinea
-        - New Guinea # Papua New Guinea
         - Solomon Islands
         - Vanuatu
       # Micronesia:
         - Guam
         - Kiribati
         - Marshall Islands
-        - Federated States of Micronesia
-        - Micronesia # Federated States of Micronesia
+        - Micronesia
         - Nauru
         - Northern Mariana Islands
         - Palau
-        - United States Minor Outlying Islands
-        - U.S. Outlying Islands # United States Minor Outlying Islands
+        - US Minor Outlying Islands
       # Polynesia:
         - American Samoa
         - Cook Islands
         - French Polynesia
         - Niue
         - Pitcairn Islands
-        - Pitcairn # Pitcairn Islands
         - Samoa
         - Tokelau
         - Tonga
         - Tuvalu
         - Wallis and Futuna Islands
-        - Wallis and Futuna # Wallis and Futuna Islands
     addons:
       Tanzania:
         - United Republic of Tanzania
@@ -336,12 +330,12 @@ dynamic_collections:
         - Congo
       Democratic Republic of the Congo:
         - Zaire
-      Sao Tome and Principe:
-        - São Tomé and Príncipe
+      São Tomé and Príncipe:
+        - Sao Tome and Principe
       Eswatini:
         - Swaziland
-      Cabo Verde:
-        - Cape Verde
+      Cape Verde:
+        - Cabo Verde
       Côte d'Ivoire:
         - Côte d’Ivoire
         - Ivory Coast
@@ -365,78 +359,85 @@ dynamic_collections:
         - Saint Vincent and Grenadines
         - St. Vincent and the Grenadines
         - St. Vincent and Grenadines
-      U.S. Virgin Islands:
+      US Virgin Islands:
+        - U.S. Virgin Islands
         - United States Virgin Islands
-      Plurinational State of Bolivia:
-        - Bolivia
+      Bolivia:
+        - Plurinational State of Bolivia
       Falkland Islands:
         - Malvinas
       South Georgia and the South Sandwich Islands:
         - South Georgia and South Sandwich Islands
         - South Georgia
         - South Sandwich Islands
-      Bolivarian Republic of Venezuela:
-        - Venezuela
+      Venezuela:
+        - Bolivarian Republic of Venezuela
       Saint Pierre and Miquelon:
         - St. Pierre and Miquelon
-      United States of America:
-        - United States
+      United States:
+        - United States of America
       Hong Kong:
         - Hong Kong SAR China
       Macao:
         - Macau
         - Macau SAR China
-      Democratic People's Republic of Korea:
-        - North Korea
-      Republic of Korea:
-        - South Korea
+      North Korea:
+        - Democratic People's Republic of Korea
+      South Korea:
+        - Republic of Korea
         - Korea
       Taiwan:
         - Taiwan, Province of China
       Brunei:
         - Brunei Darussalam
-      Lao People's Democratic Republic:
+      Laos:
+        - Lao People's Democratic Republic
         - Lao
-        - Laos
       Myanmar:
         - Burma
-      Timor-Leste:
-        - East Timor
-      Viet Nam:
-        - Vietnam
-      Islamic Republic of Iran:
-        - Iran
-      State of Palestine:
-        - Palestine
-      Syrian Arab Republic:
-        - Syria
-      Türkiye:
-        - Turkey
+      East Timor:
+        - Timor-Leste
+      Vietnam:
+        - Viet Nam
+      Iran:
+        - Islamic Republic of Iran
+      Palestine:
+        - State of Palestine
+      Syria:
+        - Syrian Arab Republic
+      Turkey:
+        - Türkiye
       Czech Republic:
         - Czechia
         - Czechoslovakia
-      Republic of Moldova:
-        - Moldova
-      Russian Federation:
-        - Russia
+      Moldova:
+        - Republic of Moldova
+      Russia:
+        - Russian Federation
         - Soviet Union
       Svalbard and Jan Mayen Islands:
         - Svalbard and Jan Mayen
-      Holy See:
-        - Vatican City
+      Vatican City:
+        - Holy See
       North Macedonia:
         - Macedonia
         - Republic of North Macedonia
       France:
         - French Republic
+      Germany:
+        - East Germany
       Heard Island and McDonald Islands:
         - Heard and McDonald Islands
       Papua New Guinea:
         - New Guinea
-      Federated States of Micronesia:
-        - Micronesia
-      United States Minor Outlying Islands:
+      Micronesia:
+        - Federated States of Micronesia
+      US Minor Outlying Islands:
+        - United States Minor Outlying Islands
+        - United States Outlying Islands
+        - U.S. Minor Outlying Islands
         - U.S. Outlying Islands
+        - US Outlying Islands
       Pitcairn Islands:
         - Pitcairn
       Wallis and Futuna Islands:

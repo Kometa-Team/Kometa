@@ -2997,6 +2997,7 @@ class CollectionBuilder:
                         logger.error("Details: Failed to Update Please delete the collection and run again")
                     logger.info("")
         else:
+            self.obj.reload()
             #self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
             if summary and str(summary[1]) != str(self.obj.summary):

@@ -130,11 +130,11 @@ The following yml is provided for reference to show what values will be in use i
         - Somalia
         - South Sudan
         - Uganda
-        - United Republic of Tanzania
-        - Tanzania # United Republic of Tanzania
+        - Tanzania
+        - United Republic of Tanzania # Tanzania
         - Zambia
         - Zimbabwe
-      # Middle Africa:
+      # Central Africa:
         - Angola
         - Cameroon
         - Central African Republic
@@ -145,8 +145,8 @@ The following yml is provided for reference to show what values will be in use i
         - Zaire # Democratic Republic of the Congo
         - Equatorial Guinea
         - Gabon
-        - Sao Tome and Principe
-        - São Tomé and Príncipe # Sao Tome and Principe
+        - São Tomé and Príncipe
+        - Sao Tome and Principe # São Tomé and Príncipe
       # Southern Africa:
         - Botswana
         - Eswatini
@@ -157,8 +157,8 @@ The following yml is provided for reference to show what values will be in use i
       # Western Africa:
         - Benin
         - Burkina Faso
-        - Cabo Verde
-        - Cape Verde # Cabo Verde
+        - Cape Verde
+        - Cabo Verde # Cape Verde
         - Côte d'Ivoire
         - Côte d’Ivoire # Côte d'Ivoire
         - Ivory Coast # Côte d'Ivoire
@@ -219,8 +219,9 @@ The following yml is provided for reference to show what values will be in use i
         - Sint Maarten
         - Trinidad and Tobago
         - Turks and Caicos Islands
-        - U.S. Virgin Islands
-        - United States Virgin Islands # U.S. Virgin Islands
+        - US Virgin Islands
+        - U.S. Virgin Islands # US Virgin Islands
+        - United States Virgin Islands # US Virgin Islands
       # Central America:
         - Belize
         - Costa Rica
@@ -232,8 +233,8 @@ The following yml is provided for reference to show what values will be in use i
         - Panama
       # South America:
         - Argentina
-        - Plurinational State of Bolivia
-        - Bolivia # Plurinational State of Bolivia
+        - Bolivia
+        - Plurinational State of Bolivia # Bolivia
         - Bouvet Island
         - Brazil
         - Chile
@@ -251,16 +252,16 @@ The following yml is provided for reference to show what values will be in use i
         - South Sandwich Islands # South Georgia and the South Sandwich Islands
         - Suriname
         - Uruguay
-        - Bolivarian Republic of Venezuela
-        - Venezuela # Bolivarian Republic of Venezuela
+        - Venezuela
+        - Bolivarian Republic of Venezuela # Venezuela
       # North America:
         - Bermuda
         - Canada
         - Greenland
         - Saint Pierre and Miquelon
         - St. Pierre and Miquelon # Saint Pierre and Miquelon
-        - United States of America
-        - United States # United States of America
+        - United States
+        - United States of America # United States
       Antarctica:
         - Antarctica
       Asia:
@@ -277,13 +278,13 @@ The following yml is provided for reference to show what values will be in use i
         - Macao
         - Macau # Macao
         - Macau SAR China # Macao
-        - Democratic People's Republic of Korea
-        - North Korea # Democratic People's Republic of Korea
+        - North Korea
+        - Democratic People's Republic of Korea # North Korea
         - Japan
         - Mongolia
-        - Republic of Korea
-        - South Korea # Republic of Korea
-        - Korea # Republic of Korea
+        - South Korea
+        - Republic of Korea # South Korea
+        - Korea # South Korea
         - Taiwan
         - Taiwan, Province of China # Taiwan
       # South-Eastern Asia:
@@ -291,17 +292,17 @@ The following yml is provided for reference to show what values will be in use i
         - Brunei Darussalam # Brunei
         - Cambodia
         - Indonesia
-        - Lao People's Democratic Republic
-        - Lao # Lao People's Democratic Republic
-        - Laos # Lao People's Democratic Republic
+        - Laos
+        - Lao People's Democratic Republic # Laos
+        - Lao # Laos
         - Malaysia
         - Myanmar
         - Burma # Myanmar
         - Philippines
         - Singapore
         - Thailand
-        - Timor-Leste
-        - East Timor # Timor-Leste
+        - East Timor
+        - Timor-Leste # East Timor
         - Vietnam
         - Viet Nam # Vietnam
       # Southern Asia:
@@ -309,8 +310,8 @@ The following yml is provided for reference to show what values will be in use i
         - Bangladesh
         - Bhutan
         - India
-        - Islamic Republic of Iran
-        - Iran # Islamic Republic of Iran
+        - Iran
+        - Islamic Republic of Iran # Iran
         - Maldives
         - Nepal
         - Pakistan
@@ -329,12 +330,12 @@ The following yml is provided for reference to show what values will be in use i
         - Oman
         - Qatar
         - Saudi Arabia
-        - State of Palestine
-        - Palestine # State of Palestine
-        - Syrian Arab Republic
-        - Syria # Syrian Arab Republic
-        - Türkiye
-        - Turkey # Türkiye
+        - Palestine
+        - State of Palestine # Palestine
+        - Syria
+        - Syrian Arab Republic # Syria
+        - Turkey
+        - Türkiye # Turkey
         - United Arab Emirates
         - Yemen
       Europe:
@@ -343,14 +344,14 @@ The following yml is provided for reference to show what values will be in use i
         - Bulgaria
         - Czech Republic
         - Czechia # Czech Republic
-        - Czechoslovakia
+        - Czechoslovakia # Czech Republic
         - Hungary
         - Poland
-        - Republic of Moldova
-        - Moldova # Republic of Moldova
+        - Moldova
+        - Republic of Moldova # Moldova
         - Romania
-        - Russian Federation
-        - Russia # Russian Federation
+        - Russia
+        - Russian Federation # Russia
         - Soviet Union
         - Slovakia
         - Ukraine
@@ -382,8 +383,8 @@ The following yml is provided for reference to show what values will be in use i
         - Gibraltar
         - Greece
         - Kosovo
-        - Holy See
-        - Vatican City # Holy See
+        - Vatican City
+        - Holy See # Vatican City
         - Italy
         - Malta
         - Montenegro
@@ -429,13 +430,17 @@ The following yml is provided for reference to show what values will be in use i
         - Guam
         - Kiribati
         - Marshall Islands
-        - Federated States of Micronesia
-        - Micronesia # Federated States of Micronesia
+        - Micronesia
+        - Federated States of Micronesia # Micronesia
         - Nauru
         - Northern Mariana Islands
         - Palau
-        - United States Minor Outlying Islands
-        - U.S. Outlying Islands # United States Minor Outlying Islands
+        - US Minor Outlying Islands
+        - United States Minor Outlying Islands # US Minor Outlying Islands
+        - United States Outlying Islands # US Minor Outlying Islands
+        - U.S. Minor Outlying Islands # US Minor Outlying Islands
+        - U.S. Outlying Islands # US Minor Outlying Islands
+        - US Outlying Islands # US Minor Outlying Islands
       # Polynesia:
         - American Samoa
         - Cook Islands

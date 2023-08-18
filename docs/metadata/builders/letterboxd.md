@@ -47,7 +47,7 @@ You can add different filters directly to this builder.
 | `year`<sup>1</sup>   | **Description:** Search for the specified year range.<br>**Values:**  range of int i.e. `1990-1999`                                                           |
 | `note`<sup>1</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not sitewide note.<br>**Values:**  Any String                  |
 
-<sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list.
+<sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list. (i.e. it should have `/detail/` in the url)
 
 ```yaml
 collections:

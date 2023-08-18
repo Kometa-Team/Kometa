@@ -416,6 +416,8 @@ class Overlays:
                     added_titles = []
                     if builder.found_items:
                         for item in builder.found_items:
+                            if builder.limit and len(added_titles) >= builder.limit:
+                                break
                             key_to_item[item.ratingKey] = item
                             added_titles.append(item)
                             if item.ratingKey not in properties[prop_name].keys:
