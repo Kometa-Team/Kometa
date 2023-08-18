@@ -64,9 +64,16 @@ templates:
       - back_line_width
       - addon_offset
       - addon_position
+    conditionals:
+      final_use:
+        conditions:
+          - use_<<key>>.exists: true
+            value: <<use_<<key>>>>
+          - use_all: false
+            value: false
     builder_level: <<builder_level>>
     run_definition:
-      - <<use_<<key>>>>
+      - <<final_use>>
       - <<use_<<alt>>>>
       - <<allowed_libraries>>
     suppress_overlays: <<suppress_overlays>>

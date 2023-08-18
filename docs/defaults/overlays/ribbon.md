@@ -30,6 +30,7 @@ Supported Overlay Level: Movie, Show
 | Metacritic Must See             | `metacritic`      | `30`   |
 | Commonsense Selection           | `common`          | `20`   |
 | Razzies Winner                  | `razzie`          | `10`   |
+
 ## Config
 
 The below YAML in your config.yml will create the overlays:
@@ -61,6 +62,7 @@ All [Shared Overlay Variables](../overlay_variables) are available with the defa
 
 | Variable                     | Description & Values                                                                                                    |
 |:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
 | `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
 
