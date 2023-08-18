@@ -1480,17 +1480,15 @@ class MetadataFile(DataFile):
                     logger.info("")
                     logger.info(f"{id_type} ID Mapping: {mapping_id}")
                     if self.library.is_movie and mapping_id in self.library.movie_map:
-                        for item_id in self.library.movie_map[mapping_id]:
-                            item.append(self.library.fetch_item(item_id))
+                        item.extend([self.library.fetch_item(i) for i in self.library.movie_map[mapping_id]])
                     elif self.library.is_show and mapping_id in self.library.show_map:
-                        for item_id in self.library.show_map[mapping_id]:
-                            item.append(self.library.fetch_item(item_id))
+                        item.extend([self.library.fetch_item(i) for i in self.library.show_map[mapping_id]])
                     elif mapping_id in self.library.imdb_map:
-                        for item_id in self.library.imdb_map[mapping_id]:
-                            item.append(self.library.fetch_item(item_id))
+                        item.extend([self.library.fetch_item(i) for i in self.library.imdb_map[mapping_id]])
                     else:
                         logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
                         continue
+                title = mapping_name if mapping_id is None else None
 
                 blank_edition = False
                 edition_titles = []
@@ -1598,7 +1596,7 @@ class MetadataFile(DataFile):
                         logger.info("")
                         logger.separator(f"Updating {i.title}", space=False, border=False)
                         logger.info("")
-                        self.update_metadata_item(i, mapping_name, meta, methods)
+                        self.update_metadata_item(i, mapping_name, meta, methods, title=title)
                     except Failed as e:
                         logger.error(e)
             except NotScheduled as e:
@@ -1606,7 +1604,7 @@ class MetadataFile(DataFile):
             except Failed as e:
                 logger.error(e)
 
-    def update_metadata_item(self, item, mapping_name, meta, methods):
+    def update_metadata_item(self, item, mapping_name, meta, methods, title=None):
 
         updated = False
 
@@ -1703,7 +1701,7 @@ class MetadataFile(DataFile):
             genres = tmdb_item.genres
 
         #item.batchEdits()
-        add_edit("title", item, meta, methods)
+        add_edit("title", item, meta, methods, value=title)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
             if "edition" in methods and not self.library.plex_pass:
