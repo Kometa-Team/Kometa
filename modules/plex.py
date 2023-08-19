@@ -1594,6 +1594,10 @@ class Plex(Library):
                 for media in item.media:
                     for part in media.parts:
                         values.extend([a.extendedDisplayTitle for a in part.audioStreams() if a.extendedDisplayTitle])
+            elif filter_attr == "subtitle_track_title":
+                for media in item.media:
+                    for part in media.parts:
+                        values.extend([a.extendedDisplayTitle for a in part.subtitleStreams() if a.extendedDisplayTitle])
             elif filter_attr in ["audio_codec", "audio_profile", "video_codec", "video_profile"]:
                 for media in item.media:
                     attr = getattr(media, filter_actual)
