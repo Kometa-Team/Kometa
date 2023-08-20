@@ -386,9 +386,9 @@ class DataFile:
                                 if var_key.endswith(".exists"):
                                     con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if con_var_value:
-                                        if var_key[:-7] not in variables or not variables[var_key[:-7]]:
+                                        if var_key[:-7] not in variables or variables[var_key[:-7]] is None:
                                             error_text = "- does not exist"
-                                    elif var_key[:-7] in variables and variables[var_key[:-7]]:
+                                    elif var_key[:-7] in variables and variables[var_key[:-7]] is not None:
                                         error_text = "- exists"
                                     con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):

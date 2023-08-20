@@ -19,7 +19,7 @@ class Letterboxd:
         letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
-            slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-film-slug")
+            slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-target-link")
             comments = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
             ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
             years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
