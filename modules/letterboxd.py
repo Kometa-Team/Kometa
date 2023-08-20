@@ -110,7 +110,7 @@ class Letterboxd:
                         tmdb_id, expired = self.config.Cache.query_letterboxd_map(letterboxd_id)
                     if not tmdb_id or expired is not False:
                         try:
-                            tmdb_id = self._tmdb(f"{base_url}{slug}", language)
+                            tmdb_id = self._tmdb(f"{base_url}/film/{slug}", language)
                         except Failed as e:
                             logger.error(e)
                             continue
