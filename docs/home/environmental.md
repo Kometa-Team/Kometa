@@ -11,20 +11,20 @@ Environment Variables can also be placed inside a `.env` file inside your config
 | Attribute                                             | Shell Command                                 | Environment Variable     |
 |:------------------------------------------------------|:----------------------------------------------|:-------------------------|
 | [Config](#config)                                     | `-c` or `--config`                            | `PMM_CONFIG`             |
-| [Time to Run](#time-to-run)                           | `-t` or `--time`                              | `PMM_TIME`               |
+| [Time to Run](#time-to-run)                           | `-t` or `--times`                             | `PMM_TIMES`              |
 | [Run Immediately](#run-immediately)                   | `-r` or `--run`                               | `PMM_RUN`                |
-| [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TEST`               |
+| [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TESTS`              |
 | [Debug](#debug)                                       | `-db` or `--debug`                            | `PMM_DEBUG`              |
 | [Trace](#trace)                                       | `-tr` or `--trace`                            | `PMM_TRACE`              |
 | [Log Requests](#log-requests)                         | `-lr` or `--log-requests`                     | `PMM_LOG_REQUESTS`       |
 | [Timeout](#timeout)                                   | `-ti` or `--timeout`                          | `PMM_TIMEOUT`            |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`                 | `PMM_COLLECTIONS_ONLY`   |
 | [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`                   | `PMM_PLAYLISTS_ONLY`     |
-| [Operations Only](#operations-only)                   | `-op`, `--operations`, or `--operations-only` | `PMM_OPERATIONS`         |
-| [Overlays Only](#overlays-only)                       | `-ov`, `--overlays`, or `--overlays-only`     | `PMM_OVERLAYS`           |
-| [Run Collections](#run-collections)                   | `-rc` or `--run-collections`                  | `PMM_COLLECTIONS`        |
-| [Run Libraries](#run-libraries)                       | `-rl` or `--run-libraries`                    | `PMM_LIBRARIES`          |
-| [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`               | `PMM_METADATA_FILES`     |
+| [Operations Only](#operations-only)                   | `-op`, `--operations`, or `--operations-only` | `PMM_OPERATIONS_ONLY`    |
+| [Overlays Only](#overlays-only)                       | `-ov`, `--overlays`, or `--overlays-only`     | `PMM_OVERLAYS_ONLY`      |
+| [Run Collections](#run-collections)                   | `-rc` or `--run-collections`                  | `PMM_RUN_COLLECTIONS`    |
+| [Run Libraries](#run-libraries)                       | `-rl` or `--run-libraries`                    | `PMM_RUN_LIBRARIES`      |
+| [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`               | `PMM_RUN_METADATA_FILES` |
 | [Libraries First](#libraries-first)                   | `-lf` or `--libraries-first`                  | `PMM_LIBRARIES_FIRST`    |
 | [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`                 | `PMM_IGNORE_SCHEDULES`   |
 | [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`                     | `PMM_IGNORE_GHOST`       |
@@ -99,13 +99,13 @@ Specify the time of day that Plex Meta Manager will run.
   </tr>
   <tr>
     <th>Flags</th>
-    <td><code>-t</code> or <code>--time</code></td>
-    <td><code>PMM_TIME</code></td>
+    <td><code>-t</code> or <code>--times</code></td>
+    <td><code>PMM_TIMES</code></td>
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--time 06:00,18:00</code></td>
-    <td><code>PMM_TIME=06:00,18:00</code></td>
+    <td><code>--times 06:00,18:00</code></td>
+    <td><code>PMM_TIMES=06:00,18:00</code></td>
   </tr>
   <tr>
     <th>Default Value</th>
@@ -119,12 +119,12 @@ Specify the time of day that Plex Meta Manager will run.
 
 ````{tab} Local Environment
 ```
-python plex_meta_manager.py --time 22:00,03:00
+python plex_meta_manager.py --times 22:00,03:00
 ```
 ````
 ````{tab} Docker Environment
 ```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --time 22:00,03:00
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --times 22:00,03:00
 ```
 ````
 
@@ -175,12 +175,12 @@ Perform a debug test run immediately, bypassing the time to run flag. This will 
   <tr>
     <th>Flags</th>
     <td><code>-rt</code>, <code>--tests</code>, or <code>--run-tests</code></td>
-    <td><code>PMM_TEST</code></td>
+    <td><code>PMM_TESTS</code></td>
   </tr>
   <tr>
     <th>Example</th>
     <td><code>--run-tests</code></td>
-    <td><code>PMM_TEST=true</code></td>
+    <td><code>PMM_TESTS=true</code></td>
   </tr>
 </table>
 
@@ -412,24 +412,24 @@ Only run library operations skipping collections/metadata, playlists, and overla
   </tr>
   <tr>
     <th>Flags</th>
-    <td><code>-op</code> or <code>--operations</code></td>
-    <td><code>PMM_OPERATIONS</code></td>
+    <td><code>-op</code>, <code>--operations</code>, or <code>--operations-only</code></td>
+    <td><code>PMM_OPERATIONS_ONLY</code></td>
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--operations</code></td>
-    <td><code>PMM_OPERATIONS=true</code></td>
+    <td><code>--operations-only</code></td>
+    <td><code>PMM_OPERATIONS_ONLY=true</code></td>
   </tr>
 </table>
 
 ````{tab} Local Environment
 ```
-python plex_meta_manager.py --operations
+python plex_meta_manager.py --operations-only
 ```
 ````
 ````{tab} Docker Environment
 ```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --operations
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --operations-only
 ```
 ````
 
@@ -445,24 +445,24 @@ Only run library overlays skipping collections/metadata, playlists, and operatio
   </tr>
   <tr>
     <th>Flags</th>
-    <td><code>-ov</code> or <code>--overlays</code></td>
-    <td><code>PMM_OVERLAYS</code></td>
+    <td><code>-ov</code>, <code>--overlays</code>, or <code>--overlays-only</code></td>
+    <td><code>PMM_OVERLAYS_ONLY</code></td>
   </tr>
   <tr>
     <th>Example</th>
-    <td><code>--overlays</code></td>
-    <td><code>PMM_OVERLAYS=true</code></td>
+    <td><code>--overlays-only</code></td>
+    <td><code>PMM_OVERLAYS_ONLY=true</code></td>
   </tr>
 </table>
 
 ````{tab} Local Environment
 ```
-python plex_meta_manager.py --overlays
+python plex_meta_manager.py --overlays-only
 ```
 ````
 ````{tab} Docker Environment
 ```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --overlays
+docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --overlays-only
 ```
 ````
 
@@ -479,12 +479,12 @@ Perform a collections run immediately to run only the pre-defined collections, b
   <tr>
     <th>Flags</th>
     <td><code>-rc</code> or <code>--run-collections</code></td>
-    <td><code>PMM_COLLECTIONS</code></td>
+    <td><code>PMM_RUN_COLLECTIONS</code></td>
   </tr>
   <tr>
     <th>Example</th>
     <td><code>--run-collections "Harry Potter|Star Wars"</code></td>
-    <td><code>PMM_COLLECTIONS=Harry Potter|Star Wars</code></td>
+    <td><code>PMM_RUN_COLLECTIONS=Harry Potter|Star Wars</code></td>
   </tr>
   <tr>
     <th>Values</th>
@@ -516,12 +516,12 @@ Perform a libraries run immediately to run only the pre-defined libraries, bypas
   <tr>
     <th>Flags</th>
     <td><code>-rl</code> or <code>--run-libraries</code></td>
-    <td><code>PMM_LIBRARIES</code></td>
+    <td><code>PMM_RUN_LIBRARIES</code></td>
   </tr>
   <tr>
     <th>Example</th>
     <td><code>--run-libraries "Movies - 4K|TV Shows - 4K"</code></td>
-    <td><code>PMM_LIBRARIES=Movies - 4K|TV Shows - 4K</code></td>
+    <td><code>PMM_RUN_LIBRARIES=Movies - 4K|TV Shows - 4K</code></td>
   </tr>
   <tr>
     <th>Values</th>
@@ -553,12 +553,12 @@ Perform a metadata files run immediately to run only the pre-defined metadata fi
   <tr>
     <th>Flags</th>
     <td><code>-rm</code> or <code>--run-metadata-files</code></td>
-    <td><code>PMM_METADATA_FILES</code></td>
+    <td><code>PMM_RUN_METADATA_FILES</code></td>
   </tr>
   <tr>
     <th>Example</th>
     <td><code>--run-metadata-files "Movies.yml|MovieCharts"</code></td>
-    <td><code>PMM_METADATA_FILES=Movies.yml|MovieCharts</code></td>
+    <td><code>PMM_RUN_METADATA_FILES=Movies.yml|MovieCharts</code></td>
   </tr>
   <tr>
     <th>Available Values</th>
