@@ -593,7 +593,7 @@ def run_libraries(config):
                         continue
                     logger.info("")
                     logger.separator(f"Running {images_name} Images File\n{images.path}")
-                    if not run_args["tests"] and not resume and not run_args["collections-only"]:
+                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
                         try:
                             images.update_metadata()
                         except Failed as e:
@@ -610,20 +610,20 @@ def run_libraries(config):
                         continue
                     logger.info("")
                     logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                    if not run_args["tests"] and not resume and not run_args["collections-only"]:
+                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
                         try:
                             metadata.update_metadata()
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
                     collections_to_run = metadata.get_collections(config.requested_collections)
-                    if resume and resume not in collections_to_run:
+                    if run_args["resume"] and run_args["resume"] not in collections_to_run:
                         logger.info("")
-                        logger.warning(f"Collection: {resume} not in Metadata File: {metadata.path}")
+                        logger.warning(f"Collection: {run_args['resume']} not in Metadata File: {metadata.path}")
                         continue
                     if collections_to_run:
                         logger.info("")
-                        logger.separator(f"{'Test ' if run_args['test'] else ''}Collections")
+                        logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
                         logger.remove_library_handler(library.mapping_name)
                         run_collection(config, library, metadata, collections_to_run)
                         logger.re_add_library_handler(library.mapping_name)
@@ -640,7 +640,6 @@ def run_libraries(config):
     return library_status
 
 def run_collection(config, library, metadata, requested_collections):
-    global resume
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -659,10 +658,10 @@ def run_collection(config, library, metadata, requested_collections):
             if no_template_test:
                 continue
 
-        if resume and resume != mapping_name:
+        if run_args["resume"] and run_args["resume"] != mapping_name:
             continue
-        elif resume == mapping_name:
-            resume = None
+        elif run_args["resume"] == mapping_name:
+            run_args["resume"] = None
             logger.info("")
             logger.separator(f"Resuming Collections")
 

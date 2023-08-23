@@ -1073,7 +1073,11 @@ class MetadataFile(DataFile):
                         else:
                             test_override.append(v)
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
-                    sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
+                    sync = False
+                    if "sync" in self.temp_vars:
+                        sync = util.parse("Config", "sync", self.temp_vars["sync"], parent="template_variables", datatype="bool")
+                    elif "sync" in methods:
+                        sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool")
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type.lower())
                     if "<<library_typeU>>" in title_format:
