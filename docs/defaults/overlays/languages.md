@@ -82,6 +82,8 @@ Supported library types: Movie & Show
 | Amharic                  | `am`  | `5`    | `et`         |  &#10060;   |
 | Sundanese                | `su`  | `4`    | `id`         |  &#10060;   |
 | Zulu                     | `zu`  | `3`    | `za`         |  &#10060;   |
+| Luxembourgish            | `lb`  | `2`    | `lu`         |  &#10060;   |
+| Mossi                    | `mos` | `1`    | `bf`         |  &#10060;   |
 
 ### Square Style
 

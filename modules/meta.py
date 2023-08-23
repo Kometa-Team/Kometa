@@ -386,9 +386,9 @@ class DataFile:
                                 if var_key.endswith(".exists"):
                                     con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if con_var_value:
-                                        if var_key[:-7] not in variables or not variables[var_key[:-7]]:
+                                        if var_key[:-7] not in variables or variables[var_key[:-7]] is None:
                                             error_text = "- does not exist"
-                                    elif var_key[:-7] in variables and variables[var_key[:-7]]:
+                                    elif var_key[:-7] in variables and variables[var_key[:-7]] is not None:
                                         error_text = "- exists"
                                     con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):
@@ -1073,7 +1073,11 @@ class MetadataFile(DataFile):
                         else:
                             test_override.append(v)
                     test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
-                    sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "sync" in methods else False
+                    sync = False
+                    if "sync" in self.temp_vars:
+                        sync = util.parse("Config", "sync", self.temp_vars["sync"], parent="template_variables", datatype="bool")
+                    elif "sync" in methods:
+                        sync = util.parse("Config", "sync", dynamic, parent=map_name, methods=methods, default=False, datatype="bool")
                     if "<<library_type>>" in title_format:
                         title_format = title_format.replace("<<library_type>>", library.type.lower())
                     if "<<library_typeU>>" in title_format:

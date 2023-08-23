@@ -67,11 +67,11 @@ sonarr_details = [
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 sub_filters = [
-    "filepath", "audio_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision",
+    "filepath", "audio_track_title", "subtitle_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision",
     "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile", "versions"
 ]
 filters_by_type = {
-    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title", "versions"],
+    "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title", "subtitle_track_title", "versions"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_season_episode_artist_album": ["has_overlay"],
     "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"],
@@ -105,7 +105,7 @@ tmdb_filters = [
 ]
 imdb_filters = ["imdb_keyword"]
 string_filters = [
-    "title", "summary", "studio", "edition", "record_label", "folder", "filepath", "audio_track_title", "tmdb_title",
+    "title", "summary", "studio", "edition", "record_label", "folder", "filepath", "audio_track_title", "subtitle_track_title", "tmdb_title",
     "audio_codec", "audio_profile", "video_codec", "video_profile"
 ]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]

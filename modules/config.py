@@ -124,9 +124,9 @@ class ConfigFile:
         self._mediastingers = None
         self.default_dir = default_dir
         self.secrets = secrets
-        self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.version = attrs["version"] if "version" in attrs else None
         self.branch = attrs["branch"] if "branch" in attrs else None
+        self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
