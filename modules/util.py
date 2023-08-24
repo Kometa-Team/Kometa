@@ -603,22 +603,47 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 continue
             param = match.group(1)
             if run_time.startswith("hour"):
-                try:
-                    if 0 <= int(param) <= 23:
-                        schedule_str += f"\nScheduled to run on the {num2words(param, to='ordinal_num')} hour"
-                        if run_hour == int(param):
-                            all_check += 1
-                    else:
-                        raise ValueError
-                except ValueError:
-                    logger.error(f"Schedule Error: hourly {display} must be an integer between 0 and 23")
+                if "-" in run_time:
+                    start, end = run_time.split("-")
+                    try:
+                        start = int(start)
+                        end = int(end)
+                        if start != end and 0 <= start <= 23 and 0 <= end <= 23:
+                            schedule_str += f"\nScheduled to run between the {num2words(start, to='ordinal_num')} hour and the {num2words(end, to='ordinal_num')} hour"
+                            if end > start and start <= run_hour <= end:
+                                all_check += 1
+                            elif start > end and (start <= run_hour or run_hour <= end):
+                                all_check += 1
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        logger.error(f"Schedule Error: hourly {start}-{end} each must be a different integer between 0 and 23")
+                else:
+                    try:
+                        if 0 <= int(param) <= 23:
+                            schedule_str += f"\nScheduled to run on the {num2words(param, to='ordinal_num')} hour"
+                            if run_hour == int(param):
+                                all_check += 1
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        logger.error(f"Schedule Error: hourly {display} must be an integer between 0 and 23")
             elif run_time.startswith("week"):
-                if param.lower() not in days_alias:
-                    logger.error(f"Schedule Error: weekly {display} must be a day of the week i.e. weekly(Monday)")
+                ok_days = param.lower().split("|")
+                err = None
+                for ok_day in ok_days:
+                    if ok_day not in days_alias:
+                        err = f"Schedule Error: weekly {display} must be a day of the week i.e. weekly(Monday)"
+                if err:
+                    logger.error(err)
                     continue
-                weekday = days_alias[param.lower()]
-                schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
-                if weekday == current_time.weekday():
+                pass_day = False
+                for ok_day in ok_days:
+                    weekday = days_alias[ok_day]
+                    schedule_str += f"\nScheduled weekly on {pretty_days[weekday]}"
+                    if weekday == current_time.weekday():
+                        pass_day = True
+                if pass_day:
                     all_check += 1
             elif run_time.startswith("month"):
                 try:
