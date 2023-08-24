@@ -8,6 +8,7 @@ plex:                                           # Can be individually specified 
   url: http://bing.bang.boing                <<< ENTER YOUR PLEX URL HERE
   token: XXXXXXXXXXXXXXXXXXXX                <<< ENTER YOUR PLEX TOKEN HERE
   timeout: 60
+  db_cache:
   clean_bundles: false
   empty_trash: false
   optimize: false

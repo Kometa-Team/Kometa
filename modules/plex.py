@@ -1,5 +1,4 @@
 import os, plexapi, re, requests
-import distutils.version
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -433,9 +432,9 @@ class Plex(Library):
     def __init__(self, config, params):
         super().__init__(config, params)
         self.plex = params["plex"]
-        self.url = params["plex"]["url"]
-        self.token = params["plex"]["token"]
-        self.timeout = params["plex"]["timeout"]
+        self.url = self.plex["url"]
+        self.token = self.plex["token"]
+        self.timeout = self.plex["timeout"]
         logger.secret(self.url)
         logger.secret(self.token)
         try:
@@ -446,12 +445,15 @@ class Plex(Library):
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
             pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
             srv_settings = self.PlexServer.settings
-            plex_version = self.PlexServer.version
-            parsed_version = distutils.version.LooseVersion(plex_version)
-            min_version = distutils.version.LooseVersion("1.29")
-            if parsed_version > min_version:
-                db_cache = srv_settings.get("DatabaseCacheSize").value
-                logger.info(f"Plex DB cache setting: {db_cache} kilobytes")
+            try:
+                db_cache = srv_settings.get("DatabaseCacheSize")
+                logger.info(f"Plex DB cache setting: {db_cache.value} MB")
+                if self.plex["db_cache"] and self.plex["db_cache"] != db_cache.value:
+                    db_cache.set(self.plex["db_cache"])
+                    self.PlexServer.settings.save()
+                    logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
+            except NotFound:
+                logger.info(f"Plex DB cache setting: Unknown")
             uc_str = f"Unknown update channel."
             if srv_settings.get("butlerUpdateChannel").value == '16':
                 uc_str = f"Public update channel."

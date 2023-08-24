@@ -662,6 +662,7 @@ class ConfigFile:
                 "url": check_for_attribute(self.data, "url", parent="plex", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="plex", default_is_none=True),
                 "timeout": check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60),
+                "db_cache": check_for_attribute(self.data, "db_cache", parent="plex", var_type="int", default_is_none=True),
                 "clean_bundles": check_for_attribute(self.data, "clean_bundles", parent="plex", var_type="bool", default=False),
                 "empty_trash": check_for_attribute(self.data, "empty_trash", parent="plex", var_type="bool", default=False),
                 "optimize": check_for_attribute(self.data, "optimize", parent="plex", var_type="bool", default=False)
@@ -944,6 +945,7 @@ class ConfigFile:
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
                         "timeout": check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False),
+                        "db_cache": check_for_attribute(lib, "db_cache", parent="plex", var_type="int", default=self.general["plex"]["db_cache"], default_is_none=True, save=False),
                         "clean_bundles": check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False),
                         "empty_trash": check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False),
                         "optimize": check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
