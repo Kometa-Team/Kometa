@@ -445,8 +445,8 @@ class Plex(Library):
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
             pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
             srv_settings = self.PlexServer.settings
-            db_cache = srv_settings.get("DatabaseCachesize")
-            logger.info(f"Plex DB cache setting = {db_cache}")
+            db_cache = srv_settings.get("DatabaseCacheSize").value
+            logger.info(f"Plex DB cache setting: {db_cache} kilobytes")
             uc_str = f"Unknown update channel."
             if srv_settings.get("butlerUpdateChannel").value == '16':
                 uc_str = f"Public update channel."
