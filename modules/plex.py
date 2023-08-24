@@ -1,4 +1,5 @@
 import os, plexapi, re, requests
+import distutils.version
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -445,8 +446,12 @@ class Plex(Library):
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
             pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
             srv_settings = self.PlexServer.settings
-            db_cache = srv_settings.get("DatabaseCacheSize").value
-            logger.info(f"Plex DB cache setting: {db_cache} kilobytes")
+            plex_version = self.PlexServer.version
+            parsed_version = distutils.version.LooseVersion(plex_version)
+            min_version = distutils.version.LooseVersion("1.29")
+            if parsed_version > min_version:
+                db_cache = srv_settings.get("DatabaseCacheSize").value
+                logger.info(f"Plex DB cache setting: {db_cache} kilobytes")
             uc_str = f"Unknown update channel."
             if srv_settings.get("butlerUpdateChannel").value == '16':
                 uc_str = f"Public update channel."
