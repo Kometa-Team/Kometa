@@ -159,6 +159,7 @@ data:
       url: http://PLEX_IP_HERE:32400
       token: YOUR_TOKEN_HERE
       timeout: 60
+      db_cache: 
       clean_bundles: false
       empty_trash: false
       optimize: false

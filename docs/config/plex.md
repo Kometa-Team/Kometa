@@ -10,19 +10,21 @@ plex:
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
+  db_cache: 4096
   clean_bundles: true
   empty_trash: true
   optimize: false
 ```
 
-| Attribute       | Allowed Values                                                                                                                 | Default | Required |
-|:----------------|:-------------------------------------------------------------------------------------------------------------------------------|:--------|:--------:|
-| `url`           | Plex Server URL<br><strong>Example:</strong> http://192.168.1.12:32400                                                         | N/A     | &#9989;  |
-| `token`         | Plex Server Authentication Token                                                                                               | N/A     | &#9989;  |
-| `timeout`       | Plex Server Timeout                                                                                                            | 60      | &#10060; |
-| `clean_bundles` | Runs Clean Bundles on the Server after all Metadata Files are run                                                              | false   | &#10060; |
-| `empty_trash`   | Runs Empty Trash on the Server after all Metadata Files are run                                                                | false   | &#10060; |
-| `optimize`      | Runs Optimize on the Server after all Metadata Files are run                                                                   | false   | &#10060; |
+| Attribute       | Allowed Values                                                         | Default | Required |
+|:----------------|:-----------------------------------------------------------------------|:--------|:--------:|
+| `url`           | Plex Server URL<br><strong>Example:</strong> http://192.168.1.12:32400 | N/A     | &#9989;  |
+| `token`         | Plex Server Authentication Token                                       | N/A     | &#9989;  |
+| `timeout`       | Plex Server Timeout                                                    | 60      | &#10060; |
+| `db_cache`      | Plex Server Database Cache Size                                        | None    | &#10060; |
+| `clean_bundles` | Runs Clean Bundles on the Server after all Metadata Files are run      | false   | &#10060; |
+| `empty_trash`   | Runs Empty Trash on the Server after all Metadata Files are run        | false   | &#10060; |
+| `optimize`      | Runs Optimize on the Server after all Metadata Files are run           | false   | &#10060; |
 
 * **Do Not Use the Plex Token found in Plex's Preferences.xml file**
 
@@ -47,11 +49,13 @@ libraries:
       url: http://plex.boing.bong
       token: SOME_TOKEN
       timeout: 360
+      db_cache: 8192
 ...
 plex:
   url: http://plex.bing.bang
   token: SOME_TOKEN
   timeout: 60
+  db_cache: 4096
   clean_bundles: false
   empty_trash: false
   optimize: false
