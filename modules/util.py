@@ -604,7 +604,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             param = match.group(1)
             if run_time.startswith("hour"):
                 if "-" in run_time:
-                    start, end = run_time.split("-")
+                    start, end = param.split("-")
                     try:
                         start = int(start)
                         end = int(end)
