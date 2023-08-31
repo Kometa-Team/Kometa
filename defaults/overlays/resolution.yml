@@ -15,6 +15,7 @@ external_templates:
         conditions:
           - type: edition_dovetail
             value:
+              - 4K-DV-HDR
               - 4K-Plus
               - 4K-DV
               - 4K-HDR
@@ -193,6 +194,10 @@ templates:
         conditions:
           - alt: plus
             value: '(?i)\bhdr10(\+|p(lus)?\b)'
+      dolby_vision_hdr_hybrid:
+        conditions:
+          - alt: dv_hdr_hybrid
+            value: '(?i)\bdv(\.hdr10?\b)'
     optional:
       - all
       - use_<<key>>
@@ -215,10 +220,15 @@ templates:
         hdr: <<hdr>>
     filters:
       has_dolby_vision: <<dolby_vision>>
-      filepath.regex: <<plus>>
+      filepath.regex:
+        - <<plus>>
+        - <<dolby_vision_hdr_hybrid>>
 
 overlays:
 
+  4K-DV-HDR-Dovetail:
+    variables: {key: 4k, alt: dv_hdr_hybrid, weight: 170, type: resolution_dovetail, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
   4K-Plus-Dovetail:
     variables: {key: 4k, alt: plus, weight: 160, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
@@ -359,6 +369,9 @@ overlays:
     variables: {key: ulysses, weight: 6, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
 
+  4K-DV-HDR:
+    variables: {key: 4k, alt: dv_hdr_hybrid, weight: 170, type: resolution}
+    template: [name: resolution, name: standard]
   4K-Plus:
     variables: {key: 4k, alt: plus, weight: 160, type: resolution}
     template: [name: resolution, name: standard]
