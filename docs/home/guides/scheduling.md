@@ -54,6 +54,8 @@ This method will start Plex Meta Manager at system startup and will keep the scr
 
 This is the recommended approach as it allows the user additional control over how and when Plex Meta Manager processes.
 
+If you don't specify a time, the script will run at 5AM each day.  You can change this with the [time-to-run](../environmental.html#time-to-run) runtime flag.
+
 <details>
   <summary>Background Run Scheduled Task</summary>
 
