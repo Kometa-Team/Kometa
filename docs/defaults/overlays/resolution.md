@@ -14,6 +14,7 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 
 | Resolution   | Key          | Weight |
 |:-------------|:-------------|:-------|
+| 4K DV/HDR    | `4k_dv_hdr_hybrid`    | `170`  |
 | 4K HDR10+    | `4k_plus`    | `160`  |
 | 4K DV        | `4k_dv`      | `150`  |
 | 4K HDR       | `4k_hdr`     | `140`  |
