@@ -12,32 +12,37 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 
 ## Supported Resolutions
 
-| Resolution   | Key          | Weight |
-|:-------------|:-------------|:-------|
-| 4K DV/HDR    | `4k_dv_hdr_hybrid`    | `170`  |
-| 4K HDR10+    | `4k_plus`    | `160`  |
-| 4K DV        | `4k_dv`      | `150`  |
-| 4K HDR       | `4k_hdr`     | `140`  |
-| 4K           | `4k`         | `130`  |
-| 1080P HDR10+ | `1080p_plus` | `125`  |
-| 1080P DV     | `1080p_dv`   | `120`  |
-| 1080P HDR    | `1080p_hdr`  | `110`  |
-| 1080P        | `1080p`      | `100`  |
-| 720P HDR10+  | `720p_plus`  | `95`   |
-| 720P DV      | `720p_dv`    | `90`   |
-| 720P HDR     | `720p_hdr`   | `80`   |
-| 720P         | `720p`       | `70`   |
-| 576P HDR10+  | `576p_plus`  | `65`   |
-| 576P DV      | `576p_dv`    | `60`   |
-| 576P HDR     | `576p_hdr`   | `50`   |
-| 576P         | `576p`       | `40`   |
-| 480P HDR10+  | `480p_plus`  | `35`   |
-| 480P DV      | `480p_dv`    | `30`   |
-| 480P HDR     | `480p_hdr`   | `20`   |
-| 480P         | `480p`       | `10`   |
-| HDR10+       | `plus`       | `7`    |
-| DV           | `dv`         | `5`    |
-| HDR          | `hdr`        | `1`    |
+| Resolution   | Key           | Weight |
+|:-------------|:--------------|:-------|
+| 4K DV/HDR    | `4k_dvhdr`    | `158`  |
+| 4K HDR10+    | `4k_plus`     | `155`  |
+| 4K DV        | `4k_dv`       | `150`  |
+| 4K HDR       | `4k_hdr`      | `140`  |
+| 4K           | `4k`          | `130`  |
+| 1080P DV/HDR | `1080p_dvhdr` | `128`  |
+| 1080P HDR10+ | `1080p_plus`  | `125`  |
+| 1080P DV     | `1080p_dv`    | `120`  |
+| 1080P HDR    | `1080p_hdr`   | `110`  |
+| 1080P        | `1080p`       | `100`  |
+| 720P DV/HDR  | `720p_dvhdr`  | `98`   |
+| 720P HDR10+  | `720p_plus`   | `95`   |
+| 720P DV      | `720p_dv`     | `90`   |
+| 720P HDR     | `720p_hdr`    | `80`   |
+| 720P         | `720p`        | `70`   |
+| 576P DV/HDR  | `576p_dvhdr`  | `68`   |
+| 576P HDR10+  | `576p_plus`   | `65`   |
+| 576P DV      | `576p_dv`     | `60`   |
+| 576P HDR     | `576p_hdr`    | `50`   |
+| 576P         | `576p`        | `40`   |
+| 480P DV/HDR  | `480p_dvhdr`  | `38`   |
+| 480P HDR10+  | `480p_plus`   | `35`   |
+| 480P DV      | `480p_dv`     | `30`   |
+| 480P HDR     | `480p_hdr`    | `20`   |
+| 480P         | `480p`        | `10`   |
+| DV/HDR       | `dvhdr`       | `8`    |
+| HDR10+       | `plus`        | `7`    |
+| DV           | `dv`          | `5`    |
+| HDR          | `hdr`         | `1`    |
 
 ## Supported Editions
 
