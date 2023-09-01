@@ -443,6 +443,8 @@ class Plex(Library):
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
         except Unauthorized:
             raise Failed("Plex Error: Plex token is invalid")
+        except requests.exceptions.ConnectTimeout:
+            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
         except ValueError as e:
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
