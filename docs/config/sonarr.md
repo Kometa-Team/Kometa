@@ -59,6 +59,27 @@ sonarr:
 
 ![Sonarr Details](sonarr.png)
 
+Based on that UI, the settings would be [settings not based on things in this image are shown as `-`]:
+
+```YAML
+sonarr:
+  url: -
+  token: -
+  add_missing: -
+  add_existing: -
+  root_folder_path: /share
+  monitor: all
+  quality_profile: Any
+  language_profile: English
+  series_type: standard
+  season_folder: true
+  tag: 
+  search: false
+  cutoff_search: false
+  sonarr_path: -
+  plex_path: -
+```
+
 # Other examples:
 
 Specifying a second Sonarr instance for a specific library:
