@@ -231,6 +231,7 @@ dynamic_collections:
       - 1492 Pictures
       - A+E Studios
       - A24
+      - Aardman
       - Aamir Khan Productions
       - ABC Signature
       - ABC Studios
@@ -368,6 +369,7 @@ dynamic_collections:
       - Michael Patrick King Productions
       - Millennium Films
       - Miramax
+      - Netflix
       - New Line Cinema
       - Nickelodeon Animation Studio
       - NorthSouth Productions
@@ -470,6 +472,7 @@ dynamic_collections:
       - Warner Animation Group
       - Warner Bros. Pictures
       - Warner Bros. Television
+      - Warner Premiere
       - warparty
       - Waverly Films
       - Wayfare Entertainment
@@ -529,6 +532,7 @@ dynamic_collections:
         - Cygames Pictures
       DC Comics:
         - DC Films
+        - DC Entertainment
       DreamWorks Studios:
         - DreamWorks
         - DreamWorks Animation
@@ -647,6 +651,7 @@ dynamic_collections:
         - Disney
       Warner Animation Group:
         - Warner Bros. Cartoon Studios
+        - Warner Animation
       Warner Bros. Pictures:
         - Warner
         - Warner Animation Group

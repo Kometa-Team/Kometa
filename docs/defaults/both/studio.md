@@ -83,7 +83,6 @@ These are lists provided for reference to show what values will be in use if you
 ### Default `include`
 
 ```yaml
-include:
 #### ANIMES ########################################################################################################
   - 8bit
   - A-1 Pictures
@@ -263,7 +262,7 @@ include:
   - Zexcs
 
 
-#### MOVIES & TV SHOWS ###############################################################################################
+  #### MOVIES & TV SHOWS ###############################################################################################
   - 3 Arts Entertainment
   - 6th & Idaho
   - 20th Century Animation
@@ -276,6 +275,7 @@ include:
   - 1492 Pictures
   - A+E Studios
   - A24
+  - Aardman
   - Aamir Khan Productions
   - ABC Signature
   - ABC Studios
@@ -413,6 +413,7 @@ include:
   - Michael Patrick King Productions
   - Millennium Films
   - Miramax
+  - Netflix
   - New Line Cinema
   - Nickelodeon Animation Studio
   - NorthSouth Productions
@@ -515,6 +516,7 @@ include:
   - Warner Animation Group
   - Warner Bros. Pictures
   - Warner Bros. Television
+  - Warner Premiere
   - warparty
   - Waverly Films
   - Wayfare Entertainment
@@ -522,12 +524,7 @@ include:
   - Wiedemann & Berg Television
   - Winkler Films
   - Working Title Films
-```
-
-### Default `addons`
-
-```yaml
-addons:
+  addons:
   8bit:
     - 8-bit
   20th Century Studios:
@@ -579,6 +576,7 @@ addons:
     - Cygames Pictures
   DC Comics:
     - DC Films
+    - DC Entertainment
   DreamWorks Studios:
     - DreamWorks
     - DreamWorks Animation
@@ -697,9 +695,9 @@ addons:
     - Disney
   Warner Animation Group:
     - Warner Bros. Cartoon Studios
+    - Warner Animation
   Warner Bros. Pictures:
     - Warner
     - Warner Animation Group
   Yokohama Animation Lab:
     - Yokohama Animation Laboratory
-```
