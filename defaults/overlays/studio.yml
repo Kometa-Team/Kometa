@@ -636,6 +636,9 @@ overlays:
   A24:
     template: [name: standard, name: studios]
 
+  Aardman:
+    template: [name: standard, name: studios]
+
   Aamir Khan Productions:
     template: [name: standard, name: studios]
 
@@ -802,7 +805,7 @@ overlays:
     template: [name: standard, name: studios]
 
   DC Comics:
-    template: [name: standard, {name: studios, search: [DC Comics, DC Films]}]
+    template: [name: standard, {name: studios, search: [DC Comics, DC Films, DC Entertainment]}]
 
   Dino De Laurentiis Company:
     template: [name: standard, name: studios]
@@ -1045,6 +1048,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Miramax:
+    template: [name: standard, name: studios]
+
+  Netflix:
     template: [name: standard, name: studios]
 
   New Line Cinema:
@@ -1345,12 +1351,15 @@ overlays:
     template: [name: standard, {name: studios, search: [Disney, Walt Disney Pictures]}]
 
   Warner Animation Group:
-    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios]}]
+    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Animation]}]
 
   Warner Bros. Pictures:
     template: [name: standard, {name: studios, search: [Warner, Warner Bros. Pictures]}]
 
   Warner Bros. Television:
+    template: [name: standard, name: studios]
+
+  Warner Premiere:
     template: [name: standard, name: studios]
 
   warparty:
