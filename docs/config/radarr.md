@@ -53,7 +53,7 @@ radarr:
 
 ![Radarr Details](radarr.png)
 
-Based on that UI, the settings would be [settings not based on things in this image are shown as `#`]:
+Based on that UI, the settings would be [settings not based on things in this image are shown as `#`; url and token are of course required they are not shown here to focus on the settings that are shown above]:
 
 ```yaml
 radarr:
