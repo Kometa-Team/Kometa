@@ -252,7 +252,7 @@ class Trakt:
         try:
             return self._request(requests.utils.urlparse(data).path)["description"]
         except Failed:
-            raise Failed(f"Trakt Error: List {data} not found")
+            raise Failed(data)
 
     def _parse(self, items, typeless=False, item_type=None, trakt_ids=False, ignore_other=False):
         ids = []

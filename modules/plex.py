@@ -466,6 +466,7 @@ class Plex(Library):
             raise Failed("Plex Error: Plex token is invalid")
         except ValueError as e:
             logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
+            logger.stacktrace()
             raise Failed(f"Plex Error: {e}")
         except (requests.exceptions.ConnectionError, ParseError):
             logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
@@ -504,7 +505,10 @@ class Plex(Library):
             self.update_blank_track_titles = False
             logger.error(f"update_blank_track_titles library operation only works with music libraries")
         logger.info(f"Connected to library {params['name']}")
-        logger.info(f"Agent: {self.agent}; Scanner: {self.scanner}; ratings source: {self.ratings_source}")
+        logger.info(f"Type: {self.type}")
+        logger.info(f"Agent: {self.agent}")
+        logger.info(f"Scanner: {self.scanner}")
+        logger.info(f"Ratings Source: {self.ratings_source}")
 
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
