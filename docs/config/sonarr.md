@@ -59,14 +59,14 @@ sonarr:
 
 ![Sonarr Details](sonarr.png)
 
-Based on that UI, the settings would be [settings not based on things in this image are shown as `-`]:
+Based on that UI, the settings would be [settings not based on things in this image are shown as `#`; url and token are of course required they are not shown here to focus on the settings that are shown above]:
 
 ```YAML
 sonarr:
-  url: -
-  token: -
-  add_missing: -
-  add_existing: -
+  url: #
+  token: #
+  add_missing: #
+  add_existing: #
   root_folder_path: /share
   monitor: all
   quality_profile: Any
@@ -76,8 +76,8 @@ sonarr:
   tag: 
   search: false
   cutoff_search: false
-  sonarr_path: -
-  plex_path: -
+  sonarr_path: #
+  plex_path: #
 ```
 
 # Other examples:
