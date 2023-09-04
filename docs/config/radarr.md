@@ -53,23 +53,23 @@ radarr:
 
 ![Radarr Details](radarr.png)
 
-Based on that UI, the settings would be [settings not based on things in this image are shown as `-`]:
+Based on that UI, the settings would be [settings not based on things in this image are shown as `#`]:
 
 ```yaml
 radarr:
-  url: -
-  token: -
-  add_missing: -
-  add_existing: -
-  upgrade_existing: -
+  url: #
+  token: #
+  add_missing: #
+  add_existing: #
+  upgrade_existing: #
   root_folder_path: /movies
   monitor: movie
   availability: announced
   quality_profile: HD-1080p
   tag: 
   search: true
-  radarr_path: -
-  plex_path: -
+  radarr_path: #
+  plex_path: #
 ```
 
 # Other examples:
