@@ -1158,7 +1158,10 @@ class CollectionBuilder:
             if summary:
                 self.summaries[method_name] = summary
         elif method_name == "trakt_description":
-            self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
+            try:
+                self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
+            except Failed as e:
+                logger.error(f"Trakt Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -1780,7 +1783,10 @@ class CollectionBuilder:
             for trakt_list in trakt_lists:
                 self.builders.append(("trakt_list", trakt_list))
             if method_name.endswith("_details"):
-                self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
+                try:
+                    self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
+                except Failed as e:
+                    logger.error(f"Trakt Error: List description not found: {e}")
         elif method_name == "trakt_boxoffice":
             if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
                 self.builders.append((method_name, 10))
