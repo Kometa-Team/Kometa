@@ -10,7 +10,7 @@ Below is an example of a separator, which can be seen surrounded by a red square
 
 ## Important Note:
 
-Plex does not support creating these empty collections natively through its UI, so they can behave strangely in some cases, primarily related to showing/hiding them in the main library view.  As a workaround, you can use a template variable [`placeholder_SOMETHING_id`] to specify a single movie/show to add to these collections so they have one thing in them and will then behave as expected.
+Plex does not support creating these empty collections natively through its UI, so they can behave strangely in some cases, primarily related to showing/hiding them in the main library view.  As a workaround, you can use a `placeholder_` [template variable](#shared-separator-variables) to specify a single movie/show to add to these collections so they have one thing in them and will then behave as expected.
 
 ## Separator Files
 
