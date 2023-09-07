@@ -22,18 +22,29 @@ settings:
 * You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [Path Types](../../config/paths.md#asset-directory) for how to define them.
 * By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
 
-## How assets are run
+## Applying assets
 
-Assets are searched for only at specific times.
+Assets can be applied to collections [managed or unmanaged], playlists, and media items [movies, shows, seasons, and episodes].
 
-1. Collection and Playlist assets are searched for whenever that collection/playlist is run.
-2. Item assets and Unmanaged Collections assets are searched for whenever the `assets_for_all` Library Operation is active.
+Managed Collection and Playlist assets are applied whenever that collection/playlist is run.  You do not have to specifically enable assets for these items; PMM will always search for and apply them.
+  
+Item [movie/show/etc] assets and Unmanaged Collections assets have to be specifically enabled before PMM will search for and apply them.  Do this by enabling the `assets_for_all` Library Operation:
+
+```yaml
+Movies:
+  operations:
+    assets_for_all: true
+```
 
 * If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md#show-missing-assets):
   ```yaml
   settings:
     show_missing_assets: false
   ```
+
+## Asset interaction with overlays
+
+If a media item has an asset associated with it, that asset image is taken as the source of truth for what artwork the item should have, and the overlay pipeline will no longer download and back up the base artwork from Plex.  Using the Asset Directory to assign custom art is the simplest and safest way to ensure that the overlay pipeline doesn't unexpectedly overwrite your custom artwork in Plex.
 
 ## Asset Naming
 
@@ -50,19 +61,110 @@ The table below shows the asset folder path structures that will be searched for
 
 * For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `name_mapping` is specified, which you would then use what's specified in `name_mapping`.
 
+  For example:
+  ```yaml
+  collections:
+    A24 Movies:
+      trakt_list: https://trakt.tv/users/moonilism/lists/a24
+  ```
+  `ASSET_NAME` is "A24 Movies"
+
+  ```yaml
+  /// < : ** : > \\\:
+     name_mapping: crazy-punctuation-collection
+     trakt_list: https://trakt.tv/users/moonilism/lists/a24
+  ```
+  `ASSET_NAME` is "crazy-punctuation-collection"
+
 * For **Movies** replace `ASSET_NAME` with the exact name of the folder the video file is stored in.
-  * i.e. if you have `Movies/Star Wars (1977)/Star Wars (1977) [1080p].mp4` then your asset directory would look at either `assets/Star Wars (1977)/poster.png` or `assets/Star Wars (1977).png` for the poster.
+  
+  For example, given this movie:
+  ```
+  /path/to/media/movies/Star Wars (1977)/Star Wars (1977) [1080p].mp4
+                        ^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+  ```
+  The asset names that PMM will look for are:
+
+  ASSET_FOLDERS=True:
+  ```
+  /path/to/assets/Star Wars (1977)/poster.ext
+  /path/to/assets/Star Wars (1977)/background.ext
+  ```
+  
+  ASSET_FOLDERS=False:
+  ```
+  /path/to/assets/Star Wars (1977).ext
+  /path/to/assets/Star Wars (1977)_background.ext
+  ```
+
 * For **Shows**, **Seasons**, and **Episodes** replace `ASSET_NAME` with the exact name of the folder for the show as a whole.
-  * i.e. if you have `Shows/Game of Thrones/Season 1/Game of Thrones - S01E01.mp4` then your asset directory would look at either `assets/Game of Thrones/poster.png` or `assets/Game of Thrones.png` for the poster.
+
+  For example, given this show:
+  ```
+  /path/to/media/tv/The Expanse (2015)/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+                    ^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+  ```
+  The asset names that PMM will look for are:
+
+  ASSET_FOLDERS=True:
+  ```
+  /path/to/assets/The Expanse (2015)/poster.ext
+  /path/to/assets/The Expanse (2015)/background.ext
+  ```
+  
+  ASSET_FOLDERS=False:
+  ```
+  /path/to/assets/The Expanse (2015).ext
+  /path/to/assets/The Expanse (2015)_background.ext
+  ```
+  
 * For **Seasons** replace `##` with the zero padded season number (00 for specials)
 
+  For example, given this show:
+  ```
+  /path/to/media/tv/The Expanse (2015)/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+  ```
+
+  The asset names that PMM will look for are:
+
+  ASSET_FOLDERS=True:
+  ```
+  /path/to/assets/The Expanse (2015)/Season01.ext
+  /path/to/assets/The Expanse (2015)/Season01_background.ext
+  ```
+  
+  ASSET_FOLDERS=False:
+  ```
+  /path/to/assets/The Expanse (2015)_Season01.ext
+  /path/to/assets/The Expanse (2015)_Season01_background.ext
+  ```
+
 * For **Episodes** replacing the first `##` with the zero padded season number (00 for specials), the second `##` with the zero padded episode number
+
+  For example, given this show:
+  ```
+  /path/to/media/tv/The Expanse (2015)/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+  ```
+
+  The asset names that PMM will look for are:
+
+  ASSET_FOLDERS=True:
+  ```
+  /path/to/assets/The Expanse (2015)/S01E01.ext
+  /path/to/assets/The Expanse (2015)/S01E01_background.ext
+  ```
+  
+  ASSET_FOLDERS=False:
+  ```
+  /path/to/assets/The Expanse (2015)_S01E01.ext
+  /path/to/assets/The Expanse (2015)_S01E01_background.ext
+  ```
 
 * Replace `.ext` with the image extension
 
 * When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
 
-* You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md#asset-depth).
+  * You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md#asset-depth).
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
 
