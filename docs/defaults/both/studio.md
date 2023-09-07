@@ -262,7 +262,7 @@ These are lists provided for reference to show what values will be in use if you
   - Zexcs
 
 
-  #### MOVIES & TV SHOWS ###############################################################################################
+#### MOVIES & TV SHOWS ###############################################################################################
   - 3 Arts Entertainment
   - 6th & Idaho
   - 20th Century Animation
@@ -273,6 +273,7 @@ These are lists provided for reference to show what values will be in use if you
   - 87North Productions
   - 101 Studios
   - 1492 Pictures
+  - A Bigger Boat
   - A+E Studios
   - A24
   - Aardman
@@ -317,6 +318,7 @@ These are lists provided for reference to show what values will be in use if you
   - Calt Production
   - Canal+
   - Carnival Films
+  - Carolco
   - Castle Rock Entertainment
   - CBS Productions
   - CBS Studios
@@ -362,9 +364,11 @@ These are lists provided for reference to show what values will be in use if you
   - Gary Sanchez Productions
   - Gaumont
   - Generator Entertainment
+  - Gracie Films
   - Green Hat Films
   - Grindstone Entertainment Group
   - Hallmark
+  - HandMade Films
   - Happy Madison Productions
   - HartBeat Productions
   - Hartswood Films
@@ -401,6 +405,7 @@ These are lists provided for reference to show what values will be in use if you
   - Lucasfilm Ltd
   - Magnolia Pictures
   - Malevolent Films
+  - Mandalay Entertainment
   - Mandarin
   - Mandarin Motion Pictures Limited
   - marv
@@ -456,6 +461,7 @@ These are lists provided for reference to show what values will be in use if you
   - Sean Daniel Company
   - Secret Hideout
   - See-Saw Films
+  - Serendipity Pictures
   - Show East
   - Showtime Networks
   - Sil-Metropole Organisation
@@ -472,6 +478,7 @@ These are lists provided for reference to show what values will be in use if you
   - Spyglass Entertainment
   - Star Thrower Entertainment
   - Stark Raving Black Productions
+  - StudioCanal
   - Studio 8
   - Studio Babelsberg
   - Studio Dragon
@@ -500,6 +507,7 @@ These are lists provided for reference to show what values will be in use if you
   - Triage Entertainment
   - Tribeca Productions
   - TriStar Pictures
+  - Twisted Pictures
   - UCP
   - United Artists
   - Universal Animation Studios
@@ -524,7 +532,7 @@ These are lists provided for reference to show what values will be in use if you
   - Wiedemann & Berg Television
   - Winkler Films
   - Working Title Films
-  addons:
+addons:
   8bit:
     - 8-bit
   20th Century Studios:
@@ -701,3 +709,4 @@ These are lists provided for reference to show what values will be in use if you
     - Warner Animation Group
   Yokohama Animation Lab:
     - Yokohama Animation Laboratory
+```
