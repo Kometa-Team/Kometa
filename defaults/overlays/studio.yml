@@ -630,6 +630,9 @@ overlays:
   1492 Pictures:
     template: [name: standard, name: studios]
 
+  A Bigger Boat:
+    template: [name: standard, name: studios]
+
   A+E Studios:
     template: [name: standard, name: studios]
 
@@ -760,6 +763,9 @@ overlays:
     template: [name: standard, {name: studios, search: [Canal+, Canal+ Polska]}]
 
   Carnival Films:
+    template: [name: standard, name: studios]
+
+  Carolco:
     template: [name: standard, name: studios]
 
   Castle Rock Entertainment:
@@ -897,6 +903,9 @@ overlays:
   Generator Entertainment:
     template: [name: standard, name: studios]
 
+  Gracie Films:
+    template: [name: standard, name: studios]
+
   Green Hat Films:
     template: [name: standard, name: studios]
 
@@ -905,6 +914,9 @@ overlays:
 
   Hallmark:
     template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
+
+  HandMade Films:
+    template: [name: standard, name: studios]
 
   Happy Madison Productions:
     template: [name: standard, name: studios]
@@ -1012,6 +1024,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Malevolent Films:
+    template: [name: standard, name: studios]
+
+  Mandalay Entertainment:
     template: [name: standard, name: studios]
 
   Mandarin:
@@ -1179,6 +1194,9 @@ overlays:
   See-Saw Films:
     template: [name: standard, name: studios]
 
+  Serendipity Pictures:
+    template: [name: standard, name: studios]
+
   Show East:
     template: [name: standard, name: studios]
 
@@ -1225,6 +1243,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Stark Raving Black Productions:
+    template: [name: standard, name: studios]
+
+  StudioCanal:
     template: [name: standard, name: studios]
 
   Studio 8:
@@ -1310,6 +1331,9 @@ overlays:
 
   TriStar Pictures:
     template: [name: standard, {name: studios, search: [TriStar, TriStar Pictures]}]
+
+  Twisted Pictures:
+    template: [name: standard, name: studios]
 
   UCP:
     template: [name: standard, name: studios]
