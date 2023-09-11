@@ -163,8 +163,8 @@ The table below shows the asset folder path structures that will be searched for
 * Replace `.ext` with the image extension
 
 * When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
-
-  * You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md#asset-depth).
+ 
+* You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md#asset-depth).
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
 
