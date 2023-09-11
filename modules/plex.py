@@ -464,6 +464,8 @@ class Plex(Library):
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
+        except requests.exceptions.ConnectTimeout:
+            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
         except ValueError as e:
             logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
             logger.stacktrace()
