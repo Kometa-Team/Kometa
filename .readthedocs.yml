@@ -13,8 +13,6 @@ formats: []
 python:
   version: "3.7"
 
-  system_packages: true
-
   install:
     - requirements: docs/requirements.txt
 
