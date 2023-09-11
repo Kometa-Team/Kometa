@@ -83,6 +83,7 @@ These are lists provided for reference to show what values will be in use if you
 ### Default `include`
 
 ```yaml
+include:
 #### ANIMES ########################################################################################################
   - 8bit
   - A-1 Pictures
@@ -532,6 +533,11 @@ These are lists provided for reference to show what values will be in use if you
   - Wiedemann & Berg Television
   - Winkler Films
   - Working Title Films
+```
+
+### Default `addons`
+
+```yaml
 addons:
   8bit:
     - 8-bit
