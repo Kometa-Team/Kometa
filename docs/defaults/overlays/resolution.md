@@ -72,6 +72,24 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | Definitive          | `definitive`    | `7`    |
 | Ulysses             | `ulysses`       | `6`    |
 
+## "Dovetail" versions
+
+In the PMM log, you may see references to versions of these overlays with `-Dovetail` appended:
+
+```
+|                             4K-Plus-Dovetail Overlay in Movies                             |
+|                              4K-DV-Dovetail Overlay in Movies                              |
+|                             4K-HDR-Dovetail Overlay in Movies                              |
+|                               4K-Dovetail Overlay in Movies                                |
+...
+|                        Extended-Edition-Dovetail Overlay in Movies                         |
+|                          Uncut-Edition-Dovetail Overlay in Movies                          |
+|                         Unrated-Edition-Dovetail Overlay in Movies                         |
+...
+```
+
+These `-Dovetail` variations are used when resolution and edition are combined so that one "dovetails" into the other.  This is not something you can enable or disable independently; it's an internal implementation detail.
+
 ## Config
 
 The below YAML in your config.yml will create the overlays:
