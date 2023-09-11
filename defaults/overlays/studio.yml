@@ -630,10 +630,16 @@ overlays:
   1492 Pictures:
     template: [name: standard, name: studios]
 
+  A Bigger Boat:
+    template: [name: standard, name: studios]
+
   A+E Studios:
     template: [name: standard, name: studios]
 
   A24:
+    template: [name: standard, name: studios]
+
+  Aardman:
     template: [name: standard, name: studios]
 
   Aamir Khan Productions:
@@ -759,6 +765,9 @@ overlays:
   Carnival Films:
     template: [name: standard, name: studios]
 
+  Carolco:
+    template: [name: standard, name: studios]
+
   Castle Rock Entertainment:
     template: [name: standard, name: studios]
 
@@ -802,7 +811,7 @@ overlays:
     template: [name: standard, name: studios]
 
   DC Comics:
-    template: [name: standard, {name: studios, search: [DC Comics, DC Films]}]
+    template: [name: standard, {name: studios, search: [DC Comics, DC Films, DC Entertainment]}]
 
   Dino De Laurentiis Company:
     template: [name: standard, name: studios]
@@ -894,6 +903,9 @@ overlays:
   Generator Entertainment:
     template: [name: standard, name: studios]
 
+  Gracie Films:
+    template: [name: standard, name: studios]
+
   Green Hat Films:
     template: [name: standard, name: studios]
 
@@ -902,6 +914,9 @@ overlays:
 
   Hallmark:
     template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
+
+  HandMade Films:
+    template: [name: standard, name: studios]
 
   Happy Madison Productions:
     template: [name: standard, name: studios]
@@ -1011,6 +1026,9 @@ overlays:
   Malevolent Films:
     template: [name: standard, name: studios]
 
+  Mandalay Entertainment:
+    template: [name: standard, name: studios]
+
   Mandarin:
     template: [name: standard, {name: studios, search: [Mandarin, Mandarin Films, Mandarin Television]}]
 
@@ -1045,6 +1063,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Miramax:
+    template: [name: standard, name: studios]
+
+  Netflix:
     template: [name: standard, name: studios]
 
   New Line Cinema:
@@ -1173,6 +1194,9 @@ overlays:
   See-Saw Films:
     template: [name: standard, name: studios]
 
+  Serendipity Pictures:
+    template: [name: standard, name: studios]
+
   Show East:
     template: [name: standard, name: studios]
 
@@ -1219,6 +1243,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Stark Raving Black Productions:
+    template: [name: standard, name: studios]
+
+  StudioCanal:
     template: [name: standard, name: studios]
 
   Studio 8:
@@ -1305,6 +1332,9 @@ overlays:
   TriStar Pictures:
     template: [name: standard, {name: studios, search: [TriStar, TriStar Pictures]}]
 
+  Twisted Pictures:
+    template: [name: standard, name: studios]
+
   UCP:
     template: [name: standard, name: studios]
 
@@ -1345,12 +1375,15 @@ overlays:
     template: [name: standard, {name: studios, search: [Disney, Walt Disney Pictures]}]
 
   Warner Animation Group:
-    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios]}]
+    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Animation]}]
 
   Warner Bros. Pictures:
     template: [name: standard, {name: studios, search: [Warner, Warner Bros. Pictures]}]
 
   Warner Bros. Television:
+    template: [name: standard, name: studios]
+
+  Warner Premiere:
     template: [name: standard, name: studios]
 
   warparty:

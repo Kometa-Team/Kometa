@@ -83,7 +83,6 @@ These are lists provided for reference to show what values will be in use if you
 ### Default `include`
 
 ```yaml
-include:
 #### ANIMES ########################################################################################################
   - 8bit
   - A-1 Pictures
@@ -274,8 +273,10 @@ include:
   - 87North Productions
   - 101 Studios
   - 1492 Pictures
+  - A Bigger Boat
   - A+E Studios
   - A24
+  - Aardman
   - Aamir Khan Productions
   - ABC Signature
   - ABC Studios
@@ -317,6 +318,7 @@ include:
   - Calt Production
   - Canal+
   - Carnival Films
+  - Carolco
   - Castle Rock Entertainment
   - CBS Productions
   - CBS Studios
@@ -362,9 +364,11 @@ include:
   - Gary Sanchez Productions
   - Gaumont
   - Generator Entertainment
+  - Gracie Films
   - Green Hat Films
   - Grindstone Entertainment Group
   - Hallmark
+  - HandMade Films
   - Happy Madison Productions
   - HartBeat Productions
   - Hartswood Films
@@ -401,6 +405,7 @@ include:
   - Lucasfilm Ltd
   - Magnolia Pictures
   - Malevolent Films
+  - Mandalay Entertainment
   - Mandarin
   - Mandarin Motion Pictures Limited
   - marv
@@ -413,6 +418,7 @@ include:
   - Michael Patrick King Productions
   - Millennium Films
   - Miramax
+  - Netflix
   - New Line Cinema
   - Nickelodeon Animation Studio
   - NorthSouth Productions
@@ -455,6 +461,7 @@ include:
   - Sean Daniel Company
   - Secret Hideout
   - See-Saw Films
+  - Serendipity Pictures
   - Show East
   - Showtime Networks
   - Sil-Metropole Organisation
@@ -471,6 +478,7 @@ include:
   - Spyglass Entertainment
   - Star Thrower Entertainment
   - Stark Raving Black Productions
+  - StudioCanal
   - Studio 8
   - Studio Babelsberg
   - Studio Dragon
@@ -499,6 +507,7 @@ include:
   - Triage Entertainment
   - Tribeca Productions
   - TriStar Pictures
+  - Twisted Pictures
   - UCP
   - United Artists
   - Universal Animation Studios
@@ -515,6 +524,7 @@ include:
   - Warner Animation Group
   - Warner Bros. Pictures
   - Warner Bros. Television
+  - Warner Premiere
   - warparty
   - Waverly Films
   - Wayfare Entertainment
@@ -522,11 +532,6 @@ include:
   - Wiedemann & Berg Television
   - Winkler Films
   - Working Title Films
-```
-
-### Default `addons`
-
-```yaml
 addons:
   8bit:
     - 8-bit
@@ -579,6 +584,7 @@ addons:
     - Cygames Pictures
   DC Comics:
     - DC Films
+    - DC Entertainment
   DreamWorks Studios:
     - DreamWorks
     - DreamWorks Animation
@@ -697,6 +703,7 @@ addons:
     - Disney
   Warner Animation Group:
     - Warner Bros. Cartoon Studios
+    - Warner Animation
   Warner Bros. Pictures:
     - Warner
     - Warner Animation Group
