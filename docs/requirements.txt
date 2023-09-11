@@ -6,3 +6,7 @@ sphinx-reredirects
 sphinx_design
 sphinx-reload
 sphinx-notfound-page
+scipy
+numpy
+pandas
+matplotlib
