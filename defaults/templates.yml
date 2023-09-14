@@ -2,6 +2,7 @@ templates:
 
   separator:
     default:
+      key: separator
       sep_style: orig
       collection_section: "00"
       url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
