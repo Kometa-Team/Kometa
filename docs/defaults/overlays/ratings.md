@@ -68,7 +68,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-All [Shared Overlay Variables](../overlay_variables) can be appended by `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
+All [Shared Overlay Variables](../overlay_variables) can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
 | Variable            | Default     |
 |:--------------------|:------------|
@@ -114,7 +114,7 @@ All [Shared Overlay Variables](../overlay_variables) can be appended by `rating1
 | `addon_position`<sup>1</sup> | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-1. These Variables can be appended by `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
+1. These Variables can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
