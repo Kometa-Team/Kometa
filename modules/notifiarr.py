@@ -36,3 +36,4 @@ class Notifiarr:
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
         if not response_json["details"]["response"]:
             raise Failed("Notifiarr Error: Invalid apikey")
+        return response
