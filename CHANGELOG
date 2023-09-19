@@ -1,10 +1,13 @@
+# Python Version
+Drops Support for Python 3.7
 
 # Requirements Update (requirements will need to be reinstalled)
-Updated GitPython requirement to 3.1.32
+Updated ArrAPI requirement to 1.4.3
+Updated GitPython requirement to 3.1.36
 Updated lxml requirement to 4.9.3
-Updated pathvalidate requirement to 3.1.0
-Updated pillow requirement to 10.0.0
-Updated PlexAPI requirement to 4.14.0
+Updated pathvalidate requirement to 3.2.0
+Updated pillow requirement to 10.0.1
+Updated PlexAPI requirement to 4.15.2
 Updated psutil requirement to 5.9.5
 Updated requests requirement to 2.31.0
 Updated ruamel.yaml requirement to 0.17.32
@@ -17,6 +20,8 @@ Add `tmdb_birthday` [Detail](https://metamanager.wiki/en/latest/metadata/details
 Add `match` [attribute](https://metamanager.wiki/en/latest/metadata/metadata/movie.html#matching-movies) to match movies within Plex to items within the Metadata file.
 Add `delete_collections_named` to [Shared Collection Variables](https://metamanager.wiki/en/latest/defaults/collection_variables.html)
 Add support for (GitHub Personal Access Tokens)[https://metamanager.wiki/en/latest/config/github.html] in config files. thanks @chazlarson
+Add runtime support for Shows, Seasons, Artists, and Albums.
+Add multiple ranges to the schedule system.
 
 # New Defaults Features
 New Default Translations of Danish, Dutch, Italian, Norwegian Bokmål, Portuguese (Brazil), and Spanish.
@@ -50,5 +55,6 @@ Fixes bug where TMDb Filters using a modifier were ignored.
 Fixes bug with `mal_search` when using the `sfw` attribute
 Fixes bug where sorting a collection would fail if the collection name had a `,` in it.
 Fixes run_end webhooks.
+Fixes Letterboxd issue
 
 Various other Minor Fixes

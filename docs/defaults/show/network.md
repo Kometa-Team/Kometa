@@ -69,7 +69,6 @@ libraries:
           sort_by: title.asc
 ```
 
-
 ## Default values
 
 These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
@@ -77,241 +76,246 @@ These are lists provided for reference to show what values will be in use if you
 ### Default `include`
 
 ```yaml
-include:
-- "#0"
-- ABC
-- ABC Family
-- ABC Kids
-- ABC TV
-- ABS-CBN
-- Acorn TV
-- Adult Swim
-- AHC
-- Alibi
-- ALTBalaji
-- Amazon Kids+
-- AMC
-- Animal Planet
-- Antena 3
-- Apple TV+
-- ARD
-- Arte
-- Atresplayer Premium
-- AT-X
-- Audience
-- AXN
-- Azteca Uno
-- A&E
-- BBC America
-- BBC Four
-- BBC iPlayer
-- BBC One
-- BBC Three
-- BBC Two
-- BET
-- BET+
-- bilibili
-- BluTV
-- Boomerang
-- Bravo
-- BritBox
-- C More
-- Canale 5
-- Canal+
-- Cartoon Network
-- Cartoonito
-- CBC
-- CBC Television
-- Cbeebies
-- CBS
-- Channel 3
-- Channel 4
-- Channel 5
-- CHCH-DT
-- Cinemax
-- Citytv
-- CNN
-- Comedy Central
-- Cooking Channel
-- Crackle
-- Criterion Channel
-- Crunchyroll
-- CTV
-- Cuatro
-- Curiosity Stream
-- Dave
-- DC Universe
-- Discovery
-- Discovery Kids
-- discovery+
-- Disney Channel
-- Disney Junior
-- Disney XD
-- Disney+
-- DR1
-- Eden
-- Elisa Viihde
-- Elisa Viihde Viaplay
-- Epix
-- ESPN
-- E!
-- Facebook Watch
-- Family Channel
-- Ficción Producciones
-- Flooxer
-- Food Network
-- FOX
-- Fox Kids
-- France 2
-- Freeform
-- Freevee
-- Fuji TV
-- FX
-- FXX
-- GAİN
-- Game Show Network
-- Global TV
-- Globoplay
-- GMA Network
-- Hallmark
-- HBO
-- HBO Max
-- HGTV
-- History
-- HOT3
-- Hulu
-- ICTV
-- IFC
-- IMDb TV
-- Investigation Discovery
-- ION Television
-- iQiyi
-- ITV
-- ITV Encore
-- ITV1
-- ITVX
-- joyn
-- Kan 11
-- KBS2
-- Kids WB
-- La 1
-- La Une
-- Las Estrellas
-- Lifetime
-- Lionsgate+
-- Logo
-- MasterClass
-- Max
-- MBC
-- MGM+
-- mitele
-- Movistar Plus+
-- MTV
-- M-Net
-- National Geographic
-- NBC
-- Netflix
-- Network 10
-- NHK
-- Nick
-- Nick Jr
-- Nickelodeon
-- Nicktoons
-- Nine Network
-- Nippon TV
-- NRK1
-- OCS City
-- OCS Max
-- ORF
-- Oxygen
-- Pantaya
-- Paramount Network
-- Paramount+
-- PBS
-- PBS Kids
-- Peacock
-- Planète+ A&E
-- Prime Video
-- Rai 1
-- Reelz
-- The Roku Channel
-- RTÉ One
-- RTL
-- RTL Télé
-- RTP1
-- RÚV
-- S4C
-- SAT.1
-- SBS
-- Science
-- Shahid
-- Showcase
-- Showmax
-- Showtime
-- Shudder
-- Sky
-- Smithsonian
-- Space
-- Spectrum
-- Spike
-- Stan
-- Starz
-- STAR+
-- Sundance TV
-- SVT1
-- Syfy
-- Syndication
-- TBS
-- Telecinco
-- Telefe
-- Telemundo
-- Televisión de Galicia
-- Televisión Pública Argentina
-- Tencent Video
-- TF1
-- The CW
-- The Roku Channel
-- The WB
-- TLC
-- TNT
-- Tokyo MX
-- Travel Channel
-- truTV
-- Turner Classic Movies
-- TV 2
-- tv asahi
-- TV Globo
-- TV Land
-- TV Tokyo
-- TV3
-- TV4
-- TVB Jade
-- tving
-- tvN
-- TVNZ 1
-- TVP1
-- UKTV
-- UniMás
-- Universal Kids
-- Universal TV
-- Univision
-- UPN
-- USA Network
-- VH1
-- Viaplay
-- Vice
-- Virgin Media One
-- ViuTV
-- ViX+
-- VRT 1
-- VTM
-- W
-- WE tv
-- YLE
-- Youku
-- YouTube
-- ZDF
-- ZEE5
+    include:
+    - "#0"
+    - ABC
+    - ABC Family
+    - ABC Kids
+    - ABC TV
+    - ABS-CBN
+    - Acorn TV
+    - Adult Swim
+    - AHC
+    - Alibi
+    - ALTBalaji
+    - Amazon Kids+
+    - AMC
+    - Animal Planet
+    - Antena 3
+    - Apple TV+
+    - ARD
+    - Arte
+    - Atresplayer Premium
+    - AT-X
+    - Audience
+    - AXN
+    - Azteca Uno
+    - A&E
+    - BBC America
+    - BBC Four
+    - BBC iPlayer
+    - BBC One
+    - BBC Three
+    - BBC Two
+    - BET
+    - BET+
+    - bilibili
+    - BluTV
+    - Boomerang
+    - Bravo
+    - BritBox
+    - C More
+    - Canale 5
+    - Canal+
+    - Cartoon Network
+    - Cartoonito
+    - CBC
+    - CBC Television
+    - Cbeebies
+    - CBS
+    - Channel 3
+    - Channel 4
+    - Channel 5
+    - CHCH-DT
+    - Cinemax
+    - Citytv
+    - CNN
+    - Comedy Central
+    - Cooking Channel
+    - Crackle
+    - Criterion Channel
+    - Crunchyroll
+    - CTV
+    - Cuatro
+    - Curiosity Stream
+    - Dave
+    - DC Universe
+    - Discovery
+    - Discovery Kids
+    - discovery+
+    - Disney Channel
+    - Disney Junior
+    - Disney XD
+    - Disney+
+    - DR1
+    - Eden
+    - Elisa Viihde
+    - Elisa Viihde Viaplay
+    - Epix
+    - ESPN
+    - E!
+    - Facebook Watch
+    - Family Channel
+    - Ficción Producciones
+    - Flooxer
+    - Food Network
+    - FOX
+    - Fox Kids
+    - France 2
+    - Freeform
+    - Freevee
+    - Fuji TV
+    - FX
+    - FXX
+    - GAİN
+    - Game Show Network
+    - Global TV
+    - Globoplay
+    - GMA Network
+    - Hallmark
+    - HBO
+    - HBO Max
+    - HGTV
+    - History
+    - HOT3
+    - Hulu
+    - ICTV
+    - IFC
+    - IMDb TV
+    - Investigation Discovery
+    - ION Television
+    - iQiyi
+    - ITV
+    - ITV Encore
+    - ITV1
+    - ITVX
+    - joyn
+    - Kan 11
+    - KBS2
+    - Kids WB
+    - La 1
+    - La Une
+    - Las Estrellas
+    - Lifetime
+    - Lionsgate+
+    - Logo
+    - MasterClass
+    - Max
+    - MBC
+    - MGM+
+    - mitele
+    - Movistar Plus+
+    - MTV
+    - M-Net
+    - National Geographic
+    - NBC
+    - Netflix
+    - Network 10
+    - NHK
+    - Nick
+    - Nick Jr
+    - Nickelodeon
+    - Nicktoons
+    - Nine Network
+    - Nippon TV
+    - NRK1
+    - OCS City
+    - OCS Max
+    - ORF
+    - Oxygen
+    - Pantaya
+    - Paramount Network
+    - Paramount+
+    - PBS
+    - PBS Kids
+    - Peacock
+    - Planète+ A&E
+    - Prime Video
+    - Rai 1
+    - Reelz
+    - The Roku Channel
+    - RTÉ One
+    - RTL
+    - RTL Télé
+    - RTP1
+    - RÚV
+    - S4C
+    - SAT.1
+    - SBS
+    - Science
+    - Shahid
+    - Showcase
+    - Showmax
+    - Showtime
+    - Shudder
+    - Sky
+    - Smithsonian
+    - Space
+    - Spectrum
+    - Spike
+    - Stan
+    - Starz
+    - STAR+
+    - Sundance TV
+    - SVT1
+    - Syfy
+    - Syndication
+    - TBS
+    - Telecinco
+    - Telefe
+    - Telemundo
+    - Televisión de Galicia
+    - Televisión Pública Argentina
+    - Tencent Video
+    - TF1
+    - The CW
+    - The Roku Channel
+    - The WB
+    - TLC
+    - TNT
+    - Tokyo MX
+    - Travel Channel
+    - truTV
+    - Turner Classic Movies
+    - TV 2
+    - tv asahi
+    - TV Globo
+    - TV Land
+    - TV Tokyo
+    - TV3
+    - TV4
+    - TVB Jade
+    - tving
+    - tvN
+    - TVNZ 1
+    - TVP1
+    - UKTV
+    - UniMás
+    - Universal Kids
+    - Universal TV
+    - Univision
+    - UPN
+    - USA Network
+    - VH1
+    - Viaplay
+    - Vice
+    - Virgin Media One
+    - ViuTV
+    - ViX+
+    - VRT 1
+    - VTM
+    - W
+    - WE tv
+    - YLE
+    - Youku
+    - YouTube
+    - ZDF
+    - ZEE5
+```
+
+### Default `addons`
+
+```yaml
 
 addons:
   ABC:

@@ -464,7 +464,18 @@ class DataFile:
                         variables[f"{key}_encoded"] = util.quote(value)
 
                     default = {k: v for k, v in default.items() if k not in variables}
-                    optional = [o for o in optional if o not in variables and o not in default]
+                    og_optional = optional
+                    optional = []
+                    for key in og_optional:
+                        if "<<" in key and ">>" in key:
+                            for k, v in variables.items():
+                                if f"<<{k}>>" in key:
+                                    key = key.replace(f"<<{k}>>", v)
+                            for k, v in default.items():
+                                if f"<<{k}>>" in key:
+                                    key = key.replace(f"<<{k}>>", v)
+                        if key not in variables and key not in default:
+                            optional.append(key)
 
                     logger.trace("")
                     logger.trace(f"Variables: {variables}")
@@ -499,8 +510,6 @@ class DataFile:
                             for i_check in range(8):
                                 for option in optional:
                                     if option not in variables and f"<<{option}>>" in str(_data):
-                                        if _debug:
-                                            logger.trace(f"Failed {_method}: {_data}")
                                         raise Failed
                                 for variable, variable_data in variables.items():
                                     if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
