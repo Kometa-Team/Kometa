@@ -320,9 +320,11 @@ include:
   - Canal+
   - Carnival Films
   - Carolco
+  - Carsey-Werner Company
   - Castle Rock Entertainment
   - CBS Productions
   - CBS Studios
+  - CBS Television Studios
   - Centropolis Entertainment
   - Chernin Entertainment
   - Chimp Television
@@ -357,6 +359,7 @@ include:
   - Flynn Picture Company
   - Focus Features
   - Fortiche Production
+  - Fox Television Studios
   - Freckle Films
   - Frederator Studios
   - FremantleMedia
@@ -373,6 +376,7 @@ include:
   - Happy Madison Productions
   - HartBeat Productions
   - Hartswood Films
+  - Hasbro
   - Heyday Films
   - HBO
   - Hurwitz & Schlossberg Productions
@@ -532,6 +536,7 @@ include:
   - Whitaker Entertainment
   - Wiedemann & Berg Television
   - Winkler Films
+  - Wolf Entertainment
   - Working Title Films
 ```
 

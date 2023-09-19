@@ -768,6 +768,9 @@ overlays:
   Carolco:
     template: [name: standard, name: studios]
 
+  Carsey-Werner Company:
+    template: [name: standard, name: studios]
+
   Castle Rock Entertainment:
     template: [name: standard, name: studios]
 
@@ -775,6 +778,9 @@ overlays:
     template: [name: standard, name: studios]
 
   CBS Studios:
+    template: [name: standard, name: studios]
+
+  CBS Television Studios:
     template: [name: standard, name: studios]
 
   Centropolis Entertainment:
@@ -879,6 +885,9 @@ overlays:
   Fortiche Production:
     template: [name: standard, name: studios]
 
+  Fox Television Studios:
+    template: [name: standard, name: studios]
+
   Freckle Films:
     template: [name: standard, name: studios]
 
@@ -925,6 +934,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Hartswood Films:
+    template: [name: standard, name: studios]
+
+  Hasbro:
     template: [name: standard, name: studios]
 
   Heyday Films:
@@ -1402,6 +1414,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Winkler Films:
+    template: [name: standard, name: studios]
+
+  Wolf Entertainment:
     template: [name: standard, name: studios]
 
   Working Title Films:
