@@ -588,3 +588,7 @@ overlays:
   mossi:
     variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
     template: [name: flags, name: standard]
+
+  lingala:
+    variables: {key: ln, text: LN, weight: 11, country: cd}
+    template: [name: flags, name: standard]
