@@ -75,7 +75,7 @@ jobs:
           author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
 
       - name: Checkout Configs Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: meisnate12/Plex-Meta-Manager-Configs
           token: ${{ secrets.PAT }}

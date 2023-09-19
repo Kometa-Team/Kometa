@@ -669,9 +669,9 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 except ValueError:
                     logger.error(f"Schedule Error: yearly {display} must be in the MM/DD format i.e. yearly(11/22)")
             elif run_time.startswith("range"):
-                ok_ranges = param.lower().split("|")
-                err = None
-                for ok_range in ok_ranges:
+                ranges = []
+                range_pass = False
+                for ok_range in param.lower().split("|"):
                     match = re.match("^(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])-(1[0-2]|0?[1-9])/(3[01]|[12][0-9]|0?[1-9])$", ok_range)
                     if not match:
                         logger.error(f"Schedule Error: range {display} must be in the MM/DD-MM/DD format i.e. range(12/01-12/25)")
@@ -683,9 +683,13 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                     start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                     end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
                     range_collection = True
-                    schedule_str += f"\nScheduled between {pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}"
+                    ranges.append(f"{pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}")
                     if start <= check <= end if start < end else (check <= end or check >= start):
-                        all_check += 1
+                        range_pass = True
+                if ranges:
+                    schedule_str += f"\nScheduled {' or '.join(ranges)}"
+                if range_pass:
+                    all_check += 1
         else:
             logger.error(f"Schedule Error: {display}")
     if is_all:
