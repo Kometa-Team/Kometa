@@ -3,6 +3,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
+import importlib.metadata
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 8:
     print("Version Error: Version: %s.%s.%s incompatible please use Python 3.8+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -110,6 +111,7 @@ for arg_key, arg_data in arguments.items():
 env_version = get_env("BRANCH_NAME", "master")
 is_docker = get_env("PMM_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("PMM_LINUXSERVER", False, arg_bool=True)
+plexapi_version = importlib.metadata.version('PlexAPI')
 
 secret_args = {}
 plex_url = None
@@ -238,6 +240,7 @@ def start(attrs):
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
+    logger.info(f"    PlexAPI library version: {plexapi_version}")
     logger.info(f"    Platform: {platform.platform()}")
     logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
