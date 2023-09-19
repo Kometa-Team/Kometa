@@ -75,6 +75,7 @@ Supported library types: Movie & Show
 | Tamil                    | `ta`  | `30`   | `in`         |  &#10060;   |
 | Urdu                     | `ur`  | `20`   | `pk`         |  &#10060;   |
 | Vietnamese               | `vi`  | `15`   | `vn`         |  &#10060;   |
+| Lingala                  | `ln`  | `11`   | `cd`         |  &#10060;   |
 | Wolof                    | `wo`  | `10`   | `sn`         |  &#10060;   |
 | Mayan                    | `myn` | `8`    | `mx`         |  &#10060;   |
 | Inuktitut                | `iu`  | `7`    | `ca`         |  &#10060;   |
