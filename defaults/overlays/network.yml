@@ -122,6 +122,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [AMC, AMC.com]}]
 
+  AMC+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Animal Planet:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Animal Planet, Animal Planet Brasil, Animal Planet Deutschland]}]
@@ -503,6 +507,22 @@ overlays:
     template: [name: standard, name: networks]
 
   ITV1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV4:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITVBe:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 

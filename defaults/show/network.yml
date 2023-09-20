@@ -50,6 +50,7 @@ dynamic_collections:
     - ALTBalaji
     - Amazon Kids+
     - AMC
+    - AMC+
     - Animal Planet
     - Antena 3
     - Apple TV+
@@ -148,6 +149,10 @@ dynamic_collections:
     - ITV
     - ITV Encore
     - ITV1
+    - ITV2
+    - ITV3
+    - ITV4
+    - ITVBe
     - ITVX
     - joyn
     - Kan 11
