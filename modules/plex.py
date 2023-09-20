@@ -443,7 +443,6 @@ class Plex(Library):
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
-            pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
             srv_settings = self.PlexServer.settings
             try:
                 db_cache = srv_settings.get("DatabaseCacheSize")
@@ -454,13 +453,21 @@ class Plex(Library):
                     logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
             except NotFound:
                 logger.info(f"Plex DB cache setting: Unknown")
-            uc_str = f"Unknown update channel."
-            if srv_settings.get("butlerUpdateChannel").value == '16':
-                uc_str = f"Public update channel."
-            elif srv_settings.get("butlerUpdateChannel").value == '8':
-                uc_str = f"PlexPass update channel."
-            logger.info(f"{pp_str} on {uc_str}")
-            logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
+            try:
+                chl_num = srv_settings.get("butlerUpdateChannel").value
+                if chl_num == "16":
+                    uc_str = f"Public update channel."
+                elif chl_num == "8":
+                    uc_str = f"PlexPass update channel."
+                else:
+                    uc_str = f"Unknown update channel: {chl_num}."
+            except NotFound:
+                uc_str = f"Unknown update channel."
+            logger.info(f"PlexPass: {self.PlexServer.myPlexSubscription} on {uc_str}")
+            try:
+                logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
+            except NotFound:
+                logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
