@@ -168,6 +168,9 @@ dynamic_collections:
           - https://www.imdb.com/search/keyword/?keywords=women-in-film&ref_=fn_kw_kw_9
           - https://www.imdb.com/search/keyword/?keywords=women%27s-rights&ref_=fn_kw_kw_2
           - https://www.imdb.com/search/keyword/?keywords=women%27s-suffrage&ref_=fn_kw_kw_13
+        latinx:
+          - https://www.imdb.com/list/ls566101592/
+          - https://www.imdb.com/list/ls563731091/
       tmdb_collection:
         halloween:
           - 185103    # Hotel Transylvania
@@ -190,8 +193,6 @@ dynamic_collections:
           - https://mdblist.com/lists/plexmetamanager/day-of-persons-with-disabilities
         lgbtq:
           - https://mdblist.com/lists/plexmetamanager/lgbtq-pride-month
-        latinx:
-          - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
       trakt_list:
         black_history:
           - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
