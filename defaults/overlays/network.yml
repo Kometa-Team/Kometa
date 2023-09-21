@@ -12,17 +12,18 @@ external_templates:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
       - <<allowed_libraries>>
+
+templates:
+  networks:
+    ignore_blank_results: true
+    optional:
+      - overlay_level
     default:
-      key: <<overlay_name>>
-      standard_value: 305
+      overlay: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
+      builder_level: <<overlay_level>>
     conditionals:
-      back_height:
-        default: 105
-        conditions:
-          - style: standard
-            value: <<standard_value>>
       vertical_offset:
         default: 15
         conditions:
@@ -41,33 +42,24 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
-        conditions:
-          - file.exists: false
-            file_<<key>>.exists: false
-            url.exists: false
-            url_<<key>>.exists: false
-            git.exists: false
-            git_<<key>>.exists: false
-            repo.exists: false
-            repo_<<key>>.exists: false
-            value: network/<<key>>
-    allowed_libraries: show
-    group: networks
-    vertical_offset: 15
-    back_color: "#00000099"
-    back_width: 305
-
-templates:
-  networks:
-    default:
-      key: <<overlay_name>>
-      search: <<key>>
-    ignore_blank_results: true
+    builder_level: <<builder_level>>
     plex_search:
       validate: false
-      any:
-        network: <<search>>
+      all:
+        network: <<overlay>>
+    overlay:
+      name: <<overlay_name>>
+      pmm: network/<<key>>
+      group: networks
+      weight: <<weight>>
+      back_color: "#00000099"
+      back_radius: 30
+      back_width: 305
+      back_height: 105
+      horizontal_offset: <<horizontal_offset>>
+      horizontal_align: <<horizontal_align>>
+      vertical_offset: <<vertical_offset>>
+      vertical_align: <<vertical_align>>
 
 overlays:
   "#0":
