@@ -358,6 +358,7 @@ include:
   - FilmNation Entertainment
   - Flynn Picture Company
   - Focus Features
+  - Food Network
   - Fortiche Production
   - Fox Television Studios
   - Freckle Films
@@ -377,8 +378,9 @@ include:
   - HartBeat Productions
   - Hartswood Films
   - Hasbro
-  - Heyday Films
   - HBO
+  - Heyday Films
+  - Hughes Entertainment
   - Hurwitz & Schlossberg Productions
   - Hyperobject Industries
   - Icon Entertainment International
@@ -403,6 +405,7 @@ include:
   - Legendary Pictures
   - Let's Not Turn This Into a Whole Big Production
   - Levity Entertainment Group
+  - Lightstorm Entertainment
   - Likely Story
   - Lionsgate
   - Live Entertainment
@@ -413,7 +416,7 @@ include:
   - Mandalay Entertainment
   - Mandarin
   - Mandarin Motion Pictures Limited
-  - marv
+  - Marv Films
   - Marvel Animation
   - Marvel Studios
   - Matt Tolmach Productions
@@ -503,6 +506,7 @@ include:
   - The Mark Gordon Company
   - The Sea Change Project
   - The Weinstein Company
+  - Tim Burton Productions
   - Thunder Road
   - Titmouse
   - Tomorrow Studios
