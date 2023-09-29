@@ -446,7 +446,7 @@ class CollectionBuilder:
         elif self.library.is_music:     self.builder_level = "artist"
         else:                           self.builder_level = "movie"
         level = None
-        for level_attr in ["builder_level", "collection_level", "builder_level"]:
+        for level_attr in ["builder_level", "collection_level", "overlay_level"]:
             if level_attr in methods:
                 level = self.data[methods[level_attr]]
                 if level_attr != "builder_level":
