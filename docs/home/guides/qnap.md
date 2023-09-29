@@ -8,7 +8,7 @@ The "Container Station" UI on your QNAP may differ from these screenshots, but t
 2. Set environment variables to control the container's behavior [optional].
 3. Point the container to the directory where your configuration files are to be stored.
 
-Detailed steaps:
+Detailed steps:
 
 1. Open Container Station; click "Create" in the left column.
 
