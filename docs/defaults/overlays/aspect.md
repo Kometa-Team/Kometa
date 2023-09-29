@@ -35,10 +35,10 @@ libraries:
       - pmm: aspect
       - pmm: aspect
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: aspect
         template_variables:
-          overlay_level: season
+          builder_level: season
 ```
 
 ## Template Variables
@@ -91,12 +91,12 @@ libraries:
           text_1.77: "16:9"
       - pmm: aspect
         template_variables:
-          overlay_level: episode
+          builder_level: episode
           text_1.33: "4:9"
           text_1.77: "16:9"
       - pmm: aspect
         template_variables:
-          overlay_level: season
+          builder_level: season
           text_1.33: "4:9"
           text_1.77: "16:9"
 ```

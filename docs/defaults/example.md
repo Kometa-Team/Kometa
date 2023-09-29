@@ -104,27 +104,27 @@ libraries:
     - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. on show and episode
     - pmm: audio_codec
       template_variables:
-        overlay_level: episode
+        builder_level: episode
     - pmm: episode_info                             # S##E## information in bottom right on episode
       template_variables:
-        overlay_level: episode
+        builder_level: episode
     - pmm: resolution                               # 4K HDR, 1080P FHD, etc. on show, episode, and season
     - pmm: resolution
       template_variables:
-        overlay_level: episode
+        builder_level: episode
     - pmm: resolution
       template_variables:
-        overlay_level: season
+        builder_level: season
     - pmm: ribbon                                   # Used for ribbon in bottom right on show
     - pmm: status                                   # Airing, Returning, Ended, Canceled on show
     - pmm: versions                                 # Will show duplicates for that media item on show and episode
     - pmm: versions                                 
       template_variables:
-        overlay_level: episode
+        builder_level: episode
     - pmm: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left on show, episode, and season
     - pmm: video_format
       template_variables:
-        overlay_level: episode
+        builder_level: episode
     settings:
       asset_directory:
       - config/assets
