@@ -1,4 +1,4 @@
-# Synology Walthrough
+# Synology Walkthrough
 
 This is a quick walkthrough of setting up the Plex-Meta-Manager Docker container in the Synology UI.
 
