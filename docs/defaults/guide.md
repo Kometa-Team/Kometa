@@ -55,7 +55,7 @@ libraries:
     overlay_path:
       - pmm: ratings
         template_variables:
-          builder_level: episode
+          overlay_level: episode
 ```
 
 Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
