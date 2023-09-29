@@ -1398,6 +1398,9 @@ overlays:
   Walt Disney Pictures:
     template: [name: standard, {name: studios, search: [Disney, Walt Disney Pictures]}]
 
+  Walt Disney Productions:
+    template: [name: standard, name: studios]
+
   Warner Animation Group:
     template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Animation]}]
 

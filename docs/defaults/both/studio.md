@@ -530,6 +530,7 @@ include:
   - Walden Media
   - Walt Disney Animation Studios
   - Walt Disney Pictures
+  - Walt Disney Productions
   - Warner Animation Group
   - Warner Bros. Pictures
   - Warner Bros. Television
