@@ -3,7 +3,9 @@
 version: 2
 
 build:
-  image: latest
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
 
 sphinx:
   configuration: docs/conf.py
@@ -11,8 +13,6 @@ sphinx:
 formats: []
 
 python:
-  version: "3.7"
-
   install:
     - requirements: docs/requirements.txt
 
