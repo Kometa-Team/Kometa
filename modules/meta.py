@@ -454,10 +454,10 @@ class DataFile:
                         if "<<" in key and ">>" in key:
                             for k, v in variables.items():
                                 if f"<<{k}>>" in key:
-                                    key = key.replace(f"<<{k}>>", v)
+                                    key = key.replace(f"<<{k}>>", f"{v}")
                             for k, v in default.items():
                                 if f"<<{k}>>" in key:
-                                    key = key.replace(f"<<{k}>>", v)
+                                    key = key.replace(f"<<{k}>>", f"{v}")
                             if key not in variables:
                                 variables[key] = value
                     for key, value in variables.copy().items():
@@ -470,10 +470,10 @@ class DataFile:
                         if "<<" in key and ">>" in key:
                             for k, v in variables.items():
                                 if f"<<{k}>>" in key:
-                                    key = key.replace(f"<<{k}>>", v)
+                                    key = key.replace(f"<<{k}>>", f"{v}")
                             for k, v in default.items():
                                 if f"<<{k}>>" in key:
-                                    key = key.replace(f"<<{k}>>", v)
+                                    key = key.replace(f"<<{k}>>", f"{v}")
                         if key not in variables and key not in default:
                             optional.append(key)
 
