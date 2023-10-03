@@ -31,7 +31,6 @@ These collections are applied by calling the below paths into the `metadata_path
 | [IMDb Charts](chart/imdb)               | `imdb`            | IMDb Popular, IMDb Top 250                 |       &#9989;       |       &#9989;       |
 | [TMDb Charts](chart/tmdb)               | `tmdb`            | TMDb Popular, TMDb Airing Today            |       &#9989;       |       &#9989;       |
 | [Trakt Charts](chart/trakt)             | `trakt`           | Trakt Popular, Trakt Trending              | &#9989;<sup>1</sup> | &#9989;<sup>1</sup> |
-| [FlixPatrol Charts](chart/flixpatrol)   | `flixpatrol`      | Top Disney, Top Max, Top Hulu, Top Netflix |       &#9989;       |       &#9989;       |
 | [AniList Charts](chart/anilist)         | `anilist`         | AniList Popular, AniList Season            |       &#9989;       |       &#9989;       |
 | [MyAnimeList Charts](chart/myanimelist) | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated |       &#9989;       |       &#9989;       |
 | [Other Charts](chart/other)             | `other_chart`     | AniDB Popular, Common Sense Selection      |       &#9989;       |       &#9989;       |
