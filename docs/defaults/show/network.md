@@ -90,6 +90,7 @@ These are lists provided for reference to show what values will be in use if you
     - ALTBalaji
     - Amazon Kids+
     - AMC
+    - AMC+
     - Animal Planet
     - Antena 3
     - Apple TV+
@@ -188,6 +189,10 @@ These are lists provided for reference to show what values will be in use if you
     - ITV
     - ITV Encore
     - ITV1
+    - ITV2
+    - ITV3
+    - ITV4
+    - ITVBe
     - ITVX
     - joyn
     - Kan 11
