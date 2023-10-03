@@ -240,8 +240,6 @@ Updates every item's episode's audience/critic/user rating in the library to the
 
 Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.
 
-IMPORTANT NOTE: This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../home/guides/ratings).
-
 **Attribute:** `mass_poster_update`
 
 **Values:** There are a few different options to determine how the `mass_poster_update` works.
