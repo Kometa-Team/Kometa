@@ -81,7 +81,8 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 
 ### Docker Compose:
 
-Example Docker Compose file:
+This is an example docker-compose which will have to be edited to suit your environment before use, but illustrates the minimal contents:
+
 ```yaml
 version: "2.1"
 services:
@@ -99,11 +100,16 @@ services:
 
 A `Dockerfile` is included within the GitHub repository for those who require it, although this is only suggested for those with knowledge of dockerfiles. The official Plex Meta Manager build is available on the [Dockerhub Website](https://hub.docker.com/r/meisnate12/plex-meta-manager).
 
-## Runtime flags and ENV vars
+## Customizing the docker-compose file with runtime flags and ENV vars
 
 Plex Meta Manager's behavior can be modified in a variety of ways using either runtime flags or environnment variables.  These flags and vars are detailed [here](environmental).
 
-For example, this docker-compose would create a container that runs immediately upon start (rather than waiting until 5AM), uses a particular config file, processes only overlays on only one library, and exits when done:
+This is optional, and is not necessary to run PMM.  Many if not most users will have no reason to do this and can use something more like the basic docker-compose just above.
+
+This example docker-compose would create a container that runs immediately upon start (rather than waiting until 5AM), uses a particular config file, processes only overlays on only one library, and exits when done.  Those four changes are made by the four `environment:` entries, which are discussed in detail after the example:
+
+As with the one above, this is an example docker-compose which will have to be edited to suit your environment before use.
+
 ```yaml
 version: "2.1"
 services:
@@ -118,3 +124,13 @@ services:
     volumes:
       - /path/to/config:/config
 ```
+
+`- PMM_RUN=true` tells PMM to run right away,
+
+`- PMM_CONFIG=/config/special-config.yml` points PMM at a particular config file,
+
+`- PMM_OVERLAYS=true` tells PMM to run overlays only, and 
+
+`- PMM_LIBRARIES=Movies` tells PMM to process only a library called "Movies"
+
+Again, a list of the available enviroment variables can be found [here](environmental).

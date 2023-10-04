@@ -882,6 +882,9 @@ overlays:
   Focus Features:
     template: [name: standard, name: studios]
 
+  Food Network:
+    template: [name: standard, name: studios]
+
   Fortiche Production:
     template: [name: standard, name: studios]
 
@@ -939,10 +942,13 @@ overlays:
   Hasbro:
     template: [name: standard, name: studios]
 
+  HBO:
+    template: [name: standard, name: studios]
+
   Heyday Films:
     template: [name: standard, name: studios]
 
-  HBO:
+  Hughes Entertainment:
     template: [name: standard, name: studios]
 
   Hurwitz & Schlossberg Productions:
@@ -1017,6 +1023,9 @@ overlays:
   Levity Entertainment Group:
     template: [name: standard, name: studios]
 
+  Lightstorm Entertainment:
+    template: [name: standard, name: studios]
+
   Likely Story:
     template: [name: standard, name: studios]
 
@@ -1047,7 +1056,7 @@ overlays:
   Mandarin Motion Pictures Limited:
     template: [name: standard, name: studios]
 
-  marv:
+  Marv Films:
     template: [name: standard, name: studios]
 
   Marvel Animation:
@@ -1317,6 +1326,9 @@ overlays:
   The Weinstein Company:
     template: [name: standard, name: studios]
 
+  Tim Burton Productions:
+    template: [name: standard, name: studios]
+
   Thunder Road:
     template: [name: standard, name: studios]
 
@@ -1385,6 +1397,9 @@ overlays:
 
   Walt Disney Pictures:
     template: [name: standard, {name: studios, search: [Disney, Walt Disney Pictures]}]
+
+  Walt Disney Productions:
+    template: [name: standard, name: studios]
 
   Warner Animation Group:
     template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Animation]}]

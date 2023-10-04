@@ -43,8 +43,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                            |
 |:------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                         |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                      |
+| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                         |
+| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                      |
 | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                            |
 | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                      |
 | `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Studios found in your library                                                                                                                                   |
@@ -358,6 +358,7 @@ include:
   - FilmNation Entertainment
   - Flynn Picture Company
   - Focus Features
+  - Food Network
   - Fortiche Production
   - Fox Television Studios
   - Freckle Films
@@ -377,8 +378,9 @@ include:
   - HartBeat Productions
   - Hartswood Films
   - Hasbro
-  - Heyday Films
   - HBO
+  - Heyday Films
+  - Hughes Entertainment
   - Hurwitz & Schlossberg Productions
   - Hyperobject Industries
   - Icon Entertainment International
@@ -403,6 +405,7 @@ include:
   - Legendary Pictures
   - Let's Not Turn This Into a Whole Big Production
   - Levity Entertainment Group
+  - Lightstorm Entertainment
   - Likely Story
   - Lionsgate
   - Live Entertainment
@@ -413,7 +416,7 @@ include:
   - Mandalay Entertainment
   - Mandarin
   - Mandarin Motion Pictures Limited
-  - marv
+  - Marv Films
   - Marvel Animation
   - Marvel Studios
   - Matt Tolmach Productions
@@ -503,6 +506,7 @@ include:
   - The Mark Gordon Company
   - The Sea Change Project
   - The Weinstein Company
+  - Tim Burton Productions
   - Thunder Road
   - Titmouse
   - Tomorrow Studios
@@ -526,6 +530,7 @@ include:
   - Walden Media
   - Walt Disney Animation Studios
   - Walt Disney Pictures
+  - Walt Disney Productions
   - Warner Animation Group
   - Warner Bros. Pictures
   - Warner Bros. Television

@@ -114,7 +114,7 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`origin_country`](#origin-country)           | Create a collection for each TMDb origin country associated with an item in the library                     |    &#10060;    | &#10060; | &#9989;  | &#10060; | &#10060; |
 | [`trakt_user_lists`](#trakt-user-lists)       | Create a collection for each list from specific trakt users                                                 |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`trakt_liked_lists`](#trakt-liked-lists)     | Create a collection for each list the authenticated trakt user likes                                        |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
-| [`trakt_people_list`](#trakt-people-lists)    | Create a collection for each actor found in the trakt list                                                  |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`trakt_people_list`](#trakt-people-list)     | Create a collection for each actor found in the trakt list                                                  |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`actor`](#actor)                             | Create a collection for each actor found in the library                                                     |    &#9989;     | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`director`](#director)                       | Create a collection for each director found in the library                                                  |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
 | [`writer`](#writer)                           | Create a collection for each writer found in the library                                                    |    &#9989;     | &#9989;  | &#10060; | &#10060; | &#10060; |
@@ -434,7 +434,7 @@ dynamic_collections:
     type: trakt_liked_lists
 ```
 
-### Trakt People Lists
+### Trakt People List
 
 Create collections for each of the people found within Trakt lists that the user specifies.
 
@@ -443,7 +443,7 @@ Create collections for each of the people found within Trakt lists that the user
 <table class="dualTable colwidths-auto align-default table">
   <tr>
     <th><code>type</code> Option</th>
-    <td><code>trakt_user_lists</code></td>
+    <td><code>trakt_people_list</code></td>
   </tr>
   <tr>
     <th><code>data</code> Value</th>
@@ -480,8 +480,8 @@ default_template:
 #### Example: Create a collection for each of the people on the trakt list
 ```yaml
 dynamic_collections:
-  Trakt User Lists:
-    type: trakt_people_lists
+  Trakt People Lists:
+    type: trakt_people_list
     data:
      - https://trakt.tv/users/ash9001/lists/all-time-top-actors
 ```
