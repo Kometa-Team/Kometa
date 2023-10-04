@@ -243,7 +243,6 @@ html_theme_options = {
                     ("IMDb Charts", "defaults/chart/imdb"),
                     ("TMDb Charts", "defaults/chart/tmdb"),
                     ("Trakt Charts", "defaults/chart/trakt"),
-                    ("Flixpatrol Charts", "defaults/chart/flixpatrol"),
                     ("AniList Charts", "defaults/chart/anilist"),
                     ("MyAnimeList Charts", "defaults/chart/myanimelist"),
                     ("Other Charts", "defaults/chart/other"),
@@ -303,7 +302,6 @@ html_theme_options = {
                 ("Shared Variables", "defaults/overlay_variables"),
                 ("_divider", ),
                 ("_menu", "Chart", "defaults/overlays", "#chart-overlays", [
-                    ("FlixPatrol Top", "defaults/overlays/flixpatrol"),
                     ("Ribbon", "defaults/overlays/ribbon"),
                 ]),
                 ("_menu", "Content", "defaults/overlays", "#content-overlays", [
@@ -464,12 +462,6 @@ html_theme_options = {
                 ]),
                 ("_menu", "ICheckMovies Builders", "metadata/builders/icheckmovies", [
                     ("ICheckMovies List", "metadata/builders/icheckmovies", "#icheckmovies-list"),
-                ]),
-                ("_menu", "FlixPatrol Builders", "metadata/builders/flixpatrol", [
-                    ("FlixPatrol Top Platform", "metadata/builders/flixpatrol", "#flixpatrol-top"),
-                    ("FlixPatrol Popular", "metadata/builders/flixpatrol", "#flixpatrol-popular"),
-                    ("FlixPatrol Demographics", "metadata/builders/flixpatrol", "#flixpatrol-demographics"),
-                    ("FlixPatrol URL", "metadata/builders/flixpatrol", "#flixpatrol-url"),
                 ]),
                 ("_menu", "Reciperr Builders", "metadata/builders/reciperr", [
                     ("Reciperr List", "metadata/builders/reciperr", "#reciperr-list"),

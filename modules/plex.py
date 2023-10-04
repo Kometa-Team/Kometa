@@ -570,7 +570,7 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItems(self, uri_args):
-        return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{uri_args}")
+        return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
     def get_all(self, builder_level=None, load=False):
         if load and builder_level in [None, "show", "artist", "movie"]:

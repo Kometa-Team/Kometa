@@ -38,8 +38,8 @@ This file contains a [Separator](../separators) so all [Shared Separator Variabl
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                             |
 |:------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                          |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                       |
+| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                          |
+| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                       |
 | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                             |
 | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                       |
 | `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Networks found in your library                                                                                                                                   |
@@ -90,6 +90,7 @@ These are lists provided for reference to show what values will be in use if you
     - ALTBalaji
     - Amazon Kids+
     - AMC
+    - AMC+
     - Animal Planet
     - Antena 3
     - Apple TV+
@@ -188,6 +189,10 @@ These are lists provided for reference to show what values will be in use if you
     - ITV
     - ITV Encore
     - ITV1
+    - ITV2
+    - ITV3
+    - ITV4
+    - ITVBe
     - ITVX
     - joyn
     - Kan 11

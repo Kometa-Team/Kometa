@@ -11,18 +11,11 @@ external_templates:
     run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
-      - <<allowed_libraries>>
     default:
       key: <<overlay_name>>
-      standard_value: 305
       horizontal_align: left
       vertical_align: bottom
     conditionals:
-      back_height:
-        default: 105
-        conditions:
-          - style: standard
-            value: <<standard_value>>
       vertical_offset:
         default: 15
         conditions:
@@ -54,9 +47,10 @@ external_templates:
             value: network/<<key>>
     allowed_libraries: show
     group: networks
-    vertical_offset: 15
     back_color: "#00000099"
+    back_radius: 30
     back_width: 305
+    back_height: 105
 
 templates:
   networks:
@@ -121,6 +115,10 @@ overlays:
   AMC:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [AMC, AMC.com]}]
+
+  AMC+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Animal Planet:
     variables: { weight: 10}
@@ -503,6 +501,22 @@ overlays:
     template: [name: standard, name: networks]
 
   ITV1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV4:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITVBe:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
