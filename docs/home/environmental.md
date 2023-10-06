@@ -28,7 +28,6 @@ Environment Variables can also be placed inside a `.env` file inside your config
 | [Libraries First](#libraries-first)                   | `-lf` or `--libraries-first`                  | `PMM_LIBRARIES_FIRST`    |
 | [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`                 | `PMM_IGNORE_SCHEDULES`   |
 | [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`                     | `PMM_IGNORE_GHOST`       |
-| [Cache Libraries](#cache-libraries)                   | `-ca` or `--cache-libraries`                  | `PMM_CACHE_LIBRARIES`    |
 | [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`               | `PMM_DELETE_COLLECTIONS` |
 | [Delete Labels](#delete-labels)                       | `-dl` or `--delete-labels`                    | `PMM_DELETE_LABELS`      |
 | [Resume Run](#resume-run)                             | `-re` or `--resume`                           | `PMM_RESUME`             |
@@ -675,39 +674,6 @@ python plex_meta_manager.py --ignore-ghost
 ````{tab} Docker Environment
 ```
 docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --ignore-ghost
-```
-````
-
-### Cache Libraries
-
-Cache the library Load for 1 day.
-
-<table class="dualTable colwidths-auto align-default table">
-  <tr>
-    <th style="background-color: #1d1d1d;"></th>
-    <th>Shell</th>
-    <th>Environment</th>
-  </tr>
-  <tr>
-    <th>Flags</th>
-    <td><code>-ca</code> or <code>--cache-libraries</code></td>
-    <td><code>PMM_CACHE_LIBRARIES</code></td>
-  </tr>
-  <tr>
-    <th>Example</th>
-    <td><code>--cache-libraries</code></td>
-    <td><code>PMM_CACHE_LIBRARIES=true</code></td>
-  </tr>
-</table>
-
-````{tab} Local Environment
-```
-python plex_meta_manager.py --cache-libraries
-```
-````
-````{tab} Docker Environment
-```
-docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --cache-libraries
 ```
 ````
 

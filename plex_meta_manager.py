@@ -41,7 +41,6 @@ arguments = {
     "libraries-first": {"args": ["lf", "library-first"], "type": "bool", "help": "Run library operations before collections"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
-    "cache-libraries": {"args": ["ca", "cache-library"], "type": "bool", "help": "Cache Library load for 1 day"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
     "delete-labels": {"args": ["dl", "delete-label"], "type": "bool", "help": "Deletes all Labels in the Plex Library before running"},
     "resume": {"args": "re", "type": "str", "help": "Resume collection run from a specific collection"},
@@ -556,17 +555,11 @@ def run_libraries(config):
             expired = None
             if config.Cache:
                 list_key, expired = config.Cache.query_list_cache("library", library.mapping_name, 1)
-                if run_args["cache-libraries"] and list_key and expired is False:
-                    logger.info(f"Library: {library.mapping_name} loaded from Cache")
-                    temp_items = config.Cache.query_list_ids(list_key)
 
             if not temp_items:
                 temp_items = library.cache_items()
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
-                if config.Cache and run_args["cache-libraries"]:
-                    list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
-                    config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
