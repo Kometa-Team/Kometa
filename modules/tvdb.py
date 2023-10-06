@@ -150,7 +150,7 @@ class TVDb:
                 results = response.xpath("//*[text()='IMDB']/@href")
                 if len(results) > 0:
                     try:
-                        imdb_id = util.get_id_from_imdb_url(results[0])
+                        imdb_id = util.get_imdb_id_from_string(results[0])
                     except Failed:
                         pass
                 if tmdb_id is None and imdb_id is None:

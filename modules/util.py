@@ -323,10 +323,10 @@ def windows_input(prompt, timeout=5):
             print("")
             raise TimeoutExpired
 
-def get_id_from_imdb_url(imdb_url):
-    match = re.search("(tt\\d+)", str(imdb_url))
+def get_imdb_id_from_string(in_string):
+    match = re.search("(tt\\d+)", str(in_string))
     if match:           return match.group(1)
-    else:               raise Failed(f"Regex Error: Failed to parse IMDb ID from IMDb URL: {imdb_url}")
+    else:               raise Failed(f"Regex Error: Failed to parse IMDb ID from: {in_string}")
 
 def regex_first_int(data, id_type, default=None):
     match = re.search("(\\d+)", str(data))

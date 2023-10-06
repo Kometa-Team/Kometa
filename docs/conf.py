@@ -469,6 +469,9 @@ html_theme_options = {
                 ("_menu", "StevenLu Builders", "metadata/builders/stevenlu", [
                     ("StevenLu List", "metadata/builders/stevenlu", "#stevenlu-s-popular-movies-list"),
                 ]),
+                ("_menu", "BoxOfficeMojo Builders", "metadata/builders/boxofficemojo", [
+                    ("BoxOfficeMojo Latest Weekend", "metadata/builders/boxofficemojo", "##boxofficemojos-latest-weekend-list"),
+                ]),
                 ("_menu", "AniDB Builders", "metadata/builders/anidb", [
                     ("AniDB ID", "metadata/builders/anidb", "#anidb-id"),
                     ("AniDB Relation", "metadata/builders/anidb", "#anidb-relation"),

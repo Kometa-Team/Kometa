@@ -1,7 +1,7 @@
 import os, re, time
 from arrapi import ArrException
 from datetime import datetime
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import anidb, anilist, boxofficemojo, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import PMMImage
@@ -24,8 +24,8 @@ show_only_builders = [
 ]
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
-    "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing", "item_edition",
-    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist"
+    "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing",
+    "boxofficemojo_latestweekend", "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list"
 ]
 music_only_builders = ["item_album_sorting"]
 summary_details = [
@@ -152,7 +152,8 @@ custom_sort_builders = [
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio",
+    "boxofficemojo_latestweekend",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
@@ -1032,6 +1033,8 @@ class CollectionBuilder:
                     self._letterboxd(method_name, method_data)
                 elif method_name in imdb.builders:
                     self._imdb(method_name, method_data)
+                elif method_name in boxofficemojo.builders:
+                    self._bom(method_name, method_data)
                 elif method_name in mal.builders:
                     self._mal(method_name, method_data)
                 elif method_name in plex.builders or method_final in plex.searches:
@@ -1632,6 +1635,10 @@ class CollectionBuilder:
         elif method_name == "stevenlu_popular":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
+    def _bom(self, method_name, method_data):
+        if method_name == "boxofficemojo_latestweekend":
+            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
+
     def _mdblist(self, method_name, method_data):
         for mdb_dict in self.config.Mdblist.validate_mdblist_lists(self.Type, method_data):
             self.builders.append((method_name, mdb_dict))
@@ -1870,6 +1877,8 @@ class CollectionBuilder:
             ids = self.config.TVDb.get_tvdb_ids(method, value)
         elif "imdb" in method:
             ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+        elif 'boxofficemojo' in method:
+            ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "icheckmovies" in method:
             ids = self.config.ICheckMovies.get_imdb_ids(method, value, self.language)
         elif "letterboxd" in method:

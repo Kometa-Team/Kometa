@@ -4,6 +4,7 @@ from lxml import html
 from modules import util, radarr, sonarr, operations
 from modules.anidb import AniDB
 from modules.anilist import AniList
+from modules.boxofficemojo import BoxOfficeMojo
 from modules.cache import Cache
 from modules.convert import Convert
 from modules.ergast import Ergast
@@ -651,6 +652,7 @@ class ConfigFile:
             self.Letterboxd = Letterboxd(self)
             self.Reciperr = Reciperr(self)
             self.Ergast = Ergast(self)
+            self.BoxOfficeMojo = BoxOfficeMojo(self)
 
             logger.separator()
 
