@@ -1121,7 +1121,7 @@ class CollectionBuilder:
                 if self.obj and check_url != self.library.smart_filter(self.obj):
                     self.library.update_smart_collection(self.obj, check_url)
                     logger.info(f"Detail: Smart Collection updated to {check_url}")
-                self.beginning_count = len(self.library.fetchItems(check_url))
+                    self.beginning_count = len(self.library.fetchItems(check_url))
             if self.obj:
                 self.exists = True
                 if self.sync or self.playlist:
