@@ -209,6 +209,7 @@ include:
   - Shogakukan
   - Shuka
   - Signal.MD
+  - Silver
   - SILVER LINK.
   - Staple Entertainment
   - Studio 3Hz
@@ -286,6 +287,7 @@ include:
   - Amazon Studios
   - Amblin Entertainment
   - AMC Studios
+  - Anima Sola Productions
   - Annapurna Pictures
   - Ardustry Entertainment
   - Artisan Entertainment
@@ -320,6 +322,7 @@ include:
   - Canal+
   - Carnival Films
   - Carolco
+  - Cartoon Saloon
   - Carsey-Werner Company
   - Castle Rock Entertainment
   - CBS Productions
@@ -399,6 +402,7 @@ include:
   - Kjam Media
   - Kudos
   - Kurtzman Orci
+  - Laika Entertainment
   - Landscape Entertainment
   - Laura Ziskin Productions
   - Leftfield Pictures
@@ -689,6 +693,8 @@ addons:
     - Shogakukan Production
   Signal.MD:
     - Signal MD
+  Silver:
+    - Studio Silver
   SILVER LINK.:
     - Silver Link
   Sky studios:
