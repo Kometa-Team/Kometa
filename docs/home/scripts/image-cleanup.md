@@ -165,6 +165,23 @@ IMPORTANT: If you are running this in Docker, remember that these settings are b
 
 The only required Option is the `Plex Path` Option which is the Plex Config Folder containing the servers Metadata including `Cache`, `Metadata`, and `Plug-in Support`.
 
+IMPORTANT: This path has to be valid in the context where the script is running.  If you are running it on the host, it will be a direct path like `/opt/plex/Library/Application\ Support/Plex\ Media\ Server` or `X:\Plex Media Server`.  If you are running the script in docker, the script cannot see anything on the host, so you will have to map that path into the the container and then enter the mapped path into the env file.
+
+For instance, in the example above:
+```
+docker run -v "X:\Media\Plex Image Cleanup\config:/config:rw" -v "X:\Plex Media Server:/plex:rw" meisnate12/plex-image-cleanup
+```
+The `.env` would contain:
+```
+PLEX_PATH=/plex   # pointing to mapped path *inside the container*
+```
+NOT
+```
+PLEX_PATH=X:\Plex Media Server   # wrong because the script cannot see *outside the container*
+```
+
+This is not specific to Plex Image Cleanup; it's standard Docker behavior.
+
 To set the `Plex Path` for the run: 
 * **Environment Variable:** `PLEX_PATH=C:\Plex Media Server`
 * **Shell Command:** `-p "C:\Plex Media Server"` or `--plex "C:\Plex Media Server"`
