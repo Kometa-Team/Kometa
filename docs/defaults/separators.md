@@ -98,7 +98,7 @@ The available styles available are:
 | Amethyst | `amethyst` |  
 | Aqua     | `aqua`     |   
 | Blue     | `blue`     |  
-| Forest   | `green`    | 
+| Forest   | `forest`   | 
 | Fuchsia  | `fuchsia`  |
 | Gold     | `gold`     |   
 | Gray     | `gray`     |  

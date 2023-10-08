@@ -59,6 +59,11 @@ templates:
           - dynamic: true
             key.not: other
             value: <<summary_format>>
+      url_poster_<<key>>:
+        conditions:
+          - file_poster_<<key>>.exists: false
+            file_poster.exists: false
+            value: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
     default:
       collection_section: "00"
       key: <<mapping_name>>
@@ -96,6 +101,7 @@ templates:
       - name_format
       - key_name
       - translation_key
+      - url_poster
       - file_poster
       - url_background
       - file_background
