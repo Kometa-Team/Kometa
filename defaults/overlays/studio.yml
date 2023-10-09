@@ -63,6 +63,7 @@ templates:
     default:
       key: <<overlay_name>>
       search: <<key>>
+    ignore_blank_results: true
     plex_search:
       validate: false
       any:
