@@ -442,6 +442,9 @@ overlays:
   Signal.MD:
     template: [name: standard, {name: studios, search: [Signal.MD, Signal MD]}]
 
+  Silver:
+    template: [name: standard, {name: studios, search: [Silver, Studio Silver]}]
+
   SILVER LINK.:
     template: [name: standard, {name: studios, search: [SILVER LINK., Silver Link]}]
 
@@ -666,6 +669,9 @@ overlays:
   AMC Studios:
     template: [name: standard, name: studios]
 
+  Anima Sola Productions:
+    template: [name: standard, name: studios]
+
   Annapurna Pictures:
     template: [name: standard, name: studios]
 
@@ -766,6 +772,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Carolco:
+    template: [name: standard, name: studios]
+
+  Cartoon Saloon:
     template: [name: standard, name: studios]
 
   Carsey-Werner Company:
@@ -1003,6 +1012,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Kurtzman Orci:
+    template: [name: standard, name: studios]
+
+  Laika Entertainment:
     template: [name: standard, name: studios]
 
   Landscape Entertainment:

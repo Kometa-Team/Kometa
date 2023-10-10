@@ -164,6 +164,7 @@ dynamic_collections:
       - Shogakukan
       - Shuka
       - Signal.MD
+      - Silver
       - SILVER LINK.
       - Staple Entertainment
       - Studio 3Hz
@@ -241,6 +242,7 @@ dynamic_collections:
       - Amazon Studios
       - Amblin Entertainment
       - AMC Studios
+      - Anima Sola Productions
       - Annapurna Pictures
       - Ardustry Entertainment
       - Artisan Entertainment
@@ -275,6 +277,7 @@ dynamic_collections:
       - Canal+
       - Carnival Films
       - Carolco
+      - Cartoon Saloon
       - Carsey-Werner Company
       - Castle Rock Entertainment
       - CBS Productions
@@ -354,6 +357,7 @@ dynamic_collections:
       - Kjam Media
       - Kudos
       - Kurtzman Orci
+      - Laika Entertainment
       - Landscape Entertainment
       - Laura Ziskin Productions
       - Leftfield Pictures
@@ -639,6 +643,8 @@ dynamic_collections:
         - Shogakukan Production
       Signal.MD:
         - Signal MD
+      Silver:
+        - Studio Silver
       SILVER LINK.:
         - Silver Link
       Sky studios:
