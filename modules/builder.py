@@ -1118,9 +1118,10 @@ class CollectionBuilder:
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj and check_url != self.library.smart_filter(self.obj):
-                    self.library.update_smart_collection(self.obj, check_url)
-                    logger.info(f"Detail: Smart Collection updated to {check_url}")
+                if self.obj:
+                    if check_url != self.library.smart_filter(self.obj):
+                        self.library.update_smart_collection(self.obj, check_url)
+                        logger.info(f"Detail: Smart Collection updated to {check_url}")
                     self.beginning_count = len(self.library.fetchItems(check_url))
             if self.obj:
                 self.exists = True

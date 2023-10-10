@@ -716,8 +716,10 @@ addons:
     - Tiger Aspect Productions
   TMS Entertainment:
     - Tokyo Movie Shinsha
+  Toei Animation:
+    - Toei
   TriStar Pictures:
-  - TriStar
+    - TriStar
   Universal Pictures:
     - Universal
     - Universal Animation Studios
