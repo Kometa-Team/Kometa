@@ -543,7 +543,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Toei Animation:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Toei Animation, Toei]}]
 
   Topcraft:
     template: [name: standard, name: studios]
