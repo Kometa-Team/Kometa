@@ -333,6 +333,16 @@ source pmm-venv/bin/activate
 ```
 ````
 
+### If you are running Python 3.12
+
+with the virtual environment activated, type this into your terminal:
+
+```
+pip install setuptools
+```
+
+This will update a piece of the Python infrastructure and prevent an error later.
+
 ### Installing requirements
 
 Plex-Meta-Manager, like every other Python script, depends on support libraries that manage things like connections to Plex, or getting things from the internet, or writing files and so on.
