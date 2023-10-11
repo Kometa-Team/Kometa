@@ -1125,10 +1125,10 @@ class CollectionBuilder:
                     self.beginning_count = len(self.library.fetchItems(check_url))
             if self.obj:
                 self.exists = True
+                col_items = self.library.get_collection_items(self.obj, self.smart_label_collection)
+                self.beginning_count = len(col_items) if self.smart or self.playlist else self.obj.childCount
                 if self.sync or self.playlist:
-                    self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
-                if not self.smart:
-                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
+                    self.remove_item_map = {i.ratingKey: i for i in col_items}
         else:
             self.obj = None
             if self.sync:
