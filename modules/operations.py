@@ -538,9 +538,9 @@ class Operations:
                                     season_background = None
                                 season_title = f"S{season.seasonNumber} {season.title}"
                                 tmdb_poster = tmdb_seasons[season.seasonNumber].poster_url if season.seasonNumber in tmdb_seasons else None
-                                if self.library.mass_poster_update:
+                                if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
                                     self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
-                                if self.library.mass_background_update:
+                                if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
                                     self.library.background_update(season, season_background, title=season_title if season else None)
 
                             if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or \
@@ -562,9 +562,9 @@ class Operations:
                                         episode_background = None
                                     episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
                                     tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
-                                    if self.library.mass_poster_update:
+                                    if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
                                         self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
-                                    if self.library.mass_background_update:
+                                    if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
                                         self.library.background_update(episode, episode_background, title=episode_title if episode else None)
 
                 episode_ops = [
