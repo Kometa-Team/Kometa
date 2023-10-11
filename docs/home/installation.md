@@ -139,4 +139,4 @@ services:
 
 `- PMM_LIBRARIES=Movies` tells PMM to process only a library called "Movies"
 
-Again, a list of the available enviroment variables can be found [here](environmental).
+Again, a list of the available environment variables can be found [here](environmental).
