@@ -1,13 +1,14 @@
-##############################################################################
-#                                         Custom Video Format Overlay                                                        #
-#                                              Modified by: tylerreed19                                                            #
-#                          CHANGES: Split 'WEB' into 'WEB-DL' and 'WEB-RIP'                                   #
-#                 Added: 'UHD BLU-RAY' | 'HDRIP' | 'SDRIP' | 'HDTV' | 'SDTV' | 'CAM'                       #
-#                                    Utilized tinyMediaManager naming scheme                                         #
-#        Video Source can either be in folder naming or video file naming for Movies and               #
-#                                            only video file naming for Shows                                                  #
-#  Examples: Oppenheimer (2023) [Web-DL]  |  Oppenheimer (2023) 1080p AAC Telesync.mkv  #                                                                                          #    Loki (2023)\Season 2\Loki - S02E02 - Breaking Brad [2160p - Web-DL Dolby Vision].mkv    #
-##############################################################################
+##############################################################################################
+#                                   Custom Video Format Overlay                              #
+#                                    Modified by: tylerreed19                                #
+#                          CHANGES: Split 'WEB' into 'WEB-DL' and 'WEB-RIP'                  #
+#                 Added: 'UHD BLU-RAY' | 'HDRIP' | 'SDRIP' | 'HDTV' | 'SDTV' | 'CAM'         #
+#                             Utilized tinyMediaManager naming scheme                        #
+#     Video Source can either be in folder naming or video file naming for Movies and        #
+#                                only video file naming for Shows                            #
+#  Examples: Oppenheimer (2023) [Web-DL]  |  Oppenheimer (2023) 1080p AAC Telesync.mkv       #                                                                                          
+#    Loki (2023)\Season 2\Loki - S02E02 - Breaking Brad [2160p - Web-DL Dolby Vision].mkv    #
+##############################################################################################
 
 external_templates:
   pmm: templates
