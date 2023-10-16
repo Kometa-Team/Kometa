@@ -670,19 +670,6 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "delete_collections_named" in methods and not self.overlay and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: delete_collections_named")
-            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
-            for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
-                try:
-                    del_obj = self.library.get_collection(del_col, force_search=True)
-                    self.library.delete(del_obj)
-                    logger.info(f"Collection: {del_obj.title} deleted")
-                except Failed as e:
-                    if str(e).startswith("Plex Error: Failed to delete"):
-                        logger.error(e)
-
         if "schedule" in methods and not self.config.requested_collections and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: schedule")
@@ -711,6 +698,19 @@ class CollectionBuilder:
                         except Failed:
                             suffix = f" and could not be found to delete"
                     raise NotScheduled(f"{err}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
+
+        if "delete_collections_named" in methods and not self.overlay and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: delete_collections_named")
+            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
+            for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
+                try:
+                    del_obj = self.library.get_collection(del_col, force_search=True)
+                    self.library.delete(del_obj)
+                    logger.info(f"Collection: {del_obj.title} deleted")
+                except Failed as e:
+                    if str(e).startswith("Plex Error: Failed to delete"):
+                        logger.error(e)
 
         self.collectionless = "plex_collectionless" in methods and not self.playlist and not self.overlay
 
@@ -2540,7 +2540,7 @@ class CollectionBuilder:
                 if self.details["changes_webhooks"]:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
-                self.obj.reload()
+                self.library._reload(self.obj)
                 self.obj.removeItems(items_removed)
             if self.do_report and items_removed:
                 self.library.add_removed(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed], self.library.is_movie)
@@ -2967,7 +2967,7 @@ class CollectionBuilder:
                         logger.error("Details: Failed to Update Please delete the collection and run again")
                     logger.info("")
         else:
-            self.obj.reload()
+            self.library._reload(self.obj)
             #self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
             if summary and str(summary[1]) != str(self.obj.summary):
@@ -3160,7 +3160,7 @@ class CollectionBuilder:
         logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
         logger.info("")
         if self.obj:
-            self.obj.reload()
+            self.library._reload(self.obj)
         self.load_collection_items()
         current_ids = []
         for item in self.items:
@@ -3222,7 +3222,7 @@ class CollectionBuilder:
     def send_notifications(self, playlist=False):
         if self.obj and self.details["changes_webhooks"] and \
                 (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
-            self.obj.reload()
+            self.library._reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(
                     self.details["changes_webhooks"],

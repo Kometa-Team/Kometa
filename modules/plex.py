@@ -723,6 +723,15 @@ class Plex(Library):
             raise Failed("Overlay Error: No Poster found to reset")
         return image_url
 
+    def _reload(self, item):
+        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
+                    includeReviews=False, includeStations=False)
+        item._autoReload = False
+        return item
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False
@@ -730,12 +739,7 @@ class Plex(Library):
             item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
-                            includeReviews=False, includeStations=False)
-                item._autoReload = False
+                self._reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
