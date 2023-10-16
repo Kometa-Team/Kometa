@@ -1,0 +1,124 @@
+##############################################################################
+#                                         Custom Video Format Overlay                                                        #
+#                                              Modified by: tylerreed19                                                            #
+#                          CHANGES: Split 'WEB' into 'WEB-DL' and 'WEB-RIP'                                   #
+#                 Added: 'UHD BLU-RAY' | 'HDRIP' | 'SDRIP' | 'HDTV' | 'SDTV' | 'CAM'                       #
+#                                    Utilized tinyMediaManager naming scheme                                         #
+#        Video Source can either be in folder naming or video file naming for Movies and               #
+#                                            only video file naming for Shows                                                  #
+#  Examples: Oppenheimer (2023) [Web-DL]  |  Oppenheimer (2023) 1080p AAC Telesync.mkv  #                                                                                          #    Loki (2023)\Season 2\Loki - S02E02 - Breaking Brad [2160p - Web-DL Dolby Vision].mkv    #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      text_<<key>>: <<overlay_name>>
+      horizontal_align: left
+      vertical_align: bottom
+      horizontal_offset_uhdbluray: 15
+      back_width_uhdbluray: 405
+      back_height_uhdbluray: 105
+          
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15            ### changed from 15 to 40
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+    group: quality
+    back_color: "#00000099"
+    back_width: 305                   ### Changed from 305 to 405
+    back_height: 105
+    final_name: text(<<text_<<key>>>>)
+
+templates:
+  video_format:
+    default:
+      regex_<<key>>: <<regex>>
+    conditionals:
+      regex:
+        conditions:
+          - key: remux
+            value: '(?i)\b(remux|remuxed)\b'
+          - key: bluray
+            value: '(?i)\b(blu[ ._-]?ray|bd|br|hd[ ._-]?dvd)\b'
+          - key: uhdbluray
+            value: '(?i)\b(uhd[ ._-]?blu-ray|uhd[ ._-]?blu[ ._-]?ray)\b'
+          - key: web-dl
+            value: '(?i)\bweb[ ._-]?dl\b'
+          - key: web-rip
+            value: '(?i)\b(webrip|web[ ._-]?rip)\b'
+          - key: hdrip
+            value: '(?i)\b(1080p[ ._-]?hdrip|720p[ ._-]?hdrip)\b'
+          - key: sdrip
+            value: '(?i)\b(480p[ ._-]?hdrip|360p[ ._-]?hdrip|288p[ ._-]?hdrip)\b'
+          - key: hdtv
+            value: '(?i)\b(hd[ ._-]?tv|1080p[ ._-]?tv|720p[ ._-]?tv|1080p - TV|720p - TV)\b'
+          - key: dvd
+            value: '(?i)\bdvd\b'
+          - key: cam
+            value: '(?i)\b(telesync|cam|telecine)\b'
+          - key: sdtv
+            value: '(?i)\b(sd[ ._-]?tv|480p[ ._-]?tv|360p[ ._-]?tv|288p[ ._-]?tv|480p - TV|360p - TV|288p - TV)\b'
+    ignore_blank_results: true
+    plex_all: true
+    filters:
+      filepath.regex: <<regex_<<key>>>>
+
+overlays:
+
+  REMUX:
+    variables: {key: remux, weight: 110}
+    template: [name: standard, name: video_format]
+
+  UHD BLU-RAY:
+    variables: {key: uhdbluray, weight: 100}
+    template: [name: standard, name: video_format]
+
+  BLU-RAY:
+    variables: {key: bluray, weight: 90}
+    template: [name: standard, name: video_format]
+
+  WEB-DL:
+    variables: {key: web-dl, weight: 80}
+    template: [name: standard, name: video_format]
+
+  WEB-RIP:
+    variables: {key: web-rip, weight: 70}
+    template: [name: standard, name: video_format]
+
+  HD-RIP:
+    variables: {key: hdrip, weight: 60}
+    template: [name: standard, name: video_format]
+
+  SD-RIP:
+    variables: {key: sdrip, weight: 50}
+    template: [name: standard, name: video_format]
+
+  HDTV:
+    variables: {key: hdtv, weight: 40}
+    template: [name: standard, name: video_format]
+
+  DVD:
+    variables: {key: dvd, weight: 30}
+    template: [name: standard, name: video_format]
+
+  CAM:
+    variables: {key: cam, weight: 20}
+    template: [name: standard, name: video_format]
+
+  SDTV:
+    variables: {key: sdtv, weight: 10}
+    template: [name: standard, name: video_format]
