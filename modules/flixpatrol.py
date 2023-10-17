@@ -43,9 +43,9 @@ class FlixPatrol:
             logger.info(f"\tPlatform: {data['platform'].replace('_', ' ').title()}")
             logger.info(f"\tLocation: {data['location'].replace('_', ' ').title()}")
             logger.info(f"\tLimit: {data['limit']}")
-        total_items = self.data[data["platform"]][data["location"]]["movies" if is_movie else "shows"][:data["limit"]]
-        if total_items > 0:
-            logger.info(f"Processed {total_items} TMDb IDs")
-            return total_items
+        items = self.data[data["platform"]][data["location"]]["movies" if is_movie else "shows"][:data["limit"]]
+        if len(items) > 0:
+            logger.info(f"Processed {len(items)} TMDb IDs")
+            return items
         else:
             raise Failed(f"FlixPatrol Error: No List Items found in {data}")
