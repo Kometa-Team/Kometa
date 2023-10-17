@@ -12,6 +12,7 @@ These overlays are applied by calling the below paths into the `overlay_path` [s
 
 | Default                           | Path         | Example Overlays                         |  Movies  |  Shows  | Seasons  | Episodes |
 |:----------------------------------|:-------------|:-----------------------------------------|:--------:|:-------:|:--------:|:--------:|
+| [FlixPatrol](overlays/flixpatrol) | `flixpatrol` | "Streaming service logo with words "TOP" | &#9989;  | &#9989; | &#10060; | &#10060; |
 | [Ribbon](overlays/ribbon)         | `ribbon`     | IMDb Top 250 Ribbon, RT Fresh Ribbon     | &#9989;  | &#9989; | &#10060; | &#10060; |
 
 ### Content Overlays

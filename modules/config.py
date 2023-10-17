@@ -7,6 +7,7 @@ from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
 from modules.ergast import Ergast
+from modules.flixpatrol import FlixPatrol
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.github import GitHub
@@ -647,6 +648,7 @@ class ConfigFile:
             self.IMDb = IMDb(self)
             self.Convert = Convert(self)
             self.AniList = AniList(self)
+            self.FlixPatrol = FlixPatrol(self)
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.Reciperr = Reciperr(self)
@@ -1119,8 +1121,11 @@ class ConfigFile:
     def post(self, url, data=None, json=None, headers=None):
         return self.session.post(url, data=data, json=json, headers=headers)
 
+    def load_yaml(self, url):
+        return YAML(input_data=self.get(url).content).data
+
     @property
     def mediastingers(self):
         if self._mediastingers is None:
-            self._mediastingers = YAML(input_data=self.get(mediastingers_url).content).data
+            self._mediastingers = self.load_yaml(mediastingers_url)
         return self._mediastingers

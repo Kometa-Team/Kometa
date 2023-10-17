@@ -16,6 +16,7 @@ Builders use third-party services to source items to be added to the collection.
 | [MdbList](builders/mdblist)           | Grabs items based on metadata and lists on [MdbList.com](https://mdblist.com/).               |    &#10060;     |
 | [Letterboxd](builders/letterboxd)     | Grabs items based on metadata and lists on [Letterboxd.com](https://letterboxd.com/).         |    &#10060;     |
 | [ICheckMovies](builders/icheckmovies) | Grabs items based on metadata and lists on [ICheckMovies.com](https://www.icheckmovies.com/). |    &#10060;     |
+| [FlixPatrol](builders/flixpatrol)     | Grabs items based on metadata and lists on [FlixPatrol.com](https://flixpatrol.com/).         |    &#10060;     |
 | [Reciperr](builders/reciperr)         | Grabs items based on metadata and lists on [reciperr.com](https://reciperr.com/).             |    &#10060;     |
 | [StevenLu](builders/stevenlu)         | Grabs items based on metadata and lists on [StevenLu.com](https://movies.stevenlu.com/).      |    &#10060;     |
 | [AniDB](builders/anidb)               | Grabs items based on metadata and lists on [AniDB.net](https://anidb.net/).                   |    &#10060;     |
