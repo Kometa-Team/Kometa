@@ -60,6 +60,7 @@ This is the default PMM collection ordering:
 | `basic`             | `010`              |
 | `anilist`           | `020`              |
 | `imdb`              | `020`              |
+| `flixpatrol`        | `020`              |
 | `myanimelist`       | `020`              |
 | `other_chart`       | `020`              |
 | `tautulli`          | `020`              |
