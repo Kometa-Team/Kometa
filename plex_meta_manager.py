@@ -335,7 +335,7 @@ def run_config(config, stats):
     playlist_status = {}
     playlist_stats = {}
     if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_metadata_files:
-        logger.add_playlists_handler()
+        #logger.add_playlists_handler()
         if config.playlist_files:
             playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
@@ -356,7 +356,7 @@ def run_config(config, stats):
                 logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
                 for playlist_name, users in report.items():
                     logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
-        logger.remove_playlists_handler()
+        #logger.remove_playlists_handler()
 
     amount_added = 0
     if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
@@ -378,7 +378,7 @@ def run_config(config, stats):
             for library in config.libraries:
                 if library.run_again:
                     try:
-                        logger.re_add_library_handler(library.mapping_name)
+                        #logger.re_add_library_handler(library.mapping_name)
                         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                         logger.info("")
                         logger.separator(f"{library.name} Library Run Again")
@@ -394,7 +394,7 @@ def run_config(config, stats):
                                 library.notify(e, collection=builder.name, critical=False)
                                 logger.stacktrace()
                                 logger.error(e)
-                        logger.remove_library_handler(library.mapping_name)
+                        #logger.remove_library_handler(library.mapping_name)
                     except Exception as e:
                         library.notify(e)
                         logger.stacktrace()
@@ -484,7 +484,7 @@ def run_libraries(config):
             continue
         library_status[library.name] = {}
         try:
-            logger.add_library_handler(library.mapping_name)
+            #logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
@@ -618,15 +618,15 @@ def run_libraries(config):
                     if collections_to_run:
                         logger.info("")
                         logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
-                        logger.remove_library_handler(library.mapping_name)
+                        #logger.remove_library_handler(library.mapping_name)
                         run_collection(config, library, metadata, collections_to_run)
-                        logger.re_add_library_handler(library.mapping_name)
+                        #logger.re_add_library_handler(library.mapping_name)
                 library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
 
             if not run_args["libraries-first"]:
                 run_operations_and_overlays()
 
-            logger.remove_library_handler(library.mapping_name)
+            #logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(e)
             logger.stacktrace()
@@ -663,7 +663,7 @@ def run_collection(config, library, metadata, requested_collections):
             collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
-        logger.add_collection_handler(library.mapping_name, collection_log_name)
+        #logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
@@ -817,7 +817,7 @@ def run_collection(config, library, metadata, requested_collections):
         library.status[str(mapping_name)]["run_time"] = collection_run_time
         logger.info("")
         logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
-        logger.remove_collection_handler(library.mapping_name, collection_log_name)
+        #logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
@@ -847,7 +847,7 @@ def run_playlists(config):
                 playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
-            logger.add_playlist_handler(playlist_log_name)
+            #logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             library_names = None
@@ -998,7 +998,7 @@ def run_playlists(config):
             status[mapping_name]["run_time"] = playlist_run_time
             logger.info("")
             logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
-            logger.remove_playlist_handler(playlist_log_name)
+            #logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
 if __name__ == "__main__":
