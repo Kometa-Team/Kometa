@@ -56,6 +56,8 @@ templates:
       slug: <<key>>
       location: world
       location_<<key>>: <<location>>
+      in_the_last: 1
+      in_the_last_<<key>>: <<in_the_last>>
       limit: 10
       limit_<<key>>: <<limit>>
     conditionals:
@@ -68,6 +70,7 @@ templates:
     flixpatrol_top:
       platform: <<slug>>
       location: <<actual_location>>
+      in_the_last: <<in_the_last_<<key>>>>
       limit: <<limit_<<key>>>>
 
 overlays:

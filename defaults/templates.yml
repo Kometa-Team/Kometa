@@ -101,7 +101,6 @@ templates:
       - name_format
       - key_name
       - translation_key
-      - url_poster
       - file_poster
       - url_background
       - file_background
