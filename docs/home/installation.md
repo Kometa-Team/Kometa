@@ -11,16 +11,22 @@ For this reason, it's generally recommended that you install via Docker rather t
 
 If you have some specific reason to avoid Docker, or you prefer running it as a Python script for some particular reason, then this general recommendation is not aimed at you.  It's aimed at someone who doesn't have an existing compelling reason to choose one over the other.
 
+## Where to install Plex Meta Manager
+
+Plex Meta Manager communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Plex Meta Manager does *not* have to be installed on the samne machine as Plex.  Plex Meta Manager does not require [nor would it use] access to the filesystem behind your Plex libraries.
+
+Perhaps your Plex server is remote and you want to run Plex Meta Manager on a machine in your home.  That's fine.  The relative locations of Plex Meta Manager and Plex have no effect on the installation [except perhaps the URL you would use in the config].
+
 ## Install Walkthroughs
 
 The installation overviews on this page are aimed at users who have previous experience of installing services via command-line terminal commands.
 
 For those who need full installation walkthroughs, please refer to the following walkthrough guides:
 
-  * [Local Walkthrough](guides/local)
-  * [Docker Walkthrough](guides/docker)
+  * [Local Walkthrough](guides/local) - follow this if you are running the script directly on Windows, OS X, or Linux
+  * [Docker Walkthrough](guides/docker) - this discusses using Docker at the command line
 
-If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to container setup for each system:
+If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to Docker container setup for each system:
 **this doesn't cover the PMM setup specifics found in the guides above**
 
   * [unRAID Walkthrough](guides/unraid)
@@ -133,4 +139,4 @@ services:
 
 `- PMM_LIBRARIES=Movies` tells PMM to process only a library called "Movies"
 
-Again, a list of the available enviroment variables can be found [here](environmental).
+Again, a list of the available environment variables can be found [here](environmental).

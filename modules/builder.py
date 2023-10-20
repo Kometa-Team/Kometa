@@ -1,7 +1,7 @@
 import os, re, time
 from arrapi import ArrException
 from datetime import datetime
-from modules import anidb, anilist, boxofficemojo, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import anidb, anilist, boxofficemojo, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import PMMImage
@@ -15,7 +15,7 @@ logger = util.logger
 
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
-all_builders = anidb.builders + anilist.builders + icheckmovies.builders + imdb.builders + \
+all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
                letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders + radarr.builders + sonarr.builders
 show_only_builders = [
@@ -146,7 +146,7 @@ custom_sort_builders = [
     "tvdb_list", "imdb_chart", "imdb_list", "imdb_watchlist", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
     "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "trakt_recommendations",
+    "flixpatrol_top", "trakt_recommendations",
     "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
@@ -671,19 +671,6 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
             self.details["delete_not_scheduled"] = util.parse(self.Type, "delete_not_scheduled", self.data, datatype="bool", methods=methods, default=False)
 
-        if "delete_collections_named" in methods and not self.overlay and not self.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: delete_collections_named")
-            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
-            for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
-                try:
-                    del_obj = self.library.get_collection(del_col, force_search=True)
-                    self.library.delete(del_obj)
-                    logger.info(f"Collection: {del_obj.title} deleted")
-                except Failed as e:
-                    if str(e).startswith("Plex Error: Failed to delete"):
-                        logger.error(e)
-
         if "schedule" in methods and not self.config.requested_collections and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: schedule")
@@ -712,6 +699,19 @@ class CollectionBuilder:
                         except Failed:
                             suffix = f" and could not be found to delete"
                     raise NotScheduled(f"{err}\n\n{self.Type} {self.name} not scheduled to run{suffix}")
+
+        if "delete_collections_named" in methods and not self.overlay and not self.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: delete_collections_named")
+            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
+            for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
+                try:
+                    del_obj = self.library.get_collection(del_col, force_search=True)
+                    self.library.delete(del_obj)
+                    logger.info(f"Collection: {del_obj.title} deleted")
+                except Failed as e:
+                    if str(e).startswith("Plex Error: Failed to delete"):
+                        logger.error(e)
 
         self.collectionless = "plex_collectionless" in methods and not self.playlist and not self.overlay
 
@@ -1027,6 +1027,8 @@ class CollectionBuilder:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
                     self._anilist(method_name, method_data)
+                elif method_name in flixpatrol.builders:
+                    self._flixpatrol(method_name, method_data)
                 elif method_name in icheckmovies.builders:
                     self._icheckmovies(method_name, method_data)
                 elif method_name in letterboxd.builders:
@@ -1446,6 +1448,16 @@ class CollectionBuilder:
                 new_dictionary["sort_by"] = util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.sort_options)
                 new_dictionary["limit"] = util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
                 self.builders.append((method_name, new_dictionary))
+
+    def _flixpatrol(self, method_name, method_data):
+        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            dict_methods = {dm.lower(): dm for dm in dict_data}
+            self.builders.append((method_name, {
+                "platform": util.parse(self.Type, "platform", dict_data, methods=dict_methods, parent=method_name, options=self.config.FlixPatrol.platforms),
+                "location": util.parse(self.Type, "location", dict_data, methods=dict_methods, parent=method_name, default="world", options=self.config.FlixPatrol.locations),
+                "in_the_last": util.parse(self.Type, "in_the_last", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=1, maximum=30),
+                "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10, maximum=10)
+            }, self.library.is_movie))
 
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
@@ -1879,6 +1891,8 @@ class CollectionBuilder:
             ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
         elif 'boxofficemojo' in method:
             ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
+        elif "flixpatrol" in method:
+            ids = self.config.FlixPatrol.get_tmdb_ids(method, value, self.library.is_movie)
         elif "icheckmovies" in method:
             ids = self.config.ICheckMovies.get_imdb_ids(method, value, self.language)
         elif "letterboxd" in method:
@@ -2549,7 +2563,7 @@ class CollectionBuilder:
                 if self.details["changes_webhooks"]:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
-                self.obj.reload()
+                self.library._reload(self.obj)
                 self.obj.removeItems(items_removed)
             if self.do_report and items_removed:
                 self.library.add_removed(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed], self.library.is_movie)
@@ -2976,7 +2990,7 @@ class CollectionBuilder:
                         logger.error("Details: Failed to Update Please delete the collection and run again")
                     logger.info("")
         else:
-            self.obj.reload()
+            self.library._reload(self.obj)
             #self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
             if summary and str(summary[1]) != str(self.obj.summary):
@@ -3169,7 +3183,7 @@ class CollectionBuilder:
         logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
         logger.info("")
         if self.obj:
-            self.obj.reload()
+            self.library._reload(self.obj)
         self.load_collection_items()
         current_ids = []
         for item in self.items:
@@ -3231,7 +3245,7 @@ class CollectionBuilder:
     def send_notifications(self, playlist=False):
         if self.obj and self.details["changes_webhooks"] and \
                 (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
-            self.obj.reload()
+            self.library._reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(
                     self.details["changes_webhooks"],
