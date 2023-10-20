@@ -8,6 +8,7 @@ Instead, it is recommended to set an automated scheduling service so that Plex M
 
 **To control how individual parts of PMM are scheduled see the [Schedule detail](../../metadata/details/schedule)**
 
+IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path to that directory on *your* system.
 
 ````{tab} Docker
 Using docker is the simplest and most robust solution to automating Plex Meta Manager scheduling.
@@ -23,6 +24,7 @@ docker run -d \
   -v /path/to/config:/config:rw \
   meisnate12/plex-meta-manager
 ```
+Change `/path/to/config` to reflect where you've installed Plex Meta Manager.
 
 TZ=<TIMEZONE>
 <TIMEZONE> is replaced with your local timezone, or the timezone your device is in that is running Plex Meta Manager. For a list of available timezones, please see [Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). You want to replace <TIMEZONE> with the TZ Database Name. 
@@ -174,6 +176,8 @@ Plex Meta Manager will now run at the set date/time you selected in Step 6, and 
 
    A couple examples; you'll want to edit the THINGS IN ALL CAPS to reflect your system.
 
+   Change `/path/to/plex-meta-manager` to reflect where you've installed Plex Meta Manager.
+
    Keep PMM running constantly, let it wait to do its thing at 3AM:
 
    ```
@@ -187,16 +191,15 @@ Plex Meta Manager will now run at the set date/time you selected in Step 6, and 
    	<array>
    		<string>sh</string>
    		<string>-c</string>
-   		<string>pmm-venv/bin/python plex-meta-manager.py --config /PATH/TO/PMM/config/config.yml</string>
+   		<string>pmm-venv/bin/python plex-meta-manager.py --config /path/to/plex-meta-manager/config/config.yml</string>
    	</array>
    	<key>UserName</key>
    	<string>YOUR_USERNAME</string>
    	<key>WorkingDirectory</key>
-   	<string>/PATH/TO/PMM</string>
+   	<string>/path/to/plex-meta-manager</string>
    </dict>
    </plist>
    ```
-
    Run PMM every 6 hours, running it immediately and letting it quit:
 
    ```
@@ -210,7 +213,7 @@ Plex Meta Manager will now run at the set date/time you selected in Step 6, and 
    	<array>
    		<string>sh</string>
    		<string>-c</string>
-   		<string>pmm-venv/bin/python plex-meta-manager.py --config /PATH/TO/PMM/config/config.yml --run</string>
+   		<string>pmm-venv/bin/python plex-meta-manager.py --config /path/to/plex-meta-manager/config/config.yml --run</string>
    	</array>
    	<key>StartCalendarInterval</key>
    	<array>
@@ -234,7 +237,7 @@ Plex Meta Manager will now run at the set date/time you selected in Step 6, and 
    	<key>UserName</key>
    	<string>YOUR_USERNAME</string>
    	<key>WorkingDirectory</key>
-   	<string>/PATH/TO/PMM</string>
+   	<string>/path/to/plex-meta-manager</string>
    </dict>
    </plist>
    ```
@@ -332,6 +335,9 @@ The cron utility is used for running scripts and commands at regular intervals, 
    ```
    cd /path/to/plex-meta-manager && pmm-venv/bin/python plex_meta_manager.py --config config/config.yml --run
    ```
+   Change `/path/to/plex-meta-manager` to reflect where you've installed Plex Meta Manager.
+
+   This is an example, which does nothing but run the script immediately.  If you want to add additional flags you can do so.
 
    NOTE: This is assuming you created the `pmm-venv` virtual environment as described in the [Local Walkthrough](local)
 
@@ -341,7 +347,7 @@ The cron utility is used for running scripts and commands at regular intervals, 
    sudo crontab -e
    ```
 
-3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own.
+3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own.  Depending on the editor being used, you may need to put it into insert mode first.  There's a good chance it's `vi`, in which case you need to press `i` to put it into insert mode, after which you will see `-- INSERT -- ` in the lower left.
 
-4. Save and close the file.
+4. Save and close the file.  How you do that depends on which editor is being used.  There's a good chance it's `vi`, in which case `ESC : w RETURN` will save and `ESC : q RETURN` will exit.
 ````
