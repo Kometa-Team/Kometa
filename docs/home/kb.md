@@ -1,6 +1,6 @@
 # Frequently Asked Questions & Knowledgebase
 
-This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/plexmetamanager).
+This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/gYU8wATxKw).
 
 ## Frequently Asked Questions
 
