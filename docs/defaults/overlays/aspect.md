@@ -35,10 +35,10 @@ libraries:
       - pmm: aspect
       - pmm: aspect
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: aspect
         template_variables:
-          overlay_level: season
+          builder_level: season
 ```
 
 ## Template Variables
