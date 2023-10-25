@@ -34,7 +34,7 @@ libraries:
   Movies:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlay: true
+      - reapply_overlays: true
       - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -80,7 +80,7 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlay: true
+      - reapply_overlays: true
       - pmm: resolution                                                    # 1
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -123,16 +123,16 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlay: true
+      - reapply_overlays: true
       - pmm: resolution                                                    # 1
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: audio_codec                                                   # 2
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: video_format                                                  # 3
         template_variables:
-          overlay_level: season
+          builder_level: season
 ```
 </details>
 
@@ -149,13 +149,13 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlay: true
+      - reapply_overlays: true
       - pmm: resolution                                                    # 1
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: audio_codec                                                   # 2
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: ratings                                                       # 3, 4
         template_variables:
   
@@ -170,16 +170,16 @@ libraries:
           rating2_font_size: 70                                            # 4 adjusted font size to fit rating
   
           horizontal_position: right                                       # the set of ratings is on the right of the poster
-          overlay_level: episode
+          builder_level: episode
       - pmm: video_format                                                  # 5
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: episode_info                                                  # 6
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: runtimes                                                      # 7
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 
     operations:
       mass_episode_critic_rating_update: imdb                            # 3 This operation will update the episodes critic rating in plex with IMDb ratings information
@@ -223,7 +223,7 @@ libraries:
     overlay_path:
       - pmm: ratings
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
 Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
