@@ -56,7 +56,7 @@ settings:
   show_unmanaged: true
   show_unconfigured: true
   show_filtered: false
-  show_options: false
+  show_options: true
   show_missing: true
   show_missing_assets: true
   save_report: false
