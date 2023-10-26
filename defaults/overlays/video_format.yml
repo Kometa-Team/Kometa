@@ -31,6 +31,9 @@ external_templates:
           - horizontal_align: [left, right]
             value: 15
     group: quality
+    font: fonts/Inter-Medium.ttf
+    font_size: 55
+    font_color: "#FFFFFF"
     back_color: "#00000099"
     back_width: 305
     back_height: 105
