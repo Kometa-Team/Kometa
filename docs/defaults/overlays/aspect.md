@@ -1,6 +1,6 @@
-# Status Overlay
+# Aspect Overlay
 
-The `aspect` Default Overlay File is used to create an overlay on a show detailing its Current Airing Status for all shows in your library.
+The `aspect` Default Overlay File is used to create an overlay on a show/movie detailing its aspect ratio.
 
 ![](images/aspect.png)
 
@@ -10,7 +10,7 @@ Supported Overlay Level: Movie, Show
 
 ## Supported Status
 
-| Status | Key    | Weight |
+| Aspect | Key    | Weight |
 |:-------|:-------|:-------|
 | 1.33   | `1.33` | `80`   |
 | 1.65   | `1.65` | `70`   |
