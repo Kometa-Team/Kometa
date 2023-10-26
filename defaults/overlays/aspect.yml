@@ -30,6 +30,7 @@ external_templates:
           - horizontal_align: [left, right]
             value: 15
     group: aspect
+    font_color: "#FFFFFF"
     font: fonts/Inter-Medium.ttf
     font_size: 63
     back_color: "#00000099"
