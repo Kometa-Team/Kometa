@@ -428,7 +428,7 @@ Here's an example of an episode collection using `plex_search`.
      collection_order: custom
      builder_level: episode
      plex_search:
-       type: episodes
+       type: episode
        sort_by: audience_rating.desc
        limit: 100
        all:
