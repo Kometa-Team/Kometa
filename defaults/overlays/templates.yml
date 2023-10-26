@@ -2,9 +2,6 @@ templates:
 
   standard:
     default:
-      font: fonts/Inter-Medium.ttf
-      font_size: 55
-      font_color: "#FFFFFF"
       back_radius: 30
       weight_<<key>>: <<weight>>
       file_<<key>>: <<file>>
