@@ -1435,6 +1435,9 @@ overlays:
   Wayfare Entertainment:
     template: [name: standard, name: studios]
 
+  Williams Street:
+    template: [name: standard, name: studios]
+
   Whitaker Entertainment:
     template: [name: standard, name: studios]
 
