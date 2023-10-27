@@ -153,7 +153,7 @@ data:
       tvdb_language: eng
       ignore_ids:
       ignore_imdb_ids:
-      playlist_sync_to_user: all
+      playlist_sync_to_users: all
       verify_ssl: true
     plex:
       url: http://PLEX_IP_HERE:32400
