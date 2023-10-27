@@ -1454,7 +1454,7 @@ class CollectionBuilder:
                 "location": util.parse(self.Type, "location", dict_data, methods=dict_methods, parent=method_name, default="world", options=self.config.FlixPatrol.locations),
                 "in_the_last": util.parse(self.Type, "in_the_last", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=1, maximum=30),
                 "limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, parent=method_name, default=10, maximum=10)
-            }, self.library.is_movie))
+            }))
 
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
