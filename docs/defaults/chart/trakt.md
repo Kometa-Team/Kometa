@@ -14,6 +14,7 @@ Requirements: [Trakt Authentication](../../config/trakt)
 
 | Collection          | Key           | Description                                             |
 |:--------------------|:--------------|:--------------------------------------------------------|
+| `Trakt Anticipated` | `anticipated` | Collection of the Most Anticipated Movies/Shows on Trakt. |
 | `Trakt Collected`   | `collected`   | Collection of the Most Collected Movies/Shows on Trakt. |
 | `Trakt Popular`     | `popular`     | Collection of the Most Popular Movies/Shows on Trakt.   |
 | `Trakt Recommended` | `recommended` | Collection of Recommended Movies/Shows on Trakt.        |
