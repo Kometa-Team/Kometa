@@ -45,7 +45,8 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay", "pmm_poster",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name", "limit",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday"
+    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday",
+    "skip_missing_report"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "url_theme",
@@ -440,6 +441,23 @@ class CollectionBuilder:
                     raise NotScheduled(f"Skipped because run_definition is false")
                 elif library_type != "true" and self.library and library_type != self.library.Plex.type:
                     raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
+
+        self.skip_missing_report = False
+        if "skip_missing_report" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: skip_missing_report")
+            if self.data[methods["skip_missing_report"]] is None:
+                raise Failed("skip_missing_generation has no value")
+            logger.debug(f"Value: {self.data[methods['skip_missing_report']]}")
+            for v in util.get_list(self.data[methods["skip_missing_report"]], lower=True):
+                if v == 'false':
+                    continue
+                elif v == 'true':
+                    logger.debug("Setting skip_missing_report to True")
+                    self.skip_missing_report = True
+                    break
+                else:
+                    raise Failed(f"{self.Type} Error: {v} is an invalid value. Options are: true, false")
 
         if self.playlist:               self.builder_level = "item"
         elif self.library.is_show:      self.builder_level = "show"
@@ -1109,9 +1127,11 @@ class CollectionBuilder:
             self.sync = False
 
         self.do_report = not self.config.no_report and (self.details["save_report"])
-        self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report
-                                                          or (self.library.Radarr and self.radarr_details["add_missing"])
-                                                          or (self.library.Sonarr and self.sonarr_details["add_missing"]))
+        self.do_missing = (not self.config.no_missing and not self.skip_missing_report
+                           and (self.details["show_missing"] or self.do_report
+                                or (self.library.Radarr and self.radarr_details["add_missing"])
+                                or (self.library.Sonarr and self.sonarr_details["add_missing"])))
+
         if self.build_collection:
             if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")

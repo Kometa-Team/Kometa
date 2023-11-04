@@ -106,6 +106,8 @@ templates:
       - limit
       - name_mapping
       - delete_collections_named
+      - skip_missing_report
+      - skip_<<key>>_missing_report
     run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
@@ -132,6 +134,9 @@ templates:
     file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
     delete_collections_named: <<delete_collections_named>>
+    skip_missing_report:
+      - <<skip_missing_report>>
+      - <<skip_<<key>>_missing_report>>
 
   trakt:
     optional:
