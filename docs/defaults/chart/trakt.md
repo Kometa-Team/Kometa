@@ -12,13 +12,14 @@ Requirements: [Trakt Authentication](../../config/trakt)
 
 ## Collections Section 020
 
-| Collection          | Key           | Description                                             |
-|:--------------------|:--------------|:--------------------------------------------------------|
-| `Trakt Collected`   | `collected`   | Collection of the Most Collected Movies/Shows on Trakt. |
-| `Trakt Popular`     | `popular`     | Collection of the Most Popular Movies/Shows on Trakt.   |
-| `Trakt Recommended` | `recommended` | Collection of Recommended Movies/Shows on Trakt.        |
-| `Trakt Trending`    | `trending`    | Collection of Trending Movies/Shows on Trakt.           |
-| `Trakt Watched`     | `watched`     | Collection of the Most Watched Movies/Shows on Trakt.   |
+| Collection          | Key           | Description                                               |
+|:--------------------|:--------------|:----------------------------------------------------------|
+| `Trakt Anticipated` | `anticipated` | Collection of the Most Anticipated Movies/Shows on Trakt. |
+| `Trakt Collected`   | `collected`   | Collection of the Most Collected Movies/Shows on Trakt.   |
+| `Trakt Popular`     | `popular`     | Collection of the Most Popular Movies/Shows on Trakt.     |
+| `Trakt Recommended` | `recommended` | Collection of Recommended Movies/Shows on Trakt.          |
+| `Trakt Trending`    | `trending`    | Collection of Trending Movies/Shows on Trakt.             |
+| `Trakt Watched`     | `watched`     | Collection of the Most Watched Movies/Shows on Trakt.     |
 
 ## Config
 
