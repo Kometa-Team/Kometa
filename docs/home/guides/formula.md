@@ -65,6 +65,7 @@ Formula                                   -> Library Folder
 ```
 
 What matters for plex and for pmm.
+* Change the Plex Agent to "Personal Media Shows" for F1 libraries
 * The show name can be whatever you want it to be but the pre created metadata file will only work if you use just the year numbers.
 * The season folder can be called whatever you want as long as plex scans it in with the Season Number matching the race number.
 * The episodes must follow plex's naming convention to have them scanned in properly but in order for PMM to update the metadata the files need to be specifically name like above.
