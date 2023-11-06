@@ -23,12 +23,12 @@ anidb:
 
 | Attribute          | Allowed Values                                                                                | Default | Required |
 |:-------------------|:----------------------------------------------------------------------------------------------|:--------|:--------:|
-| `client`           | AniDB Client Name                                                                             | N/A     | &#10060; |
-| `version`          | AniDB Client Version                                                                          | N/A     | &#10060; |
-| `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language. | en      | &#10060; |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                     | 60      | &#10060; |
-| `username`         | AniDB Username                                                                                | N/A     | &#10060; |
-| `password`         | AniDB Password                                                                                | N/A     | &#10060; |
+| `client`           | AniDB Client Name                                                                             | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
+| `version`          | AniDB Client Version                                                                          | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
+| `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language. | en      | :fontawesome-solid-circle-xmark:{ .red } |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                     | 60      | :fontawesome-solid-circle-xmark:{ .red } |
+| `username`         | AniDB Username                                                                                | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
+| `password`         | AniDB Password                                                                                | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 
 * To get a Client Name and Client Version please follow the following steps.
 

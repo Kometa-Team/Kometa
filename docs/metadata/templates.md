@@ -16,7 +16,7 @@ collections:
     collection_order: release
 ```
 
-Note: The `sort_title` in these examples is wrapped in quotes because it contains a character [`!`] which has [syntactic meaning in YAML files](../home/guides/yaml.md#string-literals).  This "quoting special characters" is a general YAML requirement, not something specific to `sort_title`.
+Note: The `sort_title` in these examples is wrapped in quotes because it contains a character [`!`] which has [syntactic meaning in YAML files](../pmm/install/guides/yaml.md#string-literals). This "quoting special characters" is a general YAML requirement, not something specific to `sort_title`.
 
 Then you add another:
 
@@ -84,7 +84,7 @@ collections:
 
 Note that we provide the template name `Actor` and the value to insert in the place of `<<person>>`. The `<<collection_name>>` is a template variable that is always available and doesn't have to be called out like `<<person>>`.
 
-Inside a template, you can use all the Builders, Details, and [Filters](filters) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
+Inside a template, you can use all the Builders, Details, and [Filters]filters.md) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
 
 The names of template variables that you define are arbitrary. In the example above, `<<person>>` could have been `<<tvdb_person_id>>` or `<<bing>>` or anything else. The only thing that matters is that in the template definition you surround them with `<< >>` and in the collection definition you spell it correctly.
 
@@ -238,7 +238,7 @@ Check out the example files in the [Plex Meta Manager Configs Repository](https:
 
 ## External Templates
 
-To load external templates located in another file you can use the `external_templates` attribute by specifying the path type and path of the files that will be executed. See [Path Types](../config/paths) for how to define them.
+To load external templates located in another file you can use the `external_templates` attribute by specifying the path type and path of the files that will be executed. See [Path Types](../config/paths.md) for how to define them.
 
 ```yaml
 external_templates:

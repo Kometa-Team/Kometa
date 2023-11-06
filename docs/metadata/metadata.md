@@ -10,11 +10,11 @@ These are the attributes which can be used within the Metadata File:
 
 | Attribute                                               | Description                                                                                                                                                                       |
 |:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple collections                                                                                                   |
-| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple collections                                                             |
+| [`templates`](templates.md)                                | contains definitions of templates that can be leveraged by multiple collections                                                                                                   |
+| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths.md) that point to external templates that can be leveraged by multiple collections                                                             |
 | [`collections`](#collection-attributes)                 | contains definitions of collections you wish to add to one or more libraries                                                                                                      |
-| [`dynamic_collections`](#dynamic-collection-attributes) | contains definitions of [dynamic collections](dynamic) you wish to create                                                                                                         |
-| [`metadata`](#metadata-attributes)                      | contains definitions of metadata changes to [movie](metadata/movie), [show](metadata/show), or [music](metadata/music) library's items [movie titles, episode descriptions, etc.] |
+| [`dynamic_collections`](#dynamic-collection-attributes) | contains definitions of [dynamic collections](dynamic.md) you wish to create                                                                                                         |
+| [`metadata`](#metadata-attributes)                      | contains definitions of metadata changes to [movie](metadata/movie.md), [show](metadata/show.md), or [music](metadata/music.md) library's items [movie titles, episode descriptions, etc.] |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the Metadata File to execute.
 * Example Metadata Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
@@ -42,9 +42,9 @@ collections:
 
 There are multiple types of attributes that can be utilized within a collection:
 
-* [Builders](builders)
-* [Settings/Updates](update)
-* [Filters](filters)
+* [Builders](builders.md)
+* [Settings/Updates](update.md)
+* [Filters]filters.md)
 
 ### Example
 
@@ -88,7 +88,7 @@ dynamic_collections:
 
 ## Metadata Attributes
 
-Plex Meta Manager can automatically update items in Plex [Movie](metadata/movie), [Show](metadata/show), and [Music](metadata/music) Libraries based on what's defined within the `metadata` attribute.
+Plex Meta Manager can automatically update items in Plex [Movie](metadata/movie.md), [Show](metadata/show.md), and [Music](metadata/music.md) Libraries based on what's defined within the `metadata` attribute.
 
 Each metadata requires its own section within the `metadata` attribute. 
 

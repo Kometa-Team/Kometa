@@ -145,30 +145,30 @@ The available attributes for editing shows, seasons, and episodes are as follows
 
 | Attribute         | Description                                                                                                                                                                                                                                     |  Shows   | Seasons  | Episodes |
 |:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|
-| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../../home/guides/formula) for more information.                                                                                                 | &#9989;  | &#10060; | &#10060; |
-| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                              | &#9989;  | &#10060; | &#10060; |
-| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                        | &#9989;  | &#10060; | &#10060; |
-| `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                          | &#9989;  | &#10060; | &#10060; |
-| `episodes`        | Attribute used to edit episode metadata. The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.                                                               | &#10060; | &#9989;  | &#10060; |
-| `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false` | &#9989;  | &#10060; | &#10060; |
-| `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                            | &#9989;  | &#10060; | &#10060; |
-| `update_episodes` | Used to specify if this definition's episodes metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                           | &#9989;  | &#10060; | &#10060; |
+| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../../pmm/install/guides/formula.md) for more information.                                                                                       | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                              | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                        | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                          | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `episodes`        | Attribute used to edit episode metadata. The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.                                                               | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false` | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                            | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `update_episodes` | Used to specify if this definition's episodes metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                           | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 
 ### General Attributes
 
 | Attribute              | Allowed Values                                                 |  Shows  | Seasons  | Episodes |
 |:-----------------------|:---------------------------------------------------------------|:-------:|:--------:|:--------:|
-| `title`                | Text to change Title.                                          | &#9989; | &#9989;  | &#9989;  |
-| `sort_title`           | Text to change Sort Title.                                     | &#9989; | &#10060; | &#9989;  |
-| `original_title`       | Text to change Original Title.                                 | &#9989; | &#10060; | &#10060; |
-| `originally_available` | Date to change Originally Available.<br>**Format:** YYYY-MM-DD | &#9989; | &#10060; | &#9989;  |
-| `content_rating`       | Text to change Content Rating.                                 | &#9989; | &#10060; | &#9989;  |
-| `user_rating`          | Number to change User Rating.                                  | &#9989; | &#9989;  | &#9989;  |
-| `audience_rating`      | Number to change Audience Rating.                              | &#9989; | &#10060; | &#9989;  |
-| `critic_rating`        | Number to change Critic Rating.                                | &#9989; | &#10060; | &#9989;  |
-| `studio`               | Text to change Studio.                                         | &#9989; | &#10060; | &#10060; |
-| `tagline`              | Text to change Tagline.                                        | &#9989; | &#10060; | &#10060; |
-| `summary`              | Text to change Summary.                                        | &#9989; | &#9989;  | &#9989;  |
+| `title`                | Text to change Title.                                          | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| `sort_title`           | Text to change Sort Title.                                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `original_title`       | Text to change Original Title.                                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `originally_available` | Date to change Originally Available.<br>**Format:** YYYY-MM-DD | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `content_rating`       | Text to change Content Rating.                                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `user_rating`          | Number to change User Rating.                                  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| `audience_rating`      | Number to change Audience Rating.                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `critic_rating`        | Number to change Critic Rating.                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `studio`               | Text to change Studio.                                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `tagline`              | Text to change Tagline.                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `summary`              | Text to change Summary.                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
 
 ### Tag Attributes
 
@@ -178,20 +178,20 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 
 | Attribute    | Allowed Values                                       |  Shows   | Seasons  | Episodes |
 |:-------------|:-----------------------------------------------------|:--------:|:--------:|:--------:|
-| `director`   | List or comma-separated text of each Director Tag.   | &#10060; | &#10060; | &#9989;  |
-| `genre`      | List or comma-separated text of each Genre Tag.      | &#9989;  | &#10060; | &#10060; |
-| `writer`     | List or comma-separated text of each Writer Tag.     | &#10060; | &#10060; | &#9989;  |
-| `collection` | List or comma-separated text of each Collection Tag. | &#9989;  | &#9989;  | &#9989;  |
-| `label`      | List or comma-separated text of each Label Tag.      | &#9989;  | &#9989;  | &#9989;  |
+| `director`   | List or comma-separated text of each Director Tag.   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `genre`      | List or comma-separated text of each Genre Tag.      | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| `writer`     | List or comma-separated text of each Writer Tag.     | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| `collection` | List or comma-separated text of each Collection Tag. | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| `label`      | List or comma-separated text of each Label Tag.      | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
 
 ### Image Attributes
 
 | Attribute         | Allowed Values                                   |  Shows  | Seasons | Episodes |
 |:------------------|:-------------------------------------------------|:-------:|:-------:|:--------:|
-| `url_poster`      | URL of image publicly available on the internet. | &#9989; | &#9989; | &#9989;  |
-| `file_poster`     | Path to image in the file system.                | &#9989; | &#9989; | &#9989;  |
-| `url_background`  | URL of image publicly available on the internet. | &#9989; | &#9989; | &#9989;  |
-| `file_background` | Path to image in the file system.                | &#9989; | &#9989; | &#9989;  |
+| `url_poster`      | URL of image publicly available on the internet. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |
+| `file_poster`     | Path to image in the file system.                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |
+| `url_background`  | URL of image publicly available on the internet. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |
+| `file_background` | Path to image in the file system.                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |
 
 ### Advanced Attributes
 

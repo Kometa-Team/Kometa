@@ -4,7 +4,7 @@ Filters allow for you to filter every item added to the collection/overlay/playl
 
 ## Using Filters
 
-Filters cannot do anything alone they require the use of at least one [Builder](builders) to function.
+Filters cannot do anything alone they require the use of at least one [Builder](builders.md) to function.
 
 You can have multiple filters in each set but an item must match at least one value from **each** filter to not be ignored. The values for each must match what Plex has including special characters in order to match.
 
@@ -32,11 +32,11 @@ All filter options are listed below. To display items filtered out add `show_fil
 
 You can use the `plex_all: true` builder to filter from your entire library.
 
-**Filters can be very slow. Try to build or narrow your items using [Plex Search](builders/plex.md#plex-search) or another [Builder](builders) if possible.** 
+**Filters can be very slow. Try to build or narrow your items using [Plex Search](../builders/plex.md#plex-search) or another [Builder](builders.md) if possible.** 
 
 ## Table Annotations
 
-<sup>**1**</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/definition).
+<sup>**1**</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](../builders/details/definition.md).
 
 <sup>**2**</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 

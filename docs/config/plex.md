@@ -1,3 +1,7 @@
+---
+search:
+  boost: 3
+---
 # Plex Attributes
 
 Configuring [Plex](https://www.plex.tv/) is required in order to connect to your libraries.

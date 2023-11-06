@@ -4,8 +4,10 @@ There are many Default Metadata Files built into PMM itself which offer an easy-
 
 This is the simplest way to create Collections using Plex Meta Manager.
 
-```{include} collection_list.md
-```
+{%
+   include-markdown "./collection_list.md"
+
+%}
 
 ## Configurations
 
@@ -117,9 +119,9 @@ libraries:
           visible_shared_top: true
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre.md).
 
-**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](collection_variables).**
+**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](collection_variables.md).**
 
 ### Examples
 
@@ -188,5 +190,6 @@ libraries:
           use_separator: false
 ```
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}

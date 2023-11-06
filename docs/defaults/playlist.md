@@ -2,7 +2,7 @@
 
 The `playlist` Default Metadata File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
 
-This Default file requires [Trakt Authentication](../config/trakt)
+This Default file requires [Trakt Authentication](../config/trakt.md)
 
 This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries, use the `libraries` template variable which is outlined in the [Template Variables](#template-variables) table.
 ![](images/playlist.png)
@@ -36,14 +36,14 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-**[Shared Variables](collection_variables) are NOT available to this default file.**
+**[Shared Variables](collection_variables.md) are NOT available to this default file.**
 
 | Variable                                 | Description & Values                                                                                                                                                                                                                                                                         |
 |:-----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `use_<<key>>`<sup>1</sup>                | **Description:** Turns off individual Playlists in a Defaults file.<br>**Values:** `false` to turn off the playlist                                                                                                                                                                          |
 | `name_<<key>>`<sup>1</sup>               | **Description:** Changes the name of the specified key's playlist.<br>**Values:** New Playlist Name                                                                                                                                                                                          |
 | `summary_<<key>>`<sup>1</sup>            | **Description:** Changes the summary of the specified key's playlist.<br>**Values:** New Playlist Summary                                                                                                                                                                                    |
-| `libraries`                              | **Description:** Sets the names of the libraries to use for the Playlists.<br>**Default:** `Movies, TV Shows`<br>**Values:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/configuration). |
+| `libraries`                              | **Description:** Sets the names of the libraries to use for the Playlists.<br>**Default:** `Movies, TV Shows`<br>**Values:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/configuration.md. |
 | `sync_to_user`                           | **Description:** Sets the users to sync all playlists to.<br>**Default:** `playlist_sync_to_users` Global Setting Value<br>**Values:** Comma-separated string or list of user names.                                                                                                          |
 | `sync_to_user_<<key>>`<sup>1</sup>       | **Description:** Sets the users to sync the specified key's playlist to.<br>**Default:** `sync_to_user` Value<br>**Values:** Comma-separated string or list of user names.                                                                                                                   |
 | `exclude_user`                           | **Description:** Sets the users to exclude from sync for all playlists.<br>**Default:** `playlist_sync_to_users` Global Setting Value<br>**Values:** Comma-separated string or list of user names.                                                                                            |

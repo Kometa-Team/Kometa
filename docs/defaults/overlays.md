@@ -4,8 +4,9 @@ There are many Default Overlay Files built into PMM itself which offer an easy-t
 
 This is the simplest way to create Overlays using Plex Meta Manager.
 
-```{include} overlay_list.md
-```
+{%
+   include-markdown "./overlay_list.md"
+%}
 
 ## Configurations
 
@@ -203,7 +204,7 @@ Plex has three available spots in the Plex DB to store ratings and thus Plex Met
 
 To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
 
-**mass_*_rating_update** sources can be found here: [operations](../config/operations)
+**mass_*_rating_update** sources can be found here: [operations](../config/operations.md)
 
 ![](images/ratings_operations.png)
 
@@ -226,11 +227,12 @@ libraries:
           builder_level: episode
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings.md).
 
-**In addition to the defined `template_variables` almost all default Overlay files have access to the [Shared Variables](collection_variables).**
+**In addition to the defined `template_variables` almost all default Overlay files have access to the [Shared Variables](collection_variables.md).**
 
 ### Examples
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}
