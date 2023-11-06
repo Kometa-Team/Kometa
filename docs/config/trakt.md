@@ -1,3 +1,7 @@
+---
+search:
+  boost: 3
+---
 # Trakt Attributes
 
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
@@ -21,13 +25,13 @@ trakt:
 
 | Attribute       | Allowed Values                  | Default | Required |
 |:----------------|:--------------------------------|:--------|:--------:|
-| `client_id`     | Trakt Application Client ID     | N/A     | &#9989;  |
-| `client_secret` | Trakt Application Client Secret | N/A     | &#9989;  |
-| `pin`           | Trakt Pin                       | None    | &#10060; |
+| `client_id`     | Trakt Application Client ID     | N/A     | :fontawesome-solid-circle-check:{ .green }  |
+| `client_secret` | Trakt Application Client Secret | N/A     | :fontawesome-solid-circle-check:{ .green }  |
+| `pin`           | Trakt Pin                       | None    | :fontawesome-solid-circle-xmark:{ .red } |
 
-* All other attributes will be filled in by the script. 
+* All other attributes will be filled in by Plex Meta Manager. 
 
-* To connect to Trakt.tv you must create a Trakt application and supply the script the `client_id`, `client_secret`, and `pin` provided, please do the following:
+* To connect to Trakt.tv you must create a Trakt application and supply Plex Meta Manager the `client_id`, `client_secret`, and `pin` provided, please do the following:
 1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
 2. Enter a `Name` for the application.
 3. Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
@@ -38,7 +42,7 @@ trakt:
     ![Trakt Authorize](trakt.png)
 8. Record the `PIN` as `pin` in your Configuration File.
 
-* Run the script shortly after obtaining your PIN; the PIN may expire at some point.
+* Run Plex Meta Manager shortly after obtaining your PIN; the PIN may expire at some point.
 
 ## Online Authorization Script
 

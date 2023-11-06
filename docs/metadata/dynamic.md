@@ -124,8 +124,8 @@ Depending on the `type` of dynamic collection, `data` is used to specify the opt
 | [`content_rating`](#content-rating)           | Create a collection for each content rating found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 | [`year`](#year)                               | Create a collection for each year found in the library                                                      |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`episode_year`](#episode-year)               | Create a collection for each episode year found in the library                                              |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
-| [`decade`](#decade)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
-| [`country`](#country)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
+| [`decade`](#decade.md)                           | Create a collection for each decade found in the library                                                    |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
+| [`country`](#country.md)                         | Create a collection for each country found in the library                                                   |    &#10060;    | &#9989;  | &#10060; | &#9989;  | &#9989;  |
 | [`resolution`](#resolution)                   | Create a collection for each resolution found in the library                                                |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`subtitle_language`](#subtitle-language)     | Create a collection for each subtitle language found in the library                                         |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
 | [`audio_language`](#audio-language)           | Create a collection for each audio language found in the library                                            |    &#10060;    | &#9989;  | &#9989;  | &#10060; | &#10060; |
@@ -339,7 +339,7 @@ dynamic_collections:
 
 Create collections for each of the Trakt lists for the specified users. Use `me` to reference the authenticated user.
 
-* Requires [Trakt Authentication](../config/trakt) to be configured within the Configuration File
+* Requires [Trakt Authentication](../config/trakt.md) to be configured within the Configuration File
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -390,7 +390,7 @@ dynamic_collections:
 
 Create collections for each of the Trakt lists that the authenticated user has liked.
 
-* Requires [Trakt Authentication](../config/trakt) to be configured within the Configuration File
+* Requires [Trakt Authentication](../config/trakt.md) to be configured within the Configuration File
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -438,7 +438,7 @@ dynamic_collections:
 
 Create collections for each of the people found within Trakt lists that the user specifies.
 
-* Requires [Trakt Authentication](../config/trakt) to be configured within the Configuration File
+* Requires [Trakt Authentication](../config/trakt.md) to be configured within the Configuration File
 
 <table class="dualTable colwidths-auto align-default table">
   <tr>

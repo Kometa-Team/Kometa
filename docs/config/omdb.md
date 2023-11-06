@@ -13,8 +13,8 @@ omdb:
 
 | Attribute          | Allowed Values                                                             | Default | Required |
 |:-------------------|:---------------------------------------------------------------------------|:--------|:--------:|
-| `apikey`           | OMDb API Key                                                               | N/A     | &#9989;  |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      | &#10060; |
+| `apikey`           | OMDb API Key                                                               | N/A     | :fontawesome-solid-circle-check:{ .green }  |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      | :fontawesome-solid-circle-xmark:{ .red } |
 
 * The OMDb apikey can be generated [here](http://www.omdbapi.com/apikey.aspx).
 

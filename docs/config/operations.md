@@ -1,3 +1,7 @@
+---
+search:
+  boost: 4
+---
 # Library Operations
 
 There are a variety of Library Operations that can be utilized in a library.
@@ -18,29 +22,29 @@ The available attributes for the operations attribute are as follows
 
 | Attribute                                                             | Description                                                                                                                                                |   Movies   |  Shows   |  Music   |
 |:----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:----------:|:--------:|:--------:|
-| [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                                |  &#9989;   | &#9989;  | &#9989;  |
-| [Delete Collections](#delete-collections)                             | Deletes collections based on a set of given attributes.                                                                                                    |  &#9989;   | &#9989;  | &#9989;  |
-| [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    |  &#9989;   | &#9989;  | &#9989;  |
-| [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    |  &#9989;   | &#9989;  | &#10060; |
-| [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    |  &#9989;   | &#9989;  | &#10060; |
-| [Mass Studio Update](#mass-studio-update)                             | Updates every item's studio in the library to the chosen site's studio.                                                                                    |  &#9989;   | &#9989;  | &#10060; |
-| [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                                   |  &#9989;   | &#9989;  | &#10060; |
-| [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                               |  &#9989;   | &#9989;  | &#10060; |
-| [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.                                                     |  &#10060;  | &#9989;  | &#10060; |
-| [Mass Poster Update](#mass-poster-update)                             | Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.         |  &#9989;   | &#9989;  | &#10060; |
-| [Mass Background Update](#mass-background-update)                     | Updates every item's background to the chosen sites background. Will fallback to `plex` if the given option fails. Assets will be used over anything else. |  &#9989;   | &#9989;  | &#10060; |
-| [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                               |  &#9989;   | &#10060; | &#10060; |
-| [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                                 |  &#9989;   | &#10060; | &#10060; |
-| [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                                |  &#10060;  | &#10060; | &#9989;  |
-| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title is not locked.                                                 |  &#9989;   | &#9989;  | &#10060; |
-| [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                                   |  &#9989;   | &#9989;  | &#10060; |
-| [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                                  |  &#9989;   | &#10060; | &#10060; |
-| [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                                        |  &#9989;   | &#10060; | &#10060; |
-| [Sonarr Add All](#sonarr-add-all)                                     | Adds every item in the library to Sonarr.                                                                                                                  |  &#10060;  | &#9989;  | &#10060; |
-| [Sonarr Remove By Tag](#sonarr-remove-by-tag)                         | Removes every item from Sonarr with the Tags given.                                                                                                        |  &#10060;  | &#9989;  | &#10060; |
-| [Genre Mapper](#genre-mapper)                                         | Allows genres to be changed to other genres or be removed from every item in your library.                                                                 |  &#9989;   | &#9989;  | &#10060; |
-| [Content Rating Mapper](#content-rating-mapper)                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.                                               |  &#9989;   | &#9989;  | &#10060; |
-| [Metadata Backup](#metadata-backup)                                   | Creates/Maintains a PMM [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.               |  &#9989;   | &#9989;  | &#9989;  |
+| [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                                |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| [Delete Collections](#delete-collections)                             | Deletes collections based on a set of given attributes.                                                                                                    |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
+| [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Studio Update](#mass-studio-update)                             | Updates every item's studio in the library to the chosen site's studio.                                                                                    |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                                   |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                               |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.                                                     |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Poster Update](#mass-poster-update)                             | Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.         |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Background Update](#mass-background-update)                     | Updates every item's background to the chosen sites background. Will fallback to `plex` if the given option fails. Assets will be used over anything else. |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                               |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                                 |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                                |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  |
+| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title is not locked.                                                 |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                                   |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                                  |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                                        |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+| [Sonarr Add All](#sonarr-add-all)                                     | Adds every item in the library to Sonarr.                                                                                                                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Sonarr Remove By Tag](#sonarr-remove-by-tag)                         | Removes every item from Sonarr with the Tags given.                                                                                                        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Genre Mapper](#genre-mapper)                                         | Allows genres to be changed to other genres or be removed from every item in your library.                                                                 |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Content Rating Mapper](#content-rating-mapper)                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.                                               |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } |
+| [Metadata Backup](#metadata-backup)                                   | Creates/Maintains a PMM [Metadata File](../metadata/metadata.md) with a full `metadata` mapping based on the library's items locked attributes.               |  :fontawesome-solid-circle-check:{ .green }   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
 
 ## Assets For All
 
@@ -62,7 +66,7 @@ Deletes collections based on a set of given attributes. The Collection must matc
 |:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `managed`    | **Values:**<br>`true`: Collection must be a Managed Collection to be deleted (the collection has the `PMM` label)<br>`false`: Collection must be an Unmanaged Collection to be deleted (the collection does not have the `PMM` label)                                                                                                                                                                       |
 | `configured` | **Values:**<br>`true`: Collection must be a Configured Collection to be deleted (collection is in the config file of the specific PMM run)<br>`false`: Collection must be an Unconfigured Collection to be deleted (collection is not in the config file of the specific PMM run).<br>**The collection does not need to be scheduled to be considered configured and only needs to be in the config file.** |
-| `less`       | Collection must contain less then the given number of items to be deleted.<br>**Values:** Number Greater than 0                                                                                                                                                                                                                                                                                             |
+| `less`       | Collection must contain less then the given number of items to be deleted.<br>**Values:** Number Greater then 0                                                                                                                                                                                                                                                                                             |
 
 **Example:**
 
@@ -187,7 +191,9 @@ Updates every item's originally available date in the library to the chosen site
 
 Updates every item's audience/critic/user rating in the library to the chosen site's rating.
 
-IMPORTANT NOTE: This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../home/guides/ratings).
+???+ warning "Important Note"
+    
+    This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../pmm/install/guides/ratings.md).
 
 **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
 
@@ -344,7 +350,7 @@ Splits all duplicate movies/shows found in this library.
 
 ## Radarr Add All
 
-Adds every item in the library to Radarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Radarr paths you can use the `plex_path` and `radarr_path` [Radarr](radarr) details to convert the paths.
+Adds every item in the library to Radarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Radarr paths you can use the `plex_path` and `radarr_path` [Radarr](radarr.md) details to convert the paths.
 
 **Attribute:** `radarr_add_all`
 
@@ -360,7 +366,7 @@ Removes every item from Radarr with the Tags given.
 
 ## Sonarr Add All
 
-Adds every item in the library to Sonarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Sonarr paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr) details to convert the paths.
+Adds every item in the library to Sonarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Sonarr paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr.md) details to convert the paths.
 
 **Attribute:** `sonarr_add_all`
 
@@ -450,7 +456,7 @@ This example will change go through every item in your library and change the co
 
 ## Metadata Backup
 
-Creates/Maintains a Plex Meta Manager [Metadata File](../metadata/metadata) with a full `metadata` mapping based on the library's items locked attributes.
+Creates/Maintains a Plex Meta Manager [Metadata File](../metadata/metadata.md) with a full `metadata` mapping based on the library's items locked attributes.
 
 If you point to an existing Metadata File then PMM will Sync the changes to the file, so you won't lose non plex changes in the file.
 

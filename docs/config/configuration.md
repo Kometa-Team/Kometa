@@ -8,30 +8,24 @@ A template Configuration File can be found in the [GitHub Repo](https://github.c
 
 This table outlines the third-party services that Plex Meta Manager can make use of. Each service has specific requirements for setup that can be found by clicking the links within the table.
 
-| Attribute                     | Required                                |
-|:------------------------------|:----------------------------------------|
-| [`libraries`](libraries)      | &#9989;                                 |
-| [`playlist_files`](playlists) | &#10060;                                |
-| [`settings`](settings)        | &#10060;                                |
-| [`webhooks`](webhooks)        | &#10060;                                |
-| [`plex`](plex)                | &#9989; <br/>Either here or per library |
-| [`tmdb`](tmdb)                | &#9989;                                 |
-| [`github`](github)            | &#10060;                                |
-| [`tautulli`](tautulli)        | &#10060;                                |
-| [`omdb`](omdb)                | &#10060;                                |
-| [`notifiarr`](notifiarr)      | &#10060;                                |
-| [`anidb`](anidb)              | &#10060;                                |
-| [`radarr`](radarr)            | &#10060;                                |
-| [`sonarr`](sonarr)            | &#10060;                                |
-| [`trakt`](trakt)              | &#10060;                                |
-| [`mal`](myanimelist)          | &#10060;                                |
+| Attribute                        | Required                                                              |
+|:---------------------------------|:----------------------------------------------------------------------|
+| [`libraries`](libraries.md)      | :fontawesome-solid-circle-check:{ .green }                          |
+| [`playlist_files`](playlists.md) | :fontawesome-solid-circle-xmark:{ .red }                            |
+| [`settings`](settings.md)        | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`webhooks`](webhooks.md)        | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`plex`](plex.md)                | :fontawesome-solid-circle-check:{ .green } Either here or per library |
+| [`tmdb`](tmdb.md)                | :fontawesome-solid-circle-check:{ .green }                            |
+| [`github`](github.md)            | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`tautulli`](tautulli.md)        | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`omdb`](omdb.md)                | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`notifiarr`](notifiarr.md)      | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`anidb`](anidb.md)              | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`radarr`](radarr.md)            | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`sonarr`](sonarr.md)            | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`trakt`](trakt.md)              | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`mal`](myanimelist.md)          | :fontawesome-solid-circle-xmark:{ .red }                              |
 
 ## Configuration File Example
 
 This example outlines what a "standard" config.yml file might look like when in use.
-
-```{literalinclude} ../../config/config.yml.template
----
-language: yaml
----
-```

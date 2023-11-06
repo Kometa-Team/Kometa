@@ -14,8 +14,8 @@ tautulli:
 
 | Attribute | Allowed Values                                        | Default | Required |
 |:----------|:------------------------------------------------------|:--------|:--------:|
-| `url`     | Tautulli URL<br>**Example:** http://192.168.1.12:8659 | N/A     | &#9989;  |
-| `apikey`  | Tautulli API Key                                      | N/A     | &#9989;  |
+| `url`     | Tautulli URL<br>**Example:** http://192.168.1.12:8659 | N/A     | :fontawesome-solid-circle-check:{ .green }  |
+| `apikey`  | Tautulli API Key                                      | N/A     | :fontawesome-solid-circle-check:{ .green }  |
 
 * The apikey can be found by going to Tautulli > Settings > Web Interface > API > API Key
 

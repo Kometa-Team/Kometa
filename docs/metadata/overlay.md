@@ -16,8 +16,8 @@ These are the attributes which can be used within the Overlay File:
 
 | Attribute                                               | Description                                                                                                        |
 |:--------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates)                                | contains definitions of templates that can be leveraged by multiple overlays                                       |
-| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths) that point to external templates that can be leveraged by multiple overlays |
+| [`templates`](templates.md)                                | contains definitions of templates that can be leveraged by multiple overlays                                       |
+| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths.md) that point to external templates that can be leveraged by multiple overlays |
 | [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                       |
 | [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                   |
 
@@ -40,9 +40,9 @@ overlays:
 
 There are multiple types of attributes that can be utilized within an overlay:
 
-* [Builders](builders)
-* [Settings/Updates](update)
-* [Filters](filters)
+* [Builders](builders.md)
+* [Settings/Updates](update.md)
+* [Filters]filters.md)
 
 ## Overlay
 
@@ -218,7 +218,7 @@ There are multiple Special Text Variables that can be used when formatting the t
 | `<<bitrate>>`: Bitrate of the first media file for an item.<br>`<<bitrateH>>`: Bitrate of the media file with the highest bitrate<br>`<<bitrateL>>`: Bitrate of the media file with the lowest bitrate                                                                                                                                                                                                                                | &#9989;  | &#10060; | &#10060; | &#9989;  |
 | `<<originally_available>>`: Original Available Date of the Item<br>`<<originally_available[FORMAT]>>`: Original Available Date of the Item in the given format. [Format Options](https://strftime.org/)                                                                                                                                                                                                                               | &#9989;  | &#9989;  | &#10060; | &#9989;  |
 
-Note: You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
+Note: You can use the `mass_audience_rating_update` or `mass_critic_rating_update` [Library Operation](../config/operations.md) to update your plex ratings to various services like `tmdb`, `imdb`, `mdb`, `metacritic`, `letterboxd` and many more.
 
 ##### Example
 

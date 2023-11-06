@@ -14,7 +14,7 @@ Please consider [donating](https://github.com/sponsors/meisnate12) towards the p
 
 ## Collection Defaults
 
-See the [Collection Defaults](collections) Page for more information on the specifics of the Collection Defaults.
+See the [Collection Defaults](collections.md) Page for more information on the specifics of the Collection Defaults.
 
 ## Overlay Defaults
 
@@ -58,9 +58,10 @@ libraries:
           builder_level: episode
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings.md).
 
-**In addition to the defined `template_variables` almost all default Metadata and Overlay files have access to their respective [Metadata](collection_variables)/[Overlay](overlay_variables.md) Shared Variables.**
+**In addition to the defined `template_variables` almost all default Metadata and Overlay files have access to their respective [Metadata](collection_variables.md)/[Overlay](overlay_variables.md) Shared Variables.**
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}

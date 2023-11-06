@@ -4,7 +4,7 @@ The `ratings` Default Overlay File is used to create an overlay based on the Cri
 
 This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info.
 
-**Please read [PMM Ratings Explained](../../home/guides/ratings) for more understanding on how PMM interacts with ratings.**
+**Please read [PMM Ratings Explained](../../pmm/install/guides/ratings.md) for more understanding on how PMM interacts with ratings.**
 
 ![](images/ratings_overlay.png)
 
@@ -66,9 +66,9 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
-All [Shared Overlay Variables](../overlay_variables) can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
+All [Shared Overlay Variables](../overlay_variables.md) can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
 | Variable            | Default     |
 |:--------------------|:------------|
