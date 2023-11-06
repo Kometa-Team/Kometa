@@ -46,5 +46,5 @@ libraries:
     overlay_path:
       - pmm: mediastinger
         template_variables:
-          font_color: "#FFFFFF99"
+          back_color: "#FFFFFF99"
 ```
