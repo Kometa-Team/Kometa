@@ -12,7 +12,7 @@ builders = [
     "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
     "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
     "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "trakt_collection", "trakt_popular", "trakt_trending", "trakt_watchlist"
+    "trakt_collection", "trakt_anticipated", "trakt_popular", "trakt_trending", "trakt_watchlist"
 ]
 sorts = [
     "rank", "added", "title", "released", "runtime", "popularity",
@@ -442,7 +442,7 @@ class Trakt:
             try:
                 if method_name == "trakt_chart":
                     final_dict = {}
-                    final_dict["chart"] = util.parse(err_type, "chart", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "collected", "trending", "popular"])
+                    final_dict["chart"] = util.parse(err_type, "chart", trakt_dict, methods=dict_methods, parent=method_name, options=["recommended", "watched", "anticipated", "collected", "trending", "popular"])
                     final_dict["limit"] = util.parse(err_type, "limit", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", default=10)
                     final_dict["time_period"] = None
                     if final_dict["chart"] in ["recommended", "watched", "collected"] and "time_period" in dict_methods:
