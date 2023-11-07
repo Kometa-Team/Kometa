@@ -382,42 +382,42 @@ nav:
           - MyAnimeList UserList: builders/myanimelist/#myanimelist-userlist
           - MyAnimeList Seasonal: builders/myanimelist/#myanimelist-seasonal
       - "DYNAMIC COLLECTIONS":
-        - Overview: builders/dynamic.md
+        - Overview: metadata/dynamic.md
         - Dynamic Collection Builders:
           - TMDb Dynamic Collections:
-            - TMDb Collection: builders/dynamic/#tmdb-collection
-            - TMDb Popular People: builders/dynamic/#tmdb-popular-people
-            - Original Language: builders/dynamic/#original-language
-            - Origin Country: builders/dynamic/#origin-country
+            - TMDb Collection: metadata/dynamic/#tmdb-collection
+            - TMDb Popular People: metadata/dynamic/#tmdb-popular-people
+            - Original Language: metadata/dynamic/#original-language
+            - Origin Country: metadata/dynamic/#origin-country
           - Trakt  Dynamic Collections:
-            - Trakt User Lists: builders/dynamic/#trakt-user-lists
-            - Trakt Liked Lists: builders/dynamic/#trakt-liked-lists
-            - Trakt People Lists: builders/dynamic/#trakt-people-lists
+            - Trakt User Lists: metadata/dynamic/#trakt-user-lists
+            - Trakt Liked Lists: metadata/dynamic/#trakt-liked-lists
+            - Trakt People Lists: metadata/dynamic/#trakt-people-lists
           - Plex Dynamic Collections:
-            - Actor: builders/dynamic/#actor
-            - Director: builders/dynamic/#director
-            - Writer: builders/dynamic/#writer
-            - Producer: builders/dynamic/#producer
-            - Genre: builders/dynamic/#genre
-            - Album Genre: builders/dynamic/#album-genre
-            - Content Rating: builders/dynamic/#content-rating
-            - Year: builders/dynamic/#year
-            - Decade: builders/dynamic/#decade
-            - Country: builders/dynamic/#country
-            - Resolution: builders/dynamic/#resolution
-            - Subtitle Language: builders/dynamic/#subtitle-language
-            - Audio Language: builders/dynamic/#audio-language
-            - Studio: builders/dynamic/#studio
-            - Edition: builders/dynamic/#edition
-            - Network: builders/dynamic/#network
-            - Mood: builders/dynamic/#mood
-            - Album Mood: builders/dynamic/#album-mood
-            - Track Mood: builders/dynamic/#track-mood
-            - Style: builders/dynamic/#style
-            - Album Style: builders/dynamic/#album-style
+            - Actor: metadata/dynamic/#actor
+            - Director: metadata/dynamic/#director
+            - Writer: metadata/dynamic/#writer
+            - Producer: metadata/dynamic/#producer
+            - Genre: metadata/dynamic/#genre
+            - Album Genre: metadata/dynamic/#album-genre
+            - Content Rating: metadata/dynamic/#content-rating
+            - Year: metadata/dynamic/#year
+            - Decade: metadata/dynamic/#decade
+            - Country: metadata/dynamic/#country
+            - Resolution: metadata/dynamic/#resolution
+            - Subtitle Language: metadata/dynamic/#subtitle-language
+            - Audio Language: metadata/dynamic/#audio-language
+            - Studio: metadata/dynamic/#studio
+            - Edition: metadata/dynamic/#edition
+            - Network: metadata/dynamic/#network
+            - Mood: metadata/dynamic/#mood
+            - Album Mood: metadata/dynamic/#album-mood
+            - Track Mood: metadata/dynamic/#track-mood
+            - Style: metadata/dynamic/#style
+            - Album Style: metadata/dynamic/#album-style
           - Other Dynamic Collections:
-            - Number: builders/dynamic/#number
-            - Custom: builders/dynamic/#custom
+            - Number: metadata/dynamic/#number
+            - Custom: metadata/dynamic/#custom
       - SETTINGS & UPDATES:
         - Overview: metadata/update.md
         - Settings:
