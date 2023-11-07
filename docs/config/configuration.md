@@ -29,3 +29,10 @@ This table outlines the third-party services that Plex Meta Manager can make use
 ## Configuration File Example
 
 This example outlines what a "standard" config.yml file might look like when in use.
+
+~~~yaml
+{%    
+  include-markdown "./config.yml.template" 
+  comments=false
+%}
+~~~
