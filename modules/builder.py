@@ -2642,7 +2642,7 @@ class CollectionBuilder:
                 if tmdb_f:
                     if not tmdb_item and isinstance(item, (Movie, Show)):
                         if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
-                            logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
+                            logger.info(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
                             or_result = False
                         else:
                             try:
@@ -2651,20 +2651,20 @@ class CollectionBuilder:
                                 else:
                                     tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True), ignore_cache=True)
                             except Failed as e:
-                                logger.error(e)
+                                logger.info(e)
                                 or_result = False
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.library.movie_rating_key_map) is False:
                         or_result = False
                 if imdb_f:
                     if not imdb_info and isinstance(item, (Movie, Show)):
                         if item.ratingKey not in self.library.imdb_rating_key_map:
-                            logger.warning(f"Filter Error: No IMDb ID found for {item.title}")
+                            logger.info(f"Filter Error: No IMDb ID found for {item.title}")
                             or_result = False
                         else:
                             try:
                                 imdb_info = self.config.IMDb.keywords(self.library.imdb_rating_key_map[item.ratingKey], self.language)
                             except Failed as e:
-                                logger.error(e)
+                                logger.info(e)
                                 or_result = False
                     if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
