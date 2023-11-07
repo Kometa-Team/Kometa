@@ -2515,8 +2515,6 @@ class CollectionBuilder:
                 amount_unchanged += 1
             else:
                 items_added.append(item)
-                if not self.playlist:
-                    self.library.alter_collection(item, name, smart_label_collection=self.smart_label_collection)
                 amount_added += 1
                 if self.details["changes_webhooks"]:
                     self.notification_additions.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
@@ -2526,6 +2524,8 @@ class CollectionBuilder:
             logger.info(f"Playlist: {self.name} created")
         elif self.playlist and items_added:
             self.obj.addItems(items_added)
+        elif items_added:
+        	self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
         if self.do_report and items_added:
             self.library.add_additions(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_added], self.library.is_movie)
         logger.exorcise()
@@ -2548,14 +2548,14 @@ class CollectionBuilder:
                 number_text = f"{i}/{total}"
                 logger.info(f"{number_text:>{spacing}} | {self.name} {self.Type} | - | {util.item_title(item)}")
                 items_removed.append(item)
-                if not self.playlist:
-                    self.library.alter_collection(item, self.name, smart_label_collection=self.smart_label_collection, add=False)
                 amount_removed += 1
                 if self.details["changes_webhooks"]:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
                 self.library._reload(self.obj)
                 self.obj.removeItems(items_removed)
+            elif items_removed:
+            	self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
             if self.do_report and items_removed:
                 self.library.add_removed(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed], self.library.is_movie)
             logger.info("")
