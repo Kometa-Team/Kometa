@@ -880,24 +880,19 @@ class Plex(Library):
                  r._data.attrib.get('promotedToOwnHome'), r._data.attrib.get('promotedToSharedHome'))
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
-    def alter_collection(self, item, collection, smart_label_collection=False, add=True):
+    def alter_collection(self, items, collection, smart_label_collection=False, add=True):
+        self.Plex.batchMultiEdits(items)
         if smart_label_collection:
-            self.query_data(item.addLabel if add else item.removeLabel, collection)
+            if add: 
+            	self.Plex.addLabel(collection) 
+            else: 
+            	self.Plex.removeLabel(collection)
         else:
-            locked = True
-            item = self.reload(item)
-            if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
-                field = next((f for f in item.fields if f.name == "collection"), None)
-                locked = field is not None
-            try:
-                self.query_collection(item, collection, locked=locked, add=add)
-            except TypeError:
-                logger.info(item.collections)
-                for col in item.collections:
-                    logger.info(col.id)
-                    logger.info(col.key)
-                    logger.info(col.tag)
-                raise
+            if add:
+                self.Plex.addCollection(collection)
+            else:
+            	self.Plex.removeCollection(collection)
+        self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
