@@ -143,14 +143,14 @@ However, these branches (especially Nightly) are recommended for more technical 
     Switching to `nightly`:
 
     === "Running in Docker"
-        Add ":develop" to the image name in your run command or configuration:
+        Add ":nightly" to the image name in your run command or configuration:
             ```
-            meisnate12/plex-meta-manager:develop
+            meisnate12/plex-meta-manager:nightly
             ```
     === "Running on the Host"
         In the directory where you cloned PMM:
             ```bash
-            git checkout develop
+            git checkout nightly
             ```
         To switch back:
             ```bash
