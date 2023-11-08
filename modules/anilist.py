@@ -36,6 +36,7 @@ media_source = {
     "original": "ORIGINAL", "manga": "MANGA", "light_novel": "LIGHT_NOVEL", "visual_novel": "VISUAL_NOVEL",
     "video_game": "VIDEO_GAME", "other": "OTHER", "novel": "NOVEL", "doujinshi": "DOUJINSHI", "anime": "ANIME"
 }
+score_format = {"point_100": "POINT_100", "point_10": "POINT_10", "point_10_decimal": "POINT_10_decimal", "point_5": "POINT_5", "point_3": "POINT_3"}
 base_url = "https://graphql.anilist.co"
 tag_query = "query{MediaTagCollection {name, category}}"
 genre_query = "query{GenreCollection}"
@@ -221,23 +222,28 @@ class AniList:
 
         return anilist_ids, ignore_ids, name
 
-    def _userlist(self, username, list_name, sort_by):
+    def _userlist(self, username, list_name, sort_by, score_filter=None):
+        score_format_query = score_format["point_100"]
+        if score_filter is not None and score_filter["score_format"] is not None:
+            score_format_query = score_filter["score_format"]
+
         query = """
-            query ($user: String, $sort: [MediaListSort]) {
+            query ($user: String, $sort: [MediaListSort], $scoreFormat: ScoreFormat) {
               MediaListCollection (userName: $user, sort: $sort, type: ANIME) {
                 lists {
                   name 
                   entries {
+                    score(format: $scoreFormat)
                     media{id}
                   }
                 }
               }
             }
         """
-        variables = {"user": username, "sort": userlist_sort_options[sort_by]}
+        variables = {"user": username, "sort": userlist_sort_options[sort_by], "scoreFormat": score_format_query}
         for alist in self._request(query, variables)["data"]["MediaListCollection"]["lists"]:
             if alist["name"] == list_name:
-                return [m["media"]["id"] for m in alist["entries"]]
+                return [m["media"]["id"] for m in alist["entries"] if score_filter is None or util.is_number_filter(score_filter["score"], score_filter["modifier"], m["score"])]
         return []
 
     def validate_userlist(self, data):
@@ -293,7 +299,7 @@ class AniList:
             anilist_ids, _, name = self._relations(data)
             logger.info(f"Processing AniList Relations: ({data}) {name} ({len(anilist_ids)} Anime)")
         elif method == "anilist_userlist":
-            anilist_ids = self._userlist(data["username"], data["list_name"], data["sort_by"])
+            anilist_ids = self._userlist(data["username"], data["list_name"], data["sort_by"], data["score_filter"]])
             logger.info(f"Processing AniList Userlist: {data['list_name']} from {data['username']} sorted by {pretty_user[data['sort_by']]}")
         else:
             if method == "anilist_popular":
