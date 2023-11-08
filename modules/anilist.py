@@ -36,7 +36,7 @@ media_source = {
     "original": "ORIGINAL", "manga": "MANGA", "light_novel": "LIGHT_NOVEL", "visual_novel": "VISUAL_NOVEL",
     "video_game": "VIDEO_GAME", "other": "OTHER", "novel": "NOVEL", "doujinshi": "DOUJINSHI", "anime": "ANIME"
 }
-score_format = {"point_100": "POINT_100", "point_10": "POINT_10", "point_10_decimal": "POINT_10_decimal", "point_5": "POINT_5", "point_3": "POINT_3"}
+score_format = {"point_100": "POINT_100", "point_10_decimal": "POINT_10_DECIMAL", "point_10": "POINT_10", "point_5": "POINT_5", "point_3": "POINT_3"}
 base_url = "https://graphql.anilist.co"
 tag_query = "query{MediaTagCollection {name, category}}"
 genre_query = "query{GenreCollection}"
