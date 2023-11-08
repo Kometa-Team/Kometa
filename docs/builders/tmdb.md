@@ -44,7 +44,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 | [`tmdb_on_the_air`](#tmdb-on-the-air)           | Finds the shows in TMDb's [On TV Shows](https://www.themoviedb.org/tv/on-the-air) list                                                                                                                                                                                                                           |     &#10060;      |     &#9989;      |               &#9989;                |
 | [`tmdb_trending_daily`](#tmdb-trending-daily)   | Finds the movies/shows in TMDb's Trending Daily list                                                                                                                                                                                                                                                             |      &#9989;      |     &#9989;      |               &#9989;                |
 | [`tmdb_trending_weekly`](#tmdb-trending-weekly) | Finds the movies/shows in TMDb's Trending Weekly list                                                                                                                                                                                                                                                            |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`tmdb_discover`](#tmdb-discover)               | Uses [TMDb's Discover Search](https://www.themoviedb.org/documentation/api/discover) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`tmdb_discover`](#tmdb-discover)               | Uses [TMDb's Discover Search](https://developer.themoviedb.org/docs/search-and-query-for-details) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided |      &#9989;      |     &#9989;      |               &#9989;                |
 
 ## Expected Input
 
@@ -416,7 +416,7 @@ collections:
 
 ## TMDb Discover
 
-Uses [TMDb's Discover Search](https://www.themoviedb.org/documentation/api/discover) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided.
+Uses [TMDb's Discover Search](https://developer.themoviedb.org/docs/search-and-query-for-details) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided.
 
 I've observed many attributes that begin with `with_` or `without_` being able to use `|` as an `OR` and `&` as an `AND` when specifying multiple items even though it's not listed as possible.
 
