@@ -882,16 +882,7 @@ class Plex(Library):
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         self.Plex.batchMultiEdits(items)
-        if smart_label_collection:
-            if add: 
-            	self.Plex.addLabel(collection) 
-            else: 
-            	self.Plex.removeLabel(collection)
-        else:
-            if add:
-                self.Plex.addCollection(collection)
-            else:
-            	self.Plex.removeCollection(collection)
+        self.query_data(getattr(self.Plex, f"{'add' if add else 'remove'}{'Label' if smart_label_collection else 'Collection'}"), collection)
         self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):

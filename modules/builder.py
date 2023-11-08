@@ -1393,11 +1393,22 @@ class CollectionBuilder:
         elif method_name == "anilist_userlist":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
-                self.builders.append((method_name, self.config.AniList.validate_userlist({
+                new_dictionary = {
                     "username": util.parse(self.Type, "username", dict_data, methods=dict_methods, parent=method_name),
                     "list_name": util.parse(self.Type, "list_name", dict_data, methods=dict_methods, parent=method_name),
                     "sort_by": util.parse(self.Type, "sort_by", dict_data, methods=dict_methods, parent=method_name, default="score", options=anilist.userlist_sort_options),
-                })))
+                }
+                score_dict = {}
+                for search_method, search_data in dict_data.items():
+                    search_attr, modifier = os.path.splitext(str(search_method).lower())
+                    if search_attr == "score" and modifier in ["gt", "gte", "lt", "lte"]:
+                        score = util.parse(self.Type, search_method, dict_data, datatype="int", default=-1, minimum=0, maximum=10, parent=method_name)
+                        if score > -1:
+                            score_dict[modifier] = score
+                    elif search_attr not in ["username", "list_name", "sort_by"]:
+                        raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
+                new_dictionary["score"] = score_dict
+                self.builders.append((method_name, self.config.AniList.validate_userlist(new_dictionary)))
         elif method_name == "anilist_search":
             if self.current_time.month in [12, 1, 2]:           current_season = "winter"
             elif self.current_time.month in [3, 4, 5]:          current_season = "spring"
@@ -2525,7 +2536,7 @@ class CollectionBuilder:
         elif self.playlist and items_added:
             self.obj.addItems(items_added)
         elif items_added:
-        	self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
+            self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
         if self.do_report and items_added:
             self.library.add_additions(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_added], self.library.is_movie)
         logger.exorcise()
@@ -2555,7 +2566,7 @@ class CollectionBuilder:
                 self.library._reload(self.obj)
                 self.obj.removeItems(items_removed)
             elif items_removed:
-            	self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
+                self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
             if self.do_report and items_removed:
                 self.library.add_removed(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed], self.library.is_movie)
             logger.info("")

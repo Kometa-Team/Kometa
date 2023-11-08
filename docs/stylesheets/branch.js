@@ -6,8 +6,8 @@ function checkURLForBranch() {
 
   if (currentURL.indexOf("nightly") !== -1) {
     // If "config" is found in the URL, change the CSS of .md-header to red
-    document.querySelector(".md-header").style.backgroundColor = "#ef5552";
-    document.querySelector(".md-tabs").style.backgroundColor = "#ef5552";
+    document.querySelector(".md-header").style.backgroundColor = "#262dbd";
+    document.querySelector(".md-tabs").style.backgroundColor = "#262dbd";
 
     // Change the text of <span class="md-ellipsis">
     const ellipsisSpan = document.querySelector(".md-ellipsis");
