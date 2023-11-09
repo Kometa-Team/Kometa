@@ -101,6 +101,28 @@
   color: #e69800;
 }
 
+table.clearTable {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+table.clearTable td {
+  padding: 3px 3px 3px 15px;
+}
+table.clearTable th {
+  text-align: center;
+}
+table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable td, table.clearTable th {
+    background-color: var(--md-default-bg-color);
+    border: 0.05rem solid var(--md-typeset-table-color);
+    border-radius: 0.1rem;
+}
+table.dualTable td, table.dualTable th {
+  padding-left: 15px !important;
+    background-color: var(--md-default-bg-color);
+    border: 0.05rem solid var(--md-typeset-table-color);
+    border-radius: 0.1rem;
+}
+
 [data-md-color-scheme="slate"] .grey {
   color: #414454;
 }
