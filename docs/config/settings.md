@@ -8,6 +8,7 @@ search:
 The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Plex Meta Manager.
 
 Examples of these settings include the ability to:
+
 * Cache each Plex GUID and IDs to increase performance
 * Create asset folders for collections so that custom posters can be stored for upload.
 * Use a custom repository as the base for all `git` Metadata files.
@@ -123,10 +124,12 @@ i.e. `assets/Star Wars/poster.png` instead of `assets/Star Wars.png`
 </table>
 
 ## Asset Depth
+
 Specify how many folder levels to scan for an item within the asset directory<br>
 At each asset level, PMM will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder containing `poster.ext`<br>
 i.e. `assets/Star Wars/poster.png` and `assets/Star Wars.png` are both asset depth 0
 and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are both asset level 1
+
 * `asset_folders` must be set to `true` for this to take effect.
 * increasing the amount of levels to scan will reduce performance
 
@@ -146,6 +149,7 @@ and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are b
 Whilst searching for assets, if an asset folder cannot be found within the `asset_directory` one will be created.
 
 Asset Searches can happen in a number of ways.
+
 * Any Collection specified under the `collections` header in a Metadata File.
 * Any Item specified under the `metadata` header in a Metadata File.
 * Any Playlist specified under the `playlists` header in a Playlist File.
@@ -258,6 +262,7 @@ Whilst searching for assets, show or hide the `update not needed` messages.
 
 ## Sync Mode
 Set the default `sync_mode` for collections.
+
 * `sync` will add and remove any items that are added/removed from the source builder
 * `append` will only add items that are added from the source builder, but will not remove anything even if it is removed from the source builder.
 
@@ -274,7 +279,9 @@ Set the default `sync_mode` for collections.
 </table>
 
 ## Default Collection Order
+
 Set the default `collection_order` for every collection run by PMM.
+
 * `custom` cannot be used if more than one builder is being used for the collection (such as `imdb_list` and `trakt_list` within the same collection)
 
 <table class="dualTable colwidths-auto align-default table">
@@ -309,7 +316,9 @@ Set the minimum number of items that must be found in order to build or update a
 </table>
 
 ## Delete Below Minimum
+
 When a collection is run, delete the collection if it is below the minimum number specified by `minimum_items`.
+
 * Relies on `minimum_items` being set to the desired integer.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -340,8 +349,11 @@ If a collection is skipped due to it not being scheduled, delete the collection.
 </table>
 
 ## Run Again Delay
+
 Set the number of minutes to delay running `run_again` collections after daily run is finished.
+
 For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run "X" amount of time later so that any downloaded items are processed.
+
 * A collection is a `run_again` collection if it has the `run_again` [Setting Detail](../builders/details/definition.md) attribute set to true.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -356,6 +368,7 @@ For example, if a collection adds items to Sonarr/Radarr, the library can automa
 </table>
 
 ## Missing Only Released
+
 Whilst running a collection, all unreleased missing items will be filtered out from the [missing YAML file](../builders/details/definition.md)
 
 <table class="dualTable colwidths-auto align-default table">
@@ -371,6 +384,7 @@ Whilst running a collection, all unreleased missing items will be filtered out f
 </table>
 
 ## Show Unmanaged Collections
+
 List all collections not managed by Plex Meta Manager at the end of each run.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -433,7 +447,9 @@ While `show_missing` is true items missing from collections will be displayed.
 </table>
 
 ## Only Filter Missing
+
 Only items missing from a collection will be filtered. **Only specific filters can filter missing. See [Filters](../metadata/filters.md) for more information.** 
+
 * this can be used to filter which missing media items get sent to Sonarr/Radarr
 
 <table class="dualTable colwidths-auto align-default table">
@@ -479,7 +495,9 @@ Save a report of the items added, removed, filtered, or missing from collections
 </table>
 
 ## TVDb Language
+
 Specify the language to query TVDb in.
+
 * If no language is specified or the specified language is not found then the original language is used.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -496,7 +514,9 @@ Specify the language to query TVDb in.
 <sup>1</sup> Language Codes can be found [here](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
 
 ## Ignore IDs
+
 Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collections.
+
 * this does not apply to `smart_filter` Collections
 
 <table class="dualTable colwidths-auto align-default table">
@@ -511,7 +531,9 @@ Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collectio
 </table>
 
 ## Ignore IMDb IDs
+
 Set a list or comma-separated string of IMDb IDs to ignore in all collections.
+
 * this does not apply to `smart_filter` Collections
 
 <table class="dualTable colwidths-auto align-default table">
@@ -526,7 +548,9 @@ Set a list or comma-separated string of IMDb IDs to ignore in all collections.
 </table>
 
 ## Item Refresh Delay
+
 Specify the amount of time to wait between each `item_refresh` of every movie/show in a collection/playlist.
+
 * Useful if your Plex Media Server is having issues with high request levels.
 
 <table class="dualTable colwidths-auto align-default table">
@@ -541,7 +565,9 @@ Specify the amount of time to wait between each `item_refresh` of every movie/sh
 </table>
 
 ## Playlist Sync to Users
+
 Set the default playlist `sync_to_users`. To Sync a playlist to only yourself leave `playlist_sync_to_users` blank.
+
 * sharing playlists with other users will not share any posters associated with the playlist, this is a Plex limitation.
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -582,7 +608,9 @@ Set `playlist_report` to true to print out a playlist report at the end of the l
 </table>
 
 ## Custom Repo
+
 Specify where the `repo` attribute's base is when defining `metadata_path`, `playlist_file` and `overlay_path`.
+
 * Ensure you are using the raw GitHub link (i.e. https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
 
 <table class="dualTable colwidths-auto align-default table">
@@ -597,7 +625,9 @@ Specify where the `repo` attribute's base is when defining `metadata_path`, `pla
 </table>
 
 ## Verify SSL
+
 Turn SSL Verification on or off.
+
 * set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 <table class="dualTable colwidths-auto align-default table">
   <tr>
@@ -612,7 +642,9 @@ Turn SSL Verification on or off.
 </table>
 
 ## Check Nightly
+
 Will check nightly for updates instead of develop. 
+
 * This does not affect which version of PMM is grabbed when using `git pull` or any other update mechanism, it is only used for the initial version check when PMM runs to specify if a new version is available.
 * It is recommended to set this to `true` if you primarily use the `nightly` branch
 
