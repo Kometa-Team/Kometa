@@ -26,6 +26,7 @@ mal:
 * All other attributes will be filled in by Plex Meta Manager.
 
 * To connect to MyAnimeList.net you must create a MyAnimeList application and supply Plex Meta Manager the `client id` and `client secret` provided, please do the following:
+
 1. [Click here to create a MyAnimeList API application.](https://myanimelist.net/apiconfig/create)
 2. Enter an `App Name` for the application. Ex. `Plex Meta Manager`
 3. Select `web` for `App Type`.
