@@ -49,6 +49,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 ## Expected Input
 
 The builders below are expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+
 * [TMDb Collection](#tmdb-collection) and [TMDb Collection Details](#tmdb-collection)
 * [TMDb List](#tmdb-list) and [TMDb List Details](#tmdb-list)
 * [TMDb Actor](#tmdb-actor) and [TMDb Actor Details](#tmdb-actor)
@@ -62,6 +63,7 @@ The builders below are expected to have the full URL to the item or the TMDb ID 
 * [TMDb Network](#tmdb-network)
 
 The builders below are expected to have a single integer value of how many movies/shows to query.
+
 * [TMDb Popular](#tmdb-popular)
 * [TMDb Now Playing](#tmdb-now-playing)
 * [TMDb Top Rated](#tmdb-top-rated)
