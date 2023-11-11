@@ -139,6 +139,7 @@ All [Shared Overlay Variables](../overlay_variables.md) are available with the d
 | `back_align`        | `left`/`right`               |
 | `font`              | `fonts/Inter-Bold.ttf`       |
 | `font_size`         | `50`                         |
+| `font_color`        | `#FFFFFFFF`                  |
 
 | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -167,6 +168,7 @@ libraries:
     overlay_path:
       - pmm: languages
         template_variables:
+          font_color: '#008000FF'
           languages:
             - en
             - ja

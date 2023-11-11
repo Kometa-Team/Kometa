@@ -52,6 +52,7 @@ external_templates:
     back_width: <<width>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
+    font_color: "#FFFFFFFF"
     font_size: 50
     final_name: text(<<final_text>>)
 
