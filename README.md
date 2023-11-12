@@ -1,4 +1,4 @@
-# <img src="https://metamanager.wiki/en/latest/_static/logo-full.png" alt="PMM">
+# <img src="https://www.metamanager.wiki/en/latest/_static/logo-full.png" alt="PMM">
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/meisnate12/Plex-Meta-Manager?style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/releases)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/meisnate12/plex-meta-manager?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/meisnate12/plex-meta-manager)
@@ -8,7 +8,7 @@
 
 [![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/gYU8wATxKw)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
-[![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
+[![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://www.metamanager.wiki)
 [![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/projects/plex-meta-manager/#languages)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
@@ -36,21 +36,21 @@ Plex Meta Manager can
 
 These are the high-level steps you must take to get Plex Meta Manager up and running:
 
-1. Install Plex Meta Manager; this process is described [here](https://metamanager.wiki/en/latest/home/installation.html).
+1. Install Plex Meta Manager; this process is described [here](https://www.metamanager.wiki/en/latest/home/installation.html).
 
-2. Once installed, you have to create a [Configuration File](https://metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
+2. Once installed, you have to create a [Configuration File](https://www.metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
 
-3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://metamanager.wiki/en/latest/metadata/metadata.html) for each Library you want to interact with.
+3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://www.metamanager.wiki/en/latest/metadata/metadata.html) for each Library you want to interact with.
 
-4. After that, explore the [Wiki](https://metamanager.wiki/) to see all the different Collection Builders that can be used to create collections.
+4. After that, explore the [Wiki](https://www.metamanager.wiki/) to see all the different Collection Builders that can be used to create collections.
 
 ## Walkthroughs
 
 If you find steps 1-3 above daunting, there are some walkthroughs available that will take you through those three steps: getting Plex Meta Manager installed, creating a config file, and creating a couple collections to show how the process works.
 
-   1. The [Local Walkthrough](https://metamanager.wiki/en/latest/home/guides/local.html) covers installing the script natively [not in docker] on your local computer or a remote server.
-   2. The [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) covers the same thing, running the script via Docker.
-   3. The [unRAID Walkthrough](https://metamanager.wiki/en/latest/home/guides/unraid.html) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) first on your computer to gain that understanding.
+   1. The [Local Walkthrough](https://www.metamanager.wiki/en/latest/home/guides/local.html) covers installing the script natively [not in docker] on your local computer or a remote server.
+   2. The [Docker Walkthrough](https://www.metamanager.wiki/en/latest/home/guides/docker.html) covers the same thing, running the script via Docker.
+   3. The [unRAID Walkthrough](https://www.metamanager.wiki/en/latest/home/guides/unraid.html) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](https://www.metamanager.wiki/en/latest/home/guides/docker.html) first on your computer to gain that understanding.
 
 ## Example Usage
 
@@ -65,19 +65,19 @@ Some example collections that can be created are:
   * Actors
   * Decades
 
-Below are some user-curated collections which have been created by Plex Meta Manager using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html).
+Below are some user-curated collections which have been created by Plex Meta Manager using the [PMM Defaults](https://www.metamanager.wiki/en/latest/defaults/guide.html).
 
 ### Example Movie Collection
-![Movie Collection Preview](https://metamanager.wiki/en/latest/_images/movie-collection-preview.png)
+![Movie Collection Preview](https://www.metamanager.wiki/en/latest/_images/movie-collection-preview.png)
 
 ### Example Movie Overlays
-![Movie Library Preview](https://metamanager.wiki/en/latest/_images/movie-library-preview.png)
+![Movie Library Preview](https://www.metamanager.wiki/en/latest/_images/movie-library-preview.png)
 
 ### Example Show Collection
-![Show Collection Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
+![Show Collection Preview](https://www.metamanager.wiki/en/latest/_images/show-collection-preview.png)
 
 ### Example Show Overlays
-![Show Library Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
+![Show Library Preview](https://www.metamanager.wiki/en/latest/_images/show-collection-preview.png)
 
 ## Develop & Nightly Branches
 
@@ -110,7 +110,7 @@ git checkout master
 ```
 ````
 
-If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master branch.
+If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://www.metamanager.wiki/en/develop/), which documents any changes made from the Master branch.
 
 </details>
 
@@ -144,12 +144,12 @@ git checkout master
 ```
 ````
 
-As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/gYU8wATxKw).
+As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://www.metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/gYU8wATxKw).
 </details>
 
 ## Defaults and User Metadata/Overlay Files
 
-The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
+The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](https://www.metamanager.wiki/en/latest/defaults/guide.html). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
 
 To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
 
@@ -164,7 +164,7 @@ If you have an idea for how to enhance Plex Meta Manager or just want to vote on
 ## Errors and Configuration Questions
 If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/gYU8wATxKw), please follow this guidance:
 * If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) if the error persists.
-* If you see a mistake/typo with the [Plex Meta Manager Wiki](https://metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
+* If you see a mistake/typo with the [Plex Meta Manager Wiki](https://www.metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
 * If you have a metadata configuration query please post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).
 
 ## Contributing

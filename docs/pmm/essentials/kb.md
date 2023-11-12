@@ -165,7 +165,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
 ??? question "Any tips on increasing PMM performance?"
 
-    Use PMM Caching where possible, this allows PMM to temporarily store commonly-used information so that it can be retreived more efficiently. There are [multipe things](https://metamanager.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within PMM.
+    Use PMM Caching where possible, this allows PMM to temporarily store commonly-used information so that it can be retreived more efficiently. There are [multipe things](https://www.metamanager.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within PMM.
     
     Run PMM after PLEX Scheduled Tasks, as Plex's API tends to be slower at responding whilst it is performing the tasks. By default, PMM runs at 5AM to avoid the 3-5am window that Plex suggests for Scheduled Tasks.
     

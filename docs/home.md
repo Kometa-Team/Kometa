@@ -9,7 +9,7 @@
 
 [![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/NfH6mGFuAB)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
-[![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
+[![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://www.metamanager.wiki)
 [![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/projects/plex-meta-manager/#languages)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
@@ -70,7 +70,7 @@ To get started with Plex Meta Manager, follow these simple steps:
 
 3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a [Metadata File](metadata/metadata.md) for each Library you want to work with. If you'd rather use some of our pre-made Metadata Files, take a look at the [Plex Meta Manager Defaults](#defaults-and-user-metadataoverlay-files)
 
-4. Finally, check out the [Wiki](https://metamanager.wiki/), you'll find new and exciting ways to truly unlock the potential of your libraries.
+4. Finally, check out the [Wiki](https://www.metamanager.wiki/), you'll find new and exciting ways to truly unlock the potential of your libraries.
 
 ## Step-by-Step Guides
 
@@ -130,7 +130,7 @@ However, these branches (especially Nightly) are recommended for more technical 
             ```
 
     
-    If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://metamanager.wiki/en/develop/), which documents any changes made from the Master branch.
+    If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://www.metamanager.wiki/en/develop/), which documents any changes made from the Master branch.
 
 ??? warning "Nightly Branch - Click to Expand"
 
@@ -157,7 +157,7 @@ However, these branches (especially Nightly) are recommended for more technical 
             git checkout master
             ```
 
-    As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
+    As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://www.metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB).
 
 ## Discord Support Server
 
@@ -172,7 +172,7 @@ At Plex Meta Manager, we value our community's input and actively seek feedback 
 If you're having trouble, we recommend first joining the [Plex Meta Manager Discord Server](https://discord.gg/NfH6mGFuAB) and seeking support there. If that isn't possible for you, here's what you can do:
 
 * If you get an error, update to the latest version and check if the issue persists. If it does, report the bug by filling out the [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) template.
-* If you spot a mistake or have an idea to improve the [Plex Meta Manager Wiki](https://metamanager.wiki/), submit a request using the [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+) template.
+* If you spot a mistake or have an idea to improve the [Plex Meta Manager Wiki](https://www.metamanager.wiki/), submit a request using the [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+) template.
 * If you have a question about metadata configuration, start a discussion on the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions). Remember, the community helps shape the future of Plex Meta Manager, so your input is valuable!
 
 For support on any of the above, visit the [Discord server](https://discord.gg/ugfKXpFND8).
