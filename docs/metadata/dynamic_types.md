@@ -77,7 +77,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collection for every TMDb Collection found in the library.
+#### Example: Create collection for every TMDb Collection found in the library.
 
 ```yaml
 dynamic_collections:
@@ -128,7 +128,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collection for the top 10 popular people
+#### Example: Create collection for the top 10 popular people
 
 ```yaml
 dynamic_collections:
@@ -177,7 +177,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collection for every TMDb Original Language found in the library.
+#### Example: Create collection for every TMDb Original Language found in the library.
 
 ```yaml
 dynamic_collections:
@@ -225,7 +225,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collection for every TMDb Origin Country found in the library.
+#### Example: Create collection for every TMDb Origin Country found in the library.
 
 ```yaml
 dynamic_collections:
@@ -273,7 +273,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collections for each of the lists that the users have created
+#### Example: Create collections for each of the lists that the users have created
 
 ```yaml
 dynamic_collections:
@@ -324,7 +324,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create collections for each of the lists that the user has liked within Trakt
+#### Example: Create collections for each of the lists that the user has liked within Trakt
 
 ```yaml
 dynamic_collections:
@@ -375,7 +375,7 @@ default_template:
   </tr>
 </table>
 
-### Example: Create a collection for each of the people on the trakt list
+#### Example: Create a collection for each of the people on the trakt list
 ```yaml
 dynamic_collections:
   Trakt People Lists:
@@ -450,7 +450,7 @@ default_template:
 * `minimum` determines the minimum number of times the actor must appear within `depth` for the collection to be created.
 * `limit` determines the number of actor collection to max out at. (i.e. if to make collections for the top 25 actors)
 
-### Example:
+#### Example:
 
 * Create a collection for the top 25 actors who appear in the top 5 billing credits of movies
 
@@ -463,7 +463,7 @@ dynamic_collections:
       limit: 25
 ```
 
-### Example:
+#### Example:
 
 * Create a collection for actors who appear in the top 5 billing credits of movies
 * Only create the collection if they are in the top 5 billing credits of at least 20 movies
@@ -543,7 +543,7 @@ default_template:
 * `minimum` determines the minimum number of times the director must appear within `depth` for the collection to be created.
 * `limit` determines the number of director collection to max out at. (i.e. if to make collections for the top 25 directors)
 
-### Example:
+#### Example:
 
 * Create a collection for the top 5 directors who appear in the top director credit of movies
 
@@ -556,7 +556,7 @@ dynamic_collections:
       limit: 5
 ```
 
-### Example:
+#### Example:
 
 * Create a collection for directors who appear in the top director credits of movies
 * Only create the collection if they are in the top director credits of at least 10 movies
@@ -636,7 +636,7 @@ default_template:
 * `minimum` determines the minimum number of times the writer must appear within `depth` for the collection to be created.
 * `limit` determines the number of writer collection to max out at. (i.e. if to make collections for the top 25 writers)
 
-### Example:
+#### Example:
 
 * Create a collection for the top 5 writers who appear in the top writer credit of movies
 
@@ -649,7 +649,7 @@ dynamic_collections:
       limit: 5
 ```
 
-### Example:
+#### Example:
 
 * Create a collection for writers who appear in the top writer credits of movies
 * Only create the collection if they are in the top writer credits of at least 10 movies
@@ -729,7 +729,7 @@ default_template:
 * `minimum` determines the minimum number of times the producer must appear within `depth` for the collection to be created.
 * `limit` determines the number of producer collection to max out at. (i.e. if to make collections for the top 25 producers)
 
-### Example:
+#### Example:
 
 * Create a collection for the top 5 producers who appear in the top producer credit of movies
 
@@ -742,7 +742,7 @@ dynamic_collections:
       limit: 5
 ```
 
-### Example:
+#### Example:
 
 * Create a collection for producers who appear in the top producer credits of movies
 * Only create the collection if they are in the top producer credits of at least 10 movies
@@ -798,7 +798,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create dynamic collections based on each genre found in the library (TV and Movies)
 * Amend the template to increase the limit from 50 to 100
@@ -864,7 +864,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create dynamic collections based on each Album genre found in the library
 * Amend the template to increase the limit from 10 to 20 
@@ -930,7 +930,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create dynamic collections based on each content rating found in the library (TV and Movies)
 * Amend the template to increase the limit from 50 to 100
@@ -991,7 +991,7 @@ default_template:
   </tr>
 </table>
 
-### Example
+#### Example
 
 * Create dynamic collections based on each year found in the library (TV and Movies)
 * Use the `include` attribute to only show collections for years "2020", "2021" and "2022"
@@ -1050,7 +1050,7 @@ default_template:
   </tr>
 </table>
 
-### Example
+#### Example
 
 * Create dynamic collections based on each year found in the library (TV and Movies)
 * Use the `include` attribute to only show collections for years "2020", "2021" and "2022"
@@ -1109,7 +1109,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for each decade found in the library (TV and Movies)
 * Name the collection "Top [Decade] Movies"
@@ -1166,7 +1166,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top movies from each country found in the library
 * Name the collection "Top [Country] Cinema"
@@ -1225,7 +1225,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for each resolution found in the library
 * Name the collection "[Resolution] Movies"
@@ -1284,7 +1284,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for each subtitle language found in the library
 
@@ -1336,7 +1336,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for each audio language found in the library
 
@@ -1389,7 +1389,7 @@ default_template:
 </table>
 
 
-### Example:
+#### Example:
 
 * Create a collection for each studio found in a Movies library
 
@@ -1450,7 +1450,7 @@ default_template:
 </table>
 
 
-### Example:
+#### Example:
 
 * Create a collection for each edition found in a Movies library
 
@@ -1511,7 +1511,7 @@ default_template:
 </table>
 
 
-### Example:
+#### Example:
 
 * Create a collection for each network found in a TV Shows library
 
@@ -1571,7 +1571,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top 20 artists for each mood found in the Music library
 * Amend the template to increase the limit from 10 to 20 
@@ -1634,7 +1634,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top 20 albums for each mood found in the Music library
 * Amend the template to increase the limit from 10 to 20 
@@ -1697,7 +1697,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top 100 tracks for each mood found in the Music library
 * Amend the template to increase the limit from 50 to 100 
@@ -1760,7 +1760,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top 10 artists for each style found in the Music library
 * Name the collection "Top [Style] Artists"
@@ -1822,7 +1822,7 @@ default_template:
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the top 10 albums for each style found in the Music library
 * Name the collection "Top [Style] Albums"
@@ -1901,7 +1901,7 @@ Creates a collection for each number defined.
 </table>
 
 
-### Example:
+#### Example:
 
 * Create a collection for the Oscar Winner by Year for the last 5 years
 * Name the collection "Oscars Winners [Number]"
@@ -1956,7 +1956,7 @@ Creates a collection for each custom `key: key_name` pair defined.
   </tr>
 </table>
 
-### Example:
+#### Example:
 
 * Create a collection for the various Streaming Services
 * Name the collection "[Key Name] Movies"

@@ -86,6 +86,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+      toc_depth: 3
   - pymdownx.emoji:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
       emoji_index: !!python/name:material.extensions.emoji.twemoji
