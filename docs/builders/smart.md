@@ -2,7 +2,9 @@
 
 Smart Builders allow Plex Meta Manager to create Smart Collections in two different ways.
 
-** Smart Builders do not currently work with Playlists **
+???+ note
+    
+    Smart Builders do not currently work with Playlists
 
 ## Smart Label
 

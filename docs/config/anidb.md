@@ -8,7 +8,7 @@ Using `username` and `password` allows you to access mature content with AniDB B
 
 **All AniDB Builders still work without this, they will just not have mature content**
 
-A `anidb` mapping is in the root of the config file.
+An `anidb` mapping is in the root of the config file.
 
 Below is a `anidb` mapping example and the full set of attributes:
 ```yaml
@@ -30,31 +30,31 @@ anidb:
 | `username`         | AniDB Username                                                                                | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 | `password`         | AniDB Password                                                                                | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 
-* To get a Client Name and Client Version please follow the following steps.
+To get a Client Name and Client Version please follow the following steps.
 
-1. Login to [AniDB](https://anidb.net/)
-2. Go to you [API Client Page](https://anidb.net/software/add) and go to the `Add New Project` Tab.
+1.  Login to [AniDB](https://anidb.net/)
+2.  Go to you [API Client Page](https://anidb.net/software/add) and go to the `Add New Project` Tab.
 
-![AniDB Add Project](anidb-1.png)
+    ![AniDB Add Project](anidb-1.png)
 
-3. Fill in the Project Name with whatever name you want and then hit `+ Add Project`. The rest of the settings don't matter.
-4. After you've added the project you should end up on the Projects Page. If not go back to the [API Client Page](https://anidb.net/software/add) and click your projects name. 
-5. Once you're on the project page click `Add Client` in the top right.
+3.  Fill in the Project Name with whatever name you want and then hit `+ Add Project`. The rest of the settings don't matter.
+4.  After you've added the project you should end up on the Projects Page. If not go back to the [API Client Page](https://anidb.net/software/add) and click your projects name. 
+5.  Once you're on the project page click `Add Client` in the top right.
 
-![AniDB Add Client](anidb-2.png)
+    ![AniDB Add Client](anidb-2.png)
 
-6a. Come up with and enter a unique to AniDB Client Name
-6b. Select `HTTP API` in the API Dropdown
-6c. Put `1` for Version.
+6.  Come up with and enter a unique to AniDB Client Name
+7.  Select `HTTP API` in the API Dropdown
+8.  Put `1` for Version.
 
-![AniDB Client Page](anidb-3.png)
+    ![AniDB Client Page](anidb-3.png)
 
-7. Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
+9.  Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
 
-```yaml
-anidb:
-  client: UniqueAniDBName
-  version: 1
-  language: en
-  cache_expiration: 60
-```
+    ```yaml
+    anidb:
+      client: UniqueAniDBName
+      version: 1
+      language: en
+      cache_expiration: 60
+    ```
