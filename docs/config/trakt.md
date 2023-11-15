@@ -31,18 +31,22 @@ trakt:
 
 * All other attributes will be filled in by Plex Meta Manager. 
 
-* To connect to Trakt.tv you must create a Trakt application and supply Plex Meta Manager the `client_id`, `client_secret`, and `pin` provided, please do the following:
-1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
-2. Enter a `Name` for the application.
-3. Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
-4. Click the `SAVE APP` button.
-5. Record the `Client ID` and `Client Secret` as `client_id` and `client_secret` in your Configuration File.
-6. Click the Green Authorize Button next to the Redirect URI
+To connect to Trakt.tv you must create a Trakt application and supply Plex Meta Manager the `client_id`, `client_secret`, and `pin` provided, please do the following:
+
+1.  [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
+2.  Enter a `Name` for the application.
+3.  Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
+4.  Click the `SAVE APP` button.
+5.  Record the `Client ID` and `Client Secret` as `client_id` and `client_secret` in your Configuration File.
+6.  Click the Green Authorize Button next to the Redirect URI
 
     ![Trakt Authorize](trakt.png)
-8. Record the `PIN` as `pin` in your Configuration File.
 
-* Run Plex Meta Manager shortly after obtaining your PIN; the PIN may expire at some point.
+7.  Record the `PIN` as `pin` in your Configuration File.
+
+???+ warning
+
+    Run Plex Meta Manager shortly after obtaining your PIN; the PIN may expire at some point.
 
 ## Online Authorization Script
 

@@ -40,6 +40,7 @@ These overlays are applied by calling the below paths into the `overlay_path` [s
 | [Video Format](overlays/video_format.md)<sup>1</sup>        | `video_format`   | "REMUX", "HDTV"                                                           | &#9989; | &#10071; | &#10071; | &#9989;  |
 
 <sup>1</sup> Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme
+
 <sup>2</sup> Requires Plex Pass or [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 
 ### Production Overlays
