@@ -27,6 +27,7 @@ For those who need full installation walkthroughs, please refer to the following
   * [Docker Walkthrough](guides/docker.md) - this discusses using Docker at the command line
 
 If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to Docker container setup for each system:
+
 **this doesn't cover the PMM setup specifics found in the guides above**
 
   * [unRAID Walkthrough](guides/unraid.md)
@@ -70,11 +71,13 @@ python plex_meta_manager.py
 ```shell
 docker run -it -v <PATH_TO_CONFIG>:/config:rw meisnate12/plex-meta-manager
 ```
-* The `-it` flag allows you to interact with the script when needed (such as for Trakt or MyAnimeList authentication).
-* The `-v <PATH_TO_CONFIG>:/config:rw` flag mounts the location you choose as a persistent volume to store your files.
-  * Change `<PATH_TO_CONFIG>` to a folder where your config.yml and other files are.
-  * The docker image defaults to running the configuration file named `config.yml` which resides in your persistent volume.
-  * If your directory has spaces (such as "My Documents"), place quotation marks around your directory pathing as shown here: `-v "<PATH_TO_CONFIG>:/config:rw"`
+
+- The `-it` flag allows you to interact with the script when needed (such as for Trakt or MyAnimeList authentication).
+- The `-v <PATH_TO_CONFIG>:/config:rw` flag mounts the location you choose as a persistent volume to store your files.
+
+    * Change `<PATH_TO_CONFIG>` to a folder where your config.yml and other files are.
+    * The docker image defaults to running the configuration file named `config.yml` which resides in your persistent volume.
+    * If your directory has spaces (such as "My Documents"), place quotation marks around your directory pathing as shown here: `-v "<PATH_TO_CONFIG>:/config:rw"`
 
 
 Example Docker Run command:
