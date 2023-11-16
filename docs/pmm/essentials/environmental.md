@@ -468,7 +468,7 @@ Delete all labels on every item in a Library prior to running collections/operat
 
      To preserve functionality of PMM, this will **not** remove the Overlay label, which is required for PMM to know which items have Overlays applied.
 
-     This will impact any [Smart Label Collections](../../builders../smart.md#smart-label) that you have in your library.
+     This will impact any [Smart Label Collections](../../builders/smart.md#smart-label) that you have in your library.
 
      We do not recommend using this on a regular basis if you also use any operations or collections that update labels, as you are effectively deleting and adding labels on each run.
 
