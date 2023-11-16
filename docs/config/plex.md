@@ -9,6 +9,7 @@ Configuring [Plex](https://www.plex.tv/) is required in order to connect to your
 A `plex` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `plex` mapping individually per library.
 
 Below is a `plex` mapping example and the full set of attributes:
+
 ```yaml
 plex:
   url: http://192.168.1.12:32400
@@ -30,11 +31,14 @@ plex:
 | `empty_trash`   | Runs Empty Trash on the Server after all Metadata Files are run        | false   | &#10060; |
 | `optimize`      | Runs Optimize on the Server after all Metadata Files are run           | false   | &#10060; |
 
-* **Do Not Use the Plex Token found in Plex's Preferences.xml file**
+???+ warning
+    
+    Do Not Use the Plex Token found in Plex's Preferences.xml file.
 
-* This script can be run on a remote Plex server, but be sure that the `url` provided is publicly addressable, and it's recommended to use `HTTPS`.
+    If you need help finding your Plex authentication token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 
-* If you need help finding your Plex authentication token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
+This script can be run on a remote Plex server, but be sure that the `url` provided is publicly addressable, and it's recommended to use `HTTPS`.
+
 
 # Multi-Plex Instance Setup:
 

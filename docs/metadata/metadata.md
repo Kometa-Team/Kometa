@@ -44,7 +44,7 @@ There are multiple types of attributes that can be utilized within a collection:
 
 * [Builders](builders.md)
 * [Settings/Updates](update.md)
-* [Filters]filters.md)
+* [Filters](filters.md)
 
 ### Example
 

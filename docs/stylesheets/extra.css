@@ -58,9 +58,8 @@
 }
 
 [data-md-color-scheme="slate"] .md-typeset code {
-    background-color: hsl(225deg 17.25% 6.84%);
+    background-color: hsl(225deg 8.87% 10.98%);
 }
-
 @media only screen and (min-width: 76.25em) {
   .md-main__inner {
     max-width: 80%;

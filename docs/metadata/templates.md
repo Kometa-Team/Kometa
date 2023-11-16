@@ -84,7 +84,7 @@ collections:
 
 Note that we provide the template name `Actor` and the value to insert in the place of `<<person>>`. The `<<collection_name>>` is a template variable that is always available and doesn't have to be called out like `<<person>>`.
 
-Inside a template, you can use all the Builders, Details, and [Filters]filters.md) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
+Inside a template, you can use all the Builders, Details, and [Filters](filters.md) attributes that you can give collections/playlists [except `template`; templates cannot be nested].
 
 The names of template variables that you define are arbitrary. In the example above, `<<person>>` could have been `<<tvdb_person_id>>` or `<<bing>>` or anything else. The only thing that matters is that in the template definition you surround them with `<< >>` and in the collection definition you spell it correctly.
 

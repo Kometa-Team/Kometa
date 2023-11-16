@@ -2,22 +2,24 @@
 
 This article will walk you through getting Plex-Meta-Manager [PMM] set up and running.  It will cover:
 
-1. Retrieving the PMM code
-2. Installing requirements
-3. Setting up the initial config file
-4. Setting up a metadata file and creating a couple sample collections.
+1.  Retrieving the PMM code
+2.  Installing requirements
+3.  Setting up the initial config file
+4.  Setting up a metadata file and creating a couple sample collections.
 
 The specific steps you will be taking:
-1. Verify that Python 3.8 or better is installed and install it if not
-2. Verify that the Git tools are installed and install them if not
-3. Use `git` to retrieve the code
-4. Install requirements [extra bits of code required for PMM]
-5. Gather two things that the script requires:
-   1. TMDb API Key
-   2. Plex URL and Token
-6. Then, iteratively:
-   1. use `python` to run the script
-   2. use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
+
+1.  Verify that Python 3.8 or better is installed and install it if not
+2.  Verify that the Git tools are installed and install them if not
+3.  Use `git` to retrieve the code
+4.  Install requirements [extra bits of code required for PMM]
+5.  Gather two things that the script requires:
+    1. TMDb API Key
+    2. Plex URL and Token
+
+6.  Then, iteratively:
+    1. use `python` to run the script
+    2. use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
 
 Note that running a Python script is inherently a pretty technical process.  If you are unable or unwilling to learn the rudiments of using tools like python and git, you should probably strongly consider running PMM in [Docker](docker.md).  That will eliminate the Python and git installs from this process and make it as simple as it can be.
 
@@ -35,15 +37,17 @@ something like this
 
 That’s a command you’re going to type or paste into your terminal (OSX or Linux) or Powershell (Windows).  In some cases it's displaying *output* from a command you've typed, but the difference should be apparent in context.
 
-IMPORTANT NOTE:
-This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Python script going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
+???+ warning ""
 
-I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
+    This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get a Python script going, so I’m proceeding from the assumption that you want to be walked through every little detail.   You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
 
-This walkthrough involves typing commands into a command window.  On Mac OS X or Linux, you can use your standard terminal window, whether that's the builtin Terminal app or something like iTerm.  On Windows, you should use PowerShell.  There are other options for command windows in Windows, but if you want this to work as written, which I assume is the case since you've read this far, you should use Powershell.
+    I am assuming you do not have any of these tools already installed.  When writing this up I started with a brand new Windows 10 install.
 
-IMPORTANT:
-This walkthrough is assuming you are doing the entire process on the same platform; i.e. you're installing PMM and editing its config files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing the config files on your Windows box.
+    This walkthrough involves typing commands into a command window.  On Mac OS X or Linux, you can use your standard terminal window, whether that's the builtin Terminal app or something like iTerm.  On Windows, you should use PowerShell.  There are other options for command windows in Windows, but if you want this to work as written, which I assume is the case since you've read this far, you should use Powershell.
+
+???+ danger "Important"
+
+    This walkthrough is assuming you are doing the entire process on the same platform; i.e. you're installing PMM and editing its config files on a single Linux, Windows, or OS X machine.  It doesn't account for situations like running PMM on a Linux machine while editing the config files on your Windows box.
 
 ### Prepare a small test library [optional]
 

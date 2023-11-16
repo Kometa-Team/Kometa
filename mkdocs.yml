@@ -86,6 +86,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+      toc_depth: 3
   - pymdownx.emoji:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
       emoji_index: !!python/name:material.extensions.emoji.twemoji
@@ -381,43 +382,42 @@ nav:
           - MyAnimeList ID: builders/myanimelist/#myanimelist-id
           - MyAnimeList UserList: builders/myanimelist/#myanimelist-userlist
           - MyAnimeList Seasonal: builders/myanimelist/#myanimelist-seasonal
-      - "DYNAMIC COLLECTIONS":
+      - DYNAMIC COLLECTIONS:
         - Overview: metadata/dynamic.md
-        - Dynamic Collection Builders:
-          - TMDb Dynamic Collections:
-            - TMDb Collection: metadata/dynamic/#tmdb-collection
-            - TMDb Popular People: metadata/dynamic/#tmdb-popular-people
-            - Original Language: metadata/dynamic/#original-language
-            - Origin Country: metadata/dynamic/#origin-country
-          - Trakt  Dynamic Collections:
-            - Trakt User Lists: metadata/dynamic/#trakt-user-lists
-            - Trakt Liked Lists: metadata/dynamic/#trakt-liked-lists
-            - Trakt People Lists: metadata/dynamic/#trakt-people-lists
-          - Plex Dynamic Collections:
-            - Actor: metadata/dynamic/#actor
-            - Director: metadata/dynamic/#director
-            - Writer: metadata/dynamic/#writer
-            - Producer: metadata/dynamic/#producer
-            - Genre: metadata/dynamic/#genre
-            - Album Genre: metadata/dynamic/#album-genre
-            - Content Rating: metadata/dynamic/#content-rating
-            - Year: metadata/dynamic/#year
-            - Decade: metadata/dynamic/#decade
-            - Country: metadata/dynamic/#country
-            - Resolution: metadata/dynamic/#resolution
-            - Subtitle Language: metadata/dynamic/#subtitle-language
-            - Audio Language: metadata/dynamic/#audio-language
-            - Studio: metadata/dynamic/#studio
-            - Edition: metadata/dynamic/#edition
-            - Network: metadata/dynamic/#network
-            - Mood: metadata/dynamic/#mood
-            - Album Mood: metadata/dynamic/#album-mood
-            - Track Mood: metadata/dynamic/#track-mood
-            - Style: metadata/dynamic/#style
-            - Album Style: metadata/dynamic/#album-style
-          - Other Dynamic Collections:
-            - Number: metadata/dynamic/#number
-            - Custom: metadata/dynamic/#custom
+        - TMDb Dynamic Collections:
+          - TMDb Collection: metadata/dynamic_types/#tmdb-collection
+          - TMDb Popular People: metadata/dynamic_types/#tmdb-popular-people
+          - Original Language: metadata/dynamic_types/#original-language
+          - Origin Country: metadata/dynamic_types/#origin-country
+        - Trakt  Dynamic Collections:
+          - Trakt User Lists: metadata/dynamic_types/#trakt-user-lists
+          - Trakt Liked Lists: metadata/dynamic_types/#trakt-liked-lists
+          - Trakt People Lists: metadata/dynamic_types/#trakt-people-lists
+        - Plex Dynamic Collections:
+          - Actor: metadata/dynamic_types/#actor
+          - Director: metadata/dynamic_types/#director
+          - Writer: metadata/dynamic_types/#writer
+          - Producer: metadata/dynamic_types/#producer
+          - Genre: metadata/dynamic_types/#genre
+          - Album Genre: metadata/dynamic_types/#album-genre
+          - Content Rating: metadata/dynamic_types/#content-rating
+          - Year: metadata/dynamic_types/#year
+          - Decade: metadata/dynamic_types/#decade
+          - Country: metadata/dynamic_types/#country
+          - Resolution: metadata/dynamic_types/#resolution
+          - Subtitle Language: metadata/dynamic_types/#subtitle-language
+          - Audio Language: metadata/dynamic_types/#audio-language
+          - Studio: metadata/dynamic_types/#studio
+          - Edition: metadata/dynamic_types/#edition
+          - Network: metadata/dynamic_types/#network
+          - Mood: metadata/dynamic_types/#mood
+          - Album Mood: metadata/dynamic_types/#album-mood
+          - Track Mood: metadata/dynamic_types/#track-mood
+          - Style: metadata/dynamic_types/#style
+          - Album Style: metadata/dynamic_types/#album-style
+        - Other Dynamic Collections:
+          - Number: metadata/dynamic_types/#number
+          - Custom: metadata/dynamic_types/#custom
       - SETTINGS & UPDATES:
         - Overview: metadata/update.md
         - Settings:

@@ -37,6 +37,7 @@ These collections are applied by calling the below paths into the `metadata_path
 | [Other Charts](chart/other.md)             | `other_chart`     | AniDB Popular, Common Sense Selection      |       &#9989;       |       &#9989;       |
 
 <sup>1</sup> Requires [Trakt Authentication](../config/trakt.md)
+
 <sup>2</sup> Requires [Tautulli Authentication](../config/tautulli.md)
 
 ### Content Collections
