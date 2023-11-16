@@ -102,7 +102,9 @@ You and I both know that the IMDb rating isn't 6.0, but Plex Meta Manager is jus
     ```
     
     * `rating1_image` and `rating2_image` were both changed from `rt_score` and `rt_popcorn` respectively to `imdb`
-    
+
+    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+
 When the above is run you see this result:
 
    ![](ratings/ratings-06.png)
@@ -135,7 +137,10 @@ Now let's actually update the ratings and push some numbers into those boxes usi
     ```
 
     * `operations` with the attribute `mass_user_rating_update` set to `imdb` is added.
+
     * `rating1_image` and `rating2_image` were both changed back to `rt_score` and `rt_popcorn` respectively from `imdb`
+
+    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 This will put the actual IMDb rating value, retrieved from IMDb, into the "user" rating field.
 
@@ -172,6 +177,8 @@ Now let's update the critic and audience ratings to some different ratings:
     ```
 
     * under `operations` the attribute `mass_critic_rating_update` set to `trakt_user` and `mass_audience_rating_update` set to `tmdb` are added.
+
+    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 Running the above will put the Trakt User's personal rating into the critic box and the TMDb rating into the audience box. Note that we haven't changed the rating images yet.
 
@@ -220,6 +227,8 @@ Let's change the Trakt rating to that trakt public rating of `85%` instead, whic
 
     * under `operations` the attribute `mass_critic_rating_update` was changed to `mdb_trakt` from `trakt_user`. (This step requires MDBList to be configured)
 
+    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+
 When the above is run you should get:
 
    ![](ratings/ratings-09.png)
@@ -252,7 +261,10 @@ Now, finally, let's make the poster rating images match the numbers we put in th
     ```
 
     * `rating1_image` was changed to `trakt` from `rt_score`
+
     * `rating2_image` was changed to `tmdb` from `rt_popcorn`
+
+    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 When the above is run you should get:
 

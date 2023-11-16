@@ -53,8 +53,11 @@ libraries:
 ```
 
 * `rating1`, `rating1_image`, `rating2`, `rating2_image` are set to match the ratings that Plex already has assigned to those fields (critic/audience).  The order here is arbitrary.
+
 * `rating3` is set to be the user rating and it's image (`rating3_image`) is set to IMDb just because we have to pick something.
+
 * `reapply_overlays` is set to true to ensure that PMM always updates the overlays as we run things.
+
 * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 </details>
@@ -102,6 +105,8 @@ libraries:
 
 * `rating1_image` and `rating2_image` were both changed from `rt_score` and `rt_popcorn` respectively to `imdb`
 
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+
 </details>
 
 When the above is run you see this result:
@@ -137,7 +142,10 @@ libraries:
 ```
 
 * `operations` with the attribute `mass_user_rating_update` set to `imdb` is added.
+
 * `rating1_image` and `rating2_image` were both changed back to `rt_score` and `rt_popcorn` respectively from `imdb`
+
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 </details>
 
@@ -177,6 +185,8 @@ libraries:
 ```
 
 * under `operations` the attribute `mass_critic_rating_update` set to `trakt_user` and `mass_audience_rating_update` set to `tmdb` are added.
+
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 </details>
 
@@ -228,6 +238,8 @@ libraries:
 
 * under `operations` the attribute `mass_critic_rating_update` was changed to `mdb_trakt` from `trakt_user`. (This step requires MDBList to be configured)
 
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+
 </details>
 
 When the above is run you should get:
@@ -263,7 +275,10 @@ libraries:
 ```
 
 * `rating1_image` was changed to `trakt` from `rt_score`
+
 * `rating2_image` was changed to `tmdb` from `rt_popcorn`
+
+* We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
 
 </details>
 

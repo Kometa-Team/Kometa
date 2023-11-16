@@ -6,7 +6,9 @@ search:
 
 Configuring [Sonarr](https://sonarr.tv/) is optional but will allow you to send shows to a Sonarr instance when they're found missing while updating a library's collections.
 
-Sonarr V2 may work, but it is not supported please upgrade to V3 if you can.
+???+ note
+    
+    Sonarr V2 may work, but it is not supported please upgrade to V3 if you can.
 
 Items in your List Exclusions will be ignored by PMM.
 
@@ -55,9 +57,11 @@ sonarr:
 | `plex_path`        | When using `add_existing` or `sonarr_add_all` Convert this part of the path to `sonarr_path`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | ` `           | &#10060; |
 | `sonarr_path`      | When using `add_existing` or `sonarr_add_all` Convert the `plex_path` part of the path to this.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | ` `           | &#10060; |
 
-* The `token` can be found by going to `Sonarr > Settings > General > Security > API Key`
+???+ tip
+    
+    The `token` can be found by going to `Sonarr > Settings > General > Security > API Key`
 
-* The `quality_profile` and `language_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
+    The `quality_profile` and `language_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
 
 * You can set most attributes per collection by using the [Sonarr Details](../builders/details/arr.md#sonarr-definition-settings) in the collection definition.
 

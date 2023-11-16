@@ -57,7 +57,7 @@ Another way to specify environmental variables is by adding them to a .env file 
 
 Further explanation and examples of each command can be found below.
 
-Environment variables are expressed as `KEY=VALUE`  Depending on the context where you are specifying them, you may enter those two things in two different fields, or some other way.  The examples below show how you would specify the environment variable in a script or a `docker run` command.  Things like Portainer or a NAS Docker UI will have different ways to specify these things.
+Environment variables are expressed as `KEY=VALUE` depending on the context where you are specifying them, you may enter those two things in two different fields, or some other way.  The examples below show how you would specify the environment variable in a script or a `docker run` command.  Things like Portainer or a NAS Docker UI will have different ways to specify these things.
 
 ## Config
 
@@ -73,11 +73,11 @@ Specify the location of the configuration YAML file.
 !!! example
     === "Local Environment"
         ```
-        python plex_meta_manager.py --config <path_to_config>
+        python plex_meta_manager.py --config /data/config.yml
         ```
     === "Docker Environment"
         ```
-        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --config <path_to_config>
+        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --config /data/config.yml
         ```
 
 ### Time to Run
@@ -140,6 +140,22 @@ Perform a debug test run immediately, bypassing the time to run flag. This will 
         ```
         docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-tests
         ```
+    === "Example Collection File"
+
+        In my collection YAML file, I would set `true: false` like this:
+
+        ```yaml
+        collections:
+          Marvel Cinematic Universe:
+            test: true                  # HERE
+            trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+            smart_label: release.desc
+        ```
+collections:
+  Marvel Cinematic Universe:
+    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    smart_label: release.desc
+
 
 ### Debug
 
@@ -298,11 +314,11 @@ Only run library overlays skipping collections/metadata, playlists, and operatio
 
 Perform a collections run immediately to run only the pre-defined collections, bypassing the time to run flag.
 
-|         | Shell Command                                   | Environment Variable  |
-|:--------|:------------------------------------------------|:----------------------|
-| Flags   | `-rc` or `--run-collections`                    | `PMM_RUN_COLLECTIONS` |
-| Example | `--run-collections "Harry Potter\               | Star Wars"`           |`PMM_COLLECTIONS=Harry Potter\|Star Wars`|
-| Values  | Pipe-separated list of Collection Names to run  |
+|         | Shell Command                                     | Environment Variable                         |
+|:--------|:--------------------------------------------------|:---------------------------------------------|
+| Flags   | `-rc` or `--run-collections`                      | `PMM_RUN_COLLECTIONS`                        |
+| Example | --run-collections "Harry Potter&#124;Star Wars"   | PMM_COLLECTIONS=Harry Potter&#124;Star Wars  |
+| Values  | Pipe-separated list of Collection Names to run    |
 
 !!! example
     === "Local Environment"
@@ -318,43 +334,47 @@ Perform a collections run immediately to run only the pre-defined collections, b
 
 Perform a libraries run immediately to run only the pre-defined libraries, bypassing the time to run flag.
 
-|         | Shell Command                               | Environment Variable |
-|:--------|:--------------------------------------------|:---------------------|
-| Flags   | `-rl` or `--run-libraries`                  | `PMM_RUN_LIBRARIES`  |
-| Example | `--run-libraries "Movies - 4K\              | TV Shows - 4K"`      |`PMM_LIBRARIES=Movies - 4K\|TV Shows - 4K`|
-| Values  | Pipe-separated list of Library Names to run |
+|         | Shell Command                                     | Environment Variable                           |
+|:--------|:--------------------------------------------------|:-----------------------------------------------|
+| Flags   | `-rl` or `--run-libraries`                        | `PMM_RUN_LIBRARIES`                            |
+| Example | --run-libraries "Movies - 4K&#124;TV Shows - 4K"  | PMM_LIBRARIES=Movies - 4K&#124;TV Shows - 4K`  |
+| Values  | Pipe-separated list of Library Names to run       |
 
 !!! example
     === "Local Environment"
         ```
-        python plex_meta_manager.py --run-libraries "TV Shows"
+        python plex_meta_manager.py --run-libraries "Movies - 4K|TV Shows - 4K"
         ```
     === "Docker Environment"
         ```
-        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-libraries "TV Shows"
+        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-libraries "Movies - 4K|TV Shows - 4K"
         ```
 
 ### Run Metadata Files
 
 Perform a metadata files run immediately to run only the pre-defined metadata files, bypassing the time to run flag.
 
-|                  | Shell Command                                    | Environment Variable     |
-|:-----------------|:-------------------------------------------------|:-------------------------|
-| Flags            | `-rm` or `--run-metadata-files`                  | `PMM_RUN_METADATA_FILES` |
-| Example          | `--run-metadata-files "Movies.yml\               | MovieCharts"`            |`PMM_METADATA_FILES=Movies.yml\|MovieCharts`|
-| Available Values | Pipe-separated list of Metadata Filenames to run |
+???+ warning
+     
+     Do not use this to run Overlay files, as Overlay files must run all together or not at all due to their nature.
+
+|                  | Shell Command                                           | Environment Variable                           |
+|:-----------------|:--------------------------------------------------------|:-----------------------------------------------|
+| Flags            | `-rm` or `--run-metadata-files`                         | `PMM_RUN_METADATA_FILES`                       |
+| Example          | --run-metadata-files "Movies.yml&#124;MovieCharts"      | PMM_METADATA_FILES=Movies.yml&#124;MovieCharts |
+| Available Values | Pipe-separated list of Metadata Filenames to run        |
 
 
-* This works for all different metadata paths i.e. `git`, `url`, `file`, or `repo`.
+* This works for all different metadata paths i.e. `pmm`, `git`, `url`, `file`, or `repo`.
 
 !!! example
     === "Local Environment"
         ```
-        python plex_meta_manager.py --run-metadata-files "Movies"
+        python plex_meta_manager.py --run-metadata-files "Movies.yml|seasonal|genre"
         ```
     === "Docker Environment"
         ```
-        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-metadata-files "Movies"
+        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-metadata-files "Movies.yml|seasonal|genre"
         ```
 
 ### Libraries First
@@ -421,6 +441,10 @@ Ignore all ghost logging for the run. A ghost log is what's printed to the conso
 
 Delete all collections in a Library prior to running collections/operations.
 
+???+ warning
+     
+     You will lose **all** collections in the library - this will delete all collections, including ones not created or maintained by Plex Meta Manager.
+
 |          | Shell Command                   | Environment Variable           |
 |:---------|:--------------------------------|:-------------------------------|
 | Flags    | `-dc` or `--delete-collections` | `PMM_DELETE_COLLECTIONS`       |
@@ -439,6 +463,14 @@ Delete all collections in a Library prior to running collections/operations.
 ### Delete Labels
 
 Delete all labels on every item in a Library prior to running collections/operations.
+
+???+ warning
+
+     To preserve functionality of PMM, this will **not** remove the Overlay label, which is required for PMM to know which items have Overlays applied.
+
+     This will impact any [Smart Label Collections](../../builders/smart.md#smart-label) that you have in your library.
+
+     We do not recommend using this on a regular basis if you also use any operations or collections that update labels, as you are effectively deleting and adding labels on each run.
 
 |          | Shell Command              | Environment Variable      |
 |:---------|:---------------------------|:--------------------------|
@@ -498,10 +530,10 @@ Run without displaying a countdown to the next scheduled run.
 
 Run without utilizing the missing movie/show functions.
 
-|         | Shell Command              | Environment Variable    |
-|:--------|:---------------------------|:------------------------|
-| Flags   | `-nc` or `--no-countdown`  | `PMM_NO_COUNTDOWN`      |
-| Example | `--no-countdown`           | `PMM_NO_COUNTDOWN=true` |
+|         | Shell Command           | Environment Variable   |
+|:--------|:------------------------|:-----------------------|
+| Flags   | `-nm` or `--no-missing` | `PMM_NO_MISSING`       |
+| Example | `--no-missing`          | `PMM_NO_MISSING=true`  |
 
 !!! example
     === "Local Environment"
