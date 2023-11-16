@@ -77,6 +77,9 @@ class Operations:
             radarr_adds = []
             sonarr_adds = []
             trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if any([o == "trakt_user" for o in self.library.meta_operations]) else []
+            item_audienceRating = {}
+            item_criticRating = {}
+            item_userRating = {}
             episode_audienceRating = {}
             episode_criticRating = {}
             episode_userRating = {}
@@ -238,80 +241,103 @@ class Operations:
                                 logger.warning(f"No MdbItem for {item.title} (Guid: {item.guid})")
                         except LimitReached as e:
                             logger.debug(e)
-
-                def update_rating(attribute, item_attr, display):
-                    current = getattr(item, item_attr)
-                    if attribute in ["remove", "reset"] and current is not None:
-                        item.editField(item_attr, None, locked=attribute == "remove")
-                        return f"\n{display} | None"
-                    elif attribute in ["unlock", "reset"] and item_attr in locked_fields:
-                        self.library.edit_query(item, {f"{item_attr}.locked": 0})
-                        return f"\n{display} | Unlocked"
-                    elif attribute in ["lock", "remove"] and item_attr not in locked_fields:
-                        self.library.edit_query(item, {f"{item_attr}.locked": 1})
-                        return f"\n{display} | Locked"
-                    elif attribute not in ["lock", "unlock", "remove", "reset"]:
-                        if tmdb_item and attribute == "tmdb":
+                
+                rating_ops = {
+                    "audienceRating": self.library.mass_audience_rating_update,
+                    "criticRating": self.library.mass_critic_rating_update,
+                    "userRating": self.library.mass_user_rating_update
+                }
+                
+                for key in rating_ops:
+                    if rating_ops[key] in ["remove", "reset"]:
+                        if key == "audienceRating":
+                            if None in item_audienceRating.keys():
+                                item_audienceRating[None].append(item)
+                            else:
+                                item_audienceRating.update({None:[item]})
+                        if key == "criticRating":
+                            if None in item_criticRating.keys():
+                                item_criticRating[None].append(item)
+                            else:
+                                item_criticRating.update({None:[item]})
+                        if key == "userRating":
+                            if None in item_userRating.keys():
+                                item_userRating[None].append(item)
+                            else:
+                                item_userRating.update({None:[item]})
+                        logger.info(f"\n{key} | None")
+                    if rating_ops[key] in ["lock", "unlock"]:
+                        if rating_ops[key] == "unlock":
+                            self.library.edit_query(item, {f"{key}.locked": 0})
+                            logger.info(f"\n{key} | Unlock")
+                        else:
+                            self.library.edit_query(item, {f"{key}.locked": 1})
+                            logger.info(f"\n{key} | Lock")
+                    elif rating_ops[key] not in [None, "lock", "unlock", "remove", "reset"]:
+                        if tmdb_item and rating_ops[key] == "tmdb":
                             found_rating = tmdb_item.vote_average
-                        elif imdb_id and attribute == "imdb":
+                        elif imdb_id and rating_ops[key] == "imdb":
                             found_rating = self.config.IMDb.get_rating(imdb_id)
-                        elif attribute == "trakt_user" and self.library.is_movie and tmdb_id in trakt_ratings:
+                        elif rating_ops[key] == "trakt_user" and self.library.is_movie and tmdb_id in trakt_ratings:
                             found_rating = trakt_ratings[tmdb_id]
-                        elif attribute == "trakt_user" and self.library.is_show and tvdb_id in trakt_ratings:
+                        elif rating_ops[key] == "trakt_user" and self.library.is_show and tvdb_id in trakt_ratings:
                             found_rating = trakt_ratings[tvdb_id]
-                        elif omdb_item and attribute == "omdb":
+                        elif omdb_item and rating_ops[key] == "omdb":
                             found_rating = omdb_item.imdb_rating
-                        elif mdb_item and attribute == "mdb":
+                        elif mdb_item and rating_ops[key] == "mdb":
                             found_rating = mdb_item.score / 10 if mdb_item.score else None
-                        elif mdb_item and attribute == "mdb_average":
+                        elif mdb_item and rating_ops[key] == "mdb_average":
                             found_rating = mdb_item.average / 10 if mdb_item.average else None
-                        elif mdb_item and attribute == "mdb_imdb":
+                        elif mdb_item and rating_ops[key] == "mdb_imdb":
                             found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
-                        elif mdb_item and attribute == "mdb_metacritic":
+                        elif mdb_item and rating_ops[key] == "mdb_metacritic":
                             found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
-                        elif mdb_item and attribute == "mdb_metacriticuser":
+                        elif mdb_item and rating_ops[key] == "mdb_metacriticuser":
                             found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
-                        elif mdb_item and attribute == "mdb_trakt":
+                        elif mdb_item and rating_ops[key] == "mdb_trakt":
                             found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
-                        elif mdb_item and attribute == "mdb_tomatoes":
+                        elif mdb_item and rating_ops[key] == "mdb_tomatoes":
                             found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
-                        elif mdb_item and attribute == "mdb_tomatoesaudience":
+                        elif mdb_item and rating_ops[key] == "mdb_tomatoesaudience":
                             found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
-                        elif mdb_item and attribute == "mdb_tmdb":
+                        elif mdb_item and rating_ops[key] == "mdb_tmdb":
                             found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
-                        elif mdb_item and attribute == "mdb_letterboxd":
+                        elif mdb_item and rating_ops[key] == "mdb_letterboxd":
                             found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
-                        elif mdb_item and attribute == "mdb_myanimelist":
+                        elif mdb_item and rating_ops[key] == "mdb_myanimelist":
                             found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
-                        elif anidb_item and attribute == "anidb_rating":
+                        elif anidb_item and rating_ops[key] == "anidb_rating":
                             found_rating = anidb_item.rating
-                        elif anidb_item and attribute == "anidb_average":
+                        elif anidb_item and rating_ops[key] == "anidb_average":
                             found_rating = anidb_item.average
-                        elif anidb_item and attribute == "anidb_score":
+                        elif anidb_item and rating_ops[key] == "anidb_score":
                             found_rating = anidb_item.score
-                        elif mal_item and attribute == "mal":
+                        elif mal_item and rating_ops[key] == "mal":
                             found_rating = mal_item.score
                         else:
                             found_rating = None
 
                         if found_rating is None:
-                            logger.info(f"No {display} Found")
+                            logger.info(f"No {key} Found")
                         else:
                             found_rating = f"{float(found_rating):.1f}"
-                            if str(current) != found_rating:
-                                item.editField(item_attr, found_rating)
-                                return f"\n{display} | {found_rating}"
-                    return ""
-
-                if self.library.mass_audience_rating_update:
-                    batch_display += update_rating(self.library.mass_audience_rating_update, "audienceRating", "Audience Rating")
-
-                if self.library.mass_critic_rating_update:
-                    batch_display += update_rating(self.library.mass_critic_rating_update, "rating", "Critic Rating")
-
-                if self.library.mass_user_rating_update:
-                    batch_display += update_rating(self.library.mass_user_rating_update, "userRating", "User Rating")
-
+                            if key == "audienceRating":
+                                if found_rating in item_audienceRating.keys():
+                                    item_audienceRating[found_rating].append(item)
+                                else:
+                                    item_audienceRating.update({found_rating:[item]})
+                            if key == "criticRating":
+                                if found_rating in item_criticRating.keys():
+                                    item_criticRating[found_rating].append(item)
+                                else:
+                                    item_criticRating.update({found_rating:[item]})
+                            if key == "userRating":
+                                if found_rating in item_userRating.keys():
+                                    item_userRating[found_rating].append(item)
+                                else:
+                                    item_userRating.update({found_rating:[item]})
+                            logger.info(f"\n{key} | {found_rating}")
+                
                 if self.library.mass_genre_update or self.library.genre_mapper:
                     try:
                         new_genres = []
@@ -641,6 +667,34 @@ class Operations:
                                             episode_userRating.update({found_rating:[ep]})
                                     logger.info(f"\n{key} | {found_rating}")
 
+            for key in item_audienceRating:
+                if self.library.mass_audience_rating_update not in ["reset", None]:
+                    self.library.Plex.batchMultiEdits(item_audienceRating[key])
+                    self.library.Plex.editField("audienceRating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_audience_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(item_audienceRating[key])
+                    self.library.Plex.editField("audienceRating", key, False)
+                    self.library.Plex.saveMultiEdits()
+            for key in item_criticRating:
+                if self.library.mass_critic_rating_update not in ["reset", None]:
+                    self.library.Plex.batchMultiEdits(item_criticRating[key])
+                    self.library.Plex.editField("rating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_critic_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(item_criticRating[key])
+                    self.library.Plex.editField("rating", key, False)
+                    self.library.Plex.saveMultiEdits()
+            for key in item_userRating:
+                if self.library.mass_user_rating_update not in ["reset", None]:
+                    self.library.Plex.batchMultiEdits(item_userRating[key])
+                    self.library.Plex.editField("userRating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_user_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(item_userRating[key])
+                    self.library.Plex.editField("userRating", key, False)
+                    self.library.Plex.saveMultiEdits()
+            
             for key in episode_audienceRating:
                 if self.library.mass_episode_audience_rating_update in ["tmdb", "imdb", "remove"]:
                     self.library.Plex.batchMultiEdits(episode_audienceRating[key])
