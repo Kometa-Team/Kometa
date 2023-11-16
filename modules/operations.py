@@ -77,7 +77,9 @@ class Operations:
             radarr_adds = []
             sonarr_adds = []
             trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie) if any([o == "trakt_user" for o in self.library.meta_operations]) else []
-
+            episode_audienceRating = {}
+            episode_criticRating = {}
+            episode_userRating = {}
             reverse_anidb = {}
             for k, v in self.library.anidb_map.items():
                 reverse_anidb[v] = k
@@ -567,67 +569,105 @@ class Operations:
                                     if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
                                         self.library.background_update(episode, episode_background, title=episode_title if episode else None)
 
-                episode_ops = [
-                    self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update,
-                    self.library.mass_episode_user_rating_update, self.library.mass_episode_imdb_parental_labels
-                ]
+                episode_ops = {
+                    "audienceRating": self.library.mass_episode_audience_rating_update,
+                    "criticRating": self.library.mass_episode_critic_rating_update,
+                    "userRating": self.library.mass_episode_user_rating_update,
+                    "parentalLabels": self.library.mass_episode_imdb_parental_labels
+                }
 
-                if any([x is not None for x in episode_ops]):
+                if any(value is not None for value in episode_ops.values()):
 
                     if any([x == "imdb" for x in episode_ops]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
                     for ep in item.episodes():
-                        #ep.batchEdits()
-                        ep = self.library.reload(ep)
-                        batch_display = ""
-                        item_title = self.library.get_item_sort_title(ep, atr="title")
+                        item_title = ep.seasonEpisode
                         logger.info("")
-                        logger.info(f"Processing {item_title}")
-                        episode_locked_fields = [f.name for f in ep.fields if f.locked]
-
-                        def update_episode_rating(attribute, item_attr, display):
-                            current = getattr(ep, item_attr)
-                            if attribute in ["remove", "reset"] and current:
-                                ep.editField(item_attr, None, locked=attribute == "remove")
-                                return f"\n{display} | None"
-                            elif attribute in ["unlock", "reset"] and item_attr in episode_locked_fields:
-                                self.library.edit_query(ep, {f"{item_attr}.locked": 0})
-                                return f"\n{display} | Unlocked"
-                            elif attribute in ["lock", "remove"] and item_attr not in episode_locked_fields:
-                                self.library.edit_query(ep, {f"{item_attr}.locked": 1})
-                                return f"\n{display} | Locked"
-                            elif attribute not in ["lock", "unlock", "remove", "reset"]:
+                        logger.info(f"Processing {item.title} {item_title}")
+                        episode_locked_fields = ""
+                        for key in episode_ops:
+                            if episode_ops[key] in ["remove", "reset"]:
+                                if key == "audienceRating":
+                                    if None in episode_audienceRating.keys():
+                                        episode_audienceRating[None].append(ep)
+                                    else:
+                                        episode_audienceRating.update({None:[ep]})
+                                if key == "criticRating":
+                                    if None in episode_criticRating.keys():
+                                        episode_criticRating[None].append(ep)
+                                    else:
+                                        episode_criticRating.update({None:[ep]})
+                                if key == "userRating":
+                                    if None in episode_userRating.keys():
+                                        episode_userRating[None].append(ep)
+                                    else:
+                                        episode_userRating.update({None:[ep]})
+                                logger.info(f"\n{key} | None")
+                            if episode_ops[key] in ["lock", "unlock"]:
+                                if episode_ops[key] == "unlock":
+                                    self.library.edit_query(ep, {f"{key}.locked": 0})
+                                    logger.info(f"\n{key} | Unlock")
+                                else:
+                                    self.library.edit_query(ep, {f"{key}.locked": 1})
+                                    logger.info(f"\n{key} | Lock")
+                            elif episode_ops[key] not in [None, "lock", "unlock", "remove", "reset"]:
                                 found_rating = None
-                                if tmdb_item and attribute == "tmdb":
+                                if tmdb_item and episode_ops[key] == "tmdb":
                                     try:
                                         found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average
                                     except Failed as er:
                                         logger.error(er)
-                                elif imdb_id and attribute == "imdb":
+                                elif imdb_id and episode_ops[key] == "imdb":
                                     found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
-
                                 if found_rating is None:
-                                    logger.info(f"No {display} Found")
+                                    logger.info(f"No {key} Found")
                                 else:
                                     found_rating = f"{float(found_rating):.1f}"
-                                    if str(current) != found_rating:
-                                        ep.editField(item_attr, found_rating)
-                                        return f"\n{display} | {found_rating}"
-                            return ""
+                                    if key == "audienceRating":
+                                        if found_rating in episode_audienceRating.keys():
+                                            episode_audienceRating[found_rating].append(ep)
+                                        else:
+                                            episode_audienceRating.update({found_rating:[ep]})
+                                    if key == "criticRating":
+                                        if found_rating in episode_criticRating.keys():
+                                            episode_criticRating[found_rating].append(ep)
+                                        else:
+                                            episode_criticRating.update({found_rating:[ep]})
+                                    if key == "userRating":
+                                        if found_rating in episode_userRating.keys():
+                                            episode_userRating[found_rating].append(ep)
+                                        else:
+                                            episode_userRating.update({found_rating:[ep]})
+                                    logger.info(f"\n{key} | {found_rating}")
 
-                        if self.library.mass_episode_audience_rating_update:
-                            batch_display += update_episode_rating(self.library.mass_episode_audience_rating_update, "audienceRating", "Audience Rating")
-
-                        if self.library.mass_episode_critic_rating_update:
-                            batch_display += update_episode_rating(self.library.mass_episode_critic_rating_update, "rating", "Critic Rating")
-
-                        if self.library.mass_episode_user_rating_update:
-                            batch_display += update_episode_rating(self.library.mass_episode_user_rating_update, "userRating", "User Rating")
-
-                        if len(batch_display) > 0:
-                            #ep.saveEdits()
-                            logger.info(f"Batch Edits:{batch_display}")
+            for key in episode_audienceRating:
+                if self.library.mass_episode_audience_rating_update in ["tmdb", "imdb", "remove"]:
+                    self.library.Plex.batchMultiEdits(episode_audienceRating[key])
+                    self.library.Plex.editField("audienceRating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_episode_audience_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(episode_audienceRating[key])
+                    self.library.Plex.editField("audienceRating", key, False)
+                    self.library.Plex.saveMultiEdits()
+            for key in episode_criticRating:
+                if self.library.mass_episode_critic_rating_update in ["tmdb", "imdb", "remove"]:
+                    self.library.Plex.batchMultiEdits(episode_criticRating[key])
+                    self.library.Plex.editField("rating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_episode_critic_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(episode_criticRating[key])
+                    self.library.Plex.editField("rating", key, False)
+                    self.library.Plex.saveMultiEdits()
+            for key in episode_userRating:
+                if self.library.mass_episode_user_rating_update in ["tmdb", "imdb", "remove"]:
+                    self.library.Plex.batchMultiEdits(episode_userRating[key])
+                    self.library.Plex.editField("userRating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_episode_user_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(episode_userRating[key])
+                    self.library.Plex.editField("userRating", key, False)
+                    self.library.Plex.saveMultiEdits()
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 try:
