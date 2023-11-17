@@ -408,6 +408,7 @@ include:
   - Leftfield Pictures
   - Legendary Pictures
   - Let's Not Turn This Into a Whole Big Production
+  - Lifetime
   - Levity Entertainment Group
   - Lightstorm Entertainment
   - Likely Story

@@ -1033,6 +1033,9 @@ overlays:
   Let's Not Turn This Into a Whole Big Production:
     template: [name: standard, name: studios]
 
+  Lifetime:
+    template: [name: standard, name: studios]
+
   Levity Entertainment Group:
     template: [name: standard, name: studios]
 
