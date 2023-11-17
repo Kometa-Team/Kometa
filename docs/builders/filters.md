@@ -5,6 +5,7 @@ Filters allow for you to filter every item added to the collection/overlay/playl
 ## Using Filters
 
 Filters cannot do anything alone they require the use of at least one [Builder](../metadata/builders.md) to function.
+
 You can have multiple filters in each set but an item must match at least one value from **each** filter to not be ignored. The values for each must match what Plex has including special characters in order to match.
 
 ```yaml
@@ -31,19 +32,9 @@ All filter options are listed below. To display items filtered out add `show_fil
 
 You can use the `plex_all: true` builder to filter from your entire library.
 
-**Filters can be very slow. Try to build or narrow your items using [Plex Search](plex.md#plex-search) or another [Builder](../metadata/builders.md) if possible.** 
-[definition.md](details%2Fdefinition.md)
-## Table Annotations
-
-<sup>**1**</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/definition.md).
-
-<sup>**2**</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
-
-<sup>**3**</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
-
-<sup>**4**</sup> The actual numbers are pulled from the [PMM-Mediastingers](https://github.com/meisnate12/PMM-Mediastingers) Repo.
-
-<sup>**5**</sup> Also is a Tag Filter and can use all of those modifiers.
+???+ warning
+    
+    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](smart.md#smart-label), [Plex Search](plex.md#plex-search) or another [Builder](../metadata/builders.md) if possible.
 
 ## String Filters
 
@@ -217,6 +208,18 @@ Special Filters each have their own set of rules for how they're used.
 | `tmdb_status`<sup>**[2](#table-annotations)**</sup><br>`tmdb_status.not`<sup>**[2](#table-annotations)**</sup>             | Uses TMDb Status to match<br>**Values:** `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`                                                                                                                                                                                              | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 | `tmdb_type`<sup>**[2](#table-annotations)**</sup><br>`tmdb_type.not`<sup>**[2](#table-annotations)**</sup>                 | Uses TMDb Type to match<br>**Values:** `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`                                                                                                                                                                    | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 | `imdb_keyword`<sup>**[2](#table-annotations)**</sup><sup>**[5](#table-annotations)**</sup>                                 | Uses the keywords from IMDb to match<br>`keywords`: list of keywords to match<br>`minimum_votes`: minimum number of votes keywords must have<br>`minimum_relevant`: minimum number of relevant votes keywords must have<br>`minimum_percentage`: minimum percentage of relevant votes keywords must have | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+
+## Table Annotations
+
+<sup>**1**</sup> Filters using the special `episodes`/`tracks` [filter](#special-filters) with the [default percent](details/definition.md).
+
+<sup>**2**</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
+
+<sup>**3**</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
+
+<sup>**4**</sup> The actual numbers are pulled from the [PMM-Mediastingers](https://github.com/meisnate12/PMM-Mediastingers) Repo.
+
+<sup>**5**</sup> Also is a Tag Filter and can use all of those modifiers.
 
 ## Collection Filter Examples
 

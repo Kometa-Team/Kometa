@@ -155,11 +155,12 @@ libraries:
 
 #### Remove Overlays
 
-This will remove all overlays from your library, but will not delete the overlaid images from your system, resulting in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
     
-You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`. This will remove all overlays when run and not generate new ones.
+You can remove overlays from a library by adding `remove_overlays: true` to `overlay_path`.
 
 ???+ warning "Proceed with Caution"
+
+    This will remove all overlays from your library, but will not delete the overlaid images from your system, resulting in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
 
     ```yaml
     libraries:
@@ -173,11 +174,11 @@ You can remove overlays from a library by adding `remove_overlays: true` to `ove
 
 #### Reapply Overlays
 
-This will reapply all overlays on each run until this attribute is set to `false`, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
-
 You can reapply overlays from a library by adding `reapply_overlays: true` to `overlay_path`. This will reapply overlays to every item in your library.
 
-???+ danger Proceed with Caution
+???+ danger "Important Notice"
+
+    This will reapply all overlays on each run until this attribute is set to `false`, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
 
     ```yaml
     libraries:
@@ -191,11 +192,12 @@ You can reapply overlays from a library by adding `reapply_overlays: true` to `o
 
 #### Reset Overlays
 
-This will reset all posters to the desired source on each run until this attribute is set to `false`, and will reapply all overlays on each run, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
-
 You can reset overlays from a library by adding `reset_overlays` to `overlay_path` and setting it to either `tmdb` or `plex` depending on where you want to source the images from. This will use the reset image when overlaying items in your library.
 
-???+ danger "Proceed with Caution"
+???+ danger "Important Notice"
+
+    This will reset all posters to the desired source on each run until this attribute is set to `false`, and will reapply all overlays on each run, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
+
 
     ```yaml
     libraries:

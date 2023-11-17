@@ -4,7 +4,9 @@ search:
 ---
 # Frequently Asked Questions & Knowledgebase
 
-This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://discord.gg/NfH6mGFuAB).
+This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our 
+
+If you have a question that is not answered here, try enter some keywords into the search bar above, or join our [Discord Server](https://discord.gg/NfH6mGFuAB).
 
 ## Frequently Asked Questions
 

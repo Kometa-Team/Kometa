@@ -6,7 +6,9 @@ search:
 
 Configuring [Radarr](https://radarr.video/) is optional but will allow you to send movies to a Radarr instance when they're found missing while updating a library's collections.
 
-Radarr V2 may work, but it is not supported please upgrade to V3 if you can.
+???+ note
+    
+    Radarr V2 may work, but it is not supported. Please upgrade to V3 if you can.
 
 Items in your List Exclusions will be ignored by PMM.
 
@@ -49,9 +51,11 @@ radarr:
 | `plex_path`        | When using `add_existing` or `radarr_add_all` Convert this part of the path to `radarr_path`.                                                                                                                                                                                                                      | ` `         | &#10060; |
 | `radarr_path`      | When using `add_existing` or `radarr_add_all` Convert the `plex_path` part of the path to this.                                                                                                                                                                                                                    | ` `         | &#10060; |
 
-* The `token` can be found by going to `Radarr > Settings > General > Security > API Key`
+???+ tip
+    
+    The `token` can be found by going to `Radarr > Settings > General > Security > API Key`
 
-* The `quality_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
+    The `quality_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
 
 * You can set most attributes per collection by using the [Radarr Details](../builders/details/arr.md#radarr-definition-settings) in the collection definition.
 
@@ -81,7 +85,6 @@ radarr:
 Specifying different options for specific libraries:
 
 In this example we have two Radarr instances, standard and 4K, and four libraries showing how one can override individual settings at the library level.  Also, movies are being added to the "Library05" library outside Radarr via a custom script and I want those new movies added to Radarr for tracking.
-
 
 ```
 libraries:

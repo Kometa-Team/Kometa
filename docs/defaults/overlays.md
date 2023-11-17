@@ -35,7 +35,6 @@ libraries:
   Movies:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlays: true
       - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -81,7 +80,6 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlays: true
       - pmm: resolution                                                    # 1
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -124,7 +122,6 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlays: true
       - pmm: resolution                                                    # 1
         template_variables:
           builder_level: season
@@ -150,7 +147,6 @@ libraries:
   TV Shows:
     overlay_path:
       - remove_overlays: false
-      - reapply_overlays: true
       - pmm: resolution                                                    # 1
         template_variables:
           builder_level: episode
