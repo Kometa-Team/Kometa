@@ -81,6 +81,8 @@ class Operations:
             item_criticRating = {}
             item_userRating = {}
             item_contentRating = {}
+            item_genres = {}
+            library_genres = []
             episode_audienceRating = {}
             episode_criticRating = {}
             episode_userRating = {}
@@ -342,6 +344,9 @@ class Operations:
                 if self.library.mass_genre_update or self.library.genre_mapper:
                     try:
                         new_genres = []
+                        for g in item.genres:
+                            if g.tag not in library_genres:
+                                library_genres.append(g.tag) 
                         if self.library.mass_genre_update and self.library.mass_genre_update not in ["lock", "unlock", "remove", "reset"]:
                             if tmdb_item and self.library.mass_genre_update == "tmdb":
                                 new_genres = tmdb_item.genres
@@ -373,16 +378,12 @@ class Operations:
                                     else:
                                         mapped_genres.append(genre)
                                 new_genres = mapped_genres
-                        is_locked = None
-                        if self.library.mass_genre_update in ["unlock", "reset"] and "genre" in locked_fields:
-                            is_locked = False
-                        elif self.library.mass_genre_update in ["lock", "remove"] and "genre" not in locked_fields:
-                            is_locked = True
-                        temp_display = self.library.edit_tags("genre", item, sync_tags=new_genres, do_print=False,
-                                                              locked=False if self.library.mass_genre_update in ["unlock", "reset"] else True,
-                                                              is_locked=is_locked)
-                        if temp_display:
-                            batch_display += f"\n{temp_display}"
+                        for genre in new_genres:
+                            if genre in item_genres.keys():
+                                item_genres[genre].append(item)
+                            else:
+                                item_genres.update({genre:[item]})                        
+                        logger.info(f"Genres | {new_genres}")
                     except Failed:
                         pass
 
@@ -701,6 +702,20 @@ class Operations:
                     self.library.Plex.batchMultiEdits(item_userRating[key])
                     self.library.Plex.editField("userRating", key, False)
                     self.library.Plex.saveMultiEdits()
+            
+            if self.library.mass_genre_update or self.library.genre_mapper:
+                self.library.Plex.batchMultiEdits(items)
+                self.library.Plex.removeGenre(library_genres)
+                self.library.Plex.saveMultiEdits()
+                for key in item_genres:
+                    if self.library.mass_genre_update not in ["reset", "unlock", None] or self.library.genre_mapper:
+                        self.library.Plex.batchMultiEdits(item_genres[key])
+                        self.library.Plex.addGenre(key)
+                        self.library.Plex.saveMultiEdits()
+                    if self.library.mass_genre_update in ["reset", "unlock"]:
+                        self.library.Plex.batchMultiEdits(item_genres[key])
+                        self.library.Plex.addGenre(key, False)
+                        self.library.Plex.saveMultiEdits()
                     
             for key in item_contentRating:
                 if self.library.mass_content_rating_update not in ["reset", None] or self.library.content_rating_mapper:
