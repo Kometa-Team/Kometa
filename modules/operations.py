@@ -80,6 +80,7 @@ class Operations:
             item_audienceRating = {}
             item_criticRating = {}
             item_userRating = {}
+            item_contentRating = {}
             episode_audienceRating = {}
             episode_criticRating = {}
             episode_userRating = {}
@@ -401,8 +402,6 @@ class Operations:
                                 new_rating = mal_item.rating
                             else:
                                 raise Failed
-                            if not new_rating:
-                                logger.info(f"No Content Rating Found")
 
                         is_none = False
                         if self.library.content_rating_mapper or self.library.mass_content_rating_update in ["lock", "unlock"]:
@@ -412,20 +411,27 @@ class Operations:
                                 new_rating = self.library.content_rating_mapper[new_rating]
                                 if not new_rating:
                                     is_none = True
-                        if (is_none or self.library.mass_content_rating_update in ["remove", "reset"]) and item.contentRating:
-                            item.editField("contentRating", None, locked=self.library.mass_content_rating_update == "remove")
-                            batch_display += f"\nContent Rating | None"
+                        if (is_none or self.library.mass_content_rating_update in ["remove", "reset"]):
+                            if None in item_contentRating.keys():
+                                item_contentRating[None].append(item)
+                            else:
+                                item_contentRating.update({None:[item]})
+                            logger.info(f"\nContent Rating | {item.contentRating} -> None")
                         elif not new_rating and self.library.mass_content_rating_update not in ["lock", "unlock", "remove", "reset"]:
                             logger.info(f"No Content Rating Found")
                         elif str(item.contentRating) != str(new_rating):
-                            item.editContentRating(new_rating)
-                            batch_display += f"\nContent Rating | {new_rating}"
-                        elif self.library.mass_content_rating_update in ["unlock", "reset"] and "contentRating" in locked_fields:
-                            self.library.edit_query(item, {"contentRating.locked": 0})
-                            batch_display += f"\nContent Rating | Unlocked"
-                        elif self.library.mass_content_rating_update in ["lock", "remove"] and "contentRating" not in locked_fields:
-                            self.library.edit_query(item, {"contentRating.locked": 1})
-                            batch_display += f"\nContent Rating | Locked"
+                            if str(new_rating) in item_contentRating.keys():
+                                item_contentRating[str(new_rating)].append(item)
+                            else:
+                                item_contentRating.update({str(new_rating):[item]})
+                            logger.info(f"\nContent Rating | {item.contentRating} -> {new_rating}")
+                        elif self.library.mass_content_rating_update in ["lock", "unlock"]:
+                            if self.library.mass_content_rating_update == "unlock":
+                                self.library.edit_query(item, {"contentRating.locked": 0})
+                                logger.info(f"\n{key} | Unlock")
+                            else:
+                                self.library.edit_query(item, {"contentRating.locked": 1})
+                                logger.info(f"\n{key} | Lock")
                     except Failed:
                         pass
 
@@ -524,6 +530,7 @@ class Operations:
                             pass
 
                 if len(batch_display) > 0:
+                    logger.info(f"{batch_display}")
                     try:
                         #item.saveEdits()
                         logger.info(f"Batch Edits{batch_display}")
@@ -694,6 +701,16 @@ class Operations:
                     self.library.Plex.batchMultiEdits(item_userRating[key])
                     self.library.Plex.editField("userRating", key, False)
                     self.library.Plex.saveMultiEdits()
+                    
+            for key in item_contentRating:
+                if self.library.mass_content_rating_update not in ["reset", None] or self.library.content_rating_mapper:
+                    self.library.Plex.batchMultiEdits(item_contentRating[key])
+                    self.library.Plex.editField("contentRating", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_content_rating_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(item_contentRating[key])
+                    self.library.Plex.editField("contentRating", key, False)
+                    self.library.Plex.saveMultiEdits()        
             
             for key in episode_audienceRating:
                 if self.library.mass_episode_audience_rating_update in ["tmdb", "imdb", "remove"]:
