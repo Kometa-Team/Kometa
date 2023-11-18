@@ -83,7 +83,17 @@ Some logic is applied to allow for regional streaming service lists to be availa
 | `ca`             | `max`, `showtime`                | These collections will not be created if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
 
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -91,13 +101,21 @@ libraries:
     metadata_path:
       - pmm: streaming
         template_variables:
-          region: fr
-          use_separator: false
-          sep_style: stb
-          visible_library_disney: true
-          visible_home_disney: true
-          visible_shared_disney: true
-          sonarr_add_missing_hulu: true
-          radarr_add_missing_amazon: true
-          sort_by: random
+          region: fr #(1)!
+          sep_style: amethyst #(2)!
+          visible_library_disney: true #(3)!
+          visible_home_disney: true #(4)!
+          visible_shared_disney: true #(5)!
+          sonarr_add_missing_hulu: true #(6)!
+          radarr_add_missing_amazon: true #(7)!
+          sort_by: random #(8)!
 ```
+
+1.  Use french region lists where possible
+2.  Use the amethyst [Separator Style](../separators.md#separator-styles)
+3.  Pin the "Disney+ Movies/Shows" collection to the Recommended tab of the library
+4.  Pin the "Disney+ Movies/Shows" collection to the homescreen of the server owner
+5.  Pin the "Disney+ Movies/Shows" collection to the homescreen of other users of the server
+6.  Add missing shows in your library from the "Hulu Shows" list to your Sonarr
+7.  Add missing movies in your library from the "Prime Video Movies" list to your Radarr
+8.  Sort all of the collections created by this file randomly

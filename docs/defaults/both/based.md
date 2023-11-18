@@ -56,7 +56,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -64,11 +74,17 @@ libraries:
     metadata_path:
       - pmm: based
         template_variables:
-          use_separator: false
-          sep_style: purple
-          use_comics: false
-          order_true_story: 01
-          visible_library_video_games: true
-          visible_home_video_games: true
-          visible_shared_video_games: true
+          sep_style: navy #(1)!
+          use_comics: false #(2)!
+          order_true_story: 01 #(3)!
+          visible_library_video_games: true #(4)!
+          visible_home_video_games: true #(5)!
+          visible_shared_video_games: true #(6)!
 ```
+
+1.  Use the navy [Separator Style](../separators.md#separator-styles)
+2.  Do not create a "Based on a Comic" collection
+3.  Make the "Based on a True Story" collection appear in the collection list before the other collections in this file
+4.  Pin the "Based on a Video Game" collection to the Recommended tab of the library
+5.  Pin the "Based on a Video Game" collection to the homescreen of the server owner
+6.  Pin the "Based on a Video Game" collection to the homescreen of other users of the server

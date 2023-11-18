@@ -59,7 +59,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -68,13 +78,15 @@ libraries:
       - pmm: studio
         template_variables:
           append_include:
-            - Big Bull Productions
+            - Big Bull Productions #(1)!
           sort_by: title.asc
-          collection_section: 4
-          collection_mode: show_items
-          use_separator: false
-          sep_style: gray
+          collection_mode: show_items #(2)!
+          sep_style: gray #(3)!
 ```
+
+1.  add "Big Bull Productions" to the list of items that should be included in the Collection list
+2.  Show these collections and their items within the "Library" tab
+3.  Use the gray [Separator Style](../separators.md#separator-styles)
 
 ## Default values
 

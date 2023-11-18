@@ -70,7 +70,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -78,15 +88,19 @@ libraries:
     metadata_path:
       - pmm: universe
         template_variables:
-          use_separator: false
-          sep_style: gray
-          collection_order: release
-          radarr_add_missing: true
-          # Add a custom universe
+          sep_style: salmon #(1)!
+          collection_order: release #(2)!
+          radarr_add_missing: true #(3)!
           append_data:
-            monster: MonsterVerse
-          trakt_list_monster: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies
+            monster: MonsterVerse #(4)!
+          trakt_list_monster: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies #(5)!
 ```
+
+1.  Use the salmon [Separator Style](../separators.md#separator-styles)
+2.  Sort the Universe collections by release date
+3.  Send missing items in your library from the source lists to Radarr
+4.  Create a new universe called "MonsterVerse", the key for this universe will be "monster"
+5.  Add a trakt list to the "monster" key
 
 ## Default values
 

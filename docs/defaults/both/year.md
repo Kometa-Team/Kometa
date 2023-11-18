@@ -50,7 +50,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -58,8 +68,11 @@ libraries:
     metadata_path:
       - pmm: year
         template_variables:
-          use_separator: false
-          sep_style: purple
-          sort_by: title.asc
-          sort_by_2022: release.desc
+          sep_style: purple #(1)!
+          sort_by: title.asc 
+          sort_by_2022: release.desc #(2)!
 ```
+
+1.  Use the purple [Separator Style](../separators.md#separator-styles)
+2.  Set the sort order for "Best of 2022" to release date descending
+

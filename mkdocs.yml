@@ -206,7 +206,7 @@ nav:
             - Continents (Movie): defaults/movie/continent.md
             - Continents (Show): defaults/show/continent.md
           - Media:
-            - Aspect Rations (Show): defaults/both/aspect.md
+            - Aspect Ration (Show): defaults/both/aspect.md
             - Resolutions: defaults/both/resolution.md
             - Audio Languages: defaults/both/audio_language.md
             - Subtitle Languages: defaults/both/subtitle_language.md
