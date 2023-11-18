@@ -40,7 +40,7 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Overlay Variables](../overlay_variables) except `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are available with the default values below as well as the additional Variables below which can be used to customize the file.
+All [Shared Overlay Variables](../overlay_variables.md) except `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are available with the default values below as well as the additional Variables below which can be used to customize the file.
  
 | Variable            | Default           |
 |:--------------------|:------------------|
@@ -54,24 +54,24 @@ All [Shared Overlay Variables](../overlay_variables) except `horizontal_offset`,
 | `back_height`       | `160`             |
 | `back_padding`      | `15`              |
 
-| Variable                          | Description & Values                                                                                                                                                                                                    |
-|:----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `position`                        | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                                   |
-| `style`                           | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                                        |
-| `pre_text`                        | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                                    |
-| `limit`                           | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                                     |
-| `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                       |
-| `location`                        | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../metadata/builders/flixpatrol.md#top-platform-attributes) |
-| `location_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../metadata/builders/flixpatrol.md#top-platform-attributes)   |
-| `weight_<<key>>`<sup>1</sup>      | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                            |
-| `font`                            | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                                                                             |
-| `font_style`                      | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                                                                      |
-| `font_size`                       | **Description:** Choose the font size for the Overlay.<br>**Default:** `50`<br>**Values:** Any Number greater then 0                                                                                                    |
-| `font_color`                      | **Description:** Choose the font color for the Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                     |
-| `stroke_width`                    | **Description:** Font Stroke Width for the Text Overlay.<br>**Values:** Any Number greater then 0                                                                                                                       |
-| `stroke_color`                    | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                                              |
-| `addon_offset`                    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater then 0                                                                                                   |
-| `addon_position`                  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                              |
+| Variable                          | Description & Values                                                                                                                                                                                             |
+|:----------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `position`                        | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                            |
+| `style`                           | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                                 |
+| `pre_text`                        | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                             |
+| `limit`                           | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                              |
+| `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                |
+| `location`                        | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)   |
+| `location_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)     |
+| `weight_<<key>>`<sup>1</sup>      | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                     |
+| `font`                            | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                                                                      |
+| `font_style`                      | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                                                               |
+| `font_size`                       | **Description:** Choose the font size for the Overlay.<br>**Default:** `50`<br>**Values:** Any Number greater then 0                                                                                             |
+| `font_color`                      | **Description:** Choose the font color for the Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                              |
+| `stroke_width`                    | **Description:** Font Stroke Width for the Text Overlay.<br>**Values:** Any Number greater then 0                                                                                                                |
+| `stroke_color`                    | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                                                       |
+| `addon_offset`                    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater then 0                                                                                            |
+| `addon_position`                  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                       |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
