@@ -56,7 +56,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -64,16 +74,20 @@ libraries:
     metadata_path:
       - pmm: genre
         template_variables:
-          use_separator: false
-          sep_style: red
+          sep_style: red #(1)!
           exclude:
-            - Politics
-            - News
+            - Politics #(2)!
+            - News #(3)!
           append_addons:
-            Horror:
-              - Thriller  # Adds all thriller items to the Horror collection
-          sort_by: title.asc
+            Horror: #(4)!
+              - Thriller #(5)! # Adds all thriller items to the Horror collection
 ```
+
+1.  Use the red [Separator Style](../separators.md#separator-styles)
+2.  Do not create a "Politics" collection, and do not include it in any other collections that it may be in as part of an "include"
+3.  Do not create a "News" collection, and do not include it in any other collections that it may be in as part of an "include"
+4.  Create a "Horror" collection, this genre does not need to exist in your library
+5.  Include the "Thriller" genre in the "Horror" collection, the "Thriller" genre must exist in your library if the "Horror" genre does not
 
 ## Default values
 

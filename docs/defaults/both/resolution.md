@@ -66,7 +66,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -74,12 +84,14 @@ libraries:
     metadata_path:
       - pmm: resolution
         template_variables:
-          use_separator: false
-          sep_style: green
+          sep_style: green #(1)!
           exclude:
-            - SD
+            - sd #(2)!
           sort_by: title.asc
 ```
+
+1.  Use the green [Separator Style](../separators.md#separator-styles)
+2.  Do not use the "sd" resolution as part of the "480p Movies/Shows" Collections
 
 ## Default values
 

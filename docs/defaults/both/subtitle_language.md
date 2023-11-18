@@ -55,7 +55,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -63,13 +73,16 @@ libraries:
     metadata_path:
       - pmm: subtitle_language
         template_variables:
-          use_other: false
-          use_separator: false
-          sep_style: purple
+          use_other: false #(1)!
+          use_separator: false #(2)!
           exclude:
-            - fr  # Exclude French
+            - fr  #(3)!
           sort_by: title.asc
 ```
+
+1.  Do not create an "Other Audio" collection
+2.  Do not create an "Audio Language Collections" separator
+3.  Exclude "French" from having an Audio Collection
 
 ## Default `include`
 

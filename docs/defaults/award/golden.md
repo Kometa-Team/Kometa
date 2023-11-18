@@ -55,7 +55,17 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -63,12 +73,20 @@ libraries:
     metadata_path:
       - pmm: golden
         template_variables:
-          collection_mode: show_items
-          collection_order: alpha
-          radarr_add_missing: true
+          collection_mode: show_items #(1)!
+          collection_order: alpha #(2)!
+          radarr_add_missing: true #(3)!
+          name_format: Emmys <<key_name>> Winners #(4)!
           data:
-            starting: current_year-10
-            ending: current_year
+            starting: current_year-10 #(5)!
+            increment: 2 #(6)!
+            ending: current_year #(7)!
 ```
 
-
+1.  Shows the collection and all of its items within the Library tab in Plex
+2.  Sorts the collection items alphabetically
+3.  Adds items from the source list which are not in Plex to Radarr
+4.  Change the name of the collections to "Golden Globes yearhere Winners"
+5.  If today is 2024, then create collections for Golden Globes 2014 onwards
+6.  If starting year is 2014, then create collections for 2014, 2016, 2018, 2020, etc.
+7.  If today is 2024, then the final collection is Golden Globes 2024

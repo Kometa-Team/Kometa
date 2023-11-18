@@ -55,7 +55,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -63,12 +73,17 @@ libraries:
     metadata_path:
       - pmm: writer
         template_variables:
-          style: signature
-          use_separator: false
-          sep_style: purple
           data:
-            depth: 10
-            limit: 20
+            depth: 10 #(1)!
+            limit: 20 #(2)!
+          style: diivivoy #(3)!
           sort_by: title.asc
-          tmdb_person_offset_Charles Bennett: 1
+          use_separator: false #(4)!
+          tmdb_person_offset_Richard Brooks: 1 #(5)!
 ```
+
+1.  Check the first 10 casting credits in each movie
+2.  Create 20 collections maximum
+3.  use the [diivivoy Style](#rainier-style)
+4.  Do not create a "Writers Collections" separator
+5.  There are two Richard Brooks, so use the 2nd [Richard Brooks](https://www.themoviedb.org/search?query=Richard%20Brooks) found on TMDb
