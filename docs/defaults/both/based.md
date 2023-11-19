@@ -86,5 +86,5 @@ libraries:
 2.  Do not create a "Based on a Comic" collection
 3.  Make the "Based on a True Story" collection appear in the collection list before the other collections in this file
 4.  Pin the "Based on a Video Game" collection to the Recommended tab of the library
-5.  Pin the "Based on a Video Game" collection to the homescreen of the server owner
-6.  Pin the "Based on a Video Game" collection to the homescreen of other users of the server
+5.  Pin the "Based on a Video Game" collection to the home screen of the server owner
+6.  Pin the "Based on a Video Game" collection to the home screen of other users of the server

@@ -84,7 +84,7 @@ libraries:
           use_other: false #(2)!
           append_addons:
             "R+ - Mild Nudity": #(3)!
-              - de/18 #(4)!
+              - "de/18" #(4)!
           sort_by: title.asc
 ```
 

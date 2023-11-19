@@ -54,20 +54,34 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
-  TV Shows:
+  Movies:
     metadata_path:
       - pmm: network
         template_variables:
-          use_separator: false
-          sep_style: stb
           append_exclude:
-            - BBC
+            - BBC #(1)!
           sort_by: title.asc
+          collection_mode: show_items #(2)!
+          sep_style: gray #(3)!
 ```
+
+1.  exclude "BBC" from the list of items that should be included in the Collection list
+2.  Show these collections and their items within the "Library" tab
+3.  Use the gray [Separator Style](../separators.md#separator-styles)
 
 ## Default values
 

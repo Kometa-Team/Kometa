@@ -59,22 +59,37 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
-  TV Shows:
+  Movies:
     metadata_path:
       - pmm: content_rating_us
         template_variables:
-          use_other: false
-          use_separator: false
-          sep_style: blue
+          sep_style: blue #(1)!
+          use_other: false #(2)!
           append_addons:
-            R:
-              - "de/18"
+            R: #(3)!
+              - "de/18" #(4)!
           sort_by: title.asc
 ```
+
+1.  Use the blue [Separator Style](../separators.md#separator-styles)
+2.  Do not create a "Not Rated Movies" collection
+3.  Defines a collection which will be called "R", this does not need to already exist in your library
+4.  Adds the "de/18" content rating to the "R" addon list, "de/18" must exist in your library if the "R" content rating does not
+
 
 ## Default values
 
