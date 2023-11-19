@@ -114,8 +114,8 @@ libraries:
 1.  Use french region lists where possible
 2.  Use the amethyst [Separator Style](../separators.md#separator-styles)
 3.  Pin the "Disney+ Movies/Shows" collection to the Recommended tab of the library
-4.  Pin the "Disney+ Movies/Shows" collection to the homescreen of the server owner
-5.  Pin the "Disney+ Movies/Shows" collection to the homescreen of other users of the server
+4.  Pin the "Disney+ Movies/Shows" collection to the home screen of the server owner
+5.  Pin the "Disney+ Movies/Shows" collection to the home screen of other users of the server
 6.  Add missing shows in your library from the "Hulu Shows" list to your Sonarr
 7.  Add missing movies in your library from the "Prime Video Movies" list to your Radarr
 8.  Sort all of the collections created by this file randomly

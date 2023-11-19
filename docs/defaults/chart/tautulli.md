@@ -52,7 +52,17 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -60,10 +70,17 @@ libraries:
     metadata_path:
       - pmm: tautulli
         template_variables:
-          use_watched: false
-          list_days_popular: 7
-          list_size_popular: 10
-          visible_library_watched: true
-          visible_home_watched: true
-          visible_shared_watched: true
+          use_watched: false #(1)!
+          list_days_popular: 7 #(2)!
+          list_size_popular: 10 #(3)!
+          visible_library_popular: true #(4)!
+          visible_home_popular: true #(5)!
+          visible_shared_popular: true #(6)!
 ```
+
+1.  Do not create the "Plex Watched" collection
+2.  Change "Plex Popular" to look at items from the past 7 days
+3.  Change "Plex Popular" to have a maximum of 10 items
+4.  Pin the "Plex Popular" collection to the Recommended tab of the library
+5.  Pin the "Plex Popular" collection to the home screen of the server owner
+6.  Pin the "Plex Popular" collection to the home screen of other users of the server

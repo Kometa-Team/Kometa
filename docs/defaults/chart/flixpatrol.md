@@ -55,7 +55,17 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -63,5 +73,7 @@ libraries:
     metadata_path:
       - pmm: flixpatrol
         template_variables:
-          location: united_states
+          location: united_states #(1)!
 ```
+
+1.  Change the location of the FlixPatrol  collections to the United States of America

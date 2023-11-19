@@ -69,7 +69,17 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -78,11 +88,15 @@ libraries:
       - pmm: franchise
         template_variables:
           append_data:
-            "31917": Pretty Little Liars
+            "31917": Pretty Little Liars  #(1)!
           append_addons:
-            31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
-          sonarr_add_missing: true
+            31917: [46958, 79863, 110531]  #(2)!
+          sonarr_add_missing: true  #(3)!
 ```
+
+1.  Add [TMDB Show 31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) to the data dictionary
+2.  Add [TMDb Shows 46958](https://www.themoviedb.org/tv/46958), [79863](https://www.themoviedb.org/tv/79863) and [110531](https://www.themoviedb.org/tv/110531)  as addons of [TMDB Show 31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) so that they appear in the same collection
+3.  Add items missing from your library in Plex to Sonarr
 
 ## Default values
 

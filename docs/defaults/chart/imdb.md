@@ -49,7 +49,17 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -57,8 +67,12 @@ libraries:
     metadata_path:
       - pmm: imdb
         template_variables:
-          use_popular: false
-          visible_library_top: true
-          visible_home_top: true
-          visible_shared_top: true
+          use_lowest: false #(1)!
+          visible_library_top: true #(2)!
+          visible_home_top: true #(3)!
+          visible_shared_top: true #(4)!
 ```
+1.  Do not create the "IMDb Lowest Rated" collection
+2.  Pin the "AniList Popular" collection to the Recommended tab of the library
+3.  Pin the "AniList Popular" collection to the home screen of the server owner
+4.  Pin the "AniList Popular" collection to the home screen of other users of the server

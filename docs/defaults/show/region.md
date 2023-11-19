@@ -12,11 +12,11 @@ Supported Library Types: Show
 
 ## Collections Section 081
 
-| Collection                         | Key                                                | Description                                                                 |
-|:-----------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|
-| `Region Collections`               | `separator`                                        | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `<<Region>>`<br>**Example:** `de`  | `<<2 digit ISO 3166-1 code>>`<br>**Example:** `de` | Collection of TV Shows that have this Region.                               |
-| `Other Regions`                    | `other`                                            | Collection of TV Shows that are in other uncommon Regions.                  |
+| Collection                            | Key                                                     | Description                                                                      |
+|:--------------------------------------|:--------------------------------------------------------|:---------------------------------------------------------------------------------|
+| `Region Collections`                  | `separator`                                             | [Separator Collection](../separators.md) to denote the Section of Collections.   |
+| `<<Region>>`<br>**Example:** `German` | `<<2 digit ISO 3166-1 code>>`<br>**Example:** `German ` | Collection of TV Shows that have this Region.                                    |
+| `Other Regions`                       | `other`                                                 | Collection of TV Shows that are in other uncommon Regions.                       |
 
 ## Config
 
@@ -67,22 +67,36 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
-  TV Shows:
+  Movies:
     metadata_path:
       - pmm: region
         template_variables:
-          use_other: false
-          use_separator: false
-          style: color
-          sep_style: purple
+          use_other: false #(1)!
+          use_separator: false #(2)!
+          style: color #(3)!
           exclude:
-            - fr
+            - fr #(4)!
           sort_by: title.asc
 ```
+
+1.  Do not create the "Other Regions" collection
+2.  Do not create a "Region Collections" separator
+3.  Set the [Color Style](#color-style)
+4.  Exclude "French" from the list of collections that are created
 
 ## Default values
 

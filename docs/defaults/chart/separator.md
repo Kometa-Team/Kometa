@@ -38,7 +38,17 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 This file contains only a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -46,6 +56,7 @@ libraries:
     metadata_path:
       - pmm: separator_chart
         template_variables:
-          use_separator: false
-          sep_style: purple
+          sep_style: purple #(1)!
 ```
+
+1.  Use the purple [Separator Style](../separators.md#separator-styles)
