@@ -384,6 +384,8 @@ class Operations:
                                 new_genres = mal_item.genres
                             else:
                                 raise Failed
+                            if new_genres == ["\\N"]:
+                                new_genres = []
                             if not new_genres:
                                 logger.info(f"No Genres Found")
                         if self.library.genre_mapper or self.library.mass_genre_update in ["lock", "unlock"]:
