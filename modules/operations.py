@@ -81,6 +81,9 @@ class Operations:
             item_criticRating = {}
             item_userRating = {}
             item_contentRating = {}
+            item_parental_labels_add = {}
+            item_parental_labels_remove = {}
+            item_studio = {}
             item_genres = {}
             library_genres = []
             episode_audienceRating = {}
@@ -128,8 +131,25 @@ class Operations:
                         parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
                         add_labels = [la for la in parental_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
-                        if add_labels or remove_labels:
-                            batch_display += f"\n{self.library.edit_tags('label', item, add_tags=add_labels, remove_tags=remove_labels, do_print=False)}"
+                        logger.info(f"Parental Labels: {parental_labels}")
+                        logger.info(f"Current Labels: {current_labels}")
+                        for label in add_labels:
+                            if label in item_parental_labels_add.keys():
+                                item_parental_labels_add[label].append(item)
+                            else:
+                                item_parental_labels_add.update({label:[item]})
+                        for label in remove_labels:
+                            if label in item_parental_labels_remove.keys():
+                                item_parental_labels_remove[label].append(item)
+                            else:
+                                item_parental_labels_remove.update({label:[item]})
+                        if add_labels:
+                            logger.info(f"Parental Labels Added | {add_labels}")
+                        if remove_labels:
+                            logger.info(f"Parental Labels Removed | {remove_labels}")
+                        if not add_labels and not remove_labels:
+                            logger.info(f"Parental Labels | No Changes")
+                            
                     except Failed:
                         pass
                 if item.locations:
@@ -471,13 +491,14 @@ class Operations:
                 if self.library.mass_studio_update:
                     if self.library.mass_studio_update in ["remove", "reset"] and item.studio:
                         item.editField("studio", None, locked=self.library.mass_studio_update == "remove")
-                        batch_display += f"\nStudio | None"
-                    elif self.library.mass_studio_update in ["unlock", "reset"] and "studio" in locked_fields:
-                        self.library.edit_query(item, {"studio.locked": 0})
-                        batch_display += f"\nStudio | Unlocked"
-                    elif self.library.mass_studio_update in ["lock", "remove"] and "studio" not in locked_fields:
-                        self.library.edit_query(item, {"studio.locked": 1})
-                        batch_display += f"\nStudio | Locked"
+                        logger.info(f"\nStudio | None")
+                    elif self.library.mass_studio_update in ["unlock", "lock"]:
+                        if self.library.mass_studio_update == "unlock":
+                            self.library.edit_query(item, {"studio.locked": 0})
+                            logger.info(f"\nStudio | Unlocked")
+                        else:
+                            self.library.edit_query(item, {"studio.locked": 1})
+                            logger.info(f"\nStudio | Locked")
                     elif self.library.mass_studio_update not in ["lock", "unlock", "remove", "reset"]:
                         try:
                             if anidb_item and self.library.mass_studio_update == "anidb":
@@ -491,8 +512,11 @@ class Operations:
                             if not new_studio:
                                 logger.info(f"No Studio Found")
                             elif str(item.studio) != str(new_studio):
-                                item.editStudio(new_studio)
-                                batch_display += f"\nStudio | {new_studio}"
+                                if new_studio in item_studio.keys():
+                                    item_studio[new_studio].append(item)
+                                else:
+                                    item_studio.update({new_studio:[item]})
+                                logger.info(f"\nStudio | {new_studio}")
                         except Failed:
                             pass
 
@@ -675,7 +699,8 @@ class Operations:
                                             episode_userRating.update({found_rating:[ep]})
                                     logger.info(f"\n{key} | {found_rating}")
 
-            for key in item_audienceRating:
+            for i, key in enumerate(item_audienceRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(item_audienceRating)} Audience Ratings")
                 if self.library.mass_audience_rating_update not in ["reset", None]:
                     self.library.Plex.batchMultiEdits(item_audienceRating[key])
                     self.library.Plex.editField("audienceRating", key)
@@ -684,7 +709,8 @@ class Operations:
                     self.library.Plex.batchMultiEdits(item_audienceRating[key])
                     self.library.Plex.editField("audienceRating", key, False)
                     self.library.Plex.saveMultiEdits()
-            for key in item_criticRating:
+            for i, key in enumerate(item_criticRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(item_criticRating)} Critic Ratings")
                 if self.library.mass_critic_rating_update not in ["reset", None]:
                     self.library.Plex.batchMultiEdits(item_criticRating[key])
                     self.library.Plex.editField("rating", key)
@@ -693,7 +719,8 @@ class Operations:
                     self.library.Plex.batchMultiEdits(item_criticRating[key])
                     self.library.Plex.editField("rating", key, False)
                     self.library.Plex.saveMultiEdits()
-            for key in item_userRating:
+            for i, key in enumerate(item_userRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(item_userRating)} User Ratings")
                 if self.library.mass_user_rating_update not in ["reset", None]:
                     self.library.Plex.batchMultiEdits(item_userRating[key])
                     self.library.Plex.editField("userRating", key)
@@ -707,7 +734,8 @@ class Operations:
                 self.library.Plex.batchMultiEdits(items)
                 self.library.Plex.removeGenre(library_genres)
                 self.library.Plex.saveMultiEdits()
-                for key in item_genres:
+                for i, key in enumerate(item_genres, 1):
+                    logger.ghost(f"Batch Editing: {i}/{len(item_genres)} Genres")
                     if self.library.mass_genre_update not in ["reset", "unlock", None] or self.library.genre_mapper:
                         self.library.Plex.batchMultiEdits(item_genres[key])
                         self.library.Plex.addGenre(key)
@@ -717,7 +745,8 @@ class Operations:
                         self.library.Plex.addGenre(key, False)
                         self.library.Plex.saveMultiEdits()
                     
-            for key in item_contentRating:
+            for i, key in enumerate(item_contentRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(item_contentRating)} Content Ratings")
                 if self.library.mass_content_rating_update not in ["reset", None] or self.library.content_rating_mapper:
                     self.library.Plex.batchMultiEdits(item_contentRating[key])
                     self.library.Plex.editField("contentRating", key)
@@ -725,9 +754,21 @@ class Operations:
                 if self.library.mass_content_rating_update in ["reset"]:
                     self.library.Plex.batchMultiEdits(item_contentRating[key])
                     self.library.Plex.editField("contentRating", key, False)
-                    self.library.Plex.saveMultiEdits()        
+                    self.library.Plex.saveMultiEdits()
+                    
+            for i, key in enumerate(item_studio, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(item_studio)} Studios")
+                if self.library.mass_studio_update not in ["reset", None]:
+                    self.library.Plex.batchMultiEdits(item_studio[key])
+                    self.library.Plex.editField("studio", key)
+                    self.library.Plex.saveMultiEdits()
+                if self.library.mass_studio_update in ["reset"]:
+                    self.library.Plex.batchMultiEdits(item_studio[key])
+                    self.library.Plex.editField("studio", key, False)
+                    self.library.Plex.saveMultiEdits()         
             
-            for key in episode_audienceRating:
+            for i, key in enumerate(episode_audienceRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(episode_audienceRating)} Episode Audience Ratings")
                 if self.library.mass_episode_audience_rating_update in ["tmdb", "imdb", "remove"]:
                     self.library.Plex.batchMultiEdits(episode_audienceRating[key])
                     self.library.Plex.editField("audienceRating", key)
@@ -736,7 +777,8 @@ class Operations:
                     self.library.Plex.batchMultiEdits(episode_audienceRating[key])
                     self.library.Plex.editField("audienceRating", key, False)
                     self.library.Plex.saveMultiEdits()
-            for key in episode_criticRating:
+            for i, key in enumerate(episode_criticRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(episode_criticRating)} Episode Critic Ratings")
                 if self.library.mass_episode_critic_rating_update in ["tmdb", "imdb", "remove"]:
                     self.library.Plex.batchMultiEdits(episode_criticRating[key])
                     self.library.Plex.editField("rating", key)
@@ -745,7 +787,8 @@ class Operations:
                     self.library.Plex.batchMultiEdits(episode_criticRating[key])
                     self.library.Plex.editField("rating", key, False)
                     self.library.Plex.saveMultiEdits()
-            for key in episode_userRating:
+            for i, key in enumerate(episode_userRating, 1):
+                logger.ghost(f"Batch Editing: {i}/{len(episode_userRating)} Episode User Ratings")
                 if self.library.mass_episode_user_rating_update in ["tmdb", "imdb", "remove"]:
                     self.library.Plex.batchMultiEdits(episode_userRating[key])
                     self.library.Plex.editField("userRating", key)
@@ -754,6 +797,17 @@ class Operations:
                     self.library.Plex.batchMultiEdits(episode_userRating[key])
                     self.library.Plex.editField("userRating", key, False)
                     self.library.Plex.saveMultiEdits()
+                    
+            for i, key in enumerate(item_parental_labels_add, 1):
+                logger.ghost(f"Batch Adding: {i}/{len(item_parental_labels_add)} IMDb Parental Labels")
+                self.library.Plex.batchMultiEdits(item_parental_labels_add[key])
+                self.library.Plex.addLabel(key)
+                self.library.Plex.saveMultiEdits()
+            for i, key in enumerate(item_parental_labels_remove, 1):
+                logger.ghost(f"Batch Removing: {i}/{len(item_parental_labels_remove)} IMDb Parental Labels")
+                self.library.Plex.batchMultiEdits(item_parental_labels_remove[key])
+                self.library.Plex.removeLabel(key)
+                self.library.Plex.saveMultiEdits()
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 try:
