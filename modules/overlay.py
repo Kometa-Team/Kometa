@@ -155,8 +155,10 @@ class Overlay:
 
         def get_and_save_image(image_url):
             response = self.config.get(image_url)
-            if response.status_code >= 400:
+            if response.status_code == 404:
                 raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
+            if response.status_code >= 400:
+                raise Failed(f"Overlay Error: Status {response.status_code} when attempting download of: {image_url}")
             if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
                 raise Failed(f"Overlay Error: Overlay Image not a png: {image_url}")
             if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
