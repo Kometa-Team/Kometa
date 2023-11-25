@@ -170,8 +170,10 @@ def quote(data):
 
 def download_image(title, image_url, download_directory, filename=None):
     response = requests.get(image_url, headers=header())
+    if response.status_code == 404:
+        raise Failed(f"Image Error: Not Found on Image URL: {image_url}")
     if response.status_code >= 400:
-        raise Failed(f"Image Error: Failed to download Image URL: {image_url}")
+        raise Failed(f"Image Error: {response.status_code} on Image URL: {image_url}")
     if "Content-Type" not in response.headers or response.headers["Content-Type"] not in image_content_types:
         raise Failed("Image Not PNG, JPG, or WEBP")
     new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory

@@ -205,6 +205,6 @@ class Mdblist:
                         results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
                 return results
             except JSONDecodeError:
-                raise Failed(f"Mdblist Error: Invalid Response")
+                raise Failed(f"Mdblist Error: Invalid JSON Response received")
         else:
             raise Failed(f"Mdblist Error: Method {method} not supported")
