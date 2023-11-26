@@ -47,6 +47,7 @@ theme:
         name: Switch to dark mode
 
 plugins:
+  - glightbox
   - search:
       lang: en
   - include-markdown
