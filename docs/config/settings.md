@@ -64,6 +64,22 @@ The available setting attributes which can be set at each level are outlined bel
 | [`verify_ssl`](#verify-ssl)                                   |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
 | [`check_nightly`](#check-nightly)                             |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
 
+## Default Values
+
+The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.
+
+???+ tip
+
+    We suggest users review each of these settings and amend as necessary, these are just default values to get you started.
+
+~~~yaml
+{%    
+  include-markdown "./config.yml.template" 
+  comments=false
+  start="settings:"
+  end="webhooks:"
+%}
+~~~
 ## Cache
 Cache the Plex GUID and associated IDs for each library item for faster subsequent processing. The cache file is created in the same directory as the configuration file.
 

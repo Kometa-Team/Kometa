@@ -4,6 +4,44 @@ Overlay files are used to create and maintain overlays within the Plex libraries
 
 Overlays and templates are defined within one or more Overlay files, which are linked to libraries in the [Libraries Attribute](../config/libraries.md#overlay-path) within the [Configuration File](../config/configuration.md).
 
+## Example
+
+This example is an Overlay file with a basic overlay which is saved in a file called `MyOverlays.yml` within the location mapped as `config` in my setup.
+
+???+ example "Example "MyOverlays.yml"""
+
+    This will add an overlay with text that says "Direct Play" to any item which has a 4K resolution in my library. It will be located at the bottom of the poster in the center.
+
+    ```yaml
+    overlays:
+      directplay:
+        overlay:
+          name: text(Direct Play)
+          horizontal_offset: 0
+          horizontal_align: center
+          vertical_offset: 150
+          vertical_align: bottom
+          font_size: 63
+          font_color: "#FFFFFF"
+          back_color: "#00000099"
+          back_radius: 30
+        plex_search:
+          all:
+            resolution: 4K
+    ```
+
+This file would then be defined in my `config.yml` file as a `overlay_path` item:
+
+???+ example "config.yml Example Overlay Path Addition"
+
+    ```yaml
+    libraries:
+      Movies:       # this must match the name of a library in your Plex server
+        overlay_path:
+          - remove_overlays: false
+          - file: config/MyOverlays.yml
+    ```
+
 All overlay coordinates assume 1000 x 1500 for Posters and 1920 x 1080 for Backgrounds and Title Cards.
 
 **To remove all overlays add `remove_overlays: true` to the `overlay_path` [Libraries Attribute](../config/libraries.md#remove-overlays).**
