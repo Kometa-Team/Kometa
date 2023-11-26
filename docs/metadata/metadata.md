@@ -19,6 +19,31 @@ These are the attributes which can be used within the Metadata File:
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the Metadata File to execute.
 * Example Metadata Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
 
+## Example
+
+This example is a Metadata file with a basic collection which is saved in a file called `MyCollections.yml` within the location mapped as `config` in my setup.
+
+???+ example "Example "MyCollections.yml"""
+
+    ```yaml
+    collections:    # this must appear once and **only once** in any Metadata file
+       Top 50 Grossing Films of All Time (Worldwide):
+        tmdb_list: 10     # https://www.themoviedb.org/list/10 also accepted
+        collection_order: custom
+        sync_mode: sync
+    ```
+
+This file would then be defined in my `config.yml` file as a `metadata_path` item:
+
+???+ example "config.yml Example Metadata Path Addition"
+
+    ```yaml
+    libraries:
+      Movies:       # this must match the name of a library in your Plex server
+        metadata_path:
+          - file: config/MyCollections.yml
+    ```
+
 ## Collection Attributes
 
 Plex Meta Manager can run a number of different operations within `collections` and such as:
