@@ -14,19 +14,41 @@ You can use the [`playlist_report` setting](../config/settings.md#playlist-repor
 
 This example is a Playlist file with a basic overlay which is saved in a file called `MyPlaylists.yml` within the location mapped as `config` in my setup.
 
+
 ???+ example "Example "MyPlaylists.yml"""
 
-    This will add an overlay with text that says "Direct Play" to any item which has a 4K resolution in my library. It will be located at the bottom of the poster in the center.
+    Click the :fontawesome-solid-circle-plus: icon to learn more
 
     ```yaml
-    playlists:
+    collections: #(1)!
+       Top 50 Grossing Films of All Time (Worldwide):
+        tmdb_list: 10 #(2)!
+        collection_order: custom #(3)!
+        sync_mode: sync #(4)!
+    ```
+
+    1.  This must appear once and **only once** in any Metadata file
+    2.  This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
+    3.  This will sort the items in the Plex collection to be the same as the order in the list
+    4.  Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the collection. Set this to `append` if you only want it to add things and not remove them.
+
+???+ example "config.yml Example Metadata Path Addition"
+
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
+    ```yaml
+    playlists: #(1)!
       Marvel Cinematic Universe Chronological Order:
         sync_mode: sync
-        libraries: Movies, TV Shows                         # these libraries must exist in your Plex server
-        sync_to_users: User1, someone@somewhere.com, User3
-        trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe?sort=rank,asc
+        libraries: Movies, TV Shows  #(2)!
+        sync_to_users: User1, someone@somewhere.com, User3  #(3)!
+        trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         summary: Marvel Cinematic Universe In Chronological Order
     ```
+
+    1.  This must appear once and **only once** in any Playlist file
+    2.  These libraries must exist in your Plex library
+    3.  Leave this blank if you only only want the Playlist to sync to the server owner's account
 
 This file would then be defined in my `config.yml` file as a `playlist_files` item:
 
@@ -36,15 +58,20 @@ This file would then be defined in my `config.yml` file as a `playlist_files` it
 
 ???+ example "config.yml Example Playlists Addition"
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
     ```yaml
     libraries:
       Movies:
         # Metadata and Overlay files here
       TV Shows:
         # Metadata and Overlay files here
-    playlist_files:
-      - file: config/MyPlaylists.yml
+    playlist_files: #(1)!
+      - file: config/MyPlaylists.yml #(2)!
     ```
+
+    1.  Note that Playlist files are not called within the `libraries` section, they are defined at the root identation as you can see here
+    2.  `config` refers to the location that you mapped to `config` when following the PMM Installation Guides.
 
 ## Playlist Attributes
 
