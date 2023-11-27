@@ -25,7 +25,7 @@ If you have some specific reason to avoid Docker, or you prefer running it as a 
 
 ### Install Walkthroughs
 
-There are no detailed walkthroughs specifically for Plex Image Cleanup but the process is extremely similar to how you would do it with [Plex Meta Manager](https://www.metamanager.wiki/en/latest/home/installation.html#install-walkthroughs).
+There are no detailed walkthroughs specifically for Plex Image Cleanup but the process is extremely similar to how you would do it with [Plex Meta Manager](https://metamanager.wiki/en/latest/home/installation.html#install-walkthroughs).
 
 ### Local Install Overview
 
