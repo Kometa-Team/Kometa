@@ -39,3 +39,17 @@ All the following attributes serve various functions as how the definition funct
 | `ignore_blank_results`       | **Description:** Used to not have Errors resulting from blank results from builders.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                |
 | `only_run_on_create`         | **Description:** Used to only run the collection definition if the collection doesn't already exist.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                |
 | `delete_collections_named`   | **Description:** Used to delete any collections in your plex named one of the given collections.<br>**Values:** List of Collection Names to delete                                                                                                                                                                                                                                                           |[environmental.md](..%2F..%2Fpmm%2Fessentials%2Fenvironmental.md)
+
+An example of using `default_percent` which is used in an external yml file and not within config.yml:
+```yml
+  HDR10Plus:
+    default_percent: 35  #default default_percent is 50
+    template:
+      - name: Resolution
+        weight: 400
+        opt1: hdr10p
+    plex_search:
+      all:
+        hdr: true
+    filters:
+      filepath.regex: 'HDR10\+|HDR10P'
