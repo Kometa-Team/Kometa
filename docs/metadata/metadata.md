@@ -53,6 +53,7 @@ This example is a Metadata file with a basic collection which is saved in a file
 
     1.  This must match the name of a library in your Plex server
     2.  `config` refers to the location that you mapped to `config` when following the PMM Installation Guides.
+
 ## Collection Attributes
 
 Plex Meta Manager can run a number of different operations within `collections` and such as:

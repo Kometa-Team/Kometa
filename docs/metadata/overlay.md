@@ -6,17 +6,20 @@ Overlays and templates are defined within one or more Overlay files, which are l
 
 ## Example
 
+
 This example is an Overlay file with a basic overlay which is saved in a file called `MyOverlays.yml` within the location mapped as `config` in my setup.
 
 ???+ example "Example "MyOverlays.yml"""
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
     This will add an overlay with text that says "Direct Play" to any item which has a 4K resolution in my library. It will be located at the bottom of the poster in the center.
 
     ```yaml
-    overlays:
+    overlays: #(1)!
       directplay:
         overlay:
-          name: text(Direct Play)
+          name: text(Direct Play) #(2)!
           horizontal_offset: 0
           horizontal_align: center
           vertical_offset: 150
@@ -25,22 +28,29 @@ This example is an Overlay file with a basic overlay which is saved in a file ca
           font_color: "#FFFFFF"
           back_color: "#00000099"
           back_radius: 30
-        plex_search:
+        plex_search: #(3)!
           all:
             resolution: 4K
     ```
 
-This file would then be defined in my `config.yml` file as a `overlay_path` item:
+    1.  This must appear once and **only once** in any Overlay file
+    2.  This tells PMM to use text as the overlay rather than an image
+    3.  This is the criteria that PMM will use to define what should receive the overlay
 
 ???+ example "config.yml Example Overlay Path Addition"
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
     ```yaml
     libraries:
-      Movies:       # this must match the name of a library in your Plex server
+      Movies:  #(1)!
         overlay_path:
           - remove_overlays: false
-          - file: config/MyOverlays.yml
+          - file: config/MyOverlays.yml #(2)!
     ```
+
+    1.  This must match the name of a library in your Plex server
+    2.  `config` refers to the location that you mapped to `config` when following the PMM Installation Guides.
 
 All overlay coordinates assume 1000 x 1500 for Posters and 1920 x 1080 for Backgrounds and Title Cards.
 
