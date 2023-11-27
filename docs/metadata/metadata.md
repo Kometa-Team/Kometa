@@ -25,25 +25,34 @@ This example is a Metadata file with a basic collection which is saved in a file
 
 ???+ example "Example "MyCollections.yml"""
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
     ```yaml
-    collections:    # this must appear once and **only once** in any Metadata file
+    collections: #(1)!
        Top 50 Grossing Films of All Time (Worldwide):
-        tmdb_list: 10     # https://www.themoviedb.org/list/10 also accepted
-        collection_order: custom
-        sync_mode: sync
+        tmdb_list: 10 #(2)!
+        collection_order: custom #(3)!
+        sync_mode: sync #(4)!
     ```
 
-This file would then be defined in my `config.yml` file as a `metadata_path` item:
+    1.  This must appear once and **only once** in any Metadata file
+    2.  This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
+    3.  This will sort the items in the Plex collection to be the same as the order in the list
+    4.  Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the collection. Set this to `append` if you only want it to add things and not remove them.
 
 ???+ example "config.yml Example Metadata Path Addition"
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+
     ```yaml
     libraries:
-      Movies:       # this must match the name of a library in your Plex server
+      Movies: #(1)!
         metadata_path:
-          - file: config/MyCollections.yml
+          - file: config/MyCollections.yml #(2)!
     ```
 
+    1.  This must match the name of a library in your Plex server
+    2.  `config` refers to the location that you mapped to `config` when following the PMM Installation Guides.
 ## Collection Attributes
 
 Plex Meta Manager can run a number of different operations within `collections` and such as:
