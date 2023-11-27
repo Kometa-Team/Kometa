@@ -182,7 +182,7 @@ NOTE: You must either create an empty Trakt list or specify an existing Trakt li
 
 ```yaml
 collections:
-  My Favouite Movies:
+  My Favourite Movies:
     sync_to_trakt_list: myfilms
     # trakt_list: https://trakt.tv/users/plexmetamanager/lists/myfilms  OPTIONAL TWO-WAY SYNC
     plex_search:
