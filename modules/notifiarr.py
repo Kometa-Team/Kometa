@@ -17,7 +17,7 @@ class Notifiarr:
         try:
             self.request(path="user", params={"fetch": "settings"})
         except JSONDecodeError:
-            raise Failed("Notifiarr Error: Invalid response")
+            raise Failed("Notifiarr Error: Invalid JSON response received")
 
     def notification(self, json):
         return self.request(json=json)

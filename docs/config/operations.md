@@ -54,6 +54,16 @@ Search in assets for images for every item in your library.
 
 **Values:** `true` or `false`
 
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          assets_for_all: false
+    ```
+
 ## Delete Collections
 
 Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
@@ -68,18 +78,19 @@ Deletes collections based on a set of given attributes. The Collection must matc
 | `configured` | **Values:**<br>`true`: Collection must be a Configured Collection to be deleted (collection is in the config file of the specific PMM run)<br>`false`: Collection must be an Unconfigured Collection to be deleted (collection is not in the config file of the specific PMM run).<br>**The collection does not need to be scheduled to be considered configured and only needs to be in the config file.** |
 | `less`       | Collection must contain less then the given number of items to be deleted.<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                             |
 
-**Example:**
+???+ example
 
-Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
+    Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
 
-```yaml
-library:
-  Movies:
-    operations:
-      delete_collections:
-        configured: false
-        managed: true
-```
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          delete_collections:
+            configured: false
+            managed: true
+    ```
 
 ## Mass Genre Update
 
@@ -108,6 +119,17 @@ Updates every item's genres in the library to the chosen site's genres.
 | `remove`    | Remove all Genres and Lock Field                               |
 | `reset`     | Remove all Genres and Unlock Field                             |
 
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          mass_genre_update: imdb
+    ```
+
+
 ## Mass Content Rating Update
 
 Updates every item's content rating in the library to the chosen site's content rating.
@@ -127,6 +149,16 @@ Updates every item's content rating in the library to the chosen site's content 
 | `unlock`           | Unlock Content Rating Field                                                  |
 | `remove`           | Remove Content Rating and Lock Field                                         |
 | `reset`            | Remove Content Rating and Unlock Field                                       |
+
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          mass_content_rating_update: omdb
+    ```
 
 ## Mass Original Title Update
 
@@ -148,6 +180,16 @@ Updates every item's original title in the library to the chosen site's original
 | `remove`         | Remove Original Title and Lock Field                                                            |
 | `reset`          | Remove Original Title and Unlock Field                                                          |
 
+???+ example
+
+    ```yaml
+    libraries:
+      Anime:
+        # Metadata and Overlay files here
+        operations:
+          mass_original_title_update: anidb_official
+    ```
+
 ## Mass Studio Update
 
 Updates every item's studio in the library to the chosen site's studio.
@@ -165,6 +207,16 @@ Updates every item's studio in the library to the chosen site's studio.
 | `unlock` | Unlock Original Title Field            |
 | `remove` | Remove Original Title and Lock Field   |
 | `reset`  | Remove Original Title and Unlock Field |
+
+???+ example
+
+    ```yaml
+    libraries:
+      Anime:
+        # Metadata and Overlay files here
+        operations:
+          mass_studio_update: mal
+    ```
 
 ## Mass Originally Available Update
 
@@ -186,6 +238,16 @@ Updates every item's originally available date in the library to the chosen site
 | `unlock` | Unlock Originally Available Field            |
 | `remove` | Remove Originally Available and Lock Field   |
 | `reset`  | Remove Originally Available and Unlock Field |
+
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_originally_available_update: tvdb
+    ```
 
 ## Mass * Rating Update
 
@@ -225,9 +287,24 @@ Updates every item's audience/critic/user rating in the library to the chosen si
 | `remove`               | Remove Rating and Lock Field                        |
 | `reset`                | Remove Rating and Unlock Field                      |
 
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          mass_audience_rating_update: mdb_average
+          mass_critic_rating_update: mdb_metacritic
+          mass_user_rating_update: imdb
+    ```
 ## Mass Episode * Rating Update
 
 Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.
+
+???+ warning "Important Note"
+    
+    This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../pmm/install/guides/ratings.md).
 
 **Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
 
@@ -242,6 +319,17 @@ Updates every item's episode's audience/critic/user rating in the library to the
 | `remove` | Remove Rating and Lock Field   |
 | `reset`  | Remove Rating and Unlock Field |
 
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_episode_audience_rating_update: tmdb
+          mass_episode_critic_rating_update: remove
+          mass_episode_user_rating_update: imdb
+    ```
 ## Mass Poster Update
 
 Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.
@@ -249,7 +337,6 @@ Updates every item's poster to the chosen sites poster. Will fallback to `plex` 
 ???+ warning
 
     When used in combination with Overlays, this could cause PMM to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
-
 
 **Attribute:** `mass_poster_update`
 
@@ -261,17 +348,18 @@ Updates every item's poster to the chosen sites poster. Will fallback to `plex` 
 | `seasons`           | Update season posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
 | `episodes`          | Update episode posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
 
-**Example:**
+???+ example
 
-```yaml
-library:
-  TV Shows:
-    operations:
-      mass_poster_update:
-        source: tmdb
-        seasons: false
-        episodes: false
-```
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_poster_update:
+            source: tmdb
+            seasons: false
+            episodes: false
+    ```
 
 ## Mass Background Update
 
@@ -291,17 +379,18 @@ Updates every item's background to the chosen sites background. Will fallback to
 | `seasons`           | Update season backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
 | `episodes`          | Update episode backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
 
-**Example:**
+???+ example
 
-```yaml
-library:
-  TV Shows:
-    operations:
-      mass_background_update:
-        source: tmdb
-        seasons: false
-        episodes: false
-```
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_background_update:
+            source: tmdb
+            seasons: false
+            episodes: false
+    ```
 
 ## Mass IMDb Parental Labels
 
@@ -318,6 +407,16 @@ Updates every item's labels in the library to match the IMDb Parental Guide.
 | `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`                  |
 | `severe`   | Apply all Parental Labels with a value of `Severe`                                |
 
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_imdb_parental_labels: severe
+    ```
+
 ## Mass Collection Mode
 
 Updates every Collection in your library to the specified Collection Mode.
@@ -333,6 +432,16 @@ Updates every Collection in your library to the specified Collection Mode.
 | `hide_items` | Hide Items in this Collection      |
 | `show_items` | Show this Collection and its Items |
 
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          mass_collection_mode: hide
+    ```
+
 ## Update Blank Track Titles
 
 Search though every track in a music library and replace any blank track titles with the tracks sort title.
@@ -340,6 +449,16 @@ Search though every track in a music library and replace any blank track titles 
 **Attribute:** `update_blank_track_titles`
 
 **Values:** `true` or `false`
+
+???+ example
+
+    ```yaml
+    libraries:
+      Music:
+        # Metadata and Overlay files here
+        operations:
+          update_blank_track_titles: true
+    ```
 
 ## Remove Title Parentheses
 
@@ -349,6 +468,16 @@ Search through every title and remove all ending parentheses in an items title i
 
 **Values:** `true` or `false`
 
+???+ example
+
+    ```yaml
+    libraries:
+      Music:
+        # Metadata and Overlay files here
+        operations:
+          remove_title_parentheses: true
+    ```
+
 ## Split Duplicates
 
 Splits all duplicate movies/shows found in this library.
@@ -356,6 +485,16 @@ Splits all duplicate movies/shows found in this library.
 **Attribute:** `split_duplicates`
 
 **Values:** `true` or `false`
+
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          split_duplicates: true
+    ```
 
 ## Radarr Add All
 
@@ -365,6 +504,16 @@ Adds every item in the library to Radarr. The existing paths in plex will be use
 
 **Values:** `true` or `false`
 
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          radarr_add_all: true
+    ```
+
 ## Radarr Remove By Tag
 
 Removes every item from Radarr with the Tags given.
@@ -372,6 +521,16 @@ Removes every item from Radarr with the Tags given.
 **Attribute:** `radarr_remove_by_tag`
 
 **Values:** List or comma separated string of tags
+
+???+ example
+
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          radarr_remove_by_tag: mytag1, mytag2
+    ```
 
 ## Sonarr Add All
 
@@ -381,6 +540,16 @@ Adds every item in the library to Sonarr. The existing paths in plex will be use
 
 **Values:** `true` or `false`
 
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          sonarr_add_all: true
+    ```
+
 ## Sonarr Remove By Tag
 
 Removes every item from Sonarr with the Tags given.
@@ -388,6 +557,16 @@ Removes every item from Sonarr with the Tags given.
 **Attribute:** `sonarr_remove_by_tag`
 
 **Values:** List or comma separated string of tags
+
+???+ example
+
+    ```yaml
+    libraries:
+      TV Shows:
+        # Metadata and Overlay files here
+        operations:
+          sonarr_remove_by_tag: mytag1, mytag2
+    ```
 
 ## Genre Mapper
 
@@ -400,31 +579,35 @@ Maps genres in your library to be changed to other genres.
 * The key (`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the value.
 * The value (`Action` in the example below) is what the genres will end up as.
 
-So this example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
+???+ example
 
-```yaml
-library:
-  Movies:
-    operations:
-      genre_mapper:
-        "Action/Adventure": Action 
-        "Action & Adventure": Action
-        Romantic Comedy: Comedy
-```
+    This example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
 
-To just Remove a Genre without replacing it just set the Genre to nothing like this.
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          genre_mapper:
+            "Action/Adventure": Action 
+            "Action & Adventure": Action
+            Romantic Comedy: Comedy
+    ```
 
-```yaml
-library:
-  Movies:
-    operations:
-      genre_mapper:
-        "Action/Adventure": Action 
-        "Action & Adventure": Action
-        Romantic Comedy:
-```
+    To just Remove a Genre without replacing it just set the Genre to nothing like this.
 
-This example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          genre_mapper:
+            "Action/Adventure": Action 
+            "Action & Adventure": Action
+            Romantic Comedy:
+    ```
+
+    The above example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
 
 ## Content Rating Mapper
 
@@ -437,31 +620,35 @@ Maps content ratings in your library to be changed to other content ratings.
 * The key (`PG`, `PG-13` in the example below) is what content ratings you want mapped to the value.
 * The value (`Y-10` in the example below) is what the content ratings will end up as.
 
-So this example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and `R` to `Y-17`.
+???+ example
 
-```yaml
-library:
-  Movies:
-    operations:
-      content_rating_mapper:
-        PG: Y-10 
-        "PG-13": Y-10
-        R: Y-17
-```
-
-To just Remove a content rating without replacing it just set the content rating to nothing like this.
-
-```yaml
-library:
-  Movies:
-    operations:
-      content_rating_mapper:
-        PG: Y-10 
-        "PG-13": Y-10
-        R:
-```
-
-This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
+    This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and `R` to `Y-17`.
+    
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          content_rating_mapper:
+            PG: Y-10 
+            "PG-13": Y-10
+            R: Y-17
+    ```
+    
+    To just Remove a content rating without replacing it just set the content rating to nothing like this.
+    
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          content_rating_mapper:
+            PG: Y-10 
+            "PG-13": Y-10
+            R:
+    ```
+    
+    The above example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
 
 ## Metadata Backup
 
@@ -480,14 +667,15 @@ If you point to an existing Metadata File then PMM will Sync the changes to the 
 | `sync_tags`         | All Tag Attributes will have the `.sync` option and blank attribute will be added to sync to as well<br>**Default:** `false`<br>**Values:** `true` or `false`       |
 | `add_blank_entries` | Will add a line for entries that have no metadata changes<br>**Default:** `true`<br>**Values:** `true` or `false`                                                   |
 
-**Example:**
+???+ example
 
-```yaml
-library:
-  Movies:
-    operations:
-      metadata_backup:
-        path: config/Movie_Backup.yml
-        sync_tags: true
-        add_blank_entries: false
-```
+    ```yaml
+    libraries:
+      Movies:
+        # Metadata and Overlay files here
+        operations:
+          metadata_backup:
+            path: config/Movie_Backup.yml
+            sync_tags: true
+            add_blank_entries: false
+    ```

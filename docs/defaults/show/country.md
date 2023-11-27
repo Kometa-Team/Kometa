@@ -67,22 +67,36 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
-  TV Shows:
+  Movies:
     metadata_path:
       - pmm: country
         template_variables:
-          use_other: false
-          use_separator: false
-          style: color
-          sep_style: purple
+          use_other: false #(1)!
+          use_separator: false #(2)!
+          style: color #(3)!
           exclude:
-            - fr
+            - France #(4)!
           sort_by: title.asc
 ```
+
+1.  Do not create the "Other Countries" collection
+2.  Do not create a "Country Collections" separator
+3.  Set the [Color Style](#color-style)
+4.  Exclude "France" from the list of collections that are created
 
 ## Default values
 

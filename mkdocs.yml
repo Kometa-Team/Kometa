@@ -22,7 +22,6 @@ theme:
     - navigation.top
     - navigation.tracking
     - navigation.prune
-    - navigation.expand
     - toc.follow
     - search.suggest
     - search.highlight
@@ -48,6 +47,7 @@ theme:
         name: Switch to dark mode
 
 plugins:
+  - glightbox
   - search:
       lang: en
   - include-markdown
@@ -156,7 +156,7 @@ nav:
         - OMDb: config/omdb.md
         - AniDB: config/anidb.md
         - MyAnimeList: config/myanimelist.md
-  - DEFAULT FILES:
+  - PMM DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
       - COLLECTIONS DEFAULTS:
@@ -206,7 +206,7 @@ nav:
             - Continents (Movie): defaults/movie/continent.md
             - Continents (Show): defaults/show/continent.md
           - Media:
-            - Aspect Rations (Show): defaults/both/aspect.md
+            - Aspect Ration (Show): defaults/both/aspect.md
             - Resolutions: defaults/both/resolution.md
             - Audio Languages: defaults/both/audio_language.md
             - Subtitle Languages: defaults/both/subtitle_language.md
@@ -260,7 +260,8 @@ nav:
             - Direct Play Only: defaults/overlays/direct_play.md
       - PLAYLIST DEFAULTS:
         - Playlists: defaults/playlist.md
-  - CUSTOM FILES:
+  - METADATA FILES:
+      - Overview: metadata/metadata.md
       - Templates: builders/templates.md
       - Filters: builders/filters.md
       - Builders Overview: metadata/builders.md
@@ -427,11 +428,29 @@ nav:
         - Updates:
           - Collection/Playlist Metadata Updates: builders/details/metadata.md
           - Item Metadata Updates: builders/details/item_metadata.md
-  - METADATA:
-    - Editing Movie Metadata: metadata/metadata/movie.md
-    - Editing TV Metadata: metadata/metadata/show.md
-    - Editing Music Metadata: metadata/metadata/music.md
-    - Formula 1 Metadata Guide: pmm/install/guides/formula.md
+  - MISCELLANEOUS:
+    - EDITING METADATA:
+      - Editing Movie Metadata: metadata/metadata/movie.md
+      - Editing TV Metadata: metadata/metadata/show.md
+      - Editing Music Metadata: metadata/metadata/music.md
+      - Formula 1 Metadata Guide: pmm/install/guides/formula.md
+    - EXPLANATION GUIDES:
+      - Plex Ratings Explained: pmm/essentials/ratings.md
+      - Scheduling Guide: pmm/install/guides/scheduling.md
+      - Image Asset Directory Guide: pmm/install/guides/assets.md
+      - Log Files:  pmm/essentials/logs.md
+      - YAML File Guide: pmm/essentials/yaml.md
+    - COMPANION SCRIPTS:
+      - Overview: pmm/essentials/scripts.md
+      - Plex Image Cleanup: pmm/essentials/scripts/image-cleanup.md
+      - PMM Overlay Reset: pmm/essentials/scripts/overlay-reset.md
+    - USEFUL LINKS:
+      - Feature Requests: https://features.metamanager.wiki/
+      - Bugs & Issues: https://github.com/meisnate12/Plex-Meta-Manager/issues
+      - User Configs Repository: https://github.com/meisnate12/Plex-Meta-Manager-Configs
+      - Discord Server: https://discord.gg/NfH6mGFuAB
+      - Donate/Sponsor PMM: https://github.com/sponsors/meisnate12
+      - Acknowledgements: pmm/essentials/acknowledgements.md
   - SPONSOR: https://github.com/sponsors/meisnate12
 #  - SHOWCASE:
 #    - Overlays Showcase: showcase/overlays.md

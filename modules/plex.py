@@ -1358,7 +1358,7 @@ class Plex(Library):
                 else:
                     starting = item
                 if not starting.locations:
-                    raise Failed(f"Asset Warning: No video filepath found fo {item.title}")
+                    raise Failed(f"Asset Warning: No video filepath found for {item.title}")
                 path_test = str(starting.locations[0])
                 if not os.path.dirname(path_test):
                     path_test = path_test.replace("\\", "/")

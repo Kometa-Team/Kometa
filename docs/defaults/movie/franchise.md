@@ -69,7 +69,17 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -77,12 +87,15 @@ libraries:
     metadata_path:
       - pmm: franchise
         template_variables:
-          collection_order: alpha
-          collection_section: "02"
-          build_collection: false
-          movie_105995: 336560
-          radarr_add_missing: true
+          build_collection: false #(1)!
+          movie_105995: 336560 #(2)!
+          radarr_add_missing: true #(3)!
 ```
+
+1.  Do not create any physical collections in Plex (normally used when you want to perform an "operation" instead, see the third tooltip for the example)
+2.  Add [TMDb Movie 336560](https://www.themoviedb.org/movie/336560-lake-placid-vs-anaconda) to [TMDb Collection 105995](https://www.themoviedb.org/collection/105995-anaconda-collection) 
+3.  Add items missing from your library in Plex to Radarr. When used in this particular file, hundreds if not thousands of items may be sent to Radarr - proceed with caution!
+
 ## Default values
 
 These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.

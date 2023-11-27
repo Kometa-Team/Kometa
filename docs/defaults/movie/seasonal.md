@@ -79,7 +79,17 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -87,18 +97,23 @@ libraries:
     metadata_path:
       - pmm: seasonal
         template_variables:
-          use_separator: true
-          sep_style: stb
-          use_independence: false
-          schedule_thanksgiving: range(10/01-10/30)
-          sort_by: random
-          # Add a custom holiday
+          use_independence: false #(1)!
+          schedule_thanksgiving: range(10/01-10/30) #(2)!
+          sort_by: random #(3)!
           append_data:
-            veteran: Veteran's Day
-          schedule_veteran: range(11/01-11/30)
-          imdb_list_veteran: https://www.imdb.com/list/ls565595526/
-          emoji_veteran: "🪖 "
+            veteran: Veteran's Day #(4)!
+          schedule_veteran: range(11/01-11/30) #(5)!
+          imdb_list_veteran: https://www.imdb.com/list/ls565595526/ #(6)!
+          emoji_veteran: "🪖 " #(7)!
 ```
+
+1.  Do not create the "Independence Day" collection
+2.  Set a custom schedule for the Thanksgiving Day collection
+3.  Sort the collections created by this file to random
+4.  Create a new Seasonal collection called "Veteran's Day", they key for this collection is `veteran`
+5.  Set a scheduled range for the "Veteran's Day" collection
+6.  Add an IMDb List to be used for the "Veteran's Day" collection
+7.  Add the 🪖 emoji to the "Veteran's Day" collection so that the title in Plex is "🪖 Veteran's Day Movies"
 
 ## Default values
 

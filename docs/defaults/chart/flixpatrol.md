@@ -11,10 +11,10 @@ Supported Library Types: Movie, Show
 ## Collections Section 020
 
 | Collection                        | Key         | Description                                                                |
-|:--------------------------------- |:------------|:---------------------------------------------------------------------------|
+|:----------------------------------|:------------|:---------------------------------------------------------------------------|
 | `Netflix Top 10 Movies/Shows`     | `netflix`   | Collection of the Top Movies/Shows on Netflix according to FlixPatrol.     |
 | `Disney+ Top 10 Movies/Shows`     | `disney`    | Collection of the Top Movies/Shows on Disney+ according to FlixPatrol.     |
-| `HBO Top 10 Movies/Shows`         | `hbo`       | Collection of the Top Movies/Shows on HBO according to FlixPatrol.         |
+| `MAX Top 10 Movies/Shows`         | `max`       | Collection of the Top Movies/Shows on MAX according to FlixPatrol.         |
 | `Hulu Top 10 Movies/Shows`        | `hulu`      | Collection of the Top Movies/Shows on Hulu according to FlixPatrol.        |
 | `Paramount+ Top 10 Movies/Shows`  | `paramount` | Collection of the Top Movies/Shows on Paramount+ according to FlixPatrol.  |
 | `Prime Video Top 10 Movies/Shows` | `prime`     | Collection of the Top Movies/Shows on Prime Video according to FlixPatrol. |
@@ -44,12 +44,10 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 | Variable                               | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |:---------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                                | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Default:** `10`<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `limit_<<key>>`<sup>1</sup>            | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `limit`                                | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `limit_<<key>>`<sup>1</sup>            | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `location`                             | **Description:** Changes the Builder Location for all collections in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)                                                                                                                                                                                                                                                                                                                   |
 | `location_<<key>>`<sup>1</sup>         | **Description:** Changes the Builder Location of the specified key's collection.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)                                                                                                                                                                                                                                                                                                                     |
-| `time_window`                          | **Description:** Changes the Builder Time Window for all collections in a Defaults file.<br>**Default:** `last_week`<br>**Values:** [`time_window` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)                                                                                                                                                                                                                                                                                                         |
-| `time_window_<<key>>`<sup>1</sup>      | **Description:** Changes the Builder Time Window of the specified key's collection.<br>**Default:** `time_window`<br>**Values:** [`time_window` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)                                                                                                                                                                                                                                                                                                            |
 | `sync_mode`                            | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                                                                                                                                                                                                                                             |
 | `sync_mode_<<key>>`<sup>1</sup>        | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                                                                                                                                                                                                                                             |
 | `collection_order`                     | **Description:** Changes the Collection Order for all collections in a Defaults file.<br>**Default:** `custom`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>      |
@@ -57,7 +55,17 @@ All [Shared Collection Variables](../collection_variables.md) are available as w
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+### Example Template Variable Amendments
+
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+???+ tip
+
+    Anywhere you see this icon:
+   
+    > :fontawesome-solid-circle-plus:
+   
+    That's a tooltip, you can press them to get more information.
 
 ```yaml
 libraries:
@@ -65,6 +73,7 @@ libraries:
     metadata_path:
       - pmm: flixpatrol
         template_variables:
-          location: united_states
-          time_window: last_month
+          location: united_states #(1)!
 ```
+
+1.  Change the location of the FlixPatrol  collections to the United States of America
