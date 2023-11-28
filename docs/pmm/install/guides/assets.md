@@ -91,14 +91,14 @@ The table below shows the asset folder path structures that will be searched for
 
   ASSET_FOLDERS=True:
   ```
-  /path/to/assets/Star Wars (1977)/poster.ext
-  /path/to/assets/Star Wars (1977)/background.ext
+  config/assets/Star Wars (1977)/poster.ext
+  config/assets/Star Wars (1977)/background.ext
   ```
   
   ASSET_FOLDERS=False:
   ```
-  /path/to/assets/Star Wars (1977).ext
-  /path/to/assets/Star Wars (1977)_background.ext
+  config/assets/Star Wars (1977).ext
+  config/assets/Star Wars (1977)_background.ext
   ```
 
 * For **Shows**, **Seasons**, and **Episodes** replace `ASSET_NAME` with the exact name of the folder for the show as a whole.
@@ -112,14 +112,14 @@ The table below shows the asset folder path structures that will be searched for
 
   ASSET_FOLDERS=True:
   ```
-  /path/to/assets/The Expanse (2015)/poster.ext
-  /path/to/assets/The Expanse (2015)/background.ext
+  config/assets/The Expanse (2015)/poster.ext
+  config/assets/The Expanse (2015)/background.ext
   ```
   
   ASSET_FOLDERS=False:
   ```
-  /path/to/assets/The Expanse (2015).ext
-  /path/to/assets/The Expanse (2015)_background.ext
+  config/assets/The Expanse (2015).ext
+  config/assets/The Expanse (2015)_background.ext
   ```
   
 * For **Seasons** replace `##` with the zero padded season number (00 for specials)
@@ -133,14 +133,14 @@ The table below shows the asset folder path structures that will be searched for
 
   ASSET_FOLDERS=True:
   ```
-  /path/to/assets/The Expanse (2015)/Season01.ext
-  /path/to/assets/The Expanse (2015)/Season01_background.ext
+  config/assets/The Expanse (2015)/Season01.ext
+  config/assets/The Expanse (2015)/Season01_background.ext
   ```
   
   ASSET_FOLDERS=False:
   ```
-  /path/to/assets/The Expanse (2015)_Season01.ext
-  /path/to/assets/The Expanse (2015)_Season01_background.ext
+  config/assets/The Expanse (2015)_Season01.ext
+  config/assets/The Expanse (2015)_Season01_background.ext
   ```
 
 * For **Episodes** replacing the first `##` with the zero padded season number (00 for specials), the second `##` with the zero padded episode number
@@ -154,14 +154,14 @@ The table below shows the asset folder path structures that will be searched for
 
   ASSET_FOLDERS=True:
   ```
-  /path/to/assets/The Expanse (2015)/S01E01.ext
-  /path/to/assets/The Expanse (2015)/S01E01_background.ext
+  config/assets/The Expanse (2015)/S01E01.ext
+  config/assets/The Expanse (2015)/S01E01_background.ext
   ```
   
   ASSET_FOLDERS=False:
   ```
-  /path/to/assets/The Expanse (2015)_S01E01.ext
-  /path/to/assets/The Expanse (2015)_S01E01_background.ext
+  config/assets/The Expanse (2015)_S01E01.ext
+  config/assets/The Expanse (2015)_S01E01_background.ext
   ```
 
 * Replace `.ext` with the image extension
