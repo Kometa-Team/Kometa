@@ -7,10 +7,15 @@ They can either be on the local system, online at an url, directly from the [Ple
 The path types are outlined as follows:
 
 * `- file:` refers to a metadata file which is located within the system that PMM is being run from.
+
 * `- folder:` refers to a directory containing metadata files which is located within the system that PMM is being run from.
+
 * `- pmm:` refers to a [PMM Defaults](/defaults/guide.md builders/overlay/playlist file. 
+
 * `- url:` refers to a metadata file which is hosted publicly on the internet. 
+
 * `- git:` refers to a metadata file which is hosted on the [Configs Repo](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
+
 * `- repo:` refers to a metadata file which is hosted on a custom repository specified by the user with the [`custom_repo` Setting Attribute](settings.md#custom-repo).
 
 
@@ -95,21 +100,25 @@ playlist_files:
 
 You can define custom Asset Directories per file by adding `asset_directory` to the file call.
 
+???+ important 
+
+    Assets can be stored anywhere on the host system that PMM has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
+
 ```yaml
 libraries:
   Movies:
     metadata_path:
       - file: config/Movies.yml
-        asset_directory: config/assets/Movies
+        asset_directory: <path_to_assets>/Movies
       - pmm: actors
-        asset_directory: config/assets/people
+        asset_directory: <path_to_assets>/people
     overlay_path:
       - pmm: imdb
 playlist_files:
   - file: config/Playlists.yml
     asset_directory:
-      - config/assets/playlists1
-      - config/assets/playlists2
+      - <path_to_assets>/playlists1
+      - <path_to_assets>/playlists2
 ```
 
 ## Metadata Path 
@@ -206,7 +215,7 @@ The [`playlist_files`](playlists.md) at the top level in your [Configuration Fil
 ## External Templates 
 
 The [`external_templates`](../builders/templates.md#external-templates) attribute is defined at the top level in your [Metadata File](../builders/details/metadata.md). 
-[metadata.md](..%2Fbuilders%2Fdetails%2Fmetadata.md)
+
 ??? example
     
     In this example, multiple external template file path types are defined:
