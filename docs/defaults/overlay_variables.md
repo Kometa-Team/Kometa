@@ -1,6 +1,8 @@
 # Shared Overlay Template Variables
 
-IMPORTANT: The variables in this table are only valid in the context of the [`PMM default metadata files`](guide.md.
+???+ important
+
+    The variables in this table are only valid in the context of the PMM Defaults Overlay files and will not work with non-Defaults files that have been manually created using builders.
 
 There are some `template_variables` that all the PMM Defaults except `franchise` can use to manipulate the file from the default settings which are provided.   This page is not an exhaustive list of all such template variables.
 
@@ -37,3 +39,31 @@ Below are the common variables which can be used to customize the file.
 | `back_line_width`          | **Description:** Controls the Backdrop Line Width for the Text Overlay.<br>**Values:** Any number greater than 0                                                                                                                      |
 
 1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+
+# Text Overlay Template Variables
+
+The below `template_variables` are also available for Overlays which have text written, allowing for further customization of the text that appears.
+
+???+ note
+
+    This will not work for images of text such as the Resolution overlays, this is specifically for text which Plex Meta Manager writes such as the Direct Play overlay
+
+Some of these template variables may have default values depending on the specific overlay.  Those default values will also be listed on the individual overlay page.
+
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+
+
+| Variable               | Description & Values                                                                                                                                                       |
+|:-----------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `font`                 | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                                |
+| `font_style`           | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                         |
+| `font_size`            | **Description:** Choose the font size for the Overlay.<br>**Default:** `55`<br>**Values:** Any number greater than 0                                                       |
+| `font_color`           | **Description:** Choose the font color for the Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`        |
+| `stroke_width`         | **Description:** Font Stroke Width for the Overlay.<br>**Values:** Any number greater than 0                                                                          |
+| `stroke_color`         | **Description:** Font Stroke Color for the Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                                 |
+| `font_<<key>>`         | **Description:** Choose the font for this key's Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                         |
+| `font_style_<<key>>`   | **Description:** Font style for this key's Variable Fonts.<br>**Values:** Variable Font Style                                                                              |
+| `font_size_<<key>>`    | **Description:** Choose the font size for this key's Overlay.<br>**Default:** `55`<br>**Values:** Any number greater than 0                                                |
+| `font_color_<<key>>`   | **Description:** Choose the font color for this key's Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA` |
+| `stroke_width_<<key>>` | **Description:** Font Stroke Width for this key's Overlay.<br>**Values:** Any number greater than 0                                                                   |
+| `stroke_color_<<key>>` | **Description:** Font Stroke Color for this key's Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                               |
