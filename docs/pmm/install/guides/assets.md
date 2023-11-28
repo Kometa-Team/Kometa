@@ -54,14 +54,14 @@ If a media item has an asset associated with it, that asset image is taken as th
 
 The table below shows the asset folder path structures that will be searched for. There are two options for how Plex Meta Manager looks at the files inside your Asset Directories. Choose an option with the [`asset_folders` Setting Attribute](../../../config/settings.md#image-asset-folders).  Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
-| Image Type                       | Asset Folders Image Paths<br>`asset_folders: true` | Flat Assets Image Paths<br>`asset_folders: false` |
-|:---------------------------------|:---------------------------------------------------|:--------------------------------------------------|
-| Collection/Movie/Show poster     | `assets/ASSET_NAME/poster.ext`                     | `assets/ASSET_NAME.ext`                           |
-| Collection/Movie/Show background | `assets/ASSET_NAME/background.ext`                 | `assets/ASSET_NAME_background.ext`                |
-| Season poster                    | `assets/ASSET_NAME/Season##.ext`                   | `assets/ASSET_NAME_Season##.ext`                  |
-| Season background                | `assets/ASSET_NAME/Season##_background.ext`        | `assets/ASSET_NAME_Season##_background.ext`       |
-| Episode poster                   | `assets/ASSET_NAME/S##E##.ext`                     | `assets/ASSET_NAME_S##E##.ext`                    |
-| Episode background               | `assets/ASSET_NAME/S##E##_background.ext`          | `assets/ASSET_NAME_S##E##_background.ext`         |
+| Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`     | Flat Assets Image Paths<br>`asset_folders: false`         |
+|:---------------------------------|:-------------------------------------------------------|:----------------------------------------------------------|
+| Collection/Movie/Show poster     | `config/assets/ASSET_NAME/poster.ext`                  | `config/assets/ASSET_NAME.ext`                            |
+| Collection/Movie/Show background | `config/assets/ASSET_NAME/background.ext`              | `config/assets/ASSET_NAME_background.ext`                 |
+| Season poster                    | `config/assets/ASSET_NAME/Season##.ext`                | `config/assets/ASSET_NAME_Season##.ext`                   |
+| Season background                | `config/assets/ASSET_NAME/Season##_background.ext`     | `config/assets/ASSET_NAME_Season##_background.ext`        |
+| Episode poster                   | `config/assets/ASSET_NAME/S##E##.ext`                  | `config/assets/ASSET_NAME_S##E##.ext`                     |
+| Episode background               | `config/assets/ASSET_NAME/S##E##_background.ext`       | `config/assets/ASSET_NAME_S##E##_background.ext`          |
 
 * For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `name_mapping` is specified, which you would then use what's specified in `name_mapping`.
 

@@ -100,16 +100,16 @@ libraries:
   Movies:
     metadata_path:
       - file: config/Movies.yml
-        asset_directory: assets/Movies
+        asset_directory: config/assets/Movies
       - pmm: actors
-        asset_directory: assets/people
+        asset_directory: config/assets/people
     overlay_path:
       - pmm: imdb
 playlist_files:
   - file: config/Playlists.yml
     asset_directory:
-      - assets/playlists1
-      - assets/playlists2
+      - config/assets/playlists1
+      - config/assets/playlists2
 ```
 
 ## Metadata Path 
