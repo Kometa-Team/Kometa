@@ -76,7 +76,7 @@ All [Shared Overlay Variables](../overlay_variables.md) are available with the d
 |:---------------------|:------------|
 | `horizontal_offset`  | `30`        |
 | `horizontal_align`   | `left`      |
-| `vertical_offset`    | `30`        |
+| `vertical_offset`    | `0`         |
 | `vertical_align`     | `center`    |
 | `back_color`         | `#00000099` |
 | `back_radius`        | `30`        |
