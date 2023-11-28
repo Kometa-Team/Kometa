@@ -23,7 +23,7 @@ These are the attributes which can be used within the Metadata File:
 
 This example is a Metadata file with a basic collection which is saved in a file called `MyCollections.yml` within the location mapped as `config` in my setup.
 
-???+ example "Example "MyCollections.yml"""
+???+ example "Example "MyCollections.yml""
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
 
