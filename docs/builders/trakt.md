@@ -23,6 +23,10 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 
 **Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own the list.**
 
+???+ tip
+
+    If you have [authorized Trakt](../config/trakt.md) then you can use private Trakt Lists, this is not possible if you have not authorized Trakt.
+
 ```yaml
 collections:
   Christmas:
