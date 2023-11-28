@@ -109,7 +109,7 @@ Specify the directory where assets (posters, backgrounds, etc) are located.
 
 ## Image Asset Folders
 Search the `asset_directory` for a dedicated folder. Set to true if each poster is within its own directory.<br>
-i.e. `assets/Star Wars/poster.png` instead of `assets/Star Wars.png`
+i.e. `config/assets/Star Wars/poster.png` instead of `config/assets/Star Wars.png`
 
 |   |   |
 |---|---|
@@ -121,8 +121,8 @@ i.e. `assets/Star Wars/poster.png` instead of `assets/Star Wars.png`
 
 Specify how many folder levels to scan for an item within the asset directory<br>
 At each asset level, PMM will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder containing `poster.ext`<br>
-i.e. `assets/Star Wars/poster.png` and `assets/Star Wars.png` are both asset depth 0
-and `assets/Movies/Star Wars/poster.png` and `assets/Movies/Star Wars.png` are both asset level 1
+i.e. `config/assets/Star Wars/poster.png` and `config/assets/Star Wars.png` are both asset depth 0
+and `config/assets/Movies/Star Wars/poster.png` and `config/assets/Movies/Star Wars.png` are both asset level 1
 
 ???+ note
 
