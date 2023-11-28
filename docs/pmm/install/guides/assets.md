@@ -8,6 +8,13 @@ The Image Asset Directories can be used to update the posters and backgrounds of
 
 You can specify your asset folders under the `settings` attribute `asset_directory`:
 
+
+???+ important 
+
+    Assets can be stored anywhere on the host system that PMM has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
+
+    For the sake of this document, we will assume that your assets folders are all based within the directory mapped to `config` within your PMM environment.
+
 ```yaml
 settings:
   asset_directory: config/assets
@@ -22,8 +29,9 @@ settings:
     - config/more_assets
     - config/assets_ahoy
 ```
-[paths.md](..%2F..%2F..%2Fconfig%2Fpaths.md)
+
 * You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [Path Types](../../../config/paths.md#asset-directory) for how to define them.
+
 * By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
 
 ## Applying assets
@@ -54,14 +62,20 @@ If a media item has an asset associated with it, that asset image is taken as th
 
 The table below shows the asset folder path structures that will be searched for. There are two options for how Plex Meta Manager looks at the files inside your Asset Directories. Choose an option with the [`asset_folders` Setting Attribute](../../../config/settings.md#image-asset-folders).  Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
-| Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`     | Flat Assets Image Paths<br>`asset_folders: false`         |
-|:---------------------------------|:-------------------------------------------------------|:----------------------------------------------------------|
-| Collection/Movie/Show poster     | `config/assets/ASSET_NAME/poster.ext`                  | `config/assets/ASSET_NAME.ext`                            |
-| Collection/Movie/Show background | `config/assets/ASSET_NAME/background.ext`              | `config/assets/ASSET_NAME_background.ext`                 |
-| Season poster                    | `config/assets/ASSET_NAME/Season##.ext`                | `config/assets/ASSET_NAME_Season##.ext`                   |
-| Season background                | `config/assets/ASSET_NAME/Season##_background.ext`     | `config/assets/ASSET_NAME_Season##_background.ext`        |
-| Episode poster                   | `config/assets/ASSET_NAME/S##E##.ext`                  | `config/assets/ASSET_NAME_S##E##.ext`                     |
-| Episode background               | `config/assets/ASSET_NAME/S##E##_background.ext`       | `config/assets/ASSET_NAME_S##E##_background.ext`          |
+Assets can be stored anywhere on the host system that PMM has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
+
+???+ important 
+
+    The below table assumes that your assets are stored within the directory mapped to `config` in your PMM environment.
+
+| Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`       | Flat Assets Image Paths<br>`asset_folders: false`             |
+|:---------------------------------|:---------------------------------------------------------|:--------------------------------------------------------------|
+| Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                 | `<path_to_assets>/ASSET_NAME.ext`                             |
+| Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`             | `<path_to_assets>/ASSET_NAME_background.ext`                  |
+| Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`               | `<path_to_assets>/ASSET_NAME_Season##.ext`                    |
+| Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`    | `<path_to_assets>/ASSET_NAME_Season##_background.ext`         |
+| Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                 | `<path_to_assets>/ASSET_NAME_S##E##.ext`                      |
+| Episode background               | `<path_to_assets>/ASSET_NAME/S##E##_background.ext`      | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`           |
 
 * For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `name_mapping` is specified, which you would then use what's specified in `name_mapping`.
 
