@@ -61,12 +61,6 @@ All [Shared Overlay Variables](../overlay_variables.md) are available with the d
 | `back_radius`    | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                                                |
 | `back_width`     | **Description:** Choose the back width for the overlay lozenge.<br>**Default:**`305`                                                                                |
 | `back_height`    | **Description:** Choose the back height for the overlay lozenge.<br>**Default:**`105`                                                                               |
-| `font`           | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                         |
-| `font_style`     | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                  |
-| `font_size`      | **Description:** Choose the font size for the Overlay.<br>**Default:** `55`<br>**Values:** Any number greater than 0                                                |
-| `font_color`     | **Description:** Choose the font color for the Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA` |
-| `stroke_width`   | **Description:** Font Stroke Width for the Text Overlay.<br>**Values:** Any number greater than 0                                                                   |
-| `stroke_color`   | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                          |
 | `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                                               |
 | `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                         |
 
