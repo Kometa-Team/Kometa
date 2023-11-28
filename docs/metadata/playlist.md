@@ -15,7 +15,7 @@ You can use the [`playlist_report` setting](../config/settings.md#playlist-repor
 This example is a Playlist file with a basic overlay which is saved in a file called `MyPlaylists.yml` within the location mapped as `config` in my setup.
 
 
-???+ example "Example "MyPlaylists.yml"""
+???+ example "Example "MyPlaylists.yml""
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
 

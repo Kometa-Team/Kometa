@@ -9,7 +9,7 @@ Overlays and templates are defined within one or more Overlay files, which are l
 
 This example is an Overlay file with a basic overlay which is saved in a file called `MyOverlays.yml` within the location mapped as `config` in my setup.
 
-???+ example "Example "MyOverlays.yml"""
+???+ example "Example "MyOverlays.yml""
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
 
