@@ -38,31 +38,30 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+| Variable             | Default / Values                                                                                                                            |
+|:---------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
+| `color`              | ``                                                                                                                                          |
+| `horizontal_offset`  | `15`                                                                                                                                        |
+| `horizontal_align`   | `left`                                                                                                                                      |
+| `vertical_offset`    | `270`                                                                                                                                       |
+| `vertical_align`     | `bottom`                                                                                                                                    |
+| `color`              | **Description:** Color version of the content rating images<br>**Default:**`` Set to `false` if you want b&w version.                       |
+| `back_color`         | **Description:** Choose the back color in RGBA for the overlay lozenge.<br>**Default:**`#00000099`                                          |
+| `back_radius`        | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                        |
+| `back_width`         | **Description:** Choose the back width for the overlay lozenge.<br>**Default:**`305`                                                        |
+| `back_height`        | **Description:** Choose the back height for the overlay lozenge.<br>**Default:**`105`                                                       |
+| `addon_offset`       | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
+| `addon_position`     | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
 
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+{%
+   include-markdown "../overlay_variables.md"
+%}
 
-| Variable            | Default  |
-|:--------------------|:---------|
-| `color`             | ``       |
-| `horizontal_offset` | `15`     |
-| `horizontal_align`  | `left`   |
-| `vertical_offset`   | `270`    |
-| `vertical_align`    | `bottom` |
-
-| Variable         | Description & Values                                                                                                                                                |
-|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `color`          | **Description:** Color version of the content rating images<br>**Default:**`` Set to `false` if you want b&w version.                                               |
-| `back_color`     | **Description:** Choose the back color in RGBA for the overlay lozenge.<br>**Default:**`#00000099`                                                                  |
-| `back_radius`    | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                                                |
-| `back_width`     | **Description:** Choose the back width for the overlay lozenge.<br>**Default:**`305`                                                                                |
-| `back_height`    | **Description:** Choose the back height for the overlay lozenge.<br>**Default:**`105`                                                                               |
-| `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                                               |
-| `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                         |
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

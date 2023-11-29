@@ -118,30 +118,23 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
-
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
-
-| Variable            | Default                      |
-|:--------------------|:-----------------------------|
-| `horizontal_offset` | `15`/`206`/`397`/`588`/`779` |
-| `horizontal_align`  | `left`/`right`/`center`      |
-| `vertical_offset`   | `15`/`76`/`137`/`198`/`259`  |
-| `vertical_align`    | `top`/`bottom`/`center`      |
-| `back_color`        | `#00000099`                  |
-| `back_radius`       | `26`/` `                     |
-| `back_width`        | `190`                        |
-| `back_height`       | `105`                        |
-| `back_align`        | `left`/`right`               |
-| `font`              | `fonts/Inter-Bold.ttf`       |
-| `font_size`         | `50`                         |
-
-| Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
+| Variable                      | Default / Values                                                                                                                                                                                                                                                                                                              |
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `horizontal_offset`           | `15`/`206`/`397`/`588`/`779`                                                                                                                                                                                                                                                                                                  |
+| `horizontal_align`            | `left`/`right`/`center`                                                                                                                                                                                                                                                                                                       |
+| `vertical_offset`             | `15`/`76`/`137`/`198`/`259`                                                                                                                                                                                                                                                                                                   |
+| `vertical_align`              | `top`/`bottom`/`center`                                                                                                                                                                                                                                                                                                       |
+| `back_color`                  | `#00000099`                                                                                                                                                                                                                                                                                                                   |
+| `back_radius`                 | `26`/` `                                                                                                                                                                                                                                                                                                                      |
+| `back_width`                  | `190`                                                                                                                                                                                                                                                                                                                         |
+| `back_height`                 | `105`                                                                                                                                                                                                                                                                                                                         |
+| `back_align`                  | `left`/`right`                                                                                                                                                                                                                                                                                                                |
+| `font`                        | `fonts/Inter-Bold.ttf`                                                                                                                                                                                                                                                                                                        |
+| `font_size`                   | `50`                                                                                                                                                                                                                                                                                                                          |
 | `languages`                   | **Description:** Controls which Languages will be active.<br>**Default:** `["en", "de", "fr", "es", "pt", "ja"]` <br>**Values:** List of [ISO 639-1 Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the Languages desired                                                                                   |
 | `use_subtitles`               | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
 | `builder_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |
@@ -158,6 +151,16 @@ All [Shared Overlay Variables](../overlay_variables.md) are available with the d
 | `weight_<<key>>`<sup>1</sup>  | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                  |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+{%
+   include-markdown "../overlay_variables.md"
+%}
+
+{%
+   include-markdown "../overlay_text_variables.md"
+%}
+
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

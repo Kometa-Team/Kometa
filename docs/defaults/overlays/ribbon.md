@@ -45,28 +45,30 @@ libraries:
       - pmm: ribbon
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+.
 
-| Variable            | Default   |
-|:--------------------|:----------|
-| `horizontal_offset` | `0`       |
-| `horizontal_align`  | `right`   |
-| `vertical_offset`   | `0`       |
-| `vertical_align`    | `bottom`  |
-
-| Variable                     | Description & Values                                                                                                    |
+| Variable                     | Default / Values                                                                                                        |
 |:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| `horizontal_offset`          | `0`                                                                                                                     |
+| `horizontal_align`           | `right`                                                                                                                 |
+| `vertical_offset`            | `0`                                                                                                                     |
+| `vertical_align`             | `bottom`                                                                                                                |
 | `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
 | `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+{%
+   include-markdown "../overlay_variables.md"
+%}
+
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

@@ -69,6 +69,9 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
+{%
+   include-markdown "../collection_variables.md"
+%}
 ### Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
