@@ -34,40 +34,54 @@ libraries:
       - pmm: flixpatrol
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
-
-All [Shared Overlay Variables](../overlay_variables.md) except `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are available with the default values below as well as the additional Variables below which can be used to customize the file.
  
-| Variable            | Default           |
-|:--------------------|:------------------|
-| `horizontal_offset` | `30`              |
-| `horizontal_align`  | `left`/`right`    |
-| `vertical_offset`   | `465`/`670`/`875` |
-| `vertical_align`    | `top`             |
-| `back_color`        | `#00000099`       |
-| `back_radius`       | `30`              |
-| `back_width`        | `160`             |
-| `back_height`       | `160`             |
-| `back_padding`      | `15`              |
-
-| Variable                          | Description & Values                                                                                                                                                                                             |
-|:----------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `position`                        | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                            |
-| `style`                           | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                                 |
-| `pre_text`                        | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                             |
-| `limit`                           | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                              |
-| `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                |
-| `location`                        | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)   |
-| `location_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)     |
-| `weight_<<key>>`<sup>1</sup>      | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                     |
-| `addon_offset`                    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater then 0                                                                                            |
-| `addon_position`                  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                       |
+| Variable                       | Default / Values                                                                                                                                                                                               |
+|:-------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `horizontal_offset`            | `30`                                                                                                                                                                                                           |
+| `horizontal_align`             | `left`/`right`                                                                                                                                                                                                 |
+| `vertical_offset`              | `465`/`670`/`875`                                                                                                                                                                                              |
+| `vertical_align`               | `top`                                                                                                                                                                                                          |
+| `back_color`                   | `#00000099`                                                                                                                                                                                                    |
+| `back_radius`                  | `30`                                                                                                                                                                                                           |
+| `back_width`                   | `160`                                                                                                                                                                                                          |
+| `back_height`                  | `160`                                                                                                                                                                                                          |
+| `back_padding`                 | `15`                                                                                                                                                                                                           |
+| `position`                     | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                          |
+| `style`                        | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                               |
+| `pre_text`                     | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                           |
+| `limit`                        | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                            |
+| `limit_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                              |
+| `location`                     | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes) |
+| `location_<<key>>`<sup>1</sup> | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)   |
+| `weight_<<key>>`<sup>1</sup>   | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                   |
+| `addon_offset`                 | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater then 0                                                                                          |
+| `addon_position`               | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                     |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+{%
+   include-markdown "../overlay_variables.md"
+   end="Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored."
+%}
+
+???+ bug "Warning"
+
+    `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are NOT available for use in this file
+
+{%
+   include-markdown "../overlay_variables.md"
+   start="The below template variables are available for this PMM Defaults file."
+%}
+
+{%
+   include-markdown "../overlay_text_variables.md"
+%}
+
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

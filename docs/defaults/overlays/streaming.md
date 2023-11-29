@@ -47,13 +47,9 @@ libraries:
       - pmm: streaming
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
-
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
-
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
 
 | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                            |
 |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -81,6 +77,12 @@ Some logic is applied to allow for regional streaming service lists to be availa
 | any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
 | any besides `ca` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
 | `ca`             | `max`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+
+{%
+   include-markdown "../overlay_variables.md"
+%}
+
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 

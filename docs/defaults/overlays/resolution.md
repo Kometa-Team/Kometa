@@ -110,33 +110,32 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variables
+## Template Variable Default Values
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
-
-All [Shared Overlay Variables](../overlay_variables.md) are available with the default values below as well as the additional Variables below which can be used to customize the file.
-
-| Variable            | Default     |
-|:--------------------|:------------|
-| `horizontal_offset` | `15`        |
-| `horizontal_align`  | `left`      |
-| `vertical_offset`   | `15`        |
-| `vertical_align`    | `top`       |
-| `back_color`        | `#00000099` |
-| `back_radius`       | `30`        |
-| `back_width`        | `305`       |
-| `back_height`       | `105`/`189` |
-
-| Variable                     | Description & Values                                                                                                                           |
+| Variable                     | Default / Values                                                                                                                               |
 |:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| `horizontal_offset`          | `15`                                                                                                                                           |
+| `horizontal_align`           | `left`                                                                                                                                         |
+| `vertical_offset`            | `15`                                                                                                                                           |
+| `vertical_align`             | `top`                                                                                                                                          |
+| `back_color`                 | `#00000099`                                                                                                                                    |
+| `back_radius`                | `30`                                                                                                                                           |
+| `back_width`                 | `305`                                                                                                                                          |
+| `back_height`                | `105`/`189`                                                                                                                                    |
 | `use_resolution`             | **Description:** Turns off all Resolution Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                       |
 | `use_edition`                | **Description:** Turns off all Edition Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                          |
 | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                |
 | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority. **Only works with Edition keys.**<br>**Values:** Any Number |
 
 1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+{%
+   include-markdown "../overlay_variables.md"
+%}
+
+## Example Template Variable Amendments
 
 The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
