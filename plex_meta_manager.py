@@ -237,10 +237,15 @@ def start(attrs):
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
-    with open("requirements.txt", "r") as file:
-        required_version = next(l.strip()[9:] for l in file.readlines() if l.strip().startswith("PlexAPI=="))
+    required_version = None
+    if not is_docker and not is_linuxserver:
+        try:
+            with open("requirements.txt", "r") as file:
+                required_version = next(l.strip()[9:] for l in file.readlines() if l.strip().startswith("PlexAPI=="))
+        except FileNotFoundError:
+            logger.error("    File Error: requirements.txt not found")
     logger.info(f"    PlexAPI Version: {plexapi.VERSION}")
-    if required_version != plexapi.VERSION:
+    if required_version is not None and required_version != plexapi.VERSION:
         logger.info(f"    PlexAPI Requires an Update to Version: {required_version}")
     logger.info(f"    Platform: {platform.platform()}")
     logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
