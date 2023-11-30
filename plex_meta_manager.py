@@ -38,7 +38,7 @@ arguments = {
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
     "run-metadata-files": {"args": ["rm", "m", "metadata", "metadata-files"], "type": "str", "help": "Process only specified Metadata files (pipe-separated list '|')"},
-    "libraries-first": {"args": ["lf", "library-first"], "type": "bool", "help": "Run library operations before collections"},
+    "libraries-first": {"args": ["lf", "library-first"], "type": "bool", "help": argparse.SUPPRESS},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
@@ -269,13 +269,15 @@ def start(attrs):
     attrs["playlist_only"] = run_args["playlists-only"]
     attrs["operations_only"] = run_args["operations-only"]
     attrs["overlays_only"] = run_args["overlays-only"]
+    attrs["libraries_first"] = run_args["libraries-first"]
     attrs["plex_url"] = plex_url
     attrs["plex_token"] = plex_token
     logger.separator(debug=True)
     logger.debug(f"Run Command: {run_arg}")
     for akey, adata in arguments.items():
-        ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
-        logger.debug(f"--{akey} (PMM_{akey.upper()}): {ext}{run_args[akey]}{ext}")
+        if isinstance(adata["help"], str):
+            ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
+            logger.debug(f"--{akey} (PMM_{akey.upper()}): {ext}{run_args[akey]}{ext}")
     logger.debug("")
     if secret_args:
         logger.debug("PMM Secrets Read:")
@@ -501,6 +503,7 @@ def run_libraries(config):
 
             logger.debug("")
             logger.debug(f"Library Name: {library.name}")
+            logger.debug(f"Run Order: {', '.join(library.run_order)}")
             logger.debug(f"Folder Name: {library.mapping_name}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
@@ -561,9 +564,8 @@ def run_libraries(config):
             time_start = datetime.now()
             temp_items = None
             list_key = None
-            expired = None
             if config.Cache:
-                list_key, expired = config.Cache.query_list_cache("library", library.mapping_name, 1)
+                list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
 
             if not temp_items:
                 temp_items = library.cache_items()
@@ -576,64 +578,59 @@ def run_libraries(config):
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
-            def run_operations_and_overlays():
-                if not run_args["tests"] and not run_args["collections-only"] and not run_args["playlists-only"] and not config.requested_metadata_files:
-                    if not run_args["overlays-only"] and library.library_operation:
+            for run_type in library.run_order:
+                if run_type == "metadata":
+                    if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
+                        time_start = datetime.now()
+                        for images in library.images_files:
+                            images_name = images.get_file_name()
+                            if config.requested_metadata_files and images_name not in config.requested_metadata_files:
+                                logger.info("")
+                                logger.separator(f"Skipping {images_name} Images File")
+                                continue
+                            logger.info("")
+                            logger.separator(f"Running {images_name} Images File\n{images.path}")
+                            if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
+                                try:
+                                    images.update_metadata()
+                                except Failed as e:
+                                    library.notify(e)
+                                    logger.error(e)
+                        library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
+
+                        time_start = datetime.now()
+                        for metadata in library.metadata_files:
+                            metadata_name = metadata.get_file_name()
+                            if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+                                logger.info("")
+                                logger.separator(f"Skipping {metadata_name} Metadata File")
+                                continue
+                            logger.info("")
+                            logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
+                            if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
+                                try:
+                                    metadata.update_metadata()
+                                except Failed as e:
+                                    library.notify(e)
+                                    logger.error(e)
+                            collections_to_run = metadata.get_collections(config.requested_collections)
+                            if run_args["resume"] and run_args["resume"] not in collections_to_run:
+                                logger.info("")
+                                logger.warning(f"Collection: {run_args['resume']} not in Metadata File: {metadata.path}")
+                                continue
+                            if collections_to_run:
+                                logger.info("")
+                                logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
+                                # logger.remove_library_handler(library.mapping_name)
+                                run_collection(config, library, metadata, collections_to_run)
+                                # logger.re_add_library_handler(library.mapping_name)
+                        library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
+                elif run_type == "overlays":
+                    if not run_args["tests"] and not run_args["collections-only"] and not run_args["playlists-only"] and not config.requested_metadata_files and not run_args["overlays-only"] and library.library_operation:
                         library_status[library.name]["Library Operations"] = library.Operations.run_operations()
-                    if not run_args["operations-only"] and (library.overlay_files or library.remove_overlays):
+                elif run_type == "operations":
+                    if not run_args["tests"] and not run_args["collections-only"] and not run_args["playlists-only"] and not config.requested_metadata_files and not run_args["operations-only"] and (library.overlay_files or library.remove_overlays):
                         library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
-
-            if run_args["libraries-first"]:
-                run_operations_and_overlays()
-
-            if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
-                time_start = datetime.now()
-                for images in library.images_files:
-                    images_name = images.get_file_name()
-                    if config.requested_metadata_files and images_name not in config.requested_metadata_files:
-                        logger.info("")
-                        logger.separator(f"Skipping {images_name} Images File")
-                        continue
-                    logger.info("")
-                    logger.separator(f"Running {images_name} Images File\n{images.path}")
-                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
-                        try:
-                            images.update_metadata()
-                        except Failed as e:
-                            library.notify(e)
-                            logger.error(e)
-                library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
-
-                time_start = datetime.now()
-                for metadata in library.metadata_files:
-                    metadata_name = metadata.get_file_name()
-                    if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
-                        logger.info("")
-                        logger.separator(f"Skipping {metadata_name} Metadata File")
-                        continue
-                    logger.info("")
-                    logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
-                        try:
-                            metadata.update_metadata()
-                        except Failed as e:
-                            library.notify(e)
-                            logger.error(e)
-                    collections_to_run = metadata.get_collections(config.requested_collections)
-                    if run_args["resume"] and run_args["resume"] not in collections_to_run:
-                        logger.info("")
-                        logger.warning(f"Collection: {run_args['resume']} not in Metadata File: {metadata.path}")
-                        continue
-                    if collections_to_run:
-                        logger.info("")
-                        logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
-                        #logger.remove_library_handler(library.mapping_name)
-                        run_collection(config, library, metadata, collections_to_run)
-                        #logger.re_add_library_handler(library.mapping_name)
-                library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
-
-            if not run_args["libraries-first"]:
-                run_operations_and_overlays()
 
             #logger.remove_library_handler(library.mapping_name)
         except Exception as e:

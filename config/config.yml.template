@@ -33,6 +33,7 @@ playlist_files:
       libraries: Movies, TV Shows   # list of libraries that you want the PMM Defaults playlists to look at
   # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
+  run_order: metadata, overlays, operations
   cache: true
   cache_expiration: 60
   asset_directory: config/assets
