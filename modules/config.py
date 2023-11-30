@@ -33,6 +33,11 @@ from retrying import retry
 logger = util.logger
 
 mediastingers_url = "https://raw.githubusercontent.com/meisnate12/PMM-Mediastingers/master/stingers.yml"
+run_order_options = {
+    "metadata": "Represents Collection and Metadata Updates",
+    "overlays": "Represents Overlay Updates",
+    "operations": "Represents Operations Updates"
+}
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 imdb_label_options = {
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
@@ -153,6 +158,7 @@ class ConfigFile:
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
+        self.libraries_first = attrs["libraries_first"] if "libraries_first" in attrs else False
         self.env_plex_url = attrs["plex_url"] if "plex_url" in attrs else ""
         self.env_plex_token = attrs["plex_token"] if "plex_token" in attrs else ""
         current_time = datetime.now()
@@ -341,9 +347,13 @@ class ConfigFile:
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
-            elif var_type == "list":                                            return util.get_list(data[attribute], split=False)
-            elif var_type == "comma_list":                                      return util.get_list(data[attribute])
-            elif var_type == "int_list":                                        return util.get_list(data[attribute], int_list=True)
+            elif var_type in ["list", "comma_list", "int_list"]:
+                output_list = list(set(util.get_list(data[attribute], lower=var_type != "int_list", split=var_type != "list", int_list=var_type == "int_list")))
+                failed_items = [o for o in output_list if o not in test_list] if test_list else []
+                if failed_items:
+                    message = f"{text}: {', '.join(failed_items)} is an invalid input"
+                else:
+                    return output_list
             elif var_type == "list_path":
                 temp_list = []
                 warning_message = ""
@@ -390,7 +400,10 @@ class ConfigFile:
                     logger.warning(options)
             return default
 
+        default_run = ["overlays", "operations", "metadata"] if self.libraries_first else ["metadata", "overlays", "operations"]
+
         self.general = {
+            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="comma_list", test_list=run_order_options, default=default_run),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
@@ -421,7 +434,7 @@ class ConfigFile:
             "save_report": check_for_attribute(self.data, "save_report", parent="settings", var_type="bool", default=False),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
-            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True),
+            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="comma_list", default_is_none=True),
             "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "playlist_exclude_users": check_for_attribute(self.data, "playlist_exclude_users", parent="settings", default_is_none=True),
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
@@ -722,7 +735,8 @@ class ConfigFile:
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
 
-                params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, save=False)
+                params["run_order"] = check_for_attribute(lib, "run_order", parent="settings", var_type="comma_list", default=self.general["run_order"], do_print=False, save=False)
+                params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, do_print=False, save=False)
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
                 params["asset_depth"] = check_for_attribute(lib, "asset_depth", parent="settings", var_type="int", default=self.general["asset_depth"], do_print=False, save=False)
                 params["sync_mode"] = check_for_attribute(lib, "sync_mode", parent="settings", test_list=sync_modes, default=self.general["sync_mode"], do_print=False, save=False)
@@ -749,7 +763,7 @@ class ConfigFile:
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["ignore_ids"] = check_for_attribute(lib, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
-                params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="list", default_is_none=True, do_print=False, save=False)
+                params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="comma_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
