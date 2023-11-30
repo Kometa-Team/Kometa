@@ -223,6 +223,7 @@ include:
   - Signal.MD
   - Silver
   - SILVER LINK.
+  - Square Enix
   - Staple Entertainment
   - Studio 3Hz
   - Studio A-CAT
