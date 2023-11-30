@@ -97,7 +97,7 @@ libraries:
   Movies:
     run_order: #(1)!
     - operations
-    - collections
+    - metadata
     - overlays
     minimum_items: 3 #(2)!
     metadata_path:
@@ -115,9 +115,9 @@ libraries:
       # stuff here
 settings:
   run_order: #(3)!
-  - collections
-  - operations
+  - metadata
   - overlays
+  - operations
   minimum_items: 1 #(4)!
 ```
 
