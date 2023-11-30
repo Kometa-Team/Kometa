@@ -24,36 +24,35 @@ Another way to specify environmental variables is by adding them to a .env file 
 [official tutorial](https://www.docker.com/101-tutorial/).
 
 
-| Attribute                                             | Shell Command                                 | Environment Variable      |
-|:------------------------------------------------------|:----------------------------------------------|:--------------------------|
-| [Config](#config)                                     | `-c` or `--config`                            | `PMM_CONFIG`              |
-| [Time to Run](#time-to-run)                           | `-t` or `--times`                             | `PMM_TIMES`               |
-| [Run Immediately](#run-immediately)                   | `-r` or `--run`                               | `PMM_RUN`                 |
-| [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TESTS`                |
-| [Debug](#debug)                                       | `-db` or `--debug`                            | `PMM_DEBUG`               |
-| [Trace](#trace)                                       | `-tr` or `--trace`                            | `PMM_TRACE`               |
-| [Log Requests](#log-requests)                         | `-lr` or `--log-requests`                     | `PMM_LOG_REQUESTS`        |
-| [Timeout](#timeout)                                   | `-ti` or `--timeout`                          | `PMM_TIMEOUT`             |
-| [Collections Only](#collections-only)                 | `-co` or `--collections-only`                 | `PMM_COLLECTIONS_ONLY`    |
-| [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`                   | `PMM_PLAYLISTS_ONLY`      |
-| [Operations Only](#operations-only)                   | `-op`, `--operations`, or `--operations-only` | `PMM_OPERATIONS_ONLY`     |
-| [Overlays Only](#overlays-only)                       | `-ov`, `--overlays`, or `--overlays-only`     | `PMM_OVERLAYS_ONLY`       |
-| [Run Collections](#run-collections)                   | `-rc` or `--run-collections`                  | `PMM_RUN_COLLECTIONS`     |
-| [Run Libraries](#run-libraries.md)                       | `-rl` or `--run-libraries`                    | `PMM_RUN_LIBRARIES`       |
-| [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`               | `PMM_RUN_METADATA_FILES`  |
-| [Libraries First](#libraries-first)                   | `-lf` or `--libraries-first`                  | `PMM_LIBRARIES_FIRST`     |
-| [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`                 | `PMM_IGNORE_SCHEDULES`    |
-| [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`                     | `PMM_IGNORE_GHOST`        |
-| [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`               | `PMM_DELETE_COLLECTIONS`  |
-| [Delete Labels](#delete-labels)                       | `-dl` or `--delete-labels`                    | `PMM_DELETE_LABELS`       |
-| [Resume Run](#resume-run)                             | `-re` or `--resume`                           | `PMM_RESUME`              |
-| [No Countdown](#no-countdown)                         | `-nc` or `--no-countdown`                     | `PMM_NO_COUNTDOWN`        |
-| [No Missing](#no-missing)                             | `-nm` or `--no-missing`                       | `PMM_NO_MISSING`          |
-| [No Report](#no-report)                               | `-nr` or `--no-report`                        | `PMM_NO_REPORT`           |
-| [Read Only Config](#read-only-config)                 | `-ro` or `--read-only-config`                 | `PMM_READ_ONLY_CONFIG`    |
-| [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                           | `PMM_DIVIDER`             |
-| [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                             | `PMM_WIDTH`               |
-| [Config Secrets](#config-secrets)                     | `--pmm-***`                                   | `PMM_***`                 |
+| Attribute                                             | Shell Command                                 | Environment Variable     |
+|:------------------------------------------------------|:----------------------------------------------|:-------------------------|
+| [Config](#config)                                     | `-c` or `--config`                            | `PMM_CONFIG`             |
+| [Time to Run](#time-to-run)                           | `-t` or `--times`                             | `PMM_TIMES`              |
+| [Run Immediately](#run-immediately)                   | `-r` or `--run`                               | `PMM_RUN`                |
+| [Run Tests](#run-tests)                               | `-rt`, `--tests`, or `--run-tests`            | `PMM_TESTS`              |
+| [Debug](#debug)                                       | `-db` or `--debug`                            | `PMM_DEBUG`              |
+| [Trace](#trace)                                       | `-tr` or `--trace`                            | `PMM_TRACE`              |
+| [Log Requests](#log-requests)                         | `-lr` or `--log-requests`                     | `PMM_LOG_REQUESTS`       |
+| [Timeout](#timeout)                                   | `-ti` or `--timeout`                          | `PMM_TIMEOUT`            |
+| [Collections Only](#collections-only)                 | `-co` or `--collections-only`                 | `PMM_COLLECTIONS_ONLY`   |
+| [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`                   | `PMM_PLAYLISTS_ONLY`     |
+| [Operations Only](#operations-only)                   | `-op`, `--operations`, or `--operations-only` | `PMM_OPERATIONS_ONLY`    |
+| [Overlays Only](#overlays-only)                       | `-ov`, `--overlays`, or `--overlays-only`     | `PMM_OVERLAYS_ONLY`      |
+| [Run Collections](#run-collections)                   | `-rc` or `--run-collections`                  | `PMM_RUN_COLLECTIONS`    |
+| [Run Libraries](#run-libraries.md)                    | `-rl` or `--run-libraries`                    | `PMM_RUN_LIBRARIES`      |
+| [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`               | `PMM_RUN_METADATA_FILES` |
+| [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`                 | `PMM_IGNORE_SCHEDULES`   |
+| [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`                     | `PMM_IGNORE_GHOST`       |
+| [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`               | `PMM_DELETE_COLLECTIONS` |
+| [Delete Labels](#delete-labels)                       | `-dl` or `--delete-labels`                    | `PMM_DELETE_LABELS`      |
+| [Resume Run](#resume-run)                             | `-re` or `--resume`                           | `PMM_RESUME`             |
+| [No Countdown](#no-countdown)                         | `-nc` or `--no-countdown`                     | `PMM_NO_COUNTDOWN`       |
+| [No Missing](#no-missing)                             | `-nm` or `--no-missing`                       | `PMM_NO_MISSING`         |
+| [No Report](#no-report)                               | `-nr` or `--no-report`                        | `PMM_NO_REPORT`          |
+| [Read Only Config](#read-only-config)                 | `-ro` or `--read-only-config`                 | `PMM_READ_ONLY_CONFIG`   |
+| [Divider Character](#divider-character--screen-width) | `-d` or `--divider`                           | `PMM_DIVIDER`            |
+| [Screen Width](#divider-character--screen-width)      | `-w` or `--width`                             | `PMM_WIDTH`              |
+| [Config Secrets](#config-secrets)                     | `--pmm-***`                                   | `PMM_***`                |
 
 Further explanation and examples of each command can be found below.
 
@@ -375,25 +374,6 @@ Perform a metadata files run immediately to run only the pre-defined metadata fi
     === "Docker Environment"
         ```
         docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-metadata-files "Movies.yml|seasonal|genre"
-        ```
-
-### Libraries First
-
-Run library operations prior to running collections.
-
-|         | Shell Command                | Environment Variable       |
-|:--------|:-----------------------------|:---------------------------|
-| Flags   | `-lf` or `--libraries-first` | `PMM_LIBRARIES_FIRST`      |
-| Example | `--libraries-first`          | `PMM_LIBRARIES_FIRST=true` |
-
-!!! example
-    === "Local Environment"
-        ```
-        python plex_meta_manager.py --libraries-first
-        ```
-    === "Docker Environment"
-        ```
-        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --libraries-first
         ```
 
 ### Ignore Schedules

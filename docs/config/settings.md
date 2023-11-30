@@ -24,45 +24,46 @@ Attributes set at the collection level will take priority over any library or gl
 The available setting attributes which can be set at each level are outlined below:
 
 
-| Attribute                                                     | Global Level | Library Level | Collection/Playlist Level |
-|:--------------------------------------------------------------|:------------:|:-------------:|:-------------------------:|
-| [`cache`](#cache)                                             |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`cache_expiration`](#cache-expiration)                       |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`asset_directory`](#image-asset-directory)                   |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`asset_folders`](#image-asset-folders)                       |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`asset_depth`](#asset-depth)                                 |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`create_asset_folders`](#create-asset-folders)               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`prioritize_assets`](#prioritize-assets)                     |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`dimensional_asset_rename`](#dimensional-asset-rename)       |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`download_url_assets`](#download-url-assets)                 |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`show_missing_season_assets`](#show-missing-season-assets)   |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`show_missing_episode_assets`](#show-missing-episode-assets) |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`show_asset_not_needed`](#show-asset-not-needed)             |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`sync_mode`](#sync-mode)                                     |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`default_collection_order`](#default-collection-order)       |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`minimum_items`](#minimum-items)                             |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`delete_below_minimum`](#delete-below-minimum)               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`delete_not_scheduled`](#delete-not-scheduled)               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`run_again_delay`](#run-again-delay)                         |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`missing_only_released`](#missing-only-released)             |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`show_unmanaged`](#show-unmanaged-collections)               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`show_unconfigured`](#show-unconfigured-collections)         |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`show_filtered`](#show-filtered)                             |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`show_options`](#show-options)                               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`show_missing`](#show-missing)                               |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`only_filter_missing`](#only-filter-missing)                 |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`show_missing_assets`](#show-missing-assets)                 |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`save_report`](#save-report)                                 |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`tvdb_language`](#tvdb-language)                             |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`ignore_ids`](#ignore-ids)                                   |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`ignore_imdb_ids`](#ignore-imdb-ids)                         |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`item_refresh_delay`](#item-refresh-delay)                   |   :fontawesome-solid-circle-check:{ .green }    |    :fontawesome-solid-circle-check:{ .green }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`playlist_sync_to_users`](#playlist-sync-to-users)           |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`playlist_exclude_users`](#playlist-exclude-users)           |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |          :fontawesome-solid-circle-check:{ .green }          |
-| [`playlist_report`](#playlist-report)                         |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`custom_repo`](#custom-repo)                                 |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`verify_ssl`](#verify-ssl)                                   |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
-| [`check_nightly`](#check-nightly)                             |   :fontawesome-solid-circle-check:{ .green }    |   :fontawesome-solid-circle-xmark:{ .red }    |         :fontawesome-solid-circle-xmark:{ .red }          |
+| Attribute                                                     |                Global Level                |               Library Level                |         Collection/Playlist Level          |
+|:--------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
+| [`cache`](#cache)                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`cache_expiration`](#cache-expiration)                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`asset_directory`](#image-asset-directory)                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`asset_folders`](#image-asset-folders)                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`asset_depth`](#asset-depth)                                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`create_asset_folders`](#create-asset-folders)               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`prioritize_assets`](#prioritize-assets)                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`dimensional_asset_rename`](#dimensional-asset-rename)       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`download_url_assets`](#download-url-assets)                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`show_missing_season_assets`](#show-missing-season-assets)   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`show_missing_episode_assets`](#show-missing-episode-assets) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`show_asset_not_needed`](#show-asset-not-needed)             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`sync_mode`](#sync-mode)                                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`default_collection_order`](#default-collection-order)       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`minimum_items`](#minimum-items)                             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`delete_below_minimum`](#delete-below-minimum)               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`delete_not_scheduled`](#delete-not-scheduled)               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`run_again_delay`](#run-again-delay)                         | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`missing_only_released`](#missing-only-released)             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`show_unmanaged`](#show-unmanaged-collections)               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`show_unconfigured`](#show-unconfigured-collections)         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`show_filtered`](#show-filtered)                             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`show_options`](#show-options)                               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`show_missing`](#show-missing)                               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`only_filter_missing`](#only-filter-missing)                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`show_missing_assets`](#show-missing-assets)                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`save_report`](#save-report)                                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`tvdb_language`](#tvdb-language)                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`ignore_ids`](#ignore-ids)                                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`ignore_imdb_ids`](#ignore-imdb-ids)                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`item_refresh_delay`](#item-refresh-delay)                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`playlist_sync_to_users`](#playlist-sync-to-users)           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+| [`playlist_exclude_users`](#playlist-exclude-users)           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+| [`playlist_report`](#playlist-report)                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`run_order`](#run-order)                                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`custom_repo`](#custom-repo)                                 | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`verify_ssl`](#verify-ssl)                                   | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`check_nightly`](#check-nightly)                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ## Default Values
 
@@ -80,6 +81,51 @@ The below in an extract of the `config.yml.template` and is the initial values t
   end="webhooks:"
 %}
 ~~~
+
+## Example Library-Level Settings
+
+The below showcases how to set a library-level setting, assuming that the attribute is listed as a library-level compatible attribute in the above table.
+
+If no library-level attribute is set, then the global attribute is used.
+
+???+ tip
+
+    Press the :fontawesome-solid-circle-plus: icon to learn more
+
+```yaml
+libraries:
+  Movies:
+    run_order: #(1)!
+    - operations
+    - collections
+    - overlays
+    minimum_items: 3 #(2)!
+    metadata_path:
+      # stuff here
+    overlay_path:
+      # stuff here
+    operations:
+      # stuff here
+  TV Shows:
+    metadata_path:
+      # stuff here
+    overlay_path:
+      # stuff here
+    operations:
+      # stuff here
+settings:
+  run_order: #(3)!
+  - collections
+  - operations
+  - overlays
+  minimum_items: 1 #(4)!
+```
+
+1.  Sets the `run_order` specifically for the Movies library
+2.  Sets the `minimum_items` attribute specifically for the Movies library
+3.  Sets the global `run_order` which will apply to all libraries unless a library-level `run_order` is found, as showcased in the above example
+4.  Sets the global `minimum_items` which will apply to all libraries unless a library-level `run_order` is found, as showcased in the above example
+
 ## Cache
 Cache the Plex GUID and associated IDs for each library item for faster subsequent processing. The cache file is created in the same directory as the configuration file.
 
@@ -458,13 +504,34 @@ Set the default playlist `exclude_users`.
 | Allowed Values | list of users or comma-separated string of users |
 
 
-# Playlist Report
+## Playlist Report
 Set `playlist_report` to true to print out a playlist report at the end of the log.
 
-|   |   |
-|---|---|
-| Default Value | false |
+|                |                   |
+|----------------|-------------------|
+| Default Value  | false             |
 | Allowed Values | `true` or `false` |
+
+## Run Order
+
+Specify the run order of the library components [Metadata Files, Library Operations, and Overlay Files]
+
+???+ tip
+
+    If not specified, the default run order is Metadata Files, then Library Operations, then Overlay Files
+
+    ```yml
+    settings:
+      run_order:
+      - metadata
+      - operations
+      - overlays
+    ```
+
+|                |                                                                               |
+|----------------|-------------------------------------------------------------------------------|
+| Default Value  | ``                                                                            |
+| Allowed Values | List which must include `operations`, `metadata` and `overlays` in any order  |
 
 
 ## Custom Repo
@@ -475,9 +542,9 @@ Specify where the `repo` attribute's base is when defining `metadata_path`, `pla
 
     Ensure you are using the raw GitHub link (i.e. https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
 
-|   |   |
-|---|---|
-| Default Value | None |
+|                |                         |
+|----------------|-------------------------|
+| Default Value  | None                    |
 | Allowed Values | link to base repository |
 
 
@@ -489,10 +556,10 @@ Turn SSL Verification on or off.
 
     set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 
-|   |   |
-|---|---|
-| Default Value | true |
-| Allowed Values | `true` or `false` |
+|                 |                     |
+|-----------------|---------------------|
+| Default Value   | true                |
+| Allowed Values  | `true` or `false`   |
 
 
 ## Check Nightly
@@ -505,8 +572,8 @@ Will check nightly for updates instead of develop.
     
     It is recommended to set this to `true` if you primarily use the `nightly` branch
 
-|   |   |
-|---|---|
-| Default Value | false |
-| Allowed Values | `true` or `false` |
+|                 |                    |
+|-----------------|--------------------|
+| Default Value   | false              |
+| Allowed Values  | `true` or `false`  |
 
