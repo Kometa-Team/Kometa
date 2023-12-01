@@ -985,6 +985,7 @@ class YAML:
         self.path = path
         self.input_data = input_data
         self.yaml = ruamel.yaml.YAML()
+        self.yaml.width = 100000
         self.yaml.indent(mapping=2, sequence=2)
         try:
             if input_data:
