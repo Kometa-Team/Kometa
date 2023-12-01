@@ -52,7 +52,7 @@ jobs:
           webhook_id: ${{ secrets.DEVELOP_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DEVELOP_WEBHOOK_TOKEN }}
           title: Plex Meta Manager Develop Commits
-          message: "<@&954835263731949623> - An update to Plex Meta Manager has been published and is available to users of the **develop** branch.\n\nWe **stongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch."
+          message: "<@&954835263731949623> - An update to Plex Meta Manager has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
           commits: "true"
           username: Metabot
           avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/pmm.png
