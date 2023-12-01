@@ -96,8 +96,8 @@ If no library-level attribute is set, then the global attribute is used.
 libraries:
   Movies:
     run_order: #(1)!
-    - operations
     - metadata
+    - operations
     - overlays
     minimum_items: 3 #(2)!
     metadata_path:
@@ -115,8 +115,8 @@ libraries:
       # stuff here
 settings:
   run_order: #(3)!
-  - metadata
   - operations
+  - metadata
   - overlays
   minimum_items: 1 #(4)!
 ```
@@ -514,17 +514,17 @@ Set `playlist_report` to true to print out a playlist report at the end of the l
 
 ## Run Order
 
-Specify the run order of the library components [Metadata Files, Library Operations, and Overlay Files]
+Specify the run order of the library components [Library Operations, Metadata Files and Overlay Files]
 
 ???+ tip
 
-    If not specified, the default run order is Metadata Files, then Library Operations, then Overlay Files
+    If not specified, the default run order is Library Operations, then Metadata Files, then Overlay Files
 
     ```yml
     settings:
       run_order:
-      - metadata
       - operations
+      - metadata
       - overlays
     ```
 
