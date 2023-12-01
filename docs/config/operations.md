@@ -222,6 +222,10 @@ Updates every item's studio in the library to the chosen site's studio.
 
 Updates every item's originally available date in the library to the chosen site's date.
 
+???+ tip
+
+    As plex does not allow this field to be empty, using `remove` or `reset` will set the date to the Plex default date, which is `1969-12-31`
+
 **Attribute:** `mass_originally_available_update`
 
 **Values:**
