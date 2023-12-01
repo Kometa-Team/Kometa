@@ -40,6 +40,7 @@ run_order_options = {
 }
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 imdb_label_options = {
+    "remove": "Remove All IMDb Parental Labels",
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
     "mild": "Add IMDb Parental Labels for Mild, Moderate, or Severe",
     "moderate": "Add IMDb Parental Labels for Moderate or Severe",

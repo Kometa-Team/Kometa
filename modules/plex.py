@@ -1148,6 +1148,9 @@ class Plex(Library):
     def get_tvdb_from_map(self, item):
         return self.show_rating_key_map[item.ratingKey] if item.ratingKey in self.show_rating_key_map else None
 
+    def get_imdb_from_map(self, item):
+        return self.imdb_rating_key_map[item.ratingKey] if item.ratingKey in self.imdb_rating_key_map else None
+
     def search_item(self, data, year=None, edition=None):
         kwargs = {}
         if year is not None:
@@ -1464,6 +1467,8 @@ class Plex(Library):
             tmdb_id = self.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and self.is_show:
             tvdb_id = self.get_tvdb_from_map(item)
+        if not imdb_id:
+            imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
     def get_locked_attributes(self, item, titles=None):
