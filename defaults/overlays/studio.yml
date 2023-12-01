@@ -449,6 +449,9 @@ overlays:
   SILVER LINK.:
     template: [name: standard, {name: studios, search: [SILVER LINK., Silver Link]}]
 
+  Square Enix:
+    template: [name: standard, name: studios]
+
   Staple Entertainment:
     template: [name: standard, name: studios]
 
