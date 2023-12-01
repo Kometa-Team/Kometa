@@ -116,8 +116,8 @@ libraries:
 settings:
   run_order: #(3)!
   - metadata
-  - overlays
   - operations
+  - overlays
   minimum_items: 1 #(4)!
 ```
 
