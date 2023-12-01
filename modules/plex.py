@@ -732,6 +732,19 @@ class Plex(Library):
         item._autoReload = False
         return item
 
+    def load_from_cache(self, rating_key):
+        if rating_key in self.cached_items:
+            item, _ = self.cached_items[rating_key]
+            return item
+
+    def load_list_from_cache(self, rating_keys):
+        item_list = []
+        for rating_key in rating_keys:
+            item = self.load_from_cache(rating_key)
+            if item:
+                item_list.append(item)
+        return item_list
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False
