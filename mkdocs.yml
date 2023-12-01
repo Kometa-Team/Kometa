@@ -264,125 +264,133 @@ nav:
       - Overview: metadata/metadata.md
       - Templates: builders/templates.md
       - Filters: builders/filters.md
-      - Builders Overview: metadata/builders.md
-      - "PLEX & SMART BUILDERS":
-        - Plex Builders:
-          - Overview: builders/plex.md
-          - Plex All: builders/plex/#plex-all
-          - Plex Watchlist: builders/plex/#plex-watchlist
-          - Plex Pilots: builders/plex/#plex-pilots
-          - Plex Collectionless: builders/plex/#plex-collectionless
-          - Plex Search: builders/plex/#plex-search
-        - "Smart Builders":
-          - Overview: builders/smart.md
-          - Smart Label: builders/smart/#smart-label
-          - Smart Filter: builders/smart/#smart-filter
-      - "THIRD-PARTY BUILDERS":
-        - TMDb Builders:
-          - Overview: builders/tmdb.md
-          - TMDb Collection: builders/tmdb/#tmdb-collection
-          - TMDb List: builders/tmdb/#tmdb-list
-          - TMDb Actor: builders/tmdb/#tmdb-actor
-          - TMDb Crew: builders/tmdb/#tmdb-crew
-          - TMDb Director: builders/tmdb/#tmdb-director
-          - TMDb Producer: builders/tmdb/#tmdb-producer
-          - TMDb Writer: builders/tmdb/#tmdb-writer
-          - TMDb Movie: builders/tmdb/#tmdb-movie
-          - TMDb Show: builders/tmdb/#tmdb-show
-          - TMDb Company: builders/tmdb/#tmdb-company
-          - TMDb Network: builders/tmdb/#tmdb-network
-          - TMDb Keyword: builders/tmdb/#tmdb-keyword
-          - TMDb Popular: builders/tmdb/#tmdb-popular
-          - TMDb Now Playing: builders/tmdb/#tmdb-now-playing
-          - TMDb Top Rated: builders/tmdb/#tmdb-top-rated
-          - TMDb Upcoming: builders/tmdb/#tmdb-upcoming
-          - TMDb Airing Today: builders/tmdb/#tmdb-airing-today
-          - TMDb On the Air: builders/tmdb/#tmdb-on-the-air
-          - TMDb Trending Daily: builders/tmdb/#tmdb-trending-daily
-          - TMDb Trending Weekly: builders/tmdb/#tmdb-trending-weekly
-          - TMDb Discover: builders/tmdb/#tmdb-discover
-        - TVDb Builders:
-          - Overview: builders/tvdb.md
-          - TVDb List: builders/tvdb/#tvdb-list
-          - TVDb Movie: builders/tvdb/#tvdb-movie
-          - TVDb Show: builders/tvdb/#tvdb-show
-        - IMDb Builders:
-          - Overview: builders/imdb.md
-          - IMDb ID: builders/imdb/#imdb-id
-          - IMDb Chart: builders/imdb/#imdb-chart
-          - IMDb List: builders/imdb/#imdb-list
-          - IMDb Watchlist: builders/imdb/#imdb-watchlist
-        - Trakt Builders:
-          - Overview: builders/trakt.md
-          - Trakt List: builders/trakt/#trakt-list
-          - Trakt Chart: builders/trakt/#trakt-chart
-          - Trakt Userlist: builders/trakt/#trakt-userlist
-          - Trakt Recommendations: builders/trakt/#trakt-recommendations
-          - Trakt Box Office: builders/trakt/#trakt-box-office
-        - Tautulli Builders:
-          - Overview: builders/tautulli.md
-          - Tautulli Popular/Watched: builders/tautulli/#tautulli-popular-watched
-        - Radarr Builders:
-          - Overview: builders/radarr.md
-          - Radarr All: builders/radarr/#radarr-all
-          - Radarr Taglist: builders/radarr/#radarr-taglist
-        - Sonarr Builders:
-          - Overview: builders/sonarr.md
-          - Sonarr All: builders/sonarr/#sonarr-all
-          - Sonarr Taglist: builders/sonarr/#sonarr-taglist
-        - MdbList Builders:
-          - Overview: builders/mdblist.md
-          - MdbList List: builders/mdblist/#mdblist-list
-        - Letterboxd Builders:
-          - Overview: builders/letterboxd.md
-          - Letterboxd List: builders/letterboxd/#letterboxd-list
-        - ICheckMovies Builders:
-          - Overview: builders/icheckmovies.md
-          - ICheckMovies List: builders/icheckmovies/#icheckmovies-list
-        - FlixPatrol Builders:
-          - Overview: builders/flixpatrol.md
-          - FlixPatrol Top Platform: builders/flixpatrol/#flixpatrol-top
-          - FlixPatrol Popular: builders/flixpatrol/#flixpatrol-popular
-          - FlixPatrol Demographics: builders/flixpatrol/#flixpatrol-demographics
-          - FlixPatrol URL: builders/flixpatrol/#flixpatrol-url
-        - Reciperr Builders:
-          - Overview: builders/reciperr.md
-          - Reciperr List: builders/reciperr/#reciperr-list
-        - StevenLu Builders:
-          - Overview: builders/stevenlu.md
-          - StevenLu List: builders/stevenlu/#stevenlu-s-popular-movies-list
-        - AniDB Builders:
-          - Overview: builders/anidb.md
-          - AniDB ID: builders/anidb/#anidb-id
-          - AniDB Relation: builders/anidb/#anidb-relation
-          - AniDB Popular: builders/anidb/#anidb-popular
-          - AniDB Tag: builders/anidb/#anidb-tag
-        - AniList Builders:
-          - Overview: builders/anilist.md
-          - AniList Top Rated: builders/anilist/#anilist-top-rated
-          - AniList Anilist Popular: builders/anilist/#anilist-anilist-popular
-          - AniList Trending: builders/anilist/#anilist-trending
-          - AniList Relations: builders/anilist/#anilist-relations
-          - AniList Studio: builders/anilist/#anilist-studio
-          - AniList ID: builders/anilist/#anilist-id
-          - AniList UserList: builders/anilist/#anilist-userlist
-          - AniList Search: builders/anilist/#anilist-search
-        - MyAnimeList Builders:
-          - Overview: builders/myanimelist.md
-          - MyAnimeList Search: builders/myanimelist/#myanimelist-search
-          - MyAnimeList Top All: builders/myanimelist/#myanimelist-top-all
-          - MyAnimeList Top Airing: builders/myanimelist/#myanimelist-top-airing
-          - MyAnimeList Top Upcoming: builders/myanimelist/#myanimelist-top-upcoming
-          - MyAnimeList Top TV Series: builders/myanimelist/#myanimelist-top-tv-series
-          - MyAnimeList Top Movies: builders/myanimelist/#myanimelist-top-movies
-          - MyAnimeList Top OVA Series: builders/myanimelist/#myanimelist-top-ova-series
-          - MyAnimeList Top Specials: builders/myanimelist/#myanimelist-top-specials
-          - MyAnimeList Most Popular: builders/myanimelist/#myanimelist-most-popular
-          - MyAnimeList Most Favorited: builders/myanimelist/#myanimelist-most-favorited
-          - MyAnimeList Suggested: builders/myanimelist/#myanimelist-suggested
-          - MyAnimeList ID: builders/myanimelist/#myanimelist-id
-          - MyAnimeList UserList: builders/myanimelist/#myanimelist-userlist
-          - MyAnimeList Seasonal: builders/myanimelist/#myanimelist-seasonal
+      - "EDITING METADATA":
+        - Metadata Edits:
+          - Movie Metadata Edits: metadata/metadata/movie.md
+          - Show Metadata Edits: metadata/metadata/show.md
+          - Music Metadata: metadata/metadata/music.md
+      - "BUILDERS":
+        - Overview: metadata/builders.md
+        - "Plex Builders":
+          - Overview: builders/overview/plex.md
+          - Plex Builders:
+            - Overview: builders/plex.md
+            - Plex All: builders/plex/#plex-all
+            - Plex Watchlist: builders/plex/#plex-watchlist
+            - Plex Pilots: builders/plex/#plex-pilots
+            - Plex Collectionless: builders/plex/#plex-collectionless
+            - Plex Search: builders/plex/#plex-search
+          - "Smart Builders":
+            - Overview: builders/smart.md
+            - Smart Label: builders/smart/#smart-label
+            - Smart Filter: builders/smart/#smart-filter
+        - "Third-Party Builders":
+          - Overview: builders/overview/thirdparty.md
+          - TMDb Builders:
+            - Overview: builders/tmdb.md
+            - TMDb Collection: builders/tmdb/#tmdb-collection
+            - TMDb List: builders/tmdb/#tmdb-list
+            - TMDb Actor: builders/tmdb/#tmdb-actor
+            - TMDb Crew: builders/tmdb/#tmdb-crew
+            - TMDb Director: builders/tmdb/#tmdb-director
+            - TMDb Producer: builders/tmdb/#tmdb-producer
+            - TMDb Writer: builders/tmdb/#tmdb-writer
+            - TMDb Movie: builders/tmdb/#tmdb-movie
+            - TMDb Show: builders/tmdb/#tmdb-show
+            - TMDb Company: builders/tmdb/#tmdb-company
+            - TMDb Network: builders/tmdb/#tmdb-network
+            - TMDb Keyword: builders/tmdb/#tmdb-keyword
+            - TMDb Popular: builders/tmdb/#tmdb-popular
+            - TMDb Now Playing: builders/tmdb/#tmdb-now-playing
+            - TMDb Top Rated: builders/tmdb/#tmdb-top-rated
+            - TMDb Upcoming: builders/tmdb/#tmdb-upcoming
+            - TMDb Airing Today: builders/tmdb/#tmdb-airing-today
+            - TMDb On the Air: builders/tmdb/#tmdb-on-the-air
+            - TMDb Trending Daily: builders/tmdb/#tmdb-trending-daily
+            - TMDb Trending Weekly: builders/tmdb/#tmdb-trending-weekly
+            - TMDb Discover: builders/tmdb/#tmdb-discover
+          - TVDb Builders:
+            - Overview: builders/tvdb.md
+            - TVDb List: builders/tvdb/#tvdb-list
+            - TVDb Movie: builders/tvdb/#tvdb-movie
+            - TVDb Show: builders/tvdb/#tvdb-show
+          - IMDb Builders:
+            - Overview: builders/imdb.md
+            - IMDb ID: builders/imdb/#imdb-id
+            - IMDb Chart: builders/imdb/#imdb-chart
+            - IMDb List: builders/imdb/#imdb-list
+            - IMDb Watchlist: builders/imdb/#imdb-watchlist
+          - Trakt Builders:
+            - Overview: builders/trakt.md
+            - Trakt List: builders/trakt/#trakt-list
+            - Trakt Chart: builders/trakt/#trakt-chart
+            - Trakt Userlist: builders/trakt/#trakt-userlist
+            - Trakt Recommendations: builders/trakt/#trakt-recommendations
+            - Trakt Box Office: builders/trakt/#trakt-box-office
+          - Tautulli Builders:
+            - Overview: builders/tautulli.md
+            - Tautulli Popular/Watched: builders/tautulli/#tautulli-popular-watched
+          - Radarr Builders:
+            - Overview: builders/radarr.md
+            - Radarr All: builders/radarr/#radarr-all
+            - Radarr Taglist: builders/radarr/#radarr-taglist
+          - Sonarr Builders:
+            - Overview: builders/sonarr.md
+            - Sonarr All: builders/sonarr/#sonarr-all
+            - Sonarr Taglist: builders/sonarr/#sonarr-taglist
+          - MdbList Builders:
+            - Overview: builders/mdblist.md
+            - MdbList List: builders/mdblist/#mdblist-list
+          - Letterboxd Builders:
+            - Overview: builders/letterboxd.md
+            - Letterboxd List: builders/letterboxd/#letterboxd-list
+          - ICheckMovies Builders:
+            - Overview: builders/icheckmovies.md
+            - ICheckMovies List: builders/icheckmovies/#icheckmovies-list
+          - FlixPatrol Builders:
+            - Overview: builders/flixpatrol.md
+            - FlixPatrol Top Platform: builders/flixpatrol/#flixpatrol-top
+            - FlixPatrol Popular: builders/flixpatrol/#flixpatrol-popular
+            - FlixPatrol Demographics: builders/flixpatrol/#flixpatrol-demographics
+            - FlixPatrol URL: builders/flixpatrol/#flixpatrol-url
+          - Reciperr Builders:
+            - Overview: builders/reciperr.md
+            - Reciperr List: builders/reciperr/#reciperr-list
+          - StevenLu Builders:
+            - Overview: builders/stevenlu.md
+            - StevenLu List: builders/stevenlu/#stevenlu-s-popular-movies-list
+          - AniDB Builders:
+            - Overview: builders/anidb.md
+            - AniDB ID: builders/anidb/#anidb-id
+            - AniDB Relation: builders/anidb/#anidb-relation
+            - AniDB Popular: builders/anidb/#anidb-popular
+            - AniDB Tag: builders/anidb/#anidb-tag
+          - AniList Builders:
+            - Overview: builders/anilist.md
+            - AniList Top Rated: builders/anilist/#anilist-top-rated
+            - AniList Anilist Popular: builders/anilist/#anilist-anilist-popular
+            - AniList Trending: builders/anilist/#anilist-trending
+            - AniList Relations: builders/anilist/#anilist-relations
+            - AniList Studio: builders/anilist/#anilist-studio
+            - AniList ID: builders/anilist/#anilist-id
+            - AniList UserList: builders/anilist/#anilist-userlist
+            - AniList Search: builders/anilist/#anilist-search
+          - MyAnimeList Builders:
+            - Overview: builders/myanimelist.md
+            - MyAnimeList Search: builders/myanimelist/#myanimelist-search
+            - MyAnimeList Top All: builders/myanimelist/#myanimelist-top-all
+            - MyAnimeList Top Airing: builders/myanimelist/#myanimelist-top-airing
+            - MyAnimeList Top Upcoming: builders/myanimelist/#myanimelist-top-upcoming
+            - MyAnimeList Top TV Series: builders/myanimelist/#myanimelist-top-tv-series
+            - MyAnimeList Top Movies: builders/myanimelist/#myanimelist-top-movies
+            - MyAnimeList Top OVA Series: builders/myanimelist/#myanimelist-top-ova-series
+            - MyAnimeList Top Specials: builders/myanimelist/#myanimelist-top-specials
+            - MyAnimeList Most Popular: builders/myanimelist/#myanimelist-most-popular
+            - MyAnimeList Most Favorited: builders/myanimelist/#myanimelist-most-favorited
+            - MyAnimeList Suggested: builders/myanimelist/#myanimelist-suggested
+            - MyAnimeList ID: builders/myanimelist/#myanimelist-id
+            - MyAnimeList UserList: builders/myanimelist/#myanimelist-userlist
+            - MyAnimeList Seasonal: builders/myanimelist/#myanimelist-seasonal
       - DYNAMIC COLLECTIONS:
         - Overview: metadata/dynamic.md
         - TMDb Dynamic Collections:
@@ -429,17 +437,13 @@ nav:
           - Collection/Playlist Metadata Updates: builders/details/metadata.md
           - Item Metadata Updates: builders/details/item_metadata.md
   - MISCELLANEOUS:
-    - EDITING METADATA:
-      - Editing Movie Metadata: metadata/metadata/movie.md
-      - Editing TV Metadata: metadata/metadata/show.md
-      - Editing Music Metadata: metadata/metadata/music.md
-      - Formula 1 Metadata Guide: pmm/install/guides/formula.md
     - EXPLANATION GUIDES:
       - Plex Ratings Explained: pmm/essentials/ratings.md
       - Scheduling Guide: pmm/install/guides/scheduling.md
       - Image Asset Directory Guide: pmm/install/guides/assets.md
       - Log Files:  pmm/essentials/logs.md
       - YAML File Guide: pmm/essentials/yaml.md
+      - Formula 1 Metadata Guide: pmm/install/guides/formula.md
     - COMPANION SCRIPTS:
       - Overview: pmm/essentials/scripts.md
       - Plex Image Cleanup: pmm/essentials/scripts/image-cleanup.md
