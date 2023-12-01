@@ -110,7 +110,7 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
-    "mass_imdb_parental_labels": imdb_label_options, "mass_episode_imdb_parental_labels": imdb_label_options,
+    "mass_imdb_parental_labels": imdb_label_options,
     "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
     "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
@@ -812,7 +812,9 @@ class ConfigFile:
                                 if "mapper" in op:
                                     params[op] = input_dict
                                     for old_value, new_value in input_dict.items():
-                                        if old_value == new_value:
+                                        if not old_value:
+                                            logger.warning("Config Warning: The key cannot be empty")
+                                        elif old_value == new_value:
                                             logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
                                             params[op][old_value] = new_value if new_value else None
