@@ -158,7 +158,6 @@ class ConfigFile:
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
-        self.libraries_first = attrs["libraries_first"] if "libraries_first" in attrs else False
         self.env_plex_url = attrs["plex_url"] if "plex_url" in attrs else ""
         self.env_plex_token = attrs["plex_token"] if "plex_token" in attrs else ""
         current_time = datetime.now()
@@ -400,10 +399,8 @@ class ConfigFile:
                     logger.warning(options)
             return default
 
-        default_run = ["overlays", "operations", "metadata"] if self.libraries_first else ["metadata", "overlays", "operations"]
-
         self.general = {
-            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="comma_list", test_list=run_order_options, default=default_run),
+            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="comma_list", test_list=run_order_options, default=["operations", "metadata", "overlays"]),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
