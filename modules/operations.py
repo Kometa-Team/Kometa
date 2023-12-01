@@ -568,7 +568,7 @@ class Operations:
 
                 episode_ops = [
                     self.library.mass_episode_audience_rating_update, self.library.mass_episode_critic_rating_update,
-                    self.library.mass_episode_user_rating_update, self.library.mass_episode_imdb_parental_labels
+                    self.library.mass_episode_user_rating_update
                 ]
 
                 if any([x is not None for x in episode_ops]):
