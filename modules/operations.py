@@ -558,6 +558,8 @@ class Operations:
 
                 if self.library.mass_originally_available_update:
                     current_available = item.originallyAvailableAt
+                    if current_available:
+                        current_available = current_available.strftime("%Y-%m-%d")
                     has_edit = False
                     if self.library.mass_originally_available_update == "remove" and current_available:
                         if "originallyAvailableAt" not in remove_edits:
@@ -585,14 +587,16 @@ class Operations:
                                 new_available = mal_item.aired
                             else:
                                 raise Failed
-                            if not new_available:
+                            if new_available:
+                                new_available = new_available.strftime("%Y-%m-%d")
+                                if current_available != new_available:
+                                    if new_available not in available_edits:
+                                        available_edits[new_available] = []
+                                    available_edits[new_available].append(item.ratingKey)
+                                    item_edits += f"\nUpdate Originally Available Date (Batched) | {new_available}"
+                                    has_edit = True
+                            else:
                                 logger.info("No Originally Available Date Found")
-                            elif str(current_available) != str(new_available):
-                                if str(new_available) not in available_edits:
-                                    available_edits[str(new_available)] = []
-                                available_edits[str(new_available)].append(item.ratingKey)
-                                item_edits += f"\nUpdate Originally Available Date (Batched) | {new_available.strftime('%Y-%m-%d')}"
-                                has_edit = True
                         except Failed:
                             pass
 
@@ -779,7 +783,7 @@ class Operations:
                 self.library.Plex.saveMultiEdits()
 
             for new_available, rating_keys in sorted(available_edits.items()):
-                logger.info(get_batch_info("originallyAvailableAt", len(rating_keys), display_value=new_available.strftime("%Y-%m-%d"))) # noqa
+                logger.info(get_batch_info("originallyAvailableAt", len(rating_keys), display_value=new_available))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editOriginallyAvailable(new_available)
                 self.library.Plex.saveMultiEdits()

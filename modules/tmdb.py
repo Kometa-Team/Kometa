@@ -103,8 +103,8 @@ class TMDBObj:
         self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
         self.language_iso = data["language_iso"] if isinstance(data, dict) else data.original_language.iso_639_1 if data.original_language else None
         self.language_name = data["language_name"] if isinstance(data, dict) else data.original_language.english_name if data.original_language else None
-        self.genres = data["genres"].split("|") if isinstance(data, dict) else [g.name for g in data.genres if g]
-        self.keywords = data["keywords"].split("|") if isinstance(data, dict) else [k.name for k in data.keywords if k]
+        self.genres = [g for g in data["genres"].split("|") if g] if isinstance(data, dict) else [g.name for g in data.genres if g]
+        self.keywords = [k for k in data["keywords"].split("|") if k] if isinstance(data, dict) else [k.name for k in data.keywords if k]
 
 
 class TMDbMovie(TMDBObj):
