@@ -14,11 +14,15 @@ This sections aims to answer the most commonly asked questions that users have.
 
 #### PMM Versions & Updating
 
+The commands here should work in any terminal on the respective platforms, but that can't be guaranteed.  If you know shortcuts for some of these things, go ahead and use them.  For example, in many terminals, `cd ~/Plex-Meta-Manager` is the same as `cd /Users/YOUR_USERNAME/Plex-Meta-Manager`.  
+
+Your PMM installation may not be located at the paths referenced below.  These are the paths used in the walkthroughs in this documentation, so if you installed it somewhere else you will have to change the path[s] to reflect your system and the choices you made during installation.
+
 ??? question "How do I update to the latest version of Plex Meta Manager?"
 
     === ":fontawesome-brands-linux: Linux"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -37,7 +41,7 @@ This sections aims to answer the most commonly asked questions that users have.
     
     === ":fontawesome-brands-apple: macOS"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -55,8 +59,9 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-windows: Windows"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username and the drive letter if needed]
 
+            C:
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
             git stash
             git stash clear
@@ -87,7 +92,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-linux: Linux"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -107,7 +112,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-apple: macOS"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -126,8 +131,9 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-windows: Windows"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username and the drive letter if needed]
 
+            C:
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
             git stash
             git stash clear
@@ -158,7 +164,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-linux: Linux"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -177,7 +183,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-apple: macOS"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -196,8 +202,9 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-windows: Windows"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username and the drive letter if needed]
 
+            C:
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
             git stash
             git stash clear
@@ -227,7 +234,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-linux: Linux"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -246,7 +253,7 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-apple: macOS"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
             git stash
@@ -265,8 +272,9 @@ This sections aims to answer the most commonly asked questions that users have.
 
     === ":fontawesome-brands-windows: Windows"
     
-        [type this into your terminal, changing `YOUR_USERNAME`` to your username]
+        [type this into your terminal, changing `YOUR_USERNAME` to your username and the drive letter if needed]
 
+            C:
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
             git stash
             git stash clear
