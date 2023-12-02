@@ -371,6 +371,7 @@ class Operations:
                                 raise Failed
                             if not new_genres:
                                 logger.info("No Genres Found")
+                            new_genres = [genre for genre in new_genres if genre]
                         if self.library.genre_mapper or self.library.mass_genre_update in ["lock", "unlock"]:
                             if not new_genres and self.library.mass_genre_update not in ["remove", "reset"]:
                                 new_genres = [g.tag for g in item.genres]
