@@ -151,6 +151,7 @@ nav:
       - "THIRD-PARTY CONNECTORS":
         - Notifiarr: config/notifiarr.md
         - TMDb: config/tmdb.md
+        - GitHub: config/github.md
         - Trakt: config/trakt.md
         - MdbList: config/mdblist.md
         - OMDb: config/omdb.md
