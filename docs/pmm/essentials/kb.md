@@ -21,9 +21,18 @@ This sections aims to answer the most commonly asked questions that users have.
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
+
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     
     === ":fontawesome-brands-apple: macOS"
@@ -31,21 +40,37 @@ This sections aims to answer the most commonly asked questions that users have.
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-windows: Windows"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
+            git stash
+            git stash clear
             git pull
             .\pmm-venv\Scripts\activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-docker: Docker"
     
         [type this into your terminal]
@@ -65,35 +90,59 @@ This sections aims to answer the most commonly asked questions that users have.
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout develop
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-apple: macOS"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout develop
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-windows: Windows"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout develop
             git pull
             .\pmm-venv\Scripts\activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-docker: Docker"
     
         [type this into your terminal]
@@ -112,33 +161,57 @@ This sections aims to answer the most commonly asked questions that users have.
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout nightly
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
+        These two commands:
 
-    
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-apple: macOS"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout nightly
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-windows: Windows"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout nightly
             git pull
             .\pmm-venv\Scripts\activate
             python -m pip install -r requirements.txt
+
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -157,33 +230,57 @@ This sections aims to answer the most commonly asked questions that users have.
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout master
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
+        These two commands:
 
-    
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-apple: macOS"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd /Users/YOUR_USERNAME/Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout master
             git pull
             source pmm-venv/bin/activate
             python -m pip install -r requirements.txt
 
-    
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+
     === ":fontawesome-brands-windows: Windows"
     
         [type this into your terminal, changing `YOUR_USERNAME`` to your username]
 
             cd C:\Users\YOUR_USERNAME\Plex-Meta-Manager
+            git stash
+            git stash clear
             git checkout master
             git pull
             .\pmm-venv\Scripts\activate
             python -m pip install -r requirements.txt
+
+        These two commands:
+
+            git stash
+            git stash clear
+
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
