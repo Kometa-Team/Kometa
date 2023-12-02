@@ -339,7 +339,7 @@ class Operations:
                             else:
                                 found_rating = None
 
-                            if found_rating and found_rating > 0:
+                            if found_rating and float(found_rating) > 0:
                                 found_rating = f"{float(found_rating):.1f}"
                                 if str(current) != found_rating:
                                     if found_rating not in rating_edits[item_attr]:
@@ -727,15 +727,15 @@ class Operations:
                                     elif imdb_id and attribute == "imdb":
                                         found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
 
-                                    if found_rating is None:
-                                        logger.info(f"No {name_display[item_attr]} Found")
-                                    else:
+                                    if found_rating and float(found_rating) > 0:
                                         found_rating = f"{float(found_rating):.1f}"
                                         if str(current) != found_rating:
                                             if found_rating not in ep_rating_edits[item_attr]:
                                                 ep_rating_edits[item_attr][found_rating] = []
                                             ep_rating_edits[item_attr][found_rating].append(ep)
                                             item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                    else:
+                                        logger.info(f"No {name_display[item_attr]} Found")
 
                         if len(item_edits) > 0:
                             logger.info(f"Item Edits:{item_edits}")
