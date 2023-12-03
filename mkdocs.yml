@@ -149,9 +149,9 @@ nav:
         - Radarr: config/radarr.md
         - Sonarr: config/sonarr.md
       - "THIRD-PARTY CONNECTORS":
-        - Github: config/github.md
         - Notifiarr: config/notifiarr.md
         - TMDb: config/tmdb.md
+        - Github: config/github.md
         - Trakt: config/trakt.md
         - MdbList: config/mdblist.md
         - OMDb: config/omdb.md
