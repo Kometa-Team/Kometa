@@ -151,6 +151,7 @@ nav:
       - "THIRD-PARTY CONNECTORS":
         - Notifiarr: config/notifiarr.md
         - TMDb: config/tmdb.md
+        - Github: config/github.md
         - Trakt: config/trakt.md
         - MdbList: config/mdblist.md
         - OMDb: config/omdb.md
@@ -350,9 +351,6 @@ nav:
           - FlixPatrol Builders:
             - Overview: builders/flixpatrol.md
             - FlixPatrol Top Platform: builders/flixpatrol/#flixpatrol-top
-            - FlixPatrol Popular: builders/flixpatrol/#flixpatrol-popular
-            - FlixPatrol Demographics: builders/flixpatrol/#flixpatrol-demographics
-            - FlixPatrol URL: builders/flixpatrol/#flixpatrol-url
           - Reciperr Builders:
             - Overview: builders/reciperr.md
             - Reciperr List: builders/reciperr/#reciperr-list
