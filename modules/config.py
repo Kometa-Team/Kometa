@@ -348,7 +348,10 @@ class ConfigFile:
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
             elif var_type in ["list", "comma_list", "int_list"]:
-                output_list = list(set(util.get_list(data[attribute], lower=var_type != "int_list", split=var_type != "list", int_list=var_type == "int_list")))
+                output_list = []
+                for output_item in util.get_list(data[attribute], lower=var_type != "int_list", split=var_type != "list", int_list=var_type == "int_list"):
+                    if output_item not in output_list:
+                        output_list.append(output_item)
                 failed_items = [o for o in output_list if o not in test_list] if test_list else []
                 if failed_items:
                     message = f"{text}: {', '.join(failed_items)} is an invalid input"
