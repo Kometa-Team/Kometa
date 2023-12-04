@@ -721,6 +721,9 @@ overlays:
   Blade:
     template: [name: standard, name: studios]
 
+  Bleecker Street:
+    template: [name: standard, name: studios]
+
   Blown Deadline Productions:
     template: [name: standard, name: studios]
 
@@ -973,6 +976,9 @@ overlays:
   Icon Entertainment International:
     template: [name: standard, name: studios]
 
+  IFC Films:
+    template: [name: standard, name: studios]
+
   Illumination Entertainment:
     template: [name: standard, {name: studios, search: [Illumination Entertainment, Illumination Films]}]
 
@@ -1105,6 +1111,9 @@ overlays:
   Miramax:
     template: [name: standard, name: studios]
 
+  NEON:
+    template: [name: standard, name: studios]
+
   Netflix:
     template: [name: standard, name: studios]
 
@@ -1191,6 +1200,9 @@ overlays:
 
   Railsplitter Pictures:
     template: [name: standard, name: studios]
+
+  Rankin Bass Productions:
+    template: [name: standard, {name: studios, search: [Rankin/Bass Productions, Videocraft International]}]
 
   RatPac Entertainment:
     template: [name: standard, {name: studios, search: [Dune Entertainment, RatPac Entertainment]}]
@@ -1297,6 +1309,9 @@ overlays:
   Studio Dragon:
     template: [name: standard, name: studios]
 
+  STX Entertainment:
+    template: [name: standard, {name: studios, search: [STX Entertainment, STX Films]}]
+
   Summit Entertainment:
     template: [name: standard, name: studios]
 
@@ -1348,6 +1363,9 @@ overlays:
   Tim Burton Productions:
     template: [name: standard, name: studios]
 
+  TOHO:
+    template: [name: standard, {name: studios, search: [TOHO, Toho Pictures, "Toho Pictures, Inc."]}]
+
   Thunder Road:
     template: [name: standard, name: studios]
 
@@ -1375,6 +1393,9 @@ overlays:
   TriStar Pictures:
     template: [name: standard, {name: studios, search: [TriStar, TriStar Pictures]}]
 
+  TSG Entertainment:
+    template: [name: standard, name: studios]
+
   Twisted Pictures:
     template: [name: standard, name: studios]
 
@@ -1397,9 +1418,6 @@ overlays:
     template: [name: standard, name: studios]
 
   Vertigo Entertainment:
-    template: [name: standard, name: studios]
-
-  Videocraft International:
     template: [name: standard, name: studios]
 
   Village Roadshow Pictures:
