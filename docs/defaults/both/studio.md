@@ -276,7 +276,6 @@ include:
   - Zero-G
   - Zexcs
 
-
 #### MOVIES & TV SHOWS ###############################################################################################
   - 3 Arts Entertainment
   - 6th & Idaho
@@ -316,6 +315,7 @@ include:
   - BBC Studios
   - Bill Melendez Productions
   - Blade
+  - Bleecker Street
   - Blown Deadline Productions
   - Blue Ice Pictures
   - Blue Sky Studios
@@ -400,6 +400,7 @@ include:
   - Hurwitz & Schlossberg Productions
   - Hyperobject Industries
   - Icon Entertainment International
+  - IFC Films
   - Illumination Entertainment
   - Imagin
   - Imperative Entertainment
@@ -444,6 +445,7 @@ include:
   - Michael Patrick King Productions
   - Millennium Films
   - Miramax
+  - NEON
   - Netflix
   - New Line Cinema
   - Nickelodeon Animation Studio
@@ -473,6 +475,7 @@ include:
   - Radar Pictures
   - RadicalMedia
   - Railsplitter Pictures
+  - Rankin/Bass Productions
   - RatPac Entertainment
   - Red Dog Culture House
   - Regency Pictures
@@ -508,6 +511,7 @@ include:
   - Studio 8
   - Studio Babelsberg
   - Studio Dragon
+  - STX Entertainment
   - Summit Entertainment
   - Syfy
   - Syncopy
@@ -525,6 +529,7 @@ include:
   - The Sea Change Project
   - The Weinstein Company
   - Tim Burton Productions
+  - TOHO
   - Thunder Road
   - Titmouse
   - Tomorrow Studios
@@ -534,6 +539,7 @@ include:
   - Triage Entertainment
   - Tribeca Productions
   - TriStar Pictures
+  - TSG Entertainment
   - Twisted Pictures
   - UCP
   - United Artists
@@ -542,7 +548,6 @@ include:
   - Universal Television
   - Vancouver Media
   - Vertigo Entertainment
-  - Videocraft International
   - Village Roadshow Pictures
   - W. Chump and Sons
   - Walden Media
@@ -693,6 +698,8 @@ addons:
     - PlatinumVision
   Production +h.:
     - Production +h
+  Rankin/Bass Productions:
+    - Videocraft International
   RatPac Entertainment:
     - Dune Entertainment
   Regency Pictures:
@@ -725,10 +732,15 @@ addons:
     - Studio Blanc
   Studio Deen:
     - Studio DEEN
+  STX Entertainment:
+    - STX Films
   The Kennedy-Marshall Company:
     - The Kennedy/Marshall Company
   The Mark Gordon Company:
     - Tiger Aspect Productions
+  TOHO:
+    - Toho Pictures
+    - Toho Pictures, Inc.
   TMS Entertainment:
     - Tokyo Movie Shinsha
   Toei Animation:
