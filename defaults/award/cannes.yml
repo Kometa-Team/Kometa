@@ -23,7 +23,7 @@ collections:
         translation_key: cannes_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
+    letterboxd_list: https://letterboxd.com/brsan/list/cannes-palme-dor-winners/
 
 dynamic_collections:
   Cannes Awards:
