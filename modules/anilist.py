@@ -137,7 +137,10 @@ class AniList:
                 ani_attr = attr_translation[attr] if attr in attr_translation else attr
                 final = ani_attr if attr in no_mod_searches else f"{ani_attr}_{mod_translation[mod]}"
                 if attr in ["start", "end"]:
-                    value = int(util.validate_date(value, f"anilist_search {key}", return_as="%Y%m%d"))
+                    try:
+                        value = int(util.validate_date(value, return_as="%Y%m%d"))
+                    except Failed as e:
+                        raise Failed(f"Collection Error: anilist_search {key}: {e}")
                 elif attr in ["format", "status", "genre", "tag", "tag_category"]:
                     temp_value = [self.options[attr.replace('_', ' ').title()][v.lower().replace(' / ', '-').replace(' ', '-')] for v in value]
                     if attr in ["format", "status"]:

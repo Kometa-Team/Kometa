@@ -262,14 +262,14 @@ def get_int_list(data, id_type):
         except Failed as e:         logger.error(e)
     return int_values
 
-def validate_date(date_text, method, return_as=None):
+def validate_date(date_text, return_as=None):
     if isinstance(date_text, datetime):
         date_obg = date_text
     else:
         try:
             date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if "-" in str(date_text) else "%m/%d/%Y")
         except ValueError:
-            raise Failed(f"Collection Error: {method}: {date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
+            raise Failed(f"{date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
     return datetime.strftime(date_obg, return_as) if return_as else date_obg
 
 def validate_regex(data, col_type, validate=True):
@@ -513,7 +513,10 @@ def is_date_filter(value, modifier, data, final, current_time):
                 or (modifier == ".not" and value and value >= threshold_date):
             return True
     elif modifier in [".before", ".after"]:
-        filter_date = validate_date(data, final)
+        try:
+            filter_date = validate_date(data)
+        except Failed as e:
+            raise Failed(f"Collection Error: {final}: {e}")
         if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
             return True
     elif modifier == ".regex":
@@ -741,21 +744,23 @@ def parse_and_or(error, attribute, data, test_list):
             out += ")"
     return out, final
 
-def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None):
+def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None, date_return=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
     if options is None and translation is not None:
         options = [o for o in translation]
     value = data[methods[attribute]] if methods and attribute in methods else data
 
-    if datatype in ["list", "commalist", "strlist", "lowerlist"]:
+    if datatype in ["list", "commalist", "strlist", "lowerlist", "upperlist"]:
         final_list = []
         if value:
-            if datatype in ["commalist", "strlist"] and isinstance(value, dict):
+            if isinstance(value, dict):
                 raise Failed(f"{error} Error: {display} {value} must be a list or string")
             if datatype == "commalist":
                 value = get_list(value)
             if datatype == "lowerlist":
                 value = get_list(value, lower=True)
+            if datatype == "upperlist":
+                value = get_list(value, upper=True)
             if not isinstance(value, list):
                 value = [value]
             for v in value:
@@ -840,11 +845,16 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
         if range_split:
             message = f"{message} separated by a {range_split}"
+    elif datatype == "date":
+        try:
+            return validate_date(datetime.now() if data == "today" else data, return_as=date_return)
+        except Failed as e:
+            message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or \
             (options is not None and translation is None and str(value).lower() not in options):
         message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
     else:
-        return translation[value] if translation is not None else value
+        return translation[str(value).lower()] if translation is not None else value
 
     if default is None:
         raise Failed(f"{error} Error: {message}")

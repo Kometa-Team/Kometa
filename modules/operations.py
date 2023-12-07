@@ -857,7 +857,7 @@ class Operations:
 
         if self.library.radarr_remove_by_tag:
             logger.info("")
-            logger.separator(f"Radarr Remove {len(self.library.sonarr_remove_by_tag)} Movies with Tags: {', '.join(self.library.sonarr_remove_by_tag)}", space=False, border=False)
+            logger.separator(f"Radarr Remove {len(self.library.radarr_remove_by_tag)} Movies with Tags: {', '.join(self.library.radarr_remove_by_tag)}", space=False, border=False)
             logger.info("")
             self.library.Radarr.remove_all_with_tags(self.library.radarr_remove_by_tag)
         if self.library.sonarr_remove_by_tag:

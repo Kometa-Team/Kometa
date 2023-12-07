@@ -1631,7 +1631,10 @@ class MetadataFile(DataFile):
                         current = str(getattr(current_item, key, ""))
                         final_value = None
                         if var_type == "date":
-                            final_value = util.validate_date(value, name, return_as="%Y-%m-%d")
+                            try:
+                                final_value = util.validate_date(value, return_as="%Y-%m-%d")
+                            except Failed as ei:
+                                raise Failed(f"{self.type_str} Error: {name} {ei}")
                             current = current[:-9]
                         elif var_type == "float":
                             try:

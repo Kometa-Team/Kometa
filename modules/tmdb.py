@@ -135,7 +135,7 @@ class TMDbMovie(TMDBObj):
             raise Failed(f"TMDb Error: No Movie found for TMDb ID {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
-            raise Failed(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
 
 
 class TMDbShow(TMDBObj):
@@ -172,7 +172,7 @@ class TMDbShow(TMDBObj):
             raise Failed(f"TMDb Error: No Show found for TMDb ID {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
-            raise Failed(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
 
 class TMDb:
     def __init__(self, config, params):
@@ -344,7 +344,10 @@ class TMDb:
             limit = int(attrs.pop("limit"))
             for date_attr in date_methods:
                 if date_attr in attrs:
-                    attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
+                    try:
+                        attrs[date_attr] = util.validate_date(attrs[date_attr], return_as="%Y-%m-%d")
+                    except Failed as e:
+                        raise Failed(f"Collection Error: tmdb_discover attribute {date_attr}: {e}")
             if is_movie and region and "region" not in attrs:
                 attrs["region"] = region
             logger.trace(f"Params: {attrs}")
