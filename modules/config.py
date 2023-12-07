@@ -329,9 +329,9 @@ class ConfigFile:
                     elif attribute not in yaml.data[parent]:                            yaml.data[parent][attribute] = default
                     else:                                                               endline = ""
                     yaml.save()
-                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]: return default if default else []
             elif data[attribute] is None:
-                if default_is_none and var_type in ["list", "int_list", "comma_list"]: return default if default else []
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]: return default if default else []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
@@ -347,9 +347,9 @@ class ConfigFile:
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
-            elif var_type in ["list", "comma_list", "int_list"]:
+            elif var_type in ["list", "lower_list", "int_list"]:
                 output_list = []
-                for output_item in util.get_list(data[attribute], lower=var_type != "int_list", split=var_type != "list", int_list=var_type == "int_list"):
+                for output_item in util.get_list(data[attribute], lower=var_type == "lower_list", split=var_type != "list", int_list=var_type == "int_list"):
                     if output_item not in output_list:
                         output_list.append(output_item)
                 failed_items = [o for o in output_list if o not in test_list] if test_list else []
@@ -371,7 +371,6 @@ class ConfigFile:
                     logger.warning(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
-            elif var_type == "lower_list":                                      return util.get_list(data[attribute], lower=True)
             elif test_list is None or data[attribute] in test_list:             return data[attribute]
             else:                                                               message = f"{text}: {data[attribute]} is an invalid input"
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
@@ -404,7 +403,7 @@ class ConfigFile:
             return default
 
         self.general = {
-            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="comma_list", test_list=run_order_options, default=["operations", "metadata", "overlays"]),
+            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="lower_list", test_list=run_order_options, default=["operations", "metadata", "overlays"]),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
@@ -435,7 +434,7 @@ class ConfigFile:
             "save_report": check_for_attribute(self.data, "save_report", parent="settings", var_type="bool", default=False),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
-            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="comma_list", default_is_none=True),
+            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True),
             "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "playlist_exclude_users": check_for_attribute(self.data, "playlist_exclude_users", parent="settings", default_is_none=True),
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
@@ -736,7 +735,7 @@ class ConfigFile:
                 logger.info("")
                 logger.info(f"Connecting to {display_name} Library...")
 
-                params["run_order"] = check_for_attribute(lib, "run_order", parent="settings", var_type="comma_list", default=self.general["run_order"], do_print=False, save=False)
+                params["run_order"] = check_for_attribute(lib, "run_order", parent="settings", var_type="lower_list", default=self.general["run_order"], do_print=False, save=False)
                 params["asset_directory"] = check_for_attribute(lib, "asset_directory", parent="settings", var_type="list_path", default=self.general["asset_directory"], default_is_none=True, do_print=False, save=False)
                 params["asset_folders"] = check_for_attribute(lib, "asset_folders", parent="settings", var_type="bool", default=self.general["asset_folders"], do_print=False, save=False)
                 params["asset_depth"] = check_for_attribute(lib, "asset_depth", parent="settings", var_type="int", default=self.general["asset_depth"], do_print=False, save=False)
@@ -764,7 +763,7 @@ class ConfigFile:
                 params["delete_not_scheduled"] = check_for_attribute(lib, "delete_not_scheduled", parent="settings", var_type="bool", default=self.general["delete_not_scheduled"], do_print=False, save=False)
                 params["ignore_ids"] = check_for_attribute(lib, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
-                params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="comma_list", default_is_none=True, do_print=False, save=False)
+                params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
@@ -809,7 +808,7 @@ class ConfigFile:
                                         logger.debug(f"{e} using default {default_path}")
                                     params[op] = {
                                         "path": default_path,
-                                        "exclude": check_for_attribute(input_dict, "exclude", var_type="comma_list", default_is_none=True, save=False),
+                                        "exclude": check_for_attribute(input_dict, "exclude", var_type="lower_list", default_is_none=True, save=False),
                                         "sync_tags": check_for_attribute(input_dict, "sync_tags", var_type="bool", default=False, save=False),
                                         "add_blank_entries": check_for_attribute(input_dict, "add_blank_entries", var_type="bool", default=True, save=False)
                                     }
