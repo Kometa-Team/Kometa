@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
-builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist"]
+builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search"]
 movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
 show_charts = ["popular_shows", "top_shows"]
 charts = {
@@ -18,11 +18,62 @@ charts = {
     "top_indian": "Top Rated Indian Movies",
     "lowest_rated": "Lowest Rated Movies"
 }
+imdb_search_attributes = [
+    "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
+    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.any", "series.not",
+    "imdb_top", "imdb_bottom", "company", "content_rating", "country", "country.any", "country.not", "country.origin",
+    "keyword", "keyword.any", "keyword.not", "language", "language.any", "language.not", "language.primary",
+    "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte", "runtime.lte", "adult",
+]
+sort_by_options = {
+    "popularity": "POPULARITY",
+    "title": "TITLE_REGIONAL",
+    "rating": "USER_RATING",
+    "votes": "USER_RATING_COUNT",
+    "box_office": "BOX_OFFICE_GROSS_DOMESTIC",
+    "runtime": "RUNTIME",
+    "year": "YEAR",
+    "release": "RELEASE_DATE",
+}
+sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
+title_type_options = {
+    "movie": "movie", "tv_series": "tvSeries", "short": "short", "tv_episode": "tvEpisode", "tv_mini_series": "tvMiniSeries",
+    "tv_movie": "tvMovie", "tv_special": "tvSpecial", "tv_short": "tvShort", "video_game": "videoGame", "video": "video",
+    "music_video": "musicVideo", "podcast_series": "podcastSeries", "podcast_episode": "podcastEpisode"
+}
+genre_options = {a.lower(): a for a in [
+    "Action", "Adventure", "Animation", "Biography", "Comedy", "Documentary", "Drama", "Crime", "Family", "History",
+    "News", "Short", "Western", "Sport", "Reality-TV", "Horror", "Fantasy", "Film-Noir", "Music", "Romance",
+    "Talk-Show", "Thriller", "War", "Sci-Fi", "Musical", "Mystery", "Game-Show"
+]}
+company_options = {
+    "fox": ["co0000756", "co0176225", "co0201557", "co0017497"],
+    "dreamworks": ["co0067641", "co0040938", "co0252576", "co0003158"],
+    "mgm": ["co0007143", "co0026841"],
+    "paramount": ["co0023400"],
+    "sony": ["co0050868", "co0026545", "co0121181"],
+    "universal": ["co0005073", "co0055277", "co0042399"],
+    "disney": ["co0008970", "co0017902", "co0098836", "co0059516", "co0092035", "co0049348"],
+    "warner": ["co0002663", "co0005035", "co0863266", "co0072876", "co0080422", "co0046718"],
+}
+event_options = {
+    "cannes": {"eventId": "ev0000147"},
+    "choice": {"eventId": "ev0000133"},
+    "spirit": {"eventId": "ev0000349"},
+    "sundance": {"eventId": "ev0000631"},
+    "bafta": {"eventId": "ev0000123"},
+    "oscar": {"eventId": "ev0000003"},
+    "emmy": {"eventId": "ev0000223"},
+    "golden": {"eventId": "ev0000292"},
+    "oscar_picture": {"eventId": "ev0000003", "searchAwardCategoryId": "bestPicture"},
+    "oscar_director": {"eventId": "ev0000003", "searchAwardCategoryId": "bestDirector"},
+    "national_film_board_preserved": {"eventId": "ev0000468"},
+    "razzie": {"eventId": "ev0000558"},
+}
 base_url = "https://www.imdb.com"
+graphql_url = "https://api.graphql.imdb.com/"
 urls = {
     "lists": f"{base_url}/list/ls",
-    "searches": f"{base_url}/search/title/",
-    "title_text_searches": f"{base_url}/search/title-text/",
     "keyword_searches": f"{base_url}/search/keyword/",
     "filmography_searches": f"{base_url}/filmosearch/"
 }
@@ -41,6 +92,9 @@ class IMDb:
         headers = util.header(language) if language else util.header()
         response = self.config.get_html(url, headers=headers, params=params)
         return response.xpath(xpath) if xpath else response
+
+    def _graph_request(self, json_data):
+        return self.config.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
 
     def validate_imdb_lists(self, err_type, imdb_lists, language):
         valid_lists = []
@@ -102,12 +156,6 @@ class IMDb:
         if imdb_url.startswith(urls["lists"]):
             xpath_total = "//div[@class='desc lister-total-num-results']/text()"
             per_page = 100
-        elif imdb_url.startswith(urls["searches"]):
-            xpath_total = "//div[@class='desc']/span/text()"
-            per_page = 250
-        elif imdb_url.startswith(urls["title_text_searches"]):
-            xpath_total = "//div[@class='desc']/span/text()"
-            per_page = 50
         else:
             xpath_total = "//div[@class='desc']/text()"
             per_page = 50
@@ -135,7 +183,6 @@ class IMDb:
         params.pop("page", None) # noqa
         logger.trace(f"URL: {imdb_base}")
         logger.trace(f"Params: {params}")
-        search_url = imdb_base.startswith(urls["searches"])
         if limit < 1 or total < limit:
             limit = total
         remainder = limit % item_count
@@ -145,15 +192,9 @@ class IMDb:
         for i in range(1, num_of_pages + 1):
             start_num = (i - 1) * item_count + 1
             logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
-            if search_url:
-                params["count"] = remainder if i == num_of_pages else item_count # noqa
-                params["start"] = start_num # noqa
-            elif imdb_base.startswith(urls["title_text_searches"]):
-                params["start"] = start_num # noqa
-            else:
-                params["page"] = i # noqa
+            params["page"] = i # noqa
             ids_found = self._request(imdb_base, language=language, xpath="//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst", params=params)
-            if not search_url and i == num_of_pages:
+            if i == num_of_pages:
                 ids_found = ids_found[:remainder]
             imdb_ids.extend(ids_found)
             time.sleep(2)
@@ -161,6 +202,206 @@ class IMDb:
         if len(imdb_ids) > 0:
             return imdb_ids
         raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
+
+    def _search_json(self, data):
+        out = {
+            "locale": "en-US",
+            "first": data["limit"] if "limit" in data and data["limit"] < 250 else 250,
+            "titleTypeConstraint": {"anyTitleTypeIds": [title_type_options[t] for t in data["type"]] if "type" in data else []},
+        }
+        sort = data["sort_by"] if "sort_by" in data else "popularity.asc"
+        sort_by, sort_order = sort.split(".")
+        out["sortBy"] = sort_by_options[sort_by]
+        out["sortOrder"] = sort_order.upper()
+
+        if "type.not" in data:
+            out["titleTypeConstraint"]["excludeTitleTypeIds"] = [title_type_options[t] for t in data["type.not"]]
+
+        if "release.after" in data or "release.before" in data:
+            num_range = {}
+            if "release.after" in data:
+                num_range["start"] = data["release.after"]
+            if "release.before" in data:
+                num_range["end"] = data["release.before"]
+            out["releaseDateConstraint"] = {"releaseDateRange": num_range}
+
+        if "title" in data:
+            out["titleTextConstraint"] = {"searchTerm": data["title"]}
+
+        if any([a in data for a in ["rating.gte", "rating.lte", "votes.gte", "votes.lte"]]):
+            out["userRatingsConstraint"] = {}
+            num_range = {}
+            if "rating.gte" in data:
+                num_range["min"] = data["rating.gte"]
+            if "rating.lte" in data:
+                num_range["max"] = data["rating.lte"]
+            out["userRatingsConstraint"]["aggregateRatingRange"] = num_range
+            num_range = {}
+            if "votes.gte" in data:
+                num_range["min"] = data["votes.gte"]
+            if "votes.lte" in data:
+                num_range["max"] = data["votes.lte"]
+            out["userRatingsConstraint"]["ratingsCountRange"] = num_range
+
+        if any([a in data for a in ["genre", "genre.any", "genre.not"]]):
+            out["genreConstraint"] = {}
+            if "genre" in data:
+                out["genreConstraint"]["allGenreIds"] = [genre_options[g] for g in data["genre"]]
+            if "genre.any" in data:
+                out["genreConstraint"]["anyGenreIds"] = [genre_options[g] for g in data["genre.any"]]
+            if "genre.not" in data:
+                out["genreConstraint"]["excludeGenreIds"] = [genre_options[g] for g in data["genre.not"]]
+
+        if "event" in data or "event.winning" in data:
+            input_list = []
+            if "event" in data:
+                input_list.extend([event_options[a] if a in event_options else {"eventId": a} for a in data["event"]])
+            if "event.winning" in data:
+                for a in data["event.winning"]:
+                    award_dict = event_options[a] if a in event_options else {"eventId": a}
+                    award_dict["winnerFilter"] = "WINNER_ONLY"
+                    input_list.append(award_dict)
+            out["awardConstraint"] = {"allEventNominations": input_list}
+
+        if any([a in data for a in ["imdb_top", "imdb_bottom", "popularity.gte", "popularity.lte"]]):
+            ranges = []
+            if "imdb_top" in data:
+                ranges.append({"rankRange": {"max": data["imdb_top"]}, "rankedTitleListType": "TOP_RATED_MOVIES"})
+            if "imdb_bottom" in data:
+                ranges.append({"rankRange": {"max": data["imdb_bottom"]}, "rankedTitleListType": "LOWEST_RATED_MOVIES"})
+            if "popularity.gte" in data or "popularity.lte" in data:
+                num_range = {}
+                if "popularity.lte" in data:
+                    num_range["max"] = data["popularity.lte"]
+                if "popularity.gte" in data:
+                    num_range["min"] = data["popularity.gte"]
+                ranges.append({"rankRange": num_range, "rankedTitleListType": "TITLE_METER"})
+            out["rankedTitleListConstraint"] = {"allRankedTitleLists": ranges}
+
+        if any([a in data for a in ["series", "series.any", "series.not"]]):
+            out["episodicConstraint"] = {}
+            if "series" in data:
+                out["episodicConstraint"]["allSeriesIds"] = data["series"]
+            if "series.any" in data:
+                out["episodicConstraint"]["anySeriesIds"] = data["series.any"]
+            if "series.not" in data:
+                out["episodicConstraint"]["excludeSeriesIds"] = data["series.not"]
+
+        if any([a in data for a in ["list", "list.any", "list.not"]]):
+            out["listConstraint"] = {}
+            if "list" in data:
+                out["listConstraint"]["inAllLists"] = data["list"]
+            if "list.any" in data:
+                out["listConstraint"]["inAnyList"] = data["list.any"]
+            if "list.not" in data:
+                out["listConstraint"]["notInAnyList"] = data["list.not"]
+
+        if "company" in data:
+            company_ids = []
+            for c in data["company"]:
+                if c in company_options:
+                    company_ids.extend(company_options[c])
+                else:
+                    company_ids.append(c)
+            out["creditedCompanyConstraint"] = {"anyCompanyIds": company_ids}
+
+        if "content_rating" in data:
+            out["certificateConstraint"] = {"anyRegionCertificateRatings": data["content_rating"]}
+
+        if any([a in data for a in ["country", "country.any", "country.not", "country.origin"]]):
+            out["originCountryConstraint"] = {}
+            if "country" in data:
+                out["originCountryConstraint"]["allCountries"] = data["country"]
+            if "country.any" in data:
+                out["originCountryConstraint"]["anyCountries"] = data["country.any"]
+            if "country.not" in data:
+                out["originCountryConstraint"]["excludeCountries"] = data["country.not"]
+            if "country.origin" in data:
+                out["originCountryConstraint"]["anyPrimaryCountries"] = data["country.origin"]
+
+        if any([a in data for a in ["keyword", "keyword.any", "keyword.not"]]):
+            out["keywordConstraint"] = {}
+            if "keyword" in data:
+                out["keywordConstraint"]["allKeywords"] = data["keyword"]
+            if "keyword.any" in data:
+                out["keywordConstraint"]["anyKeywords"] = data["keyword.any"]
+            if "keyword.not" in data:
+                out["keywordConstraint"]["excludeKeywords"] = data["keyword.not"]
+
+        if any([a in data for a in ["language", "language.any", "language.not", "language.primary"]]):
+            out["languageConstraint"] = {}
+            if "language" in data:
+                out["languageConstraint"]["allLanguages"] = data["language"]
+            if "language.any" in data:
+                out["languageConstraint"]["anyLanguages"] = data["language.any"]
+            if "language.not" in data:
+                out["languageConstraint"]["excludeLanguages"] = data["language.not"]
+            if "language.primary" in data:
+                out["languageConstraint"]["anyPrimaryLanguages"] = data["language.primary"]
+
+        if any([a in data for a in ["cast", "cast.any", "cast.not"]]):
+            out["creditedNameConstraint"] = {}
+            if "cast" in data:
+                out["creditedNameConstraint"]["allNameIds"] = data["cast"]
+            if "cast.any" in data:
+                out["creditedNameConstraint"]["anyNameIds"] = data["cast.any"]
+            if "cast.not" in data:
+                out["creditedNameConstraint"]["excludeNameIds"] = data["cast.not"]
+
+        if "runtime.gte" in data or "runtime.lte" in data:
+            num_range = {}
+            if "runtime.gte" in data:
+                num_range["min"] = data["runtime.gte"]
+            if "runtime.lte" in data:
+                num_range["max"] = data["runtime.lte"]
+            out["runtimeConstraint"] = {"runtimeRangeMinutes": num_range}
+
+        if "adult" in data and data["adult"]:
+            out["explicitContentConstraint"] = {"explicitContentFilter": "INCLUDE_ADULT"}
+
+        logger.trace(out)
+        return {
+            "operationName": "AdvancedTitleSearch",
+            "variables": out,
+            "extensions": {
+                "persistedQuery": {
+                    "version": 1,
+                    "sha256Hash": "7327d144ec84b57c93f761affe0d0609b0d495f85e8e47fdc76291679850cfda"
+                }
+            }
+        }
+
+    def _search(self, data):
+        json_obj = self._search_json(data)
+        item_count = 250
+        imdb_ids = []
+        logger.ghost("Parsing Page 1")
+        response_json = self._graph_request(json_obj)
+        total = response_json["data"]["advancedTitleSearch"]["total"]
+        limit = data["limit"] if "limit" in data else 0
+        if limit < 1 or total < limit:
+            limit = total
+        remainder = limit % item_count
+        if remainder == 0:
+            remainder = item_count
+        num_of_pages = math.ceil(int(limit) / item_count)
+        end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
+        imdb_ids.extend([n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]])
+        if num_of_pages > 1:
+            for i in range(2, num_of_pages + 1):
+                start_num = (i - 1) * item_count + 1
+                logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+                json_obj["variables"]["after"] = end_cursor
+                response_json = self._graph_request(json_obj)
+                end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
+                ids_found = [n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]]
+                if i == num_of_pages:
+                    ids_found = ids_found[:remainder]
+                imdb_ids.extend(ids_found)
+        logger.exorcise()
+        if len(imdb_ids) > 0:
+            return imdb_ids
+        raise Failed("IMDb Error: No IMDb IDs Found")
 
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
@@ -238,6 +479,11 @@ class IMDb:
         elif method == "imdb_watchlist":
             logger.info(f"Processing IMDb Watchlist: {data}")
             return [(_i, "imdb") for _i in self._watchlist(data, language)]
+        elif method == "imdb_search":
+            logger.info(f"Processing IMDb Search:")
+            for k, v in data.items():
+                logger.info(f"    {k}: {v}")
+            return [(_i, "imdb") for _i in self._search(data)]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
