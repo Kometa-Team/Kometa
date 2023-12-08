@@ -378,7 +378,7 @@ class IMDb:
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
         total = response_json["data"]["advancedTitleSearch"]["total"]
-        limit = data["limit"] if "limit" in data else 0
+        limit = data["limit"]
         if limit < 1 or total < limit:
             limit = total
         remainder = limit % item_count
