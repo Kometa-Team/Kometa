@@ -1616,7 +1616,7 @@ class CollectionBuilder:
                     elif search_attr == "adult":
                         if util.parse(self.Type, search_method, search_data, datatype="bool", parent=method_name):
                             new_dictionary[lower_method] = True
-                    else:
+                    elif search_attr != "limit":
                         raise Failed(f"{self.Type} Error: {method_name} {search_method} attribute not supported")
                 if len(new_dictionary) > 1:
                     self.builders.append((method_name, new_dictionary))
