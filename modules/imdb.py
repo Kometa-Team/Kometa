@@ -23,7 +23,7 @@ imdb_search_attributes = [
     "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.any", "series.not",
     "imdb_top", "imdb_bottom", "company", "content_rating", "country", "country.any", "country.not", "country.origin",
     "keyword", "keyword.any", "keyword.not", "language", "language.any", "language.not", "language.primary",
-    "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte", "runtime.lte", "adult",
+    "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte", "runtime.lte", "adult", "limit"
 ]
 sort_by_options = {
     "popularity": "POPULARITY",
