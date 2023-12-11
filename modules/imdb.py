@@ -19,7 +19,7 @@ charts = {
     "lowest_rated": "Lowest Rated Movies"
 }
 imdb_search_attributes = [
-    "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
+    "limit", "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
     "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.any", "series.not",
     "imdb_top", "imdb_bottom", "company", "content_rating", "country", "country.any", "country.not", "country.origin",
     "keyword", "keyword.any", "keyword.not", "language", "language.any", "language.not", "language.primary",
