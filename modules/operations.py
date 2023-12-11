@@ -422,8 +422,10 @@ class Operations:
                                 new_rating = mal_item.rating
                             else:
                                 raise Failed
-                            if not new_rating:
+                            if new_rating is None:
                                 logger.info("No Content Rating Found")
+                            else:
+                                new_rating = str(new_rating)
 
                         is_none = False
                         current_rating = item.contentRating
@@ -748,8 +750,8 @@ class Operations:
             logger.separator("Batch Updates", space=False, border=False)
             logger.info("")
 
-            def get_batch_info(display_attr, total_count, display_value=None, is_episode=False, out_type=None, tag_type=None):
-                return f"Batch {name_display[display_attr] if display_attr in name_display else display_attr.capitalize()} Update: " \
+            def get_batch_info(placement, total, display_attr, total_count, display_value=None, is_episode=False, out_type=None, tag_type=None):
+                return f"Batch {name_display[display_attr] if display_attr in name_display else display_attr.capitalize()} Update ({placement}/{total}): " \
                        f"{f'{out_type.capitalize()}ing ' if out_type else ''}" \
                        f"{f'Adding {display_value} to ' if tag_type == 'add' else f'Removing {display_value} from ' if tag_type == 'remove' else ''}" \
                        f"{total_count} {'Episode' if is_episode else 'Movie' if self.library.is_movie else 'Show'}" \
@@ -757,82 +759,102 @@ class Operations:
 
             for tag_attribute, edit_dict in [("Label", label_edits), ("Genre", genre_edits)]:
                 for edit_type, batch_edits in edit_dict.items():
-                    for tag_name, rating_keys in sorted(batch_edits.items()):
-                        logger.info(get_batch_info(tag_attribute, len(rating_keys), display_value=tag_name, tag_type=edit_type))
+                    _size = len(batch_edits.items())
+                    for i, (tag_name, rating_keys) in enumerate(sorted(batch_edits.items()), 1):
+                        logger.info(get_batch_info(i, _size, tag_attribute, len(rating_keys), display_value=tag_name, tag_type=edit_type))
                         self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                         getattr(self.library.Plex, f"{edit_type}{tag_attribute}")(tag_name)
                         self.library.Plex.saveMultiEdits()
 
             for item_attr, _edits in rating_edits.items():
-                for new_rating, rating_keys in sorted(_edits.items()):
-                    logger.info(get_batch_info(item_attr, len(rating_keys), display_value=new_rating))
+                _size = len(rating_edits.items())
+                for i, (new_rating, rating_keys) in enumerate(sorted(_edits.items()), 1):
+                    logger.info(get_batch_info(i, _size, item_attr, len(rating_keys), display_value=new_rating))
                     self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                     self.library.Plex.editField(item_attr, new_rating)
                     self.library.Plex.saveMultiEdits()
 
-            for new_rating, rating_keys in sorted(content_edits.items()):
-                logger.info(get_batch_info("contentRating", len(rating_keys), display_value=new_rating))
+            _size = len(content_edits.items())
+            for i, (new_rating, rating_keys) in enumerate(sorted(content_edits.items()), 1):
+                logger.info(get_batch_info(i, _size, "contentRating", len(rating_keys), display_value=new_rating))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editContentRating(new_rating)
                 self.library.Plex.saveMultiEdits()
 
-            for new_studio, rating_keys in sorted(studio_edits.items()):
-                logger.info(get_batch_info("studio", len(rating_keys), display_value=new_studio))
+            _size = len(studio_edits.items())
+            for i, (new_studio, rating_keys) in enumerate(sorted(studio_edits.items()), 1):
+                logger.info(get_batch_info(i, _size, "studio", len(rating_keys), display_value=new_studio))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editStudio(new_studio)
                 self.library.Plex.saveMultiEdits()
 
-            for new_available, rating_keys in sorted(available_edits.items()):
-                logger.info(get_batch_info("originallyAvailableAt", len(rating_keys), display_value=new_available))
+            _size = len(available_edits.items())
+            for i, (new_available, rating_keys) in enumerate(sorted(available_edits.items()), 1):
+                logger.info(get_batch_info(i, _size, "originallyAvailableAt", len(rating_keys), display_value=new_available))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editOriginallyAvailable(new_available)
                 self.library.Plex.saveMultiEdits()
 
-            for field_attr, rating_keys in remove_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), out_type="remov"))
+            _size = len(remove_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(remove_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="remov"))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editField(field_attr, None, locked=True)
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in reset_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), out_type="reset"))
+
+            _size = len(reset_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(reset_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="reset"))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex.editField(field_attr, None, locked=False)
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in lock_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), out_type="lock"))
+
+            _size = len(lock_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(lock_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="lock"))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex._edit(**{f"{field_attr}.locked": 1})
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in unlock_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), out_type="unlock"))
+
+            _size = len(unlock_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(unlock_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="unlock"))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
                 self.library.Plex._edit(**{f"{field_attr}.locked": 0})
                 self.library.Plex.saveMultiEdits()
 
             for item_attr, _edits in ep_rating_edits.items():
-                for new_rating, rating_keys in sorted(_edits.items()):
-                    logger.info(f"Batch {name_display[item_attr]} Update: {len(rating_keys)} Episodes updated to {new_rating}")
+                _size = len(_edits.items())
+                for i, (new_rating, rating_keys) in enumerate(sorted(_edits.items()), 1):
+                    logger.info(get_batch_info(i, _size, item_attr, len(rating_keys), display_value=new_rating, is_episode=True))
                     self.library.Plex.batchMultiEdits(rating_keys)
                     self.library.Plex.editField(item_attr, new_rating)
                     self.library.Plex.saveMultiEdits()
 
-            for field_attr, rating_keys in ep_remove_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), is_episode=True, out_type="remov"))
+            _size = len(ep_remove_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(ep_remove_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="remov"))
                 self.library.Plex.batchMultiEdits(rating_keys)
                 self.library.Plex.editField(field_attr, None, locked=True)
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in ep_reset_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), is_episode=True, out_type="reset"))
+
+            _size = len(ep_reset_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(ep_reset_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="reset"))
                 self.library.Plex.batchMultiEdits(rating_keys)
                 self.library.Plex.editField(field_attr, None, locked=False)
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in ep_lock_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), is_episode=True, out_type="lock"))
+
+            _size = len(ep_lock_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(ep_lock_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="lock"))
                 self.library.Plex.batchMultiEdits(rating_keys)
                 self.library.Plex._edit(**{f"{field_attr}.locked": 1})
                 self.library.Plex.saveMultiEdits()
-            for field_attr, rating_keys in ep_unlock_edits.items():
-                logger.info(get_batch_info(field_attr, len(rating_keys), is_episode=True, out_type="unlock"))
+
+            _size = len(ep_unlock_edits.items())
+            for i, (field_attr, rating_keys) in enumerate(ep_unlock_edits.items(), 1):
+                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="unlock"))
                 self.library.Plex.batchMultiEdits(rating_keys)
                 self.library.Plex._edit(**{f"{field_attr}.locked": 0})
                 self.library.Plex.saveMultiEdits()
