@@ -143,13 +143,14 @@ smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show
 custom_sort_builders = [
     "plex_search", "plex_watchlist", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
-    "tvdb_list", "imdb_chart", "imdb_list", "imdb_watchlist", "stevenlu_popular", "anidb_popular", "tmdb_upcoming", "tmdb_airing_today",
-    "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection", "trakt_trending", "trakt_popular", "trakt_boxoffice",
-    "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "flixpatrol_top", "trakt_recommendations",
-    "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
-    "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list",
+    "tvdb_list", "imdb_chart", "imdb_list", "imdb_search", "imdb_watchlist", "stevenlu_popular", "anidb_popular",
+    "tmdb_upcoming", "tmdb_airing_today", "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection",
+    "trakt_trending", "trakt_popular", "trakt_boxoffice", "trakt_collected_daily", "trakt_collected_weekly",
+    "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all", "trakt_recommendations",
+    "trakt_recommended_personal", "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly",
+    "trakt_recommended_yearly", "trakt_recommended_all", "trakt_watched_daily", "trakt_watched_weekly",
+    "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
+    "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list", "flixpatrol_top",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
@@ -162,8 +163,8 @@ overlay_attributes = [
 parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_filtering", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_report", "missing_only_released", "server_preroll", "changes_webhooks",
-     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "cache_builders",
-     "url_theme", "file_theme", "item_label", "default_percent"
+     "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "imdb_search",
+     "cache_builders", "url_theme", "file_theme", "item_label", "default_percent"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types", "run_definition",

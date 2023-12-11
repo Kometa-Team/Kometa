@@ -20,7 +20,7 @@ charts = {
 }
 imdb_search_attributes = [
     "limit", "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.any", "series.not",
+    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.not",
     "imdb_top", "imdb_bottom", "company", "content_rating", "country", "country.any", "country.not", "country.origin",
     "keyword", "keyword.any", "keyword.not", "language", "language.any", "language.not", "language.primary",
     "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte", "runtime.lte", "adult",
@@ -278,12 +278,10 @@ class IMDb:
                 ranges.append({"rankRange": num_range, "rankedTitleListType": "TITLE_METER"})
             out["rankedTitleListConstraint"] = {"allRankedTitleLists": ranges}
 
-        if any([a in data for a in ["series", "series.any", "series.not"]]):
+        if any([a in data for a in ["series", "series.not"]]):
             out["episodicConstraint"] = {}
             if "series" in data:
-                out["episodicConstraint"]["allSeriesIds"] = data["series"]
-            if "series.any" in data:
-                out["episodicConstraint"]["anySeriesIds"] = data["series.any"]
+                out["episodicConstraint"]["anySeriesIds"] = data["series"]
             if "series.not" in data:
                 out["episodicConstraint"]["excludeSeriesIds"] = data["series.not"]
 
