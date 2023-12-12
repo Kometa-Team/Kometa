@@ -89,24 +89,24 @@ In this example we have two Radarr instances, standard and 4K, and four librarie
 ```
 libraries:
   Library01:     # this library uses the default radarr config
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
 
   Library02:     # this library overrides radarr root path and profile
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
     radarr:
       root_folder_path: /data/media/movies/tony
       quality_profile: Better
 
   Library03:      # this library overrides radarr quality profile
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
     radarr:
       quality_profile: Best
 
   Library04:      # this library uses the 4K radarr instance
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
     radarr:
       url: https://radarr-4k.bing.bang
@@ -115,7 +115,7 @@ libraries:
       quality_profile: Bestest
 
   Library05:      # movies get added by a custom script so they should get added to radarr-4k
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
     radarr:
       url: https://radarr-4k.bing.bang

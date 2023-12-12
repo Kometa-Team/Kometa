@@ -1,6 +1,6 @@
 # Seasonal Collections
 
-The `seasonal` Default Metadata File is used to dynamically create seasonal collections based on holidays .
+The `seasonal` Default Collection File is used to dynamically create seasonal collections based on holidays .
 
 ![](../images/seasonal.png)
 
@@ -40,7 +40,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: seasonal
 ```
 
@@ -93,26 +93,26 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: seasonal
         template_variables:
           use_independence: false #(1)!
           schedule_thanksgiving: range(10/01-10/30) #(2)!
           sort_by: random #(3)!
           append_data:
-            apes: Planet of the Apes Day #(4)!
-          schedule_apes: range(11/24-11/26) #(5)!
-          imdb_list_apes: https://www.imdb.com/list/ls005126084/ #(6)!
-          emoji_veteran: "🐵 " #(7)!
+            veteran: Veteran's Day #(4)!
+          schedule_veteran: range(11/01-11/30) #(5)!
+          imdb_list_veteran: https://www.imdb.com/list/ls565595526/ #(6)!
+          emoji_veteran: "🪖 " #(7)!
 ```
 
 1.  Do not create the "Independence Day" collection
 2.  Set a custom schedule for the Thanksgiving Day collection
-3.  Sort the collections created by this file in random order
-4.  Create a new Seasonal collection called "Planet of the Apes Day", and set the key for this collection to `apes`
-5.  Set a scheduled range for the "Planet of the Apes Day" collection.  Planet Of The Apes Day is 11/25.
-6.  Add an IMDb List to be used for the "Planet of the Apes Day" collection
-7.  Add the 🐵 emoji to the "Planet of the Apes Day" collection so that the title in Plex is "🐵 Planet of the Apes Day Movies"
+3.  Sort the collections created by this file to random
+4.  Create a new Seasonal collection called "Veteran's Day", they key for this collection is `veteran`
+5.  Set a scheduled range for the "Veteran's Day" collection
+6.  Add an IMDb List to be used for the "Veteran's Day" collection
+7.  Add the 🪖 emoji to the "Veteran's Day" collection so that the title in Plex is "🪖 Veteran's Day Movies"
 
 ## Default values
 

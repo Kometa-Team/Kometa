@@ -1,6 +1,6 @@
 # Decade Collections
 
-The `decade` Metadata File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
+The `decade` Collection File is used to dynamically create collections based on the decades available in your library, sorted by critic rating to create a "best of <decade>"
 
 **This file has a Movie Library [Counterpart](../movie/decade.md).**
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: decade
 ```
 
@@ -67,7 +67,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: year
         template_variables:
           sep_style: purple #(1)!

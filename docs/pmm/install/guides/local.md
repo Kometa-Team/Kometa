@@ -5,7 +5,7 @@ This article will walk you through getting Plex-Meta-Manager [PMM] set up and ru
 1.  Retrieving the PMM code
 2.  Installing requirements
 3.  Setting up the initial config file
-4.  Setting up a metadata file and creating a couple sample collections.
+4.  Setting up a collection file and creating a couple sample collections.
 
 The specific steps you will be taking:
 
@@ -19,7 +19,7 @@ The specific steps you will be taking:
 
 6.  Then, iteratively:
     1. use `python` to run the script
-    2. use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
+    2. use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
 
 Note that running a Python script is inherently a pretty technical process.  If you are unable or unwilling to learn the rudiments of using tools like python and git, you should probably strongly consider running PMM in [Docker](docker.md).  That will eliminate the Python and git installs from this process and make it as simple as it can be.
 
@@ -528,7 +528,7 @@ So let's run Plex Meta Manager and see this happen:
 
 {% include-markdown "./wt/wt-04b-default-after.md" %}
 
-### Setting up a metadata file and creating a sample collection
+### Setting up a collection file and creating a sample collection
 
 {% include-markdown "./wt/wt-05-local-file.md" %}
 

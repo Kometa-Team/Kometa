@@ -1,6 +1,6 @@
 # British Academy of Film and Television Arts Awards Collections
 
-The `bafta` Default Metadata File is used to create collections based on the British Academy of Film and Television Arts Awards.
+The `bafta` Default Collection File is used to create collections based on the British Academy of Film and Television Arts Awards.
 
 ![](../images/bafta.png)
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: bafta
 ```
 
@@ -66,7 +66,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: bafta
         template_variables:
           collection_mode: show_items #(1)!

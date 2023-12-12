@@ -29,7 +29,7 @@ Each showcased photo has been confirmed to be fully functional with Plex Meta Ma
     ```yml
     libraries:
       Movies:
-        overlay_path:
+        overlay_files:
         - pmm: resolution
         - pmm: audio_codec
         - pmm: video_format
@@ -62,7 +62,7 @@ Each showcased photo has been confirmed to be fully functional with Plex Meta Ma
     ```yml
     libraries:
       Movies:
-        overlay_path:
+        overlay_files:
         - pmm: ratings
           template_variables:
             rating1: critic
@@ -116,7 +116,7 @@ Each showcased photo has been confirmed to be fully functional with Plex Meta Ma
     ```yml
     libraries:
       Movies:
-        overlay_path:
+        overlay_files:
         - pmm: runtimes
           template_variables:
             text: ""

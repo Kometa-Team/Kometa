@@ -27,10 +27,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
 ```
 
@@ -57,8 +57,6 @@ Template Variables can be used to manipulate the file in various ways to slightl
 | `limit_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                              |
 | `location`                     | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes) |
 | `location_<<key>>`<sup>1</sup> | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../builders/flixpatrol.md#top-platform-attributes)   |
-| `in_the_last`                          | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `1`<br>**Values:** Any Number 1-30                                                                            |
-| `in_the_last_<<key>>`<sup>1</sup>      | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `in_the_last`<br>**Values:** Any Number 1-30                                                                  |
 | `weight_<<key>>`<sup>1</sup>   | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                   |
 | `addon_offset`                 | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater then 0                                                                                          |
 | `addon_position`               | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                     |
@@ -90,7 +88,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
         template_variables:
           location: united_states

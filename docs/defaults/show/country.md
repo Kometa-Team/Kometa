@@ -1,6 +1,6 @@
 # Country Collections
 
-The `country` Default Metadata File is used to dynamically create collections based on the countries available in your library.
+The `country` Default Collection File is used to dynamically create collections based on the countries available in your library.
 
 **This file has a Movie Library [Counterpart](../movie/country.md).**
 
@@ -25,7 +25,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: country
 ```
 
@@ -81,7 +81,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: country
         template_variables:
           use_other: false #(1)!

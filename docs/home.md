@@ -68,7 +68,7 @@ To get started with Plex Meta Manager, follow these simple steps:
 
 2. Once you have installed Plex Meta Manager, create your [Configuration File](config/configuration.md). This file contains important information such as URLs and credentials needed to connect to services like Plex and TMDb
 
-3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a [Metadata File](metadata/metadata.md) for each Library you want to work with. If you'd rather use some of our pre-made Metadata Files, take a look at the [Plex Meta Manager Defaults](#defaults-and-user-metadataoverlay-files)
+3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a [Collection File](config/data/collections.md) for each Library you want to work with. If you'd rather use some of our pre-made Collection Files, take a look at the [Plex Meta Manager Defaults](#defaults-and-user-metadataoverlay-files)
 
 4. Finally, check out the [Wiki](https://metamanager.wiki/), you'll find new and exciting ways to truly unlock the potential of your libraries.
 
@@ -78,7 +78,7 @@ If you're a beginner to the concepts of Python, Git and/or Plex Meta Manager and
 
    1. The [Local Walkthrough](pmm/install/guides/local.md) covers installing Plex Meta Manager natively [not in docker] on your local computer or a remote server.
    2. The [Docker Walkthrough](pmm/install/guides/docker.md) covers installing Plex Meta Manager via Docker.
-   3. The [unRAID Walkthrough](pmm/install/guides/unraid.md) gets you started configuring Plex Meta Manager in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](pmm/install/guides/docker.md) first on your computer to gain that understanding.
+   3. The [unRAID Walkthrough](pmm/install/guides/unraid.md) gets you started configuring Plex Meta Manager in UNRaid.  It doesn't go through the same steps with regard to creating the config file and collection file, so you may want to go through the [Docker Walkthrough](pmm/install/guides/docker.md) first on your computer to gain that understanding.
 
 ## Example Usage
 

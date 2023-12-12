@@ -351,7 +351,7 @@ Perform a libraries run immediately to run only the pre-defined libraries, bypas
 
 ### Run Metadata Files
 
-Perform a metadata files run immediately to run only the pre-defined metadata files, bypassing the time to run flag.
+Perform a collection files run immediately to run only the pre-defined collection files, bypassing the time to run flag.
 
 ???+ warning
      
@@ -364,7 +364,7 @@ Perform a metadata files run immediately to run only the pre-defined metadata fi
 | Available Values | Pipe-separated list of Metadata Filenames to run        |
 
 
-* This works for all different metadata paths i.e. `pmm`, `git`, `url`, `file`, or `repo`.
+* This works for all different Collection Files i.e. `pmm`, `git`, `url`, `file`, or `repo`.
 
 !!! example
     === "Local Environment"

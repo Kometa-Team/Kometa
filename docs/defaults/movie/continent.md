@@ -1,6 +1,6 @@
 # Continent Collections
 
-The `continent` Default Metadata File is used to dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into seven continents.
+The `continent` Default Collection File is used to dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into seven continents.
 
 **This file has a Show Library [Counterpart](../show/continent.md).**
 
@@ -25,7 +25,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: continent
 ```
 
@@ -78,7 +78,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: continent
         template_variables:
           use_other: false #(1)!
