@@ -30,10 +30,10 @@ In this example we have a separate Tautulli instance for TV.
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
   TV Shows:
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
     tautulli:
       url: http://192.168.1.14:8659

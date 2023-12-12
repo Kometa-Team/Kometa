@@ -5,7 +5,7 @@ This article will walk you through getting Plex Meta Manager set up and running 
 1. Installing Docker
 2. Retrieving the image
 3. Setting up the initial config file
-4. Setting up a metadata file and creating a couple sample collections
+4. Setting up a collection file and creating a couple sample collections
 5. Creating a docker container that will keep running in the background
 
 The specific steps you will be taking:
@@ -18,7 +18,7 @@ The specific steps you will be taking:
     - Plex URL and Token
 5. Then, iteratively:
     - use `docker` to run the image
-    - use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
+    - use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
 
 Note that running a Docker container is inherently a pretty technical process.  If you are unable or unwilling to learn the rudiments of using Docker, this may not be the tool for you.
 
@@ -370,7 +370,7 @@ So let's run Plex Meta Manager and see this happen:
 %}
 
 
-### Setting up a metadata file and creating a few sample collections
+### Setting up a collection file and creating a few sample collections
    
 {%
    include-markdown "./wt/wt-05-local-file.md"

@@ -136,9 +136,10 @@ nav:
       - Overview: config/configuration.md
       - "STRUCTURE":
         - Library Attributes: config/libraries.md
-        - "Metadata Files": metadata/metadata.md
-        - Overlay Files: metadata/overlay.md
-        - Playlist Files: metadata/playlist.md
+        - "Collection Files": config/files.md
+        - Overlay Files: config/files.md
+        - Metadata Files: config/files.md
+        - Playlist Files: config/files.md
         - Path Types: config/paths.md
         - Library Operations: config/operations.md
         - Settings: config/settings.md
@@ -261,20 +262,32 @@ nav:
             - Direct Play Only: defaults/overlays/direct_play.md
       - PLAYLIST DEFAULTS:
         - Playlists: defaults/playlist.md
-  - METADATA FILES:
-      - Overview: metadata/metadata.md
-      - Templates: builders/templates.md
-      - Filters: builders/filters.md
-      - "EDITING METADATA":
-        - Metadata Edits:
-          - Movie Metadata Edits: metadata/metadata/movie.md
-          - Show Metadata Edits: metadata/metadata/show.md
-          - Music Metadata: metadata/metadata/music.md
+  - FILES & BUILDERS:
+      - "FILES":
+        - Collection Files: config/data/collections.md
+        - Overlay Files: config/data/overlays.md
+        - Playlist Files: config/data/playlists.md
+        - Metadata Files:
+          - Editing Movie Metadata: config/data/metadata/movie.md
+          - Editing Show Metadata: config/data/metadata/show.md
+          - Editing Music Metadata: config/data/metadata/music.md
+      - "FILE ATTRIBUTES":
+        - Templates: builders/templates.md
+        - Filters: builders/filters.md
+      - SETTINGS & UPDATES:
+        - Overview: metadata/update.md
+        - Settings:
+          - Definition Settings: builders/details/definition.md
+          - Schedule Settings: builders/details/schedule.md
+          - Radarr/Sonarr Settings: builders/details/arr.md
+        - Updates:
+          - Collection/Playlist Metadata Updates: builders/details/metadata.md
+          - Item Metadata Updates: builders/details/item_metadata.md
       - "BUILDERS":
-        - Overview: metadata/builders.md
+        - Overview: builders/overview.md
         - "Plex Builders":
           - Overview: builders/overview/plex.md
-          - Plex Builders:
+          - Dumb Builders:
             - Overview: builders/plex.md
             - Plex All: builders/plex/#plex-all
             - Plex Watchlist: builders/plex/#plex-watchlist
@@ -321,6 +334,8 @@ nav:
             - IMDb Chart: builders/imdb/#imdb-chart
             - IMDb List: builders/imdb/#imdb-list
             - IMDb Watchlist: builders/imdb/#imdb-watchlist
+            - IMDb Award: builders/imdb/#imdb-award
+            - IMDb Search: builders/imdb/#imdb-search
           - Trakt Builders:
             - Overview: builders/trakt.md
             - Trakt List: builders/trakt/#trakt-list
@@ -389,51 +404,42 @@ nav:
             - MyAnimeList ID: builders/myanimelist/#myanimelist-id
             - MyAnimeList UserList: builders/myanimelist/#myanimelist-userlist
             - MyAnimeList Seasonal: builders/myanimelist/#myanimelist-seasonal
-      - DYNAMIC COLLECTIONS:
-        - Overview: metadata/dynamic.md
-        - TMDb Dynamic Collections:
-          - TMDb Collection: metadata/dynamic_types/#tmdb-collection
-          - TMDb Popular People: metadata/dynamic_types/#tmdb-popular-people
-          - Original Language: metadata/dynamic_types/#original-language
-          - Origin Country: metadata/dynamic_types/#origin-country
-        - Trakt  Dynamic Collections:
-          - Trakt User Lists: metadata/dynamic_types/#trakt-user-lists
-          - Trakt Liked Lists: metadata/dynamic_types/#trakt-liked-lists
-          - Trakt People Lists: metadata/dynamic_types/#trakt-people-lists
-        - Plex Dynamic Collections:
-          - Actor: metadata/dynamic_types/#actor
-          - Director: metadata/dynamic_types/#director
-          - Writer: metadata/dynamic_types/#writer
-          - Producer: metadata/dynamic_types/#producer
-          - Genre: metadata/dynamic_types/#genre
-          - Album Genre: metadata/dynamic_types/#album-genre
-          - Content Rating: metadata/dynamic_types/#content-rating
-          - Year: metadata/dynamic_types/#year
-          - Decade: metadata/dynamic_types/#decade
-          - Country: metadata/dynamic_types/#country
-          - Resolution: metadata/dynamic_types/#resolution
-          - Subtitle Language: metadata/dynamic_types/#subtitle-language
-          - Audio Language: metadata/dynamic_types/#audio-language
-          - Studio: metadata/dynamic_types/#studio
-          - Edition: metadata/dynamic_types/#edition
-          - Network: metadata/dynamic_types/#network
-          - Mood: metadata/dynamic_types/#mood
-          - Album Mood: metadata/dynamic_types/#album-mood
-          - Track Mood: metadata/dynamic_types/#track-mood
-          - Style: metadata/dynamic_types/#style
-          - Album Style: metadata/dynamic_types/#album-style
-        - Other Dynamic Collections:
-          - Number: metadata/dynamic_types/#number
-          - Custom: metadata/dynamic_types/#custom
-      - SETTINGS & UPDATES:
-        - Overview: metadata/update.md
-        - Settings:
-          - Definition Settings: builders/details/definition.md
-          - Schedule Settings: builders/details/schedule.md
-          - Radarr/Sonarr Definition Settings: builders/details/arr.md
-        - Updates:
-          - Collection/Playlist Metadata Updates: builders/details/metadata.md
-          - Item Metadata Updates: builders/details/item_metadata.md
+        - "Dynamic Collections":
+          - Overview: builders/dynamic.md
+          - TMDb Dynamic Collections:
+            - TMDb Collection: builders/dynamic_types/#tmdb-collection
+            - TMDb Popular People: builders/dynamic_types/#tmdb-popular-people
+            - Original Language: builders/dynamic_types/#original-language
+            - Origin Country: builders/dynamic_types/#origin-country
+          - Trakt  Dynamic Collections:
+            - Trakt User Lists: builders/dynamic_types/#trakt-user-lists
+            - Trakt Liked Lists: builders/dynamic_types/#trakt-liked-lists
+            - Trakt People Lists: builders/dynamic_types/#trakt-people-lists
+          - Plex Dynamic Collections:
+            - Actor: builders/dynamic_types/#actor
+            - Director: builders/dynamic_types/#director
+            - Writer: builders/dynamic_types/#writer
+            - Producer: builders/dynamic_types/#producer
+            - Genre: builders/dynamic_types/#genre
+            - Album Genre: builders/dynamic_types/#album-genre
+            - Content Rating: builders/dynamic_types/#content-rating
+            - Year: builders/dynamic_types/#year
+            - Decade: builders/dynamic_types/#decade
+            - Country: builders/dynamic_types/#country
+            - Resolution: builders/dynamic_types/#resolution
+            - Subtitle Language: builders/dynamic_types/#subtitle-language
+            - Audio Language: builders/dynamic_types/#audio-language
+            - Studio: builders/dynamic_types/#studio
+            - Edition: builders/dynamic_types/#edition
+            - Network: builders/dynamic_types/#network
+            - Mood: builders/dynamic_types/#mood
+            - Album Mood: builders/dynamic_types/#album-mood
+            - Track Mood: builders/dynamic_types/#track-mood
+            - Style: builders/dynamic_types/#style
+            - Album Style: builders/dynamic_types/#album-style
+          - Other Dynamic Collections:
+            - Number: builders/dynamic_types/#number
+            - Custom: builders/dynamic_types/#custom
   - MISCELLANEOUS:
     - EXPLANATION GUIDES:
       - Plex Ratings Explained: pmm/essentials/ratings.md

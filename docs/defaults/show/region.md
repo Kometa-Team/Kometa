@@ -1,6 +1,6 @@
 # Region Collections
 
-The `region` Default Metadata File is used to dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into 39 countries or collections of countries. Some care has been taken to ensure all countries are included, and the groupings won't fit well with everyone's collections.  Western and Southern Europe, Oceania, and North America could be useful groupings for those libraries with more of an Asian focus, for instance. Please see the comments in the yml below where a decision point might be seen as controversial. You are welcome to edit this to fit your own audience's needs.
+The `region` Default Collection File is used to dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into 39 countries or collections of countries. Some care has been taken to ensure all countries are included, and the groupings won't fit well with everyone's collections.  Western and Southern Europe, Oceania, and North America could be useful groupings for those libraries with more of an Asian focus, for instance. Please see the comments in the yml below where a decision point might be seen as controversial. You are welcome to edit this to fit your own audience's needs.
 
 **This file has a Movie Library [Counterpart](../movie/region.md).**
 
@@ -25,7 +25,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: region
 ```
 
@@ -81,7 +81,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: region
         template_variables:
           use_other: false #(1)!

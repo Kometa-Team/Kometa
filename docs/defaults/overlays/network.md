@@ -15,7 +15,7 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: network
       - pmm: network
         template_variables:
@@ -52,7 +52,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: network
         template_variables:
           vertical_offset: 390

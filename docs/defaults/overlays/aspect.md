@@ -28,10 +28,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: aspect
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: aspect
       - pmm: aspect
         template_variables:
@@ -73,13 +73,13 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: aspect
         template_variables:
           text_1.33: "4:9"
           text_1.77: "16:9"
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: aspect
         template_variables:
           text_1.33: "4:9"

@@ -1,4 +1,4 @@
-# Separators Default Metadata Files
+# Separators Default Collection Files
 
 Separators are a special form of collections which are used similar to index cards in a library, they help to "split up" collections by identifying categories (such as "Studio Collections" and "Holiday Collections").
 
@@ -80,7 +80,7 @@ And at the file-level
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
         template_variables:
           use_separator: false
@@ -135,7 +135,7 @@ And at the file-level
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
         template_variables:
           sep_style: stb

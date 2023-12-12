@@ -1,8 +1,8 @@
 # Playlist Files Attributes
 
-As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](../metadata/playlist.md) to work.
+As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](data/playlists.md) to work.
 
-Within the [Config File](configuration.md, the `playlist_files` attribute specifies the [path type](paths.md) and path of the [Playlist Files](../metadata/playlist.md) that the user wants Plex Meta Manager to act on.
+Within the [Config File](configuration.md, the `playlist_files` attribute specifies the [path type](paths.md) and path of the [Playlist Files](data/playlists.md) that the user wants Plex Meta Manager to act on.
 
 **The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the [Config File](configuration.md.**
 
@@ -19,7 +19,7 @@ This example is an advanced version of the playlist mappings with accompanying l
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
       - pmm: imdb
       - pmm: studio
@@ -29,11 +29,11 @@ libraries:
       mass_critic_rating_update: tmdb
       split_duplicates: true
   TV Shows:
-    metadata_path:
+    collection_files:
       - file: config/TV Shows.yml
       - pmm: tmdb
       - pmm: network
-    overlay_path:
+    overlay_files:
       - remove_overlays: false
       - file: config/Overlays.yml
 playlist_files:

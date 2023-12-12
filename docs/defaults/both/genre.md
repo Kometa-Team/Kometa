@@ -1,6 +1,6 @@
 # Genre Collections
 
-The `genre` Default Metadata File is used to dynamically create collections based on the genres available in your library.
+The `genre` Default Collection File is used to dynamically create collections based on the genres available in your library.
 
 This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci-Fi & Fantasy") into one ("Science Fiction")
 
@@ -24,10 +24,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: genre
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: genre
 ```
 
@@ -71,7 +71,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: genre
         template_variables:
           sep_style: red #(1)!

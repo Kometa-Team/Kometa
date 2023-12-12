@@ -22,7 +22,7 @@ The below YAML in your config.yml will create the overlays:
 
 ```yaml
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           rating1: critic
@@ -36,7 +36,7 @@ The below YAML in your config.yml will create the overlays:
       mass_audience_rating_update: mdb_tomatoesaudience
       mass_user_rating_update: tmdb
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           rating1: critic
@@ -122,7 +122,7 @@ The below is an example config.yml extract with some Template Variables added in
 
 ```yaml
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           rating1: critic
@@ -146,7 +146,7 @@ The below is an example config.yml extract with some Template Variables added in
       mass_audience_rating_update: mdb_tomatoesaudience
       mass_user_rating_update: tmdb
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           rating1: critic

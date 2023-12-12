@@ -1,6 +1,6 @@
 # Aspect Ratio Collections
 
-The `aspect` Default Metadata File is used to create collections with items that are based on their aspect ratio.
+The `aspect` Default Collection File is used to create collections with items that are based on their aspect ratio.
 
 ![](../images/aspect.png)
 
@@ -29,10 +29,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: aspect
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: aspect
 ```
 
@@ -75,7 +75,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: aspect
         template_variables:
           use_1.65: false #(1)!
