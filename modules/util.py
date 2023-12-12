@@ -852,7 +852,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or \
             (options is not None and translation is None and str(value).lower() not in options):
-        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+        message = f"{display} {value} must be in [{', '.join([str(o) for o in options])}]"
     else:
         return translation[str(value).lower()] if translation is not None else value
 

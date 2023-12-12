@@ -1500,6 +1500,42 @@ class CollectionBuilder:
         elif method_name == "imdb_watchlist":
             for imdb_user in self.config.IMDb.validate_imdb_watchlists(self.Type, method_data, self.language):
                 self.builders.append((method_name, imdb_user))
+        elif method_name == "imdb_award":
+            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+                dict_methods = {dm.lower(): dm for dm in dict_data}
+                event_id = util.parse(self.Type, "event_id", dict_data, parent=method_name, methods=dict_methods, regex=(r"(ev\d+)", "ev0000003"))
+                year_options = self.config.IMDb.get_event_years(event_id)
+                if not year_options:
+                    raise Failed(f"{self.Type} Error: imdb_award event_id attribute: No event found at {imdb.base_url}/event/{event_id}")
+                event_year = util.parse(self.Type, "event_year", dict_data, parent=method_name, methods=dict_methods, options=year_options)
+                try:
+                    award_filters = util.parse(self.Type, "award_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
+                except Failed:
+                    award_filters = []
+                try:
+                    category_filters = util.parse(self.Type, "category_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
+                except Failed:
+                    category_filters = []
+                final_category = []
+                final_awards = []
+                if award_filters or category_filters:
+                    award_names, category_names = self.config.IMDb.get_award_names(event_id, event_year)
+                    lower_award = {a.lower(): a for a in award_names if a}
+                    for award_filter in award_filters:
+                        if award_filter in lower_award:
+                            final_awards.append(lower_award[award_filter])
+                        else:
+                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in lower_award.items()])}]")
+                    lower_category = {c.lower(): c for c in category_names if c}
+                    for category_filter in category_filters:
+                        if category_filter in lower_category:
+                            final_category.append(lower_category[category_filter])
+                        else:
+                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in lower_category.items()])}]")
+                self.builders.append((method_name, {
+                    "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
+                    "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
+                }))
         elif method_name == "imdb_search":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
