@@ -1,6 +1,6 @@
 # IMDb Charts Collections
 
-The `imdb` Default Metadata File is used to create collections based on IMDb Charts.
+The `imdb` Default Collection File is used to create collections based on IMDb Charts.
 
 ![](../images/imdb.png)
 
@@ -25,10 +25,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: imdb
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: imdb
 ```
 
@@ -63,7 +63,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: imdb
         template_variables:
           use_lowest: false #(1)!

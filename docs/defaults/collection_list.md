@@ -2,7 +2,7 @@
 
 These files can generally be used on both Movie and Show library-types, or are part of a category of collection (such as Award Shows.)
 
-These collections are applied by calling the below paths into the `metadata_path` section of your config.yml
+These collections are applied by calling the below paths into the `collection_files` section of your config.yml
 
 ### Award Collections
 

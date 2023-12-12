@@ -15,10 +15,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: runtimes
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: runtimes
       - pmm: runtimes
         template_variables:
@@ -56,7 +56,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: runtimes
         template_variables:
           builder_level: episode

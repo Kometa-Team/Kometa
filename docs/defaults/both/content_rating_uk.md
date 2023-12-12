@@ -1,6 +1,6 @@
 # UK Content Rating Collections
 
-The `content_rating_uk` Default Metadata File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_uk` Default Collection File is used to dynamically create collections based on the content ratings available in your library.
 
 If you do not use the UK-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
 
@@ -27,10 +27,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: content_rating_uk
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: content_rating_uk
 ```
 
@@ -77,7 +77,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: content_rating_cs
         template_variables:
           sep_style: stb #(1)!

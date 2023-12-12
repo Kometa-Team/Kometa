@@ -24,30 +24,30 @@ Now scroll up and look at the top section:
 
 libraries:                       # This is called out once within the config.yml file
   Movies:                        # Each library must match the Plex library name
-    metadata_path:
+    collection_files:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
+    overlay_files:
       - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
+    overlay_files:
       - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
-    metadata_path:
+    collection_files:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: anilist             # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
   Music:
-    metadata_path:
+    collection_files:
       - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
 playlist_files:
   - pmm: playlist                # This is a file within PMM's defaults folder
@@ -63,7 +63,7 @@ The top bit of your config file should now looke like this:
 ```yaml
 libraries:
   Movies-NOSUCHLIBRARY:                         ## <<< CHANGE THIS LINE
-    metadata_path:
+    collection_files:
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git

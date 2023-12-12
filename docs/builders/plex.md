@@ -1,8 +1,10 @@
-# Plex Builders
+# Dumb Builders
 
 This builder finds its items by using the features of Plex.
 
 No configuration is required for these builders.
+
+The results of these builders are static and require PMM to re-run in order to update.
 
 | Attribute                                     | Description                                                                 | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
 |:----------------------------------------------|:----------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|

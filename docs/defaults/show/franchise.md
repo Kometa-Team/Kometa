@@ -1,8 +1,8 @@
 # Franchise Collections
 
-The `franchise` Default Metadata File is used to create collections based on popular TV Show franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
+The `franchise` Default Collection File is used to create collections based on popular TV Show franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
-Unlike most Default Metadata Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Pretty Little Liars" franchise collection will appear next to the "Pretty Little Liars" show in your library so that you have easy access to the other shows in the franchise.
+Unlike most Default Collection Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Pretty Little Liars" franchise collection will appear next to the "Pretty Little Liars" show in your library so that you have easy access to the other shows in the franchise.
 
 **This file has a Movie Library [Counterpart](../movie/franchise.md).**
 
@@ -25,7 +25,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: franchise
 ```
 
@@ -87,7 +87,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: franchise
         template_variables:
           append_data:

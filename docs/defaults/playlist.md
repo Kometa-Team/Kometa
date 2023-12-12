@@ -1,6 +1,6 @@
 # Playlists
 
-The `playlist` Default Metadata File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
+The `playlist` Default Collection File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
 
 This Default file requires [Trakt Authentication](../config/trakt.md)
 

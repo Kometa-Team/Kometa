@@ -28,7 +28,7 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: content_rating_us_movie
 ```
 
@@ -62,7 +62,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: content_rating_us_movie
         template_variables:
           color: false

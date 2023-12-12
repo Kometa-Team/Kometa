@@ -1,6 +1,6 @@
 # Resolution Collections
 
-The `resolution` Default Metadata File is used to dynamically create collections based on the resolutions available in your library.
+The `resolution` Default Collection File is used to dynamically create collections based on the resolutions available in your library.
 
 ![](../images/resolution.png)
 
@@ -30,10 +30,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: resolution
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: resolution
 ```
 
@@ -81,7 +81,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: resolution
         template_variables:
           sep_style: green #(1)!

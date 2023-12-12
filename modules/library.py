@@ -24,6 +24,7 @@ class Library(ABC):
         self.image_styles = {}
         self.collection_images = {}
         self.queue_current = 0
+        self.collection_files = []
         self.metadata_files = []
         self.overlay_files = []
         self.images_files = []
@@ -41,9 +42,10 @@ class Library(ABC):
         self.config = config
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
-        self.metadata_path = params["metadata_path"]
-        self.overlay_path = params["overlay_path"]
-        self.image_sets = params["image_sets"]
+        self.scanned_collection_files = params["collection_files"]
+        self.scanned_metadata_files = params["metadata_files"]
+        self.scanned_overlay_files = params["overlay_files"]
+        self.scanned_image_files = params["image_files"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
@@ -138,13 +140,24 @@ class Library(ABC):
             logger.info("")
             logger.info(output)
 
-    def scan_files(self, operations_only, overlays_only, collection_only):
-        if not operations_only and not overlays_only:
-            for file_type, metadata_file, temp_vars, asset_directory in self.metadata_path:
+    def scan_files(self, operations_only, overlays_only, collection_only, metadata_only):
+        if not operations_only and not overlays_only and not metadata_only:
+            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_collection_files:
                 try:
-                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory)
+                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
+                    self.collection_files.append(meta_obj)
+                except Failed as e:
+                    logger.error(e)
+                    logger.info("Collection File Failed To Load")
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Collection File")
+        if not operations_only and not overlays_only and not collection_only:
+            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_metadata_files:
+                try:
+                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "metadata")
                     if meta_obj.metadata:
                         self.metadatas.extend([m for m in meta_obj.metadata])
                     self.metadata_files.append(meta_obj)
@@ -154,8 +167,8 @@ class Library(ABC):
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Metadata File")
-        if not operations_only and not collection_only:
-            for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
+        if not operations_only and not collection_only and not metadata_only:
+            for file_type, overlay_file, temp_vars, asset_directory in self.scanned_overlay_files:
                 try:
                     overlay_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory, self.queue_current)
                     self.overlay_files.append(overlay_obj)
@@ -165,14 +178,17 @@ class Library(ABC):
                 except Failed as e:
                     logger.error(e)
                     logger.info("Overlay File Failed To Load")
-        if not operations_only and not overlays_only:
-            for file_type, images_file, temp_vars, asset_directory in self.image_sets:
+        if not operations_only and not overlays_only and not collection_only:
+            for file_type, images_file, temp_vars, asset_directory in self.scanned_image_files:
                 try:
-                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, image_set_file=True)
+                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, "image")
                     self.images_files.append(images_obj)
                 except Failed as e:
                     logger.error(e)
-                    logger.info("Images File Failed To Load")
+                    logger.info("Image File Failed To Load")
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Image File")
 
     def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False

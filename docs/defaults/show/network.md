@@ -1,6 +1,6 @@
 # Network Collections
 
-The `network` Default Metadata File is used to dynamically create collections based on the networks available in your library.
+The `network` Default Collection File is used to dynamically create collections based on the networks available in your library.
 
 ![](../images/network.png)
 
@@ -22,7 +22,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: network
 ```
 
@@ -68,7 +68,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: network
         template_variables:
           append_exclude:

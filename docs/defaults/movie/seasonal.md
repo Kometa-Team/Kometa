@@ -1,6 +1,6 @@
 # Seasonal Collections
 
-The `seasonal` Default Metadata File is used to dynamically create seasonal collections based on holidays .
+The `seasonal` Default Collection File is used to dynamically create seasonal collections based on holidays .
 
 ![](../images/seasonal.png)
 
@@ -40,7 +40,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: seasonal
 ```
 
@@ -93,7 +93,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: seasonal
         template_variables:
           use_independence: false #(1)!

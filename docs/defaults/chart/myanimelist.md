@@ -1,6 +1,6 @@
 # MyAnimeList Charts Collections
 
-The `myanimelist` Default Metadata File is used to create collections based on MyAnimeList Charts.
+The `myanimelist` Default Collection File is used to create collections based on MyAnimeList Charts.
 
 ![](../images/myanimelist.png)
 
@@ -25,10 +25,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: myanimelist
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: myanimelist
 ```
 
@@ -65,7 +65,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: myanimelist
         template_variables:
           use_season: false #(1)!

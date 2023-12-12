@@ -79,6 +79,9 @@ class DataFile:
         self.asset_directory = asset_directory
         self.data_type = ""
         self.templates = {}
+        filename = self.get_file_name()
+        if config.requested_files and filename not in config.requested_files:
+            raise NotScheduled(filename)
 
     def get_file_name(self):
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
@@ -585,13 +588,10 @@ class DataFile:
                     self.templates.update({k: (v, temp_vars) for k, v in temp_data["templates"].items() if k not in self.templates})
 
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, image_set_file=False):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style):
         super().__init__(config, file_type, path, temp_vars, asset_directory)
-        self.image_set_file = image_set_file
-        self.type_str = "Images" if self.image_set_file else "Metadata"
-        metadata_name = self.get_file_name()
-        if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
-            raise NotScheduled(metadata_name)
+        self.file_style = file_style
+        self.type_str = f"{file_style.capitalize()} File"
         self.data_type = "Collection"
         self.library = library
         self.metadata = None
@@ -602,9 +602,9 @@ class MetadataFile(DataFile):
         self.update_episodes = True
         self.set_collections = {}
         self.style_priority = []
-        if image_set_file:
+        if self.file_style == "image":
             logger.info("")
-            logger.separator(f"Loading Images {file_type}: {path}")
+            logger.separator(f"Loading Image File {file_type}: {path}")
             logger.info("")
             self.metadata = {}
             if self.type == "PMM Default":
@@ -748,13 +748,13 @@ class MetadataFile(DataFile):
             if not self.metadata:
                 raise Failed(f"{self.type_str} Error: No metadata items added")
             logger.info("")
-            logger.info(f"Images File Loaded Successfully")
+            logger.info("Images File Loaded Successfully")
         elif file_type == "Data":
             self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
         else:
             logger.info("")
-            logger.separator(f"Loading Metadata {file_type}: {path}")
+            logger.separator(f"Loading {self.type_str} {file_type}: {path}")
             logger.info("")
             data = self.load_file(self.type, self.path)
             self.metadata = get_dict("metadata", data, library.metadatas)
@@ -1246,10 +1246,12 @@ class MetadataFile(DataFile):
                     logger.error(f"{map_name} Dynamic Collection Failed")
                     continue
 
-            if not self.metadata and not self.collections:
-                raise Failed("YAML Error: metadata, collections, or dynamic_collections attribute is required")
+            if self.file_style == "metadata" and not self.metadata:
+                raise Failed("YAML Error: metadata attribute is required")
+            if self.file_style == "collection" and not self.collections:
+                raise Failed("YAML Error: collections or dynamic_collections attribute is required")
             logger.info("")
-            logger.info(f"Metadata File Loaded Successfully")
+            logger.info(f"{self.type_str} Loaded Successfully")
 
     def get_style_data(self, style_file, section_key, items_data=None):
         style_id = ""
@@ -2098,7 +2100,7 @@ class PlaylistFile(DataFile):
         self.external_templates(data)
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
-        logger.info(f"Playlist File Loaded Successfully")
+        logger.info("Playlist File Loaded Successfully")
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, queue_current):

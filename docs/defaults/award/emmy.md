@@ -1,6 +1,6 @@
 # Emmy Awards Collections
 
-The `emmy` Default Metadata File is used to create collections based on the Emmy Awards.
+The `emmy` Default Collection File is used to create collections based on the Emmy Awards.
 
 ![](../images/emmy.png)
 
@@ -21,10 +21,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: emmy
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: emmy
 ```
 
@@ -66,7 +66,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: emmy
         template_variables:
           collection_mode: show_items #(1)!

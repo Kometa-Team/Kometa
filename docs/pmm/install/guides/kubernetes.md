@@ -121,10 +121,10 @@ data:
   config.yml: |
     libraries:
       Movies:
-        metadata_path:
+        collection_files:
           - file: config/movies.yaml
       TV Shows:
-        metadata_path:
+        collection_files:
           - file: config/tv.yaml
     settings:
       cache: true

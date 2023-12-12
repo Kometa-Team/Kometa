@@ -15,7 +15,7 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: episode_info
 ```
 
@@ -49,7 +49,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: episode_info
         template_variables:
           font_color: "#FFFFFF99"

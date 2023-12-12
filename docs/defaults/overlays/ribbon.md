@@ -38,10 +38,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
 ```
 
@@ -75,7 +75,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
         template_variables:
           style: black

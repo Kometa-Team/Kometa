@@ -1,6 +1,6 @@
 # Year Collections
 
-The `year` Default Metadata File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
+The `year` Default Collection File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
 
 ![](../images/year.png)
 
@@ -22,10 +22,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: year
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: year
 ```
 
@@ -65,7 +65,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: year
         template_variables:
           sep_style: purple #(1)!

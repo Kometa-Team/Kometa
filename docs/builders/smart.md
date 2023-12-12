@@ -2,6 +2,8 @@
 
 Smart Builders allow Plex Meta Manager to create Smart Collections in two different ways.
 
+The results of these builders are dynamic and do not require PMM to re-run in order to update, instead they will update automatically as the data within your Plex Library updates (i.e. if new media is added)
+
 ???+ note
     
     Smart Builders do not currently work with Playlists

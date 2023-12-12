@@ -4,7 +4,7 @@ This article will walk you through getting Plex-Meta-Manager [PMM] set up and ru
 1. Installing Plex Meta Manager unRAID app
 2. Retrieving the image
 3. Setting up the initial config file
-4. Setting up a metadata file and creating a couple sample collections
+4. Setting up a collection file and creating a couple sample collections
 5. Creating a docker container that will keep running in the background
 
 The specific steps you will be taking:
@@ -20,7 +20,7 @@ The specific steps you will be taking:
 5. Then, iteratively:
 
     1. use `unRAID >_Console` to run the commmands
-    2. use a text editor to modify a couple of text files until you have a working config file and a single working metadata file.
+    2. use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
 
 If the idea of editing YAML files by hand is daunting, this may not be the tool for you.  All the configuration of PMM is done via YAML text files, so if you are unable or unwilling to learn how those work, you should stop here.
 
@@ -190,7 +190,7 @@ So let's run the script and see this happen:
    include-markdown "./wt/wt-04b-default-after.md"
 %}
 
-### Setting up a metadata file and creating a sample collection.
+### Setting up a collection file and creating a sample collection.
 
 {%
    include-markdown "./wt/wt-05-local-file.md"

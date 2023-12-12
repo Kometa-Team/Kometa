@@ -343,7 +343,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
         schedule: weekly(monday)
         operations:
           split_duplicates: true
-        overlay_path:
+        overlay_files:
           - pmm: resolution
     ```
 

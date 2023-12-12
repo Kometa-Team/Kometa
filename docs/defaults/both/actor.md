@@ -1,6 +1,6 @@
 # Actor Collections
 
-The `actor` Default Metadata File is used to dynamically create collections based on the most popular actors/actresses in your library.
+The `actor` Default Collection File is used to dynamically create collections based on the most popular actors/actresses in your library.
 
 ## Requirements & Recommendations
 
@@ -24,10 +24,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: actor
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: actor
 ```
 
@@ -73,7 +73,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: actor
         template_variables:
           data:

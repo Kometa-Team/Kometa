@@ -6,7 +6,7 @@ It should be noted that when an overlay has &#10071; for a season or episode, it
 
 In the scenario where there is missing data such as age ratings for episodes, then generally the highest-level data available will be applied at the lower level (i.e. a Show's CommonSense age rating would apply to all episodes).
 
-These overlays are applied by calling the below paths into the `overlay_path` [section](../config/libraries.md#overlay-path) of your config.yml
+These overlays are applied by calling the below paths into the `overlay_files` [section](../config/libraries.md#overlay-path) of your config.yml
 
 ### Chart Overlays
 

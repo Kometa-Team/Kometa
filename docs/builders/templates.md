@@ -1,6 +1,6 @@
 # Templates
 
-Collection, Playlist, Metadata, and Overlay Definitions often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
+Collection, Playlist, Metadata, and Overlay Files often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
 
 For example, an actor collection might look like this:
 
@@ -90,7 +90,7 @@ The names of template variables that you define are arbitrary. In the example ab
 
 To use a template with a collection definition you use the `template` attribute. The only required attribute under `template` is `name` which must correspond exactly to the template mapping name. Any other attributes under `template` are considered template variables whose names correspond exactly with the template variable name surrounded by `<<` and `>>` in the templates. These template variables will replace any part of any value that contains the template variable name surrounded by `<<` and `>>` in the template with the specified template variable's value.
 
-Here's the full example Actor template and two different ways to use it, as it would appear in a metadata file.
+Here's the full example Actor template and two different ways to use it, as it would appear in a collection file.
 
 ```yaml
 templates:

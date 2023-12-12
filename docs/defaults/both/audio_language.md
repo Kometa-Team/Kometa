@@ -1,6 +1,6 @@
 # Audio Language Collections
 
-The `audio_language` Default Metadata File is used to dynamically create collections based on the audio languages available in your library.
+The `audio_language` Default Collection File is used to dynamically create collections based on the audio languages available in your library.
 
 ![](../images/audio_language.png)
 
@@ -23,10 +23,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: audio_language
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: audio_language
 ```
 
@@ -70,7 +70,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: audio_language
         template_variables:
           use_other: false #(1)!

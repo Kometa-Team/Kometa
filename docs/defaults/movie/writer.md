@@ -1,6 +1,6 @@
 # Writer Collections
 
-The `writer` Default Metadata File is used to dynamically create collections based on the most popular writers in your library.
+The `writer` Default Collection File is used to dynamically create collections based on the most popular writers in your library.
 
 ## Requirements & Recommendations
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: writer
 ```
 
@@ -72,7 +72,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: writer
         template_variables:
           data:

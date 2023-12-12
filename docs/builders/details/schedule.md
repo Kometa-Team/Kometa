@@ -29,14 +29,14 @@ The scheduling options are:
 
 ## Examples 
 
-Below is an example of a library which has been scheduled to run every Sunday. This will schedule everything within the library (in this case Metadata files and Operations) for the same day.
+Below is an example of a library which has been scheduled to run every Sunday. This will schedule everything within the library (in this case Collection Files and Operations) for the same day.
 
 
 ```yaml
 libraries:
   Movies:
     schedule: weekly(sunday)
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
       - pmm: imdb
       - pmm: studio
@@ -46,14 +46,14 @@ libraries:
       mass_critic_rating_update: tmdb
 ```
 
-Metadata Files, Playlist Files, and Overlay Files can all be individually scheduled, as seen below where different files are scheduled to run on each day of the week: 
+Collection Files, Playlist Files, and Overlay Files can all be individually scheduled, as seen below where different files are scheduled to run on each day of the week: 
 
 **Note: Overlay Files cannot be individually Scheduled, all Overlay Files must be scheduled for the same period.**
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
         schedule: weekly(monday)
       - pmm: imdb
@@ -64,7 +64,7 @@ libraries:
         schedule: weekly(thursday)
       - pmm: actor
         schedule: weekly(friday)
-    overlay_path:
+    overlay_files:
       - schedule: weekly(saturday)
       - pmm: audio_codec
       - pmm: resolution
@@ -104,7 +104,7 @@ Whilst it isn't possible to schedule individual Operations, you can create addit
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
   Movies Operations (Monday):       # Name doesn't matter
     library_name: Movies            # Must match your library name in Plex

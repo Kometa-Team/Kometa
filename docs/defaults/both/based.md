@@ -1,6 +1,6 @@
 # Based On... Collections
 
-The `based` Default Metadata File is used to create collections with items that are based on or inspired by various media outlets (such as Books or Video Games).
+The `based` Default Collection File is used to create collections with items that are based on or inspired by various media outlets (such as Books or Video Games).
 
 ![](../images/based.png)
 
@@ -25,10 +25,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: based
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: based
 ```
 
@@ -67,7 +67,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: based
         template_variables:
           sep_style: navy #(1)!

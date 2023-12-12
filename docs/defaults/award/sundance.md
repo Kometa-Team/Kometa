@@ -1,6 +1,6 @@
 # Sundance Film Festival Awards Collections
 
-The `sundance` Default Metadata File is used to  create collections based on the Sundance Film Festival Awards.
+The `sundance` Default Collection File is used to  create collections based on the Sundance Film Festival Awards.
 
 ![](../images/sundance.png)
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: sundance
 ```
 
@@ -66,7 +66,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: sundance
         template_variables:
           collection_mode: show_items #(1)!

@@ -1,6 +1,6 @@
 # Defaults Usage Guide
 
-Plex Meta Manager includes a pre-created set of Metadata Files and Overlay Files which can be found in the "defaults" folder in the root of your Plex Meta Manager installation directory.
+Plex Meta Manager includes a pre-created set of Collection Files and Overlay Files which can be found in the "defaults" folder in the root of your Plex Meta Manager installation directory.
 
 These files offer an easy-to-use and customizable set of Collections and Overlays that the user can achieve without having to worry about creating the files that make the collections and overlays possible.
 
@@ -22,15 +22,15 @@ See the [Overlay Defaults](overlays.md) Page for more information on the specifi
 
 ## Configurations
 
-To run a default pmm Metadata or Overlay file you can simply add it to your `metadata_path` (For Metadata Files) or `overlay_path` (For Overlay Files) using `pmm` like so:
+To run a default pmm Metadata or Overlay file you can simply add it to your `collection_files` (For Collection Files) or `overlay_files` (For Overlay Files) using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
     - pmm: actor
     - pmm: genre
-    overlay_path:
+    overlay_files:
     - pmm: ribbon
     - pmm: ratings
 ```
@@ -44,7 +44,7 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: imdb
         template_variables:
           use_popular: false
@@ -52,7 +52,7 @@ libraries:
           visible_library_top: true
           visible_home_top: true
           visible_shared_top: true
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           builder_level: episode

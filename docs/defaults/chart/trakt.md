@@ -1,6 +1,6 @@
 # Trakt Charts Collections
 
-The `trakt` Default Metadata File is used to create collections based on Trakt Charts.
+The `trakt` Default Collection File is used to create collections based on Trakt Charts.
 
 ![](../images/trakt.png)
 
@@ -28,10 +28,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: trakt
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: trakt
 ```
 
@@ -68,7 +68,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: trakt
         template_variables:
           use_collected: false #(1)!

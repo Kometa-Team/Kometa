@@ -11,7 +11,7 @@ libraries:
       sep_style: purple                               # use the purple separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
       placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
-    metadata_path:
+    collection_files:
     - pmm: separator_award                          # An "index card"
     - pmm: bafta                                    # BAFTA Awards
       template_variables:                           # Show collections from current_year-10 onwards.
@@ -46,7 +46,7 @@ libraries:
 	  template_variables:
 	    originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
     - pmm: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
-    overlay_path:
+    overlay_files:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     # - reapply_overlays: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat
@@ -69,7 +69,7 @@ libraries:
       sep_style: plum                               # use the plum separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
       placeholder_imdb_id: tt1190634                # The Boys (2019) placeholder id for the separators, avoids a plex bug.
-    metadata_path:
+    collection_files:
     - pmm: separator_award                          # An "index card"
     - pmm: bafta                                    # BAFTA Awards
       template_variables:                           # Show collections from current_year-10 onwards.
@@ -97,7 +97,7 @@ libraries:
     - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
 	  template_variables:
 	    originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
-    overlay_path:
+    overlay_files:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     # - reapply_overlays: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat

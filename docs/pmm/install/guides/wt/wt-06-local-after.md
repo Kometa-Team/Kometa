@@ -1,8 +1,8 @@
-You should see that the metadata file gets loaded:
+You should see that the collection file gets loaded:
 
 ```
-| Loading Metadata File: config/Movies.yml
-| Metadata File Loaded Successfully
+| Loading Collection File: config/Movies.yml
+| Collection File Loaded Successfully
 ```
 
 As it builds the collection, you should see a fair amount of logging about which movies are being added and which ones aren’t found.  Once it completes, go to Plex, go to your Movies library, and click “Collections” at the top.

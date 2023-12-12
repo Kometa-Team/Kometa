@@ -9,19 +9,19 @@ This tutorial will help you understand the specific parts of the files.
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: basic
       - pmm: imdb
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
         template_variables:
           use_metacritic: false
           use_common: false
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: basic
       - pmm: imdb
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
 settings:
   cache: true
@@ -49,20 +49,20 @@ Let us try and identify where these appear in the sample YAML file we saw earlie
 ```yaml
 # Starts with a top level Dictionary with keys `libraries` and `settings`
 libraries:                        # Value is a Dictionary with keys `Movies` and `TV Shows`
-  Movies:                         # Value is a Dictionary with keys `metadata_path` and `overlay_path`
-    metadata_path:                # Value is a List with two Items
+  Movies:                         # Value is a Dictionary with keys `collection_files` and `overlay_files`
+    collection_files:                # Value is a List with two Items
       - pmm: basic                # List Item is a Dictionary with one key pair whose value is a String Literal
       - pmm: imdb                 # List Item is a Dictionary with one key pair whose value is a String Literal
-    overlay_path:                 # Value is a List with one Item
+    overlay_files:                 # Value is a List with one Item
       - pmm: ribbon               # List Item is a Dictionary with keys `pmm` and `template_variables` with `pmm`'s value a String Literal
         template_variables:       # Value is a Dictionary with keys `use_metacritic` and `use_common`
           use_metacritic: false   # Value is a Boolean Literal
           use_common: false       # Value is a Boolean Literal
-  TV Shows:                       # Value is a Dictionary with keys `metadata_path` and `overlay_path`
-    metadata_path:                # Value is a List with two Items
+  TV Shows:                       # Value is a Dictionary with keys `collection_files` and `overlay_files`
+    collection_files:                # Value is a List with two Items
       - pmm: basic                # List Item is a Dictionary with one key pair whose value is a String Literal
       - pmm: imdb                 # List Item is a Dictionary with one key pair whose value is a String Literal
-    overlay_path:                 # Value is a List with one Item
+    overlay_files:                 # Value is a List with one Item
       - pmm: ribbon               # List Item is a Dictionary with one key pair whose value is a String Literal
 settings:                         # Value is a Dictionary with keys `cache` and `cache_expiration`
   cache: true                     # Value is a Boolean Literal
@@ -81,19 +81,19 @@ A YAML file relies on whitespace and indentation to indicate nesting. The number
 ```yaml
 libraries:                        # Nesting Level 1
   Movies:                         # Nesting Level 2
-    metadata_path:                # Nesting Level 3
+    collection_files:                # Nesting Level 3
       - pmm: basic                # Nesting Level 4
       - pmm: imdb                 # Nesting Level 4
-    overlay_path:                 # Nesting Level 3
+    overlay_files:                 # Nesting Level 3
       - pmm: ribbon               # Nesting Level 4
         template_variables:       # Nesting Level 5
           use_metacritic: false   # Nesting Level 6
           use_common: false       # Nesting Level 6
   TV Shows:                       # Nesting Level 2
-    metadata_path:                # Nesting Level 3
+    collection_files:                # Nesting Level 3
       - pmm: basic                # Nesting Level 4
       - pmm: imdb                 # Nesting Level 4
-    overlay_path:                 # Nesting Level 3
+    overlay_files:                 # Nesting Level 3
       - pmm: ribbon               # Nesting Level 4
 settings:                         # Nesting Level 1
   cache: true                     # Nesting Level 2
@@ -217,19 +217,19 @@ In YAML files, anchors (`&`) and aliases (`*`) are used to avoid duplication. Wh
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: basic
       - pmm: imdb
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
         template_variables:
           use_metacritic: false
           use_common: false
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: basic
       - pmm: imdb
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
 ```
 
@@ -242,16 +242,16 @@ Anchors (`&`) are used to define a chunk of configuration, and aliases (`*`) are
 ```yaml
 libraries:
   Movies:
-    metadata_path: &paths   # Anchor called `paths`
+    collection_files: &paths   # Anchor called `paths`
       - pmm: basic
       - pmm: imdb
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
         template_variables:
           use_metacritic: false
           use_common: false
   TV Shows:
-    metadata_path: *paths   # Alias to call the above `paths` section
-    overlay_path:
+    collection_files: *paths   # Alias to call the above `paths` section
+    overlay_files:
       - pmm: ribbon
 ```

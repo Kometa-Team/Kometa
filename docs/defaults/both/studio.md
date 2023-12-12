@@ -1,6 +1,6 @@
 # Studio Collections
 
-The `studio` Default Metadata File is used to dynamically create collections based on the studios available in your library.
+The `studio` Default Collection File is used to dynamically create collections based on the studios available in your library.
 
 This file also merges similarly named studios (such as "20th Century Fox" and "20th Century Animation") into one ("20th Century Studios")
 
@@ -24,10 +24,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: studio
 ```
 
@@ -74,7 +74,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
         template_variables:
           append_include:

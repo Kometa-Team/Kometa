@@ -35,12 +35,13 @@ Another way to specify environmental variables is by adding them to a .env file 
 | [Log Requests](#log-requests)                         | `-lr` or `--log-requests`                     | `PMM_LOG_REQUESTS`       |
 | [Timeout](#timeout)                                   | `-ti` or `--timeout`                          | `PMM_TIMEOUT`            |
 | [Collections Only](#collections-only)                 | `-co` or `--collections-only`                 | `PMM_COLLECTIONS_ONLY`   |
+| [Metadata Only](#metadata-only)                       | `-co` or `--metadata-only`                    | `PMM_METADATA_ONLY`      |
 | [Playlists Only](#playlists-only)                     | `-po` or `--playlists-only`                   | `PMM_PLAYLISTS_ONLY`     |
 | [Operations Only](#operations-only)                   | `-op`, `--operations`, or `--operations-only` | `PMM_OPERATIONS_ONLY`    |
 | [Overlays Only](#overlays-only)                       | `-ov`, `--overlays`, or `--overlays-only`     | `PMM_OVERLAYS_ONLY`      |
 | [Run Collections](#run-collections)                   | `-rc` or `--run-collections`                  | `PMM_RUN_COLLECTIONS`    |
-| [Run Libraries](#run-libraries.md)                    | `-rl` or `--run-libraries`                    | `PMM_RUN_LIBRARIES`      |
-| [Run Metadata Files](#run-metadata-files)             | `-rm` or `--run-metadata-files`               | `PMM_RUN_METADATA_FILES` |
+| [Run Libraries](#run-libraries)                       | `-rl` or `--run-libraries`                    | `PMM_RUN_LIBRARIES`      |
+| [Run Files](#run-files)                               | `-rf` or `--run-files`                        | `PMM_RUN_FILES`          |
 | [Ignore Schedules](#ignore-schedules)                 | `-is` or `--ignore-schedules`                 | `PMM_IGNORE_SCHEDULES`   |
 | [Ignore Ghost](#ignore-ghost)                         | `-ig` or `--ignore-ghost`                     | `PMM_IGNORE_GHOST`       |
 | [Delete Collections](#delete-collections)             | `-dc` or `--delete-collections`               | `PMM_DELETE_COLLECTIONS` |
@@ -124,8 +125,8 @@ Perform a debug test run immediately, bypassing the time to run flag. This will 
 
 |          | Shell Command                      | Environment Variable |
 |:---------|:-----------------------------------|:---------------------|
-| Flags    | `-rt`, `--tests`, or `--run-tests` | `PMM_TESTS`           |
-| Example  | `--run-tests`                      | `PMM_TESTS=true`      |
+| Flags    | `-rt`, `--tests`, or `--run-tests` | `PMM_TESTS`          |
+| Example  | `--run-tests`                      | `PMM_TESTS=true`     |
 
 
 * Only collections with `test: true` enabled will be run
@@ -235,7 +236,26 @@ Change the timeout for all non-Plex services (such as TMDb, Radarr, and Trakt). 
 
 ### Collections Only
 
-Only run collection metadata/YAML files, skip library operations, overlays, and playlists.
+Only run collection YAML files, skip library operations, metadata, overlays, and playlists.
+
+|          | Shell Command                 | Environment Variable         |
+|:---------|:------------------------------|:-----------------------------|
+| Flags    | `-co` or `--collections-only` | `PMM_COLLECTIONS_ONLY`       |
+| Example  | `--collections-only`          | `PMM_COLLECTIONS_ONLY=true`  |
+
+!!! example
+    === "Local Environment"
+        ```
+        python plex_meta_manager.py --collections-only
+        ```
+    === "Docker Environment"
+        ```
+        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --collections-only
+        ```
+
+### Metadata Only
+
+Only run metadata files, skip library operations, collections, overlays, and playlists.
 
 |          | Shell Command                 | Environment Variable         |
 |:---------|:------------------------------|:-----------------------------|
@@ -254,7 +274,7 @@ Only run collection metadata/YAML files, skip library operations, overlays, and 
 
 ### Playlists Only
 
-Only run playlist metadata/YAML files, skip library operations, overlays, and collections/metadata.
+Only run playlist YAML files, skip library operations, overlays, collections, and metadata.
 
 |         | Shell Command                | Environment Variable      |
 |:--------|:-----------------------------|:--------------------------|
@@ -273,7 +293,7 @@ Only run playlist metadata/YAML files, skip library operations, overlays, and co
 
 ### Operations Only
 
-Only run library operations skipping collections/metadata, playlists, and overlays.
+Only run library operations skipping collections, metadata, playlists, and overlays.
 
 |          | Shell Command           | Environment Variable       |
 |:---------|:------------------------|:---------------------------|
@@ -292,7 +312,7 @@ Only run library operations skipping collections/metadata, playlists, and overla
 
 ### Overlays Only
 
-Only run library overlays skipping collections/metadata, playlists, and operations.
+Only run library overlay files skipping collections, metadata, playlists, and operations.
 
 |         | Shell Command         | Environment Variable      |
 |:--------|:----------------------|:--------------------------|
@@ -349,31 +369,31 @@ Perform a libraries run immediately to run only the pre-defined libraries, bypas
         docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-libraries "Movies - 4K|TV Shows - 4K"
         ```
 
-### Run Metadata Files
+### Run Files
 
-Perform a metadata files run immediately to run only the pre-defined metadata files, bypassing the time to run flag.
+Perform a run immediately to run only the pre-defined Collection, Metadata or Playlist files, bypassing the time to run flag.
 
 ???+ warning
      
      Do not use this to run Overlay files, as Overlay files must run all together or not at all due to their nature.
 
-|                  | Shell Command                                           | Environment Variable                           |
-|:-----------------|:--------------------------------------------------------|:-----------------------------------------------|
-| Flags            | `-rm` or `--run-metadata-files`                         | `PMM_RUN_METADATA_FILES`                       |
-| Example          | --run-metadata-files "Movies.yml&#124;MovieCharts"      | PMM_METADATA_FILES=Movies.yml&#124;MovieCharts |
-| Available Values | Pipe-separated list of Metadata Filenames to run        |
+|                  | Shell Command                                                            | Environment Variable                          |
+|:-----------------|:-------------------------------------------------------------------------|:----------------------------------------------|
+| Flags            | `-rf` or `--run-files`                                                   | `PMM_RUN_FILES`                               |
+| Example          | --run-files "Movies.yml&#124;MovieCharts"                                | PMM_FILES=Movies.yml&#124;MovieCharts         |
+| Available Values | Pipe-separated list of Collection, Metadata or Playlist Filenames to run |
 
 
-* This works for all different metadata paths i.e. `pmm`, `git`, `url`, `file`, or `repo`.
+* This works for all different paths i.e. `pmm`, `git`, `url`, `file`, or `repo`.
 
 !!! example
     === "Local Environment"
         ```
-        python plex_meta_manager.py --run-metadata-files "Movies.yml|seasonal|genre"
+        python plex_meta_manager.py --run-files "Movies.yml|seasonal|genre"
         ```
     === "Docker Environment"
         ```
-        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-metadata-files "Movies.yml|seasonal|genre"
+        docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --run-files "Movies.yml|seasonal|genre"
         ```
 
 ### Ignore Schedules

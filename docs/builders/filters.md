@@ -4,7 +4,7 @@ Filters allow for you to filter every item added to the collection/overlay/playl
 
 ## Using Filters
 
-Filters cannot do anything alone they require the use of at least one [Builder](../metadata/builders.md) to function.
+Filters cannot do anything alone they require the use of at least one [Builder](overview.md) to function.
 
 You can have multiple filters in each set but an item must match at least one value from **each** filter to not be ignored. The values for each must match what Plex has including special characters in order to match.
 
@@ -34,7 +34,7 @@ You can use the `plex_all: true` builder to filter from your entire library.
 
 ???+ warning
     
-    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](smart.md#smart-label), [Plex Search](plex.md#plex-search) or another [Builder](../metadata/builders.md) if possible.
+    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](smart.md#smart-label), [Plex Search](plex.md#plex-search) or another [Builder](overview.md) if possible.
 
 ## String Filters
 

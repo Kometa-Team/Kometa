@@ -1,6 +1,6 @@
 # Collection Defaults
 
-There are many Default Metadata Files built into PMM itself which offer an easy-to-use and customizable set of Collections that the user can achieve without having to worry about creating the files that makes the collections possible.
+There are many Default Collection Files built into PMM itself which offer an easy-to-use and customizable set of Collections that the user can achieve without having to worry about creating the files that makes the collections possible.
 
 This is the simplest way to create Collections using Plex Meta Manager.
 
@@ -11,12 +11,12 @@ This is the simplest way to create Collections using Plex Meta Manager.
 
 ## Configurations
 
-To run a default pmm Metadata file you can simply add it to your `metadata_path` using `pmm` like so:
+To run a default pmm Metadata file you can simply add it to your `collection_files` using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: actor
       - pmm: genre
 ```
@@ -43,14 +43,14 @@ libraries:
   LIBRARYNAME:
     template_variables:
       use_separator: false
-    metadata_path:
+    collection_files:
       - pmm: actor
       - pmm: genre
 ```
 
 ## Collection Section Order
 
-All Default Metadata Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
+All Default Collection Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
 
 For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
 
@@ -109,7 +109,7 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: imdb
         template_variables:
           use_popular: false
@@ -130,7 +130,7 @@ For example if you want yearly oscar collections that go back 10 years instead o
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: oscars
         template_variables:
           radarr_add_missing: true
@@ -144,7 +144,7 @@ Or maybe you want to change the number of actor collections made using pmm: acto
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: actor
         template_variables:
           collection_mode: hide
@@ -158,7 +158,7 @@ Or maybe you want to change the collection sort order of the genre collections u
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: genre
         template_variables:
           collection_section: 11
@@ -171,7 +171,7 @@ libraries:
   LIBRARYNAME:
     template_variables:
       use_separator: false
-    metadata_path:
+    collection_files:
       - ...
 ```
 
@@ -180,7 +180,7 @@ Alternatively it can be turned off individually per git file:
 ```yaml
 libraries:
   LIBRARYNAME:
-    metadata_path:
+    collection_files:
       - pmm: <file1>    # separator is disabled
         template_variables:
           use_separator: false

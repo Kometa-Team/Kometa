@@ -1,6 +1,6 @@
 # Director Collections
 
-The `director` Default Metadata File is used to dynamically create collections based on the most popular directors in your library.
+The `director` Default Collection File is used to dynamically create collections based on the most popular directors in your library.
 
 ## Requirements & Recommendations
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: director
 ```
 
@@ -69,7 +69,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: director
         template_variables:
           data:

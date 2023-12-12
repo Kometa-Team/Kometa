@@ -1,6 +1,6 @@
 # Subtitle Language Collections
 
-The `subtitle_language` Default Metadata File is used to dynamically create collections based on the subtitle languages available in your library.
+The `subtitle_language` Default Collection File is used to dynamically create collections based on the subtitle languages available in your library.
 
 ![](../images/subtitle_language.png)
 
@@ -23,10 +23,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: subtitle_language
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: subtitle_language
 ```
 
@@ -70,7 +70,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: subtitle_language
         template_variables:
           use_other: false #(1)!

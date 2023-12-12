@@ -97,24 +97,24 @@ In this example we have two Sonarr instances, standard and 4K, with five librari
 ```
 libraries:
   Library01:     # this library uses the default sonarr config
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
 
   Library02:     # this library overrides sonarr root path and profile
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
     sonarr:
       root_folder_path: /data/media/shows/tony
       quality_profile: Better
 
   Library03:      # this library overrides sonarr quality profile
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
     sonarr:
       quality_profile: Best
 
   Library04:      # this library uses the 4K sonarr instance
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
     sonarr:
       url: https://sonarr-4k.bing.bang
@@ -123,7 +123,7 @@ libraries:
       quality_profile: Bestest
       
   Library05:      # shows get added by a custom script so they should get added to sonarr-4k
-    metadata_path:
+    collection_files:
       - file: config/TV.yml
     sonarr:
       url: https://sonarr-4k.bing.bang

@@ -27,10 +27,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
 ```
 
@@ -90,7 +90,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: flixpatrol
         template_variables:
           location: united_states
