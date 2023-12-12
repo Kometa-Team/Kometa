@@ -334,6 +334,8 @@ nav:
             - IMDb Chart: builders/imdb/#imdb-chart
             - IMDb List: builders/imdb/#imdb-list
             - IMDb Watchlist: builders/imdb/#imdb-watchlist
+            - IMDb Award: builders/imdb/#imdb-award
+            - IMDb Search: builders/imdb/#imdb-search
           - Trakt Builders:
             - Overview: builders/trakt.md
             - Trakt List: builders/trakt/#trakt-list
