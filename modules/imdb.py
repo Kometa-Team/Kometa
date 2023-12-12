@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
-builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search"]
+builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search", "imdb_award"]
 movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
 show_charts = ["popular_shows", "top_shows"]
 charts = {
@@ -144,6 +144,23 @@ class IMDb:
             if self._watchlist(user, language):
                 valid_users.append(user)
         return valid_users
+
+    def get_event_years(self, event_id):
+        return self._request(f"{base_url}/event/{event_id}", xpath="//div[@class='event-history-widget']//a/text()")
+
+    def get_award_names(self, event_id, event_year):
+        award_names = []
+        category_names = []
+        for text in self._request(f"{base_url}/event/{event_id}/{event_year}", xpath="//div[@class='article']/script/text()")[0].split("\n"):
+            if text.strip().startswith("IMDbReactWidgets.NomineesWidget.push"):
+                jsonline = text.strip()
+                obj = json.loads(jsonline[jsonline.find("{"):-3])
+                for award in obj["nomineesWidgetModel"]["eventEditionSummary"]["awards"]:
+                    award_names.append(award["awardName"])
+                    for category in award["categories"]:
+                        category_names.append(category["categoryName"])
+                break
+        return award_names, category_names
 
     def _watchlist(self, user, language):
         imdb_url = f"{base_url}/user/{user}/watchlist"
@@ -401,6 +418,27 @@ class IMDb:
             return imdb_ids
         raise Failed("IMDb Error: No IMDb IDs Found")
 
+    def _award(self, data):
+        final_list = []
+        for text in self._request(f"{base_url}/event/{data['event_id']}/{data['event_year']}", xpath="//div[@class='article']/script/text()")[0].split("\n"):
+            if text.strip().startswith("IMDbReactWidgets.NomineesWidget.push"):
+                jsonline = text.strip()
+                obj = json.loads(jsonline[jsonline.find('{'):-3])
+                for award in obj["nomineesWidgetModel"]["eventEditionSummary"]["awards"]:
+                    if data["award_filter"] and award["awardName"] not in data["award_filter"]:
+                        continue
+                    for cat in award["categories"]:
+                        if data["category_filter"] and cat["categoryName"] not in data["category_filter"]:
+                            continue
+                        for nom in cat["nominations"]:
+                            if data["winning"] and not nom["isWinner"]:
+                                continue
+                            imdb_set = next(((n["const"], n["name"]) for n in nom["primaryNominees"] + nom["secondaryNominees"] if n["const"].startswith("tt")), None)
+                            if imdb_set:
+                                final_list.append(imdb_set)
+                break
+        return final_list
+
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
         expired = None
@@ -408,7 +446,7 @@ class IMDb:
             imdb_keywords, expired = self.config.Cache.query_imdb_keywords(imdb_id, self.config.Cache.expiration)
             if imdb_keywords and expired is False:
                 return imdb_keywords
-        keywords = self._request(f"https://www.imdb.com/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
+        keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
             raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
         for k in keywords:
@@ -430,7 +468,7 @@ class IMDb:
             parental_dict, expired = self.config.Cache.query_imdb_parental(imdb_id, self.config.Cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        response = self._request(f"https://www.imdb.com/title/{imdb_id}/parentalguide")
+        response = self._request(f"{base_url}/title/{imdb_id}/parentalguide")
         for ptype in util.parental_types:
             results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
             if results:
@@ -460,7 +498,7 @@ class IMDb:
             url = "chart/bottom"
         else:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        links = self._request(f"https://www.imdb.com/{url}", language=language, xpath="//li//a[@class='ipc-title-link-wrapper']/@href")
+        links = self._request(f"{base_url}/{url}", language=language, xpath="//li//a[@class='ipc-title-link-wrapper']/@href")
         return [re.search("(tt\\d+)", l).group(1) for l in links]
 
     def get_imdb_ids(self, method, data, language):
@@ -477,6 +515,14 @@ class IMDb:
         elif method == "imdb_watchlist":
             logger.info(f"Processing IMDb Watchlist: {data}")
             return [(_i, "imdb") for _i in self._watchlist(data, language)]
+        elif method == "imdb_award":
+            logger.info(f"Processing IMDb Award: {base_url}/{data['event_id']}/{data['event_year']}")
+            for k in ["award_filter", "category_filter", "winning"]:
+                logger.info(f"    {k}: {data[k]}")
+            awards = self._award(data)
+            for award in awards:
+                logger.info(award)
+            return [(_i, "imdb") for _i, _ in awards]
         elif method == "imdb_search":
             logger.info(f"Processing IMDb Search:")
             for k, v in data.items():

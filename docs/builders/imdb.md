@@ -2,13 +2,14 @@
 
 You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb).
 
-| Attribute                           | Description                                                                                                                                                                            | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`imdb_id`](#imdb-id)               | Gets the movie/show specified.                                                                                                                                                         |      &#9989;      |     &#9989;      |               &#10060;               |
-| [`imdb_chart`](#imdb-chart)         | Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).                                                                                     |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`imdb_list`](#imdb-list)           | Gets every movie/show in an IMDb List or [IMDb Keyword Search](https://www.imdb.com/search/keyword/).                                                                                  |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`imdb_watchlist`](#imdb-watchlist) | Gets every movie/show in an IMDb User's Watchlist.                                                                                                                                     |      &#9989;      |     &#9989;      |               &#9989;                |
-| [`imdb_search`](#imdb-search)       | Gets every movie/show in an [IMDb Search](https://www.imdb.com/search/title/).                                                                                                         |      &#9989;      |     &#9989;      |               &#9989;                |
+| Attribute                           | Description                                                                                           | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
+|:------------------------------------|:------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
+| [`imdb_id`](#imdb-id)               | Gets the movie/show specified.                                                                        |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`imdb_chart`](#imdb-chart)         | Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).    |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`imdb_list`](#imdb-list)           | Gets every movie/show in an IMDb List or [IMDb Keyword Search](https://www.imdb.com/search/keyword/). |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`imdb_watchlist`](#imdb-watchlist) | Gets every movie/show in an IMDb User's Watchlist.                                                    |      &#9989;      |     &#9989;      |               &#9989;                |
+| [`imdb_award`](#imdb-award)         | Gets every movie/show in an [IMDb Event](https://www.imdb.com/event/).                                |      &#9989;      |     &#9989;      |               &#10060;               |
+| [`imdb_search`](#imdb-search)       | Gets every movie/show in an [IMDb Search](https://www.imdb.com/search/title/).                        |      &#9989;      |     &#9989;      |               &#9989;                |
 
 ## IMDb ID
 
@@ -154,9 +155,38 @@ collections:
     sync_mode: sync
 ```
 
+## IMDb Award
+
+Finds every item in an [IMDb Event](https://www.imdb.com/event/).
+
+| Award Parameter   | Description                                                                                                                                                    |
+|:------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `event_id`        | Specify the IMDb Event ID to search.<br>**Options:** The ID found in the URLs linked on the [IMDb Events Page](https://www.imdb.com/event/). (ex. `ev0000003`) |
+| `event_year`      | Specify the Year of the Event to look at.<br>**Options:** Any Year under the Event History Sidebar on an Event page.                                           |
+| `award_filter`    | Filter by the Award heading. Can only accept multiple values as a list.<br>**Options:** Any Black Award heading on an Event Page.                              |
+| `category_filter` | Filter by the Category heading. Can only accept multiple values as a list.<br>**Options:** Any Gold/Yellow Category heading on an Event Page.                  |
+| `winning`         | Filter by if the Item Won the award.<br>**Options:** `true`/`false`<br>**Default:** `false`                                                                    |
+
+```yaml
+collections:
+  Academy Award Winners 2023:
+    imdb_award: 
+      event_id: ev0000003
+      event_year: 2023
+      winning: true
+```
+```yaml
+collections:
+  Academy Award 2023 Best Picture Nominees:
+    imdb_award: 
+      event_id: ev0000003
+      event_year: 2023
+      category_filter: Best Motion Picture of the Year
+```
+
 ## IMDb Search
 
-Finds every item using an [IMDb Advance Title Search](https://www.imdb.com/search/title/)
+Finds every item using an [IMDb Advance Title Search](https://www.imdb.com/search/title/).
 
 The `sync_mode: sync` and `collection_order: custom` Details are recommended since the lists are continuously updated and in a specific order.
 
