@@ -1,6 +1,6 @@
 # Other Charts Collections
 
-The `other_chart` Default Metadata File is used to create collections based on other Charts.
+The `other_chart` Default Collection File is used to create collections based on other Charts.
 
 ![](../images/chartother.png)
 
@@ -26,10 +26,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: other_chart
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: other_chart
 ```
 
@@ -65,7 +65,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: other_chart
         template_variables:
           use_anidb: false #(1)!

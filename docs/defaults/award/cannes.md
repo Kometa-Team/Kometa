@@ -1,6 +1,6 @@
 # Cannes Awards Collections
 
-The `cannes` Default Metadata File is used to create collections based on the Cannes Film Awards.
+The `cannes` Default Collection File is used to create collections based on the Cannes Film Awards.
 
 ![](../images/cannes.png)
 
@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: cannes
 ```
 
@@ -66,7 +66,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: cannes
         template_variables:
           collection_mode: show_items #(1)!

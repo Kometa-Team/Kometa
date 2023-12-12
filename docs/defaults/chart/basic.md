@@ -1,6 +1,6 @@
 # Basic Charts Collections
 
-The `basic` Default Metadata File is used to create collections based on recently released media in your library.
+The `basic` Default Collection File is used to create collections based on recently released media in your library.
 
 ![](../images/basic.png)
 
@@ -22,10 +22,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: basic
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: basic
 ```
 
@@ -61,7 +61,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: basic
         template_variables:
           in_the_last_episodes: 14 #(1)!

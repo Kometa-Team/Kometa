@@ -1,6 +1,6 @@
 # Collectionless Collection
 
-The `collectionless` Default Metadata File is used to create a [Collectionless collection](../../builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library.
+The `collectionless` Default Collection File is used to create a [Collectionless collection](../../builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library.
 
 ![](../images/collectionless.png)
 
@@ -8,7 +8,7 @@ The `collectionless` Default Metadata File is used to create a [Collectionless c
 
 Supported Library Types: Movie, Show
 
-Requirements: For this file to work it needs to run last under `metadata_path` and all other normal collections must use `collection_mode: hide_items`
+Requirements: For this file to work it needs to run last under `collection_files` and all other normal collections must use `collection_mode: hide_items`
 
 ## Collection
 
@@ -25,12 +25,12 @@ libraries:
   Movies:
     template_variables:
       collection_mode: hide_items
-    metadata_path:
+    collection_files:
       - pmm: collectionless
   TV Shows:
     template_variables:
       collection_mode: hide_items
-    metadata_path:
+    collection_files:
       - pmm: collectionless
 ```
 
@@ -61,7 +61,7 @@ libraries:
   Movies:
     template_variables:
       collection_mode: hide_items
-    metadata_path:
+    collection_files:
       - pmm: collectionless
         template_variables:
           exclude:

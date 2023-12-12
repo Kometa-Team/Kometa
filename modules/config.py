@@ -34,7 +34,8 @@ logger = util.logger
 
 mediastingers_url = "https://raw.githubusercontent.com/meisnate12/PMM-Mediastingers/master/stingers.yml"
 run_order_options = {
-    "metadata": "Represents Collection and Metadata Updates",
+    "collections": "Represents Collection Updates",
+    "metadata": "Represents Metadata Updates",
     "overlays": "Represents Overlay Updates",
     "operations": "Represents Operations Updates"
 }
@@ -144,19 +145,20 @@ class ConfigFile:
         self.requested_libraries = None
         if "libraries" in attrs and attrs["libraries"]:
             self.requested_libraries = [s.strip() for s in attrs["libraries"].split("|")]
-        self.requested_metadata_files = None
-        if "metadata_files" in attrs and attrs["metadata_files"]:
-            self.requested_metadata_files = []
-            for s in attrs["metadata_files"].split("|"):
+        self.requested_files = None
+        if "files" in attrs and attrs["files"]:
+            self.requested_files = []
+            for s in attrs["files"].split("|"):
                 s = s.strip()
                 if s:
                     if s.endswith(".yml"):
-                        self.requested_metadata_files.append(s[:-4])
+                        self.requested_files.append(s[:-4])
                     elif s.endswith(".yaml"):
-                        self.requested_metadata_files.append(s[:-5])
+                        self.requested_files.append(s[:-5])
                     else:
-                        self.requested_metadata_files.append(s)
+                        self.requested_files.append(s)
         self.collection_only = attrs["collection_only"] if "collection_only" in attrs else False
+        self.metadata_only = attrs["metadata_only"] if "metadata_only" in attrs else False
         self.operations_only = attrs["operations_only"] if "operations_only" in attrs else False
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         self.env_plex_url = attrs["plex_url"] if "plex_url" in attrs else ""
@@ -197,6 +199,10 @@ class ConfigFile:
             for library in self.data["libraries"]:
                 if not self.data["libraries"][library]:
                     continue
+                if "metadata_path" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["collection_files"] = self.data["libraries"][library].pop("metadata_path")
+                if "overlay_path" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["overlay_files"] = self.data["libraries"][library].pop("overlay_path")
                 if "radarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
                 if "sonarr_add_all" in self.data["libraries"][library]:
@@ -403,7 +409,7 @@ class ConfigFile:
             return default
 
         self.general = {
-            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="lower_list", test_list=run_order_options, default=["operations", "metadata", "overlays"]),
+            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="lower_list", test_list=run_order_options, default=["operations", "metadata", "collections", "overlays"]),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
@@ -652,8 +658,11 @@ class ConfigFile:
                         self.playlist_names.extend([p for p in playlist_obj.playlists])
                         self.playlist_files.append(playlist_obj)
                     except Failed as e:
-                        logger.info(f"Playlist File Failed To Load")
+                        logger.info("Playlist File Failed To Load")
                         logger.error(e)
+                    except NotScheduled as e:
+                        logger.info("")
+                        logger.separator(f"Skipping {e} Playlist File")
             else:
                 logger.info("playlist_files attribute not found")
 
@@ -855,18 +864,31 @@ class ConfigFile:
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):
                     lib_vars = lib["template_variables"]
 
-                params["metadata_path"] = []
+                params["collection_files"] = []
                 try:
-                    if lib and "metadata_path" in lib:
-                        if not lib["metadata_path"]:
-                            raise Failed("Config Error: metadata_path attribute is blank")
-                        files, had_scheduled = util.load_files(lib["metadata_path"], "metadata_path", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
+                    if lib and "collection_files" in lib:
+                        if not lib["collection_files"]:
+                            raise Failed("Config Error: collection_files attribute is blank")
+                        files, had_scheduled = util.load_files(lib["collection_files"], "collection_files", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
                         if files:
-                            params["metadata_path"] = files
+                            params["collection_files"] = files
                         elif not had_scheduled:
-                            raise Failed("Config Error: No Paths Found for metadata_path")
+                            raise Failed("Config Error: No Paths Found for collection_files")
                     elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
-                        params["metadata_path"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
+                        params["collection_files"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
+                except Failed as e:
+                    logger.error(e)
+
+                params["metadata_files"] = []
+                try:
+                    if lib and "metadata_files" in lib:
+                        if not lib["metadata_files"]:
+                            raise Failed("Config Error: metadata_files attribute is blank")
+                        files, had_scheduled = util.load_files(lib["metadata_files"], "metadata_files", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
+                        if files:
+                            params["metadata_files"] = files
+                        elif not had_scheduled:
+                            raise Failed("Config Error: No Paths Found for metadata_files")
                 except Failed as e:
                     logger.error(e)
                 params["default_dir"] = default_dir
@@ -882,16 +904,16 @@ class ConfigFile:
                         except NotScheduled:
                             params["skip_library"] = True
 
-                params["overlay_path"] = []
+                params["overlay_files"] = []
                 params["remove_overlays"] = False
                 params["reapply_overlays"] = False
                 params["reset_overlays"] = None
-                if lib and "overlay_path" in lib:
+                if lib and "overlay_files" in lib:
                     try:
-                        if not lib["overlay_path"]:
-                            raise Failed("Config Error: overlay_path attribute is blank")
-                        files, _ = util.load_files(lib["overlay_path"], "overlay_path", lib_vars=lib_vars)
-                        for file in util.get_list(lib["overlay_path"], split=False):
+                        if not lib["overlay_files"]:
+                            raise Failed("Config Error: overlay_files attribute is blank")
+                        files, _ = util.load_files(lib["overlay_files"], "overlay_files", lib_vars=lib_vars)
+                        for file in util.get_list(lib["overlay_files"], split=False):
                             if isinstance(file, dict):
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
                                         or ("remove_overlay" in file and file["remove_overlay"] is True) \
@@ -932,25 +954,25 @@ class ConfigFile:
                                     if err:
                                         raise NotScheduled(f"Overlay Schedule:{err}\n\nOverlays not scheduled to run")
                         if not files and params["remove_overlays"] is False and params["reset_overlays"] is False:
-                            raise Failed("Config Error: No Paths Found for overlay_path")
-                        params["overlay_path"] = files
+                            raise Failed("Config Error: No Paths Found for overlay_files")
+                        params["overlay_files"] = files
                     except NotScheduled as e:
                         logger.info("")
                         logger.info(e)
-                        params["overlay_path"] = []
+                        params["overlay_files"] = []
                         params["remove_overlays"] = False
                     except Failed as e:
                         logger.error(e)
 
-                params["image_sets"] = []
+                params["image_files"] = []
                 try:
-                    if lib and "image_sets" in lib:
-                        if not lib["image_sets"]:
-                            raise Failed("Config Error: image_sets attribute is blank")
-                        files, _ = util.load_files(lib["image_sets"], "image_sets")
+                    if lib and "image_files" in lib:
+                        if not lib["image_files"]:
+                            raise Failed("Config Error: image_files attribute is blank")
+                        files, _ = util.load_files(lib["image_files"], "image_files")
                         if not files:
-                            raise Failed("Config Error: No Paths Found for image_sets")
-                        params["image_sets"] = files
+                            raise Failed("Config Error: No Paths Found for image_files")
+                        params["image_files"] = files
                 except Failed as e:
                     logger.error(e)
 
@@ -974,10 +996,10 @@ class ConfigFile:
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                     logger.info("")
-                    logger.separator("Scanning Metadata and Overlay Files", space=False, border=False)
-                    library.scan_files(self.operations_only, self.overlays_only, self.collection_only)
-                    if not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
-                        raise Failed("Config Error: No valid metadata files, overlay files, images files, playlist files, or library operations found")
+                    logger.separator("Scanning Files", space=False, border=False)
+                    library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
+                    if not library.collection_files and not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
+                        raise Failed("Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)

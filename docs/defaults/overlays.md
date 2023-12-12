@@ -10,12 +10,12 @@ This is the simplest way to create Overlays using Plex Meta Manager.
 
 ## Configurations
 
-To run a default pmm Overlay file you can simply add it to your `overlay_path` using `pmm` like so:
+To run a default pmm Overlay file you can simply add it to your `overlay_files` using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
       - pmm: ratings
 ```
@@ -33,7 +33,7 @@ libraries:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - remove_overlays: false
       - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
@@ -78,7 +78,7 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - remove_overlays: false
       - pmm: resolution                                                    # 1
       - pmm: audio_codec                                                   # 2
@@ -120,7 +120,7 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - remove_overlays: false
       - pmm: resolution                                                    # 1
         template_variables:
@@ -145,7 +145,7 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - remove_overlays: false
       - pmm: resolution                                                    # 1
         template_variables:
@@ -204,7 +204,7 @@ To be able to insert the ratings you want, Plex Meta Manager operations need to 
 
 ![](images/ratings_operations.png)
 
-Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
+Finally, to show the ratings on the poster, the following was added to the `overlay_files` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
 
 ![](images/ratings_overlay_path.png)
 
@@ -217,7 +217,7 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
           builder_level: episode

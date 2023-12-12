@@ -1,6 +1,6 @@
 # Streaming Collections
 
-The `streaming` Default Metadata File is used to dynamically create collections based on the streaming Services that your media is available on.
+The `streaming` Default Collection File is used to dynamically create collections based on the streaming Services that your media is available on.
 
 ![](../images/streaming.png)
 
@@ -38,10 +38,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: streaming
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: streaming
 ```
 
@@ -98,7 +98,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: streaming
         template_variables:
           region: fr #(1)!

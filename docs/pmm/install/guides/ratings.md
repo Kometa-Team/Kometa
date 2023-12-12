@@ -40,7 +40,7 @@ Now let's add rating overlays to the poster. We're going to use the minimal conf
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:
@@ -91,7 +91,7 @@ You and I both know that the IMDb rating isn't 6.0, but PMM is just doing what i
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:
@@ -127,7 +127,7 @@ Now let's actually update the ratings and push some numbers into those boxes usi
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:
@@ -168,7 +168,7 @@ Now let's update the critic and audience ratings to some different ratings:
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:
@@ -220,7 +220,7 @@ Let's change the Trakt rating to that trakt public rating of `85%` instead, whic
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:
@@ -258,7 +258,7 @@ Now, finally, let's make the poster rating images match the numbers we put in th
 ```yaml
 libraries:
   One Movie:
-    overlay_path:
+    overlay_files:
     - reapply_overlays: true
     - pmm: ratings
       template_variables:

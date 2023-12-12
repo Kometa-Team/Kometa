@@ -27,9 +27,9 @@ plex:
 | `token`         | Plex Server Authentication Token                                       | N/A     | &#9989;  |
 | `timeout`       | Plex Server Timeout                                                    | 60      | &#10060; |
 | `db_cache`      | Plex Server Database Cache Size                                        | None    | &#10060; |
-| `clean_bundles` | Runs Clean Bundles on the Server after all Metadata Files are run      | false   | &#10060; |
-| `empty_trash`   | Runs Empty Trash on the Server after all Metadata Files are run        | false   | &#10060; |
-| `optimize`      | Runs Optimize on the Server after all Metadata Files are run           | false   | &#10060; |
+| `clean_bundles` | Runs Clean Bundles on the Server after all Collection Files are run      | false   | &#10060; |
+| `empty_trash`   | Runs Empty Trash on the Server after all Collection Files are run        | false   | &#10060; |
+| `optimize`      | Runs Optimize on the Server after all Collection Files are run           | false   | &#10060; |
 
 ???+ warning
     
@@ -42,16 +42,16 @@ This script can be run on a remote Plex server, but be sure that the `url` provi
 
 # Multi-Plex Instance Setup:
 
-The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example there are two plex servers which are receiving the same Metadata File:
+The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example there are two plex servers which are receiving the same Collection File:
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
   Movies_on_Second_Plex:
     library_name: Movies
-    metadata_path:
+    collection_files:
       - file: config/Movies.yml
     plex:
       url: http://plex.boing.bong

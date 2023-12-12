@@ -24,7 +24,7 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: status
 ```
 
@@ -63,7 +63,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: status
         template_variables:
           text_canceled: "C A N C E L L E D"

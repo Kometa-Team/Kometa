@@ -1,6 +1,6 @@
 # Golden Globes Awards Collections
 
-The `golden` Default Metadata File is used to create collections based on the Golden Globe Awards.
+The `golden` Default Collection File is used to create collections based on the Golden Globe Awards.
 
 ![](../images/golden.png)
 
@@ -25,10 +25,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: golden
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: golden
 ```
 
@@ -70,7 +70,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: golden
         template_variables:
           collection_mode: show_items #(1)!

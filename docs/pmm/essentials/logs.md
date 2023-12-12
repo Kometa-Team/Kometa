@@ -48,7 +48,7 @@ These files will contain a great deal of detail about what exactly is happening 
 
 Something's missing from the format of the file:
 ```
-| Loading Metadata File: config/TV Shows.yml                                                         |
+| Loading Collection File: config/TV Shows.yml                                                         |
 |                                                                                                    |
 | YAML Error: metadata, collections, or dynamic_collections attribute is required                    |
 ```
@@ -73,7 +73,7 @@ collections:   <<< THIS LINE WAS MISSING
 
 YAML doesn't allow duplicate keys:
 ```
-| Loading Metadata File: config/Anime.yml                                                            |
+| Loading Collection File: config/Anime.yml                                                            |
 |                                                                                                    |
 | YAML Error: while constructing a mapping
 |   in "<unicode string>", line 27, column 5:
@@ -105,7 +105,7 @@ collections:   <<< THIS LINE WAS MISSING
 
 File is not where PMM expects it:
 ```
-| Loading Metadata File: config/Movies.yml                                                           |
+| Loading Collection File: config/Movies.yml                                                           |
 | YAML Error: File Error: File does not exist /Users/Lucky/Plex-Meta-Manager/config/Movies.yml       |
 ```
 

@@ -47,7 +47,7 @@ This example is a Metadata file with a basic collection which is saved in a file
     ```yaml
     libraries:
       Movies: #(1)!
-        metadata_path:
+        collection_files:
           - file: config/MyCollections.yml #(2)!
     ```
 

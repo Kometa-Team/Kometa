@@ -1,6 +1,6 @@
 # Other Awards Collections
 
-The `other_award` Default Metadata File is used to  create collections based on numerous other awards.
+The `other_award` Default Collection File is used to  create collections based on numerous other awards.
 
 ![](../images/awardother.png)
 
@@ -26,7 +26,7 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: other_award
 ```
 
@@ -62,7 +62,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: other_award
         template_variables:
           use_berlinale: false #(1)!

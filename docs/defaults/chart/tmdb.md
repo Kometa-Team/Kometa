@@ -1,6 +1,6 @@
 # TMDb Charts Collections
 
-The `tmdb` Default Metadata File is used to create collections based on TMDb Charts.
+The `tmdb` Default Collection File is used to create collections based on TMDb Charts.
 
 ![](../images/tmdb.png)
 
@@ -27,10 +27,10 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: tmdb
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: tmdb
 ```
 
@@ -67,7 +67,7 @@ The below is an example config.yml extract with some Template Variables added in
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: tmdb
         template_variables:
           use_trending: false #(1)!

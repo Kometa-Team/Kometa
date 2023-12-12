@@ -1,6 +1,6 @@
-If the default metadata files do not allow you to create the collections you want, you can define your own collections in your own metadata files to do whatever you like within the capabilities of PMM.  We will create a simple collection that will contain 20 comedy movies released since 2012.
+If the default collection files do not allow you to create the collections you want, you can define your own collections in your own collection files to do whatever you like within the capabilities of PMM.  We will create a simple collection that will contain 20 comedy movies released since 2012.
 
-First, open the metadata file [this will create the file if it doesn't already exist]:
+First, open the collection file [this will create the file if it doesn't already exist]:
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -52,7 +52,7 @@ Open the config file again and add the last line shown below:
 ```yaml
 libraries:
   All The Movies:
-    metadata_path:
+    collection_files:
       - pmm: basic
       - pmm: imdb
       # see the wiki for how to use local files, folders, URLs, or files from git
