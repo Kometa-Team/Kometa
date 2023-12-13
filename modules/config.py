@@ -200,7 +200,9 @@ class ConfigFile:
                 if not self.data["libraries"][library]:
                     continue
                 if "metadata_path" in self.data["libraries"][library]:
-                    self.data["libraries"][library]["collection_files"] = self.data["libraries"][library].pop("metadata_path")
+                    path_dict = self.data["libraries"][library].pop("metadata_path")
+                    self.data["libraries"][library]["collection_files"] = path_dict
+                    self.data["libraries"][library]["metadata_files"] = path_dict
                 if "overlay_path" in self.data["libraries"][library]:
                     self.data["libraries"][library]["overlay_files"] = self.data["libraries"][library].pop("overlay_path")
                 if "radarr_add_all" in self.data["libraries"][library]:
