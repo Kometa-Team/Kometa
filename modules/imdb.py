@@ -433,9 +433,9 @@ class IMDb:
                         for nom in cat["nominations"]:
                             if data["winning"] and not nom["isWinner"]:
                                 continue
-                            imdb_set = next(((n["const"], n["name"]) for n in nom["primaryNominees"] + nom["secondaryNominees"] if n["const"].startswith("tt")), None)
-                            if imdb_set:
-                                final_list.append(imdb_set)
+                            imdb_id = next((n["const"] for n in nom["primaryNominees"] + nom["secondaryNominees"] if n["const"].startswith("tt")), None)
+                            if imdb_id:
+                                final_list.append(imdb_id)
                 break
         return final_list
 
@@ -519,10 +519,7 @@ class IMDb:
             logger.info(f"Processing IMDb Award: {base_url}/{data['event_id']}/{data['event_year']}")
             for k in ["award_filter", "category_filter", "winning"]:
                 logger.info(f"    {k}: {data[k]}")
-            awards = self._award(data)
-            for award in awards:
-                logger.info(award)
-            return [(_i, "imdb") for _i, _ in awards]
+            return [(_i, "imdb") for _i in self._award(data)]
         elif method == "imdb_search":
             logger.info(f"Processing IMDb Search:")
             for k, v in data.items():
