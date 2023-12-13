@@ -79,21 +79,21 @@ This example is an advanced version of the library mappings which highlights som
 
 The available attributes for each library are as follows:
 
-| Attribute                                           | Values                                                                                                | Default                               |                              Required                              |
-|:----------------------------------------------------|:------------------------------------------------------------------------------------------------------|:--------------------------------------|:------------------------------------------------------------------:|
-| [`library_name`](#library-name)                     | Library name (required only when trying to use multiple libraries with the same name)                 | Base Attribute Name                   |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`collection_files`](#collection-file)              | Location of Collection YAML files                                                                     | `/config/<<MAPPING_NAME>>.yml`        |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`overlay_files`](#overlay-file)                    | Location of Overlay YAML files                                                                        | None                                  |           :fontawesome-solid-circle-xmark:{ .red }                 |
-| [`metadata_files`](#metadata-file)                  | Location of Metadata YAML files                                                                       | None                                  |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`report_path`](#report-path)                       | Location to create the YAML file listing added, removed, filtered, and missing items for this library | `/config/<<MAPPING_NAME>>_report.yml` |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`template_variables`](#library-template-variables) | Library template variables to be applied to every Metadata and Overlay file run.                      | N/A                                   |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`schedule`](../builders/details/schedule.md)       | Use any [schedule option](../builders/details/schedule.md) to control when this library is run.       | daily                                 |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`operations`](operations.md)                       | Library Operations to run                                                                             | N/A                                   |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`settings`](settings.md)                           | Any `setting` attribute that overrides a global value                                                 | global                                |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`plex`](plex.md)                                   | Any `plex` attribute that overrides a global value                                                    | global                                | :fontawesome-solid-circle-check:{ .green } Either here or globally |
-| [`radarr`](radarr.md)                               | Any `radarr` attribute that overrides a global value                                                  | global                                |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`sonarr`](sonarr.md)                               | Any `sonarr` attribute that overrides a global value                                                  | global                                |              :fontawesome-solid-circle-xmark:{ .red }              |
-| [`tautulli`](tautulli.md)                           | Any `tautulli` attribute that overrides a global value                                                | global                                |              :fontawesome-solid-circle-xmark:{ .red }              |
+| Attribute                                           | Description                                                                                                                                                                                                           |
+|:----------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`library_name`](#library-name)                     | Used to specify the Library's name.<br>*required only when trying to use multiple libraries with the same name.*<br>**Values:** Library Name<br>**Default:** Base Attribute Name                                      |
+| [`collection_files`](#collection-file)              | Used to define [Collection Files](data/collections.md).<br>**Values:** Location of Collection YAML files.<br>**Default:** `/config/<<MAPPING_NAME>>.yml`                                                              |
+| [`metadata_files`](#metadata-file)                  | Used to define [Metadata Files](data/collections.md).<br>**Values:** Location of Metadata YAML files.                                                                                                                 |
+| [`overlay_files`](#overlay-file)                    | Used to define [Overlay Files](data/overlays.md) .<br>**Values:** Location of Overlay YAML files.                                                                                                                     |
+| [`report_path`](#report-path)                       | Location to create the YAML file listing added, removed, filtered, and missing items for this library.<br>**Values:** Location of the report file.<br>**Default:** `/config/<<MAPPING_NAME>>_report.yml`              |
+| [`template_variables`](#library-template-variables) | Library template variables to be applied to every Collection, Metadata, and Overlay file run.<br>**Values:** Values are specified by each particular file.                                                            |
+| [`schedule`](../builders/details/schedule.md)       | Used to schedule when this library is run.<br>**Values:** Any [schedule option](../builders/details/schedule.md)<br>**Default:** `daily`                                                                              |
+| [`operations`](operations.md)                       | Used to specify Library Operations to run.<br>**Values:** Any [Library Operation](operations.md)                                                                                                                      |
+| [`settings`](settings.md)                           | Used to override global `setting` values for this library only.<br>**Values:** Any `setting` attribute that overrides a global value.<br>**Default:** global value                                                    |
+| [`plex`](plex.md)                                   | Used to override global `plex` values for this library only. **`plex` Attribute is required either here or globally**<br>**Values:** Any `plex` attribute that overrides a global value.<br>**Default:** global value |
+| [`radarr`](radarr.md)                               | Used to override global `radarr` values for this library only.<br>**Values:** Any `radarr` attribute that overrides a global value.<br>**Default:** global value                                                      |
+| [`sonarr`](sonarr.md)                               | Used to override global `sonarr` values for this library only.<br>**Values:** Any `sonarr` attribute that overrides a global value.<br>**Default:** global value                                                      |
+| [`tautulli`](tautulli.md)                           | Used to override global `tautulli` values for this library only.<br>**Values:** Any `tautulli` attribute that overrides a global value.<br>**Default:** global value                                                  |
 
 ### Library Name
 
@@ -117,11 +117,11 @@ Each library that the user wants Plex Meta Manager to interact with must be docu
       token: ####################
     ```
     
-    * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (http://192.168.1.12:32400) which is defined using the global `plex` mapping. `"Movies02"` will use the plex server http://192.168.1.35:32400 which is defined under its `plex` mapping over the global mapping.
+    * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (**http://192.168.1.12:32400**) which is defined using the global `plex` mapping. `"Movies02"` will use the plex server **http://192.168.1.35:32400** which is defined under its `plex` mapping over the global mapping.
 
 ### Collection File
 
-The `collection_files` attribute is used to define [Collection Files](data/collections.md) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths.md) for how to define them.
+The `collection_files` attribute is used to define [Collection Files](data/collections.md) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](../builders/files.md#paths) for how to define them.
 
 ```yaml
 libraries:
@@ -139,9 +139,27 @@ libraries:
   TV Shows:
 ```
 
+### Metadata File
+
+The `metadata_files` attribute is used to define Metadata Files by specifying the path of the files that will be executed against the parent library. See [Path Types](../builders/files.md#paths) for how to define them.
+
+???+ tip
+
+    As of Plex Meta Manager 1.20.0 "Metadata Files" refers to YAML files which refers to managing the metadata of items [movies, shows, music] within your library, and "Collection Files" refers to YAML files which define Collections.
+
+    In previous version of Plex Meta Manager, "Metadata Files" could mean either of the above.
+
+
+```yaml
+libraries:
+  TV Shows:
+    metadata_files:
+      - file: config/metadata.yml
+```
+
 ### Overlay File
 
-The `overlay_files` attribute is used to define [Overlay Files](data/overlays.md) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](paths.md) for how to define them.
+The `overlay_files` attribute is used to define [Overlay Files](data/overlays.md) by specifying the path type and path of the files that will be executed against the parent library. See [Path Types](../builders/files.md#paths) for how to define them.
 
 ```yaml
 libraries:
@@ -228,23 +246,6 @@ You cannot schedule individual Overlay Files, as any unscheduled overlay file wi
           - file: config/Overlays.yml
     ```
 
-### Metadata File
-
-The `metadata_files` attribute is used to define Metadata Files by specifying the path of the files that will be executed against the parent library. See [Path Types](paths.md) for how to define them.
-
-???+ tip
-
-    As of Plex Meta Manager 1.19.2 "Metadata Files" refers to YAML files which refers to managing the metadata of items [movies, shows, music] within your library, and "Collection Files" refers to YAML files which define Collections.
-
-    In previous version of Plex Meta Manager, "Metadata Files" could mean either of the above.
-
-
-```yaml
-libraries:
-  TV Shows:
-    metadata_files:
-      - file: config/metadata.yml
-```
 ### Report Path
 
 The `report_path` attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Metadata file.

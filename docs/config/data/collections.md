@@ -49,12 +49,12 @@ Whenever I execute Plex Meta Manager and the Movies library is run, MyCollection
 
 Collection Files can utilize the following top-level attributes
 
-| Attribute                                                                 | Description                                                                                                       |
-|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
-| [`templates`](../../builders/templates.md)                                | contains definitions of templates that can be leveraged by multiple collections                                   |
-| [`external_templates`](../../builders/templates.md#external-templates)    | contains [path types](../paths.md) that point to external templates that can be leveraged by multiple collections |
-| [`collections`](#collection-attributes)                                   | contains definitions of collections you wish to add to one or more libraries                                      |
-| [`dynamic_collections`](#dynamic-collection-attributes)                   | contains definitions of [dynamic collections](../../builders/dynamic.md) you wish to create                       |
+| Attribute                                                                 | Description                                                                                                                         |
+|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| [`templates`](../../builders/templates.md)                                | contains definitions of templates that can be leveraged by multiple collections                                                     |
+| [`external_templates`](../../builders/templates.md#external-templates)    | contains [path types](../../builders/files.md#paths) that point to external templates that can be leveraged by multiple collections |
+| [`collections`](#collection-attributes)                                   | contains definitions of collections you wish to add to one or more libraries                                                        |
+| [`dynamic_collections`](#dynamic-collection-attributes)                   | contains definitions of [dynamic collections](../../builders/dynamic.md) you wish to create                                         |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the File to run, else you will receive an error when trying to run the file against your library.
 

@@ -1,6 +1,63 @@
-# Path Types
+# Files & Paths
 
-YAML Files are defined by their path type and path location for the [`collection_files`](libraries.md#metadata-path),  [`overlay_files`](libraries.md#overlay-path), [`playlist_files`](libraries.md#metadata-path), and [`external_templates`](libraries.md#metadata-path) attributes.
+When using Plex Meta Manager, the structure of each library is made up of Files and Paths
+
+???+ example "Example Library Structure"
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: imdb
+    ```
+
+    In the above example, `collection_files` is the type of File, which tells PMM that the entries that follow will create/update collections and `- pmm:` is the type of Path, which PMM that the file it is looking for is a PMM Defaults file.
+
+    These ideas will be further outlined on this page.
+
+## Files
+
+Files define the structure and format for creating Collections, Overlays, Playlists, and Metadata Edits within your libraries.
+
+Files are modular and when properly leveraged, they not only facilitate the management of your library's collections and metadata but also serve as a crucial backup resource in case a restore is necessary.
+
+There are four main File types that can be utilized against Plex servers:
+
+| File Type                                                                                                        | Description                                                                                                                              |
+|:-----------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| [Collection Files](data/collections.md)                                                                          | Defines the data for building collections, allowing you to group and showcase your library in unique ways                                |
+| [Overlay Files](data/overlays.md)                                                                                | Defines the data for building overlays, allowing you to place information such as resolutions and ratings onto your posters.             |
+| Metadata Files ([Movies](data/metadata/movie.md)/[Shows](data/metadata/show.md)/[Music](data/metadata/music.md)) | Defines the data for editing metadata, allowing you to find and manipulate the metadata on individual items within your library.         |
+| [Playlist Files](data/playlists.md)                                                                              | Defines the data for building playlists, allowing you to combine media from multiple libraries and share them with users on your server  |
+
+Collection, Overlay and Metadata Files can be linked to libraries in the [Libraries Attribute](../config/libraries.md#metadata-path) within the [Configuration File](../config/configuration.md).
+
+## Example Files
+
+This is a basic Files structure showing the use of all four File types.
+
+???+ example "Example Files"
+
+    Unlike the other three, Playlist Files are not defined per-library.
+
+    Theis examples utilizes the [PMM Defaults](../defaults/files.md)
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: imdb
+        overlay_files:
+          - pmm: resolution
+        metadata_files:
+          - file: config/metadata.yml
+    playlist_files:
+      - pmm: playlists
+    ```
+
+# Paths
+
+YAML Files are defined by their path type and path location for the [`collection_files`](libraries.md#metadata-path), [`overlay_files`](libraries.md#overlay-path), [`playlist_files`](libraries.md#metadata-path), and [`external_templates`](#external-templates).
 
 They can either be on the local system, online at an url, directly from the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) repository, or from another [`Custom Repository`](settings.md#custom-repo).
 
@@ -10,7 +67,7 @@ The path types are outlined as follows:
 
 * `- folder:` refers to a directory containing collection files which is located within the system that PMM is being run from.
 
-* `- pmm:` refers to a [PMM Defaults](/defaults/guide.md builders/overlay/playlist file. 
+* `- pmm:` refers to a [PMM Defaults](../defaults/files.md) builders/overlay/playlist file. 
 
 * `- url:` refers to a collection file which is hosted publicly on the internet. 
 
@@ -18,8 +75,7 @@ The path types are outlined as follows:
 
 * `- repo:` refers to a collection file which is hosted on a custom repository specified by the user with the [`custom_repo` Setting Attribute](settings.md#custom-repo).
 
-
-## Examples
+## Example Paths
 
 ```yaml
 libraries:
@@ -41,6 +97,7 @@ Note that you enter the bits of the items path relative to the top level of the 
       - repo: People
 ```
 This is assuming the `custom_repo` setting is `https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12`
+Note that as with `- git:` you enter the bits of the items path relative to repo [`meisnate12/People`] and you don't need the `.yml` extension.
 Note that as with `- git:` you enter the bits of the items path relative to repo [`meisnate12/People`] and you don't need the `.yml` extension.
 ```
       - pmm: oscars
@@ -123,7 +180,7 @@ playlist_files:
 
 ## Collection File 
 
-The [`collection_files`](libraries.md#metadata-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md. 
+The [`collection_files`](libraries.md#metadata-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
 
 ??? example
     
@@ -154,7 +211,7 @@ The [`collection_files`](libraries.md#metadata-path) attribute is defined under 
 
 ## Overlay File 
 
-The [`overlay_files`](libraries.md#overlay-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md. 
+The [`overlay_files`](libraries.md#overlay-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
 
 ??? example
 
@@ -185,7 +242,7 @@ The [`overlay_files`](libraries.md#overlay-path) attribute is defined under the 
 
 ## Playlist Files 
 
-The [`playlist_files`](playlists.md) at the top level in your [Configuration File](configuration.md. 
+The [`playlist_files`](data/playlists.md) at the top level in your [Configuration File](configuration.md). 
 
 ??? example
 
@@ -214,7 +271,7 @@ The [`playlist_files`](playlists.md) at the top level in your [Configuration Fil
 
 ## External Templates 
 
-The [`external_templates`](../builders/templates.md#external-templates) attribute is defined at the top level in your [Collection File](../data/collections.md). 
+The [`external_templates`](../builders/templates.md#external-templates) attribute is defined at the top level in your [Collection File](data/collections.md). 
 
 ??? example
     

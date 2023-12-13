@@ -99,21 +99,24 @@
 .orange {
   color: #e69800;
 }
-
 table.clearTable {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  display: inline !important;
 }
 table.clearTable td {
-  padding: 3px 3px 3px 15px;
+  padding: 3px 15px 3px 3px !important;
+}
+table.clearTable td:last-child {
+  padding: 3px 3px 3px 3px !important;
 }
 table.clearTable th {
-  text-align: center;
+  text-align: center !important;
 }
 table.clearTable, table.clearTable tbody, table.clearTable tr, table.clearTable td, table.clearTable th {
-    background-color: var(--md-default-bg-color);
-    border: 0.05rem solid var(--md-typeset-table-color);
-    border-radius: 0.1rem;
+    background-color: transparent !important;
+    border: 0 !important;
+    /* background-color: var(--md-default-bg-color); */
+    /* border: 0.05rem solid var(--md-typeset-table-color); */
+    /* border-radius: 0.1rem; */
 }
 table.dualTable td, table.dualTable th {
   padding-left: 15px !important;
@@ -151,6 +154,9 @@ table.dualTable td, table.dualTable th {
     max-width: 100%;
     overflow: auto;
     touch-action: auto;
+}
+.md-typeset table:not([class]) th {
+    min-width: 0rem;
 }
 /* dark mode alternating table bg colors */
 [data-md-color-scheme="slate"] .md-typeset__table tr:nth-child(2n) {

@@ -78,12 +78,12 @@ Whenever I execute Plex Meta Manager and the Movies library is run, MyOverlays.y
 
 Overlay Files can utilize the following top-level attributes
 
-| Attribute                                                              | Description                                                                                                                                                                       |
-|:-----------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`templates`](../../builders/templates.md)                             | contains definitions of templates that can be leveraged by multiple Overlays                                                                                                   |
-| [`external_templates`](../../builders/templates.md#external-templates) | contains [path types](../paths.md) that point to external templates that can be leveraged by multiple Overlays                                                             |
-| [`overlays`](#overlay-attributes)                                      | contains definitions of Overlays you wish to add to one or more libraries                                                                                                      |
-
+| Attribute                                                              | Description                                                                                                                      |
+|:-----------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| [`templates`](../../builders/templates.md)                             | contains definitions of templates that can be leveraged by multiple Overlays                                                     |
+| [`external_templates`](../../builders/templates.md#external-templates) | contains [path types](../../builders/files.md#paths) that point to external templates that can be leveraged by multiple Overlays |
+| [`overlays`](#overlay-attributes)                                      | contains definitions of Overlays you wish to add to one or more libraries                                                        |
+[files.md](..%2F..%2Fbuilders%2Ffiles.md)
 * Example Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
 
 ## Overlay Understandings
@@ -127,12 +127,12 @@ To remove all overlays from your library, add `remove_overlays: true` to the `ov
 
 Overlay Files can utilize the following top-level attributes
 
-| Attribute                                               | Description                                                                                                        |
-|:--------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
-| [`templates`](../../builders/templates.md)              | contains definitions of templates that can be leveraged by multiple overlays                                       |
-| [`external_templates`](../../builders/templates.md#external-templates) | contains [path types](../paths.md) that point to external templates that can be leveraged by multiple overlays |
-| [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                       |
-| [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                   |
+| Attribute                                               | Description                                                                                                                      |
+|:--------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| [`templates`](../../builders/templates.md)              | contains definitions of templates that can be leveraged by multiple overlays                                                     |
+| [`external_templates`](../../builders/templates.md#external-templates) | contains [path types](../../builders/files.md#paths) that point to external templates that can be leveraged by multiple overlays |
+| [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                                     |
+| [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                                 |
 
 * `overlays` is required in order to run the Overlay File.
 * Example Overlay Files can be found in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
