@@ -30,7 +30,7 @@ settings:
     - config/assets_ahoy
 ```
 
-* You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [Path Types](../../../config/paths.md#asset-directory) for how to define them.
+* You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [Path Types](../../../builders/files.md#paths) for how to define them.
 
 * By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
 

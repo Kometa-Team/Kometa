@@ -37,7 +37,7 @@ settings:
   - operations
   - metadata
   - collections
-  - operations
+  - overlays
   cache: true
   cache_expiration: 60
   asset_directory: config/assets

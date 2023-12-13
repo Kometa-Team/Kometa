@@ -140,7 +140,6 @@ nav:
         - Overlay Files: config/files.md
         - Metadata Files: config/files.md
         - Playlist Files: config/files.md
-        - Path Types: config/paths.md
         - Library Operations: config/operations.md
         - Settings: config/settings.md
         - Webhooks: config/webhooks.md
@@ -263,6 +262,7 @@ nav:
       - PLAYLIST DEFAULTS:
         - Playlists: defaults/playlist.md
   - FILES & BUILDERS:
+      - Overview: builders/files.md
       - "FILES":
         - Collection Files: config/data/collections.md
         - Overlay Files: config/data/overlays.md

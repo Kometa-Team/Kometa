@@ -79,11 +79,11 @@ Plex Meta Manager can automatically build and update playlists defined within th
 
 These are the attributes which can be utilized within the Playlist File:
 
-| Attribute                                               | Description                                                                                                         |
-|:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates.md)                                | contains definitions of templates that can be leveraged by multiple playlists                                       |
-| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths.md) that point to external templates that can be leveraged by multiple playlists |
-| [`playlists`](#playlist-attributes)                     | contains definitions of playlists you wish to add to the server                                                     |
+| Attribute                                                 | Description                                                                                                                     |
+|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| [`templates`](templates.md)                               | contains definitions of templates that can be leveraged by multiple playlists                                                   |
+| [`external_templates`](templates.md#external-templates)   | contains [path types](../builders/files.md#paths) that point to external templates that can be leveraged by multiple playlists  |
+| [`playlists`](#playlist-attributes)                       | contains definitions of playlists you wish to add to the server                                                                 |
 
 * `playlists` is required in order to run the Playlist File.
 * You can find example Playlist Files in the [Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)

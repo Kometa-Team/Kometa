@@ -238,7 +238,7 @@ Check out the example files in the [Plex Meta Manager Configs Repository](https:
 
 ## External Templates
 
-To load external templates located in another file you can use the `external_templates` attribute by specifying the path type and path of the files that will be executed. See [Path Types](../config/paths.md) for how to define them.
+To load external templates located in another file you can use the `external_templates` attribute by specifying the path type and path of the files that will be executed. See [Path Types](../builders/files.md#paths) for how to define them.
 
 ```yaml
 external_templates:

@@ -67,7 +67,7 @@ These are the attributes which can be used within the Overlay File:
 | Attribute                                               | Description                                                                                                        |
 |:--------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates.md)                                | contains definitions of templates that can be leveraged by multiple overlays                                       |
-| [`external_templates`](templates.md#external-templates) | contains [path types](../config/paths.md) that point to external templates that can be leveraged by multiple overlays |
+| [`external_templates`](templates.md#external-templates) | contains [path types](../builders/files.md#paths) that point to external templates that can be leveraged by multiple overlays |
 | [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                       |
 | [`overlays`](#overlays-attributes)                      | contains definitions of overlays you wish to add                                                                   |
 
