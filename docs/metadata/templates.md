@@ -158,7 +158,7 @@ Every template call is given these template variables.
 * `<<library_name>>` which is the name of the library
 * All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
 
-### Conditionals 
+### Conditionals
 
 Each conditional is identified by its mapping name and has one required attribute; `conditions` and one optional attribute; `default`.
 
@@ -229,7 +229,7 @@ collections:
     summary: Comedy is a genre of film that uses humor as a driving force. The aim of a comedy film is to illicit laughter from the audience through entertaining stories and characters. Although the comedy film may take on some serious material, most have a happy ending. Comedy film has the tendency to become a hybrid sub-genre because humor can be incorporated into many other genres. Comedies are more likely than other films to fall back on the success and popularity of an individual star.
   Romantic Comedy:
     template: {name: IMDb Genre, genre: "romance,comedy", limit: 200}
-    summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorus situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
+    summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorous situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
     filters:
       genre: Comedy
 ```

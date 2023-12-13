@@ -6,7 +6,7 @@ search:
 
 This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our 
 
-If you have a question that is not answered here, try enter some keywords into the search bar above, or join our [Discord Server](https://discord.gg/NfH6mGFuAB).
+If you have a question that is not answered here, try entering some keywords into the search bar above, or join our [Discord Server](https://discord.gg/NfH6mGFuAB).
 
 ## Frequently Asked Questions
 
@@ -424,13 +424,13 @@ If you are not on the latest version of your branch, you will see Newest Version
 
 There are five main event types that you need to be aware of when understanding the log files, detailed below:
 
-| Type       | Short Info            | Description                                                               | Recommendation                                                                                        |
-|:-----------|:----------------------|:--------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------|
-| `INFO`     | Information log       | Informational message that does not require much attention                | No action required                                                                                    |
-| `DEBUG`    | Debug Log             | Debug log message that does not require much attention                    | No action required                                                                                    |
-| `WARNING`  | Warning Log           | Warning message that may require your attention                           | Read the warning and determine if this is something you need to take action on or not                 |
-| `ERROR`    | Error Log             | Error message that in MOST cases requires action on your part to resolve  | Read the error message, look for the message below and try recommendations                            |
-| `CRITICAL` | Critical Log          | Critical messaage requiring you to fix it for PMM to run properly         | Read the critical message and take appropriate action. look for message below and try recommendations |
+| Type       | Short Info            | Description                                                              | Recommendation                                                                                        |
+|:-----------|:----------------------|:-------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------|
+| `INFO`     | Information log       | Informational message that does not require much attention               | No action required                                                                                    |
+| `DEBUG`    | Debug Log             | Debug log message that does not require much attention                   | No action required                                                                                    |
+| `WARNING`  | Warning Log           | Warning message that may require your attention                          | Read the warning and determine if this is something you need to take action on or not                 |
+| `ERROR`    | Error Log             | Error message that in MOST cases requires action on your part to resolve | Read the error message, look for the message below and try recommendations                            |
+| `CRITICAL` | Critical Log          | Critical message requiring you to fix it for PMM to run properly         | Read the critical message and take appropriate action. look for message below and try recommendations |
 
 
 ### Common Log File Messages

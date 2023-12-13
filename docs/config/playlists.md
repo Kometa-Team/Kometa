@@ -2,9 +2,9 @@
 
 As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](data/playlists.md) to work.
 
-Within the [Config File](configuration.md, the `playlist_files` attribute specifies the [path type](../builders/files.md#paths) and path of the [Playlist Files](data/playlists.md) that the user wants Plex Meta Manager to act on.
+Within the [Config File](configuration.md), the `playlist_files` attribute specifies the [path type](../builders/files.md#paths) and path of the [Playlist Files](data/playlists.md) that the user wants Plex Meta Manager to act on.
 
-**The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the [Config File](configuration.md.**
+**The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the [Config File](configuration.md).**
 
 ```yaml
 playlist_files:

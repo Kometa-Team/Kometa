@@ -24,7 +24,7 @@ libraries:
 
 ## Template Variable Default Values
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy..
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
 | Variable            | Default / Values                                                                                 |
 |:--------------------|:-------------------------------------------------------------------------------------------------|

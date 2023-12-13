@@ -30,7 +30,7 @@ There are four main File types that can be utilized against Plex servers:
 | Metadata Files ([Movies](data/metadata/movie.md)/[Shows](data/metadata/show.md)/[Music](data/metadata/music.md)) | Defines the data for editing metadata, allowing you to find and manipulate the metadata on individual items within your library.         |
 | [Playlist Files](data/playlists.md)                                                                              | Defines the data for building playlists, allowing you to combine media from multiple libraries and share them with users on your server  |
 
-Collection, Overlay and Metadata Files can be linked to libraries in the [Libraries Attribute](../config/libraries.md#metadata-path) within the [Configuration File](../config/configuration.md).
+Collection, Overlay and Metadata Files can be linked to libraries in the [Libraries Attribute](libraries) within the [Configuration File](../config/configuration.md).
 
 ## Example Files
 
@@ -57,7 +57,7 @@ This is a basic Files structure showing the use of all four File types.
 
 # Paths
 
-YAML Files are defined by their path type and path location for the [`collection_files`](libraries.md#metadata-path), [`overlay_files`](libraries.md#overlay-path), [`playlist_files`](libraries.md#metadata-path), and [`external_templates`](#external-templates).
+YAML Files are defined by their path type and path location for the [`collection_files`](libraries.md#collection-file), [`overlay_files`](libraries.md#overlay-file), [`playlist_files`](data/playlists), and [`external_templates`](../builders/templates).
 
 They can either be on the local system, online at an url, directly from the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) repository, or from another [`Custom Repository`](settings.md#custom-repo).
 
@@ -88,7 +88,7 @@ File and folder paths need to be accessible to PMM at those paths; this is typic
 ```
       - url: https://example.com/path/to/file.yml
 ```
-This needs to point directly to the YAML file.  A common error is using a github link that points to the *page displaying the YAML*.  In github, for instance, click on the "Raw" button and use *that* link.
+This needs to point directly to the YAML file.  A common error is using a gitHub link that points to the *page displaying the YAML*.  In gitHub, for instance, click on the "Raw" button and use *that* link.
 ```
       - git: meisnate12/People # this links to https://github.com/meisnate12/Plex-Meta-Manager-Configs/blob/master/meisnate12/People.yml
 ```
@@ -136,7 +136,7 @@ What these variables will do depends on how they're defined in the Collection Fi
 
 ### Schedule
 
-Each [`collection_files`](libraries.md#metadata-path),  [`overlay_files`](libraries.md#overlay-path), or [`playlist_files`](libraries.md#metadata-path) can be scheduled by adding the `schedule` attribute to the dictionary defining the file.
+Each [`collection_files`](libraries.md#collection-file),  [`overlay_files`](libraries.md#overlay-file), or [`playlist_files`](data/playlists) can be scheduled by adding the `schedule` attribute to the dictionary defining the file.
 
 Below is an example of a scheduled Collection File and Playlist File:
 
@@ -180,7 +180,7 @@ playlist_files:
 
 ## Collection File 
 
-The [`collection_files`](libraries.md#metadata-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
+The [`collection_files`](libraries.md#collection-file) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
 
 ??? example
     
@@ -211,7 +211,7 @@ The [`collection_files`](libraries.md#metadata-path) attribute is defined under 
 
 ## Overlay File 
 
-The [`overlay_files`](libraries.md#overlay-path) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
+The [`overlay_files`](libraries.md#overlay-file) attribute is defined under the [`libraries`](libraries.md) attribute in your [Configuration File](configuration.md). 
 
 ??? example
 

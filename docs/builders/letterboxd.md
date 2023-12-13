@@ -4,10 +4,10 @@ You can find items using the lists on [Letterboxd.com](https://letterboxd.com/) 
 
 No configuration is required for these builders.
 
-| Attribute                                     | Description                                                                                                     | Works with Movies | Works with Shows  | Works with Playlists and Custom Sort |
-|:----------------------------------------------|:----------------------------------------------------------------------------------------------------------------|:-----------------:|:-----------------:|:------------------------------------:|
-| [`letterboxd_list`](#letterboxd-list)         | Finds every movie in the Letterboxd List                                                                        |      &#9989;      |     &#10060;      |               &#9989;                |
-| [`letterboxd_list_details`](#letterboxd-list) | Finds every movie in the Letterboxd List and updates the collection with the description of the Letterboxd list |      &#9989;      |     &#10060;      |               &#9989;                |
+| Attribute                                     | Description                                                                                                     |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
+|:----------------------------------------------|:----------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
+| [`letterboxd_list`](#letterboxd-list)         | Finds every movie in the Letterboxd List                                                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
+| [`letterboxd_list_details`](#letterboxd-list) | Finds every movie in the Letterboxd List and updates the collection with the description of the Letterboxd list | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
 
 ## Letterboxd List
 
@@ -40,12 +40,12 @@ collections:
 
 You can add different filters directly to this builder.
 
-| Filter Attribute     | Description                                                                                                                                                   |
-|:---------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`              | **Description:** Max number of items per returned.<br>**Values:**  number greater than `1`                                                                    |
-| `rating`<sup>1</sup> | **Description:** Search for the specified rating range. The rating is the list owner's rating not sitewide rating.<br>**Values:**  range of int i.e. `80-100` |
-| `year`<sup>1</sup>   | **Description:** Search for the specified year range.<br>**Values:**  range of int i.e. `1990-1999`                                                           |
-| `note`<sup>1</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not sitewide note.<br>**Values:**  Any String                  |
+| Filter Attribute     | Description                                                                                                                                                    |
+|:---------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`              | **Description:** Max number of items per returned.<br>**Values:**  number greater than `1`                                                                     |
+| `rating`<sup>1</sup> | **Description:** Search for the specified rating range. The rating is the list owner's rating not site wide rating.<br>**Values:**  range of int i.e. `80-100` |
+| `year`<sup>1</sup>   | **Description:** Search for the specified year range.<br>**Values:**  range of int i.e. `1990-1999`                                                            |
+| `note`<sup>1</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:**  Any String                  |
 
 <sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list. (i.e. it should have `/detail/` in the url)
 

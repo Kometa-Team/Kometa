@@ -14,11 +14,11 @@ Supported Library Types: Show
 
 ## Collections Section 110
 
-| Collection                                               | Key                                          | Description                                                                    |
-|:---------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|
-| `Ratings Collections`                                    | `separator`                                  | [Separator Collection](../separators.md) to denote the Section of Collections.    |
-| `<<Content Rating>> Shows`<br>**Example:** `TV-14 Shows` | `<<Content Rating>>`<br>**Example:** `TV-14` | Collection of Shows that have this Content Rating.                             |
-| `Not Rated Shows`                                        | `other`                                      | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
+| Collection                                               | Key                                          | Description                                                                      |
+|:---------------------------------------------------------|:---------------------------------------------|:---------------------------------------------------------------------------------|
+| `Ratings Collections`                                    | `separator`                                  | [Separator Collection](../separators.md) to denote the Section of Collections.   |
+| `<<Content Rating>> Shows`<br>**Example:** `TV-14 Shows` | `<<Content Rating>>`<br>**Example:** `TV-14` | Collection of Shows that have this Content Rating.                               |
+| `Not Rated Shows`                                        | `other`                                      | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings.   |
 
 ## Config
 
@@ -41,8 +41,8 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                 |
 | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                              |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                    |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                              |
+| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                             |
+| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                       |
 | `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
 | `exclude`                     | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of Content Ratings found in your library                                                                                                                         |
 | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Content Ratings found in your library |

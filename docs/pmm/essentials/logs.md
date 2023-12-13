@@ -37,7 +37,7 @@ config/logs
     └── playlists.log.1
 ```
 
-You will find a `meta.log`, which the the full log of the entire run.
+You will find a `meta.log`, which is the full log of the entire run.
 
 The subfolders provide more limited logs at the library, collection, and playlist levels.
 

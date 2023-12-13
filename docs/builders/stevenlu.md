@@ -4,9 +4,9 @@ You can find items using StevenLu's Popular Movies list on [StevenLu.com](https:
 
 No configuration is required for this builder.
 
-| Attribute                                            | Description                                                                          | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:-----------------------------------------------------|:-------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`stevenlu_popular`](#stevenlus-popular-movies-list) | Finds every movie on [StevenLu's Popular Movies List](https://movies.stevenlu.com/). |      &#9989;      |     &#10060;     |               &#9989;                |
+| Attribute                                            | Description                                                                          |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
+|:-----------------------------------------------------|:-------------------------------------------------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
+| [`stevenlu_popular`](#stevenlus-popular-movies-list) | Finds every movie on [StevenLu's Popular Movies List](https://movies.stevenlu.com/). | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
 
 ## StevenLu's Popular Movies List
 

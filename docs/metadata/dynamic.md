@@ -80,25 +80,25 @@ dynamic_collections:
 
 ## Attributes
 
-| Attribute                                   | Description                                                                                                                    |     Required      |
-|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|:-----------------:|
-| [`type`](#type--data)                       | Type of Dynamic Collection to be created.                                                                                      |      &#9989;      |
-| [`data`](#type--data)                       | Data to determine how dynamic collections with a certain `type` are created.                                                   | Depends on `type` |
-| [`exclude`](#exclude)                       | Exclude this list of keys from being created into collections.                                                                 |     &#10060;      |
-| [`addons`](#addons)                         | Defines how multiple keys can be combined under a parent key.                                                                  |     &#10060;      |
-| [`template`](#template)                     | Name of the template to use for these dynamic collections.                                                                     |     &#10060;      |
-| [`template_variables`](#template-variables) | Defines how template variables can be defined by key.                                                                          |     &#10060;      |
-| [`other_template`](#other-template)         | Name of the template to use for the other collection.                                                                          |     &#10060;      |
-| [`remove_suffix`](#remove-prefixsuffix)     | Removes the defined suffixes from the key before it's used in the collection title.                                            |     &#10060;      |
-| [`remove_prefix`](#remove-prefixsuffix)     | Removes the defined prefixes from the key before it's used in the collection title.                                            |     &#10060;      |
-| [`title_format`](#title-format)             | This is the format for the collection titles.                                                                                  |     &#10060;      |
-| [`key_name_override`](#key-name-override)   | Defines how key names can be overridden before they are formatted into collection titles.                                      |     &#10060;      |
-| [`title_override`](#title-override)         | Defines how collection titles can be overridden ignoring title formatting.                                                     |     &#10060;      |
-| [`custom_keys`](#custom-keys)               | Defines if custom keys are allowed.                                                                                            |     &#10060;      |
-| [`test`](#test)                             | Will add `test: true` to all collections for test runs.                                                                        |     &#10060;      |
-| [`sync`](#sync)                             | Will remove dynamic collections that are no longer in the creation list.                                                       |     &#10060;      |
-| [`include`](#include)                       | Define a list of keys to be made into collections.                                                                             |     &#10060;      |
-| [`other_name`](#other-name)                 | Used in combination with `include`. When defined, all keys not in `include` or `addons` will be combined into this collection. |     &#10060;      |
+| Attribute                                   | Description                                                                                                                    |                  Required                  |
+|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|
+| [`type`](#type--data)                       | Type of Dynamic Collection to be created.                                                                                      | :fontawesome-solid-circle-check:{ .green } |
+| [`data`](#type--data)                       | Data to determine how dynamic collections with a certain `type` are created.                                                   |             Depends on `type`              |
+| [`exclude`](#exclude)                       | Exclude this list of keys from being created into collections.                                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`addons`](#addons)                         | Defines how multiple keys can be combined under a parent key.                                                                  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`template`](#template)                     | Name of the template to use for these dynamic collections.                                                                     |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`template_variables`](#template-variables) | Defines how template variables can be defined by key.                                                                          |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`other_template`](#other-template)         | Name of the template to use for the other collection.                                                                          |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`remove_suffix`](#remove-prefixsuffix)     | Removes the defined suffixes from the key before it's used in the collection title.                                            |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`remove_prefix`](#remove-prefixsuffix)     | Removes the defined prefixes from the key before it's used in the collection title.                                            |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`title_format`](#title-format)             | This is the format for the collection titles.                                                                                  |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`key_name_override`](#key-name-override)   | Defines how key names can be overridden before they are formatted into collection titles.                                      |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`title_override`](#title-override)         | Defines how collection titles can be overridden ignoring title formatting.                                                     |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`custom_keys`](#custom-keys)               | Defines if custom keys are allowed.                                                                                            |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`test`](#test)                             | Will add `test: true` to all collections for test runs.                                                                        |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`sync`](#sync)                             | Will remove dynamic collections that are no longer in the creation list.                                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`include`](#include)                       | Define a list of keys to be made into collections.                                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`other_name`](#other-name)                 | Used in combination with `include`. When defined, all keys not in `include` or `addons` will be combined into this collection. |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 {%
    include-markdown "./dynamic_types.md"

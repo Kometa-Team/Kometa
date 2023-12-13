@@ -4,9 +4,9 @@ You can find items using the features of [FlixPatrol.com](https://flixpatrol.com
 
 No configuration is required for this builder.
 
-| Attribute                                    | Description                                                                                                              | Works with Movies | Works with Shows | Works with Playlists and Custom Sort |
-|:---------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|:-----------------:|:----------------:|:------------------------------------:|
-| [`flixpatrol_top`](#flixpatrol-top-platform) | Finds every item from [FlixPatrol's Top Platform Lists](https://flixpatrol.com/top10/) based on the attributes provided. |      &#9989;      |     &#9989;      |               &#9989;                |
+| Attribute                                    | Description                                                                                                              |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+|:---------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
+| [`flixpatrol_top`](#flixpatrol-top-platform) | Finds every item from [FlixPatrol's Top Platform Lists](https://flixpatrol.com/top10/) based on the attributes provided. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
 ## FlixPatrol Top Platform
 

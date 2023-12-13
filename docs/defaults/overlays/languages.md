@@ -10,81 +10,81 @@ Supported library types: Movie & Show
 
 ## Supported Audio/Subtitle Language Flags
 
-| Audio/Subtitle Languages | Key   | Weight | Default Flag | Default Use |
-|:-------------------------|:------|:-------|:-------------|:-----------:|
-| English                  | `en`  | `610`  | `us`         |   &#9989;   |
-| German                   | `de`  | `600`  | `de`         |   &#9989;   |
-| French                   | `fr`  | `590`  | `fr`         |   &#9989;   |
-| Spanish                  | `es`  | `580`  | `es`         |   &#9989;   |
-| Portuguese               | `pt`  | `570`  | `pt`         |   &#9989;   |
-| Japanese                 | `ja`  | `560`  | `jp`         |   &#9989;   |
-| Korean                   | `ko`  | `550`  | `kr`         |  &#10060;   |
-| Chinese                  | `zh`  | `540`  | `cn`         |  &#10060;   |
-| Danish                   | `da`  | `530`  | `dk`         |  &#10060;   |
-| Russian                  | `ru`  | `520`  | `ru`         |  &#10060;   |
-| Italian                  | `it`  | `510`  | `it`         |  &#10060;   |
-| Hindi                    | `hi`  | `500`  | `in`         |  &#10060;   |
-| Telugu                   | `te`  | `490`  | `in`         |  &#10060;   |
-| Farsi                    | `fa`  | `480`  | `ir`         |  &#10060;   |
-| Thai                     | `th`  | `470`  | `th`         |  &#10060;   |
-| Dutch                    | `nl`  | `460`  | `nl`         |  &#10060;   |
-| Norwegian                | `no`  | `450`  | `no`         |  &#10060;   |
-| Icelandic                | `is`  | `440`  | `is`         |  &#10060;   |
-| Swedish                  | `sv`  | `430`  | `se`         |  &#10060;   |
-| Turkish                  | `tr`  | `420`  | `tr`         |  &#10060;   |
-| Polish                   | `pl`  | `410`  | `pl`         |  &#10060;   |
-| Czech                    | `cs`  | `400`  | `cz`         |  &#10060;   |
-| Ukrainian                | `uk`  | `390`  | `ua`         |  &#10060;   |
-| Hungarian                | `hu`  | `380`  | `hu`         |  &#10060;   |
-| Arabic                   | `ar`  | `370`  | `eg`         |  &#10060;   |
-| Bulgarian                | `bg`  | `360`  | `bg`         |  &#10060;   |
-| Bengali                  | `bn`  | `350`  | `bd`         |  &#10060;   |
-| Bosnian                  | `bs`  | `340`  | `ba`         |  &#10060;   |
-| Catalan                  | `ca`  | `330`  | `es`         |  &#10060;   |
-| Welsh                    | `cy`  | `320`  | `uk`         |  &#10060;   |
-| Greek                    | `el`  | `310`  | `gr`         |  &#10060;   |
-| Estonian                 | `et`  | `300`  | `ee`         |  &#10060;   |
-| Basque                   | `eu`  | `290`  | `es`         |  &#10060;   |
-| Finnish                  | `fi`  | `280`  | `fi`         |  &#10060;   |
-| Tagalog                  | `tl`  | `270`  | `ph`         |  &#10060;   |
-| Filipino                 | `fil` | `265`  | `ph`         |  &#10060;   |
-| Galician                 | `gl`  | `260`  | `es`         |  &#10060;   |
-| Hebrew                   | `he`  | `250`  | `il`         |  &#10060;   |
-| Croatian                 | `hr`  | `240`  | `hr`         |  &#10060;   |
-| Indonesian               | `id`  | `230`  | `id`         |  &#10060;   |
-| Georgian                 | `ka`  | `220`  | `ge`         |  &#10060;   |
-| Kazakh                   | `kk`  | `210`  | `kz`         |  &#10060;   |
-| Kannada                  | `kn`  | `200`  | `in`         |  &#10060;   |
-| Latin                    | `la`  | `190`  | `it`         |  &#10060;   |
-| Lithuanian               | `lt`  | `180`  | `lt`         |  &#10060;   |
-| Latvian                  | `lv`  | `170`  | `lv`         |  &#10060;   |
-| Macedonian               | `mk`  | `160`  | `mk`         |  &#10060;   |
-| Malayalam                | `ml`  | `150`  | `in`         |  &#10060;   |
-| Marathi                  | `mr`  | `140`  | `in`         |  &#10060;   |
-| Malay                    | `ms`  | `130`  | `my`         |  &#10060;   |
-| Norwegian Nokmål         | `nb`  | `120`  | `no`         |  &#10060;   |
-| Norwegian Nynorsk        | `nn`  | `110`  | `no`         |  &#10060;   |
-| Punjabi                  | `pa`  | `100`  | `in`         |  &#10060;   |
-| Romanian                 | `ro`  | `90`   | `ro`         |  &#10060;   |
-| Slovak                   | `sk`  | `80`   | `sk`         |  &#10060;   |
-| Slovenian                | `sl`  | `70`   | `si`         |  &#10060;   |
-| Albanian                 | `sq`  | `60`   | `al`         |  &#10060;   |
-| Serbian                  | `sr`  | `50`   | `rs`         |  &#10060;   |
-| Somali                   | `so`  | `45`   | `so`         |  &#10060;   |
-| Swahili                  | `sw`  | `40`   | `tz`         |  &#10060;   |
-| Tamil                    | `ta`  | `30`   | `in`         |  &#10060;   |
-| Urdu                     | `ur`  | `20`   | `pk`         |  &#10060;   |
-| Vietnamese               | `vi`  | `15`   | `vn`         |  &#10060;   |
-| Lingala                  | `ln`  | `11`   | `cd`         |  &#10060;   |
-| Wolof                    | `wo`  | `10`   | `sn`         |  &#10060;   |
-| Mayan                    | `myn` | `8`    | `mx`         |  &#10060;   |
-| Inuktitut                | `iu`  | `7`    | `ca`         |  &#10060;   |
-| Romani                   | `rom` | `6`    | `ro`         |  &#10060;   |
-| Amharic                  | `am`  | `5`    | `et`         |  &#10060;   |
-| Sundanese                | `su`  | `4`    | `id`         |  &#10060;   |
-| Zulu                     | `zu`  | `3`    | `za`         |  &#10060;   |
-| Luxembourgish            | `lb`  | `2`    | `lu`         |  &#10060;   |
-| Mossi                    | `mos` | `1`    | `bf`         |  &#10060;   |
+| Audio/Subtitle Languages | Key   | Weight | Default Flag |                Default Use                 |
+|:-------------------------|:------|:-------|:-------------|:------------------------------------------:|
+| English                  | `en`  | `610`  | `us`         | :fontawesome-solid-circle-check:{ .green } |
+| German                   | `de`  | `600`  | `de`         | :fontawesome-solid-circle-check:{ .green } |
+| French                   | `fr`  | `590`  | `fr`         | :fontawesome-solid-circle-check:{ .green } |
+| Spanish                  | `es`  | `580`  | `es`         | :fontawesome-solid-circle-check:{ .green } |
+| Portuguese               | `pt`  | `570`  | `pt`         | :fontawesome-solid-circle-check:{ .green } |
+| Japanese                 | `ja`  | `560`  | `jp`         | :fontawesome-solid-circle-check:{ .green } |
+| Korean                   | `ko`  | `550`  | `kr`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Chinese                  | `zh`  | `540`  | `cn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Danish                   | `da`  | `530`  | `dk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Russian                  | `ru`  | `520`  | `ru`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Italian                  | `it`  | `510`  | `it`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Hindi                    | `hi`  | `500`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Telugu                   | `te`  | `490`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Farsi                    | `fa`  | `480`  | `ir`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Thai                     | `th`  | `470`  | `th`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Dutch                    | `nl`  | `460`  | `nl`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Norwegian                | `no`  | `450`  | `no`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Icelandic                | `is`  | `440`  | `is`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Swedish                  | `sv`  | `430`  | `se`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Turkish                  | `tr`  | `420`  | `tr`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Polish                   | `pl`  | `410`  | `pl`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Czech                    | `cs`  | `400`  | `cz`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Ukrainian                | `uk`  | `390`  | `ua`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Hungarian                | `hu`  | `380`  | `hu`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Arabic                   | `ar`  | `370`  | `eg`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bulgarian                | `bg`  | `360`  | `bg`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bengali                  | `bn`  | `350`  | `bd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bosnian                  | `bs`  | `340`  | `ba`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Catalan                  | `ca`  | `330`  | `es`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Welsh                    | `cy`  | `320`  | `uk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Greek                    | `el`  | `310`  | `gr`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Estonian                 | `et`  | `300`  | `ee`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Basque                   | `eu`  | `290`  | `es`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Finnish                  | `fi`  | `280`  | `fi`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Tagalog                  | `tl`  | `270`  | `ph`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Filipino                 | `fil` | `265`  | `ph`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Galician                 | `gl`  | `260`  | `es`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Hebrew                   | `he`  | `250`  | `il`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Croatian                 | `hr`  | `240`  | `hr`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Indonesian               | `id`  | `230`  | `id`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Georgian                 | `ka`  | `220`  | `ge`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Kazakh                   | `kk`  | `210`  | `kz`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Kannada                  | `kn`  | `200`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Latin                    | `la`  | `190`  | `it`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Lithuanian               | `lt`  | `180`  | `lt`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Latvian                  | `lv`  | `170`  | `lv`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Macedonian               | `mk`  | `160`  | `mk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Malayalam                | `ml`  | `150`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Marathi                  | `mr`  | `140`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Malay                    | `ms`  | `130`  | `my`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Norwegian Nokmål         | `nb`  | `120`  | `no`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Norwegian Nynorsk        | `nn`  | `110`  | `no`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Punjabi                  | `pa`  | `100`  | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Romanian                 | `ro`  | `90`   | `ro`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Slovak                   | `sk`  | `80`   | `sk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Slovenian                | `sl`  | `70`   | `si`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Albanian                 | `sq`  | `60`   | `al`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Serbian                  | `sr`  | `50`   | `rs`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Somali                   | `so`  | `45`   | `so`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Swahili                  | `sw`  | `40`   | `tz`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Tamil                    | `ta`  | `30`   | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Urdu                     | `ur`  | `20`   | `pk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Vietnamese               | `vi`  | `15`   | `vn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Wolof                    | `wo`  | `10`   | `sn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Mayan                    | `myn` | `8`    | `mx`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Inuktitut                | `iu`  | `7`    | `ca`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Romani                   | `rom` | `6`    | `ro`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Amharic                  | `am`  | `5`    | `et`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Sundanese                | `su`  | `4`    | `id`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Zulu                     | `zu`  | `3`    | `za`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Luxembourgish            | `lb`  | `2`    | `lu`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Mossi                    | `mos` | `1`    | `bf`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ### Square Style
 

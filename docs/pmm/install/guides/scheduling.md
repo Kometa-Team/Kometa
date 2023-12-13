@@ -4,7 +4,7 @@ search:
 ---
 # Scheduling Guide
 
-Plex Meta Manager is designed to be a background running service that "wakes up" and "sleeps" when it is scheduled to do so. By default and unless configured using the [Time to Run Command](../../essentials/environmental.md#time-to-run), Plex Meta Manager expects to run every day at 5AM local time.
+Plex Meta Manager is designed to be a background running service that "wakes up" and "sleeps" when it is scheduled to do so. By default unless configured using the [Time to Run Command](../../essentials/environmental.md#time-to-run), Plex Meta Manager expects to run every day at 5AM local time.
 
 Whilst it is possible to have `python plex-meta-manager.py` running in an open window constantly, this is not the recommended approach as it relies on an always-open command window that can be obtrusive to the user.
 
