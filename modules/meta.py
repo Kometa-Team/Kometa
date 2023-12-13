@@ -1503,7 +1503,6 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
                         continue
-                title = mapping_name if mapping_id is None else None
 
                 blank_edition = False
                 edition_titles = []
@@ -1611,7 +1610,7 @@ class MetadataFile(DataFile):
                         logger.info("")
                         logger.separator(f"Updating {i.title}", space=False, border=False)
                         logger.info("")
-                        self.update_metadata_item(i, mapping_name, meta, methods, title=title)
+                        self.update_metadata_item(i, mapping_name, meta, methods)
                     except Failed as e:
                         logger.error(e)
             except NotScheduled as e:
@@ -1619,7 +1618,7 @@ class MetadataFile(DataFile):
             except Failed as e:
                 logger.error(e)
 
-    def update_metadata_item(self, item, mapping_name, meta, methods, title=None):
+    def update_metadata_item(self, item, mapping_name, meta, methods):
 
         updated = False
 
@@ -1719,7 +1718,7 @@ class MetadataFile(DataFile):
             genres = tmdb_item.genres
 
         #item.batchEdits()
-        add_edit("title", item, meta, methods, value=title)
+        add_edit("title", item, meta, methods)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
             if "edition" in methods and not self.library.plex_pass:
