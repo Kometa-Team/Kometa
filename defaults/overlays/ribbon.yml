@@ -50,17 +50,20 @@ overlays:
   Oscars Best Picture:
     variables: {key: oscars, weight: 180}
     template: {name: standard, allowed_libraries: movie}
-    imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
+    imdb_search:
+      event.winning: oscar_picture
 
   Oscars Best Director:
     variables: {key: oscars_director, weight: 170}
     template: {name: standard, allowed_libraries: movie}
-    imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
+    imdb_search:
+      event.winning: oscar_director
 
   Golden Globe Winner:
     variables: {key: golden, weight: 160}
     template: [name: standard, name: ribbon]
-    imdb_list: https://www.imdb.com/search/title/?groups=golden_globe_winner
+    imdb_search:
+      event.winning: golden
 
   Golden Globe Best Director:
     variables: {key: golden_director, weight: 150}
@@ -95,7 +98,8 @@ overlays:
   Emmys Winner:
     variables: {key: emmys, weight: 90}
     template: [name: standard, name: ribbon]
-    imdb_list: https://www.imdb.com/search/title/?groups=emmy_winner
+    imdb_search:
+      event.winning: emmy
 
   Critics Choice Winners:
     variables: {key: choice, weight: 80}
@@ -131,4 +135,5 @@ overlays:
   Razzies Winner:
     variables: {key: razzie, weight: 10}
     template: {name: standard, allowed_libraries: movie}
-    imdb_list: https://www.imdb.com/search/title/?groups=razzie_winner
+    imdb_search:
+      event.winning: razzie

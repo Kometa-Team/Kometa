@@ -21,13 +21,18 @@ dynamic_collections:
     title_format: Independent Spirit Awards <<key_name>>
     template:
       - use_year_collections
-      - trakt
+      - imdb
       - shared
       - arr
       - custom
     template_variables:
-      trakt_list:
-        default: https://trakt.tv/users/pjcob/lists/<<key>>-independent-spirits
+      imdb_award:
+        default:
+          event_id: ev0000349
+          event_year: <<key>>
+          winning: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:
