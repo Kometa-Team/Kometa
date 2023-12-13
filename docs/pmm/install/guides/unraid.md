@@ -1,4 +1,5 @@
 # unRAID Walkthrough
+
 This article will walk you through getting Plex-Meta-Manager [PMM] set up and running via Docker.  It will cover:
 
 1. Installing Plex Meta Manager unRAID app
@@ -25,7 +26,6 @@ The specific steps you will be taking:
 If the idea of editing YAML files by hand is daunting, this may not be the tool for you.  All the configuration of PMM is done via YAML text files, so if you are unable or unwilling to learn how those work, you should stop here.
 
 Finally, this walkthrough is intended to give you a basic grounding in how to get the script running.  It doesn't cover how to create your own collections, or how to add overlays, or any of the myriad other things PMM is capable of.  It provides a simple "Getting Started" guide for those for whom the standard install instructions make no sense; presumably because you've never run a unRAID app (Docker container) before.
-
 
 ## Prerequisites.
 
@@ -57,6 +57,7 @@ Thankfully, getting Plex Meta Manager working on unRAID is a fairly simple task.
 To install a container from docker hub, you will need community applications - a very popular plugin for unRAID servers. If you don't already have this installed, you can install it [here](https://forums.unraid.net/topic/38582-plug-in-community-applications/)
 
 ### Installing Plex Meta Manager in unRAID
+
 1. Head to the `Apps` tab of unRAID (Community Applications), and search `plex meta manager` in the upper right search box. There will be a couple of results shown, but you should ignore them ([Why?](images.md)) and use the official image.
 
 2. Click the `Install` button on the Template from Sohjiro's Repository Tools.

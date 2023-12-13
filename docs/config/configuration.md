@@ -10,8 +10,8 @@ This table outlines the third-party services that Plex Meta Manager can make use
 
 | Attribute                        | Required                                                              |
 |:---------------------------------|:----------------------------------------------------------------------|
-| [`libraries`](libraries.md)      | :fontawesome-solid-circle-check:{ .green }                          |
-| [`playlist_files`](playlists.md) | :fontawesome-solid-circle-xmark:{ .red }                            |
+| [`libraries`](libraries.md)      | :fontawesome-solid-circle-check:{ .green }                            |
+| [`playlist_files`](playlists.md) | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`settings`](settings.md)        | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`webhooks`](webhooks.md)        | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`plex`](plex.md)                | :fontawesome-solid-circle-check:{ .green } Either here or per library |

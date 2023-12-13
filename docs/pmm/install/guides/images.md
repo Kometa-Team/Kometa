@@ -56,4 +56,4 @@ There are 8 other images listed at dockerhub aside from the official image and l
 
 Unless you have some compelling reason to use one of those, you shouldn't.  You should stick with the official image.
 
-If you choose to use another image than the default, you should should be prepared for the possibility that published examples fail in various ways.
+If you choose to use another image than the default, you should be prepared for the possibility that published examples fail in various ways.

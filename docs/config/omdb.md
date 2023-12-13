@@ -11,10 +11,10 @@ omdb:
   cache_expiration: 60
 ```
 
-| Attribute          | Allowed Values                                                             | Default | Required |
-|:-------------------|:---------------------------------------------------------------------------|:--------|:--------:|
-| `apikey`           | OMDb API Key                                                               | N/A     | :fontawesome-solid-circle-check:{ .green }  |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      | :fontawesome-solid-circle-xmark:{ .red } |
+| Attribute          | Allowed Values                                                             | Default |                  Required                  |
+|:-------------------|:---------------------------------------------------------------------------|:--------|:------------------------------------------:|
+| `apikey`           | OMDb API Key                                                               | N/A     | :fontawesome-solid-circle-check:{ .green } |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ???+ tip
 

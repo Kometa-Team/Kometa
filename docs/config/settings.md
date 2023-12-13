@@ -131,11 +131,7 @@ settings:
 ## Cache
 Cache the Plex GUID and associated IDs for each library item for faster subsequent processing. The cache file is created in the same directory as the configuration file.
 
-|   |   |
-|---|---|
-| Default Value | true |
-| Allowed Values | `true` or `false` |
-
+<table><tr><td>Default Value</td><td>`true`</td></tr><tr><td>Allowed Values</td><td>`true` or `false`</td></tr></table>
 
 ## Cache Expiration
 Set the number of days before each cache mapping expires and has to be re-cached.
@@ -357,6 +353,15 @@ Whilst running a collection, all unreleased missing items will be filtered out f
 ## Show Unmanaged Collections
 
 List all collections not managed by Plex Meta Manager at the end of each run.
+
+|   |   |
+|---|---|
+| Default Value | true |
+| Allowed Values | `true` or `false` |
+
+## Show Unconfigured Collections
+
+List all collections not configured in the currentPlex Meta Manager run at the end of each run.
 
 |   |   |
 |---|---|

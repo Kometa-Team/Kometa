@@ -17,14 +17,14 @@ webhooks:
   changes:
 ```
 
-| Attribute                               | Global  | Library  | Collection |
-|:----------------------------------------|:-------:|:--------:|:----------:|
-| [`error`](#error-notifications)         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`version`](#version-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`run_start`](#run-start-notifications) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`run_end`](#run-end-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`delete`](#delete-notifications)       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`changes`](#changes-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-check:{ .green }   |
+| Attribute                               |                   Global                   |                  Library                   |                  Collection                  |
+|:----------------------------------------|:------------------------------------------:|:------------------------------------------:|:--------------------------------------------:|
+| [`error`](#error-notifications)         | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
+| [`version`](#version-notifications)     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
+| [`run_start`](#run-start-notifications) | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
+| [`run_end`](#run-end-notifications)     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
+| [`delete`](#delete-notifications)       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
+| [`changes`](#changes-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-check:{ .green }  |
 
 * Each Attribute can be either a webhook url as a string or a comma-separated list of webhooks urls.
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
@@ -92,7 +92,7 @@ The Version notification will be sent at the beginning of a run if there is a ne
   "event": "version",           // Event
   "current": str,               // Current Version
   "latest": str,                // Latest Version 
-  "notes": str                  // Sends the lateset release notes or new commits to develop since your version
+  "notes": str                  // Sends the latest release notes or new commits to develop since your version
 }
 ```
 
@@ -165,9 +165,9 @@ The Changes Notification will be sent after each collection/playlist containing 
   "playlist": str,              // Playlist Name only in payload for a playlist
   "created": bool,              // Was the Collection/Playlist Created on this run
   "poster": str,                // Base64 Encoded Collection/Playlist Poster if no poster_url is found
-  "poster_url": str,            // Collection/Playlist Poster URL if avaiable
+  "poster_url": str,            // Collection/Playlist Poster URL if available
   "background": str,            // Base64 Encoded Collection/Playlist Background if no poster_url is found
-  "background_url": str,        // Collection/Playlist Background URL if avaiable
+  "background_url": str,        // Collection/Playlist Background URL if available
   "additions": [                // List of Dictionaries
     "title": str,               // Title of addition
     "tmdb_id": int,             // TMDb ID of addition only appears if it's a Movie

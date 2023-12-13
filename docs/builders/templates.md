@@ -1,6 +1,6 @@
 # Templates
 
-Collection, Playlist, Metadata, and Overlay Files often share a lot of common or generalizable configuration details. Templates allow you to define these details so they can be used across multiple definitions.
+Collection, Playlist, Metadata, and Overlay Files often share a lot of common or generalizable configuration details. Templates allow you to define these details in order for them to be used across multiple definitions.
 
 For example, an actor collection might look like this:
 
@@ -145,7 +145,7 @@ There are some attributes unique to `templates`; `default`, `optional`, `conditi
 
 * `default` can set default values for template variables to be used if they're not specified in the call.
 * `optional` can specify variables that if not specified on the template call will cause any attribute using one of those variables to be ignored in the template. You can make any template variable optional per collection by setting it to `null`.
-* `conditionals` can specify variables based on conditions set by the user. See more [here](#conditionals.md)
+* `conditionals` can specify variables based on conditions set by the user. See more [here](#conditionals)
 * `move_prefix` can be given a list or comma-separated string of prefixes to move to the end of the collection/playlist name for sorting.
     i.e. If you have `move_prefix: The` and a collection is called `The Avengers` then `<<collection_sort>>` is replaced with `Avengers, The` instead of `The Avengers` for that collection.
 
@@ -158,7 +158,7 @@ Every template call is given these template variables.
 * `<<library_name>>` which is the name of the library
 * All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. `<<collection_name_encoded>>`
 
-### Conditionals 
+### Conditionals
 
 Each conditional is identified by its mapping name and has one required attribute; `conditions` and one optional attribute; `default`.
 
@@ -229,7 +229,7 @@ collections:
     summary: Comedy is a genre of film that uses humor as a driving force. The aim of a comedy film is to illicit laughter from the audience through entertaining stories and characters. Although the comedy film may take on some serious material, most have a happy ending. Comedy film has the tendency to become a hybrid sub-genre because humor can be incorporated into many other genres. Comedies are more likely than other films to fall back on the success and popularity of an individual star.
   Romantic Comedy:
     template: {name: IMDb Genre, genre: "romance,comedy", limit: 200}
-    summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorus situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
+    summary: Romantic Comedy is a genre that attempts to catch the viewer’s heart with the combination of love and humor. This sub-genre is light-hearted and usually places the two protagonists in humorous situation. Romantic-Comedy film revolves around a romantic ideal, such as true love. In the end, the ideal triumphs over the situation or obstacle, thus creating a happy ending.
     filters:
       genre: Comedy
 ```

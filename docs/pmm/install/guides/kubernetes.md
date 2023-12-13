@@ -3,8 +3,8 @@
 This article will walk you through getting Plex-Meta-Manager [PMM] set up and running in Kubernetes.  It will cover:
 
 1. Creating the Kubernetes CronJob
-1. Creating configuration files as Config Maps
-1. (Advanced) Creating dynamic configuration files with an Init Container
+2. Creating configuration files as Config Maps
+3. (Advanced) Creating dynamic configuration files with an Init Container
 
 
 ## Prerequisites.

@@ -651,4 +651,4 @@ Follow the instructions for the `develop` branch above, subsituting `nightly` fo
 
 Follow the instructions for the `develop` branch above, subsituting `master` for `develop`
 
-The reinstall of requirements every time is probably overkill, but it's harmless and ensures that you always get any new versions or new requirements.
+The installation of requirements every time is probably overkill, but it's harmless and ensures that you always get any new versions or new requirements.

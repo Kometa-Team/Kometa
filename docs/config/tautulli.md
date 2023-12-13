@@ -12,10 +12,10 @@ tautulli:
   apikey: ################################
 ```
 
-| Attribute | Allowed Values                                        | Default | Required |
-|:----------|:------------------------------------------------------|:--------|:--------:|
-| `url`     | Tautulli URL<br>**Example:** http://192.168.1.12:8659 | N/A     | :fontawesome-solid-circle-check:{ .green }  |
-| `apikey`  | Tautulli API Key                                      | N/A     | :fontawesome-solid-circle-check:{ .green }  |
+| Attribute | Allowed Values                                        | Default |                  Required                  |
+|:----------|:------------------------------------------------------|:--------|:------------------------------------------:|
+| `url`     | Tautulli URL<br>**Example:** http://192.168.1.12:8659 | N/A     | :fontawesome-solid-circle-check:{ .green } |
+| `apikey`  | Tautulli API Key                                      | N/A     | :fontawesome-solid-circle-check:{ .green } |
 
 ???+ tip
     

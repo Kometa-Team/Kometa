@@ -47,13 +47,13 @@ libraries:
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable            | Default / Values  |
-|:--------------------|:---------|
-| `color`             | ``       |
-| `horizontal_offset` | `15`     |
-| `horizontal_align`  | `left`   |
-| `vertical_offset`   | `270`    |
-| `vertical_align`    | `bottom` |
+| Variable            | Default / Values |
+|:--------------------|:-----------------|
+| `color`             | ``               |
+| `horizontal_offset` | `15`             |
+| `horizontal_align`  | `left`           |
+| `vertical_offset`   | `270`            |
+| `vertical_align`    | `bottom`         |
 
 | Variable          | Description & Values                                                                                                                                                |
 |:------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -10,26 +10,26 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 030
 
-| Collection                 | Key           | Description                                                                 |
-|:---------------------------|:--------------|:----------------------------------------------------------------------------|
+| Collection                 | Key           | Description                                                                    |
+|:---------------------------|:--------------|:-------------------------------------------------------------------------------|
 | `Streaming Collections`    | `separator`   | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `All 4 Movies/Shows`       | `all4`        | Collection of Movies/Shows Streaming on All 4.                              |
-| `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.                          |
-| `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.                               |
-| `BritBox Movies/Shows`     | `britbox`     | Collection of Movies/Shows Streaming on BritBox.                            |
-| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.                              |
-| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.                               |
-| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.                                |
-| `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.                            |
-| `hayu Shows`               | `hayu`        | Collection of Shows Streaming on hayu.                                      |
-| `Max Movies/Shows`         | `max`         | Collection of Movies/Shows Streaming on Max.                                |
-| `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.                               |
-| `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.                            |
-| `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.                                |
-| `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.                         |
-| `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.                            |
-| `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video.                        |
-| `Showtime Movies/Shows`    | `showtime`    | Collection of Movies/Shows Streaming on Showtime.                           |
+| `All 4 Movies/Shows`       | `all4`        | Collection of Movies/Shows Streaming on All 4.                                 |
+| `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.                             |
+| `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.                                  |
+| `BritBox Movies/Shows`     | `britbox`     | Collection of Movies/Shows Streaming on BritBox.                               |
+| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.                                 |
+| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.                                  |
+| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.                                   |
+| `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.                               |
+| `hayu Shows`               | `hayu`        | Collection of Shows Streaming on hayu.                                         |
+| `Max Movies/Shows`         | `max`         | Collection of Movies/Shows Streaming on Max.                                   |
+| `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.                                  |
+| `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.                               |
+| `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.                                   |
+| `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.                            |
+| `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.                               |
+| `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video.                           |
+| `Showtime Movies/Shows`    | `showtime`    | Collection of Movies/Shows Streaming on Showtime.                              |
 
 ## Config
 
@@ -55,8 +55,8 @@ This file contains a [Separator](../separators.md) so all [Shared Separator Vari
 |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `limit`                         | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                                                                      |
 | `limit_<<key>>`<sup>1</sup>     | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                                                                                   |
-| `sort_by`                       | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                         |
-| `sort_by_<<key>>`<sup>1</sup>   | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                                   |
+| `sort_by`                       | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                                  |
+| `sort_by_<<key>>`<sup>1</sup>   | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                                            |
 | `sync_mode`                     | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
 | `sync_mode_<<key>>`<sup>1</sup> | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
 | `exclude`                       | **Description:** Exclude these Streaming Services from creating a Dynamic Collection.<br>**Values:** List of Streaming Service Keys                                                                                                                                                                                          |
@@ -111,11 +111,11 @@ libraries:
           sort_by: random #(8)!
 ```
 
-1.  Use french region lists where possible
+1.  Use French region lists where possible
 2.  Use the amethyst [Separator Style](../separators.md#separator-styles)
 3.  Pin the "Disney+ Movies/Shows" collection to the Recommended tab of the library
 4.  Pin the "Disney+ Movies/Shows" collection to the home screen of the server owner
 5.  Pin the "Disney+ Movies/Shows" collection to the home screen of other users of the server
 6.  Add missing shows in your library from the "Hulu Shows" list to your Sonarr
 7.  Add missing movies in your library from the "Prime Video Movies" list to your Radarr
-8.  Sort all of the collections created by this file randomly
+8.  Sort all the collections created by this file randomly

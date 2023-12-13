@@ -10,8 +10,8 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 020
 
-| Collection          | Key         | Description                                                                 |
-|:--------------------|:------------|:----------------------------------------------------------------------------|
+| Collection          | Key         | Description                                                                    |
+|:--------------------|:------------|:-------------------------------------------------------------------------------|
 | `Chart Collections` | `separator` | [Separator Collection](../separators.md) to denote the Section of Collections. |
 
 ## Config

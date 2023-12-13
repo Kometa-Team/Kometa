@@ -81,7 +81,7 @@ libraries:
 
 1.  Do not create the "Trakt Collected" collection
 2.  Do not create the "Trakt Recommended" collection
-2.  Change all collections built by this file to have a maximum of 20 items
-3.  Pin the "Trakt Popular" collection to the Recommended tab of the library
-4.  Pin the "Trakt Popular" collection to the home screen of the server owner
-5.  Pin the "Trakt Popular" collection to the home screen of other users of the server
+3.  Change all collections built by this file to have a maximum of 20 items
+4.  Pin the "Trakt Popular" collection to the Recommended tab of the library
+5.  Pin the "Trakt Popular" collection to the home screen of the server owner
+6.  Pin the "Trakt Popular" collection to the home screen of other users of the server

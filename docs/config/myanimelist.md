@@ -18,11 +18,11 @@ mal:
     refresh_token:
 ```
 
-| Attribute       | Allowed Values                        | Required |
-|:----------------|:--------------------------------------|:--------:|
-| `client_id`     | MyAnimeList Application Client ID     | :fontawesome-solid-circle-check:{ .green }  |
-| `client_secret` | MyAnimeList Application Client Secret | :fontawesome-solid-circle-check:{ .green }  |
-| `localhost_url` | MyAnimeList Authorization URL         | :fontawesome-solid-circle-xmark:{ .red } |
+| Attribute       | Allowed Values                        |                  Required                  |
+|:----------------|:--------------------------------------|:------------------------------------------:|
+| `client_id`     | MyAnimeList Application Client ID     | :fontawesome-solid-circle-check:{ .green } |
+| `client_secret` | MyAnimeList Application Client Secret | :fontawesome-solid-circle-check:{ .green } |
+| `localhost_url` | MyAnimeList Authorization URL         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 All other attributes will be filled in by Plex Meta Manager.
 
@@ -112,10 +112,6 @@ You will need to stop that web server while you're doing this in order to grab t
 ### OAuth Flow using Docker
 
 To authenticate MyAnimeList the first time, you need run the container with the `-it` flags in order to walk through the OAuth flow mentioned above. Once you have the MyAnimeList authentication data saved into the YAML, you'll be able to run the container normally.
-
-### OAuth Flow using unRAID Docker
-
-Directions on how to authenticate MyAnimeList on unRAID can be found on the [unRAID Walkthrough](../pmm/install/guides/unraid.md#advanced-installation-authenticating-trakt-or-myanimelist) page.
 
 ## Online Authorization Script
 
