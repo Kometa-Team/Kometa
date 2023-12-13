@@ -22,7 +22,8 @@ collections:
         translation_key: oscars_picture
       - name: arr
       - name: custom
-    imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
+    imdb_search:
+      event.winning: oscar_picture
 
   Oscars Best Director Winners:
     variables:
@@ -35,7 +36,8 @@ collections:
         translation_key: oscars_director
       - name: arr
       - name: custom
-    imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
+    imdb_search:
+      event.winning: oscar_director
 
 dynamic_collections:
   Oscars Winners Awards:
@@ -52,10 +54,13 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      imdb_list:
-        default: https://www.imdb.com/search/title/?release_date=<<key-1>>-01-01,<<key-1>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
-      imdb_sort:
-        default: moviemeter,asc
+      imdb_award:
+        default:
+          event_id: ev0000003
+          event_year: <<key>>
+          winning: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:

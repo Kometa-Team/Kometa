@@ -141,7 +141,11 @@ templates:
   imdb:
     optional:
       - imdb_list
+      - imdb_search
+      - imdb_award
     imdb_list: <<imdb_list>>
+    imdb_search: <<imdb_search>>
+    imdb_award: <<imdb_award>>
 
   tmdb_person:
     default:

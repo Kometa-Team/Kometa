@@ -35,13 +35,18 @@ dynamic_collections:
     title_format: BAFTA <<key_name>>
     template:
       - use_year_collections
-      - trakt
+      - imdb
       - shared
       - arr
       - custom
     template_variables:
-      trakt_list:
-        default: https://trakt.tv/users/pjcob/lists/<<key>>-bafta
+      imdb_award:
+        default:
+          event_id: ev0000123
+          event_year: <<key>>
+          winning: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:

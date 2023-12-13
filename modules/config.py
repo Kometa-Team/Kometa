@@ -485,8 +485,7 @@ class ConfigFile:
             yaml = YAML(self.config_path)
             if "settings" not in yaml.data or not yaml.data["settings"]:
                 yaml.data["settings"] = {}
-            if "run_order" not in yaml.data["settings"]:
-                yaml.data["settings"]["run_order"] = new_run_order
+            yaml.data["settings"]["run_order"] = new_run_order
             yaml.save()
 
         self.session = requests.Session()
