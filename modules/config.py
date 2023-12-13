@@ -460,6 +460,35 @@ class ConfigFile:
         self.check_nightly = self.general["check_nightly"]
         self.latest_version = util.current_version(self.version, branch=self.branch, nightly=self.check_nightly)
 
+        add_operations = True if "operations" not in self.general["run_order"] else False
+        add_metadata = True if "metadata" not in self.general["run_order"] else False
+        add_collection = True if "collections" not in self.general["run_order"] else False
+        add_overlays = True if "overlays" not in self.general["run_order"] else False
+        if add_operations or add_metadata or add_collection or add_overlays:
+            new_run_order = []
+            for run_order in self.general["run_order"]:
+                if add_operations and not new_run_order:
+                    new_run_order.append("operations")
+                    if add_metadata:
+                        new_run_order.append("metadata")
+                        if add_collection:
+                            new_run_order.append("collections")
+                new_run_order.append(run_order)
+                if add_metadata and run_order == "operations":
+                    new_run_order.append("metadata")
+                if add_collection and (run_order == "metadata" or (run_order == "operations" and add_metadata)):
+                    new_run_order.append("collections")
+            if add_overlays:
+                new_run_order.append("overlays")
+            self.general["run_order"] = new_run_order
+
+            yaml = YAML(self.config_path)
+            if "settings" not in yaml.data or not yaml.data["settings"]:
+                yaml.data["settings"] = {}
+            if "run_order" not in yaml.data["settings"]:
+                yaml.data["settings"]["run_order"] = new_run_order
+            yaml.save()
+
         self.session = requests.Session()
         if not self.general["verify_ssl"]:
             self.session.verify = False
