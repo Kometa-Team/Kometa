@@ -35,16 +35,17 @@ dynamic_collections:
     title_format: Cannes <<key_name>>
     template:
       - use_year_collections
-      - imdb
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      imdb_award:
-        default:
-          event_id: ev0000147
-          event_year: <<key>>
-          winning: true
+      event_id:
+        default: ev0000147
+      event_year:
+        default: <<key>>
+      winning:
+        default: true
       collection_order:
         default: release
       allowed_libraries:

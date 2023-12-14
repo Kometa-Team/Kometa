@@ -141,11 +141,19 @@ templates:
   imdb:
     optional:
       - imdb_list
-      - imdb_search
-      - imdb_award
     imdb_list: <<imdb_list>>
-    imdb_search: <<imdb_search>>
-    imdb_award: <<imdb_award>>
+
+  imdb_award:
+    optional:
+      - award_filter
+      - category_filter
+      - winning
+    imdb_award:
+      event_id: <<event_id>>
+      event_year: <<event_year>>
+      award_filter: <<award_filter>>
+      category_filter: <<category_filter>>
+      winning: <<winning>>
 
   tmdb_person:
     default:
