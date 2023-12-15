@@ -200,10 +200,14 @@ class ConfigFile:
                 if not self.data["libraries"][library]:
                     continue
                 if "metadata_path" in self.data["libraries"][library]:
+                    logger.warning("Config Warning: metadata_path has been deprecated and split into collection_files and metadata_files, Please visit the wiki to learn more about this transition.")
                     path_dict = self.data["libraries"][library].pop("metadata_path")
-                    self.data["libraries"][library]["collection_files"] = path_dict
-                    self.data["libraries"][library]["metadata_files"] = path_dict
+                    if "collection_files" not in self.data["libraries"][library]:
+                        self.data["libraries"][library]["collection_files"] = path_dict
+                    if "metadata_files" not in self.data["libraries"][library]:
+                        self.data["libraries"][library]["metadata_files"] = path_dict
                 if "overlay_path" in self.data["libraries"][library]:
+                    logger.warning("Config Warning: overlay_path has been deprecated in favor of overlay_files, Please visit the wiki to learn more about this transition.")
                     self.data["libraries"][library]["overlay_files"] = self.data["libraries"][library].pop("overlay_path")
                 if "radarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
