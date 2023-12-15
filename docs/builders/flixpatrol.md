@@ -27,7 +27,7 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 
 ```yaml
 collections:
-  US Netflix Monthly Top 20:
+  US Netflix Monthly Top 10:
     flixpatrol_top:
       platform: netflix
       location: united_states
