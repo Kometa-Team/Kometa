@@ -146,12 +146,17 @@ class IMDb:
         return valid_users
 
     def get_event_years(self, event_id):
-        return self._request(f"{base_url}/event/{event_id}", xpath="//div[@class='event-history-widget']//a/text()")
+        final = []
+        for event_link in self._request(f"{base_url}/event/{event_id}", xpath="//div[@class='event-history-widget']//a/@href"):
+            parts = event_link.split("/")
+            final.append(f"{parts[3]}{f'-{parts[4]}' if parts[4] != '1' else ''}")
+        return final
 
     def get_award_names(self, event_id, event_year):
         award_names = []
         category_names = []
-        for text in self._request(f"{base_url}/event/{event_id}/{event_year}", xpath="//div[@class='article']/script/text()")[0].split("\n"):
+        event_slug = f"{event_year}/1" if "-" not in event_year else event_year.replace("-", "/")
+        for text in self._request(f"{base_url}/event/{event_id}/{event_slug}/?ref_=ev_eh", xpath="//div[@class='article']/script/text()")[0].split("\n"):
             if text.strip().startswith("IMDbReactWidgets.NomineesWidget.push"):
                 jsonline = text.strip()
                 obj = json.loads(jsonline[jsonline.find("{"):-3])
@@ -420,7 +425,8 @@ class IMDb:
 
     def _award(self, data):
         final_list = []
-        for text in self._request(f"{base_url}/event/{data['event_id']}/{data['event_year']}", xpath="//div[@class='article']/script/text()")[0].split("\n"):
+        event_slug = f"{data['event_year']}/1" if "-" not in data["event_year"] else data["event_year"].replace("-", "/")
+        for text in self._request(f"{base_url}/event/{data['event_id']}/{event_slug}/?ref_=ev_eh", xpath="//div[@class='article']/script/text()")[0].split("\n"):
             if text.strip().startswith("IMDbReactWidgets.NomineesWidget.push"):
                 jsonline = text.strip()
                 obj = json.loads(jsonline[jsonline.find('{'):-3])
@@ -516,7 +522,8 @@ class IMDb:
             logger.info(f"Processing IMDb Watchlist: {data}")
             return [(_i, "imdb") for _i in self._watchlist(data, language)]
         elif method == "imdb_award":
-            logger.info(f"Processing IMDb Award: {base_url}/{data['event_id']}/{data['event_year']}")
+            event_slug = f"{data['event_year']}/1" if "-" not in data["event_year"] else data["event_year"].replace("-", "/")
+            logger.info(f"Processing IMDb Award: {base_url}/{data['event_id']}/{event_slug}/?ref_=ev_eh")
             for k in ["award_filter", "category_filter", "winning"]:
                 logger.info(f"    {k}: {data[k]}")
             return [(_i, "imdb") for _i in self._award(data)]

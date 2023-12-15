@@ -178,6 +178,9 @@ class Library(ABC):
                 except Failed as e:
                     logger.error(e)
                     logger.info("Overlay File Failed To Load")
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Overlay File")
         if not operations_only and not overlays_only and not collection_only:
             for file_type, images_file, temp_vars, asset_directory in self.scanned_image_files:
                 try:

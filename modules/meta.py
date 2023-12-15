@@ -9,7 +9,7 @@ logger = util.logger
 all_auto = ["genre", "number", "custom"]
 ms_auto = [
     "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
-    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade"
+    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_award"
 ]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
@@ -978,6 +978,23 @@ class MetadataFile(DataFile):
                                     all_keys[role["name"]] = role["name"]
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
+                        elif auto_type == "imdb_award":
+                            if "data" not in methods:
+                                raise Failed(f"Config Error: {map_name} data attribute not found")
+                            elif "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            lower_methods = {am.lower(): am for am in dynamic_data}
+                            person_depth = util.parse("Config", "event_id", dynamic_data, parent=f"{map_name} data",
+                                                      methods=lower_methods, datatype="int", default=3, minimum=1)
+                            person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data",
+                                                        methods=lower_methods, datatype="int", default=3,
+                                                        minimum=1) if "minimum" in lower_methods else None
+                            person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data",
+                                                      methods=lower_methods, datatype="int", default=25,
+                                                      minimum=1) if "limit" in lower_methods else None
+
                         elif auto_type == "number":
                             if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
