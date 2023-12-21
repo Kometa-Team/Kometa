@@ -27,6 +27,10 @@ The `sync_mode: sync` and `collection_order: custom` Details are recommended sin
 
     If you have [authorized Trakt](../config/trakt.md) then you can use private Trakt Lists, this is not possible if you have not authorized Trakt.
 
+???+ warning
+
+    Trakt lists and users come and go, and PMM has no control over this.  The list URLs found in this documentation are used here as examples and are available and working at time of writing, but they may disappear at any time.  Do not take their use here as a guarantee that they exist or are working when you read this.
+
 ```yaml
 collections:
   Christmas:
@@ -38,7 +42,7 @@ collections:
 ```yaml
 collections:
   Reddit Top 250:
-    trakt_list: https://trakt.tv/users/jay-greene/lists/reddit-top-250-2019-edition
+    trakt_list: https://trakt.tv/users/jaygreene/lists/reddit-top-250-2019-edition
     collection_order: custom
     sync_mode: sync
 ```
@@ -49,7 +53,7 @@ collections:
 ```yaml
 collections:
   Reddit Top 250:
-    trakt_list_details: https://trakt.tv/users/jay-greene/lists/reddit-top-250-2019-edition
+    trakt_list_details: https://trakt.tv/users/jaygreene/lists/reddit-top-250-2019-edition
     collection_order: custom
     sync_mode: sync
 ```
