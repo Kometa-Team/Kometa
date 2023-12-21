@@ -505,6 +505,7 @@ include:
   - Sony Pictures
   - Sphère Média Plus
   - Spyglass Entertainment
+  - Stöð 2
   - Star Thrower Entertainment
   - Stark Raving Black Productions
   - StudioCanal
