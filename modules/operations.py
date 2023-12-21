@@ -952,7 +952,7 @@ class Operations:
                 logger.separator(f"No Unconfigured Collections in {self.library.name} Library", space=False, border=False)
                 logger.info("")
 
-            if self.library.assets_for_all and len(unconfigured_collections) > 0:
+            if self.library.assets_for_all_collections and len(unconfigured_collections) > 0:
                 logger.info("")
                 logger.separator(f"Unconfigured Collection Assets Check for {self.library.name} Library", space=False, border=False)
                 logger.info("")
