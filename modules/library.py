@@ -83,6 +83,7 @@ class Library(ABC):
         self.ignore_ids = params["ignore_ids"]
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
+        self.assets_for_all_collections = False
         self.delete_collections = params["delete_collections"]
         self.mass_studio_update = params["mass_studio_update"]
         self.mass_genre_update = params["mass_genre_update"]

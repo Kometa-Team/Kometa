@@ -21,6 +21,7 @@ logger = util.logger
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 search_translation = {
+    "episode_actor": "episode.actor",
     "episode_title": "episode.title",
     "network": "show.network",
     "edition": "editionTitle",
@@ -121,6 +122,7 @@ show_translation = {
     "trash": "episode.trash",
     "label": "show.label",
 }
+get_tags_translation = {"episode.actor": "actor"}
 modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": "", ".rated": ""
@@ -297,7 +299,7 @@ float_attributes = [
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
-    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
+    "actor", "episode_actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
     "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
     "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_label", "artist_style", "album_genre", "album_mood",
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source", "track_label"
@@ -806,6 +808,7 @@ class Plex(Library):
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
+        final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
         try:
             names = []
             choices = {}
