@@ -1291,6 +1291,9 @@ overlays:
   Spyglass Entertainment:
     template: [name: standard, name: studios]
 
+  Stöð 2:
+    template: [name: standard, name: studios]
+
   Star Thrower Entertainment:
     template: [name: standard, name: studios]
 
