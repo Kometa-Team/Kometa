@@ -26,7 +26,7 @@ arguments = {
     "config": {"args": "c", "type": "str", "help": "Run with desired *.yml file"},
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
     "run": {"args": "r", "type": "bool", "help": "Run without the scheduler"},
-    "tests": {"args": ["rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
+    "tests": {"args": ["ts", "rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
@@ -381,10 +381,9 @@ def run_config(config, stats):
             logger.info("")
             logger.separator("Run Again")
             logger.info("")
-            for x in range(1, config.general["run_again_delay"] + 1):
-                logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
-                for y in range(60):
-                    time.sleep(1)
+            for x in range(0, config.general["run_again_delay"]):
+                logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x} minutes")
+                time.sleep(60)
             logger.exorcise()
             for library in config.libraries:
                 if library.run_again:

@@ -435,7 +435,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
 
             current = []
             def check_dict(attr, name):
-                if attr in file:
+                if attr in file and (method != "metadata_files" or attr != "pmm"):
                     if file[attr]:
                         if attr == "git" and file[attr].startswith("PMM/"):
                             current.append(("PMM Default", file[attr][4:], temp_vars, asset_directory))

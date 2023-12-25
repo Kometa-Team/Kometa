@@ -342,11 +342,11 @@ class IMDb:
         if any([a in data for a in ["keyword", "keyword.any", "keyword.not"]]):
             out["keywordConstraint"] = {}
             if "keyword" in data:
-                out["keywordConstraint"]["allKeywords"] = data["keyword"]
+                out["keywordConstraint"]["allKeywords"] = [k.replace(" ", "-") for k in data["keyword"]]
             if "keyword.any" in data:
-                out["keywordConstraint"]["anyKeywords"] = data["keyword.any"]
+                out["keywordConstraint"]["anyKeywords"] = [k.replace(" ", "-") for k in data["keyword.any"]]
             if "keyword.not" in data:
-                out["keywordConstraint"]["excludeKeywords"] = data["keyword.not"]
+                out["keywordConstraint"]["excludeKeywords"] = [k.replace(" ", "-") for k in data["keyword.not"]]
 
         if any([a in data for a in ["language", "language.any", "language.not", "language.primary"]]):
             out["languageConstraint"] = {}
