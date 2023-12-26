@@ -66,7 +66,7 @@ templates:
           - key: dtsx
             value: '(?i)\bdts[ ._-]?x\b'
           - key: plus_atmos
-            value: '(?i)^(?=.*\b(dd[p+]|dolby[ ._-]digital[ ._-]plus|e[ ._-]?ac3\b))(?=.*\batmos(\b|\d))'
+            value: '(?i)^(?=.*\b(dd[p+])|(dolby[ ._-]digital[ ._-]plus)|(e[ ._-]?ac3)\b)(?=.*\batmos(\b|\d))'
           - key: dolby_atmos
             value: '(?i)\batmos(\b|\d)'
           - key: truehd

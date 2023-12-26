@@ -20,6 +20,7 @@ templates:
       tmdb_collection_<<key>>: <<tmdb_collection>>
       tmdb_movie_<<key>>: <<tmdb_movie>>
       imdb_list_<<key>>: <<imdb_list>>
+      imdb_search_<<key>>: <<imdb_search>>
       trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
       summary_<<key>>: <<summary_format>>
@@ -32,6 +33,7 @@ templates:
       - tmdb_movie
       - limit
       - imdb_list
+      - imdb_search
       - trakt_list
       - mdblist_list
       - summary_format
@@ -50,6 +52,7 @@ templates:
     tmdb_collection: <<tmdb_collection_<<key>>>>
     tmdb_movie: <<tmdb_movie_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
+    imdb_search: <<imdb_search_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     cache_builders: 1
@@ -164,10 +167,10 @@ dynamic_collections:
           - https://www.imdb.com/list/ls000835734/
           - https://www.imdb.com/list/ls091597850/
         christmas: https://www.imdb.com/list/ls000096828/
+      imdb_search:
         women:
-          - https://www.imdb.com/search/keyword/?keywords=women-in-film&ref_=fn_kw_kw_9
-          - https://www.imdb.com/search/keyword/?keywords=women%27s-rights&ref_=fn_kw_kw_2
-          - https://www.imdb.com/search/keyword/?keywords=women%27s-suffrage&ref_=fn_kw_kw_13
+          - keyword.any: women in film, womens rights, womens suffrage
+            limit: 500
       tmdb_collection:
         halloween:
           - 185103    # Hotel Transylvania

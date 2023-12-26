@@ -1124,7 +1124,7 @@ class CollectionBuilder:
                 if self.obj:
                     if check_url != self.library.smart_filter(self.obj):
                         self.library.update_smart_collection(self.obj, check_url)
-                        logger.info(f"Detail: Smart Collection updated to {check_url}")
+                        logger.info(f"Metadata: Smart Collection updated to {check_url}")
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
             if self.obj:
                 self.exists = True
@@ -1485,6 +1485,7 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
+            logger.warning(f"{self.Type} Warning: imdb_list has been deprecated, and at some point may no longer work. Please switch to using imdb_search.")
             for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
@@ -1507,7 +1508,7 @@ class CollectionBuilder:
                 year_options = self.config.IMDb.get_event_years(event_id)
                 if not year_options:
                     raise Failed(f"{self.Type} Error: imdb_award event_id attribute: No event found at {imdb.base_url}/event/{event_id}")
-                event_year = util.parse(self.Type, "event_year", dict_data, parent=method_name, methods=dict_methods, options=year_options)
+                event_year = str(util.parse(self.Type, "event_year", dict_data, parent=method_name, methods=dict_methods, options=year_options))
                 try:
                     award_filters = util.parse(self.Type, "award_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
                 except Failed:
@@ -1616,9 +1617,7 @@ class CollectionBuilder:
                                 countries.append(str(country))
                         if countries:
                             new_dictionary[lower_method] = countries
-                    elif search_attr == "keyword":
-                        new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="strlist", parent=method_name)
-                    elif search_attr == "language":
+                    elif search_attr in ["keyword", "language"]:
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name)
                     elif search_attr == "cast":
                         casts = []
@@ -2981,7 +2980,7 @@ class CollectionBuilder:
 
     def update_item_details(self):
         logger.info("")
-        logger.separator(f"Updating Details of the Items in {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
         logger.info("")
 
         add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
@@ -3036,11 +3035,11 @@ class CollectionBuilder:
                         if key in prefs and getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
                 if advance_edits:
-                    logger.debug(f"Details Update: {advance_edits}")
+                    logger.debug(f"Metadata Update: {advance_edits}")
                     if self.library.edit_advance(item, advance_edits):
-                        logger.info(f"{item.title} Advanced Details Update Successful")
+                        logger.info(f"{item.title} Advanced Metadata Update Successful")
                     else:
-                        logger.error(f"{item.title} Advanced Details Update Failed")
+                        logger.error(f"{item.title} Advanced Metadata Update Failed")
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:
@@ -3114,7 +3113,7 @@ class CollectionBuilder:
     def update_details(self):
         updated_details = []
         logger.info("")
-        logger.separator(f"Updating Details of {self.name} {self.Type}", space=False, border=False)
+        logger.separator(f"Updating Metadata of {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
         elif "translation" in self.summaries:               summary = ("translation", self.summaries["translation"])
@@ -3148,10 +3147,10 @@ class CollectionBuilder:
                     try:
                         self.obj.edit(summary=str(summary[1]))
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
-                        logger.info("Details: have been updated")
+                        logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
                     except NotFound:
-                        logger.error("Details: Failed to Update Please delete the collection and run again")
+                        logger.error("Metadata: Failed to Update Please delete the collection and run again")
                     logger.info("")
         else:
             self.library._reload(self.obj)
@@ -3194,10 +3193,10 @@ class CollectionBuilder:
             if len(batch_display) > 25:
                 try:
                     #self.obj.saveEdits()
-                    logger.info("Details: have been updated")
+                    logger.info("Metadata: Update Completed")
                     updated_details.append("Metadata")
                 except NotFound:
-                    logger.error("Details: Failed to Update Please delete the collection and run again")
+                    logger.error("Metadata: Failed to Update Please delete the collection and run again")
                 logger.info("")
 
             advance_update = False
