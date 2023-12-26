@@ -1680,7 +1680,7 @@ class MetadataFile(DataFile):
                                 current_item.editTitle(final_value)
                             else:
                                 current_item.editField(key, final_value)
-                            logger.info(f"Detail: {name} updated to {final_value}")
+                            logger.info(f"Metadata: {name} updated to {final_value}")
                             updated = True
                     except Failed as ee:
                         logger.error(ee)
@@ -1692,9 +1692,9 @@ class MetadataFile(DataFile):
             if updated:
                 try:
                     #current_item.saveEdits()
-                    logger.info(f"{description} Details Update Successful")
+                    logger.info(f"{description} Metadata Update Successful")
                 except BadRequest:
-                    logger.error(f"{description} Details Update Failed")
+                    logger.error(f"{description} Metadata Update Failed")
 
         tmdb_item = None
         tmdb_is_movie = None
@@ -1776,15 +1776,15 @@ class MetadataFile(DataFile):
                             logger.error(f"{self.type_str} Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
                         elif ad_key in prefs and getattr(item, ad_key) != options[method_data]:
                             advance_edits[ad_key] = options[method_data]
-                            logger.info(f"Detail: {advance_edit} updated to {method_data}")
+                            logger.info(f"Metadata: {advance_edit} updated to {method_data}")
                     else:
                         logger.error(f"{self.type_str} Error: {advance_edit} attribute is blank")
             if advance_edits:
                 if self.library.edit_advance(item, advance_edits):
                     updated = True
-                    logger.info(f"{mapping_name} Advanced Details Update Successful")
+                    logger.info(f"{mapping_name} Advanced Metadata Update Successful")
                 else:
-                    logger.error(f"{mapping_name} Advanced Details Update Failed")
+                    logger.error(f"{mapping_name} Advanced Metadata Update Failed")
 
         style_data = None
         if "style_data" in methods:
@@ -1794,7 +1794,7 @@ class MetadataFile(DataFile):
         asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
-        logger.info(f"{self.library.type}: {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+        logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         update_seasons = self.update_seasons
         if "update_seasons" in methods and self.library.is_show:
@@ -1861,7 +1861,7 @@ class MetadataFile(DataFile):
                                                              folder_name=folder_name, style_data=season_style_data)
                         if ups:
                             updated = True
-                        logger.info(f"Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                        logger.info(f"Season {season_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
                     if "episodes" in season_methods and update_episodes and self.library.is_show:
                         if not season_dict[season_methods["episodes"]]:
@@ -1912,7 +1912,7 @@ class MetadataFile(DataFile):
                                                                      style_data=episode_style_data)
                                 if ups:
                                     updated = True
-                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:
@@ -1955,7 +1955,7 @@ class MetadataFile(DataFile):
                                                          image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
                     if ups:
                         updated = True
-                    logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                    logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         if "albums" in methods and self.library.is_music:
             if not meta[methods["albums"]]:
@@ -1996,7 +1996,7 @@ class MetadataFile(DataFile):
                                                          title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
                     if ups:
                         updated = True
-                    logger.info(f"Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                    logger.info(f"Album: {title} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
                     if "tracks" in album_methods:
                         if not album_dict[album_methods["tracks"]]:
@@ -2035,7 +2035,7 @@ class MetadataFile(DataFile):
                                 if not title:
                                     title = track.title
                                 finish_edit(track, f"Track: {title}")
-                                logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Details Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"Track: {track_num} on Album: {title} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         if "f1_season" in methods and self.library.is_show:
             f1_season = None
@@ -2090,7 +2090,7 @@ class MetadataFile(DataFile):
                                                          image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
                     if ups:
                         updated = True
-                    logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Details Update {'Complete' if updated else 'Not Needed'}")
+                    logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Metadata Update {'Complete' if updated else 'Not Needed'}")
                     for episode in season.episodes():
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
@@ -2102,7 +2102,7 @@ class MetadataFile(DataFile):
                                                                  image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
                             if ups:
                                 updated = True
-                            logger.info(f"Session {episode.title}: Details Update {'Complete' if updated else 'Not Needed'}")
+                            logger.info(f"Session {episode.title}: Metadata Update {'Complete' if updated else 'Not Needed'}")
                 else:
                     logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
 

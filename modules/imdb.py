@@ -109,8 +109,8 @@ class IMDb:
             else:
                 imdb_url = imdb_dict[dict_methods["url"]].strip()
             if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
-                fails = "\n".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
-                raise Failed(f"IMDb Error: {imdb_url} must begin with either:{fails}")
+                fails = "\n    ".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
+                raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n    {fails}")
             self._total(imdb_url, language)
             list_count = None
             if "limit" in dict_methods:
