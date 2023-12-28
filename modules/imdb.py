@@ -20,10 +20,11 @@ charts = {
 }
 imdb_search_attributes = [
     "limit", "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "series", "series.not",
-    "imdb_top", "imdb_bottom", "company", "content_rating", "country", "country.any", "country.not", "country.origin",
-    "keyword", "keyword.any", "keyword.not", "language", "language.any", "language.not", "language.primary",
-    "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte", "runtime.lte", "adult",
+    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "event", "event.winning", "imdb_top", "imdb_bottom",
+    "company", "content_rating", "country", "country.any", "country.not", "country.origin", "keyword", "keyword.any",
+    "keyword.not", "series", "series.not", "list", "list.any", "list.not", "language", "language.any", "language.not",
+    "language.primary", "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte",
+    "runtime.lte", "adult",
 ]
 sort_by_options = {
     "popularity": "POPULARITY",
@@ -108,6 +109,8 @@ class IMDb:
                 raise Failed(f"{err_type} Error: imdb_list url attribute is blank")
             else:
                 imdb_url = imdb_dict[dict_methods["url"]].strip()
+            if imdb_url.startswith("https://www.imdb.com/search/title/"):
+                raise Failed("IMDb Error: IMDb URLs with https://www.imdb.com/search/title/ no longer work with imdb_list.")
             if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
                 fails = "\n    ".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
                 raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n    {fails}")

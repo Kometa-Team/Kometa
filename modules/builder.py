@@ -1486,8 +1486,11 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
             logger.warning(f"{self.Type} Warning: imdb_list has been deprecated, and at some point may no longer work. Please switch to using imdb_search.")
-            for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
-                self.builders.append((method_name, imdb_dict))
+            try:
+                for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
+                    self.builders.append((method_name, imdb_dict))
+            except Failed as e:
+                logger.error(e)
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
                 if value in imdb.movie_charts and not self.library.is_movie:
