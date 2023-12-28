@@ -863,7 +863,7 @@ class ConfigFile:
                                         elif old_value == new_value:
                                             logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
-                                            params[op][old_value] = new_value if new_value else None
+                                            params[op][str(old_value)] = str(new_value) if new_value else None
                                 if op == "delete_collections":
                                     params[op] = {
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
