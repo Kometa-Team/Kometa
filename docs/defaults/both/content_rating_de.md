@@ -10,7 +10,7 @@ If you do not use the German-based rating system within Plex, this file will att
 
 Supported Library Types: Movie, Show
 
-Recommendation: Set the Certification Country within your library's advanced settings to "United Kingdom"
+Recommendation: Set the Certification Country within your library's advanced settings to "Germany"
 
 ## Collections Section 110
 
@@ -105,7 +105,7 @@ libraries:
 
 ```yaml
 include:
-  - 0
+  - "0"
   - 6
   - 12
   - 16
