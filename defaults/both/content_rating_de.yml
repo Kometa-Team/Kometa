@@ -42,7 +42,7 @@ dynamic_collections:
       dynamic:
         default: true
     include:
-      - 0
+      - "0"
       - 6
       - 12
       - 16
