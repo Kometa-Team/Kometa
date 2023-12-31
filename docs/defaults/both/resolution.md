@@ -37,88 +37,104 @@ libraries:
       - pmm: resolution
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-| Variable                      | Description & Values                                                                                                                                                                                                                                                |
-|:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `style`                       | **Description:** Controls the visual theme of the collections created.<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>default</code></td><td>Default Theme</td></tr><tr><td><code>standards</code></td><td>Standards Theme</td></tr></table>       |
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                             |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                          |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                         |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                   |
-| `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** Any Resolutions found in your library                                                                                                                                       |
-| `exclude`                     | **Description:** Exclude these Resolutions from creating a Dynamic Collection.<br>**Values:** List of Resolutions found in your library                                                                                                                             |
-| `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Resolutions found in your library |
-| `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Resolutions found in your library                                                                                                                                  |
-| `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Resolutions found in your library                                                                                                                                |
-| `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Resolutions found in your library                                                                                                                   |
-| `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Resolutions found in your library                                                                                                                 |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                 |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the resolution <<key_name>>.`<br>**Values:** Any string.                                                                               |
+??? info "Click to expand"
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../collection_variables.md"
-%}
+        The below template variables are available specifically for this PMM Defaults file.
 
-### Example Template Variable Amendments
+        Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
-???+ tip
+        | Variable                      | Description & Values                                                                                                                                                                                                                                                |
+        |:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `style`                       | **Description:** Controls the visual theme of the collections created.<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>default</code></td><td>Default Theme</td></tr><tr><td><code>standards</code></td><td>Standards Theme</td></tr></table>       |
+        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                             |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                          |
+        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                         |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                   |
+        | `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** Any Resolutions found in your library                                                                                                                                       |
+        | `exclude`                     | **Description:** Exclude these Resolutions from creating a Dynamic Collection.<br>**Values:** List of Resolutions found in your library                                                                                                                             |
+        | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Resolutions found in your library |
+        | `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Resolutions found in your library                                                                                                                                  |
+        | `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Resolutions found in your library                                                                                                                                |
+        | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Resolutions found in your library                                                                                                                   |
+        | `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Resolutions found in your library                                                                                                                 |
+        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                 |
+        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the resolution <<key_name>>.`<br>**Values:** Any string.                                                                               |
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: resolution
-        template_variables:
-          sep_style: green #(1)!
-          exclude:
-            - sd #(2)!
-          sort_by: title.asc
-```
+    === "Shared Template Variables"
 
-1.  Use the green [Separator Style](../separators.md#separator-styles)
-2.  Do not use the "sd" resolution as part of the "480p Movies/Shows" Collections
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ???+ tip
+
+        Anywhere you see this icon:
+      
+        > :fontawesome-solid-circle-plus:
+      
+        That's a tooltip, you can press them to get more information.
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: resolution
+            template_variables:
+              sep_style: green #(1)!
+              exclude:
+                - sd #(2)!
+              sort_by: title.asc
+    ```
+
+    1.  Use the green [Separator Style](../separators.md#separator-styles)
+    2.  Do not use the "sd" resolution as part of the "480p Movies/Shows" Collections
 
 ## Default values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+??? tip
 
-### Default `include`
+    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
 
-```yaml
-include:
-  - 4k
-  - 1080
-  - 720
-  - 480
-```
+    If you want to customize these values, use the methods described above.
 
-### Default `addons`
+    **Default `include`**:
 
-```yaml
-addons:
-  4k:
-    - 8k
-  1080:
-    - 2k
-  480:
-    - 144
-    - 240
-    - 360
-    - sd
-    - 576
-```
+    ```yaml
+    include:
+      - 4k
+      - 1080
+      - 720
+      - 480
+    ```
+
+    **Default `addons`**:
+
+    ```yaml
+    addons:
+      4k:
+        - 8k
+      1080:
+        - 2k
+      480:
+        - 144
+        - 240
+        - 360
+        - sd
+        - 576
+    ```

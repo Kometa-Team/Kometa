@@ -22,7 +22,7 @@ See the [Overlay Defaults](overlays.md) Page for more information on the specifi
 
 ## Configurations
 
-To run a default pmm Metadata or Overlay file you can simply add it to your `collection_files` (For Collection Files) or `overlay_files` (For Overlay Files) using `pmm` like so:
+To run a default pmm Collection or Overlay file you can simply add it to your `collection_files` (For Collection Files) or `overlay_files` (For Overlay Files) using `pmm` like so:
 
 ```yaml
 libraries:
@@ -60,7 +60,7 @@ libraries:
 
 Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings.md).
 
-**In addition to the defined `template_variables` almost all default Metadata and Overlay files have access to their respective [Metadata](collection_variables.md)/[Overlay](overlay_variables.md) Shared Variables.**
+**In addition to the defined `template_variables` almost all default Collection and Overlay files have access to their respective [Collection](collection_variables.md)/[Overlay](overlay_variables.md) Shared Variables.**
 
 {%
    include-markdown "./example.md"

@@ -54,41 +54,53 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable              | Default / Values                                                                                                                            |
-|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`   | `15`                                                                                                                                        |
-| `horizontal_align`    | `left`                                                                                                                                      |
-| `vertical_offset`     | `270`                                                                                                                                       |
-| `vertical_align`      | `bottom`                                                                                                                                    |
-| `back_color`          | `#00000099`                                                                                                                                 |
-| `back_radius`         | `30`                                                                                                                                        |
-| `back_width`          | `305`                                                                                                                                       |
-| `back_height`         | `105`                                                                                                                                       |
-| `addon_offset`        | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
-| `addon_position`      | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
-| `pre_text`            | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                  |
-| `post_text`           | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                               |
-| `pre_nr_text`         | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                             |
-| `post_nr_text`        | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                              |
-| `builder_level`       | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                             |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+??? info "Click to expand"
 
-## Example Template Variable Amendments
+    === "File-Specific Template Variables"
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        The below template variables are available specifically for this PMM Defaults file.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: commonsense
-        template_variables:
-          pre_text: "CS"
-```
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
+
+        | Variable              | Default / Values                                                                                                                            |
+        |:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`   | `15`                                                                                                                                        |
+        | `horizontal_align`    | `left`                                                                                                                                      |
+        | `vertical_offset`     | `270`                                                                                                                                       |
+        | `vertical_align`      | `bottom`                                                                                                                                    |
+        | `back_color`          | `#00000099`                                                                                                                                 |
+        | `back_radius`         | `30`                                                                                                                                        |
+        | `back_width`          | `305`                                                                                                                                       |
+        | `back_height`         | `105`                                                                                                                                       |
+        | `addon_offset`        | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
+        | `addon_position`      | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
+        | `pre_text`            | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                  |
+        | `post_text`           | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                               |
+        | `pre_nr_text`         | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                             |
+        | `post_nr_text`        | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                              |
+        | `builder_level`       | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                             |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: commonsense
+            template_variables:
+              pre_text: "CS"
+    ```

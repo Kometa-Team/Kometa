@@ -19,7 +19,7 @@ Requirements: Use the [Mass Content Rating Update Library Operation](../../confi
 | 12     | `12`   |
 | 16     | `16`   |
 | 18     | `18`   |
-| BPJM   | `bpjm` |
+| BPjM   | `bpjm` |
 | NR     | `nr`   |
 
 ## Config

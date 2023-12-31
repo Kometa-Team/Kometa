@@ -41,57 +41,70 @@ libraries:
           builder_level: season
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable(                     )| Default / Values( / Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                      )|
-|:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`          | `150`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `horizontal_align`           | `center`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `vertical_offset`            | `0`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `vertical_align`             | `bottom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `back_width`                 | `305`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `back_height`                | `105`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ||
-| `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`1.33`</td><td>`1.33`</td></tr><tr><td>`1.65`</td><td>`1.65`</td></tr><tr><td>`1.66`</td><td>`1.66`</td></tr><tr><td>`1.78`</td><td>`1.78`</td></tr><tr><td>`1.85`</td><td>`1.85`</td></tr><tr><td>`2.2`</td><td>`2.2`</td></tr><tr><td>`2.35`</td><td>`2.35`</td></tr><tr><td>`2.77`</td><td>`2.77`</td></tr></table>**Values:** Any String |
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                          |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+??? info "Click to expand"
 
-{%
-   include-markdown "../overlay_text_variables.md"
-%}
+    === "File-Specific Template Variables"
 
-## Example Template Variable Amendments
+        The below template variables are available specifically for this PMM Defaults file.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: aspect
-        template_variables:
-          text_1.33: "4:9"
-          text_1.77: "16:9"
-  TV Shows:
-    overlay_files:
-      - pmm: aspect
-        template_variables:
-          text_1.33: "4:9"
-          text_1.77: "16:9"
-      - pmm: aspect
-        template_variables:
-          overlay_level: episode
-          text_1.33: "4:9"
-          text_1.77: "16:9"
-      - pmm: aspect
-        template_variables:
-          overlay_level: season
-          text_1.33: "4:9"
-          text_1.77: "16:9"
-```
+        | Variable(                     )| Default / Values( / Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                      )|
+        |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`          | `150`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `horizontal_align`           | `center`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+        | `vertical_offset`            | `0`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+        | `vertical_align`             | `bottom`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+        | `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+        | `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+        | `back_width`                 | `305`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `back_height`                | `105`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ||
+        | `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`1.33`</td><td>`1.33`</td></tr><tr><td>`1.65`</td><td>`1.65`</td></tr><tr><td>`1.66`</td><td>`1.66`</td></tr><tr><td>`1.78`</td><td>`1.78`</td></tr><tr><td>`1.85`</td><td>`1.85`</td></tr><tr><td>`2.2`</td><td>`2.2`</td></tr><tr><td>`2.35`</td><td>`2.35`</td></tr><tr><td>`2.77`</td><td>`2.77`</td></tr></table>**Values:** Any String |
+        | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                          |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: aspect
+            template_variables:
+              text_1.33: "4:9"
+              text_1.77: "16:9"
+      TV Shows:
+        overlay_files:
+          - pmm: aspect
+            template_variables:
+              text_1.33: "4:9"
+              text_1.77: "16:9"
+          - pmm: aspect
+            template_variables:
+              overlay_level: episode
+              text_1.33: "4:9"
+              text_1.77: "16:9"
+          - pmm: aspect
+            template_variables:
+              overlay_level: season
+              text_1.33: "4:9"
+              text_1.77: "16:9"
+    ```

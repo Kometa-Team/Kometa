@@ -1,8 +1,4 @@
-## Shared Overlay Template Variables
-
-The below template variables are available for this PMM Defaults file.
-
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+The below additional template variables are available for this PMM Defaults file as it is an Overlay file.
 
 | Variable                   | Description & Values                                                                                                                                                                                                                  |
 |:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

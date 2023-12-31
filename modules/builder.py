@@ -1485,7 +1485,6 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
-            logger.warning(f"{self.Type} Warning: imdb_list has been deprecated, and at some point may no longer work. Please switch to using imdb_search.")
             try:
                 for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
                     self.builders.append((method_name, imdb_dict))

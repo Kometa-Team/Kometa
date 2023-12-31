@@ -25,40 +25,53 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable            | Default / Values                                                                                                                         |
-|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset` | `15`                                                                                                                                     |
-| `horizontal_align`  | `right`                                                                                                                                  |
-| `vertical_offset`   | `30`                                                                                                                                     |
-| `vertical_align`    | `bottom`                                                                                                                                 |
-| `back_color`        | `#00000099`                                                                                                                              |
-| `back_radius`       | `30`                                                                                                                                     |
-| `back_width`        | `600`                                                                                                                                    |
-| `back_height`       | `105`                                                                                                                                    |
-| `text`              | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+??? info "Click to expand"
 
-{%
-   include-markdown "../overlay_text_variables.md"
-%}
+    === "File-Specific Template Variables"
 
-## Example Template Variable Amendments
+        The below template variables are available specifically for this PMM Defaults file.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-```yaml
-libraries:
-  TV Shows:
-    overlay_files:
-      - pmm: runtimes
-        template_variables:
-          builder_level: episode
-        font: fonts/Inter-Bold.ttf
-```
+        | Variable            | Default / Values                                                                                                                         |
+        |:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset` | `15`                                                                                                                                     |
+        | `horizontal_align`  | `right`                                                                                                                                  |
+        | `vertical_offset`   | `30`                                                                                                                                     |
+        | `vertical_align`    | `bottom`                                                                                                                                 |
+        | `back_color`        | `#00000099`                                                                                                                              |
+        | `back_radius`       | `30`                                                                                                                                     |
+        | `back_width`        | `600`                                                                                                                                    |
+        | `back_height`       | `105`                                                                                                                                    |
+        | `text`              | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      TV Shows:
+        overlay_files:
+          - pmm: runtimes
+            template_variables:
+              builder_level: episode
+            font: fonts/Inter-Bold.ttf
+    ```

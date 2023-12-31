@@ -43,7 +43,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 | `use_<<key>>`<sup>1</sup>                | **Description:** Turns off individual Playlists in a Defaults file.<br>**Values:** `false` to turn off the playlist                                                                                                                                                                            |
 | `name_<<key>>`<sup>1</sup>               | **Description:** Changes the name of the specified key's playlist.<br>**Values:** New Playlist Name                                                                                                                                                                                            |
 | `summary_<<key>>`<sup>1</sup>            | **Description:** Changes the summary of the specified key's playlist.<br>**Values:** New Playlist Summary                                                                                                                                                                                      |
-| `libraries`                              | **Description:** Sets the names of the libraries to use for the Playlists.<br>**Default:** `Movies, TV Shows`<br>**Values:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/configuration.md. |
+| `libraries`                              | **Description:** Sets the names of the libraries to use for the Playlists.<br>**Default:** `Movies, TV Shows`<br>**Values:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/overview.md. |
 | `sync_to_user`                           | **Description:** Sets the users to sync all playlists to.<br>**Default:** `playlist_sync_to_users` Global Setting Value<br>**Values:** Comma-separated string or list of user names.                                                                                                           |
 | `sync_to_user_<<key>>`<sup>1</sup>       | **Description:** Sets the users to sync the specified key's playlist to.<br>**Default:** `sync_to_user` Value<br>**Values:** Comma-separated string or list of user names.                                                                                                                     |
 | `exclude_user`                           | **Description:** Sets the users to exclude from sync for all playlists.<br>**Default:** `playlist_sync_to_users` Global Setting Value<br>**Values:** Comma-separated string or list of user names.                                                                                             |
@@ -84,7 +84,11 @@ playlist_files:
 
 ## Default values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+???+ tip
+
+    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+
+    If you want to customize these values, use the methods described above.
 
 ### Default `trakt_list`
 

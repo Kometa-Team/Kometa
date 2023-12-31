@@ -8,678 +8,752 @@ There are a variety of Library Operations that can be utilized in a library.
 
 Within each library, operations can be defined by using the `operations` attribute, as demonstrated below.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: imdb
-    operations:
-      mass_critic_rating_update: tmdb
-      split_duplicates: true
-```
-
-The available attributes for the operations attribute are as follows
-
-| Attribute                                                             | Description                                                                                                                                                |                   Movies                    |                    Shows                    |                    Music                    |
-|:----------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------:|:-------------------------------------------:|:-------------------------------------------:|
-| [Assets For All](#assets-for-all)                                     | Search in assets for images for every item in your library.                                                                                                | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
-| [Delete Collections](#delete-collections)                             | Deletes collections based on a set of given attributes.                                                                                                    | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
-| [Mass Genre Update](#mass-genre-update)                               | Updates every item's genres in the library to the chosen site's genres.                                                                                    | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
-| [Mass Content Rating Update](#mass-content-rating-update)             | Updates every item's content rating in the library to the chosen site's content rating.                                                                    | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Original Title Update](#mass-original-title-update)             | Updates every item's original title in the library to the chosen site's original title.                                                                    | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Studio Update](#mass-studio-update)                             | Updates every item's studio in the library to the chosen site's studio.                                                                                    | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Originally Available Update](#mass-originally-available-update) | Updates every item's originally available date in the library to the chosen site's date.                                                                   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass * Rating Update](#mass--rating-update)                          | Updates every item's audience/critic/user rating in the library to the chosen site's rating.                                                               | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Episode * Rating Update](#mass-episode--rating-update)          | Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.                                                     |  :fontawesome-solid-circle-xmark:{ .red }   | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Poster Update](#mass-poster-update)                             | Updates every item's poster to the chosen sites poster. Will fallback to `plex` if the given option fails. Assets will be used over anything else.         | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Background Update](#mass-background-update)                     | Updates every item's background to the chosen sites background. Will fallback to `plex` if the given option fails. Assets will be used over anything else. | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass IMDb Parental Labels](#mass-imdb-parental-labels)               | Updates every item's labels in the library to match the IMDb Parental Guide.                                                                               | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Mass Collection Mode](#mass-collection-mode)                         | Updates every Collection in your library to the specified Collection Mode.                                                                                 | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Update Blank Track Titles](#update-blank-track-titles)               | Search though every track in a music library and replace any blank track titles with the tracks sort title.                                                |  :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }   | :fontawesome-solid-circle-check:{ .green }  |
-| [Remove Title Parentheses](#remove-title-parentheses)                 | Search through every title and remove all ending parentheses in an items title if the title is not locked.                                                 | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Split Duplicates](#split-duplicates)                                 | Splits all duplicate movies/shows found in this library.                                                                                                   | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Radarr Add All](#radarr-add-all)                                     | Adds every item in the library to Radarr.                                                                                                                  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Radarr Remove By Tag](#radarr-remove-by-tag)                         | Removes every item from Radarr with the Tags given.                                                                                                        | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Sonarr Add All](#sonarr-add-all)                                     | Adds every item in the library to Sonarr.                                                                                                                  |  :fontawesome-solid-circle-xmark:{ .red }   | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Sonarr Remove By Tag](#sonarr-remove-by-tag)                         | Removes every item from Sonarr with the Tags given.                                                                                                        |  :fontawesome-solid-circle-xmark:{ .red }   | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Genre Mapper](#genre-mapper)                                         | Allows genres to be changed to other genres or be removed from every item in your library.                                                                 | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Content Rating Mapper](#content-rating-mapper)                       | Allows content ratings to be changed to other content ratings or be removed from every item in your library.                                               | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }   |
-| [Metadata Backup](#metadata-backup)                                   | Creates/Maintains a PMM Metadata File with a full `metadata` mapping based on the library's items locked attributes.                                       | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green }  |
-
-## Assets For All
-
-Search in assets for images for every item in your library.
-
-**Attribute:** `assets_for_all`
-
-**Values:** `true` or `false`
+When not using a list under `operations` the whole operations value is one block.
 
 ???+ example
 
     ```yaml
     libraries:
       Movies:
-        # Metadata and Overlay files here
+        collection_files:
+          - pmm: imdb
         operations:
-          assets_for_all: false
-    ```
-
-## Delete Collections
-
-Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
-
-**Attribute:** `delete_collections`
-
-**Values:** There are a few different options to determine how the `delete_collections` works.
-
-| Attribute    | Description                                                                                                                                                                                                                                                                                                                                                                                                 |
-|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `managed`    | **Values:**<br>`true`: Collection must be a Managed Collection to be deleted (the collection has the `PMM` label)<br>`false`: Collection must be an Unmanaged Collection to be deleted (the collection does not have the `PMM` label)                                                                                                                                                                       |
-| `configured` | **Values:**<br>`true`: Collection must be a Configured Collection to be deleted (collection is in the config file of the specific PMM run)<br>`false`: Collection must be an Unconfigured Collection to be deleted (collection is not in the config file of the specific PMM run).<br>**The collection does not need to be scheduled to be considered configured and only needs to be in the config file.** |
-| `less`       | Collection must contain less then the given number of items to be deleted.<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                             |
-
-???+ example
-
-    Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          delete_collections:
-            configured: false
-            managed: true
-    ```
-
-## Mass Genre Update
-
-Updates every item's genres in the library to the chosen site's genres.
-
-**Attribute:** `mass_genre_update`
-
-**Values:**
-
-| Value       | Description                                                    |
-|:------------|:---------------------------------------------------------------|
-| `tmdb`      | Use TMDb for Genres                                            |
-| `tvdb`      | Use TVDb for Genres                                            |
-| `imdb`      | Use IMDb for Genres                                            |
-| `omdb`      | Use IMDb through OMDb for Genres                               |
-| `anidb`     | Use AniDB Main Tags for Genres                                 |
-| `anidb_3_0` | Use AniDB Main Tags and All 3 Star Tags and above for Genres   |
-| `anidb_2_5` | Use AniDB Main Tags and All 2.5 Star Tags and above for Genres |
-| `anidb_2_0` | Use AniDB Main Tags and All 2 Star Tags and above for Genres   |
-| `anidb_1_5` | Use AniDB Main Tags and All 1.5 Star Tags and above for Genres |
-| `anidb_1_0` | Use AniDB Main Tags and All 1 Star Tags and above for Genres   |
-| `anidb_0_5` | Use AniDB Main Tags and All 0.5 Star Tags and above for Genres |
-| `mal`       | Use MyAnimeList for Genres                                     |
-| `lock`      | Lock Genre Field                                               |
-| `unlock`    | Unlock Genre Field                                             |
-| `remove`    | Remove all Genres and Lock Field                               |
-| `reset`     | Remove all Genres and Unlock Field                             |
-
-???+ example
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          mass_genre_update: imdb
-    ```
-
-
-## Mass Content Rating Update
-
-Updates every item's content rating in the library to the chosen site's content rating.
-
-**Attribute:** `mass_content_rating_update`
-
-**Values:**
-
-| Value              | Description                                                                  |
-|:-------------------|:-----------------------------------------------------------------------------|
-| `mdb`              | Use MdbList for Content Ratings                                              |
-| `mdb_commonsense`  | Use Commonsense Rating through MDbList for Content Ratings                   |
-| `mdb_commonsense0` | Use Commonsense Rating with Zero Padding through MDbList for Content Ratings |
-| `omdb`             | Use IMDb through OMDb for Content Ratings                                    |
-| `mal`              | Use MyAnimeList for Content Ratings                                          |
-| `lock`             | Lock Content Rating Field                                                    |
-| `unlock`           | Unlock Content Rating Field                                                  |
-| `remove`           | Remove Content Rating and Lock Field                                         |
-| `reset`            | Remove Content Rating and Unlock Field                                       |
-
-???+ example
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          mass_content_rating_update: omdb
-    ```
-
-## Mass Original Title Update
-
-Updates every item's original title in the library to the chosen site's original title.
-
-**Attribute:** `mass_original_title_update`
-
-**Values:**
-
-| Value            | Description                                                                                     |
-|:-----------------|:------------------------------------------------------------------------------------------------|
-| `anidb`          | Use AniDB Main Title for Original Titles                                                        |
-| `anidb_official` | Use AniDB Official Title based on the language attribute in the config file for Original Titles |
-| `mal`            | Use MyAnimeList Main Title for Original Titles                                                  |
-| `mal_english`    | Use MyAnimeList English Title for Original Titles                                               |
-| `mal_japanese`   | Use MyAnimeList Japanese Title for Original Titles                                              |
-| `lock`           | Lock Original Title Field                                                                       |
-| `unlock`         | Unlock Original Title Field                                                                     |
-| `remove`         | Remove Original Title and Lock Field                                                            |
-| `reset`          | Remove Original Title and Unlock Field                                                          |
-
-???+ example
-
-    ```yaml
-    libraries:
-      Anime:
-        # Metadata and Overlay files here
-        operations:
-          mass_original_title_update: anidb_official
-    ```
-
-## Mass Studio Update
-
-Updates every item's studio in the library to the chosen site's studio.
-
-**Attribute:** `mass_studio_update`
-
-**Values:**
-
-| Value    | Description                            |
-|:---------|:---------------------------------------|
-| `anidb`  | Use AniDB Animation Work for Studio    |
-| `mal`    | Use MyAnimeList Studio for Studio      |
-| `tmdb`   | Use TMDb Studio for Studio             |
-| `lock`   | Lock Original Title Field              |
-| `unlock` | Unlock Original Title Field            |
-| `remove` | Remove Original Title and Lock Field   |
-| `reset`  | Remove Original Title and Unlock Field |
-
-???+ example
-
-    ```yaml
-    libraries:
-      Anime:
-        # Metadata and Overlay files here
-        operations:
-          mass_studio_update: mal
-    ```
-
-## Mass Originally Available Update
-
-Updates every item's originally available date in the library to the chosen site's date.
-
-???+ tip
-
-    As plex does not allow this field to be empty, using `remove` or `reset` will set the date to the Plex default date, which is `1969-12-31`
-
-**Attribute:** `mass_originally_available_update`
-
-**Values:**
-
-| Value    | Description                                  |
-|:---------|:---------------------------------------------|
-| `tmdb`   | Use TMDb Release Date                        |
-| `tvdb`   | Use TVDb Release Date                        |
-| `omdb`   | Use IMDb Release Date through OMDb           |
-| `mdb`    | Use MdbList Release Date                     |
-| `anidb`  | Use AniDB Release Date                       |
-| `mal`    | Use MyAnimeList Release Date                 |
-| `lock`   | Lock Originally Available Field              |
-| `unlock` | Unlock Originally Available Field            |
-| `remove` | Remove Originally Available and Lock Field   |
-| `reset`  | Remove Originally Available and Unlock Field |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_originally_available_update: tvdb
-    ```
-
-## Mass * Rating Update
-
-Updates every item's audience/critic/user rating in the library to the chosen site's rating.
-
-???+ warning "Important Note"
-    
-    This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../pmm/install/guides/ratings.md).
-
-**Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
-
-**Values:**
-
-| Value                  | Description                                         |
-|:-----------------------|:----------------------------------------------------|
-| `tmdb`                 | Use TMDb Rating                                     |
-| `imdb`                 | Use IMDb Rating                                     |
-| `trakt_user`           | Use Trakt User's Personal Rating                    |
-| `omdb`                 | Use IMDbRating through OMDb                         |
-| `mdb`                  | Use MdbList Score                                   |
-| `mdb_average`          | Use MdbList Average Score                           |
-| `mdb_imdb`             | Use IMDb Rating through MDbList                     |
-| `mdb_metacritic`       | Use Metacritic Rating through MDbList               |
-| `mdb_metacriticuser`   | Use Metacritic User Rating through MDbList          |
-| `mdb_trakt`            | Use Trakt Rating through MDbList                    |
-| `mdb_tomatoes`         | Use Rotten Tomatoes Rating through MDbList          |
-| `mdb_tomatoesaudience` | Use Rotten Tomatoes Audience Rating through MDbList |
-| `mdb_tmdb`             | Use TMDb Rating through MDbList                     |
-| `mdb_letterboxd`       | Use Letterboxd Rating through MDbList               |
-| `mdb_myanimelist`      | Use MyAnimeList Rating through MDbList              |
-| `anidb_rating`         | Use AniDB Rating                                    |
-| `anidb_average`        | Use AniDB Average                                   |
-| `anidb_score`          | Use AniDB Review Score                              |
-| `mal`                  | Use MyAnimeList Score                               |
-| `lock`                 | Lock Rating Field                                   |
-| `unlock`               | Unlock Rating Field                                 |
-| `remove`               | Remove Rating and Lock Field                        |
-| `reset`                | Remove Rating and Unlock Field                      |
-
-???+ example
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          mass_audience_rating_update: mdb_average
-          mass_critic_rating_update: mdb_metacritic
-          mass_user_rating_update: imdb
-    ```
-## Mass Episode * Rating Update
-
-Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.
-
-???+ warning "Important Note"
-    
-    This does not affect the icons displayed in the Plex UI.  This will place the number of your choice in the relevant field in the Plex database.  In other words, if Plex is configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten Tomatoes.  The human who decided to put TMDB ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten Tomatoes.  One primary use of this feature is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found [here](../pmm/install/guides/ratings.md).
-
-**Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
-
-**Values:**
-
-| Value    | Description                    |
-|:---------|:-------------------------------|
-| `tmdb`   | Use TMDb Rating                |
-| `imdb`   | Use IMDb Rating                |
-| `lock`   | Lock Rating Field              |
-| `unlock` | Unlock Rating Field            |
-| `remove` | Remove Rating and Lock Field   |
-| `reset`  | Remove Rating and Unlock Field |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_episode_audience_rating_update: tmdb
-          mass_episode_critic_rating_update: remove
-          mass_episode_user_rating_update: imdb
-    ```
-## Mass Poster Update
-
-Updates every item's poster to the chosen sites poster. Will fall back to `plex` if the given option fails. Assets will be used over anything else.
-
-???+ warning
-
-    When used in combination with Overlays, this could cause PMM to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
-
-**Attribute:** `mass_poster_update`
-
-**Values:** There are a few different options to determine how the `mass_poster_update` works.
-
-| Attribute           | Description                                                                                         |
-|:--------------------|:----------------------------------------------------------------------------------------------------|
-| `source`            | Source of the poster update<br>**Values:** `tmdb`, `plex`, `lock`, or `unlock`                      |
-| `seasons`           | Update season posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
-| `episodes`          | Update episode posters while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_poster_update:
-            source: tmdb
-            seasons: false
-            episodes: false
-    ```
-
-## Mass Background Update
-
-Updates every item's background to the chosen sites background. Will fall back to `plex` if the given option fails. Assets will be used over anything else.
-
-???+ warning
-
-    When used in combination with Overlays, this could cause PMM to reset the background and then reapply all overlays on each run, which will result in [image bloat](../pmm/essentials/scripts/image-cleanup.md).
-
-**Attribute:** `mass_background_update`
-
-**Values:** There are a few different options to determine how the `mass_background_update` works.
-
-| Attribute           | Description                                                                                             |
-|:--------------------|:--------------------------------------------------------------------------------------------------------|
-| `source`            | Source of the background update<br>**Values:** `tmdb`, `plex`, `lock`, or `unlock`                      |
-| `seasons`           | Update season backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false`  |
-| `episodes`          | Update episode backgrounds while updating shows<br>**Default:** `true`<br>**Values:** `true` or `false` |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_background_update:
-            source: tmdb
-            seasons: false
-            episodes: false
-    ```
-
-## Mass IMDb Parental Labels
-
-Updates every item's labels in the library to match the IMDb Parental Guide.
-
-**Attribute:** `mass_imdb_parental_labels`
-
-**Values:**
-
-| Value      | Description                                                                       |
-|:-----------|:----------------------------------------------------------------------------------|
-| `none`     | Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe` |
-| `mild`     | Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`         |
-| `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`                  |
-| `severe`   | Apply all Parental Labels with a value of `Severe`                                |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_imdb_parental_labels: severe
-    ```
-
-## Mass Collection Mode
-
-Updates every Collection in your library to the specified Collection Mode.
-
-**Attribute:** `mass_collection_mode`
-
-**Values:**
-
-| Value        | Description                        |
-|:-------------|:-----------------------------------|
-| `default`    | Library default                    |
-| `hide`       | Hide Collection                    |
-| `hide_items` | Hide Items in this Collection      |
-| `show_items` | Show this Collection and its Items |
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          mass_collection_mode: hide
-    ```
-
-## Update Blank Track Titles
-
-Search though every track in a music library and replace any blank track titles with the tracks sort title.
-
-**Attribute:** `update_blank_track_titles`
-
-**Values:** `true` or `false`
-
-???+ example
-
-    ```yaml
-    libraries:
-      Music:
-        # Metadata and Overlay files here
-        operations:
-          update_blank_track_titles: true
-    ```
-
-## Remove Title Parentheses
-
-Search through every title and remove all ending parentheses in an items title if the title is not locked.
-
-**Attribute:** `remove_title_parentheses`
-
-**Values:** `true` or `false`
-
-???+ example
-
-    ```yaml
-    libraries:
-      Music:
-        # Metadata and Overlay files here
-        operations:
-          remove_title_parentheses: true
-    ```
-
-## Split Duplicates
-
-Splits all duplicate movies/shows found in this library.
-
-**Attribute:** `split_duplicates`
-
-**Values:** `true` or `false`
-
-???+ example
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
+          mass_critic_rating_update: tmdb
           split_duplicates: true
     ```
 
-## Radarr Add All
+## Operation Blocks
 
-Adds every item in the library to Radarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Radarr paths you can use the `plex_path` and `radarr_path` [Radarr](radarr.md) details to convert the paths.
-
-**Attribute:** `radarr_add_all`
-
-**Values:** `true` or `false`
+You can create individual blocks of operations by using a list under `operations` with each item in the list being a 
+"block" that can be individually scheduled. 
 
 ???+ example
 
     ```yaml
     libraries:
       Movies:
-        # Metadata and Overlay files here
+        collection_files:
+          - pmm: imdb
         operations:
-          radarr_add_all: true
+          - schedule: weekly(friday)
+            mass_critic_rating_update: tmdb
+          - schedule: weekly(saturday)
+            split_duplicates: true
     ```
 
-## Radarr Remove By Tag
+## Operation Attributes
 
-Removes every item from Radarr with the Tags given.
+??? blank "`assets_for_all` - Used to search the asset directories for images for all items in the library.<a class="headerlink" href="#assets-for-all" title="Permanent link">¶</a>"
 
-**Attribute:** `radarr_remove_by_tag`
-
-**Values:** List or comma separated string of tags
-
-???+ example
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          radarr_remove_by_tag: mytag1, mytag2
-    ```
-
-## Sonarr Add All
-
-Adds every item in the library to Sonarr. The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Sonarr paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr.md) details to convert the paths.
-
-**Attribute:** `sonarr_add_all`
-
-**Values:** `true` or `false`
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          sonarr_add_all: true
-    ```
-
-## Sonarr Remove By Tag
-
-Removes every item from Sonarr with the Tags given.
-
-**Attribute:** `sonarr_remove_by_tag`
-
-**Values:** List or comma separated string of tags
-
-???+ example
-
-    ```yaml
-    libraries:
-      TV Shows:
-        # Metadata and Overlay files here
-        operations:
-          sonarr_remove_by_tag: mytag1, mytag2
-    ```
-
-## Genre Mapper
-
-Maps genres in your library to be changed to other genres.
-
-**Attribute:** `genre_mapper`
-
-**Values:** Each attribute under `genre_mapper` is a separate mapping and has two parts.
-
-* The key (`Action/Adventure, Action & Adventure` in the example below) is what genres you want mapped to the value.
-* The value (`Action` in the example below) is what the genres will end up as.
-
-???+ example
-
-    This example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          genre_mapper:
-            "Action/Adventure": Action 
-            "Action & Adventure": Action
-            Romantic Comedy: Comedy
-    ```
-
-    To just Remove a Genre without replacing it just set the Genre to nothing like this.
-
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          genre_mapper:
-            "Action/Adventure": Action 
-            "Action & Adventure": Action
-            Romantic Comedy:
-    ```
-
-    The above example will change go through every item in your library and change the genre `Action/Adventure` or `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
-
-## Content Rating Mapper
-
-Maps content ratings in your library to be changed to other content ratings.
-
-**Attribute:** `content_rating_mapper`
-
-**Values:** Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
-
-* The key (`PG`, `PG-13` in the example below) is what content ratings you want mapped to the value.
-* The value (`Y-10` in the example below) is what the content ratings will end up as.
-
-???+ example
-
-    This example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and `R` to `Y-17`.
+    <div id="assets-for-all" />Searches the asset directories for images for all items in the library.
     
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          content_rating_mapper:
-            PG: Y-10 
-            "PG-13": Y-10
-            R: Y-17
-    ```
+    <hr style="margin: 0px;">
     
-    To just Remove a content rating without replacing it just set the content rating to nothing like this.
+    **Attribute:** `assets_for_all`
     
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          content_rating_mapper:
-            PG: Y-10 
-            "PG-13": Y-10
-            R:
-    ```
+    **Accepted Values:** `true` or `false`
+
+    ???+ example "Example"
+ 
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              assets_for_all: false
+        ```
+
+??? blank "`delete_collections` - Deletes collections based on a set of given attribute.<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
+
+    <div id="delete-collections" />Deletes collections based on a set of given attributes. The Collection must match all
+    set attributes to be deleted.
     
-    The above example will change go through every item in your library and change the content rating `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `assets_for_all`
+    
+    **Accepted Values:** There are a few different options to determine how the `delete_collections` works.
+    
+    <table class="clearTable">
+      <tr><td>`managed: true`</td><td>Collection must be Managed to be deleted<br>(collection has the `PMM` label)</td></tr>
+      <tr><td>`managed: false`</td><td>Collection must be Unmanaged to be deleted<br>(collection does not have the `PMM` label)</td></tr>
+      <tr><td>`configured: true`</td><td>Collection must be Configured to be deleted<br>(collection is in the config file of the specific PMM run)</td></tr>
+      <tr><td>`configured: false`</td><td>Collection must be Unconfigured to be deleted<br>(collection is not in the config file of the specific PMM run)</td></tr>
+      <tr><td>`less: ###`</td><td>Collection must contain less then the given number of items to be deleted.<br>### is a Number greater than 0</td></tr>
+    </table>
 
-## Metadata Backup
+    **The collection does not need to be scheduled to be considered configured and only needs to be in the config file.**
 
-Creates/Maintains a Plex Meta Manager Metadata File with a full `metadata` mapping based on the library's items locked attributes.
+    ???+ example "Example"
 
-If you point to an existing Metadata File then PMM will Sync the changes to the file, so you won't lose non plex changes in the file.
+        Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
+    
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              delete_collections:
+                configured: false
+                managed: true
+        ```
 
-**Attribute:** `metadata_backup`
+??? blank "`mass_genre_update` - Updates the genres of every item in the library.<a class="headerlink" href="#mass-genre-update" title="Permanent link">¶</a>"
 
-**Values:** There are a few different options to determine how the `metadata_backup` works.
+    <div id="mass-genre-update" />Updates every item's genres in the library to the chosen site's genres.
+    
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_genre_update`
+    
+    **Accepted Values:** 
 
-| Attribute           | Description                                                                                                                                                         |
-|:--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `path`              | Path to where the metadata will be saved/maintained<br>**Default:** <<library_name>>_Metadata_Backup.yml in your config folder<br>**Values:** Path to Metadata File |
-| `exclude`           | Exclude all listed attributes from being saved in the collection file<br>**Values:** Comma-separated string or list of attributes                                   |
-| `sync_tags`         | All Tag Attributes will have the `.sync` option and blank attribute will be added to sync to as well<br>**Default:** `false`<br>**Values:** `true` or `false`       |
-| `add_blank_entries` | Will add a line for entries that have no metadata changes<br>**Default:** `true`<br>**Values:** `true` or `false`                                                   |
+    <table class="clearTable">
+      <tr><td>`tmdb`</td><td>Use TMDb for Genres</td></tr>
+      <tr><td>`tvdb`</td><td>Use TVDb for Genres</td></tr>
+      <tr><td>`imdb`</td><td>Use IMDb for Genres</td></tr>
+      <tr><td>`omdb`</td><td>Use IMDb through OMDb for Genres</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Main Tags for Genres</td></tr>
+      <tr><td>`anidb_3_0`</td><td>Use AniDB Main Tags and All 3 Star Tags and above for Genres</td></tr>
+      <tr><td>`anidb_2_5`</td><td>Use AniDB Main Tags and All 2.5 Star Tags and above for Genres</td></tr>
+      <tr><td>`anidb_2_0`</td><td>Use AniDB Main Tags and All 2 Star Tags and above for Genres</td></tr>
+      <tr><td>`anidb_1_5`</td><td>Use AniDB Main Tags and All 1.5 Star Tags and above for Genres</td></tr>
+      <tr><td>`anidb_1_0`</td><td>Use AniDB Main Tags and All 1 Star Tags and above for Genres</td></tr>
+      <tr><td>`anidb_0_5`</td><td>Use AniDB Main Tags and All 0.5 Star Tags and above for Genres</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList for Genres</td></tr>
+      <tr><td>`lock`</td><td>Lock all Genre Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock all Genre Field</td></tr>
+      <tr><td>`remove`</td><td>Remove all Genres and Lock all Field</td></tr>
+      <tr><td>`reset`</td><td>Remove all Genres and Unlock all Field</td></tr>
+    </table>
 
-???+ example
+    ???+ example "Example"
 
-    ```yaml
-    libraries:
-      Movies:
-        # Metadata and Overlay files here
-        operations:
-          metadata_backup:
-            path: config/Movie_Backup.yml
-            sync_tags: true
-            add_blank_entries: false
-    ```
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              mass_genre_update: imdb
+        ```
+
+??? blank "`mass_content_rating_update` - Updates the content rating of every item in the library.<a class="headerlink" href="#mass-content-rating-update" title="Permanent link">¶</a>"
+
+    <div id="mass-content-rating-update" />Updates every item's content rating in the library to the chosen site's 
+    content rating.
+    
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_content_rating_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`mdb`</td><td>Use MdbList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense`</td><td>Use Commonsense Rating through MDbList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense0`</td><td>Use Commonsense Rating with Zero Padding through MDbList for Content Ratings</td></tr>
+      <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList for Content Ratings</td></tr>
+      <tr><td>`lock`</td><td>Lock Content Rating Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Content Rating Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Content Rating and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Content Rating and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              mass_content_rating_update: omdb
+        ```
+
+??? blank "`mass_original_title_update` - Updates the original title of every item in the library.<a class="headerlink" href="#mass-original-title-update" title="Permanent link">¶</a>"
+
+    <div id="mass-original-title-update" />Updates every item's original title in the library to the chosen site's 
+    original title.
+    
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_original_title_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles</td></tr>
+      <tr><td>`anidb_official`</td><td>Use AniDB Official Title based on the language attribute in the config file for Original Titles</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList Main Title for Original Titles</td></tr>
+      <tr><td>`mal_english`</td><td>Use MyAnimeList English Title for Original Titles</td></tr>
+      <tr><td>`mal_japanese`</td><td>Use MyAnimeList Japanese Title for Original Titles</td></tr>
+      <tr><td>`lock`</td><td>Lock Original Title Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Original Title Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Original Title and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Original Title and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Anime:
+            operations:
+              mass_original_title_update: anidb_official
+        ```
+
+??? blank "`mass_studio_update` - Updates the studio of every item in the library.<a class="headerlink" href="#mass-studio-update" title="Permanent link">¶</a>"
+
+    <div id="mass-studio-update" />Updates every item's studio in the library to the chosen site's studio.
+    
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_studio_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList Studio for Studio</td></tr>
+      <tr><td>`tmdb`</td><td>Use TMDb Studio for Studio</td></tr>
+      <tr><td>`lock`</td><td>Lock Original Title Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Original Title Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Original Title and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Original Title and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Anime:
+            operations:
+              mass_studio_update: mal
+        ```
+
+??? blank "`mass_originally_available_update` - Updates the originally available date of every item in the library.<a class="headerlink" href="#mass-originally-available-update" title="Permanent link">¶</a>"
+
+    <div id="mass-originally-available-update" />Updates every item's originally available date in the library to the 
+    chosen site's date.
+    
+    ???+ tip
+    
+        As plex does not allow this field to be empty, using `remove` or `reset` will set the date to the Plex default 
+        date, which is `1969-12-31`
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_originally_available_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`tmdb`</td><td>Use TMDb Release Date</td></tr>
+      <tr><td>`tvdb`</td><td>Use TVDb Release Date</td></tr>
+      <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb</td></tr>
+      <tr><td>`mdb`</td><td>Use MdbList Release Date</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Release Date</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList Release Date</td></tr>
+      <tr><td>`lock`</td><td>Lock Originally Available Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Originally Available Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Originally Available and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Originally Available and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_originally_available_update: tvdb
+        ```
+
+??? blank "`mass_***_rating_update` - Updates the audience/critic/user rating of every item in the library.<a class="headerlink" href="#mass-star-rating-update" title="Permanent link">¶</a>"
+
+    <div id="mass-star-rating-update" />Updates every item's audience/critic/user rating in the library to the chosen 
+    site's rating.
+    
+    ???+ warning "Important Note"
+        
+        This does not affect the icons displayed in the Plex UI. This will place the number of your choice in the 
+        relevant field in the Plex database. In other words, if Plex is configured to use Rotten Tomatoes ratings, then 
+        no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten 
+        Tomatoes. The human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience 
+        slot is the only party who knows that the ratings are no longer Rotten Tomatoes. One primary use of this feature
+        is to put ratings overlays on posters. More information on what PMM can do with these ratings can be found 
+        [here](../pmm/guides/ratings.md).
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
+      <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
+      <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating</td></tr>
+      <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
+      <tr><td>`mdb`</td><td>Use MdbList Score</td></tr>
+      <tr><td>`mdb_average`</td><td>Use MdbList Average Score</td></tr>
+      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDbList</td></tr>
+      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDbList</td></tr>
+      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDbList</td></tr>
+      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDbList</td></tr>
+      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDbList</td></tr>
+      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDbList</td></tr>
+      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDbList</td></tr>
+      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDbList</td></tr>
+      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDbList</td></tr>
+      <tr><td>`anidb_rating`</td><td>Use AniDB Rating</td></tr>
+      <tr><td>`anidb_average`</td><td>Use AniDB Average</td></tr>
+      <tr><td>`anidb_score`</td><td>Use AniDB Review Score</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList Score</td></tr>
+      <tr><td>`lock`</td><td>Lock Rating Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Rating and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              mass_audience_rating_update: mdb_average
+              mass_critic_rating_update: mdb_metacritic
+              mass_user_rating_update: imdb
+        ```
+
+??? blank "`mass_episode_***_rating_update` - Updates the audience/critic/user rating of every episode in the library.<a class="headerlink" href="#mass-episode-star-rating-update" title="Permanent link">¶</a>"
+
+    <div id="mass-episode-star-rating-update" />Updates every item's episode's audience/critic/user rating in the 
+    library to the chosen site's rating.
+    
+    ???+ warning "Important Note"
+        
+        This does not affect the icons displayed in the Plex UI. This will place the number of your choice in the 
+        relevant field in the Plex database. In other words, if Plex is configured to use Rotten Tomatoes ratings, then 
+        no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten 
+        Tomatoes. The human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience 
+        slot is the only party who knows that the ratings are no longer Rotten Tomatoes. One primary use of this feature
+        is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found 
+        [here](../pmm/guides/ratings.md).
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
+      <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
+      <tr><td>`lock`</td><td>Lock Rating Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Rating and Unlock Field</td></tr>
+    </table>                                                      
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_episode_audience_rating_update: tmdb
+              mass_episode_critic_rating_update: remove
+              mass_episode_user_rating_update: imdb
+        ```
+
+??? blank "`mass_poster_update` - Updates the poster of every item in the library.<a class="headerlink" href="#mass-poster-update" title="Permanent link">¶</a>"
+
+    <div id="mas-_poster-update" />Updates every item's poster to the chosen sites poster. Will fall back to `plex` if 
+    the given option fails. Assets will be used over anything else.
+    
+    ???+ warning
+    
+        When used in combination with Overlays, this could cause PMM to reset the poster and then reapply all overlays 
+        on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_poster_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`source`</td><td>Source of the poster update</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+    </table>
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_poster_update:
+                source: tmdb
+                seasons: false
+                episodes: false
+        ```
+
+??? blank "`mass_background_update` - Updates the background of every item in the library.<a class="headerlink" href="#mass-background-update" title="Permanent link">¶</a>"
+
+    <div id="mass-background-update" />Updates every item's background to the chosen sites background. Will fall back to
+    `plex` if the given option fails. Assets will be used over anything else.
+    
+    ???+ warning
+    
+        When used in combination with Overlays, this could cause PMM to reset the background and then reapply all 
+        overlays on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_poster_update`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`source`</td><td>Source of the poster update</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+    </table>
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_background_update:
+                source: tmdb
+                seasons: false
+                episodes: false
+        ```
+
+??? blank "`mass_imdb_parental_labels` - Adds IMDb Parental labels of every item in the library.<a class="headerlink" href="#mass-imdb-parental-labels" title="Permanent link">¶</a>"
+
+    <div id="mass-imdb-parental-labels" />Updates every item's labels in the library to match the IMDb Parental Guide.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_imdb_parental_labels`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`none`</td><td>Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe`</td></tr>
+      <tr><td>`mild`</td><td>Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`</td></tr>
+      <tr><td>`moderate`</td><td>Apply all Parental Labels with a value of `Moderate` or `Severe`</td></tr>
+      <tr><td>`severe`</td><td>Apply all Parental Labels with a value of `Severe`</td></tr>
+    </table>
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_imdb_parental_labels: severe
+        ```
+
+??? blank "`mass_collection_mode` - Updates the Collection Mode of every item in the library.<a class="headerlink" href="#mass-collection-mode" title="Permanent link">¶</a>"
+
+    <div id="mass-collection-mode" />Updates every Collection in your library to the specified Collection Mode.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_collection_mode`
+    
+    **Accepted Values:**
+    
+    <table class="clearTable">
+      <tr><td>`default`</td><td>Library default</td></tr>
+      <tr><td>`hide`</td><td>Hide Collection</td></tr>
+      <tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr>
+      <tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr>
+    </table>
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_collection_mode: hide
+        ```
+
+??? blank "`update_blank_track_titles` - Updates blank track titles of every item in the library.<a class="headerlink" href="#update-blank-track-titles" title="Permanent link">¶</a>"
+
+    <div id="update-blank-track-titles" />Search though every track in a music library and replace any blank track 
+    titles with the tracks sort title.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `update_blank_track_titles`
+    
+    **Accepted Values:** `true` or `false`
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Music:
+            operations:
+              update_blank_track_titles: true
+        ```
+
+??? blank "`remove_title_parentheses` - Removes title parentheses of every item in the library.<a class="headerlink" href="#remove-title-parentheses" title="Permanent link">¶</a>"
+
+    <div id="remove-title-parentheses" />Search through every title and remove all ending parentheses in an items title 
+    if the title is not locked.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `remove_title_parentheses`
+    
+    **Accepted Values:** `true` or `false`
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Music:
+            operations:
+              remove_title_parentheses: true
+        ```
+
+??? blank "`split_duplicates` - Splits all duplicate items found in this library.<a class="headerlink" href="#split-duplicates" title="Permanent link">¶</a>"
+
+    <div id="split-duplicates" />Splits all duplicate items found in this library.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `split_duplicates`
+    
+    **Accepted Values:** `true` or `false`
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              split_duplicates: true
+        ```
+
+??? blank "`radarr_add_all` - Adds every item in the library to Radarr.<a class="headerlink" href="#radarr-add-all" title="Permanent link">¶</a>"
+
+    <div id="radarr-add-all" />Adds every item in the library to Radarr. 
+
+    ???+ warning
+    
+        The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same 
+        as your Radarr paths you can use the `plex_path` and `radarr_path` [Radarr](radarr.md) details to convert the 
+        paths.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `radarr_add_all`
+    
+    **Accepted Values:** `true` or `false`
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              radarr_add_all: true
+        ```
+
+??? blank "`radarr_remove_by_tag` - Removes every item from Radarr with the Tags given.<a class="headerlink" href="#radarr-remove-by-tag" title="Permanent link">¶</a>"
+
+    <div id="radarr-remove-by-tag" />Removes every item from Radarr with the Tags given.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `radarr_remove_by_tag`
+    
+    **Accepted Values:** List or comma separated string of tags
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              radarr_remove_by_tag: mytag1, mytag2
+        ```
+
+??? blank "`sonarr_add_all` - Adds every item in the library to Sonarr.<a class="headerlink" href="#sonarr-add-all" title="Permanent link">¶</a>"
+
+    <div id="sonarr-add-all" />Adds every item in the library to Sonarr. 
+
+    ???+ warning
+    
+        The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same 
+        as your Sonarr paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr.md) details to convert the 
+        paths.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `sonarr_add_all`
+    
+    **Accepted Values:** `true` or `false`
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              sonarr_add_all: true
+        ```
+
+??? blank "`sonarr_remove_by_tag` - Removes every item from Sonarr with the Tags given.<a class="headerlink" href="#sonarr-remove-by-tag" title="Permanent link">¶</a>"
+
+    <div id="sonarr-remove-by-tag" />Removes every item from Sonarr with the Tags given.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `sonarr_remove_by_tag`
+    
+    **Accepted Values:** List or comma separated string of tags
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              sonarr_remove_by_tag: mytag1, mytag2
+        ```
+
+??? blank "`genre_mapper` - Maps genres in your library to be changed to other genres.<a class="headerlink" href="#genre-mapper" title="Permanent link">¶</a>"
+
+    <div id="genre-mapper" />Maps genres in your library to be changed to other genres.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `genre_mapper`
+    
+    **Accepted Values:** Each attribute under `genre_mapper` is a separate mapping and has two parts.
+    
+    <table class="clearTable">
+      <tr><td>`key`</td><td>Genre you want mapped to the value</td><td>`Action/Adventure, Action & Adventure` in the example below</td></tr>
+      <tr><td>`value`</td><td>What the genre will end up as</td><td>`Action` in the example below</td></tr>
+    </table>
+
+    ???+ example "Example"
+    
+        This example will change go through every item in your library and change the genre `Action/Adventure` or 
+        `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
+    
+        ```yaml
+        libraries:
+          Movies:
+            # Metadata and Overlay files here
+            operations:
+              genre_mapper:
+                "Action/Adventure": Action 
+                "Action & Adventure": Action
+                Romantic Comedy: Comedy
+        ```
+    
+        To just Remove a Genre without replacing it just set the Genre to nothing like this.
+    
+        ```yaml
+        libraries:
+          Movies:
+            # Metadata and Overlay files here
+            operations:
+              genre_mapper:
+                "Action/Adventure": Action 
+                "Action & Adventure": Action
+                Romantic Comedy:
+        ```
+    
+        The above example will change go through every item in your library and change the genre `Action/Adventure` or 
+        `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
+
+??? blank "`content_rating_mapper` - Maps content ratings in your library to be changed to other content ratings.<a class="headerlink" href="#content-rating-mapper" title="Permanent link">¶</a>"
+
+    <div id="content-rating-mapper" />Maps content ratings in your library to be changed to other content ratings.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `content_rating_mapper`
+    
+    **Accepted Values:** Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
+    
+    <table class="clearTable">
+      <tr><td>`key`</td><td>Content rating you want mapped to the value</td><td>`PG`, `PG-13` in the example below</td></tr>
+      <tr><td>`value`</td><td>What the content rating will end up as</td><td>`Y-10` in the example below</td></tr>
+    </table>
+
+    ???+ example "Example"
+    
+        This example will change go through every item in your library and change the content rating `PG` or `PG-13` to 
+        `Y-10` and `R` to `Y-17`.
+        
+        ```yaml
+        libraries:
+          Movies:
+            # Metadata and Overlay files here
+            operations:
+              content_rating_mapper:
+                PG: Y-10 
+                "PG-13": Y-10
+                R: Y-17
+        ```
+        
+        To just Remove a content rating without replacing it just set the content rating to nothing like this.
+        
+        ```yaml
+        libraries:
+          Movies:
+            # Metadata and Overlay files here
+            operations:
+              content_rating_mapper:
+                PG: Y-10 
+                "PG-13": Y-10
+                R:
+        ```
+        
+        The above example will change go through every item in your library and change the content rating `PG` or 
+        `PG-13` to `Y-10` and remove every instance of the content rating `R`.
+
+??? blank "`metadata_backup` - Creates/Maintains a PMM Metadata File for the library.<a class="headerlink" href="#metadata-backup" title="Permanent link">¶</a>"
+
+    <div id="metadata-backup" />Creates/Maintains a Plex Meta Manager Metadata File with a full `metadata` mapping based
+    on the library's items locked attributes.
+
+    If you point to an existing Metadata File then PMM will Sync the changes to the file, so you won't lose non plex 
+    changes in the file.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `metadata_backup`
+    
+    **Accepted Values:** There are a few different options to determine how the `metadata_backup` works.
+    
+    <table class="clearTable">
+      <tr><td>`path`</td><td>Path to where the metadata will be saved/maintained<br>**Default:** `<<library_name>>_Metadata_Backup.yml in your config folder`<br>**Values:** Path to Metadata File</td></tr>
+      <tr><td>`exclude`</td><td>Exclude all listed attributes from being saved in the collection file<br>**Values:** `Comma-separated string or list of attributes`</td></tr>
+      <tr><td>`sync_tags`</td><td>All Tag Attributes will have the `.sync` option and blank attribute will be added to sync<br>**Default:** `false`<br>**Values:** `true` or `false`</td></tr>
+      <tr><td>`add_blank_entries`</td><td>Will add a line for entries that have no metadata changes<br>**Default:** `true`<br>**Values:** `true` or `false`</td></tr>
+    </table>
+
+    ???+ example "Example"
+    
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              metadata_backup:
+                path: config/Movie_Backup.yml
+                sync_tags: true
+                add_blank_entries: false
+        ```

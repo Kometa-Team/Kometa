@@ -418,31 +418,20 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
     if single and len(files_to_load) > 1:
         raise Failed(f"{err_type} Error: {method} can only have one entry")
     for file in files_to_load:
+        logger.info("")
         if isinstance(file, dict):
-            temp_vars = {}
-            if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
-                temp_vars = file["template_variables"]
-            for k, v in lib_vars.items():
-                if k not in temp_vars:
-                    temp_vars[k] = v
-            asset_directory = []
-            if "asset_directory" in file and file["asset_directory"]:
-                for asset_path in get_list(file["asset_directory"], split=False):
-                    if os.path.exists(asset_path):
-                        asset_directory.append(asset_path)
-                    else:
-                        logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
-
             current = []
             def check_dict(attr, name):
                 if attr in file and (method != "metadata_files" or attr != "pmm"):
+                    logger.info(f"Reading {attr}: {file[attr]}")
                     if file[attr]:
                         if attr == "git" and file[attr].startswith("PMM/"):
-                            current.append(("PMM Default", file[attr][4:], temp_vars, asset_directory))
+                            current.append(("PMM Default", file[attr][4:]))
                         else:
-                            current.append((name, file[attr], temp_vars, asset_directory))
+                            current.append((name, file[attr]))
                     else:
                         logger.error(f"{err_type} Error: {method} {attr} is blank")
+                return ""
 
             check_dict("url", "URL")
             check_dict("git", "Git")
@@ -450,6 +439,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
             check_dict("repo", "Repo")
             check_dict("file", "File")
             if not single and "folder" in file:
+                logger.info(f"Reading folder: {file['folder']}")
                 if file["folder"] is None:
                     logger.error(f"{err_type} Error: {method} folder is blank")
                 elif not os.path.isdir(file["folder"]):
@@ -458,30 +448,52 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
                     yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
                     if yml_files:
-                        current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
+                        current.extend([("File", yml) for yml in yml_files])
                     else:
                         logger.error(f"{err_type} Error: No YAML (.yml|.yaml) files found in {file['folder']}")
 
+            temp_vars = {}
+            if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
+                temp_vars = file["template_variables"]
+            for k, v in lib_vars.items():
+                if k not in temp_vars:
+                    temp_vars[k] = v
+            if temp_vars:
+                logger.info(f"Template Variables: {temp_vars}")
+
+            asset_directory = []
+            if "asset_directory" in file and file["asset_directory"]:
+                logger.info(f"Asset Directory: {file['asset_directory']}")
+                for asset_path in get_list(file["asset_directory"], split=False):
+                    if os.path.exists(asset_path):
+                        asset_directory.append(asset_path)
+                    else:
+                        logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
+
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule
-                logger.debug(f"Value: {file['schedule']}")
+                logger.info(f"Schedule: {file['schedule']}")
                 err = None
+                schedule_str = None
                 try:
-                    schedule_check("schedule", file["schedule"], current_time, run_hour)
+                    schedule_str = schedule_check("schedule", file["schedule"], current_time, run_hour)
                 except NotScheduledRange as e:
                     err = e
+                    schedule_str = e
                 except NotScheduled as e:
                     if not ignore_schedules:
                         err = e
+                        schedule_str = e
+                if schedule_str:
+                    logger.info(f"Schedule Read:{schedule_str}\n")
+
                 if err:
                     had_scheduled = True
-                    logger.info(f"Metadata Schedule:{err}\n")
-                    for file_type, file_path, temp_vars, asset_directory in current:
-                        logger.warning(f"{file_type}: {file_path} not scheduled to run")
-                    logger.info("")
+                    logger.warning(f"This {'set of files' if len(current) > 1 else 'file'} not scheduled to run")
                     continue
-            files.extend(current)
+            files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
         else:
+            logger.info(f"Reading file: {file}")
             if os.path.exists(file):
                 files.append(("File", file, {}, None))
             else:

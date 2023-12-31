@@ -73,11 +73,7 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 graphql_url = "https://api.graphql.imdb.com/"
-urls = {
-    "lists": f"{base_url}/list/ls",
-    "keyword_searches": f"{base_url}/search/keyword/",
-    "filmography_searches": f"{base_url}/filmosearch/"
-}
+list_url = f"{base_url}/list/ls"
 
 class IMDb:
     def __init__(self, config):
@@ -109,11 +105,12 @@ class IMDb:
                 raise Failed(f"{err_type} Error: imdb_list url attribute is blank")
             else:
                 imdb_url = imdb_dict[dict_methods["url"]].strip()
-            if imdb_url.startswith("https://www.imdb.com/search/title/"):
-                raise Failed("IMDb Error: IMDb URLs with https://www.imdb.com/search/title/ no longer work with imdb_list.")
-            if not imdb_url.startswith(tuple([v for k, v in urls.items()])):
-                fails = "\n    ".join([f"{v} (For {k.replace('_', ' ').title()})" for k, v in urls.items()])
-                raise Failed(f"IMDb Error: {imdb_url} must begin with either:\n    {fails}")
+            if imdb_url.startswith(f"{base_url}/search/"):
+                raise Failed("IMDb Error: URLs with https://www.imdb.com/search/ no longer works with imdb_list use imdb_search.")
+            if imdb_url.startswith(f"{base_url}/filmosearch/"):
+                raise Failed("IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with imdb_list use imdb_search.")
+            if not imdb_url.startswith(list_url):
+                raise Failed(f"IMDb Error: imdb_list URLs must begin with {list_url}")
             self._total(imdb_url, language)
             list_count = None
             if "limit" in dict_methods:
@@ -178,12 +175,8 @@ class IMDb:
         raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
 
     def _total(self, imdb_url, language):
-        if imdb_url.startswith(urls["lists"]):
-            xpath_total = "//div[@class='desc lister-total-num-results']/text()"
-            per_page = 100
-        else:
-            xpath_total = "//div[@class='desc']/text()"
-            per_page = 50
+        xpath_total = "//div[@class='desc lister-total-num-results']/text()"
+        per_page = 100
         results = self._request(imdb_url, language=language, xpath=xpath_total)
         total = 0
         for result in results:

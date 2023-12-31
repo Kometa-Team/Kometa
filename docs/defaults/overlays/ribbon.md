@@ -45,40 +45,50 @@ libraries:
       - pmm: ribbon
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-.
+??? info "Click to expand"
 
-| Variable                     | Default / Values                                                                                                        |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`          | `0`                                                                                                                     |
-| `horizontal_align`           | `right`                                                                                                                 |
-| `vertical_offset`            | `0`                                                                                                                     |
-| `vertical_align`             | `bottom`                                                                                                                |
-| `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
-| `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
+    === "File-Specific Template Variables"
 
-1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+        The below template variables are available specifically for this PMM Defaults file.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-## Example Template Variable Amendments
+        | Variable                     | Default / Values                                                                                                        |
+        |:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`          | `0`                                                                                                                     |
+        | `horizontal_align`           | `right`                                                                                                                 |
+        | `vertical_offset`            | `0`                                                                                                                     |
+        | `vertical_align`             | `bottom`                                                                                                                |
+        | `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
+        | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
+        | `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: ribbon
-        template_variables:
-          style: black
-          weight_metacritic: 35
-          use_common: false
-```
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: ribbon
+            template_variables:
+              style: black
+              weight_metacritic: 35
+              use_common: false
+    ```

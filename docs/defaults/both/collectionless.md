@@ -1,6 +1,6 @@
 # Collectionless Collection
 
-The `collectionless` Default Collection File is used to create a [Collectionless collection](../../builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library.
+The `collectionless` Default Collection File is used to create a [Collectionless collection](../../files/builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library.
 
 ![](../images/collectionless.png)
 
@@ -14,7 +14,7 @@ Requirements: For this file to work it needs to run last under `collection_files
 
 | Collection       | Description                                                                                                                               |
 |:-----------------|:------------------------------------------------------------------------------------------------------------------------------------------|
-| `Collectionless` | [Collectionless collection](../../builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library..         |
+| `Collectionless` | [Collectionless collection](../../files/builders/plex.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library..         |
 
 ## Config
 
@@ -47,7 +47,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 | `name_collectionless`    | **Description:** Changes the name of the collection.<br>**Values:** New Collection Name                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `summary_collectionless` | **Description:** Changes the summary of the collection.<br>**Values:** New Collection Summary                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `sort_title`             | **Description:** Sets the sort title for the collection.<br>**Default:** `~_Collectionless`<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `collection_order`       | **Description:** Changes the Collection Order for all collections in this file.<br>**Default:** `alpha`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>         |
+| `collection_order`       | **Description:** Changes the Collection Order for all collections in this file.<br>**Default:** `alpha`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../files/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>         |
 | `url_poster`             | **Description:** Changes the poster url of thecollection.<br>**Values:** URL directly to the Image                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `exclude`                | **Description:** Exclude these Collections from being considered for collectionless.<br>**Values:** List of Collections                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `exclude_prefix`         | **Description:** Overrides the [default exclude_prefix list](#default-exclude_prefix). Exclude Collections with one of these prefixes from being considered for collectionless.<br>**Default:** [default exclude_prefix list](#default-exclude_prefix)<br>**Values:** List of Prefixes                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                 |
@@ -71,7 +71,11 @@ libraries:
 
 ## Default values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+???+ tip
+
+    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+
+    If you want to customize these values, use the methods described above.
 
 ### Default `exclude_prefix`
 

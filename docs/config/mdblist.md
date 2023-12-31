@@ -20,4 +20,5 @@ mdblist:
 
     The MdbList apikey can be found [here](https://mdblist.com/preferences/).
 
-    The free apikey is limited to 1000 requests per day so if you hit your limit the program should be able to pick up where it left off the next day as long as the `cache` [Setting](settings.md#cache) is enabled 
+    The free apikey is limited to 1000 requests per day so if you hit your limit the program should be able to pick up 
+    where it left off the next day as long as the `cache` [Setting](settings.md#cache) is enabled.

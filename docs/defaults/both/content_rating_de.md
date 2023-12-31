@@ -10,14 +10,14 @@ If you do not use the German-based rating system within Plex, this file will att
 
 Supported Library Types: Movie, Show
 
-Recommendation: Set the Certification Country within your library's advanced settings to "United Kingdom"
+Recommendation: Set the Certification Country within your library's advanced settings to "Germany"
 
 ## Collections Section 110
 
 | Collection                                                        | Key                                         | Description                                                                             |
 |:------------------------------------------------------------------|:--------------------------------------------|:----------------------------------------------------------------------------------------|
 | `Ratings Collections`                                             | `separator`                                 | [Separator Collection](../separators.md) to denote the Section of Collections.          |
-| `<<Content Rating>> Movies/Shows`<br>**Example:** `BJPM Movies`   | `<<Content Rating>>`<br>**Example:** `BJPM` | Collection of Movies/Shows that have this Content Rating.                               |
+| `<<Content Rating>> Movies/Shows`<br>**Example:** `BPjM Movies`   | `<<Content Rating>>`<br>**Example:** `BPjM` | Collection of Movies/Shows that have this Content Rating.                               |
 | `Not Rated Movies/Shows`                                          | `other`                                     | Collection of Movies/Shows that are Unrated, Not Rated or any other uncommon Ratings.   |
 
 ## Config
@@ -83,15 +83,15 @@ libraries:
           sep_style: stb #(1)!
           use_other: false #(2)!
           append_addons:
-            BJPM: #(3)!
+            BPjM: #(3)!
               - X #(4)!
           sort_by: title.asc
 ```
 
 1.  Use the stb [Separator Style](../separators.md#separator-styles)
 2.  Do not create a "Not Rated Movies/Shows" collection
-3.  Defines a collection which will be called "BJPM", this does not need to already exist in your library
-4.  Adds the "X" content rating to the "BJPM" addon list, "X" must exist in your library if the "BJPM" content rating does not
+3.  Defines a collection which will be called "BPjM", this does not need to already exist in your library
+4.  Adds the "X" content rating to the "BPjM" addon list, "X" must exist in your library if the "BPjM" content rating does not
 
 ## Default values
 
@@ -110,7 +110,7 @@ include:
   - 12
   - 16
   - 18
-  - BJPM
+  - BPjM
 ```
 
 ### Default `addons`
@@ -200,7 +200,7 @@ include:
         - NC-17
         - R+ - Mild Nudity
         - Rx - Hentai
-      BJPM:
+      BPjM:
         - de/BPjM Restricted
         - BPjM Restricted
 ```
