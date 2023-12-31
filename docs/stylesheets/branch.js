@@ -21,9 +21,9 @@ function checkURLForBranch() {
   }
 
   // Change theme based on URL segment
-  if (currentURL.includes("nightly")) {
+  if (currentURL.includes("en/nightly")) {
     updateTheme("#262dbd", "#262dbd", "PMM Nightly Wiki");
-  } else if (currentURL.includes("develop")) {
+  } else if (currentURL.includes("en/develop")) {
     updateTheme("#ffa724", "#ffa724", "PMM Develop Wiki");
   }
 }
