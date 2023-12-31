@@ -1,30 +1,32 @@
 // custom.js
 
-// Function to check if the current URL contains "config" or "metadata"
+// Function to check if the current URL contains "nightly" or "develop" and adjust styles accordingly
 function checkURLForBranch() {
   const currentURL = window.location.href;
 
-  if (currentURL.indexOf("nightly") !== -1) {
-    // If "config" is found in the URL, change the CSS of .md-header to red
-    document.querySelector(".md-header").style.backgroundColor = "#262dbd";
-    document.querySelector(".md-tabs").style.backgroundColor = "#262dbd";
-
-    // Change the text of <span class="md-ellipsis">
+  // Helper function to update style and text
+  function updateTheme(headerColor, tabsColor, textContent) {
+    const header = document.querySelector(".md-header");
+    const tabs = document.querySelector(".md-tabs");
     const ellipsisSpan = document.querySelector(".md-ellipsis");
-    if (ellipsisSpan) {
-      ellipsisSpan.textContent = "PMM Nightly Wiki";
+
+    if (header && tabs) { // Check if elements exist
+      header.style.backgroundColor = headerColor;
+      tabs.style.backgroundColor = tabsColor;
     }
-  } else if (currentURL.indexOf("develop") !== -1) {
-    // If "metadata" is found in the URL, change the CSS of .md-header to yellow
-    document.querySelector(".md-header").style.backgroundColor = "#ffa724";
-    document.querySelector(".md-tabs").style.backgroundColor = "#ffa724";
 
-    // Change the text of <span class="md-ellipsis">
-    const ellipsisSpan = document.querySelector(".md-ellipsis");
-    if (ellipsisSpan) {
-      ellipsisSpan.textContent = "PMM Develop Wiki";
+    if (ellipsisSpan) { // Check if element exists
+      ellipsisSpan.textContent = textContent;
     }
   }
+
+  // Change theme based on URL segment
+  if (currentURL.includes("nightly")) {
+    updateTheme("#262dbd", "#262dbd", "PMM Nightly Wiki");
+  } else if (currentURL.includes("develop")) {
+    updateTheme("#ffa724", "#ffa724", "PMM Develop Wiki");
+  }
+}
 
 // Call the function on page load
 window.addEventListener("load", checkURLForBranch);
