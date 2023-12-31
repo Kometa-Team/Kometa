@@ -45,31 +45,43 @@ libraries:
       - pmm: streaming
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-| Variable                        | Description & Values                                                                                                                                                                                                                                                                                                         |
-|:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                         | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                                                                      |
-| `limit_<<key>>`<sup>1</sup>     | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                                                                                   |
-| `sort_by`                       | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                                  |
-| `sort_by_<<key>>`<sup>1</sup>   | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                                                                            |
-| `sync_mode`                     | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
-| `sync_mode_<<key>>`<sup>1</sup> | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
-| `exclude`                       | **Description:** Exclude these Streaming Services from creating a Dynamic Collection.<br>**Values:** List of Streaming Service Keys                                                                                                                                                                                          |
-| `region`                        | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                  |
-| `originals_only`                | **Description:** Changes  Streaming Service lists to only show original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces collections for `amazon`, `appletv`, `disney`, `max`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false` |
-| `name_format`                   | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                          |
-| `summary_format`                | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s streaming on <<key_name>>.`<br>**Values:** Any string.                                                                                                                                                    |
+??? info "Click to expand"
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../collection_variables.md"
-%}
+        The below template variables are available specifically for this PMM Defaults file.
+
+        Be sure to also check out the "Shared Template Variables" tab for additional variables.
+
+        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+
+        | Variable                        | Description & Values                                                                                                                                                                                                                                                                                                         |
+        |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `limit`                         | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                                                                      |
+        | `limit_<<key>>`<sup>1</sup>     | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                                                                                   |
+        | `sort_by`                       | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                                                                  |
+        | `sort_by_<<key>>`<sup>1</sup>   | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                                                                            |
+        | `sync_mode`                     | **Description:** Changes the Sync Mode for all collections in a Defaults file.<br>**Default:** `sync`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
+        | `sync_mode_<<key>>`<sup>1</sup> | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                             |
+        | `exclude`                       | **Description:** Exclude these Streaming Services from creating a Dynamic Collection.<br>**Values:** List of Streaming Service Keys                                                                                                                                                                                          |
+        | `region`                        | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                  |
+        | `originals_only`                | **Description:** Changes  Streaming Service lists to only show original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces collections for `amazon`, `appletv`, `disney`, `max`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false` |
+        | `name_format`                   | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                                          |
+        | `summary_format`                | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s streaming on <<key_name>>.`<br>**Values:** Any string.                                                                                                                                                    |
+
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+
+    === "Shared Template Variables"
+
+        {%
+          include-markdown "../collection_variables.md"
+        %}
 
 ## Regional Variants
 
@@ -95,27 +107,27 @@ The below is an example config.yml extract with some Template Variables added in
    
     That's a tooltip, you can press them to get more information.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: streaming
-        template_variables:
-          region: fr #(1)!
-          sep_style: amethyst #(2)!
-          visible_library_disney: true #(3)!
-          visible_home_disney: true #(4)!
-          visible_shared_disney: true #(5)!
-          sonarr_add_missing_hulu: true #(6)!
-          radarr_add_missing_amazon: true #(7)!
-          sort_by: random #(8)!
-```
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: streaming
+            template_variables:
+              region: fr #(1)!
+              sep_style: amethyst #(2)!
+              visible_library_disney: true #(3)!
+              visible_home_disney: true #(4)!
+              visible_shared_disney: true #(5)!
+              sonarr_add_missing_hulu: true #(6)!
+              radarr_add_missing_amazon: true #(7)!
+              sort_by: random #(8)!
+    ```
 
-1.  Use French region lists where possible
-2.  Use the amethyst [Separator Style](../separators.md#separator-styles)
-3.  Pin the "Disney+ Movies/Shows" collection to the Recommended tab of the library
-4.  Pin the "Disney+ Movies/Shows" collection to the home screen of the server owner
-5.  Pin the "Disney+ Movies/Shows" collection to the home screen of other users of the server
-6.  Add missing shows in your library from the "Hulu Shows" list to your Sonarr
-7.  Add missing movies in your library from the "Prime Video Movies" list to your Radarr
-8.  Sort all the collections created by this file randomly
+    1.  Use French region lists where possible
+    2.  Use the amethyst [Separator Style](../separators.md#separator-styles)
+    3.  Pin the "Disney+ Movies/Shows" collection to the Recommended tab of the library
+    4.  Pin the "Disney+ Movies/Shows" collection to the home screen of the server owner
+    5.  Pin the "Disney+ Movies/Shows" collection to the home screen of other users of the server
+    6.  Add missing shows in your library from the "Hulu Shows" list to your Sonarr
+    7.  Add missing movies in your library from the "Prime Video Movies" list to your Radarr
+    8.  Sort all the collections created by this file randomly

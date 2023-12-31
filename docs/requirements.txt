@@ -5,6 +5,8 @@ jinja2
 markdown
 mkdocs
 mkdocs-material-extensions
+mkdocs-redirects
+neoteroi-mkdocs
 pygments
 pymdown-extensions
 babel

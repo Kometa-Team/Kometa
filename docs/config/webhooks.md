@@ -31,7 +31,8 @@ webhooks:
 
 ## Error Notifications
 
-The Error notification will be sent whenever an error occurs. The payload that is sent is different Depending on which level the error occurs.
+The Error notification will be sent whenever an error occurs. The payload that is sent is different Depending on which 
+level the error occurs.
 
 ### Global JSON Payload
 
@@ -152,7 +153,8 @@ The Delete Notification will be sent whenever a collection/playlist is deleted c
 
 ## Changes Notifications
 
-The Changes Notification will be sent after each collection/playlist containing the following payload if the collection/playlist has been created, has new items, or has had items removed.
+The Changes Notification will be sent after each collection/playlist containing the following payload if the 
+collection/playlist has been created, has new items, or has had items removed.
 
 ### JSON Payload
 

@@ -41,46 +41,59 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable                     | Default / Values                                                                                                                                                                                                                                                                                                                                                                                             |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`          | `15`                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `horizontal_align`           | `left`                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `vertical_offset`            | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `vertical_align`             | `bottom`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `back_width`                 | `305`                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `back_height`                | `105`                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
-| `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`remux`</td><td>`REMUX`</td></tr><tr><td>`bluray`</td><td>`BLU-RAY`</td></tr><tr><td>`web`</td><td>`WEB`</td></tr><tr><td>`hdtv`</td><td>`HDTV`</td></tr><tr><td>`dvd`</td><td>`DVD`</td></tr><tr><td>`sdtv`</td><td>`SDTV`</td></tr></table>**Values:** Any String |
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                 |
-| `regex_<<key>>`<sup>1</sup>  | **Description:** Controls the regex of the Overlay Search.<br>**Values:** Any Proper Regex                                                                                                                                                                                                                                                                                                                   |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+??? info "Click to expand"
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../overlay_text_variables.md"
-%}
+        The below template variables are available specifically for this PMM Defaults file.
 
-## Example Template Variable Amendments
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        | Variable                     | Default / Values                                                                                                                                                                                                                                                                                                                                                                                             |
+        |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`          | `15`                                                                                                                                                                                                                                                                                                                                                                                                         |
+        | `horizontal_align`           | `left`                                                                                                                                                                                                                                                                                                                                                                                                       |
+        | `vertical_offset`            | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
+        | `vertical_align`             | `bottom`                                                                                                                                                                                                                                                                                                                                                                                                     |
+        | `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                  |
+        | `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
+        | `back_width`                 | `305`                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `back_height`                | `105`                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
+        | `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`remux`</td><td>`REMUX`</td></tr><tr><td>`bluray`</td><td>`BLU-RAY`</td></tr><tr><td>`web`</td><td>`WEB`</td></tr><tr><td>`hdtv`</td><td>`HDTV`</td></tr><tr><td>`dvd`</td><td>`DVD`</td></tr><tr><td>`sdtv`</td><td>`SDTV`</td></tr></table>**Values:** Any String |
+        | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                 |
+        | `regex_<<key>>`<sup>1</sup>  | **Description:** Controls the regex of the Overlay Search.<br>**Values:** Any Proper Regex                                                                                                                                                                                                                                                                                                                   |
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: video_format
-        template_variables:
-          text_bluray: BLURAY
-          use_sdtv: false
-          use_dvd: false
-```
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: video_format
+            template_variables:
+              text_bluray: BLURAY
+              use_sdtv: false
+              use_dvd: false
+    ```

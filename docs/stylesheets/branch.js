@@ -25,7 +25,6 @@ function checkURLForBranch() {
       ellipsisSpan.textContent = "PMM Develop Wiki";
     }
   }
-}
 
 // Call the function on page load
 window.addEventListener("load", checkURLForBranch);

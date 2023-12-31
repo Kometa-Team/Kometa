@@ -21,8 +21,8 @@ anidb:
   password: ######
 ```
 
-| Attribute          | Allowed Values                                                                                | Default | Required |
-|:-------------------|:----------------------------------------------------------------------------------------------|:--------|:--------:|
+| Attribute          | Allowed Values                                                                                | Default |                 Required                 |
+|:-------------------|:----------------------------------------------------------------------------------------------|:--------|:----------------------------------------:|
 | `client`           | AniDB Client Name                                                                             | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 | `version`          | AniDB Client Version                                                                          | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 | `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language. | en      | :fontawesome-solid-circle-xmark:{ .red } |
@@ -32,24 +32,31 @@ anidb:
 
 To get a Client Name and Client Version please follow the following steps.
 
-1.  Login to [AniDB](https://anidb.net/)
-2.  Go to you [API Client Page](https://anidb.net/software/add) and go to the `Add New Project` Tab.
+1. Login to [AniDB](https://anidb.net/)
 
-    ![AniDB Add Project](anidb-1.png)
+2. Go to you [API Client Page](https://anidb.net/software/add) and go to the `Add New Project` Tab.
 
-3.  Fill in the Project Name with whatever name you want and then hit `+ Add Project`. The rest of the settings don't matter.
-4.  After you've added the project you should end up on the Projects Page. If not go back to the [API Client Page](https://anidb.net/software/add) and click your projects name. 
-5.  Once you're on the project page click `Add Client` in the top right.
+    ![AniDB Add Project](images/anidb-1.png)
 
-    ![AniDB Add Client](anidb-2.png)
+3. Fill in the Project Name with whatever name you want and then hit `+ Add Project`. The rest of the settings don't 
+matter.
 
-6.  Come up with and enter a unique to AniDB Client Name
-7.  Select `HTTP API` in the API Dropdown
-8.  Put `1` for Version.
+4. After you've added the project you should end up on the Projects Page. If not go back to the 
+[API Client Page](https://anidb.net/software/add) and click your projects name. 
 
-    ![AniDB Client Page](anidb-3.png)
+5. Once you're on the project page click `Add Client` in the top right.
 
-9.  Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
+    ![AniDB Add Client](images/anidb-2.png)
+
+6. Come up with and enter a unique to AniDB Client Name
+
+7. Select `HTTP API` in the API Dropdown
+
+8. Put `1` for Version.
+
+    ![AniDB Client Page](images/anidb-3.png)
+
+9. Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
 
     ```yaml
     anidb:

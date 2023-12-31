@@ -22,39 +22,52 @@ libraries:
       - pmm: direct_play
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable            | Default / Values                                                                |
-|:--------------------|:--------------------------------------------------------------------------------|
-| `horizontal_offset` | `0`                                                                             |
-| `horizontal_align`  | `center`                                                                        |
-| `vertical_offset`   | `150`                                                                           |
-| `vertical_align`    | `bottom`                                                                        |
-| `back_color`        | `#00000099`                                                                     |
-| `back_radius`       | `30`                                                                            |
-| `back_width`        | `305`                                                                           |
-| `back_height`       | `170`                                                                           |
-| `builder_level`     | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+??? info "Click to expand"
 
-{%
-   include-markdown "../overlay_text_variables.md"
-%}
+    === "File-Specific Template Variables"
 
-## Example Template Variable Amendments
+        The below template variables are available specifically for this PMM Defaults file.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: direct_play
-        template_variables:
-          builder_level: episode
-```
+        | Variable            | Default / Values                                                                |
+        |:--------------------|:--------------------------------------------------------------------------------|
+        | `horizontal_offset` | `0`                                                                             |
+        | `horizontal_align`  | `center`                                                                        |
+        | `vertical_offset`   | `150`                                                                           |
+        | `vertical_align`    | `bottom`                                                                        |
+        | `back_color`        | `#00000099`                                                                     |
+        | `back_radius`       | `30`                                                                            |
+        | `back_width`        | `305`                                                                           |
+        | `back_height`       | `170`                                                                           |
+        | `builder_level`     | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: direct_play
+            template_variables:
+              builder_level: episode
+    ```

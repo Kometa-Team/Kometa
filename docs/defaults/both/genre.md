@@ -31,108 +31,124 @@ libraries:
       - pmm: genre
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-| Variable                      | Description & Values                                                                                                                                                                                                                                           |
-|:------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                        |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                     |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                    |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                              |
-| `exclude`                     | **Description:** Exclude these Genres from creating a Dynamic Collection.<br>**Values:** List of Genres found in your library                                                                                                                                  |
-| `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Genres found in your library |
-| `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Genres found in your library                                                                                                                   |
-| `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Genres found in your library                                                                                                                 |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                            |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the genre <<key_name>>.`<br>**Values:** Any string.                                                                               |
+??? info "Click to expand"
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../collection_variables.md"
-%}
+        The below template variables are available specifically for this PMM Defaults file.
 
-### Example Template Variable Amendments
+        Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
-???+ tip
+        | Variable                      | Description & Values                                                                                                                                                                                                                                           |
+        |:------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                        |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                     |
+        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                    |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                              |
+        | `exclude`                     | **Description:** Exclude these Genres from creating a Dynamic Collection.<br>**Values:** List of Genres found in your library                                                                                                                                  |
+        | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Genres found in your library |
+        | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Genres found in your library                                                                                                                   |
+        | `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Genres found in your library                                                                                                                 |
+        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                            |
+        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the genre <<key_name>>.`<br>**Values:** Any string.                                                                               |
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: genre
-        template_variables:
-          sep_style: red #(1)!
-          exclude:
-            - Politics #(2)!
-            - News #(3)!
-          append_addons:
-            Horror: #(4)!
-              - Thriller #(5)! # Adds all thriller items to the Horror collection
-```
+    === "Shared Template Variables"
 
-1.  Use the red [Separator Style](../separators.md#separator-styles)
-2.  Do not create a "Politics" collection, and do not include it in any other collections that it may be in as part of an "include"
-3.  Do not create a "News" collection, and do not include it in any other collections that it may be in as part of an "include"
-4.  Create a "Horror" collection, this genre does not need to exist in your library
-5.  Include the "Thriller" genre in the "Horror" collection, the "Thriller" genre must exist in your library if the "Horror" genre does not
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ???+ tip
+
+        Anywhere you see this icon:
+      
+        > :fontawesome-solid-circle-plus:
+      
+        That's a tooltip, you can press them to get more information.
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: genre
+            template_variables:
+              sep_style: red #(1)!
+              exclude:
+                - Politics #(2)!
+                - News #(3)!
+              append_addons:
+                Horror: #(4)!
+                  - Thriller #(5)! # Adds all thriller items to the Horror collection
+    ```
+
+    1.  Use the red [Separator Style](../separators.md#separator-styles)
+    2.  Do not create a "Politics" collection, and do not include it in any other collections that it may be in as part of an "include"
+    3.  Do not create a "News" collection, and do not include it in any other collections that it may be in as part of an "include"
+    4.  Create a "Horror" collection, this genre does not need to exist in your library
+    5.  Include the "Thriller" genre in the "Horror" collection, the "Thriller" genre must exist in your library if the "Horror" genre does not
 
 ## Default values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+???+ tip
 
-### Default `addons`
+    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
 
-```yaml
-addons:
-  Action:
-    - Action/Adventure
-    - Action/adventure
-    - Action & Adventure
-    - Action & adventure
-    - Action and Adventure
-    - Action and adventure
-  Adventure:
-    - Action/Adventure
-    - Action/adventure
-    - Action & Adventure
-    - Action & adventure
-    - Action and Adventure
-    - Action and adventure
-  Biopic:
-    - Biography
-  Family:
-    - Kids & Family
-  Fantasy:
-    - SciFi & Fantasy
-    - Science Fiction & Fantasy
-    - Science-Fiction & Fantasy
-    - Sci-Fi & Fantasy
-  Film Noir:
-    Film-Noir
-  Politics:
-    - War & Politics
-  Science Fiction:
-    - SciFi
-    - Sci-Fi
-    - Science-Fiction
-    - SciFi & Fantasy
-    - Science Fiction & Fantasy
-    - Sci-Fi & Fantasy
-  Talk Show:
-    - Talk
-  War:
-    - War & Politics
-```
+    If you want to customize these values, use the methods described above.
+
+    **Default `addons`**:
+
+    ```yaml
+    addons:
+      Action:
+        - Action/Adventure
+        - Action/adventure
+        - Action & Adventure
+        - Action & adventure
+        - Action and Adventure
+        - Action and adventure
+      Adventure:
+        - Action/Adventure
+        - Action/adventure
+        - Action & Adventure
+        - Action & adventure
+        - Action and Adventure
+        - Action and adventure
+      Biopic:
+        - Biography
+      Family:
+        - Kids & Family
+      Fantasy:
+        - SciFi & Fantasy
+        - Science Fiction & Fantasy
+        - Science-Fiction & Fantasy
+        - Sci-Fi & Fantasy
+      Film Noir:
+        Film-Noir
+      Politics:
+        - War & Politics
+      Science Fiction:
+        - SciFi
+        - Sci-Fi
+        - Science-Fiction
+        - SciFi & Fantasy
+        - Science Fiction & Fantasy
+        - Sci-Fi & Fantasy
+      Talk Show:
+        - Talk
+      War:
+        - War & Politics
+    ```

@@ -34,251 +34,267 @@ libraries:
       - pmm: content_rating_cs
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-| Variable                      | Description & Values                                                                                                                                                                                                                                                    |
-|:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                 |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                              |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                             |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                                                                       |
-| `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
-| `exclude`                     | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of Content Ratings found in your library                                                                                                                         |
-| `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Content Ratings found in your library |
-| `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                  |
-| `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                |
-| `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                   |
-| `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                 |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Age <<key_name>>+ <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that are rated <<key_name>> accorfing to the Common Sense Rating System.`<br>**Values:** Any string.                                                 |
+??? info "Click to expand"
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../collection_variables.md"
-%}
+        The below template variables are available specifically for this PMM Defaults file.
 
-### Example Template Variable Amendments
+        Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
-???+ tip
+        | Variable                      | Description & Values                                                                                                                                                                                                                                                    |
+        |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                 |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                              |
+        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                             |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                       |
+        | `include`                     | **Description:** Overrides the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
+        | `exclude`                     | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of Content Ratings found in your library                                                                                                                         |
+        | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-addons). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Content Ratings found in your library |
+        | `append_include`              | **Description:** Appends to the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                  |
+        | `remove_include`              | **Description:** Removes from the [default include list](#default-include).<br>**Values:** List of Content Ratings found in your library                                                                                                                                |
+        | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                   |
+        | `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-addons).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                 |
+        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Age <<key_name>>+ <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                |
+        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that are rated <<key_name>> accorfing to the Common Sense Rating System.`<br>**Values:** Any string.                                                 |
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: content_rating_cs
-        template_variables:
-          sep_style: blue #(1)!
-          use_other: false #(2)!
-          append_addons:
-            German 18: #(3)!
-              - "de/18" #(4)!
-          sort_by: title.asc
-```
+    === "Shared Template Variables"
+
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ???+ tip
+
+        Anywhere you see this icon:
+      
+        > :fontawesome-solid-circle-plus:
+      
+        That's a tooltip, you can press them to get more information.
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: content_rating_cs
+            template_variables:
+              sep_style: blue #(1)!
+              use_other: false #(2)!
+              append_addons:
+                German 18: #(3)!
+                  - "de/18" #(4)!
+              sort_by: title.asc
+    ```
 
 
-1.  Use the blue [Separator Style](../separators.md#separator-styles)
-2.  Do not create a "Not Rated Movies/Shows" collection
-3.  Defines a collection which will be called "German 18", this does not need to already exist in your library
-4.  Adds the "de/18" content rating to the "German 18" addon list, "de/18" must exist in your library if the "German 18" content rating does not
+    1.  Use the blue [Separator Style](../separators.md#separator-styles)
+    2.  Do not create a "Not Rated Movies/Shows" collection
+    3.  Defines a collection which will be called "German 18", this does not need to already exist in your library
+    4.  Adds the "de/18" content rating to the "German 18" addon list, "de/18" must exist in your library if the "German 18" content rating does not
 
 ## Default values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+??? warning
 
-### Default `include`
+    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
 
-```yaml
-include:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
-  - 17
-  - 18
-```
+    If you want to customize these values, use the methods described above.
 
-### Default `addons`
+    **Default `include`**:
 
-```yaml
-addons:
-  1:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "01"
-  2:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "02"
-  3:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "03"
-  4:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "04"
-  5:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "05"
-  6:
-    - gb/U
-    - gb/0+
-    - G
-    - TV-Y
-    - E
-    - gb/E
-    - G - All Ages
-    - "06"
-  7:
-    - gb/PG
-    - TV-PG
-    - TV-Y7
-    - TV-Y7-FV
-    - PG
-    - PG - Children
-    - "07"
-  8:
-    - gb/PG
-    - TV-PG
-    - TV-Y7
-    - TV-Y7-FV
-    - PG
-    - PG - Children
-    - "08"
-  9:
-    - gb/PG
-    - TV-PG
-    - TV-Y7
-    - TV-Y7-FV
-    - PG
-    - PG - Children
-    - gb/9+
-    - "09"
-  10:
-    - gb/PG
-    - TV-PG
-    - TV-Y7
-    - TV-Y7-FV
-    - PG
-    - PG - Children
-    - gb/9+
-  11:
-    - gb/PG
-    - TV-PG
-    - TV-Y7
-    - TV-Y7-FV
-    - PG
-    - PG - Children
-    - gb/9+
-  12:
-    - gb/12
-    - gb/12A
-    - 12+
-    - PG
-    - PG - Children
-  13:
-    - gb/12
-    - gb/12A
-    - 12+
-    - PG-13
-    - PG-13 - Teens 13 or older
-  14:
-    - gb/12
-    - 12
-    - gb/12A
-    - 12+
-    - PG-13
-    - TV-14
-    - 13
-    - PG-13 - Teens 13 or older
-  15:
-    - gb/15
-    - gb/14+
-    - TV-14
-    - 13
-    - 14
-    - PG-13 - Teens 13 or older
-  16:
-    - gb/15
-    - gb/14+
-    - TV-14
-    - 13
-    - 14
-    - 15
-    - PG-13 - Teens 13 or older
-  17:
-    - gb/15
-    - gb/14+
-    - TV-14
-    - 13
-    - 14
-    - 15
-    - 16
-    - R - 17+ (violence & profanity)
-  18:
-    - gb/18
-    - MA-17
-    - TVMA
-    - TV-MA
-    - R
-    - 16
-    - 17
-    - gb/R18
-    - gb/X
-    - X
-    - NC-17
-    - R - 17+ (violence & profanity)
-    - R+ - Mild Nudity
-    - Rx - Hentai
-```
+    ```yaml
+    include:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+    ```
+
+    **Default `addons`**:
+
+    ```yaml
+    addons:
+      1:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "01"
+      2:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "02"
+      3:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "03"
+      4:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "04"
+      5:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "05"
+      6:
+        - gb/U
+        - gb/0+
+        - G
+        - TV-Y
+        - E
+        - gb/E
+        - G - All Ages
+        - "06"
+      7:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - PG - Children
+        - "07"
+      8:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - PG - Children
+        - "08"
+      9:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - PG - Children
+        - gb/9+
+        - "09"
+      10:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - PG - Children
+        - gb/9+
+      11:
+        - gb/PG
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - PG - Children
+        - gb/9+
+      12:
+        - gb/12
+        - gb/12A
+        - 12+
+        - PG
+        - PG - Children
+      13:
+        - gb/12
+        - gb/12A
+        - 12+
+        - PG-13
+        - PG-13 - Teens 13 or older
+      14:
+        - gb/12
+        - 12
+        - gb/12A
+        - 12+
+        - PG-13
+        - TV-14
+        - 13
+        - PG-13 - Teens 13 or older
+      15:
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 13
+        - 14
+        - PG-13 - Teens 13 or older
+      16:
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 13
+        - 14
+        - 15
+        - PG-13 - Teens 13 or older
+      17:
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 13
+        - 14
+        - 15
+        - 16
+        - R - 17+ (violence & profanity)
+      18:
+        - gb/18
+        - MA-17
+        - TVMA
+        - TV-MA
+        - R
+        - 16
+        - 17
+        - gb/R18
+        - gb/X
+        - X
+        - NC-17
+        - R - 17+ (violence & profanity)
+        - R+ - Mild Nudity
+        - Rx - Hentai
+    ```

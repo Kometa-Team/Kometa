@@ -31,7 +31,8 @@ trakt:
 
 * All other attributes will be filled in by Plex Meta Manager. 
 
-To connect to Trakt.tv you must create a Trakt application and supply Plex Meta Manager the `client_id`, `client_secret`, and `pin` provided, please do the following:
+To connect to Trakt.tv you must create a Trakt application and supply Plex Meta Manager the `client_id`,
+`client_secret`, and `pin` provided, please do the following:
 
 1.  [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
 2.  Enter a `Name` for the application.
@@ -40,7 +41,7 @@ To connect to Trakt.tv you must create a Trakt application and supply Plex Meta 
 5.  Record the `Client ID` and `Client Secret` as `client_id` and `client_secret` in your Configuration File.
 6.  Click the Green Authorize Button next to the Redirect URI
 
-    ![Trakt Authorize](trakt.png)
+    ![Trakt Authorize](images/trakt.png)
 
 7.  Record the `PIN` as `pin` in your Configuration File.
 
@@ -50,7 +51,10 @@ To connect to Trakt.tv you must create a Trakt application and supply Plex Meta 
 
 ## Online Authorization Script
 
-Plex Meta Manager requires interactive mode to be able to enter the Client ID and Client Secret. Some systems (namely NAS) make this difficult to accomplish. Chazlarson has developed an online script that can be run to generate the MAL and Trakt authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration file.
+Plex Meta Manager requires interactive mode to be able to enter the Client ID and Client Secret. Some systems (namely 
+NAS) make this difficult to accomplish. Chazlarson has developed an online script that can be run to generate the MAL 
+and Trakt authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration 
+file.
 
 The Online Auth tool can be found [here](https://replit.com/@chazlarson/TraktAuth).
 

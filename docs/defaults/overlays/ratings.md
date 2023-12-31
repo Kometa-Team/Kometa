@@ -4,7 +4,7 @@ The `ratings` Default Overlay File is used to create an overlay based on the Cri
 
 This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info.
 
-**Please read [PMM Ratings Explained](../../pmm/install/guides/ratings.md) for more understanding on how PMM interacts with ratings.**
+**Please read [PMM Ratings Explained](../../pmm/guides/ratings.md) for more understanding on how PMM interacts with ratings.**
 
 ![](images/ratings_overlay.png)
 
@@ -14,7 +14,7 @@ Supported Overlay Level: Movie, Show, Episode
 
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
-Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass--rating-update) and the [Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode--rating-update) to update Plex to the Ratings you want on the Overlay.
+Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md) and the [Mass Episode * Rating Update Library Operation](../../config/operations.md) to update Plex to the Ratings you want on the Overlay.
 
 ## Config
 
@@ -60,130 +60,142 @@ The below YAML in your config.yml will create the overlays:
       mass_episode_audience_rating_update: tmdb
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-These can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-???+ warning
+??? info "Click to expand"
 
-    To amend `horizontal_offset` and `vertical_offset` you **must** prepend the variable with `rating1_`, `rating2_`, or `rating3_`
+    === "File-Specific Template Variables"
 
-| Variable                     | Default / Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-|:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`          | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `horizontal_align`           | `left`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `vertical_offset`            | `0`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `vertical_align`             | `center`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `back_width`                 | `160`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `back_height`                | `160`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `back_padding`               | `15`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `rating1`                    | **Description:** Choose the rating to display in rating1.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `rating1_image`              | **Description:** Choose the rating image to display in rating1.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rating1_style`              | **Description:** Choose the rating number style for rating1.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
-| `rating1_extra`              | **Description:** Extra text after rating1.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rating2`                    | **Description:** Choose the rating to display in rating2.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `rating2_image`              | **Description:** Choose the rating image to display in rating2.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rating2_style`              | **Description:** Choose the rating number style for rating2.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
-| `rating2_extra`              | **Description:** Extra text after rating2.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rating3`                    | **Description:** Choose the rating to display in rating3.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `rating3_image`              | **Description:** Choose the rating image to display in rating3.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `rating3_style`              | **Description:** Choose the rating number style for rating3.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
-| `rating3_extra`              | **Description:** Extra text after rating3.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `horizontal_position`        | **Description:** Choose the horizontal position for the rating group.<br>**Default:** `left`<br>**Values:** `left`, `right`, or `center`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `vertical_position`          | **Description:** Choose the vertical position for the rating group.<br>**Default:** `center`<br>**Values:** `top`, `bottom`, or `center`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `rating_alignment`           | **Description:** Choose the display alignment for the rating group.<br>**Default:** `vertical`<br>**Values:** `horizontal`, or `vertical`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `minimum_rating`             | **Description:** Minimum Rating to display<br>**Default:** 0.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `fresh_rating`               | **Description:** Determines when ratings are considered Fresh<br>**Default:** 6.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `maximum_rating`             | **Description:** Maximum Rating to display<br>**Default:** 10.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `addon_offset`<sup>1</sup>   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `addon_position`<sup>1</sup> | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+        The below template variables are available specifically for this PMM Defaults file.
 
-1. These Variables can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+        These can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
-{%
-   include-markdown "../overlay_text_variables.md"
-%}
+        ???+ warning
 
-## Example Template Variable Amendments
+            To amend `horizontal_offset` and `vertical_offset` you **must** prepend the variable with `rating1_`, `rating2_`, or `rating3_`
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        | Variable                     | Default / Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+        |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`          | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+        | `horizontal_align`           | `left`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+        | `vertical_offset`            | `0`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+        | `vertical_align`             | `center`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+        | `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+        | `back_width`                 | `160`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+        | `back_height`                | `160`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+        | `back_padding`               | `15`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+        | `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+        | `rating1`                    | **Description:** Choose the rating to display in rating1.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating1_image`              | **Description:** Choose the rating image to display in rating1.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating1_style`              | **Description:** Choose the rating number style for rating1.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
+        | `rating1_extra`              | **Description:** Extra text after rating1.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating2`                    | **Description:** Choose the rating to display in rating2.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating2_image`              | **Description:** Choose the rating image to display in rating2.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating2_style`              | **Description:** Choose the rating number style for rating2.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
+        | `rating2_extra`              | **Description:** Extra text after rating2.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating3`                    | **Description:** Choose the rating to display in rating3.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating3_image`              | **Description:** Choose the rating image to display in rating3.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating3_style`              | **Description:** Choose the rating number style for rating3.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
+        | `rating3_extra`              | **Description:** Extra text after rating3.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `horizontal_position`        | **Description:** Choose the horizontal position for the rating group.<br>**Default:** `left`<br>**Values:** `left`, `right`, or `center`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `vertical_position`          | **Description:** Choose the vertical position for the rating group.<br>**Default:** `center`<br>**Values:** `top`, `bottom`, or `center`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating_alignment`           | **Description:** Choose the display alignment for the rating group.<br>**Default:** `vertical`<br>**Values:** `horizontal`, or `vertical`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+        | `minimum_rating`             | **Description:** Minimum Rating to display<br>**Default:** 0.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `fresh_rating`               | **Description:** Determines when ratings are considered Fresh<br>**Default:** 6.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+        | `maximum_rating`             | **Description:** Maximum Rating to display<br>**Default:** 10.0<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+        | `addon_offset`<sup>1</sup>   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+        | `addon_position`<sup>1</sup> | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+        | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `episode`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-**Note: This example uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
+        1. These Variables can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.
 
-```yaml
-  Movies:
-    overlay_files:
-      - pmm: ratings
-        template_variables:
-          rating1: critic
-          rating1_image: imdb
-          rating1_font: config/metadata/fonts/Impact.ttf
-          rating1_font_size: 70
+    === "Overlay Template Variables"
 
-          rating2: audience
-          rating2_image: rt_popcorn
-          rating2_font: config/metadata/fonts/Adlib.ttf
-          rating2_font_size: 63
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
 
-          rating3: user
-          rating3_image: tmdb
-          rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
-          rating3_font_size: 70
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
 
-          horizontal_position: right
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
-  TV Shows:
-    overlay_files:
-      - pmm: ratings
-        template_variables:
-          rating1: critic
-          rating1_image: imdb
-          rating1_font: config/metadata/fonts/Impact.ttf
-          rating1_font_size: 70
+    ### Example Template Variable Amendments
 
-          rating2: audience
-          rating2_image: rt_popcorn
-          rating2_font: config/metadata/fonts/Adlib.ttf
-          rating2_font_size: 63
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-          rating3: user
-          rating3_image: tmdb
-          rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
-          rating3_font_size: 70
+    **Note: This example uses fonts not packaged with PMM. See [bullmoose20's Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/bullmoose20)**
 
-          horizontal_position: right
-      - pmm: ratings
-        template_variables:
-          builder_level: episode
-          
-          rating1: critic
-          rating1_image: imdb
-          rating1_font: config/metadata/fonts/Impact.ttf
-          rating1_font_size: 70
+    ```yaml
+      Movies:
+        overlay_files:
+          - pmm: ratings
+            template_variables:
+              rating1: critic
+              rating1_image: imdb
+              rating1_font: config/metadata/fonts/Impact.ttf
+              rating1_font_size: 70
 
-          rating2: audience
-          rating2_image: tmdb
-          rating2_font: config/metadata/fonts/Avenir_95_Black.ttf
-          rating2_font_size: 70
+              rating2: audience
+              rating2_image: rt_popcorn
+              rating2_font: config/metadata/fonts/Adlib.ttf
+              rating2_font_size: 63
 
-          horizontal_position: right
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
-      mass_episode_critic_rating_update: imdb
-      mass_episode_audience_rating_update: tmdb
-```
+              rating3: user
+              rating3_image: tmdb
+              rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
+              rating3_font_size: 70
+
+              horizontal_position: right
+        operations:
+          mass_critic_rating_update: imdb
+          mass_audience_rating_update: mdb_tomatoesaudience
+          mass_user_rating_update: tmdb
+      TV Shows:
+        overlay_files:
+          - pmm: ratings
+            template_variables:
+              rating1: critic
+              rating1_image: imdb
+              rating1_font: config/metadata/fonts/Impact.ttf
+              rating1_font_size: 70
+
+              rating2: audience
+              rating2_image: rt_popcorn
+              rating2_font: config/metadata/fonts/Adlib.ttf
+              rating2_font_size: 63
+
+              rating3: user
+              rating3_image: tmdb
+              rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
+              rating3_font_size: 70
+
+              horizontal_position: right
+          - pmm: ratings
+            template_variables:
+              builder_level: episode
+              
+              rating1: critic
+              rating1_image: imdb
+              rating1_font: config/metadata/fonts/Impact.ttf
+              rating1_font_size: 70
+
+              rating2: audience
+              rating2_image: tmdb
+              rating2_font: config/metadata/fonts/Avenir_95_Black.ttf
+              rating2_font_size: 70
+
+              horizontal_position: right
+        operations:
+          mass_critic_rating_update: imdb
+          mass_audience_rating_update: mdb_tomatoesaudience
+          mass_user_rating_update: tmdb
+          mass_episode_critic_rating_update: imdb
+          mass_episode_audience_rating_update: tmdb
+    ```

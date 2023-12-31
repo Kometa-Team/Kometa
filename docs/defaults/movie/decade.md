@@ -28,49 +28,62 @@ libraries:
       - pmm: decade
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-| Variable                      | Description & Values                                                                                                                                                                                                      |
-|:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Default:** `100`<br>**Values:** Number Greater than 0                                                                             |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `critic_rating.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)         |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../builders/smart.md#sort-options)                         |
-| `exclude`                     | **Description:** Exclude these Decades from creating a Dynamic Collection.<br>**Values:** List of Decades found in your library                                                                                           |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Best of <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                         |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `Top <<limit>> <<library_translation>>s of the <<key_name>>.`<br>**Values:** Any string.                                          |
+??? info "Click to expand"
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    === "File-Specific Template Variables"
 
-{%
-   include-markdown "../collection_variables.md"
-%}
-### Example Template Variable Amendments
+        The below template variables are available specifically for this PMM Defaults file.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
-???+ tip
+        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+        | Variable                      | Description & Values                                                                                                                                                                                                      |
+        |:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Default:** `100`<br>**Values:** Number Greater than 0                                                                             |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                |
+        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `critic_rating.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)         |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                         |
+        | `exclude`                     | **Description:** Exclude these Decades from creating a Dynamic Collection.<br>**Values:** List of Decades found in your library                                                                                           |
+        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Best of <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                         |
+        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `Top <<limit>> <<library_translation>>s of the <<key_name>>.`<br>**Values:** Any string.                                          |
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: year
-        template_variables:
-          sep_style: purple #(1)!
-          sort_by: title.asc 
-          sort_by_2020: release.desc #(2)!
-```
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
 
-1.  Use the purple [Separator Style](../separators.md#separator-styles)
-2.  Set the sort order for "Best of 2020s" to release date descending
+    === "Shared Template Variables"
+
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    ???+ tip
+
+        Anywhere you see this icon:
+      
+        > :fontawesome-solid-circle-plus:
+      
+        That's a tooltip, you can press them to get more information.
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: year
+            template_variables:
+              sep_style: purple #(1)!
+              sort_by: title.asc 
+              sort_by_2020: release.desc #(2)!
+    ```
+
+    1.  Use the purple [Separator Style](../separators.md#separator-styles)
+    2.  Set the sort order for "Best of 2020s" to release date descending

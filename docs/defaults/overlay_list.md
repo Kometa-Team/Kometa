@@ -6,7 +6,7 @@ It should be noted that when an overlay has :fontawesome-solid-circle-exclamatio
 
 In the scenario where there is missing data such as age ratings for episodes, then generally the highest-level data available will be applied at the lower level (i.e. a Show's CommonSense age rating would apply to all episodes).
 
-These overlays are applied by calling the below paths into the `overlay_files` [section](../config/libraries.md#overlay-file) of your config.yml
+These overlays are applied by calling the below paths into the `overlay_files` [section](../config/files.md) of your config.yml
 
 ### Chart Overlays
 

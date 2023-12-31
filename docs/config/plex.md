@@ -6,7 +6,8 @@ search:
 
 Configuring [Plex](https://www.plex.tv/) is required in order to connect to your libraries.
 
-A `plex` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `plex` mapping individually per library.
+A `plex` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify 
+the `plex` mapping individually per library.
 
 Below is a `plex` mapping example and the full set of attributes:
 
@@ -35,14 +36,17 @@ plex:
     
     Do Not Use the Plex Token found in Plex's Preferences.xml file.
 
-    If you need help finding your Plex authentication token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
+    If you need help finding your Plex authentication token, please see Plex's 
+    [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 
-This script can be run on a remote Plex server, but be sure that the `url` provided is publicly addressable, and it's recommended to use `HTTPS`.
+This script can be run on a remote Plex server, but be sure that the `url` provided is publicly addressable, and it's 
+recommended to use `HTTPS`.
 
 
 # Multi-Plex Instance Setup:
 
-The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example there are two plex servers which are receiving the same Collection File:
+The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example 
+there are two plex servers which are receiving the same Collection File:
 
 ```yaml
 libraries:
@@ -70,8 +74,13 @@ plex:
 ...
 ```
 
-The `plex` instance at the bottom is the "global" plex server. Unless otherwise specified, any connection to plex is assumed to be using that plex server. The first "Movies" library entry is on the global `plex` server.
+The `plex` instance at the bottom is the "global" plex server. Unless otherwise specified, any connection to plex is 
+assumed to be using that plex server. The first "Movies" library entry is on the global `plex` server.
 
-The "Movies_on_Second_Plex" library is found on the second plex server. Note that this library has its own plex section that lists the attributes that differ from the global plex instance, namely the `URL`, `token` and `timeout`.  The library on the second server is also called "Movies", but since you can't have two keys (in this scenario, libraries) with the same name, it is named Movies_on_Second_Plex in the config.yml, and the `library_name:` attribute contains the name of the library on the actual plex server.
+The "Movies_on_Second_Plex" library is found on the second plex server. Note that this library has its own plex section 
+that lists the attributes that differ from the global plex instance, namely the `URL`, `token` and `timeout`. The 
+library on the second server is also called "Movies", but since you can't have two keys (in this scenario, libraries) 
+with the same name, it is named Movies_on_Second_Plex in the config.yml, and the `library_name:` attribute contains the 
+name of the library on the actual plex server.
 
 

@@ -19,34 +19,47 @@ libraries:
       - pmm: mediastinger
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable            | Default / Values   |
-|:--------------------|:-------------------|
-| `horizontal_offset` | `200`              |
-| `horizontal_align`  | `right`            |
-| `vertical_offset`   | `15`               |
-| `vertical_align`    | `top`              |
-| `back_color`        | `#00000099`        |
-| `back_radius`       | `30`               |
-| `back_width`        | `105`              |
-| `back_height`       | `105`              |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+??? info "Click to expand"
 
-## Example Template Variable Amendments
+    === "File-Specific Template Variables"
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        The below template variables are available specifically for this PMM Defaults file.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: mediastinger
-        template_variables:
-          font_color: "#FFFFFF99"
-```
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
+
+        | Variable            | Default / Values   |
+        |:--------------------|:-------------------|
+        | `horizontal_offset` | `200`              |
+        | `horizontal_align`  | `right`            |
+        | `vertical_offset`   | `15`               |
+        | `vertical_align`    | `top`              |
+        | `back_color`        | `#00000099`        |
+        | `back_radius`       | `30`               |
+        | `back_width`        | `105`              |
+        | `back_height`       | `105`              |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: mediastinger
+            template_variables:
+              font_color: "#FFFFFF99"
+    ```

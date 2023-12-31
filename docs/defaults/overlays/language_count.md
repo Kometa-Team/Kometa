@@ -35,40 +35,53 @@ libraries:
           builder_level: episode
 ```
 
-## Template Variable Default Values
+## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-| Variable                     | Default / Values                                                                                                                                                               |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `horizontal_offset`          | `0`                                                                                                                                                                            |
-| `horizontal_align`           | `center`                                                                                                                                                                       |
-| `vertical_offset`            | `30`                                                                                                                                                                           |
-| `vertical_align`             | `bottom`                                                                                                                                                                       |
-| `back_color`                 | `#00000099`                                                                                                                                                                    |
-| `back_radius`                | `30`                                                                                                                                                                           |
-| `back_width`                 | `188`                                                                                                                                                                          |
-| `back_height`                | `105`                                                                                                                                                                          |
-| `use_subtitles`              | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language |
-| `minimum`                    | **Description:** Choose the minimum for the `multi` Overlay.<br>**Default:** `2` <br>**Values:** Any Number                                                                    |
-| `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                |
-| `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                   |
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+??? info "Click to expand"
 
-{%
-   include-markdown "../overlay_variables.md"
-%}
+    === "File-Specific Template Variables"
 
-## Example Template Variable Amendments
+        The below template variables are available specifically for this PMM Defaults file.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - pmm: language_count
-        template_variables:
-          use_subtitles: true
-```
+        | Variable                     | Default / Values                                                                                                                                                               |
+        |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset`          | `0`                                                                                                                                                                            |
+        | `horizontal_align`           | `center`                                                                                                                                                                       |
+        | `vertical_offset`            | `30`                                                                                                                                                                           |
+        | `vertical_align`             | `bottom`                                                                                                                                                                       |
+        | `back_color`                 | `#00000099`                                                                                                                                                                    |
+        | `back_radius`                | `30`                                                                                                                                                                           |
+        | `back_width`                 | `188`                                                                                                                                                                          |
+        | `back_height`                | `105`                                                                                                                                                                          |
+        | `use_subtitles`              | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language |
+        | `minimum`                    | **Description:** Choose the minimum for the `multi` Overlay.<br>**Default:** `2` <br>**Values:** Any Number                                                                    |
+        | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                |
+        | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                   |
+
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    ### Example Template Variable Amendments
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: language_count
+            template_variables:
+              use_subtitles: true
+    ```

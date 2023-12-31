@@ -1,6 +1,7 @@
 # GitHub Attributes
 
-Configuring [GitHub](https://github.com/) is optional but can allow you to avoid rate limits when requesting data from GitHub.
+Configuring [GitHub](https://github.com/) is optional but can allow you to avoid rate limits when requesting data from 
+GitHub.
 
 Requests made with a GitHub token have a higher rate limit than anonymous requests.
 

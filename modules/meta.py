@@ -856,7 +856,7 @@ class MetadataFile(DataFile):
                                         all_keys[str(item.year)] = str(item.year)
                             auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
-                            default_title_format = "Best <<library_type>>s of <<key_name>>"
+                            default_title_format = "Best <<library_type>>s of the <<key_name>>"
                         elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "episode_year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
@@ -890,7 +890,15 @@ class MetadataFile(DataFile):
                                 default_title_format = "<<key_name>> <<library_type>>s"
                             else:
                                 default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {f"{auto_type}.is" if auto_type == "studio" else auto_type: "<<value>>"}}}
-                                default_title_format = "Best <<library_type>>s of <<key_name>>" if auto_type in ["year", "decade", "episode_year"] else "Top <<key_name>> <<library_type>>s"
+                                if auto_type.startswith("episode"):
+                                    default_template["builder_level"] = "episode"
+                                    default_title_format = "Best Episodes of <<key_name>>"
+                                elif auto_type == "year":
+                                    default_title_format = "Best <<library_type>>s of <<key_name>>"
+                                elif auto_type == "decade":
+                                    default_title_format = "Best <<library_type>>s of the <<key_name>>"
+                                else:
+                                    default_title_format = "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
                             all_items = library.get_all()
                             for i, item in enumerate(all_items, 1):
