@@ -1534,8 +1534,16 @@ class CollectionBuilder:
 
                 if len(event_year) > 1 and not git_event:
                     raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: {self.config.IMDb.events_validation.keys()}")
-                award_filters = util.parse(self.Type, "award_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
-                category_filters = util.parse(self.Type, "category_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
+                award_filters = []
+                if "award_filter" in dict_methods:
+                    if not dict_data[dict_methods["award_filter"]]:
+                        raise Failed(f"{self.Type} Error: imdb_award award_filter attribute is blank")
+                    award_filters = util.parse(self.Type, "award_filter", dict_data[dict_methods["award_filter"]], datatype="lowerlist")
+                category_filters = []
+                if "category_filter" in dict_methods:
+                    if not dict_data[dict_methods["category_filter"]]:
+                        raise Failed(f"{self.Type} Error: imdb_award category_filter attribute is blank")
+                    category_filters = util.parse(self.Type, "category_filter", dict_data[dict_methods["category_filter"]], datatype="lowerlist")
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
