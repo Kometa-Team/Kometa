@@ -11,6 +11,9 @@
     --md-default-bg-color: #252525;
     --md-footer-bg-color--dark: var(--md-default-bg-color);
 }
+strong {
+    color: #00bc8c;
+}
 
 .md-banner {
     background-color: #252525;

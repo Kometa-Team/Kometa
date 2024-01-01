@@ -198,6 +198,11 @@ You can have some control of the files from inside your Configuration file by us
 
     <div id="schedule" />Used to schedule when this file is run using the [schedule options](schedule.md).
 
+    ??? warning
+    
+        This does not work with Overlays as they cannot be scheduled individually. Use the 
+        [`schedule_overlays` Library Attribute](libraries.md#schedule-overlays) to schedule Overlays.
+
     <hr style="margin: 0px;">
     
     **Attribute:** `schedule`

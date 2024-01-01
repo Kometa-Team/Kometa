@@ -356,7 +356,7 @@ The available attributes for each library are as follows:
 ??? blank "`schedule_overlays` - Used to schedule overlays.<a class="headerlink" href="#schedule-overlays" title="Permanent link">¶</a>"
 
     <div id="schedule-overlays" />Used to schedule overlays to run when desired. Overlays are applied all at once in a 
-    batch therfore you cannot schedule individual Overlay Files, as any unscheduled overlay file will be removed each 
+    batch therefore you cannot schedule individual Overlay Files, as any unscheduled overlay file will be removed each 
     time PMM is run.
 
     <hr style="margin: 0px;">
