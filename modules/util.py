@@ -776,7 +776,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             if not isinstance(value, list):
                 value = [value]
             for v in value:
-                if v:
+                if v or v == 0:
                     if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
                         final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:

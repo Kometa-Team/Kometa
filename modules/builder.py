@@ -1507,18 +1507,35 @@ class CollectionBuilder:
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 event_id = util.parse(self.Type, "event_id", dict_data, parent=method_name, methods=dict_methods, regex=(r"(ev\d+)", "ev0000003"))
-                year_options = self.config.IMDb.get_event_years(event_id)
+                git_event, year_options = self.config.IMDb.get_event_years(event_id)
                 if not year_options:
                     raise Failed(f"{self.Type} Error: imdb_award event_id attribute: No event found at {imdb.base_url}/event/{event_id}")
-                event_year = str(util.parse(self.Type, "event_year", dict_data, parent=method_name, methods=dict_methods, options=year_options))
-                try:
-                    award_filters = util.parse(self.Type, "award_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
-                except Failed:
-                    award_filters = []
-                try:
-                    category_filters = util.parse(self.Type, "category_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
-                except Failed:
-                    category_filters = []
+                if "event_year" not in dict_methods:
+                    raise Failed(f"{self.Type} Error: imdb_award event_year attribute not found")
+                og_year = dict_data[dict_methods["event_year"]]
+                if not og_year:
+                    raise Failed(f"{self.Type} Error: imdb_award event_year attribute is blank")
+                if og_year == "all":
+                    event_year = year_options
+                elif not isinstance(og_year, list) and "-" in str(og_year) and len(str(og_year)) > 7:
+                    try:
+                        min_year, max_year = og_year.split("-")
+                        min_year = int(min_year)
+                        max_year = int(max_year) if max_year != "current" else None
+                        event_year = []
+                        for option in year_options:
+                            check = int(option.split("-")[0] if "-" in option else option)
+                            if check >= min_year and (max_year is None or check <= max_year):
+                                event_year.append(option)
+                    except ValueError:
+                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
+                else:
+                    event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
+
+                if len(event_year) > 1 and not git_event:
+                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: {self.config.IMDb.events_validation.keys()}")
+                award_filters = util.parse(self.Type, "award_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
+                category_filters = util.parse(self.Type, "category_filter", dict_data, parent=method_name, methods=dict_methods, datatype="lowerlist")
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
