@@ -70,6 +70,7 @@ templates:
       pre: "_"
       order: ""
       order_<<key>>: <<order>>
+      schedule_<<key>>: <<schedule>>
       sort_prefix: "!"
       sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
@@ -106,6 +107,7 @@ templates:
       - limit
       - name_mapping
       - delete_collections_named
+      - schedule
     run_definition:
       - <<use_<<key>>>>
       - <<allowed_libraries>>
@@ -132,6 +134,7 @@ templates:
     file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
     delete_collections_named: <<delete_collections_named>>
+    schedule: <<schedule_<<key>>>>
 
   trakt:
     optional:

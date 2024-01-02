@@ -54,7 +54,7 @@ Running filters are often slower than builders so whenever possible use only bui
 ???+ example "Filter Example"
 
     This uses the `plex_all` Buidler to get every item currently in the plex library and then checks TMDb if they have 
-eithr `aftercreditsstinger` or `duringcreditsstinger` as a keyword.
+    either `aftercreditsstinger` or `duringcreditsstinger` as a keyword.
     
     ```yaml
     collections:
@@ -72,7 +72,7 @@ definition. Each setting will affect how the definition is run or shown in the l
 ???+ example "Setting Example"
 
     This sets the colleciton to only build if the builders find at **minimum 10 items** and will sync items to the 
-collection (removing items that no longer are found by the builders).
+    collection (removing items that no longer are found by the builders).
     
     ```yaml
     collections:
