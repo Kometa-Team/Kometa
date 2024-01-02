@@ -1531,9 +1531,8 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
-
                 if len(event_year) > 1 and not git_event:
-                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: {self.config.IMDb.events_validation.keys()}")
+                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
                 award_filters = []
                 if "award_filter" in dict_methods:
                     if not dict_data[dict_methods["award_filter"]]:

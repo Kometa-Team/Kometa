@@ -120,7 +120,8 @@ requirements of creating the collection.
 
 ??? blank "`origin_country` - Collections based on TMDb origin countries.<a class="headerlink" href="#origin-country" title="Permanent link">¶</a>"
 
-    <div id="origin-country" />Creates collections based on the TMDb origin country associated with items in the library.
+    <div id="origin-country" />Creates collections based on the TMDb origin country associated with items in the 
+    library.
 
     <hr style="margin: 0px;">
     
@@ -151,6 +152,72 @@ requirements of creating the collection.
         dynamic_collections:
           TMDb Countries:          # This name is the mapping name
             type: origin_country
+        ```
+
+??? blank "`imdb_awards` - Collections based on IMDb Events by Year.<a class="headerlink" href="#imdb-awards" title="Permanent link">¶</a>"
+
+    <div id="imdb-awards" />Creates collections for each of the Year's found on the IMDb event page.
+
+    <hr style="margin: 0px;">
+    
+    **`type` Value:** `imdb_awards`
+
+    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+
+    ??? blank "`event_id` - Determines the [IMDb Event](https://www.imdb.com/event/) used.<a class="headerlink" href="#imdb-awards-event-id" title="Permanent link">¶</a>"
+        
+        <div id="imdb-awards-event-id" />This determines which [IMDb Event](https://www.imdb.com/event/) is used. 
+
+        **Allowed Values:** The ID found in the URLs linked on the [IMDb Events Page](https://www.imdb.com/event/). 
+        (ex. `ev0000003`)
+
+    ??? blank "`starting` - Determines the starting year of the event to use.<a class="headerlink" href="#imdb-awards-starting" title="Permanent link">¶</a>"
+        
+        <div id="imdb-awards-starting" />This determines the starting year of the event to use to create collections.
+
+        **Allowed Values:** Number greater than 0, `current_year`, or relative year `current_year-#` (`#` is the number 
+        of years back from the current year)
+
+        **Default:** `current-5`
+
+    ??? blank "`ending` - Determines the ending year of the event to use.<a class="headerlink" href="#imdb-awards-ending" title="Permanent link">¶</a>"
+        
+        <div id="imdb-awards-ending" />This determines the ending year of the event to use to create collections. 
+        
+        **Allowed Values:** Number greater than 1, `current_year`, or relative year `current_year-#` (`#` is the number 
+        of years back from the current year)
+
+        **Default:** `current`
+
+    **Valid Library Types:** Movies and Shows
+    
+    **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that year) 
+
+    **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that 
+    year)
+
+    **Default `title_format`:** `<<key_name>>`
+
+    ??? tip "Default Template (click to expand)"
+
+        ```yaml
+        default_template:
+          imdb_award: 
+            event_id: <<event_id>>
+            event_year: <<value>>
+            winning: true
+        ```
+
+    ???+ example "Example"
+        
+        ```yaml
+        dynamic_collections:
+          Oscar Awards Lists:          # This name is the mapping name
+            type: imdb_awards
+            data:
+              event_id: ev0000003
+              starting: current-15
+              ending: current
         ```
 
 ??? blank "`trakt_user_lists` - Collections based on Trakt Lists by users.<a class="headerlink" href="#trakt-user-lists" title="Permanent link">¶</a>"
@@ -1341,7 +1408,8 @@ requirements of creating the collection.
         
         <div id="number-starting" />This determines the starting number of collections to create.
 
-        **Allowed Values:** Number greater than 0, `current_year`, or relative year `current_year-#` (`#` is the number of years back from the current year)
+        **Allowed Values:** Number greater than 0, `current_year`, or relative year `current_year-#` (`#` is the number 
+        of years back from the current year)
 
         **Default:** `0`
 
@@ -1349,7 +1417,8 @@ requirements of creating the collection.
         
         <div id="number-ending" />This determines the ending number of collections to create. 
         
-        **Allowed Values:** Number greater than 1, `current_year`, or relative year `current_year-#` (`#` is the number of years back from the current year)
+        **Allowed Values:** Number greater than 1, `current_year`, or relative year `current_year-#` (`#` is the number 
+        of years back from the current year)
 
         **Default:** `1`
 

@@ -483,7 +483,7 @@ The available setting attributes which can be set at each level are outlined bel
           delete_not_scheduled: true
         ```
 
-??? blank "`run_again_delay` - Used to control the depth of search in the asset directory.<a class="headerlink" href="#run-again-delay" title="Permanent link">¶</a>"
+??? blank "`run_again_delay` - Used to control the number of minutes to delay running `run_again` collections.<a class="headerlink" href="#run-again-delay" title="Permanent link">¶</a>"
 
     <div id="run-again-delay" />Set the number of minutes to delay running `run_again` collections after daily run is 
     finished.

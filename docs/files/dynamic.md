@@ -116,7 +116,7 @@ by this dynamic collection.
         remove_suffix: "Collection"
     ```
 
-## Attributes
+### Attributes
 
 ??? blank "`type` & `data` - Used to specify the type of Dynamic Collection.<a class="headerlink" href="#type-data" title="Permanent link">¶</a>"
 
@@ -583,6 +583,36 @@ by this dynamic collection.
               - Science Fiction
               - War
         ```
+
+## Dynamic Collection Template Variables
+
+When calling a collection file with dynamic collection all the following are automatically accepted as template 
+variables which will just replace the same attribute when running the file.
+
+* `data`
+* `exclude`
+* `addons`
+* `remove_suffix`
+* `remove_prefix`
+* `title_format`
+* `key_name_override`
+* `title_override`
+* `custom_keys`
+* `test`
+* `sync`
+* `include`
+* `other_name`
+
+There are also several template variables that will be automatically append/remove from `data`, `exclude`, `include`, 
+and `addons` so they can be changed by the user on the fly when needed.
+
+* `append_data`
+* `append_exclude`
+* `remove_exclude`
+* `append_include`
+* `remove_include`
+* `append_addons`
+* `remove_addons`
 
 {%
    include-markdown "./dynamic_examples.md"

@@ -9,7 +9,7 @@ logger = util.logger
 all_auto = ["genre", "number", "custom"]
 ms_auto = [
     "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
-    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_award"
+    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"
 ]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
@@ -833,6 +833,7 @@ class MetadataFile(DataFile):
                         default_template = None
                         auto_list = {}
                         all_keys = {}
+                        extra_template_vars = {}
                         dynamic_data = None
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
@@ -986,23 +987,59 @@ class MetadataFile(DataFile):
                                     all_keys[role["name"]] = role["name"]
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
-                        elif auto_type == "imdb_award":
+                        elif auto_type == "imdb_awards":
                             if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
                             elif "data" in self.temp_vars:
                                 dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
                             else:
                                 dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
-                            lower_methods = {am.lower(): am for am in dynamic_data}
-                            person_depth = util.parse("Config", "event_id", dynamic_data, parent=f"{map_name} data",
-                                                      methods=lower_methods, datatype="int", default=3, minimum=1)
-                            person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data",
-                                                        methods=lower_methods, datatype="int", default=3,
-                                                        minimum=1) if "minimum" in lower_methods else None
-                            person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data",
-                                                      methods=lower_methods, datatype="int", default=25,
-                                                      minimum=1) if "limit" in lower_methods else None
+                            award_methods = {am.lower(): am for am in dynamic_data}
+                            event_id = util.parse("Config", "event_id", dynamic_data, parent=f"{map_name} data", methods=award_methods, regex=(r"(ev\d+)", "ev0000003"))
+                            extra_template_vars["event_id"] = event_id
+                            if event_id not in self.config.IMDb.events_validation:
+                                raise Failed(f"Config Error: {map_name} data only specific Event IDs work with imdb_awards. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
+                            current_year = datetime.now().year
+                            _, year_options = self.config.IMDb.get_event_years(event_id)
+                            min_year = None
+                            max_year = None
+                            for option in year_options:
+                                year = int(option.split("-")[0] if "-" in option else option)
+                                if min_year is None or year < min_year:
+                                    min_year = year
+                                if max_year is None or year > max_year:
+                                    max_year = year
 
+                            if "starting" in award_methods and str(dynamic_data[award_methods["starting"]]).startswith("current_year"):
+                                year_values = str(dynamic_data[award_methods["starting"]]).split("-")
+                                try:
+                                    starting = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                                except ValueError:
+                                    raise Failed(f"Config Error: {map_name} data starting attribute modifier invalid '{year_values[1]}'")
+                            else:
+                                try:
+                                    starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", minimum=min_year)
+                                except Failed
+                            if not starting:
+                                starting = current_year
+                            if "ending" in award_methods and str(dynamic_data[award_methods["ending"]]).startswith("current_year"):
+                                year_values = str(dynamic_data[award_methods["ending"]]).split("-")
+                                try:
+                                    ending = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
+                                except ValueError:
+                                    raise Failed(f"Config Error: {map_name} data ending attribute modifier invalid '{year_values[1]}'")
+                            else:
+                                ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", default=0, minimum=1)
+                            if not ending:
+                                ending = current_year - 5
+                            if starting > ending:
+                                raise Failed(f"Config Error: {map_name} data ending must be greater than starting")
+                            _, year_options = self.config.IMDb.get_event_years(event_id)
+                            for option in year_options:
+                                all_keys[option] = option
+                                if option not in exclude and starting <= int(option.split("-")[0] if "-" in option else option) <= ending:
+                                    auto_list[option] = option
+                            default_template = {"imdb_award": {"event_id": "<event_id>>", "event_year": "<<value>>", "winning": True}}
                         elif auto_type == "number":
                             if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
@@ -1016,7 +1053,7 @@ class MetadataFile(DataFile):
                                 try:
                                     starting = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                                 except ValueError:
-                                    raise Failed(f"Config Error: starting attribute modifier invalid '{year_values[1]}'")
+                                    raise Failed(f"Config Error: {map_name} data starting attribute modifier invalid '{year_values[1]}'")
                             else:
                                 starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=0)
                             if "ending" in number_methods and str(dynamic_data[number_methods["ending"]]).startswith("current_year"):
@@ -1024,7 +1061,7 @@ class MetadataFile(DataFile):
                                 try:
                                     ending = datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                                 except ValueError:
-                                    raise Failed(f"Config Error: ending attribute modifier invalid '{year_values[1]}'")
+                                    raise Failed(f"Config Error: {map_name} data ending attribute modifier invalid '{year_values[1]}'")
                             else:
                                 ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=0, minimum=1)
                             increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=number_methods, datatype="int", default=1, minimum=1) if "increment" in number_methods else 1
@@ -1109,7 +1146,11 @@ class MetadataFile(DataFile):
                                 key_name_override.pop(k)
                             else:
                                 test_override.append(v)
-                        test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool") if "test" in methods else False
+                        test = False
+                        if "test" in self.temp_vars:
+                            test = util.parse("Config", "test", self.temp_vars["test"], parent="template_variables", datatype="bool")
+                        elif "test" in methods:
+                            test = util.parse("Config", "test", dynamic, parent=map_name, methods=methods, default=False, datatype="bool")
                         sync = False
                         if "sync" in self.temp_vars:
                             sync = util.parse("Config", "sync", self.temp_vars["sync"], parent="template_variables", datatype="bool")
@@ -1216,6 +1257,9 @@ class MetadataFile(DataFile):
                                     og_call[k] = v[key]
                                 elif "default" in v:
                                     og_call[k] = v["default"]
+                            for k, v in extra_template_vars.items():
+                                if k not in og_call:
+                                    og_call[k] = v
                             template_call = []
                             for template_name in template_names:
                                 new_call = og_call.copy()
