@@ -50,33 +50,41 @@
     ],
     "definitions": {
         "plex-server": {
+            "description": "Describes the primary Plex server to which PMM can connect. This attribute is REQUIRED.  It can be overridden at the library level.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
+                    "description": "URL at which PMM can connect to your plex server.  NOT app.plex.tv",
                     "type": "string",
                     "format": "uri",
                     "pattern": "^(https?)://"
                 },
                 "token": {
+                    "description": "Admin token for this Plex server",
                     "type": "string"
                 },
                 "timeout": {
+                    "description": "Connection timeout for this Plex server",
                     "type": "integer"
                 },
                 "db_cache": {
+                    "description": "Sets DB Cache value for this Plex server",
                     "oneOf": [
                     { "type": "integer" },
                     { "type": "string", "pattern": "^$" }
                     ]
                 },
                 "clean_bundles": {
+                    "description": "true/false - If 'true', cleans metadata bundles on this Plex server",
                     "type": "boolean"
                 },
                 "empty_trash": {
+                    "description": "true/false - If 'true', empties trash on this Plex server",
                     "type": "boolean"
                 },
                 "optimize": {
+                    "description": "true/false - If 'true', optimizes database on this Plex server",
                     "type": "boolean"
                 }
             },
@@ -87,27 +95,41 @@
             "title": "plex"
         },
         "plex-server-lib": {
+            "description": "Describes the Plex server where this library is found.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
+                    "description": "URL at which PMM can connect to this plex server.  NOT app.plex.tv",
                     "type": "string",
                     "format": "uri",
                     "pattern": "^(https?)://"
                 },
                 "token": {
+                    "description": "Admin token for this Plex server",
                     "type": "string"
                 },
                 "timeout": {
+                    "description": "Connection timeout in seconds for this Plex server",
                     "type": "integer"
                 },
+                "db_cache": {
+                    "description": "Sets DB Cache value for this Plex server",
+                    "oneOf": [
+                    { "type": "integer" },
+                    { "type": "string", "pattern": "^$" }
+                    ]
+                },
                 "clean_bundles": {
+                    "description": "true/false - If 'true', cleans metadata bundles on this Plex server",
                     "type": "boolean"
                 },
                 "empty_trash": {
+                    "description": "true/false - If 'true', empties trash on this Plex server",
                     "type": "boolean"
                 },
                 "optimize": {
+                    "description": "true/false - If 'true', optimizes database on this Plex server",
                     "type": "boolean"
                 }
             },
@@ -115,6 +137,7 @@
             "title": "plex"
         },
         "tmdb-api": {
+            "description": "API Key to connect to TMDB; REQUIRED for the script to run",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -927,7 +950,8 @@
                             "type": "boolean"
                         },
                         "reset_overlays": {
-                            "type": "boolean"
+                            "type": "string",
+                            "enum": ["tmdb","plex"]
                         }
                     }
                 },
@@ -1324,4 +1348,3 @@
         }
     }
 }
-

@@ -1,0 +1,479 @@
+
+# yaml-language-server: $schema=./config-schema.json
+
+libraries:
+  Movies:                                           # Must match a library name in your Plex
+    report_path: config/missing/Movies_missing.yml
+    remove_overlays: false                        # Set to true if you want to remove overlays
+    reapply_overlays: false
+    reset_overlays: false
+    template_variables:
+      sep_style: purple                               # use the purple separators globally for this library
+      collection_mode: hide                         # hide the collections within the "library" tab in Plex.
+      placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
+      ignore_ids: 
+      - 1230
+      - 3450
+      - 6780
+      ignore_imdb_ids: tt1234, tt5678, tt7890
+
+    metadata_path:
+    - pmm: cannes
+    - pmm: choice
+    - pmm: emmy
+    - pmm: spirit
+    - pmm: sundance
+    - pmm: other_award
+    - pmm: tautulli
+    - pmm: imdb
+    - pmm: trakt
+    - pmm: flixpatrol
+    - pmm: anilist
+    - pmm: myanimelist
+    - pmm: other_chart
+    - pmm: genre
+    - pmm: franchise
+    - pmm: based
+    - pmm: content_rating_us
+    - pmm: content_rating_uk
+    - pmm: content_rating_mal
+    - pmm: content_rating_cs
+    - pmm: country
+    - pmm: region
+    - pmm: continent
+    - pmm: aspect
+    - pmm: subtitle_language
+    - pmm: actor
+    - pmm: director
+    - pmm: producer
+    - pmm: writer
+    - pmm: year
+    - pmm: decade
+    - pmm: collectionless
+    - pmm: separator_award                          # An "index card"
+    - pmm: bafta                                    # BAFTA Awards
+      template_variables:                           # Show collections from current_year-10 onwards.
+        horizontal_offset: 99
+        data:
+          starting: current_year-10
+          ending: current_year
+    - pmm: golden                                   # Golden Globes Awards
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: oscars                                   # The Oscars
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: separator_chart                          # An "index card"
+    - pmm: basic                                    # Some basic chart collections
+    - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
+    - pmm: audio_language                           # English, French, Arabic, German, etc. audio language 
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+      # template_variables:
+      #   style: standards
+    - pmm: studio                                   # DreamWorks Studios, Lucasfilm Ltd, etc.
+    - pmm: seasonal                                 # Christmas, Halloween, etc.
+      template_variables:                           # Disable any US-specific seasonal collections
+        schedule_independence: never
+        schedule_thanksgiving: never
+        schedule_memorial: never
+        schedule_labor: never
+    - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
+      # template_variables:
+      #   originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
+    - pmm: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
+    overlay_path:
+    - remove_overlays: false                        # Set to true if you want to remove overlays
+    - reapply_overlays: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
+    - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat
+    - pmm: flixpatrol
+    - pmm: episode_info
+    - pmm: mediastinger
+    - pmm: ratings
+    - pmm: status
+    - pmm: aspect
+    - pmm: language_count
+    - pmm: languages
+    - pmm: runtimes
+    - pmm: versions
+    - pmm: network
+    - pmm: studio
+    - pmm: direct_play
+    - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc.
+    - pmm: ribbon                                   # Used for ribbon in bottom right
+    - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
+    - pmm: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left
+    settings:
+      asset_directory: config/assets
+
+    operations:
+      split_duplicates: false
+      assets_for_all: false
+
+  New-Style Movies:                                 # Must match a library name in your Plex
+    library_name: Movies
+    report_path: config/missing/Movies_missing.yml
+    remove_overlays: false                          # Set to true if you want to remove overlays
+    reapply_overlays: false
+    reset_overlays: tmdb
+    template_variables:
+      sep_style: purple                               # use the purple separators globally for this library
+      collection_mode: hide                         # hide the collections within the "library" tab in Plex.
+      placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
+      ignore_ids: 
+      - 1230
+      - 3450
+      - 6780
+      ignore_imdb_ids: tt1234, tt5678, tt7890
+
+    collection_files:
+    - pmm: cannes
+    - pmm: choice
+    - pmm: emmy
+    - pmm: spirit
+    - pmm: sundance
+    - pmm: other_award
+    - pmm: tautulli
+    - pmm: imdb
+    - pmm: trakt
+    - pmm: flixpatrol
+    - pmm: anilist
+    - pmm: myanimelist
+    - pmm: other_chart
+    - pmm: genre
+    - pmm: franchise
+    - pmm: based
+    - pmm: content_rating_us
+    - pmm: content_rating_uk
+    - pmm: content_rating_mal
+    - pmm: content_rating_cs
+    - pmm: country
+    - pmm: region
+    - pmm: continent
+    - pmm: aspect
+    - pmm: subtitle_language
+    - pmm: actor
+    - pmm: director
+    - pmm: producer
+    - pmm: writer
+    - pmm: year
+    - pmm: decade
+    - pmm: collectionless
+    - pmm: separator_award                          # An "index card"
+    - pmm: bafta                                    # BAFTA Awards
+      template_variables:                           # Show collections from current_year-10 onwards.
+        horizontal_offset: 99
+        data:
+          starting: current_year-10
+          ending: current_year
+    - pmm: golden                                   # Golden Globes Awards
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: oscars                                   # The Oscars
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: separator_chart                          # An "index card"
+    - pmm: basic                                    # Some basic chart collections
+    - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
+    - pmm: audio_language                           # English, French, Arabic, German, etc. audio language 
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+      # template_variables:
+      #   style: standards
+    - pmm: studio                                   # DreamWorks Studios, Lucasfilm Ltd, etc.
+    - pmm: seasonal                                 # Christmas, Halloween, etc.
+      template_variables:                           # Disable any US-specific seasonal collections
+        schedule_independence: never
+        schedule_thanksgiving: never
+        schedule_memorial: never
+        schedule_labor: never
+    - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
+      # template_variables:
+      #   originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
+    - pmm: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
+
+    overlay_files:
+    - pmm: flixpatrol
+    - pmm: episode_info
+    - pmm: mediastinger
+    - pmm: ratings
+    - pmm: status
+    - pmm: aspect
+    - pmm: language_count
+    - pmm: languages
+    - pmm: runtimes
+    - pmm: versions
+    - pmm: network
+    - pmm: studio
+    - pmm: direct_play
+    - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc.
+    - pmm: ribbon                                   # Used for ribbon in bottom right
+    - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
+    - pmm: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left
+    settings:
+      asset_directory: config/assets
+
+    operations:
+      split_duplicates: false
+      assets_for_all: false
+
+  TV Shows:                                         # Must match a library name in your Plex
+    report_path: config/missing/TV_missing.yml
+    # template_variables:
+    #   sep_style: plum                               # use the plum separators globally for this library
+    #   collection_mode: hide                         # hide the collections within the "library" tab in Plex.
+    #   placeholder_imdb_id: tt1190634                # The Boys (2019) placeholder id for the separators, avoids a plex bug.
+    metadata_path:
+    - pmm: cannes
+    - pmm: choice
+    - pmm: emmy
+    - pmm: spirit
+    - pmm: sundance
+    - pmm: other_award
+    - pmm: tautulli
+    - pmm: imdb
+    - pmm: trakt
+    - pmm: flixpatrol
+    - pmm: anilist
+    - pmm: myanimelist
+    - pmm: other_chart
+    - pmm: genre
+    - pmm: franchise
+    - pmm: based
+    - pmm: content_rating_us
+    - pmm: content_rating_uk
+    - pmm: content_rating_mal
+    - pmm: content_rating_cs
+    - pmm: country
+    - pmm: region
+    - pmm: continent
+    - pmm: aspect
+    - pmm: subtitle_language
+    - pmm: actor
+    - pmm: director
+    - pmm: producer
+    - pmm: writer
+    - pmm: year
+    - pmm: decade
+    - pmm: collectionless
+    - pmm: separator_award                          # An "index card"
+    - pmm: bafta                                    # BAFTA Awards
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: golden                                   # Golden Globes Awards
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: oscars                                   # The Oscars
+      # template_variables:                           # Show collections from current_year-10 onwards.
+      #   data:
+      #     starting: current_year-10
+      #     ending: current_year
+    - pmm: separator_chart                          # An "index card"
+    - pmm: basic                                    # Some basic chart collections
+    - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
+    - pmm: audio_language                           # English, French, Arabic, German, etc. audio language 
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+      # template_variables:
+      #   style: standards
+    - pmm: network                                  # ABC, CBC, NBC, FOX, etc.
+    - pmm: streaming                                # Streaming on Disney+, Netflix, etc.
+      # template_variables:
+      #   originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
+    overlay_path:
+    - remove_overlays: false                        # Set to true if you want to remove overlays
+    # - reapply_overlay: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
+    # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat
+    - pmm: flixpatrol
+    - pmm: mediastinger
+    - pmm: ratings
+    - pmm: status
+    - pmm: aspect
+    - pmm: language_count
+    - pmm: languages
+    - pmm: runtimes
+    - pmm: network
+    - pmm: studio
+    - pmm: direct_play
+    - pmm: audio_codec                              # FLAC, DTS-X, TrueHD, etc. on show and episode
+    - pmm: audio_codec
+      # template_variables:
+      #   overlay_level: episode
+    - pmm: episode_info                             # S##E## information in bottom right on episode
+      # template_variables:
+      #   overlay_level: episode
+    - pmm: resolution                               # 4K HDR, 1080P FHD, etc. on show, episode, and season
+    - pmm: resolution
+      # template_variables:
+      #   overlay_level: episode
+    - pmm: resolution
+      # template_variables:
+      #   overlay_level: season
+    - pmm: ribbon                                   # Used for ribbon in bottom right on show
+    - pmm: status                                   # Airing, Returning, Ended, Canceled on show
+    - pmm: versions                                 # Will show duplicates for that media item on show and episode
+    - pmm: versions                                 
+      # template_variables:
+      #   overlay_level: episode
+    - pmm: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left on show, episode, and season
+    - pmm: video_format
+      # template_variables:
+      #   overlay_level: episode
+    settings:
+      asset_directory:
+      - config/assets
+
+    operations:
+      split_duplicates: false
+      assets_for_all: false
+      delete_collections:
+        managed: false
+        configured: true
+        less: 123
+
+  Anime:
+    metadata_path:
+      - pmm: basic               # This is a file within PMM's defaults folder
+      - pmm: anilist             # This is a file within PMM's defaults folder
+      # see the wiki for how to use local files, folders, URLs, or files from git
+  Music:
+    metadata_path:
+      - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
+playlist_files:
+  - pmm: playlist                # This is a file within PMM's defaults folder
+    template_variables:
+      libraries: Movies, TV Shows   # list of libraries that you want the PMM Defaults playlists to look at
+  # see the wiki for how to use local files, folders, URLs, or files from git
+settings:
+  cache: true
+  cache_expiration: 60
+  asset_directory: 
+  - config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: false
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
+  sync_mode: append
+  minimum_items: 1
+  default_collection_order: asdf
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_options: false
+  show_missing: true
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_sync_to_users: all
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  custom_repo:
+  check_nightly: false
+webhooks:                        # Can be individually specified per library as well
+  error:
+  version:
+  run_start:
+  run_end:
+  changes:
+plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.12:32400
+  token: this-is-a-placeholder-string
+  timeout: 60
+  db_cache: 999
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+tmdb:                            # REQUIRED for the script to run
+  apikey: this-is-a-placeholder-string
+  language: en
+tautulli:                        # Can be individually specified per library as well
+  url: http://192.168.1.12:8181
+  apikey: this-is-a-placeholder-string
+github:
+  token: this-is-a-placeholder-string
+omdb:
+  apikey: this-is-a-placeholder-string
+  cache_expiration: 60
+mdblist:
+  apikey: this-is-a-placeholder-string
+  cache_expiration: 60
+notifiarr:
+  apikey: this-is-a-placeholder-string
+anidb:                           # Not required for AniDB builders unless you want mature content
+  username: this-is-a-placeholder-string
+  password: this-is-a-placeholder-string
+radarr:                          # Can be individually specified per library as well
+  url: http://192.168.1.12:7878
+  token: this-is-a-placeholder-string
+  add_missing: false
+  add_existing: false
+  root_folder_path: S:/Movies
+  monitor: true
+  availability: announced
+  quality_profile: HD-1080p
+  tag:
+  search: false
+  radarr_path:
+  plex_path:
+sonarr:                          # Can be individually specified per library as well
+  url: http://192.168.1.12:8989
+  token: this-is-a-placeholder-string
+  add_missing: false
+  add_existing: false
+  root_folder_path: "S:/TV Shows"
+  monitor: all
+  quality_profile: HD-1080p
+  language_profile: English
+  series_type: standard
+  season_folder: true
+  tag:
+  search: false
+  cutoff_search: false
+  sonarr_path:
+  plex_path:
+trakt:
+  client_id: this-is-a-placeholder-string
+  client_secret: this-is-a-placeholder-string
+  pin:
+  authorization:
+    # everything below is autofilled by the script
+    access_token:
+    token_type:
+    expires_in:
+    refresh_token:
+    scope: public
+    created_at:
+mal:
+  client_id: this-is-a-placeholder-string
+  client_secret: this-is-a-placeholder-string
+  authorization:
+    # everything below is autofilled by the script
+    access_token:
+    token_type:
+    expires_in:
+    refresh_token:
