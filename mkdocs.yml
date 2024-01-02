@@ -54,8 +54,9 @@ plugins:
   - include-markdown
   - redirects:
       redirect_maps:
+        'discord.md': 'https://metamanager.wiki/en/nightly/link/'
         'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
-        'discord.md': 'https://discord.gg/FNqqw5jRSz'
+        'link.md': 'https://discord.gg/FNqqw5jRSz'
         'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
         'traktauth.md': 'https://replit.com/@chazlarson/TraktAuth'
 extra:
