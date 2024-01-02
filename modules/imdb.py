@@ -448,7 +448,7 @@ class IMDb:
                     for cat in categories:
                         if data["category_filter"] and cat not in data["category_filter"]:
                             continue
-                        final_list.extend(categories["winner" if data["winning"] else "nominee"])
+                        final_list.extend(categories[cat]["winner" if data["winning"] else "nominee"])
         else:
             event_slug = f"{data['event_year'][0]}/1" if "-" not in data["event_year"][0] else data["event_year"][0].replace("-", "/")
             for text in self._request(f"{base_url}/event/{data['event_id']}/{event_slug}/?ref_=ev_eh", xpath="//div[@class='article']/script/text()")[0].split("\n"):
