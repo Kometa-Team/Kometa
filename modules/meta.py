@@ -1010,7 +1010,18 @@ class MetadataFile(DataFile):
                                 if max_year is None or year > max_year:
                                     max_year = year
 
-                            if "starting" in award_methods and str(dynamic_data[award_methods["starting"]]).startswith("current"):
+                            if "starting" in award_methods:
+                                starting_value = str(dynamic_data[award_methods["starting"]])
+                                if not starting_value:
+                                    raise Failed(f"Config Error: {map_name} data starting attribute is blank")
+                                if starting_value.startswith("first"):
+                                    year_values = starting_value.split("+")
+                                    starting = None
+
+
+
+
+                                #and str(dynamic_data[award_methods["starting"]]).startswith("current"):
                                 year_values = str(dynamic_data[award_methods["starting"]]).split("-")
                                 try:
                                     starting = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
