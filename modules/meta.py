@@ -1010,7 +1010,7 @@ class MetadataFile(DataFile):
                                 if max_year is None or year > max_year:
                                     max_year = year
 
-                            if "starting" in award_methods and str(dynamic_data[award_methods["starting"]]).startswith("current_year"):
+                            if "starting" in award_methods and str(dynamic_data[award_methods["starting"]]).startswith("current"):
                                 year_values = str(dynamic_data[award_methods["starting"]]).split("-")
                                 try:
                                     starting = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
@@ -1019,7 +1019,8 @@ class MetadataFile(DataFile):
                             else:
                                 try:
                                     starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", minimum=min_year)
-                                except Failed
+                                except Failed:
+                                    raise Failed(f"Config Error: {map_name} data starting attribute invalid '{year_values[1]}'")
                             if not starting:
                                 starting = current_year
                             if "ending" in award_methods and str(dynamic_data[award_methods["ending"]]).startswith("current_year"):
