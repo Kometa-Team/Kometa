@@ -50,7 +50,7 @@ collections:
     template:
       - name: shared
         allowed_libraries: movie
-        image: award/razzies/winner
+        image: award/razzie/winner
         translation_key: razzie_worst
       - name: arr
       - name: custom

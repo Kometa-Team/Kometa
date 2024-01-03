@@ -3165,10 +3165,10 @@ class CollectionBuilder:
         elif "tvdb_movie_details" in self.summaries:        summary = ("tvdb_movie_details", self.summaries["tvdb_movie_details"])
         elif "tvdb_show_details" in self.summaries:         summary = ("tvdb_show_details", self.summaries["tvdb_show_details"])
         elif "tmdb_show_details" in self.summaries:         summary = ("tmdb_show_details", self.summaries["tmdb_show_details"])
-        else:                                               summary = None
+        else:                                               summary = (None, None)
 
         if self.playlist:
-            if summary:
+            if summary[1]:
                 if str(summary[1]) != str(self.obj.summary):
                     try:
                         self.obj.edit(summary=str(summary[1]))
@@ -3182,7 +3182,7 @@ class CollectionBuilder:
             self.library._reload(self.obj)
             #self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
-            if summary and str(summary[1]) != str(self.obj.summary):
+            if summary[1] and str(summary[1]) != str(self.obj.summary):
                 self.obj.editSummary(summary[1])
                 batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
 
