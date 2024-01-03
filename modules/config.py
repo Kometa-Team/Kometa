@@ -864,10 +864,12 @@ class ConfigFile:
                                     }
                                 if op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
-                                    try:
-                                        default_path = check_for_attribute(input_dict, "path", var_type="path", save=False)
-                                    except Failed as e:
-                                        logger.debug(f"{e} using default {default_path}")
+                                    if "path" not in input_dict:
+                                        logger.warning(f"Config Warning: path attribute not found using default: {default_path}")
+                                    if "path" in input_dict and not input_dict["path"]:
+                                        logger.warning(f"Config Warning: path attribute blank using default: {default_path}")
+                                    else:
+                                        default_path = input_dict["path"]
                                     section_final[op] = {
                                         "path": default_path,
                                         "exclude": check_for_attribute(input_dict, "exclude", var_type="lower_list", default_is_none=True, save=False),
@@ -934,8 +936,6 @@ class ConfigFile:
                             params["collection_files"] = files
                         elif not had_scheduled:
                             raise Failed("Config Error: No Paths Found for collection_files")
-                    elif os.path.exists(os.path.join(default_dir, f"{library_name}.yml")):
-                        params["collection_files"] = [("File", os.path.join(default_dir, f"{library_name}.yml"), lib_vars, None)]
                 except Failed as e:
                     logger.error(e)
 

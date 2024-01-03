@@ -114,88 +114,39 @@ Note that the `template_variables:` section only needs to be used if you do want
     **Default `addons`**:
 
     ```yaml
-    addons:
-      8091:       # Alien
-        - 135416    # Prometheus
-      2806:       # American Pie
-        - 298820    # American Pie (Spin-off)
-      87800:      # Appleseed
-        - 371526    # Appleseed XIII
-      477208:     # DC Super Hero Girls
-        - 557495    # LEGO DC Super Hero Girls
-      86066:      # Despicable Me
-        - 544669    # Minions
-      9485:       # The Fast and the Furious
-        - 688042    # Hobbs & Shaw
-      86115:      # Garfield
-        - 373918    # Garfield CGI
-      91361:      # Halloween
-        - 126209    # Halloween (Rob Zombie Series)
-      9818:       # Mortal Kombat
-        - 931431    # Mortal Kombat
-      495:        # Shaft
-        - 608103    # Shaft (Reboot)
-      1582:       # Teenage Mutant Ninja Turtles
-        - 401562    # Teenage Mutant Ninja Turtles (Remake)
-      111751:     # Texas Chainsaw Massacre
-        - 425175    # Texas Chainsaw (Reboot)
-      2467:       # Tomb Raider
-        - 621142    # Tomb Raider (Reboot)
-      748:        # X-Men
-        - 453993    # The Wolverine
+    addons: {%    
+      include-markdown "../../../defaults/movie/franchise.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="addons:"
+      end="title_override:"
+    %}
     ```
 
     **Default `title_override`**:
 
     ```yaml
-    title_override:
-      10: "Star Wars: Skywalker Saga"
-      535313: Godzilla (MonsterVerse)
-      535790: Godzilla (Anime)
+    title_override: {%    
+      include-markdown "../../../defaults/movie/franchise.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="title_override:"
+      end="template_variables:"
+    %}
     ```
 
-    **Default `movie`**:
+    **Default Template Variables `movie` & `name_mapping`**:
+
+    ???+ tip 
+
+        Pass `movie_<<key>>` and `name_mapping_<<key>>` to the file as template variables and you can change these 
+        values. 
 
     ```yaml
-    105995: 336560    # Anaconda: Lake Placid vs. Anaconda
-    176097: 14177     # Barbershop: Beauty Shop
-    448150: 567604    # Deadpool: Once Upon a Deadpool
-    9735: 6466, 222724  # Friday the 13th: Freddy vs. Jason, Crystal Lake Memories: The Complete History of Friday the 13th
-    386382: 326359, 460793  # Frozen: Frozen Fever, Olaf's Frozen Adventure
-    2980: 43074 # Ghostbusters: Ghostbusters
-    374509: 18983 # Godzilla (Showa): Godzilla, King of the Monsters!
-    374511: 39256 # Godzilla (Heisei): Godzilla 1985
-    535313: 293167  # Godzilla: Kong: Skull Island
-    9743: 11454 # The Hannibal Lecter: Manhunter
-    8354: 79218, 717095, 387893 # Ice Age: Ice Age: A Mammoth Christmas, Ice Age Continental Drift: Scrat Got Your Tongue, Ice Age: The Great Egg-Scapade
-    70068: 658009, 643413, 450001, 751391, 44249, 182127, 44865 # Ip Man: Ip Man: Kung Fu Master, Ip Man and Four Kings, Master Z: Ip Man Legacy, Young Ip Man: Crisis Time, The Legend Is Born: Ip Man, Ip Man: The Final Fight, The Grandmaster
-    328: 630322 # Jurassic Park: Battle at Big Rock
-    8580: 38575 # The Karate Kid: The Karate Kid
-    14740: 161143, 25472, 270946  # Madagascar: Madly Madagascar, Merry Madagascar, Penguins of Madagascar
-    9818: 664767  # Mortal Kombat: Mortal Kombat Legends: Scorpion's Revenge
-    171732: 39410 # Rebirth of Mothra: Mothra
-    8581: 6466, 23437 # A Nightmare on Elm Street: Freddy vs. Jason, A Nightmare on Elm Street
-    627517: 13155, 68728  # Oz: Return to Oz, Oz the Great and Powerful
-    10789: 157433 # Pet Sematary: Pet Sematary
-    708816: 305470, 306264  # Power Rangers: Power Rangers, Power Rangers Super Megaforce: The Legendary Battle
-    190435: 687354, 11667 # Street Fighter (Animated): Street Fighter Assassin's Fist, Street Fighter
-    1582: 1273  # Teenage Mutant Ninja Turtles: TMNT
-    10194: 130925 # Toy Story: Partysaurus Rex
-    63043: 73362  # TRON: TRON: The Next Day
-    748: 567604 # X-Men: Once Upon a Deadpool
-    ```
-
-    **Default `name_mapping`**:
-
-    ```yaml
-    1565: 28 Days-Weeks Later
-    508334: Angels in the
-    115838: Escape From
-    386534: Has Fallen
-    87359: Mission Impossible
-    133352: Resident Evil Biohazard
-    115575: Star Trek Alternate Reality
-    115570: Star Trek The Next Generation
-    151: Star Trek The Original Series
-    10: Star Wars Skywalker Saga
+    movie: {%    
+      include-markdown "../../../defaults/movie/franchise.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="template_variables:"
+    %}
     ```
