@@ -637,7 +637,7 @@
                     "type": "integer"
                 },
                 "playlist_sync_to_users": {
-                    "type": "string"
+                    "type": [ "string", "null" ]
                 },
                 "playlist_exclude_users": {
                     "type": "null"
@@ -952,6 +952,10 @@
                         "reset_overlays": {
                             "type": "string",
                             "enum": ["tmdb","plex"]
+                        },
+                        "run_order": {
+                            "type": "array", "uniqueItems": true, "items": {"type": "string",
+                            "enum": ["collections","metadata","operations","overlays"] }
                         }
                     }
                 },
@@ -1179,6 +1183,37 @@
                         "configured": { "type": "boolean" },
                         "managed": { "type": "boolean" },
                         "less": { "type": "integer" }
+                    },
+                    "required": []
+                },
+                "genre_mapper": {
+                    "type": "object",
+                    "properties": {},
+                    "patternProperties": {
+                        "^.*$": { "type": ["string", "null"], "pattern": "^.*$" }
+                    },
+                    "required": []
+                },
+                "content_rating_mapper": {
+                    "type": "object",
+                    "properties": {},
+                    "patternProperties": {
+                        "^.*$": { "type": ["string", "null"], "pattern": "^.*$" }
+                    },
+                    "required": []
+                },
+                "metadata_backup": {
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string" },
+                        "exclude": {
+                            "oneOf": [
+                                { "type": "string"},
+                                { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                            ]
+                        },
+                        "sync_tags": { "type": "boolean" },
+                        "add_blank_entries": { "type": "boolean" }
                     },
                     "required": []
                 }

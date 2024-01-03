@@ -10,8 +10,11 @@ limitations:
 - schedule has no validation; just accepts string
 
 TODO:
+"list of coordinates"
 
 - schema for collection yaml
 - schema for metadata yaml
 - schema for overlay yaml
 - schema for template yaml
+
+Notes:
