@@ -54,7 +54,6 @@ collections:
         translation_key: golden_director
       - name: arr
       - name: custom
-    tmdb_list: 8235502
     imdb_award:
       event_id: ev0000292
       event_year: all

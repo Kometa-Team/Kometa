@@ -173,7 +173,7 @@ class IMDb:
             return self.events_validation[event_id]["awards"], self.events_validation[event_id]["categories"]
         award_names = []
         category_names = []
-        event_slug = f"{event_year}/1" if "-" not in event_year else event_year.replace("-", "/")
+        event_slug = f"{event_year[0]}/1" if "-" not in event_year[0] else event_year[0].replace("-", "/")
         for text in self._request(f"{base_url}/event/{event_id}/{event_slug}/?ref_=ev_eh", xpath="//div[@class='article']/script/text()")[0].split("\n"):
             if text.strip().startswith("IMDbReactWidgets.NomineesWidget.push"):
                 jsonline = text.strip()
@@ -441,7 +441,8 @@ class IMDb:
         final_list = []
         if data["event_id"] in self.events_validation:
             event_data = self.get_event(data["event_id"])
-            for event_year in data["event_year"]:
+            event_years = self.events_validation[data["event_id"]]["years"] if data["event_year"] == "all" else data["event_year"]
+            for event_year in event_years:
                 for award, categories in event_data[event_year].items():
                     if data["award_filter"] and award not in data["award_filter"]:
                         continue
@@ -547,7 +548,7 @@ class IMDb:
             logger.info(f"Processing IMDb Watchlist: {data}")
             return [(_i, "imdb") for _i in self._watchlist(data, language)]
         elif method == "imdb_award":
-            if len(data["event_year"]) == 1:
+            if data["event_year"] != "all" and len(data["event_year"]) == 1:
                 event_slug = f"{data['event_year'][0]}/1" if "-" not in data["event_year"][0] else data["event_year"][0].replace("-", "/")
                 logger.info(f"Processing IMDb Award: {base_url}/event/{data['event_id']}/{event_slug}/?ref_=ev_eh")
             else:
