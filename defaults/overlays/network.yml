@@ -15,6 +15,7 @@ external_templates:
       key: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
+      style: standard
     conditionals:
       vertical_offset:
         default: 15
@@ -44,7 +45,7 @@ external_templates:
             git_<<key>>.exists: false
             repo.exists: false
             repo_<<key>>.exists: false
-            value: network/<<key>>
+            value: network/<<style>>/<<key>>
     allowed_libraries: show
     group: networks
     back_color: "#00000099"
@@ -775,6 +776,10 @@ overlays:
   Spike:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Spike, Spike TV]}]
+
+  Stöð 2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Stan:
     variables: { weight: 10}
