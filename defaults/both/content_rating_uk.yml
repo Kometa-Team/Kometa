@@ -79,7 +79,6 @@ dynamic_collections:
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
-        - PG
         - 7
         - 8
         - 9
@@ -97,7 +96,6 @@ dynamic_collections:
         - no/07
       12:
         - gb/12
-        - 12
         - PG-13 - Teens 13 or older
         - no/9
         - no/09
@@ -122,7 +120,6 @@ dynamic_collections:
         - TV-14
         - 13
         - 14
-        - 15
         - PG-13 - Teens 13 or older
         - no/15
         - no/16
@@ -134,7 +131,6 @@ dynamic_collections:
         - R
         - 16
         - 17
-        - 18
         - R - 17+ (violence & profanity)
         - no/18
       R18:
