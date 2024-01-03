@@ -45,6 +45,7 @@ collections:
       event_id: ev0000003
       event_year: all
       category_filter:
+        - best achievement in directing
         - best director
         - best director, comedy picture
         - best director, dramatic picture

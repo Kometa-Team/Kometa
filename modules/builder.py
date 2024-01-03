@@ -1516,7 +1516,7 @@ class CollectionBuilder:
                 if not og_year:
                     raise Failed(f"{self.Type} Error: imdb_award event_year attribute is blank")
                 if og_year == "all":
-                    event_year = year_options
+                    event_year = "all"
                 elif not isinstance(og_year, list) and "-" in str(og_year) and len(str(og_year)) > 7:
                     try:
                         min_year, max_year = og_year.split("-")
@@ -1531,7 +1531,7 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
-                if len(event_year) > 1 and not git_event:
+                if (event_year == "all" or len(event_year) > 1) and not git_event:
                     raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
                 award_filters = []
                 if "award_filter" in dict_methods:
