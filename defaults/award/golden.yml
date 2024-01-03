@@ -23,13 +23,25 @@ collections:
         translation_key: golden_picture
       - name: arr
       - name: custom
-        collection_order: release.desc
     delete_collections_named:
       - Golden Globe Best Motion Pictures
-    tmdb_list: 
-      - 8191011 # Drama
-      - 8191022 # Musical or Comedy
-      - 8235497 # Animation
+    imdb_award:
+      event_id: ev0000292
+      event_year: all
+      category_filter:
+        - best motion picture - animated
+        - best motion picture - comedy
+        - best motion picture - comedy or musical
+        - best motion picture - drama
+        - best motion picture - foreign language
+        - best motion picture - musical
+        - best motion picture - musical or comedy
+        - best motion picture - non-english language
+        - best motion picture, animated
+        - best motion picture, drama
+        - best motion picture, musical or comedy
+        - best motion picture, non-english language
+      winning: true
 
   Golden Globes Best Director Winners:
     variables:
@@ -43,14 +55,23 @@ collections:
       - name: arr
       - name: custom
     tmdb_list: 8235502
+    imdb_award:
+      event_id: ev0000292
+      event_year: all
+      category_filter:
+        - best director
+        - best director - motion picture
+        - best director, motion picture
+      winning: true
     
 dynamic_collections:
   Golden Globes Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000292
+      starting: latest-5
+      ending: latest
     title_format: Golden Globe <<key_name>>
     template:
       - use_year_collections
@@ -59,10 +80,6 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      event_id:
-        default: ev0000292
-      event_year:
-        default: <<key>>
       winning:
         default: true
       collection_order:

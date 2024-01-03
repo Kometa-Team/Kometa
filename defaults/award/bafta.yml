@@ -23,15 +23,20 @@ collections:
         translation_key: bafta_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/bafta-award-best-film
+    imdb_award:
+      event_id: ev0000123
+      event_year: all
+      category_filter: best film
+      winning: true
 
 dynamic_collections:
   BAFTA Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000123
+      starting: latest-5
+      ending: latest
     title_format: BAFTA <<key_name>>
     template:
       - use_year_collections
@@ -40,10 +45,6 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      event_id:
-        default: ev0000123
-      event_year:
-        default: <<key>>
       winning:
         default: true
       collection_order:

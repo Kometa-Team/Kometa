@@ -999,59 +999,38 @@ class MetadataFile(DataFile):
                             extra_template_vars["event_id"] = event_id
                             if event_id not in self.config.IMDb.events_validation:
                                 raise Failed(f"Config Error: {map_name} data only specific Event IDs work with imdb_awards. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
-                            current_year = datetime.now().year
-                            _, year_options = self.config.IMDb.get_event_years(event_id)
-                            min_year = None
-                            max_year = None
-                            for option in year_options:
-                                year = int(option.split("-")[0] if "-" in option else option)
-                                if min_year is None or year < min_year:
-                                    min_year = year
-                                if max_year is None or year > max_year:
-                                    max_year = year
+                            _, event_years = self.config.IMDb.get_event_years(event_id)
+                            year_options = [event_years[len(event_years) - i] for i in range(1, len(event_years) + 1)]
 
-                            if "starting" in award_methods:
-                                starting_value = str(dynamic_data[award_methods["starting"]])
-                                if not starting_value:
-                                    raise Failed(f"Config Error: {map_name} data starting attribute is blank")
-                                if starting_value.startswith("first"):
-                                    year_values = starting_value.split("+")
-                                    starting = None
+                            def get_position(attr, pos_add=0):
+                                if attr not in award_methods:
+                                    return 0 if attr == "starting" else len(year_options)
+                                position_value = str(dynamic_data[award_methods[attr]])
+                                if not position_value:
+                                    raise Failed(f"Config Error: {map_name} data {attr} attribute is blank")
+                                if position_value.startswith(("first", "latest")):
+                                    int_values = position_value.split("+" if position_value.startswith("first") else "-")
+                                    try:
+                                        if len(int_values) == 1:
+                                            return 0 if position_value.startswith("first") else len(year_options)
+                                        else:
+                                            return int(int_values[1].strip()) * (-1 if position_value.startswith("latest") else 1)
+                                    except ValueError:
+                                        raise Failed(f"Config Error: {map_name} data {attr} attribute modifier invalid '{int_values[1]}'")
+                                elif position_value in year_options:
+                                    return year_options.index(position_value) + pos_add
+                                else:
+                                    raise Failed(f"Config Error: {map_name} data {attr} attribute invalid: {position_value}")
 
+                            found_options = year_options[get_position("starting"):get_position("ending")]
 
-
-
-                                #and str(dynamic_data[award_methods["starting"]]).startswith("current"):
-                                year_values = str(dynamic_data[award_methods["starting"]]).split("-")
-                                try:
-                                    starting = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
-                                except ValueError:
-                                    raise Failed(f"Config Error: {map_name} data starting attribute modifier invalid '{year_values[1]}'")
-                            else:
-                                try:
-                                    starting = util.parse("Config", "starting", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", minimum=min_year)
-                                except Failed:
-                                    raise Failed(f"Config Error: {map_name} data starting attribute invalid '{year_values[1]}'")
-                            if not starting:
-                                starting = current_year
-                            if "ending" in award_methods and str(dynamic_data[award_methods["ending"]]).startswith("current_year"):
-                                year_values = str(dynamic_data[award_methods["ending"]]).split("-")
-                                try:
-                                    ending = current_year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
-                                except ValueError:
-                                    raise Failed(f"Config Error: {map_name} data ending attribute modifier invalid '{year_values[1]}'")
-                            else:
-                                ending = util.parse("Config", "ending", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", default=0, minimum=1)
-                            if not ending:
-                                ending = current_year - 5
-                            if starting > ending:
-                                raise Failed(f"Config Error: {map_name} data ending must be greater than starting")
-                            _, year_options = self.config.IMDb.get_event_years(event_id)
-                            for option in year_options:
+                            if not found_options:
+                                raise Failed(f"Config Error: {map_name} data starting/ending range found no valid events")
+                            for option in event_years:
                                 all_keys[option] = option
-                                if option not in exclude and starting <= int(option.split("-")[0] if "-" in option else option) <= ending:
+                                if option not in exclude and option in found_options:
                                     auto_list[option] = option
-                            default_template = {"imdb_award": {"event_id": "<event_id>>", "event_year": "<<value>>", "winning": True}}
+                            default_template = {"imdb_award": {"event_id": "<<event_id>>", "event_year": "<<value>>", "winning": True}}
                         elif auto_type == "number":
                             if "data" not in methods:
                                 raise Failed(f"Config Error: {map_name} data attribute not found")
