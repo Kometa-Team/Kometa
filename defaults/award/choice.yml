@@ -13,11 +13,12 @@ external_templates:
 
 dynamic_collections:
   Critics Choice Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000133
+      starting: latest-5
+      ending: latest
     title_format: Critics Choice Awards <<key_name>>
     template:
       - use_year_collections
@@ -26,10 +27,6 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      event_id:
-        default: ev0000133
-      event_year:
-        default: <<key>>
       winning:
         default: true
       collection_order:
@@ -38,13 +35,5 @@ dynamic_collections:
         default: award/choice/<<key>>
       translation_key:
         default: choice_year
-      url:
-        default: critic-s
-        2019: critics
-        2018: critics
-        2017: critics
-        2016: critics
-        2015: critics
-        2014: critics
       dynamic:
         default: true

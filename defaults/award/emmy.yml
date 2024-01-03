@@ -12,11 +12,12 @@ external_templates:
 
 dynamic_collections:
   Emmy Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000223
+      starting: latest-5
+      ending: latest
     title_format: Emmys <<key_name>>
     template:
       - use_year_collections
@@ -25,10 +26,6 @@ dynamic_collections:
       - arr
       - custom
     template_variables:
-      event_id:
-        default: ev0000223
-      event_year:
-        default: <<key>>
       winning:
         default: true
       collection_order:

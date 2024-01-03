@@ -153,7 +153,7 @@ templates:
       - winning
     imdb_award:
       event_id: <<event_id>>
-      event_year: <<event_year>>
+      event_year: <<key>>
       award_filter: <<award_filter>>
       category_filter: <<category_filter>>
       winning: <<winning>>

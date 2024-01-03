@@ -22,7 +22,11 @@ collections:
         translation_key: berlinale_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/berlin-international-film-festival-golden-bears
+    imdb_award:
+      event_id: ev0000091
+      event_year: all
+      category_filter: best film
+      winning: true
 
   César Best Film Winners:
     variables:
@@ -34,7 +38,11 @@ collections:
         translation_key: cesar_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cesar-award-best-french-film
+    imdb_award:
+      event_id: ev0000157
+      event_year: all
+      category_filter: best film (meilleur film)
+      winning: true
 
   Razzies Golden Raspberry Winners:
     variables:
@@ -46,7 +54,11 @@ collections:
         translation_key: razzie_worst
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/hdlists/lists/razzie-awards-worst-picture-winners
+    imdb_award:
+      event_id: ev0000558
+      event_year: all
+      category_filter: worst picture
+      winning: true
 
   Venice Golden Lions:
     variables:
@@ -58,4 +70,8 @@ collections:
         translation_key: venice_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/venice-film-festival-golden-lion
+    imdb_award:
+      event_id: ev0000681
+      event_year: all
+      award_filter: golden lion
+      winning: true
