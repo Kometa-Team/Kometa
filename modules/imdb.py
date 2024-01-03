@@ -439,7 +439,7 @@ class IMDb:
 
     def _award(self, data):
         final_list = []
-        if len(data["event_year"]) > 1:
+        if data["event_id"] in self.events_validation:
             event_data = self.get_event(data["event_id"])
             for event_year in data["event_year"]:
                 for award, categories in event_data[event_year].items():
@@ -467,7 +467,7 @@ class IMDb:
                                 imdb_id = next((n["const"] for n in nom["primaryNominees"] + nom["secondaryNominees"] if n["const"].startswith("tt")), None)
                                 if imdb_id:
                                     final_list.append(imdb_id)
-                break
+                    break
         return final_list
 
     def keywords(self, imdb_id, language, ignore_cache=False):
@@ -549,7 +549,7 @@ class IMDb:
         elif method == "imdb_award":
             if len(data["event_year"]) == 1:
                 event_slug = f"{data['event_year'][0]}/1" if "-" not in data["event_year"][0] else data["event_year"][0].replace("-", "/")
-                logger.info(f"Processing IMDb Award: {base_url}/{data['event_id']}/{event_slug}/?ref_=ev_eh")
+                logger.info(f"Processing IMDb Award: {base_url}/event/{data['event_id']}/{event_slug}/?ref_=ev_eh")
             else:
                 logger.info(f"Processing IMDb Award: {data['event_id']}")
                 logger.info(f"    event_year: {data['event_year']}")
