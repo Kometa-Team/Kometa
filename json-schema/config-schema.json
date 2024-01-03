@@ -544,7 +544,11 @@
                     "type": "boolean"
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "run_order": {
+                    "type": "array", "uniqueItems": true, "items": {"enum": ["operations", "metadata", "collections", "overlays"]}
                 },
                 "asset_directory": {
                     "oneOf": [
@@ -556,7 +560,8 @@
                     "type": "boolean"
                 },
                 "asset_depth": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "create_asset_folders": {
                     "type": "boolean"
@@ -580,10 +585,11 @@
                     "type": "boolean"
                 },
                 "sync_mode": {
-                    "type": "string"
+                    "enum": ["sync", "append"]
                 },
                 "minimum_items": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "default_collection_order": {
                     "type": "string"
@@ -595,7 +601,8 @@
                     "type": "boolean"
                 },
                 "run_again_delay": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "missing_only_released": {
                     "type": "boolean"
