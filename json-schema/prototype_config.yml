@@ -6,7 +6,7 @@ libraries:
     report_path: config/missing/Movies_missing.yml
     remove_overlays: false                        # Set to true if you want to remove overlays
     reapply_overlays: false
-    reset_overlays: false
+    reset_overlays: tmdb
     template_variables:
       sep_style: purple                               # use the purple separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
@@ -18,6 +18,11 @@ libraries:
       ignore_imdb_ids: tt1234, tt5678, tt7890
 
     metadata_path:
+    - file: some/path/to/a/file.yml
+    - folder: some/path/to/a/folder/
+    - url: https://foo.bar.com/something.yml
+    - git: bing/bang/boing
+    - repo: bing
     - pmm: cannes
     - pmm: choice
     - pmm: emmy
@@ -89,6 +94,11 @@ libraries:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     - reapply_overlays: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat
+    - file: some/path/to/a/file.yml
+    - folder: some/path/to/a/folder/
+    - url: https://foo.bar.com/something.yml
+    - git: bing/bang/boing
+    - repo: bing
     - pmm: flixpatrol
     - pmm: episode_info
     - pmm: mediastinger
@@ -113,8 +123,28 @@ libraries:
     operations:
       split_duplicates: false
       assets_for_all: false
+      genre_mapper:
+        Anime: Animation
+        Children: Family
+        Foo: 
+      content_rating_mapper:
+        PG: Y-10 
+        "PG-13": Y-10
+        R:
+      metadata_backup:
+        path: config/Movie_Backup.yml
+        exclude:
+        - bing
+        - bang
+        sync_tags: true
+        add_blank_entries: false
 
   New-Style Movies:                                 # Must match a library name in your Plex
+    run_order: 
+    - collections
+    - metadata
+    - operations
+    - overlays
     library_name: Movies
     report_path: config/missing/Movies_missing.yml
     remove_overlays: false                          # Set to true if you want to remove overlays
@@ -131,6 +161,11 @@ libraries:
       ignore_imdb_ids: tt1234, tt5678, tt7890
 
     collection_files:
+    - file: some/path/to/a/file.yml
+    - folder: some/path/to/a/folder/
+    - url: https://foo.bar.com/something.yml
+    - git: bing/bang/boing
+    - repo: bing
     - pmm: cannes
     - pmm: choice
     - pmm: emmy
@@ -199,7 +234,20 @@ libraries:
       #   originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
     - pmm: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
 
+    metadata_files:
+    - file: some/path/to/a/file.yml
+    - folder: some/path/to/a/folder/
+    - url: https://foo.bar.com/something.yml
+    - git: bing/bang/boing
+    - repo: bing
+
     overlay_files:
+    - file: config/ymls/movies/overlays/streamOptimized
+    - file: some/path/to/a/file.yml
+    - folder: some/path/to/a/folder/
+    - url: https://foo.bar.com/something.yml
+    - git: bing/bang/boing
+    - repo: bing
     - pmm: flixpatrol
     - pmm: episode_info
     - pmm: mediastinger
