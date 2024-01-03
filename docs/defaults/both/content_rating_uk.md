@@ -157,7 +157,6 @@ Note that the `template_variables:` section only needs to be used if you do want
             - TV-PG
             - TV-Y7
             - TV-Y7-FV
-            - PG
             - 7
             - 8
             - 9
@@ -169,7 +168,6 @@ Note that the `template_variables:` section only needs to be used if you do want
             - PG - Children
           12:
             - gb/12
-            - 12
             - PG-13 - Teens 13 or older
           12A:
             - gb/12A
@@ -184,7 +182,6 @@ Note that the `template_variables:` section only needs to be used if you do want
             - TV-14
             - 13
             - 14
-            - 15
             - PG-13 - Teens 13 or older
           18:
             - gb/18
@@ -194,7 +191,6 @@ Note that the `template_variables:` section only needs to be used if you do want
             - R
             - 16
             - 17
-            - 18
             - R - 17+ (violence & profanity)
             - R+ - Mild Nudity
           R18:
