@@ -34,7 +34,9 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
 ## Associated Git Repos
 
 - [Plex Meta Manager User Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs)
-  - PMM's User submitted Config Repo
+    - PMM's User submitted Config Repo
+
+<br>
 
 - [Plex Image Cleanup](https://github.com/meisnate12/Plex-Image-Cleanup)
     - Removes Image bloat from your Plex
@@ -49,12 +51,16 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
 - [PMM TOP10](https://github.com/meisnate12/PMM-TOP10)
     - How PMM stores the Flixpatrol Top 10 Lists
 
+<br>
+
 - [ArrAPI](https://github.com/meisnate12/ArrAPI)
     - Module to interface with Radarr/Sonarr
 - [TMDbAPIs](https://github.com/meisnate12/TMDbAPIs)
     - Module to interface with TMDb
 - [pmmutils](https://github.com/meisnate12/pmmutils)
     - Module for various common files among PMM Repos
+
+<br>
 
 - [Plex-Meta-Manager-Images](https://github.com/meisnate12/Plex-Meta-Manager-Images)
     - Repo to store PMM's various Images
@@ -74,6 +80,8 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - Stores the DIIVOY Color actor posters
 - [Transparent (transparent)](https://github.com/meisnate12/Plex-Meta-Manager-People-transparent)
     - Stores the Transparent actor posters
+
+<br>
 
 - [Plex-Meta-Manager-Unraid-Templates](https://github.com/meisnate12/Plex-Meta-Manager-Unraid-Templates)
     - Stores the PMM Unraid Templates

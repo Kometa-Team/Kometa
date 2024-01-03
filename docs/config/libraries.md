@@ -372,7 +372,7 @@ The available attributes for each library are as follows:
         ```yaml
         libraries:
           TV Shows:
-            schedule: weekly(sunday)
+            schedule_overlays: weekly(sunday)
             collection_files:
               - file: config/TV Shows.yml
             overlay_files:

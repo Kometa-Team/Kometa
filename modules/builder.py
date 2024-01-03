@@ -164,7 +164,7 @@ parts_collection_valid = [
      "filters", "plex_all", "plex_search", "trakt_list", "trakt_list_details", "collection_filtering", "collection_mode", "label", "visible_library", "limit",
      "visible_home", "visible_shared", "show_missing", "save_report", "missing_only_released", "server_preroll", "changes_webhooks",
      "item_lock_background", "item_lock_poster", "item_lock_title", "item_refresh", "item_refresh_delay", "imdb_list", "imdb_search",
-     "cache_builders", "url_theme", "file_theme", "item_label", "default_percent"
+     "cache_builders", "url_theme", "file_theme", "item_label", "default_percent", "non_item_remove_label"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
     "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types", "run_definition",
@@ -1598,7 +1598,7 @@ class CollectionBuilder:
                                 if res:
                                     events.append(res.group(1))
                                 else:
-                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\d+ e.g. ev0000292 or be one of {', '.join([e for e in imdb.event_options])}")
+                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. ev0000292 or be one of {', '.join([e for e in imdb.event_options])}")
                         if events:
                             new_dictionary[lower_method] = events
                     elif search_attr == "company":
@@ -1611,7 +1611,7 @@ class CollectionBuilder:
                                 if res:
                                     companies.append(res.group(1))
                                 else:
-                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern co\d+ e.g. co0098836 or be one of {', '.join([e for e in imdb.company_options])}")
+                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern co\\d+ e.g. co0098836 or be one of {', '.join([e for e in imdb.company_options])}")
                         if companies:
                             new_dictionary[lower_method] = companies
                     elif search_attr == "content_rating":
@@ -1652,7 +1652,7 @@ class CollectionBuilder:
                             if res:
                                 casts.append(res.group(1))
                             else:
-                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern nm\d+ e.g. nm00988366")
+                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern nm\\d+ e.g. nm00988366")
                         if casts:
                             new_dictionary[lower_method] = casts
                     elif search_attr == "series":
@@ -1662,7 +1662,7 @@ class CollectionBuilder:
                             if res:
                                 series.append(res.group(1))
                             else:
-                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern tt\d+ e.g. tt00988366")
+                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern tt\\d+ e.g. tt00988366")
                         if series:
                             new_dictionary[lower_method] = series
                     elif search_attr == "list":
@@ -1672,7 +1672,7 @@ class CollectionBuilder:
                             if res:
                                 lists.append(res.group(1))
                             else:
-                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ls\d+ e.g. ls000024621")
+                                raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ls\\d+ e.g. ls000024621")
                         if lists:
                             new_dictionary[lower_method] = lists
                     elif search_attr == "adult":
