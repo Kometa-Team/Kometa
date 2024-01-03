@@ -133,7 +133,6 @@ The below is an example config.yml extract with some Template Variables added in
             - gb/U
             - gb/0+
             - U
-            - G
             - 1
             - 2
             - 3
@@ -166,7 +165,6 @@ The below is an example config.yml extract with some Template Variables added in
             - 13
             - gb/12A
             - 12+
-            - PG-13
             - TV-13
             - gb/14+
             - gb/15
@@ -180,7 +178,6 @@ The below is an example config.yml extract with some Template Variables added in
             - gb/18
             - MA-17
             - NC-17
-            - R
             - TVMA
             - R - 17+ (violence & profanity)
           R+:
