@@ -31,7 +31,9 @@ dynamic_collections:
       search_term:
         default: network
       image:
-        default: network/<<key_encoded>>
+        default: network/<<style>>/<<key_encoded>>
+      style:
+        default: standard
       translation_key:
         default: network
       dynamic:
@@ -217,6 +219,7 @@ dynamic_collections:
     - Space
     - Spectrum
     - Spike
+    - Stöð 2
     - Stan
     - Starz
     - STAR+
