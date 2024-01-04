@@ -132,10 +132,10 @@ class TMDbMovie(TMDBObj):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            raise Failed(f"TMDb Error: No Movie found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
-            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 
 class TMDbShow(TMDBObj):
@@ -169,10 +169,10 @@ class TMDbShow(TMDBObj):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            raise Failed(f"TMDb Error: No Show found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
-            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID {self.tmdb_id}: {e}")
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 class TMDb:
     def __init__(self, config, params):

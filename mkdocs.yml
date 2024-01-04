@@ -83,7 +83,7 @@ extra:
     class: md-social__link
     link: 'https://github.com/meisnate12/Plex-Meta-Manager'
     name: GitHub
-copyright: Copyright &copy; 2023 meisnate12
+copyright: Copyright &copy; 2024 meisnate12
 markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true

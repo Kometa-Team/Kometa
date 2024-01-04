@@ -68,9 +68,9 @@ class Convert:
             elif anidb_id in self._anidb_to_tvdb:
                 ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
             elif str(anidb_id) in self._anidb_ids:
-                logger.warning(f"Convert Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+                logger.warning(f"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
-                logger.warning(f"Convert Error: AniDB ID: {anidb_id} not found")
+                logger.error(f"AniDB Error: No Anime found for AniDB ID: {anidb_id}")
         return ids
 
     def anilist_to_ids(self, anilist_ids, library):
@@ -79,7 +79,7 @@ class Convert:
             if anilist_id in self._anilist_to_anidb:
                 anidb_ids.append(self._anilist_to_anidb[anilist_id])
             else:
-                logger.warning(f"Convert Error: AniDB ID not found for AniList ID: {anilist_id}")
+                logger.warning(f"Convert Warning: No AniDB ID Found for AniList ID: {anilist_id}")
         return self.anidb_to_ids(anidb_ids, library)
 
     def myanimelist_to_ids(self, mal_ids, library):
@@ -90,7 +90,7 @@ class Convert:
             elif int(mal_id) in self._mal_to_anidb:
                 ids.extend(self.anidb_to_ids(self._mal_to_anidb[int(mal_id)], library))
             else:
-                logger.warning(f"Convert Error: AniDB ID not found for MyAnimeList ID: {mal_id}")
+                logger.warning(f"Convert Warning: No AniDB ID Found for MyAnimeList ID: {mal_id}")
         return ids
 
     def tmdb_to_imdb(self, tmdb_id, is_movie=True, fail=False):
@@ -109,7 +109,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No IMDb ID Found for TMDb ID: {tmdb_id}")
+            raise Failed(f"Convert Warning: No IMDb ID Found for TMDb ID: {tmdb_id}")
         else:
             return None
 
@@ -128,7 +128,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No TMDb ID Found for IMDb ID: {imdb_id}")
+            raise Failed(f"Convert Warning: No TMDb ID Found for IMDb ID: {imdb_id}")
         else:
             return None, None
 
@@ -147,7 +147,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No TVDb ID Found for TMDb ID: {tmdb_id}")
+            raise Failed(f"Convert Warning: No TVDb ID Found for TMDb ID: {tmdb_id}")
         else:
             return None
 
@@ -166,7 +166,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No TMDb ID Found for TVDb ID: {tvdb_id}")
+            raise Failed(f"Convert Warning: No TMDb ID Found for TVDb ID: {tvdb_id}")
         else:
             return None
 
@@ -185,7 +185,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No IMDb ID Found for TVDb ID: {tvdb_id}")
+            raise Failed(f"Convert Warning: No IMDb ID Found for TVDb ID: {tvdb_id}")
         else:
             return None
 
@@ -206,7 +206,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Error: No TVDb ID Found for IMDb ID: {imdb_id}")
+            raise Failed(f"Convert Warning: No TVDb ID Found for IMDb ID: {imdb_id}")
         else:
             return None
 

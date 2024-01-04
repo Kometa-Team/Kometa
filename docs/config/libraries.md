@@ -649,8 +649,8 @@ This example is an advanced version of the library mappings which highlights som
           - file: config/TV Shows.yml
           - pmm: tmdb
           - pmm: network
+        remove_overlays: false
         overlay_files:
-          - remove_overlays: false
           - file: config/Overlays.yml
       TV Shows On Second Plex:
         library_name: TV Shows

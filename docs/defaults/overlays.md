@@ -33,8 +33,8 @@ libraries:
 ```yaml
 libraries:
   Movies:
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -78,8 +78,8 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - pmm: resolution                                                    # 1
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -120,8 +120,8 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - pmm: resolution                                                    # 1
         template_variables:
           builder_level: season
@@ -145,8 +145,8 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - pmm: resolution                                                    # 1
         template_variables:
           builder_level: episode

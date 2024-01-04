@@ -138,6 +138,12 @@ Finds every item in an [IMDb Event](https://www.imdb.com/event/).
 | `category_filter`         | Filter by the Category heading. Can only accept multiple values as a list.<br>**Options:** Any Gold/Yellow Category heading on an Event Page.                                                                                         |
 | `winning`                 | Filter by if the Item Won the award.<br>**Options:** `true`/`false`<br>**Default:** `false`                                                                                                                                           |
 
+??? example "Example Award and Category Filter"
+
+    In the below example, "Grand Jury Prize" is the award_filter, and "Documentary" is the `category_filter`. You can use both of these filters together.
+
+    ![imdbfilter.png](../images/imdbfilter.png)
+
 1. When using multiple years the only available Event IDs are:
 
 ```yaml

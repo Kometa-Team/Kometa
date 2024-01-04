@@ -2,7 +2,7 @@
 search:
   boost: 4
 ---
-# Frequently Asked Questions
+# FAQ & Knowledgebase
 
 This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our 
 
@@ -12,7 +12,7 @@ If you have a question that is not answered here, try entering some keywords int
 
 This sections aims to answer the most commonly asked questions that users have.
 
-#### PMM Versions & Updating
+### PMM Versions & Updating
 
 The commands here should work in any terminal on the respective platforms, but that can't be guaranteed.  If you know shortcuts for some of these things, go ahead and use them.  For example, in many terminals, `cd ~/Plex-Meta-Manager` is the same as `cd /Users/YOUR_USERNAME/Plex-Meta-Manager`.  
 
@@ -300,7 +300,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
 
         If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
 
-#### Performance & Scheduling
+### Performance & Scheduling
 
 ??? question "Any tips on increasing PMM performance?"
 
@@ -347,7 +347,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
           - pmm: resolution
     ```
 
-#### Errors & Issues
+### Errors & Issues
 
 ??? question "Why doesn't PMM let me enter my authentication information for Trakt/MAL?"
 
@@ -379,3 +379,114 @@ Your PMM installation may not be located at the paths referenced below.  These a
     :two: Check the plex logs (container or other) for the "Busy DB Sleeping for 200ms)
     
     There is nothing that PMM or our support staff can really do to resolve a 500 error.
+
+## Knowledgebase
+
+This section aims to provide some insight as to articles/information that we feel is important to document as they may pop up infrequently but often enough to require entry here.
+
+### PMM 1.20 Release Changes
+
+With the release of PMM 1.20, several changes have taken place that we would like to make you aware of, please read the below document thoroughly!
+
+??? blank "`metadata_path` and `overlay_path` are now legacy attributes (click to expand).<a class="headerlink" href="#metadata-overlay-path" title="Permanent link">¶</a>"
+
+    <div id="metadata-overlay-path" />
+
+    The attributes `metadata_path` and `overlay_path` are now legacy, and will likely produce an error `metadata attribute is required` when running PMM.
+
+    We have new attributes: `collection_files`, `overlay_files` and `metadata_files` which you can read more about on the [Libraries Attributes page](../config/libraries.md#attributes)
+
+    Whilst this error can be ignored, we strongly advise you to move over to the new attributes, which can be done following this guidance:
+
+    :fontawesome-solid-1: If your YAML file contains `collections:` or is a PMM Defaults Collection File then it belongs under `collection_files`. 
+    
+    :fontawesome-solid-2: If your YAML file contains `overlays:` or is a PMM Defaults Overlay File then it belongs under `overlay_files`
+    
+    :fontawesome-solid-3: If your YAML file contains `metadata:` then it belongs under `metadata_files`
+    
+    If your file contains both `collections:` and `metadata:` then it should go in both `collection_files` and `metadata_files`
+    
+    If you are unsure on the above, the majority of `metadata_path` items will now fall under `collection_files`, but you can ask on the Discord.
+    
+    Below is an example of the new attributes in use:
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files: #(1)!
+          - file: config/Movies.yml #(2)!
+          - pmm: imdb #(2)!
+        metadata_files: #(3)!
+          - file: config/MetadataEdits.yml #(4)!
+        overlay_files: #(5)!
+          - file: config/Overlays.yml #(6)!
+          - pmm: audio_codec #(6)!
+    ```
+
+    1.  This attribute used to be `metadata_path` and defines files that will relate to Collections
+    2.  These files are placed within `collection_files` because they define how Collections are built/maintained.
+    3.  This attribute used to be `metadata_path` and defines files that will relate to Metadata Edits
+    4.  These files are placed within `metadata_files` because they define Metadata Edits rather than collections.
+    5.  This attribute used to be `overlay_path` and defines files that will relate to Overlays
+    6.  These files are placed within `overlay_files` because they define how Overlays are built/maintained.
+
+??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (click to expand).<a class="headerlink" href="#overlay-library-attributes" title="Permanent link">¶</a>"
+
+    <div id="overlay-library-attributes" />
+
+    The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes and are called at the library level rather than within `overlay_path.
+
+    This change has been made to make these attributes consistent with other attributes of a similar nature.
+
+    Whilst the previous method still works, we strongly advise you to move over to the new attributes, which can be done by looking at the following sample YAML:
+
+    ```yaml
+    libraries:
+      Movies:
+        remove_overlays: false
+        reapply_overlays: false #(1)!
+        reset_overlays: false
+        schedule_overlays: daily
+        overlay_files:
+          - pmm: audio_codec
+    ```
+
+    1.  We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/image-cleanup.md)
+
+??? blank "`imdb_list` no longer works for Title or Keyword search URLs (click to expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
+
+    <div id="imdb-search" />
+
+    As a result of IMDb changing their back-end code, `imdb_list` can no longer be used for URLs which start with `https://www.imdb.com/search/title/` or `https://www.imdb.com/search/keyword/`
+
+    All URLs used with `imdb_list` **must** start with `https://www.imdb.com/list/`
+
+    We have introduced the [IMDb Search Builder](../files/builders/imdb.md#imdb-search) which replaces the functionality that `search/title/` and `search/keyword/` used to provide.
+
+    As an example, the `imdb_search` builder for `https://www.imdb.com/search/keyword/?keywords=christmas-movie` would be:
+
+    ```yaml
+    collections:
+      Christmas Movies:
+        imdb_search:
+          keyword: christmas movie
+    ```
+
+    And the `imdb_search` builder for `https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_special,video&num_votes=100,&keywords=spy,espionage` would be:
+
+    ```yaml
+    collections:
+      Spy Movies:
+        imdb_search:
+          type: movie, tv_movie, tv_special, video
+          votes.gte: 100
+          keyword.any: spy, espionage
+    ```
+
+??? blank "FlixPatrol Default File and Builder have been reworked (click to expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
+
+    <div id="flixpatrol" />
+
+    Due to FlixPatrol moving a lot of their data behind a paywall, the existing setup no longer works.
+
+    We have reintroduced FlixPatrol as a [Builder](../files/builders/flixpatrol.md) and [PMM Defaults File](../defaults/chart/flixpatrol.md), we recommdend reading the documentation and updating your config/YAML files to suit.

@@ -50,8 +50,8 @@ I then call "MyOverlays.yml" in my [Configuration File](../config/overview.md) w
     ```yaml
     libraries:
       Movies:  #(1)!
+        remove_overlays: false
         overlay_files:
-          - remove_overlays: false
           - file: config/MyOverlays.yml #(2)!
     ```
 
@@ -112,7 +112,7 @@ There is an attribute called `reapply_overlays` which, when set to true, will fo
 
   * Ensure `reapply_overlays` is set to `false` if you see it in your Configuration File. If it has previously been set to true we recommend using [Plex Image Cleanup](../pmm/scripts/image-cleanup.md) to get rid of the bloat.
 
-To remove all overlays from your library, add `remove_overlays: true` to the `overlay_files` [Libraries Attribute](../config/libraries.md).**
+To remove all overlays from your library, add the [`remove_overlays` library attribute](../config/libraries.md#remove-overlays) set to `true`.**
 
   * See the above note on Plex Meta Manager not removing the overlaid images, this is still true here.
 

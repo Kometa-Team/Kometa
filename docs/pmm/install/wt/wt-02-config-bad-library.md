@@ -28,8 +28,8 @@ libraries:                       # This is called out once within the config.yml
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
+    remove_overlays: false       # Set this to true to remove all overlays
     overlay_files:
-      - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
@@ -37,8 +37,8 @@ libraries:                       # This is called out once within the config.yml
       - pmm: basic               # This is a file within the defaults folder in the Repository
       - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
+    remove_overlays: false       # Set this to true to remove all overlays
     overlay_files:
-      - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
