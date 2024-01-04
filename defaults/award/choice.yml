@@ -1,7 +1,6 @@
 ##############################################################################
 #                     Critics Choice Awards Collections                      #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#                    Credit to pjcob for the Trakt Lists                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #       https://metamanager.wiki/en/latest/defaults/award/choice.html        #
 ##############################################################################
@@ -10,6 +9,24 @@ external_templates:
   pmm: templates
   template_variables:
     collection_section: 130
+
+collections:
+  Critics Choice Award Winners:
+    variables:
+      key: choice
+    template:
+      - name: shared
+        sort: Choice !
+        allowed_libraries: movie
+        image: award/choice/winner
+        translation_key: choice_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000133
+      event_year: all
+      category_filter: best picture
+      winning: true
 
 dynamic_collections:
   Critics Choice Awards:
