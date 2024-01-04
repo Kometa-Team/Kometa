@@ -113,75 +113,25 @@ The below is an example config.yml extract with some Template Variables added in
 
     If you want to customize these values, use the methods described above.
 
-    **Default `include`**:
+    **Default `include`:**
 
     ```yaml
-    include:
-      - "G"
-      - "PG"
-      - "PG-13"
-      - "R"
-      - "R+"
-      - "Rx"
+    include: {%    
+      include-markdown "../../../defaults/both/content_rating_mal.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="include:"
+      end="addons:"
+    %}
     ```
 
-    **Default `addons`**:
+    **Default `addons`:**
 
     ```yaml
-        addons:
-          G:
-            - gb/U
-            - gb/0+
-            - U
-            - 1
-            - 2
-            - 3
-            - 4
-            - 5
-            - 6
-            - "01"
-            - "02"
-            - "03"
-            - "04"
-            - "05"
-            - "06"
-            - G - All Ages
-          PG:
-            - TV-Y7
-            - TV-Y7-FV
-            - 7
-            - 8
-            - 9
-            - "07"
-            - "08"
-            - "09"
-            - gb/PG
-            - gb/9+
-            - 10
-            - 11
-            - 12
-            - PG - Children
-          PG-13:
-            - 13
-            - gb/12A
-            - 12+
-            - TV-13
-            - gb/14+
-            - gb/15
-            - 14
-            - 15
-            - 16
-            - PG-13 - Teens 13 or older
-          R:
-            - 17
-            - 18
-            - gb/18
-            - MA-17
-            - NC-17
-            - TVMA
-            - R - 17+ (violence & profanity)
-          R+:
-            - R+ - Mild Nudity
-          Rx:
-            - Rx - Hentai
+    addons: {%    
+      include-markdown "../../../defaults/both/content_rating_mal.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="addons:"
+    %}
     ```

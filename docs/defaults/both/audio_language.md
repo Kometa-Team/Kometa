@@ -52,10 +52,10 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                                         |
         | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                        |
         | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                                  |
-        | `include`                     | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)            |
+        | `include`                     | **Description:** Overrides the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)            |
         | `exclude`                     | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) |
-        | `append_include`              | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)           |
-        | `remove_include`              | **Description:** Removes from the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)         |
+        | `append_include`              | **Description:** Appends to the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)           |
+        | `remove_include`              | **Description:** Removes from the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)         |
         | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                    |
         | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                                                                                |
 
@@ -98,13 +98,13 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ## Default values
 
-??? warning
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
 
-    These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+If you want to customize these values, use the methods described above.
 
-    If you want to customize these values, use the methods described above.
+??? example "Default `include` (click to expand) <a class="headerlink" href="#include" title="Permanent link">¶</a>"
 
-    **Default `include`:**
+    <div id="include" />
 
     ```yaml
     include: {%    
@@ -116,7 +116,9 @@ Note that the `template_variables:` section only needs to be used if you do want
     %}
     ```
 
-    **Default `key_name_override`:**
+??? example "Default `key_name_override` (click to expand) <a class="headerlink" href="#key-name-override" title="Permanent link">¶</a>"
+
+    <div id="key-name-override" />
 
     ```yaml
     key_name_override: {%    

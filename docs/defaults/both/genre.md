@@ -109,46 +109,12 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     If you want to customize these values, use the methods described above.
 
-    **Default `addons`**:
+    **Default `addons`:**
 
     ```yaml
-    addons:
-      Action:
-        - Action/Adventure
-        - Action/adventure
-        - Action & Adventure
-        - Action & adventure
-        - Action and Adventure
-        - Action and adventure
-      Adventure:
-        - Action/Adventure
-        - Action/adventure
-        - Action & Adventure
-        - Action & adventure
-        - Action and Adventure
-        - Action and adventure
-      Biopic:
-        - Biography
-      Family:
-        - Kids & Family
-      Fantasy:
-        - SciFi & Fantasy
-        - Science Fiction & Fantasy
-        - Science-Fiction & Fantasy
-        - Sci-Fi & Fantasy
-      Film Noir:
-        Film-Noir
-      Politics:
-        - War & Politics
-      Science Fiction:
-        - SciFi
-        - Sci-Fi
-        - Science-Fiction
-        - SciFi & Fantasy
-        - Science Fiction & Fantasy
-        - Sci-Fi & Fantasy
-      Talk Show:
-        - Talk
-      War:
-        - War & Politics
-    ```
+    addons: {%    
+      include-markdown "../../../defaults/both/genre.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="addons:"
+    %}
