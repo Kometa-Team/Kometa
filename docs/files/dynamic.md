@@ -607,6 +607,7 @@ There are also several template variables that will be automatically append/remo
 and `addons` so they can be changed by the user on the fly when needed.
 
 * `append_data`
+* `remove_data`
 * `append_exclude`
 * `remove_exclude`
 * `append_include`

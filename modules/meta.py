@@ -938,12 +938,11 @@ class MetadataFile(DataFile):
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type in ["actor", "director", "writer", "producer"]:
                             people = {}
-                            if "data" not in methods:
-                                raise Failed(f"Config Error: {map_name} data attribute not found")
-                            elif "data" in self.temp_vars:
-                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
-                            else:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            if "data" in self.temp_vars:
+                                temp_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                                for k, v in temp_data.items():
+                                    dynamic_data[k] = v
                             person_methods = {am.lower(): am for am in dynamic_data}
                             if "actor_depth" in person_methods:
                                 person_methods["depth"] = person_methods.pop("actor_depth")
@@ -988,12 +987,11 @@ class MetadataFile(DataFile):
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "imdb_awards":
-                            if "data" not in methods:
-                                raise Failed(f"Config Error: {map_name} data attribute not found")
-                            elif "data" in self.temp_vars:
-                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
-                            else:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            if "data" in self.temp_vars:
+                                temp_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                                for k, v in temp_data.items():
+                                    dynamic_data[k] = v
                             award_methods = {am.lower(): am for am in dynamic_data}
                             event_id = util.parse("Config", "event_id", dynamic_data, parent=f"{map_name} data", methods=award_methods, regex=(r"(ev\d+)", "ev0000003"))
                             extra_template_vars["event_id"] = event_id
@@ -1008,13 +1006,13 @@ class MetadataFile(DataFile):
                                 position_value = str(dynamic_data[award_methods[attr]])
                                 if not position_value:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute is blank")
-                                if position_value.startswith(("first", "latest")):
+                                if position_value.startswith(("first", "latest", "current_year")):
                                     int_values = position_value.split("+" if position_value.startswith("first") else "-")
                                     try:
                                         if len(int_values) == 1:
                                             return 0 if position_value.startswith("first") else len(year_options)
                                         else:
-                                            return int(int_values[1].strip()) * (-1 if position_value.startswith("latest") else 1)
+                                            return int(int_values[1].strip()) * (1 if position_value.startswith("first") else -1)
                                     except ValueError:
                                         raise Failed(f"Config Error: {map_name} data {attr} attribute modifier invalid '{int_values[1]}'")
                                 elif position_value in year_options:
@@ -1032,12 +1030,11 @@ class MetadataFile(DataFile):
                                     auto_list[option] = option
                             default_template = {"imdb_award": {"event_id": "<<event_id>>", "event_year": "<<value>>", "winning": True}}
                         elif auto_type == "number":
-                            if "data" not in methods:
-                                raise Failed(f"Config Error: {map_name} data attribute not found")
-                            elif "data" in self.temp_vars:
-                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
-                            else:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            if "data" in self.temp_vars:
+                                temp_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                                for k, v in temp_data.items():
+                                    dynamic_data[k] = v
                             number_methods = {nm.lower(): nm for nm in dynamic_data}
                             if "starting" in number_methods and str(dynamic_data[number_methods["starting"]]).startswith("current_year"):
                                 year_values = str(dynamic_data[number_methods["starting"]]).split("-")
@@ -1065,25 +1062,47 @@ class MetadataFile(DataFile):
                                     auto_list[str(current)] = str(current)
                                 current += increment
                         elif auto_type == "custom":
-                            if "data" not in methods:
-                                raise Failed(f"Config Error: {map_name} data attribute not found")
-                            for k, v in util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strdict").items():
+                            if "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="strdict")
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strdict")
+                            if "remove_data" in self.temp_vars:
+                                for k in util.parse("Config", "remove_data", self.temp_vars["remove_data"], datatype="strlist"):
+                                    if k in dynamic_data:
+                                        dynamic_data.pop(k)
+                            if "append_data" in self.temp_vars:
+                                for k, v in util.parse("Config", "append_data", self.temp_vars["append_data"], datatype="strdict").items():
+                                    dynamic_data[k] = v
+                            for k, v in dynamic_data.items():
                                 all_keys[k] = v
                                 if k not in exclude and v not in exclude:
                                     auto_list[k] = v
-                        elif auto_type == "trakt_user_lists":
-                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
-                            for option in dynamic_data:
-                                _check_dict({self.config.Trakt.build_user_url(u[0], u[1]): u[2] for u in self.config.Trakt.all_user_lists(option)})
                         elif auto_type == "trakt_liked_lists":
                             _check_dict(self.config.Trakt.all_liked_lists())
                         elif auto_type == "tmdb_popular_people":
-                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
+                            if "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="int", minimum=1)
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
                             _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
-                        elif auto_type == "trakt_people_list":
-                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="list")
+                        elif auto_type in ["trakt_people_list", "trakt_user_lists"]:
+                            if "data" in self.temp_vars:
+                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="strlist")
+                            else:
+                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strlist")
+                            if "remove_data" in self.temp_vars:
+                                for k in util.parse("Config", "remove_data", self.temp_vars["remove_data"], datatype="strlist"):
+                                    if k in dynamic_data:
+                                        dynamic_data.remove(k)
+                            if "append_data" in self.temp_vars:
+                                for k in util.parse("Config", "append_data", self.temp_vars["append_data"], datatype="strlist"):
+                                    if k not in dynamic_data:
+                                        dynamic_data.append(k)
                             for option in dynamic_data:
-                                _check_dict(self.config.Trakt.get_people(option))
+                                if auto_type == "trakt_user_lists":
+                                    _check_dict({self.config.Trakt.build_user_url(u[0], u[1]): u[2] for u in self.config.Trakt.all_user_lists(option)})
+                                else:
+                                    _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
 
