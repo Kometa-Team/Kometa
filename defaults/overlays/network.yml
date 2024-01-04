@@ -15,7 +15,7 @@ external_templates:
       key: <<overlay_name>>
       horizontal_align: left
       vertical_align: bottom
-      style: standard
+      style: color
     conditionals:
       vertical_offset:
         default: 15

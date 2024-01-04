@@ -33,7 +33,7 @@ dynamic_collections:
       image:
         default: network/<<style>>/<<key_encoded>>
       style:
-        default: standard
+        default: color
       translation_key:
         default: network
       dynamic:
