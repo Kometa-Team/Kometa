@@ -86,9 +86,8 @@ Note that the `template_variables:` section only needs to be used if you do want
               radarr_add_missing: true #(3)!
               name_format: Cannes <<key_name>> Winners #(4)!
               data:
-                starting: current_year-10 #(5)!
-                increment: 2 #(6)!
-                ending: current_year #(7)!
+                starting: latest-10 #(5)!
+                ending: latest #(6)!
     ```
 
     1.  Shows the collection and all of its items within the Library tab in Plex
@@ -96,5 +95,4 @@ Note that the `template_variables:` section only needs to be used if you do want
     3.  Adds items from the source list which are not in Plex to Radarr
     4.  Change the name of the collections to "Cannes yearhere Winners"
     5.  If today is 2024, then create collections for Cannes 2014 onwards
-    6.  If starting year is 2014, then create collections for 2014, 2016, 2018, 2020, etc.
-    7.  If today is 2024, then the final collection is Cannes 2024
+    6.  If today is 2024, then the final collection is Cannes 2024
