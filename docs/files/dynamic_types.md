@@ -175,19 +175,21 @@ requirements of creating the collection.
         
         <div id="imdb-awards-starting" />This determines the starting year of the event to use to create collections.
 
-        **Allowed Values:** Number greater than 0, `current_year`, or relative year `current_year-#` (`#` is the number 
-        of years back from the current year)
+        **Allowed Values:** Number greater than 0, `first`, `latest`, relative first (`first+#`; where `#` is the number
+        of events past the first event), or relative latest (`latest-#`; where `#` is the number of events back from the
+        latest)
 
-        **Default:** `current-5`
+        **Default:** `first`
 
     ??? blank "`ending` - Determines the ending year of the event to use.<a class="headerlink" href="#imdb-awards-ending" title="Permanent link">¶</a>"
         
         <div id="imdb-awards-ending" />This determines the ending year of the event to use to create collections. 
-        
-        **Allowed Values:** Number greater than 1, `current_year`, or relative year `current_year-#` (`#` is the number 
-        of years back from the current year)
 
-        **Default:** `current`
+        **Allowed Values:** Number greater than 0, `first`, `latest`, relative first (`first+#`; where `#` is the number
+        of events past the first event), or relative latest (`latest-#`; where `#` is the number of events back from the
+        latest)
+
+        **Default:** `latest`
 
     **Valid Library Types:** Movies and Shows
     
