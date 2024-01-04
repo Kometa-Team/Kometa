@@ -3,8 +3,8 @@
 If you want to remove those overlays, open the config file, change the value of `remove_overlays` to `true`, and rerun PMM.
 
 ```
+    remove_overlays: true
     overlay_files:
-      - remove_overlays: true
       - pmm: resolution
 ```
 
@@ -18,8 +18,8 @@ libraries:
       # - pmm: imdb                # This is a file within the defaults folder in the Repository
       # see the wiki for how to use local files, folders, URLs, or files from git
       # - file: config/Movies.yml
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - pmm: resolution
 ```
 

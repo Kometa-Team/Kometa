@@ -128,8 +128,8 @@ services:
     environment:
       - PMM_RUN=true
       - PMM_CONFIG=/config/special-config.yml
-      - PMM_OVERLAYS=true
-      - PMM_LIBRARIES=Movies
+      - PMM_OVERLAYS_ONLY=true
+      - PMM_RUN_LIBRARIES=Movies
     volumes:
       - /path/to/config:/config
 ```
@@ -138,8 +138,8 @@ services:
 
 `- PMM_CONFIG=/config/special-config.yml` points PMM at a particular config file,
 
-`- PMM_OVERLAYS=true` tells PMM to run overlays only, and 
+`- PMM_OVERLAYS_ONLY=true` tells PMM to run overlays only, and 
 
-`- PMM_LIBRARIES=Movies` tells PMM to process only a library called "Movies"
+`- PMM_RUN_LIBRARIES=Movies` tells PMM to process only a library called "Movies"
 
 Again, a list of the available environment variables can be found [here](../environmental.md).

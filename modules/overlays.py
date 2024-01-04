@@ -370,7 +370,7 @@ class Overlays:
                     logger.info(e)
                     logger.info(type(e))
                     logger.stacktrace()
-                    logger.error("")
+                    logger.info("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
         for _, over in properties.items():

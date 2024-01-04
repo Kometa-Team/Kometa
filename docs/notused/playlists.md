@@ -33,8 +33,8 @@ libraries:
       - file: config/TV Shows.yml
       - pmm: tmdb
       - pmm: network
+    remove_overlays: false
     overlay_files:
-      - remove_overlays: false
       - file: config/Overlays.yml
 playlist_files:
   - file: config/playlists.yml

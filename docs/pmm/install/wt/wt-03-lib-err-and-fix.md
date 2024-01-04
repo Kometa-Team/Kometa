@@ -24,22 +24,6 @@ I’ve removed some of the lines for space, but have left the important bits:
 
 You can see there that PMM found its config file, was able to connect to TMDb, was able to connect to Plex, and then failed trying to read the “Movies-NOSUCHLIBRARY" library, which of course doesn’t exist.
 
-<details>
-  <summary>I got a ModuleError instead</summary>
-
-  If you see this error instead:
-  ```
-  ModuleNotFoundError: No module named 'pkg_resources'
-  ```
-  Chances are you're using Python 3.12 and skipped the bit above about Python 3.12.
-
-  Type this into your terminal
-  ```
-  pip install setuptools
-  ```
-  Then try the run command from above again.
-</details>
-
 Open the config file again and change "Movies-NOSUCHLIBRARY" to reflect *your own* Movie library in Plex.
 
 Say my Movies library is called “All The Movies", so mine looks like this:

@@ -1,4 +1,4 @@
-import argparse, os, platform, sys, time, uuid
+import argparse, os, platform, re, sys, time, uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
@@ -135,9 +135,9 @@ for env_name, env_data in os.environ.items():
         secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
 
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
-for _, v in secret_args.items():
-    if v in run_arg:
-        run_arg = run_arg.replace(v, "(redacted)")
+for _, sv in secret_args.items():
+    if sv in run_arg:
+        run_arg = run_arg.replace(sv, "(redacted)")
 
 try:
     from git import Repo, InvalidGitRepositoryError # noqa
@@ -241,7 +241,7 @@ def start(attrs):
     if not is_docker and not is_linuxserver:
         try:
             with open("requirements.txt", "r") as file:
-                required_version = next(l.strip()[9:] for l in file.readlines() if l.strip().startswith("PlexAPI=="))
+                required_version = next(ln.strip()[9:] for ln in file.readlines() if ln.strip().startswith("PlexAPI=="))
         except FileNotFoundError:
             logger.error("    File Error: requirements.txt not found")
     logger.info(f"    PlexAPI Version: {plexapi.VERSION}")
@@ -313,14 +313,63 @@ def start(attrs):
         version_line = f"{version_line}        Newest Version: {new_version}"
     try:
         log_data = {}
+        no_overlays = []
+        no_overlays_count = 0
+        convert_errors = {}
+
+        other_log_groups = [
+            ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
+            ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
+            ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
+            ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
+            ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
+            ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
+            ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
+            ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
+            ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
+            ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
+            ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
+            ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+        ]
+        other_message = {}
+
         with open(logger.main_log, encoding="utf-8") as f:
             for log_line in f:
                 for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                     if f"[{err_type}]" in log_line:
                         log_line = log_line.split("|")[1].strip()
-                        if err_type not in log_data:
-                            log_data[err_type] = []
-                        log_data[err_type].append(log_line)
+                        other = False
+                        for key, reg in other_log_groups:
+                            if log_line.startswith(key):
+                                other = True
+                                _name = re.match(reg, log_line).group(1)
+                                if key not in other_message:
+                                    other_message[key] = {"list": [], "count": 0}
+                                other_message[key]["count"] += 1
+                                if _name not in other_message[key]:
+                                    other_message[key]["list"].append(_name)
+                        if other is False:
+                            if err_type not in log_data:
+                                log_data[err_type] = []
+                            log_data[err_type].append(log_line)
+
+        if "No Items found for" in other_message:
+            logger.separator(f"Overlay Errors Summary", space=False, border=False)
+            logger.info("")
+            logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
+            logger.info("")
+
+        convert_title = False
+        for key, _ in other_log_groups:
+            if key.startswith("Convert Warning") and key in other_message:
+                if convert_title is False:
+                    logger.separator("Convert Summary", space=False, border=False)
+                    logger.info("")
+                    convert_title = True
+                logger.info(f"{key[17:]}")
+                logger.info(", ".join(other_message[key]["list"]))
+        if convert_title:
+            logger.info("")
 
         for err_type in ["WARNING", "ERROR", "CRITICAL"]:
             if err_type not in log_data:
@@ -554,7 +603,7 @@ def run_libraries(config):
                 for library_type in library_types:
                     for item in library.get_all(builder_level=library_type):
                         try:
-                            sync = ["Overlay"] if "Overlay" in [i.tag for i in item.labels] else []
+                            sync = ["Overlay"] if "Overlay" in [lbl.tag for lbl in item.labels] else []
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
