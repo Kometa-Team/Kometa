@@ -2,7 +2,7 @@
 
 The `network` Default Overlay File is used to create an overlay based on the show network on each item within your library.
 
-![](images/network.png)
+![](images/Network_color.png)
 
 ## Requirements & Recommendations
 
@@ -39,17 +39,21 @@ Note that the `template_variables:` section only needs to be used if you do want
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable            | Default / Values |
-        |:--------------------|:-----------------|
-        | `horizontal_offset` | `15`             |
-        | `horizontal_align`  | `left`           |
-        | `vertical_offset`   | `510`            |
-        | `vertical_align`    | `bottom`         |
-        | `back_color`        | `#00000099`      |
-        | `back_radius`       | `30`             |
-        | `back_width`        | `305`            |
-        | `back_height`       | `105`            |
+        | Variable            | Default / Values                                                                                       |
+        |:--------------------|:-------------------------------------------------------------------------------------------------------|
+        | `horizontal_offset` | `15`                                                                                                   |
+        | `horizontal_align`  | `left`                                                                                                 |
+        | `vertical_offset`   | `510`                                                                                                  |
+        | `vertical_align`    | `bottom`                                                                                               |
+        | `back_color`        | `#00000099`                                                                                            |
+        | `back_radius`       | `30`                                                                                                   |
+        | `back_width`        | `305`                                                                                                  |
+        | `back_height`       | `105`                                                                                                  |
+        | `style`             | **Description:** Choose between the default color version or the **white** one.<br>**Values:** `white` |
 
+        Preview of the white style
+
+        ![](images/Network_white.png)
 
     === "Overlay Template Variables"
 
@@ -68,6 +72,7 @@ Note that the `template_variables:` section only needs to be used if you do want
         overlay_files:
           - pmm: network
             template_variables:
+              style: white
               vertical_offset: 390
           - pmm: network
             template_variables:
