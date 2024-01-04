@@ -208,7 +208,7 @@ templates:
           - alt: plus
             value: '(?i)\bhdr10(\+|p(lus)?\b)'
           - alt: dvhdr
-            value: '(?i)\bdv((\.hdr10?\b)|(\.hdr10(\+|p(lus)?\b)))'
+            value: '(?i)\bdv((.hdr10?\b)|(.hdr10(\+|p(lus)?\b)))'
     optional:
       - all
       - use_<<key>>
