@@ -84,9 +84,8 @@ work. Any value not specified will use its default value if it has one if not it
                   radarr_add_missing: true #(3)!
                   name_format: BAFTA <<key_name>> Winners #(4)!
                   data:
-                    starting: current_year-10 #(5)!
-                    increment: 2 #(6)!
-                    ending: current_year #(7)!
+                    starting: latest-10 #(5)!
+                    ending: latest #(6)!
         ```
     
         1.  Shows the collection and all of its items within the Library tab in Plex
@@ -94,5 +93,4 @@ work. Any value not specified will use its default value if it has one if not it
         3.  Adds items from the source list which are not in Plex to Radarr
         4.  Change the name of the collections to "BAFTA yearhere Winners"
         5.  If today is 2024, then create collections for BAFTA 2014 onwards
-        6.  If starting year is 2014, then create collections for 2014, 2016, 2018, 2020, etc.
-        7.  If today is 2024, then the final collection is BAFTA 2024
+        6.  If today is 2024, then the final collection is BAFTA 2024
