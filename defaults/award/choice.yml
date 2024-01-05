@@ -11,7 +11,7 @@ external_templates:
     collection_section: 130
 
 collections:
-  Critics Choice Award Winners:
+  Critics Choice Best Picture Winners:
     variables:
       key: choice
     template:
