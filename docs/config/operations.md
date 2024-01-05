@@ -69,7 +69,7 @@ You can create individual blocks of operations by using a list under `operations
     
     <hr style="margin: 0px;">
     
-    **Attribute:** `assets_for_all`
+    **Attribute:** `delete_collections`
     
     **Accepted Values:** There are a few different options to determine how the `delete_collections` works.
     
@@ -78,7 +78,7 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`managed: false`</td><td>Collection must be Unmanaged to be deleted<br>(collection does not have the `PMM` label)</td></tr>
       <tr><td>`configured: true`</td><td>Collection must be Configured to be deleted<br>(collection is in the config file of the specific PMM run)</td></tr>
       <tr><td>`configured: false`</td><td>Collection must be Unconfigured to be deleted<br>(collection is not in the config file of the specific PMM run)</td></tr>
-      <tr><td>`less: ###`</td><td>Collection must contain less then the given number of items to be deleted.<br>### is a Number greater than 0</td></tr>
+      <tr><td>`less: ###`</td><td>Collection must contain less then the given number of items to be deleted.<br>### is a Number greater than 0<br>Optional value which if undefined means collections will be deleted regardless of how many items they have</td></tr>
     </table>
 
     **The collection does not need to be scheduled to be considered configured and only needs to be in the config file.**
@@ -410,7 +410,7 @@ You can create individual blocks of operations by using a list under `operations
 
     <hr style="margin: 0px;">
     
-    **Attribute:** `mass_poster_update`
+    **Attribute:** `mass_background_update`
     
     **Accepted Values:**
     
