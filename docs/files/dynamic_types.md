@@ -193,9 +193,9 @@ requirements of creating the collection.
 
     **Valid Library Types:** Movies and Shows
     
-    **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that year) 
+    **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that year) 
 
-    **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that 
+    **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that 
     year)
 
     **Default `title_format`:** `<<key_name>>`
