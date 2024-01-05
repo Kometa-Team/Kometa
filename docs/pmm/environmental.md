@@ -319,7 +319,7 @@ different ways to specify these things.
 
     <hr style="margin: 0px;">
 
-    **Accepted Values:** Pipe-separated list of Collection Names to run
+    **Accepted Values:** Pipe-separated list of Collection Names to run; the "pipe" character is "|" as shown in the examples below.
 
     **Shell Flags:** `-rc` or `--run-collections` (ex. `--run-collections "Harry Potter|Star Wars"`)
 
@@ -342,7 +342,7 @@ different ways to specify these things.
 
     <hr style="margin: 0px;">
 
-    **Accepted Values:** Pipe-separated list of Library Names to run
+    **Accepted Values:** Pipe-separated list of Library Names to run; the "pipe" character is "|" as shown in the examples below.
 
     **Shell Flags:** `-rl` or `--run-libraries` (ex. `--run-libraries "Movies - 4K|TV Shows - 4K"`)
 
@@ -369,7 +369,7 @@ different ways to specify these things.
 
     <hr style="margin: 0px;">
 
-    **Accepted Values:** Pipe-separated list of Collection, Metadata or Playlist Filenames to run
+    **Accepted Values:** Pipe-separated list of Collection, Metadata or Playlist Filenames to run; the "pipe" character is "|" as shown in the examples below.
 
     **Shell Flags:** `-rf` or `--run-files` (ex. `--run-files "Movies.yml|MovieCharts"`)
 
