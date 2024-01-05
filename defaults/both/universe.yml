@@ -2,7 +2,7 @@
 #                            Universe Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/both/universe.html       #
+#         https://metamanager.wiki/en/latest/defaults/both/universe          #
 ##############################################################################
 
 external_templates:
@@ -81,12 +81,13 @@ dynamic_collections:
         fast: movie
         rocky: movie
         mummy: movie
-      # check1
       trakt_url:
+      # check1
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         trek: https://trakt.tv/users/wdvhucb/lists/star-trek
         middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
       mdblist_url:
+      # check2
         avp: https://mdblist.com/lists/plexmetamanager/external/16872
         arrow: https://mdblist.com/lists/plexmetamanager/external/15113
         dca: https://mdblist.com/lists/plexmetamanager/external/15405

@@ -65,22 +65,27 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `0`         |
+        | `horizontal_align`  | `center`    |
+        | `vertical_offset`   | `15`        |
+        | `vertical_align`    | `top`       |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`/`189` |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable                     | Default / Values                                                                                             |
+        | Variable                     | Description & Values                                                                                         |
         |:-----------------------------|:-------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`          | `0`                                                                                                          |
-        | `horizontal_align`           | `center`                                                                                                     |
-        | `vertical_offset`            | `15`                                                                                                         |
-        | `vertical_align`             | `top`                                                                                                        |
-        | `back_color`                 | `#00000099`                                                                                                  |
-        | `back_radius`                | `30`                                                                                                         |
-        | `back_width`                 | `305`                                                                                                        |
-        | `back_height`                | `105`/`189`                                                                                                  |
         | `style`                      | **Description:** Choose the Overlay Style.<br>**Default:** `compact`<br>**Values:** `compact` or `standard`  |
         | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                              |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number |

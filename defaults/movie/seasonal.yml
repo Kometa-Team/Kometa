@@ -2,7 +2,7 @@
 #                            Seasonal Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/movie/seasonal.html       #
+#         https://metamanager.wiki/en/latest/defaults/movie/seasonal         #
 ##############################################################################
 
 external_templates:
@@ -102,6 +102,7 @@ dynamic_collections:
       - arr
     template_variables:
       emoji:
+        # check1
         years: "🎊 "
         valentine: "💘 "
         patrick: "☘ "
@@ -122,6 +123,7 @@ dynamic_collections:
         women: "🚺 "
         black_history: "✊ 🏿 "
       schedule:
+        # check2
         years: range(12/26-01/04)
         valentine: range(02/01-02/29)
         patrick: range(03/01-03/18)
@@ -142,6 +144,7 @@ dynamic_collections:
         latinx: range(09/15-10/15)
         women: range(02/28-03/31)
       imdb_list:
+        # check3
         years: https://www.imdb.com/list/ls066838460/
         valentine:
           - https://www.imdb.com/list/ls000094398/
@@ -168,10 +171,13 @@ dynamic_collections:
           - https://www.imdb.com/list/ls091597850/
         christmas: https://www.imdb.com/list/ls000096828/
       imdb_search:
+        # check4
         women:
-          - keyword.any: women in film, womens rights, womens suffrage
-            limit: 500
+          keyword.any: women in film, womens rights, womens suffrage
+          sort_by: rating.desc
+          limit: 500
       tmdb_collection:
+        # check5
         halloween:
           - 185103    # Hotel Transylvania
           - 11716     # Addams Family
@@ -184,9 +190,11 @@ dynamic_collections:
           - 2980      # Ghostbusters
           - 751156    # Hocus Pocus
       tmdb_movie:
+        # check6
         halloween:
           - 23437    # A Nightmare on Elm Street (2010)
       mdblist_list:
+        # check7
         aapi:
           - https://mdblist.com/lists/plexmetamanager/asian-american-pacific-islander-heritage-month
         disabilities:
@@ -196,6 +204,7 @@ dynamic_collections:
         latinx:
           - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
       trakt_list:
+        # check8
         black_history:
           - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
           - https://trakt.tv/users/bluephi8/lists/black-history?display=movie&sort=title,asc

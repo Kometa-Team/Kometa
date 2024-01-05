@@ -8,6 +8,12 @@ The `network` Default Overlay File is used to create an overlay based on the sho
 
 Supported library types: Show
 
+### White Style
+
+Below is a screenshot of the alternative White (`white`) style which can be set via the `style` template variable.
+
+![](images/Network_white.png)
+
 ## Config
 
 The below YAML in your config.yml will create the overlays:
@@ -33,27 +39,28 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `510`       |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`       |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable            | Default / Values                                                                                       |
-        |:--------------------|:-------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset` | `15`                                                                                                   |
-        | `horizontal_align`  | `left`                                                                                                 |
-        | `vertical_offset`   | `510`                                                                                                  |
-        | `vertical_align`    | `bottom`                                                                                               |
-        | `back_color`        | `#00000099`                                                                                            |
-        | `back_radius`       | `30`                                                                                                   |
-        | `back_width`        | `305`                                                                                                  |
-        | `back_height`       | `105`                                                                                                  |
-        | `style`             | **Description:** Choose between the default color version or the **white** one.<br>**Values:** `white` |
-
-        Preview of the white style
-
-        ![](images/Network_white.png)
+        | Variable | Description & Values                                                                                              |
+        |:---------|:------------------------------------------------------------------------------------------------------------------|
+        | `style`  | **Description:** Choose between the default color version or the **white** one.<br>**Values:** `color` or `white` |
 
     === "Overlay Template Variables"
 

@@ -2,7 +2,7 @@
 #                                 Playlists                                  #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/playlist.html          #
+#            https://metamanager.wiki/en/latest/defaults/playlist            #
 ##############################################################################
 
 external_templates:
@@ -10,6 +10,27 @@ external_templates:
 
 templates:
   playlist:
+    conditionals:
+      trakt_list:
+        conditions:
+          - key: arrow
+            value: https://trakt.tv/users/donxy/lists/arrowverse
+          - key: mcu
+            value: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+          - key: dcau
+            value: https://trakt.tv/users/donxy/lists/dc-animated-series-universe
+          - key: pokemon
+            value: https://trakt.tv/users/munch54/lists/pokemon-watching-order
+          - key: startrek
+            value: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
+          - key: starwars
+            value: https://trakt.tv/users/xrayblaster/lists/star-wars-chronological-order
+          - key: clonewars
+            value: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
+          - key: xmen
+            value: https://trakt.tv/users/heyitsbea/lists/x-men
+          - key: dragonball
+            value: https://trakt.tv/users/grawler/lists/dragon-ball-in-order
     default:
       libraries: Movies, TV Shows
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
@@ -52,7 +73,6 @@ playlists:
       key: arrow
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/donxy/lists/arrowverse
         summary_arrow: The Arrowverse is an American superhero media franchise and a shared universe that is centered on various interconnected television series based on DC Comics superhero characters, primarily airing on The CW as well as web series on CW Seed.
       - name: arr
 
@@ -61,7 +81,6 @@ playlists:
       key: mcu
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         summary_mcu: The Marvel Cinematic Universe (MCU) is a collection of movies and television series that tell a singular narrative related to Marvel characters, settings and stories. The MCU is a product from Disney and Marvel that brings us heroes from Black Panther and Doctor Strange to Spider-Man and Iron Man.
       - name: arr
 
@@ -79,7 +98,6 @@ playlists:
       key: pokemon
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/munch54/lists/pokemon-watching-order
         summary_pokemon: Ash Ketchum, his yellow pet Pikachu, and his human friends explore a world of powerful creatures. Ten-year-old Ash aspires to be the greatest Pokémon (pocket monster) trainer in the world. To do this, he enlists the help of many friends, and his own Pokémon, Pikachu.
       - name: arr
 
@@ -88,7 +106,6 @@ playlists:
       key: startrek
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
         summary_startrek: All Star Trek canon in chronological order, as found on thestartrekchronologyproject.blogspot.com. Includes animated series. Will be updated with new shows as they come out. Does not include Kelvinverse movies.
       - name: arr
 
@@ -97,7 +114,6 @@ playlists:
       key: starwars
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/xrayblaster/lists/star-wars-chronological-order
         summary_starwars: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over.
       - name: arr
 
@@ -106,7 +122,6 @@ playlists:
       key: clonewars
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
         summary_clonewars: As more star systems get swept into the Clone Wars, the valiant Jedi knights struggle to maintain order. Anakin Skywalker and his Padawan learner Ahsoka Tano embark on a mission that brings them face-to-face with Jabba the Hutt. Plotting against them is evil Count Dooku and his agent, Asajj Ventress, who would ensure that the Jedis fail. Meanwhile, Yoda and Obi-Wan Kenobi lead the clone army against the forces of the Dark Side.
       - name: arr
 
@@ -115,7 +130,6 @@ playlists:
       key: xmen
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/heyitsbea/lists/x-men
         summary_xmen: The X-Men are a fictional team of superheroes appearing in American comic books published by Marvel Comics, first appearing in The X-Men Issue 1. Although initially cancelled in 1970, following its 1975 revival and subsequent direction under writer Chris Claremont, it became one of the most recognizable and successful franchises of Marvel Comics.
       - name: arr
 
@@ -124,6 +138,5 @@ playlists:
       key: dragonball
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/grawler/lists/dragon-ball-in-order
         summary_dragonball: Dragon Ball follows the adventures of an extraordinarily strong young boy named Goku as he searches for the seven dragon balls. These balls, when combined, can grant the owner any one wish he desires. Along the way he makes many new friends, and enemies, and he trains to become the strongest fighter in the world.
       - name: arr

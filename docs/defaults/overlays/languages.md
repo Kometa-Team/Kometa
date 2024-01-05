@@ -126,25 +126,30 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default                      |
+        |:--------------------|:-----------------------------|
+        | `horizontal_offset` | `15`/`206`/`397`/`588`/`779` |
+        | `horizontal_align`  | `left`/`right`/`center`      |
+        | `vertical_offset`   | `15`/`76`/`137`/`198`/`259`  |
+        | `vertical_align`    | `top`/`bottom`/`center`      |
+        | `back_color`        | `#00000099`                  |
+        | `back_radius`       | `26`/` `                     |
+        | `back_width`        | `190`                        |
+        | `back_height`       | `105`                        |
+        | `back_align`        | `left`/`right`               |
+        | `font`              | `fonts/Inter-Bold.ttf`       |
+        | `font_size`         | `50`                         |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable                      | Default / Values                                                                                                                                                                                                                                                                                                              |
+        | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                          |
         |:------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`           | `15`/`206`/`397`/`588`/`779`                                                                                                                                                                                                                                                                                                  |
-        | `horizontal_align`            | `left`/`right`/`center`                                                                                                                                                                                                                                                                                                       |
-        | `vertical_offset`             | `15`/`76`/`137`/`198`/`259`                                                                                                                                                                                                                                                                                                   |
-        | `vertical_align`              | `top`/`bottom`/`center`                                                                                                                                                                                                                                                                                                       |
-        | `back_color`                  | `#00000099`                                                                                                                                                                                                                                                                                                                   |
-        | `back_radius`                 | `26`/` `                                                                                                                                                                                                                                                                                                                      |
-        | `back_width`                  | `190`                                                                                                                                                                                                                                                                                                                         |
-        | `back_height`                 | `105`                                                                                                                                                                                                                                                                                                                         |
-        | `back_align`                  | `left`/`right`                                                                                                                                                                                                                                                                                                                |
-        | `font`                        | `fonts/Inter-Bold.ttf`                                                                                                                                                                                                                                                                                                        |
-        | `font_size`                   | `50`                                                                                                                                                                                                                                                                                                                          |
         | `languages`                   | **Description:** Controls which Languages will be active.<br>**Default:** `["en", "de", "fr", "es", "pt", "ja"]` <br>**Values:** List of [ISO 639-1 Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for the Languages desired                                                                                   |
         | `use_subtitles`               | **Description:** Controls if the overlay is based on subtitle language instead of audio language.<br>**Values:** `true` to look at subtitle language instead of audio language                                                                                                                                                |
         | `builder_level`               | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                               |

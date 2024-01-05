@@ -46,19 +46,24 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default  |
+        |:--------------------|:---------|
+        | `color`             | ``       |
+        | `horizontal_offset` | `15`     |
+        | `horizontal_align`  | `left`   |
+        | `vertical_offset`   | `270`    |
+        | `vertical_align`    | `bottom` |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable             | Default / Values                                                                                                                            |
-        |:---------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
-        | `color`              | ``                                                                                                                                          |
-        | `horizontal_offset`  | `15`                                                                                                                                        |
-        | `horizontal_align`   | `left`                                                                                                                                      |
-        | `vertical_offset`    | `270`                                                                                                                                       |
-        | `vertical_align`     | `bottom`                                                                                                                                    |
+        | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+        |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `color`              | **Description:** Color version of the content rating images<br>**Default:**`` Set to `false` if you want b&w version.                       |
         | `back_color`         | **Description:** Choose the back color in RGBA for the overlay lozenge.<br>**Default:**`#00000099`                                          |
         | `back_radius`        | **Description:** Choose the back radius for the overlay lozenge.<br>**Default:**`30`                                                        |

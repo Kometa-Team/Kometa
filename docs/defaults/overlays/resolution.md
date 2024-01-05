@@ -118,22 +118,27 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `15`        |
+        | `vertical_align`    | `top`       |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`/`189` |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable                     | Default / Values                                                                                                                               |
+        | Variable                     | Description & Values                                                                                                                           |
         |:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`          | `15`                                                                                                                                           |
-        | `horizontal_align`           | `left`                                                                                                                                         |
-        | `vertical_offset`            | `15`                                                                                                                                           |
-        | `vertical_align`             | `top`                                                                                                                                          |
-        | `back_color`                 | `#00000099`                                                                                                                                    |
-        | `back_radius`                | `30`                                                                                                                                           |
-        | `back_width`                 | `305`                                                                                                                                          |
-        | `back_height`                | `105`/`189`                                                                                                                                    |
         | `use_resolution`             | **Description:** Turns off all Resolution Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                       |
         | `use_edition`                | **Description:** Turns off all Edition Overlays in the Defaults file.<br>**Values:** `false` to turn off the overlays                          |
         | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                |

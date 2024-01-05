@@ -30,23 +30,28 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `0`         |
+        | `horizontal_align`  | `center`    |
+        | `vertical_offset`   | `150`       |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `170`       |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable            | Default / Values                                                                |
-        |:--------------------|:--------------------------------------------------------------------------------|
-        | `horizontal_offset` | `0`                                                                             |
-        | `horizontal_align`  | `center`                                                                        |
-        | `vertical_offset`   | `150`                                                                           |
-        | `vertical_align`    | `bottom`                                                                        |
-        | `back_color`        | `#00000099`                                                                     |
-        | `back_radius`       | `30`                                                                            |
-        | `back_width`        | `305`                                                                           |
-        | `back_height`       | `170`                                                                           |
-        | `builder_level`     | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
+        | Variable        | Description & Values                                                            |
+        |:----------------|:--------------------------------------------------------------------------------|
+        | `builder_level` | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
 
     === "Overlay Template Variables"
 

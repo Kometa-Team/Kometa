@@ -62,29 +62,34 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `270`       |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`       |
+
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable              | Default / Values                                                                                                                            |
-        |:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`   | `15`                                                                                                                                        |
-        | `horizontal_align`    | `left`                                                                                                                                      |
-        | `vertical_offset`     | `270`                                                                                                                                       |
-        | `vertical_align`      | `bottom`                                                                                                                                    |
-        | `back_color`          | `#00000099`                                                                                                                                 |
-        | `back_radius`         | `30`                                                                                                                                        |
-        | `back_width`          | `305`                                                                                                                                       |
-        | `back_height`         | `105`                                                                                                                                       |
-        | `addon_offset`        | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
-        | `addon_position`      | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
-        | `pre_text`            | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                  |
-        | `post_text`           | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                               |
-        | `pre_nr_text`         | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                             |
-        | `post_nr_text`        | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                              |
-        | `builder_level`       | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                             |
+        | Variable         | Description & Values                                                                                                                        |
+        |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
+        | `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
+        | `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
+        | `pre_text`       | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                  |
+        | `post_text`      | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                               |
+        | `pre_nr_text`    | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                             |
+        | `post_nr_text`   | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                              |
+        | `builder_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                             |
 
     === "Overlay Template Variables"
 

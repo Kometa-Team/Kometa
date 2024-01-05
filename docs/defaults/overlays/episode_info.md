@@ -27,32 +27,26 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
-    === "File-Specific Template Variables"
+    ??? example "Default Templatye Variable Values (click to expand)"
 
-        The below template variables are available specifically for this PMM Defaults file.
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `270`       |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`       |
 
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
+    {%
+       include-markdown "../overlay_text_variables.md"
+    %}
 
-| Variable              | Default / Values |
-|:----------------------|:-----------------|
-| `horizontal_offset`   | `15`             |
-| `horizontal_align`    | `left`           |
-| `vertical_offset`     | `270`            |
-| `vertical_align`      | `bottom`         |
-| `back_color`          | `#00000099`      |
-| `back_radius`         | `30`             |
-| `back_width`          | `305`            |
-| `back_height`         | `105`            |
-
-    === "Overlay Template Variables"
-
-        {%
-           include-markdown "../overlay_text_variables.md"
-        %}
-
-        {%
-           include-markdown "../overlay_variables.md"
-        %}
+    {%
+       include-markdown "../overlay_variables.md"
+    %}
 
     ### Example Template Variable Amendments
 
