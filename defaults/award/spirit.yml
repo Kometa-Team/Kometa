@@ -1,7 +1,6 @@
 ##############################################################################
 #                   Independent Spirit Awards Collections                    #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#                    Credit to pjcob for the Trakt Lists                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
 #       https://metamanager.wiki/en/latest/defaults/award/spirit.html        #
 ##############################################################################
@@ -11,8 +10,26 @@ external_templates:
   template_variables:
     collection_section: 130
 
+collections:
+  Spirit Best Feature Winners:
+    variables:
+      key: spirit
+    template:
+      - name: shared
+        sort: Spirit !1
+        allowed_libraries: movie
+        image: award/spirit/winner
+        translation_key: spirit_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000349
+      event_year: all
+      category_filter: best feature
+      winning: true
+
 dynamic_collections:
-  Independent Spirit Awards Awards:
+  Independent Spirit Award Awards:
     type: imdb_awards
     sync: true
     data:
