@@ -113,90 +113,25 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     If you want to customize these values, use the methods described above.
 
-    **Default `include`**:
+    **Default `include`:**
 
     ```yaml
-    include:
-      - U
-      - PG
-      - 12
-      - 12A
-      - 15
-      - 18
-      - R18
+    include: {%    
+      include-markdown "../../../defaults/both/content_rating_uk.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="include:"
+      end="addons:"
+    %}
     ```
 
-    **Default `addons`**:
+    **Default `addons`:**
 
     ```yaml
-        addons:
-          U:
-            - gb/U
-            - gb/0+
-            - G
-            - TV-Y
-            - TV-G
-            - E
-            - gb/E
-            - 1
-            - 2
-            - 3
-            - 4
-            - 5
-            - 6
-            - "01"
-            - "02"
-            - "03"
-            - "04"
-            - "05"
-            - "06"
-            - G - All Ages
-          PG:
-            - gb/PG
-            - gb/9+
-            - TV-PG
-            - TV-Y7
-            - TV-Y7-FV
-            - 7
-            - 8
-            - 9
-            - 10
-            - 11
-            - "07"
-            - "08"
-            - "09"
-            - PG - Children
-          12:
-            - gb/12
-            - PG-13 - Teens 13 or older
-          12A:
-            - gb/12A
-            - 12+
-            - PG-13
-            - TV-13
-            - 12
-            - PG-13 - Teens 13 or older
-          15:
-            - gb/15
-            - gb/14+
-            - TV-14
-            - 13
-            - 14
-            - PG-13 - Teens 13 or older
-          18:
-            - gb/18
-            - MA-17
-            - TVMA
-            - TV-MA
-            - R
-            - 16
-            - 17
-            - R - 17+ (violence & profanity)
-            - R+ - Mild Nudity
-          R18:
-            - gb/R18
-            - gb/X
-            - X
-            - NC-17
-            - Rx - Hentai
+    addons: {%    
+      include-markdown "../../../defaults/both/content_rating_uk.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="addons:"
+    %}
     ```

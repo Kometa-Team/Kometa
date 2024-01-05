@@ -9,7 +9,7 @@ Special credit to [Chazlarson](https://github.com/chazlarson) for the time and e
 The below guides and recipes have been created to assist users with various aspects of Plex Meta Managers and its companion scripts.
 
 - [Plex Ratings Explained](ratings.md)
-- [Scheduling PMM Rungs Guide](scheduling.md)
+- [Scheduling PMM Runs Guide](scheduling.md)
 - [Image Asset Directory Guide](assets.md)
 - [Log Files](../logs.md)
 - [Understanding YAML File Syntax](../yaml.md)
