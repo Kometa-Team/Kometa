@@ -33,23 +33,28 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `right`     |
+        | `vertical_offset`   | `30`        |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `600`       |
+        | `back_height`       | `105`       |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable            | Default / Values                                                                                                                         |
-        |:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset` | `15`                                                                                                                                     |
-        | `horizontal_align`  | `right`                                                                                                                                  |
-        | `vertical_offset`   | `30`                                                                                                                                     |
-        | `vertical_align`    | `bottom`                                                                                                                                 |
-        | `back_color`        | `#00000099`                                                                                                                              |
-        | `back_radius`       | `30`                                                                                                                                     |
-        | `back_width`        | `600`                                                                                                                                    |
-        | `back_height`       | `105`                                                                                                                                    |
-        | `text`              | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
+        | Variable  | Description & Values                                                                                                                     |
+        |:----------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+        | `text`    | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
 
     === "Overlay Template Variables"
 

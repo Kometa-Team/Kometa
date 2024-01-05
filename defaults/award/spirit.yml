@@ -2,7 +2,7 @@
 #                   Independent Spirit Awards Collections                    #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/award/spirit.html        #
+#          https://metamanager.wiki/en/latest/defaults/award/spirit          #
 ##############################################################################
 
 external_templates:
@@ -13,7 +13,7 @@ external_templates:
 collections:
   Spirit Best Feature Winners:
     variables:
-      key: spirit
+      key: best
     template:
       - name: shared
         sort: Spirit !1

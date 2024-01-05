@@ -2,7 +2,7 @@
 #                           Franchise Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/movie/franchise.html      #
+#        https://metamanager.wiki/en/latest/defaults/movie/franchise         #
 ##############################################################################
 
 templates:
@@ -98,6 +98,7 @@ dynamic_collections:
       535790: Godzilla (Anime)
     template_variables:
       movie:
+        # check1
         105995: 336560    # Anaconda: Lake Placid vs. Anaconda
         176097: 14177     # Barbershop: Beauty Shop
         448150: 567604    # Deadpool: Once Upon a Deadpool
@@ -125,6 +126,7 @@ dynamic_collections:
         63043: 73362  # TRON: TRON: The Next Day
         748: 567604 # X-Men: Once Upon a Deadpool
       name_mapping:
+        # check2
         1565: 28 Days-Weeks Later
         508334: Angels in the
         115838: Escape From

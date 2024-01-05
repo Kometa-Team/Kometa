@@ -53,18 +53,23 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default  |
+        |:--------------------|:---------|
+        | `horizontal_offset` | `0`      |
+        | `horizontal_align`  | `right`  |
+        | `vertical_offset`   | `0`      |
+        | `vertical_align`    | `bottom` |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable                     | Default / Values                                                                                                        |
+        | Variable                     | Description & Values                                                                                                    |
         |:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`          | `0`                                                                                                                     |
-        | `horizontal_align`           | `right`                                                                                                                 |
-        | `vertical_offset`            | `0`                                                                                                                     |
-        | `vertical_align`             | `bottom`                                                                                                                |
         | `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
         | `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
@@ -80,7 +85,6 @@ Note that the `template_variables:` section only needs to be used if you do want
     ### Example Template Variable Amendments
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
 
     ```yaml
     libraries:

@@ -917,7 +917,7 @@ class CollectionBuilder:
                 test_sort = self.data[methods["collection_order"]]
         elif "collection_order" not in methods and not self.playlist and not self.blank_collection and self.build_collection and self.library.default_collection_order and not self.smart:
             test_sort = self.library.default_collection_order
-            logger.warning("")
+            logger.info("")
             logger.warning(f"{self.Type} Warning: collection_order not found using library default_collection_order: {test_sort}")
         self.custom_sort = "custom" if self.playlist else None
         if test_sort:
@@ -1515,8 +1515,8 @@ class CollectionBuilder:
                 og_year = dict_data[dict_methods["event_year"]]
                 if not og_year:
                     raise Failed(f"{self.Type} Error: imdb_award event_year attribute is blank")
-                if og_year == "all":
-                    event_year = "all"
+                if og_year in ["all", "latest"]:
+                    event_year = og_year
                 elif not isinstance(og_year, list) and "-" in str(og_year) and len(str(og_year)) > 7:
                     try:
                         min_year, max_year = og_year.split("-")
@@ -1546,7 +1546,7 @@ class CollectionBuilder:
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
-                    award_names, category_names = self.config.IMDb.get_award_names(event_id, event_year)
+                    award_names, category_names = self.config.IMDb.get_award_names(event_id, year_options[0] if event_year == "latest" else event_year)
                     lower_award = {a.lower(): a for a in award_names if a}
                     for award_filter in award_filters:
                         if award_filter in lower_award:

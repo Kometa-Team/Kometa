@@ -49,22 +49,27 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `30`        |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`       |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
-        | Variable                     | Default / Values                                                                                                                                                                                                                                                                                                                                                                                             |
+        | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                         |
         |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`          | `15`                                                                                                                                                                                                                                                                                                                                                                                                         |
-        | `horizontal_align`           | `left`                                                                                                                                                                                                                                                                                                                                                                                                       |
-        | `vertical_offset`            | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
-        | `vertical_align`             | `bottom`                                                                                                                                                                                                                                                                                                                                                                                                     |
-        | `back_color`                 | `#00000099`                                                                                                                                                                                                                                                                                                                                                                                                  |
-        | `back_radius`                | `30`                                                                                                                                                                                                                                                                                                                                                                                                         |
-        | `back_width`                 | `305`                                                                                                                                                                                                                                                                                                                                                                                                        |
-        | `back_height`                | `105`                                                                                                                                                                                                                                                                                                                                                                                                        |
         | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
         | `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`remux`</td><td>`REMUX`</td></tr><tr><td>`bluray`</td><td>`BLU-RAY`</td></tr><tr><td>`web`</td><td>`WEB`</td></tr><tr><td>`hdtv`</td><td>`HDTV`</td></tr><tr><td>`dvd`</td><td>`DVD`</td></tr><tr><td>`sdtv`</td><td>`SDTV`</td></tr></table>**Values:** Any String |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                 |

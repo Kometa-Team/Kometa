@@ -55,6 +55,19 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default                                                                        |
+        |:--------------------|:-------------------------------------------------------------------------------|
+        | `horizontal_offset` | **Description:** Change the horizontal offset.<br>**Default Value:** `15`      |
+        | `horizontal_align`  | **Description:** Change the horizontal alignment.<br>**Default Value:** `left` |
+        | `vertical_offset`   | **Description:** Change the vertical offset.<br>**Default Value:** `390`       |
+        | `vertical_align`    | **Description:** Change the vertical alignment.<br>**Default Value:** `bottom` |
+        | `back_color`        | **Description:** Change the back color.<br>**Default Value:** `#00000099`      |
+        | `back_radius`       | **Description:** Change the back (lozenge) radius .<br>**Default Value:** `30` |
+        | `back_width`        | **Description:** Change the back (lozenge) width.<br>**Default Value:** `305`  |
+        | `back_height`       | **Description:** Change the back (lozenge) height.<br>**Default Value:** `105` |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
@@ -63,14 +76,6 @@ Note that the `template_variables:` section only needs to be used if you do want
 
         | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                            |
         |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`          | **Description:** Change the horizontal offset.<br>**Default Value:** `15`                                                                                                                                                                                                                                                       |
-        | `horizontal_align`           | **Description:** Change the horizontal alignment.<br>**Default Value:** `left`                                                                                                                                                                                                                                                  |
-        | `vertical_offset`            | **Description:** Change the vertical offset.<br>**Default Value:** `390`                                                                                                                                                                                                                                                        |
-        | `vertical_align`             | **Description:** Change the vertical alignment.<br>**Default Value:** `bottom`                                                                                                                                                                                                                                                  |
-        | `back_color`                 | **Description:** Change the back color.<br>**Default Value:** `#00000099`                                                                                                                                                                                                                                                       |
-        | `back_radius`                | **Description:** Change the back (lozenge) radius .<br>**Default Value:** `30`                                                                                                                                                                                                                                                  |
-        | `back_width`                 | **Description:** Change the back (lozenge) width.<br>**Default Value:** `305`                                                                                                                                                                                                                                                   |
-        | `back_height`                | **Description:** Change the back (lozenge) height.<br>**Default Value:** `105`                                                                                                                                                                                                                                                  |
         | `region`                     | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                     |
         | `originals_only`             | **Description:** Changes Streaming Service overlays to only apply to original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces overlays for `amazon`, `appletv`, `disney`, `max`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false` |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                    |

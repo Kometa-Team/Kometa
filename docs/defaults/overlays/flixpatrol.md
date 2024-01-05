@@ -42,36 +42,40 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
+    ??? example "Default Templatye Variable Values (click to expand)"
+
+        | Variable            | Default           |
+        |:--------------------|:------------------|
+        | `horizontal_offset` | `30`              |
+        | `horizontal_align`  | `left`/`right`    |
+        | `vertical_offset`   | `465`/`670`/`875` |
+        | `vertical_align`    | `top`             |
+        | `back_color`        | `#00000099`       |
+        | `back_radius`       | `30`              |
+        | `back_width`        | `160`             |
+        | `back_height`       | `160`             |
+        | `back_padding`      | `15`              |
+        
     === "File-Specific Template Variables"
 
         The below template variables are available specifically for this PMM Defaults file.
 
         Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
- 
-        | Variable                              | Default / Values                                                                                                                                                                                                     |
-        |:--------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `horizontal_offset`                   | `30`                                                                                                                                                                                                                 |
-        | `horizontal_align`                    | `left`/`right`                                                                                                                                                                                                       |
-        | `vertical_offset`                     | `465`/`670`/`875`                                                                                                                                                                                                    |
-        | `vertical_align`                      | `top`                                                                                                                                                                                                                |
-        | `back_color`                          | `#00000099`                                                                                                                                                                                                          |
-        | `back_radius`                         | `30`                                                                                                                                                                                                                 |
-        | `back_width`                          | `160`                                                                                                                                                                                                                |
-        | `back_height`                         | `160`                                                                                                                                                                                                                |
-        | `back_padding`                        | `15`                                                                                                                                                                                                                 |
-        | `position`                            | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                                |
-        | `style`                               | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                                     |
-        | `pre_text`                            | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                                 |
-        | `limit`                               | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                                  |
-        | `limit_<<key>>`<sup>1</sup>           | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                    |
-        | `location`                            | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../files/builders/flixpatrol.md#top-platform-attributes) |
-        | `location_<<key>>`<sup>1</sup>        | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../files/builders/flixpatrol.md#top-platform-attributes)   |
-        | `in_the_last`                         | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `1`<br>**Values:** Any Number 1-30                                                                                          |
-        | `in_the_last_<<key>>`<sup>1</sup>     | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `in_the_last`<br>**Values:** Any Number 1-30                                                                                |
-        | `weight_<<key>>`<sup>1</sup>          | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                         |
-        | `addon_offset`                        | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater than 0                                                                                                |
-        | `addon_position`                      | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                           |
+        | Variable                          | Description & Values                                                                                                                                                                                                 |
+        |:----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `position`                        | **Description:** Changes the position of the Overlays.<br>**Default:** `right`<br>**Values:** `right`, `left`, or List of Coordinates                                                                                |
+        | `style`                           | **Description:** Changes the style of the Logo Image.<br>**Default:** `round`<br>**Values:** `round` or `square`                                                                                                     |
+        | `pre_text`                        | **Description:** Changes the text before the number.<br>**Default:** `TOP`<br>**Values:** Any String                                                                                                                 |
+        | `limit`                           | **Description:** Changes the Builder Limit for all overlays in a Defaults file.<br>**Default:** `10`<br>**Values:** Any Number 1-10                                                                                  |
+        | `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Builder Limit of the specified key's overlay.<br>**Default:** `limit`<br>**Values:** Any Number 1-10                                                                                    |
+        | `location`                        | **Description:** Changes the Builder Location for all overlays in a Defaults file.<br>**Default:** `world`<br>**Values:** [`location` Attribute Options](../../files/builders/flixpatrol.md#top-platform-attributes) |
+        | `location_<<key>>`<sup>1</sup>    | **Description:** Changes the Builder Location of the specified key's overlay.<br>**Default:** `location`<br>**Values:** [`location` Attribute Options](../../files/builders/flixpatrol.md#top-platform-attributes)   |
+        | `in_the_last`                     | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `1`<br>**Values:** Any Number 1-30                                                                                          |
+        | `in_the_last_<<key>>`<sup>1</sup> | **Description:** Changes How many days of daily Top 10 Lists to look at.<br>**Default:** `in_the_last`<br>**Values:** Any Number 1-30                                                                                |
+        | `weight_<<key>>`<sup>1</sup>      | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                         |
+        | `addon_offset`                    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater than 0                                                                                                |
+        | `addon_position`                  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                           |
 
         1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
 
