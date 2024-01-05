@@ -113,28 +113,25 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     If you want to customize these values, use the methods described above.
 
-    **Default `include`**:
+    **Default `include`:**
 
     ```yaml
-    include:
-      - 4k
-      - 1080
-      - 720
-      - 480
+    include: {%    
+      include-markdown "../../../defaults/both/resolution.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="include:"
+      end="addons:"
+    %}
     ```
 
-    **Default `addons`**:
+    **Default `addons`:**
 
     ```yaml
-    addons:
-      4k:
-        - 8k
-      1080:
-        - 2k
-      480:
-        - 144
-        - 240
-        - 360
-        - sd
-        - 576
+    addons: {%    
+      include-markdown "../../../defaults/both/resolution.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="addons:"
+    %}
     ```

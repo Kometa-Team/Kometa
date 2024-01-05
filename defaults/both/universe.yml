@@ -81,6 +81,7 @@ dynamic_collections:
         fast: movie
         rocky: movie
         mummy: movie
+      # check1
       trakt_url:
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         trek: https://trakt.tv/users/wdvhucb/lists/star-trek
