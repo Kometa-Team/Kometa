@@ -11,7 +11,7 @@ external_templates:
     collection_section: 130
 
 collections:
-  Spirit Best Feature Winner:
+  Spirit Best Feature Winners:
     variables:
       key: spirit
     template:
