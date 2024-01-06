@@ -218,8 +218,8 @@ requirements of creating the collection.
             type: imdb_awards
             data:
               event_id: ev0000003
-              starting: current-15
-              ending: current
+              starting: latest-15
+              ending: latest
         ```
 
 ??? blank "`trakt_user_lists` - Collections based on Trakt Lists by users.<a class="headerlink" href="#trakt-user-lists" title="Permanent link">¶</a>"
