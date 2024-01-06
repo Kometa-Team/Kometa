@@ -1,0 +1,79 @@
+##############################################################################
+#                   Audio/Subtitle Language Count Overlay                    #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                     Credit to Magic815 for base images                     #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#  https://metamanager.wiki/en/latest/defaults/overlays/language_count.html  #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      horizontal_align: center
+      vertical_align: bottom
+    conditionals:
+      image_key:
+        default: audio
+        conditions:
+          - use_subtitles: true
+            value: subs
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: <<key>>_<<image_key>>
+    group: language
+    back_color: "#00000099"
+    back_width: 188
+    back_height: 105
+
+templates:
+  language:
+    conditionals:
+      search_attribute:
+        default: audio_language
+        conditions:
+          - use_subtitles: true
+            value: subtitle_language
+    default:
+      minimum: 2
+    optional:
+      - lt
+    ignore_blank_results: true
+    plex_all: true
+    filters:
+      <<search_attribute>>.count_gte: <<minimum>>
+      <<search_attribute>>.count_lt: <<lt>>
+
+overlays:
+
+  Dual:
+    variables: {key: dual, weight: 20, lt: 3}
+    template: [name: standard, name: language]
+
+  Multi:
+    variables: {key: multi, weight: 10}
+    template: [name: standard, name: language]

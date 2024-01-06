@@ -1,0 +1,87 @@
+##############################################################################
+#                            Video Format Overlay                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                     Credit to Magic815 for base images                     #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/video_format.html   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      text_<<key>>: <<overlay_name>>
+      horizontal_align: left
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+    group: quality
+    back_color: "#00000099"
+    back_width: 305
+    back_height: 105
+    final_name: text(<<text_<<key>>>>)
+
+templates:
+  video_format:
+    default:
+      regex_<<key>>: <<regex>>
+    conditionals:
+      regex:
+        conditions:
+          - key: remux
+            value: '(?i)\bremux\b'
+          - key: bluray
+            value: '(?i)\b(blu[ ._-]?ray|bd|br|hd[ ._-]?dvd)\b'
+          - key: web
+            value: '(?i)web[ ._-]?(dl|rip)'
+          - key: hdtv
+            value: '(?i)\bhd[ ._-]?tv\b'
+          - key: dvd
+            value: '(?i)\bdvd\b'
+          - key: sdtv
+            value: '(?i)\bsd[ ._-]?tv\b'
+    ignore_blank_results: true
+    plex_all: true
+    filters:
+      filepath.regex: <<regex_<<key>>>>
+
+overlays:
+
+  REMUX:
+    variables: {key: remux, weight: 60}
+    template: [name: standard, name: video_format]
+
+  BLU-RAY:
+    variables: {key: bluray, weight: 50}
+    template: [name: standard, name: video_format]
+
+  WEB:
+    variables: {key: web, weight: 40}
+    template: [name: standard, name: video_format]
+
+  HDTV:
+    variables: {key: hdtv, weight: 30}
+    template: [name: standard, name: video_format]
+
+  DVD:
+    variables: {key: dvd, weight: 20}
+    template: [name: standard, name: video_format]
+
+  SDTV:
+    variables: {key: sdtv, weight: 10}
+    template: [name: standard, name: video_format]

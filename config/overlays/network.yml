@@ -1,0 +1,999 @@
+##############################################################################
+#                             Network Overlay                                #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#    https://metamanager.wiki/en/latest/defaults/overlays/network.html       #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    run_definition:
+      - <<use_<<key>>>>
+      - <<use_<<alt>>>>
+      - <<allowed_libraries>>
+    default:
+      key: <<overlay_name>>
+      standard_value: 305
+      horizontal_align: left
+      vertical_align: bottom
+    conditionals:
+      back_height:
+        default: 105
+        conditions:
+          - style: standard
+            value: <<standard_value>>
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 510
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: network/<<key>>
+    allowed_libraries: show
+    group: networks
+    vertical_offset: 15
+    back_color: "#00000099"
+    back_width: 305
+
+templates:
+  networks:
+    default:
+      key: <<overlay_name>>
+      search: <<key>>
+    ignore_blank_results: true
+    plex_search:
+      validate: false
+      any:
+        network: <<search>>
+
+overlays:
+  "#0":
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ABC:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [ABC, ABC.com]}]
+
+  ABC Family:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ABC Kids:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ABC TV:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [ABC TV, ABC (AU), ABC Comedy, ABC Me, ABC News, ABC iview]}]
+
+  ABS-CBN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Acorn TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Adult Swim:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  AHC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Alibi:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ALTBalaji:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Amazon Kids+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  AMC:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [AMC, AMC.com]}]
+
+  Animal Planet:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Animal Planet, Animal Planet Brasil, Animal Planet Deutschland]}]
+
+  Antena 3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Apple TV+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ARD:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Arte:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Atresplayer Premium:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  AT-X:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Audience:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  AXN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Azteca Uno:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC America:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC Four:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC iPlayer:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC One:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC Three:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC Two:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BET:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [BET, BET Her]}]
+
+  BET+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  bilibili:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BluTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Boomerang:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Bravo:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BritBox:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  C More:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Canale 5:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Canal+:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Canal+, Canal+ Poland, Canal+ Family, Canal+ Discovery, Canal+ Afrique]}]
+
+  Cartoon Network:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Cartoon Network, Cartoon Network Latin America, Cartoon Network Anything]}]
+
+  Cartoonito:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CBC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CBC Television:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Cbeebies:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CBS:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [CBS, CBS.com, CBS All Access]}]
+
+  Channel 3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Channel 4:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Channel 5:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CHCH-DT:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Cinemax:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Citytv:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CNN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Comedy Central:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Cooking Channel:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Crackle:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Criterion Channel:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Crunchyroll:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  CTV:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [CTV, CTV Two, CTV News Channel, CTV Sci-Fi Channel, CTV Comedy Channel, CTV Life Channel, ctv.ca]}]
+
+  Cuatro:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Curiosity Stream:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Dave:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  DC Universe:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Discovery:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Discovery, Discovery Health Channel, Discovery Channel, Discovery Home & Health Brasil, Discovery Family, Discovery Real Time, Discovery Asia, Discovery Home & Health, Discovery Life, Discovery World, Discovery Science]}]
+
+  Discovery Kids:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  discovery+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Disney Channel:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Disney Channel, Toon Disney, Playhouse Disney, Disney Channel Asia, disney.com, Disney Channel Middle East]}]
+
+  Disney Junior:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Disney Junior, Disney Junior Latin America, Disney Junior Brasil]}]
+
+  Disney XD:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Disney+:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Disney+, Disney+ Hotstar]}]
+
+  DR1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Eden:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Elisa Viihde:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Elisa Viihde Viaplay:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Epix:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ESPN:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [ESPN, ESPN2, ESPN+, ESPN Classic, ESPNU, ESPNews, ESPN Australia, Sony ESPN, ESPN.com, ESPN Deportes]}]
+
+  E!:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Facebook Watch:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Family Channel:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Ficción Producciones:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Flooxer:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Food Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  FOX:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [FOX, Fox News Channel, Fox Sports, Fox Reality Channel, Fox Sports Networks, Fox Latin America, Fox Brasil, Fox Soccer, Fox Sports 2, Fox Nation, Fox Sports 1, fox.com, Fox Sports Detroit]}]
+
+  Fox Kids:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  France 2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Freeform:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Freevee:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Freevee, Amazon Freevee]}]
+
+  Fuji TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  FX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  FXX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  GAİN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Game Show Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Global TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Globoplay:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  GMA Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Hallmark:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Hallmark, Hallmark Channel, Hallmark Drama, Hallmark Movie & Mysteries, Hallmark Movies Now]}]
+
+  HBO:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [HBO, HBO Brasil, HBO Europe, HBO Asia, HBO Latin America, HBO España, HBO Nordic, HBO Canada, HBO Family, HBO Mundi]}]
+
+  HGTV:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [HGTV, HGTV Canada]}]
+
+  History:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [History, History Channel Italia, H2]}]
+
+  HOT3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Hulu:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ICTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  IFC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  IMDb TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Investigation Discovery:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ION Television:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  iQiyi:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV Encore:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITVX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  joyn:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Kan 11:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  KBS2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Kids WB:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  La 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  La Une:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Las Estrellas:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Lifetime:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Lifetime, Lifetime Movies]}]
+
+  Lionsgate+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Logo:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  MasterClass:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Max:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Max, HBO Go, HBO Max]}]
+
+  MBC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  MGM+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  mitele:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Movistar Plus+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  MTV:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [MTV, MTV2, MTV3, MTV Lebanon, MTV Latin America, MTV Italia, MTV Australia, MTV Canada, MTV Global, MTV Nederland]}]
+
+  M-Net:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  National Geographic:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [National Geographic, National Geographic Channel, National Geographic Brasil, National Geographic Latinoamerica, National Geographic India]}]
+
+  NBC:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [NBC, CNBC, MSNBC, NBCSN, CNBC Europe, CNBC Asia, WNBC, Nikkei CNBC, KNBC, CNBC World, CNBC TV18, NBC Weather Plus, NBC Radio Network]}]
+
+  Netflix:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Network 10:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Network 10, Network Ten]}]
+
+  NHK:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Nick:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Nick Jr:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Nickelodeon:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Nickelodeon, Nick at Nite]}]
+
+  Nicktoons:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Nine Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Nippon TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  NRK1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  OCS City:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  OCS Max:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ORF:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Oxygen:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Pantaya:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Paramount Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Paramount+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  PBS:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  PBS Kids:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Peacock:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Planète+ A&E:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Prime Video:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Rai 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Reelz:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [ReelzChannel, Reelz]}]
+
+  RTÉ One:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  RTL:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  RTL Télé:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  RTP1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  RÚV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  S4C:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  SAT.1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  SBS:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Science:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Shahid:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Showcase:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Showmax:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Showtime:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Shudder:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Sky:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Sky, Sky One, Sky Atlantic, Sky Arts, Sky History, Sky Living, Sky Crime, Sky Uno, Sky Max, Sky Sports, Sky Documentaries, Sky Nature, Sky News, Sky Cinema, Sky News Australia, Sky Italia, Sky Comedy, Sky Sports F1, Sky Two, Sky Witness, sky Travel, Sky Vision, Sky News Weather Channel, SkyShowtime]}]
+
+  Smithsonian:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Smithsonian, Smithsonian Channel, Smithsonian Earth]}]
+
+  Space:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Spectrum:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Spike:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Spike, Spike TV]}]
+
+  Stan:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Starz:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Starz, Starz Encore]}]
+
+  STAR+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Sundance TV:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Sundance TV, SundanceTV]}]
+
+  SVT1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Syfy:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Syndication:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TBS:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [TBS, TBS.com, TBS Brasil]}]
+
+  Telecinco:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Telefe:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Telemundo:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Televisión de Galicia:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Televisión Pública Argentina:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Tencent Video:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TF1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  The CW:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [The CW, CW seed]}]
+
+  The Roku Channel:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  The WB:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TLC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TNT:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [TNT, TNT Comedy, TNT Latin America, TNT España, TNT Serie, TNT Glitz]}]
+
+  Tokyo MX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Travel Channel:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Travel Channel, Travel Channel United Kingdom]}]
+
+  truTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Turner Classic Movies:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV 2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  tv asahi:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV Globo:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV Land:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV Tokyo:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TV4:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TVB Jade:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  tving:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  tvN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TVNZ 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  TVP1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  UKTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  UniMás:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Universal Kids:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Universal TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Univision:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  UPN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  USA Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  VH1:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [VH1, VH1 Classic]}]
+
+  Viaplay:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Vice:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Vice, Viceland, Vice TV, Vice.com]}]
+
+  Virgin Media One:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ViuTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ViX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ViX+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  VRT 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  VTM:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  W:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  WE tv:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  YLE:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Youku:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  YouTube:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ZDF:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ZEE5:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]

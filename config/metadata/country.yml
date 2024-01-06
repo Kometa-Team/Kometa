@@ -1,0 +1,347 @@
+##############################################################################
+#                            Country Overlays                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                         Artwork Credit to Duhniel                          #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#       https://metamanager.wiki/en/latest/defaults/movie/country.html       #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      key: <<overlay_name>>
+    horizontal_offset: 25
+    horizontal_align: left
+    vertical_offset: 20
+    vertical_align: bottom
+    back_width: 120
+    back_height: 100
+    back_radius: 30
+    back_color: '#00000099'
+    conditionals:
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: flag/round/<<key>>.png
+
+templates:
+  landover:
+    ignore_blank_results: true
+    plex_search:
+      validate: false
+      any:
+        country: <<country>>
+
+queues:
+  landover:
+    - horizontal_offset: 25        # This is the first position
+      horizontal_align: left
+      vertical_offset: 20
+      vertical_align: bottom
+    - horizontal_offset: 150        # This is the second position
+    - horizontal_offset: 275        # This is the second position
+      overlay_limit: 3
+
+overlays:
+   United States of America:
+     template:
+      - { name: landover, country: "United States of America" }
+      - { name: standard, queue: landover, country: "United States of America", weight: 900, text: US, key: us }
+
+   Germany:
+     template:
+      - { name: landover, country: Germany }
+      - { name: standard, queue: landover, country: Germany, weight: 991, text: DE, key: de }
+
+   Austria:
+     template:
+      - { name: landover, country: Austria }
+      - { name: standard, queue: landover, country: Austria, weight: 801, text: AT, key: at }
+
+   East Germany:
+     template:
+      - { name: landover, country: "East Germany" }
+      - { name: standard, queue: landover, country: "East Germany", weight: 992, text: DD, key: dd }
+
+   France:
+     template:
+      - { name: landover, country: France }
+      - { name: standard, queue: landover, country: France, weight: 901, text: FR, key: fr }
+
+   Spain:
+     template:
+      - { name: landover, country: Spain }
+      - { name: standard, queue: landover, country: Spain, weight: 904, text: ES, key: es }
+
+   Portugal:
+     template:
+      - { name: landover, country: Portugal }
+      - { name: standard, queue: landover, country: Portugal, weight: 801, text: PT, key: pt }
+
+   Japan:
+     template:
+      - { name: landover, country: Japan }
+      - { name: standard, queue: landover, country: Japan, weight: 906, text: JP, key: jp }
+
+   Republic of Korea:
+     template:
+      - { name: landover, country: "Republic of Korea" }
+      - { name: standard, queue: landover, country: "Republic of Korea", weight: 907, text: KR, key: kr }
+
+   China:
+     template:
+      - { name: landover, country: China }
+      - { name: standard, queue: landover, country: China, weight: 701, text: CN, key: cn }
+
+   Denmark:
+     template:
+      - { name: landover, country: Denmark }
+      - { name: standard, queue: landover, country: Denmark, weight: 908, text: DK, key: dk }
+
+   Russian Federation:
+     template:
+      - { name: landover, country: "Russian Federation"}
+      - { name: standard, queue: landover, country: "Russian Federation", weight: 911, text: RU, key: ru }
+
+   Italy:
+     template:
+      - { name: landover, country: Italy }
+      - { name: standard, queue: landover, country: Italy, weight: 921, text: IT, key: it }
+
+   India:
+     template:
+      - { name: landover, country: India }
+      - { name: standard, queue: landover, country: India, weight: 701, text: IN, key: in }
+
+   Iran:
+     template:
+      - { name: landover, country: Iran }
+      - { name: standard, queue: landover, country: Iran, weight: 101, text: IR, key: ir }
+
+   Thailand:
+     template:
+      - { name: landover, country: Thailand }
+      - { name: standard, queue: landover, country: Thailand, weight: 501, text: TH, key: th }
+
+   Netherlands:
+     template:
+      - { name: landover, country: Netherlands }
+      - { name: standard, queue: landover, country: Netherlands, weight: 931, text: NL, key: nl }
+
+   Norway:
+     template:
+      - { name: landover, country: Norway }
+      - { name: standard, queue: landover, country: Norway, weight: 932, text: NO, key: no }
+
+   Iceland:
+     template:
+      - { name: landover, country: Iceland }
+      - { name: standard, queue: landover, country: Iceland, weight: 801, text: IS, key: is }
+
+   Sweden:
+     template:
+      - { name: landover, country: Sweden }
+      - { name: standard, queue: landover, country: Sweden, weight: 932, text: SE, key: se }
+
+   Turkey:
+     template:
+      - { name: landover, country: Turkey }
+      - { name: standard, queue: landover, country: Turkey, weight: 401, text: TR, key: tr }
+
+   Poland:
+     template:
+      - { name: landover, country: Poland }
+      - { name: standard, queue: landover, country: Poland, weight: 901, text: PL, key: pl }
+
+   Czech Republic:
+     template:
+      - { name: landover, country: "Czech Republic" }
+      - { name: standard, queue: landover, country: "Czech Republic", weight: 901, text: CZ, key: cz }
+
+   Ukraine:
+     template:
+      - { name: landover, country: Ukraine }
+      - { name: standard, queue: landover, country: Ukraine, weight: 901, text: UA, key: ua }
+
+   Hungary:
+     template:
+      - { name: landover, country: Hungary}
+      - { name: standard, queue: landover, country: Hungary, weight: 901, text: HU, key: hu }
+
+   Bulgaria:
+     template:
+      - { name: landover, country: Bulgaria }
+      - { name: standard, queue: landover, country: Bulgaria, weight: 301, text: BG, key: bg }
+
+   Brazil:
+     template:
+      - { name: landover, country: Brazil }
+      - { name: standard, queue: landover, country: Brazil, weight: 901, text: BR, key: br }
+
+   Bosnia and Herzegovina:
+     template:
+      - { name: landover, country: "Bosnia and Herzegovina" }
+      - { name: standard, queue: landover, country: "Bosnia and Herzegovina", weight: 401, text: BA, key: ba }
+
+   Andorra:
+     template:
+      - { name: landover, country: Andorra}
+      - { name: standard, queue: landover, country: Andorra, weight: 301, text: AD, key: ad }
+
+   United Kingdom:
+     template:
+      - { name: landover, country: "United Kingdom" }
+      - { name: standard, queue: landover, country: "United Kingdom", weight: 951, text: UK, key: uk }
+
+   Greece:
+     template:
+      - { name: landover, country: Greece }
+      - { name: standard, queue: landover, country: Greece, weight: 901, text: GR, key: gr }
+
+   Estonia:
+     template:
+      - { name: landover, country: Estonia }
+      - { name: standard, queue: landover, country: Estonia, weight: 901, text: EE, key: ee }
+
+   Finland:
+     template:
+      - { name: landover, country: Finland }
+      - { name: standard, queue: landover, country: Finland, weight: 901, text: FI, key: fi }
+
+   Israel:
+     template:
+      - { name: landover, country: Israel }
+      - { name: standard, queue: landover, country: Israel, weight: 3901, text: IL, key: il }
+
+   Croatia:
+     template:
+      - { name: landover, country: Croatia }
+      - { name: standard, queue: landover, country: Croatia, weight: 901, text: HR, key: hr }
+
+   Indonesia:
+     template:
+      - { name: landover, country: Indonesia }
+      - { name: standard, queue: landover, country: Indonesia, weight: 901, text: ID, key: id }
+
+   Georgia:
+     template:
+      - { name: landover, country: Georgia }
+      - { name: standard, queue: landover, country: Georgia, weight: 301, text: GE, key: ge }
+
+   Kazakhstan:
+     template:
+      - { name: landover, country: Kazakhstan }
+      - { name: standard, queue: landover, country: Kazakhstan, weight: 301, text: KZ, key: kz }
+
+   Lithuania:
+     template:
+      - { name: landover, country: Lithuania}
+      - { name: standard, queue: landover, country: Lithuania, weight: 501, text: LT, key: lt }
+
+   Latvia:
+     template:
+      - { name: landover, country: Latvia }
+      - { name: standard, queue: landover, country: Latvia, weight: 501, text: LV, key: lv }
+
+   Macedonia:
+     template:
+      - { name: landover, country: Macedonia }
+      - { name: standard, queue: landover, country: Macedonia, weight: 501, text: MK, key: mk }
+
+   Malaysia:
+     template:
+      - { name: landover, country: Malaysia }
+      - { name: standard, queue: landover, country: Malaysia, weight: 201, text: MY, key: my }
+
+   Romania:
+     template:
+      - { name: landover, country: Romania }
+      - { name: standard, queue: landover, country: Romania, weight: 201, text: RO, key: ro }
+
+   Slovakia:
+     template:
+      - { name: landover, country: Slovakia }
+      - { name: standard, queue: landover, country: Slovakia, weight: 601, text: SK, key: sk }
+
+   Slovenia:
+     template:
+      - { name: landover, country: Slovenia }
+      - { name: standard, queue: landover, country: Slovenia, weight: 601, text: SL, key: sl }
+
+   Albania:
+     template:
+      - { name: landover, country: Albania }
+      - { name: standard, queue: landover, country: Albania, weight: 201, text: AL, key: al }
+
+   Serbia:
+     template:
+      - { name: landover, country: Serbia }
+      - { name: standard, queue: landover, country: Serbia, weight: 201, text: SR, key: rs }
+
+   Vietnam:
+     template:
+      - { name: landover, country: Vietnam }
+      - { name: standard, queue: landover, country: Vietnam, weight: 201, text: VN, key: vn }
+
+   Mexico:
+     template:
+      - { name: landover, country: Mexico }
+      - { name: standard, queue: landover, country: Mexico, weight: 801, text: MX, key: mx }
+
+   Canada:
+     template:
+      - { name: landover, country: Canada }
+      - { name: standard, queue: landover, country: Canada, weight: 901, text: CA, key: ca }
+
+   Luxembourg:
+     template:
+      - { name: landover, country: Luxembourg }
+      - { name: standard, queue: landover, country: Luxembourg, weight: 501, text: LU, key: lu }
+
+   Switzerland:
+     template:
+      - { name: landover, country: Switzerland }
+      - { name: standard, queue: landover, country: Switzerland, weight: 501, text: CH, key: ch }
+
+   Belgium:
+     template:
+      - { name: landover, country: Belgium }
+      - { name: standard, queue: landover, country: Belgium, weight: 899, text: BE, key: be }
+
+   Chile:
+     template:
+      - { name: landover, country: Chile }
+      - { name: standard, queue: landover, country: Chile, weight: 601, text: CL, key: cl }
+
+   South Africa:
+     template:
+      - { name: landover, country: "South Africa" }
+      - { name: standard, queue: landover, country: "South Africa", weight: 601, text: ZA, key: za }
+
+   New Zealand:
+     template:
+      - { name: landover, country: "New Zealand" }
+      - { name: standard, queue: landover, country: "New Zealand", weight: 601, text: NZ, key: nz }
+
+   Argentina:
+     template:
+      - { name: landover, country: Argentina }
+      - { name: standard, queue: landover, country: Argentina, weight: 601, text: AR, key: ar }
+
+   Hong Kong:
+     template:
+      - { name: landover, country: "Hong Kong" }
+      - { name: standard, queue: landover, country: "Hong Kong", weight: 701, text: HK, key: hk }
+
+   Australia:
+     template:
+      - { name: landover, country: Australia }
+      - { name: standard, queue: landover, country: Australia, weight: 601, text: AU, key: au }

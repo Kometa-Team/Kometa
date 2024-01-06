@@ -1,0 +1,185 @@
+##############################################################################
+#                             Streaming Overlay                              #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#                     Credit to Magic815 for base images                     #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#    https://metamanager.wiki/en/latest/defaults/overlays/streaming.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    originals_only:
+      default: false
+    run_definition:
+      - <<use_<<key>>>>
+      - <<use_<<alt>>>>
+      - <<allowed_libraries>>
+    group: streaming
+    default:
+      horizontal_align: left
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 390
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: streaming/<<overlay_name>>
+    back_color: "#00000099"
+    back_width: 305
+    back_height: 105
+
+templates:
+  mdb_streaming:
+    run_definition:
+      - <<allowed_streaming>>
+    ignore_blank_results: true
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<url_part>>s<<watch_region>>
+    conditionals:
+      url_part:
+        default: <<library_type>>
+        conditions:
+          - originals_only: true
+            key: [appletv, disney, max, hulu, netflix, paramount, peacock, amazon]
+            value: "original"
+      allowed_streaming:
+        conditions:
+          - originals_only: true
+            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, showtime]
+            value: False
+          - region.not: uk
+            key: [all4, britbox, hayu, now]
+            value: False
+          - region.not: ca
+            key: [crave]
+            value: False
+          - region: ca
+            key: [max, showtime]
+            value: False
+      watch_region:
+        default: ""
+        conditions:
+          - originals_only: true
+            value: ""
+          - region: ca
+            key: [amazon, disney, netflix]
+            value: "-ca"
+          - region: da
+            key: [amazon, disney, netflix]
+            value: "-da"
+          - region: de
+            key: [amazon, disney, netflix]
+            value: "-de"
+          - region: es
+            key: [amazon, disney, netflix]
+            value: "-es"
+          - region: fr
+            key: [amazon, disney, netflix]
+            value: "-fr"
+          - region: it
+            key: [amazon, disney, netflix]
+            value: "-it"
+          - region: pt-br
+            key: [amazon, disney, netflix]
+            value: "-pt-br"
+          - region: uk
+            key: [amazon, disney, netflix]
+            value: "-uk"
+
+overlays:
+
+  Netflix:
+    variables: {key: netflix, weight: 160}
+    template: [name: standard, name: mdb_streaming]
+
+  Prime:
+    variables: {key: amazon, weight: 150}
+    template: [name: standard, name: mdb_streaming]
+
+  Disney:
+    variables: {key: disney, weight: 140}
+    template: [name: standard, name: mdb_streaming]
+
+  Max:
+    variables: {key: max, weight: 130}
+    template: [name: standard, name: mdb_streaming]
+
+  Crunchyroll:
+    variables: {key: crunchyroll, weight: 120, allowed_libraries: show}
+    template: [name: standard, name: mdb_streaming]
+
+  YouTube:
+    variables: {key: youtube, weight: 110}
+    template: [name: standard, name: mdb_streaming]
+
+  Hulu:
+    variables: {key: hulu, weight: 100}
+    template: [name: standard, name: mdb_streaming]
+
+  Paramount:
+    variables: {key: paramount, weight: 90}
+    template: [name: standard, name: mdb_streaming]
+
+  AppleTV:
+    variables: {key: appletv, weight: 80}
+    template: [name: standard, name: mdb_streaming]
+
+  Peacock:
+    variables: {key: peacock, weight: 70}
+    template: [name: standard, name: mdb_streaming]
+
+  Showtime:
+    variables: {key: showtime, weight: 60}
+    template: [name: standard, name: mdb_streaming]
+
+  discovery+:
+    variables: {key: discovery, weight: 58, allowed_libraries: show}
+    template: [name: standard, name: mdb_streaming]
+
+  Crave:
+    variables: {key: crave, weight: 55}
+    template: [name: standard, name: mdb_streaming]
+
+  NOW:
+    variables: {key: now, weight: 50}
+    template: [name: standard, name: mdb_streaming]
+
+  All 4:
+    variables: {key: all4, weight: 40}
+    template: [name: standard, name: mdb_streaming]
+
+  britbox:
+    variables: {key: britbox, weight: 30}
+    template: [name: standard, name: mdb_streaming]
+
+  BET+:
+    variables: {key: bet, weight: 20}
+    template: [name: standard, name: mdb_streaming]
+
+  hayu:
+    variables: {key: hayu, weight: 10, allowed_libraries: show}
+    template: [name: standard, name: mdb_streaming]

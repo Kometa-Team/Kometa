@@ -1,0 +1,136 @@
+## This file is a template remove the .template to use the file
+
+libraries:                       # This is called out once within the config.yml file
+  NEU:                        # These are names of libraries in your Plex
+    metadata_path:
+    #- pmm: basic                 # This is a file within PMM's defaults folder
+    #- pmm: imdb                  # This is a file within PMM's defaults folder
+    #- pmm: genre
+    - pmm: country
+    - file: config/metadata/content_rating_de.yml
+      # see the wiki for how to use local files, folders, URLs, or files from git
+    overlay_path:    # Set this to true to remove all overlays
+    - reapply_overlay: true
+    - file: config/overlays/country.yml
+    - file: config/overlays/content_rating_de.yml
+    - pmm: ribbon                # This is a file within PMM's defaults folder
+    - pmm: languages
+    - pmm: resolution
+    #- pmm: Country
+      # see the wiki for how to use local files, folders, URLs, or files from git
+    operations:
+      assets_for_all: true
+  Cinemathek: # These are names of libraries in your Plex
+    metadata_path:
+    #- pmm: basic                 # This is a file within PMM's defaults folder
+    #- pmm: imdb                  # This is a file within PMM's defaults folder
+    #- pmm: genre
+    - pmm: country
+    - file: config/metadata/content_rating_de.yml
+        # see the wiki for how to use local files, folders, URLs, or files from git
+    overlay_path: # Set this to true to remove all overlays
+    - reapply_overlay: true
+    - file: config/overlays/country.yml
+    - file: config/overlays/content_rating_de.yml
+    - pmm: ribbon                # This is a file within PMM's defaults folder
+    - pmm: languages
+    - pmm: resolution
+        #- pmm: Country
+        # see the wiki for how to use local files, folders, URLs, or files from git
+    operations:
+      assets_for_all: true
+  Serien:
+    metadata_path:
+      #- pmm: basic                 # This is a file within PMM's defaults folder
+      #- pmm: imdb                  # This is a file within PMM's defaults folder
+    - pmm: genre
+    - file: config/metadata/content_rating_de.yml
+        #- pmm: country
+        # see the wiki for how to use local files, folders, URLs, or files from git
+    overlay_path:
+    - reapply_overlays: true
+    - remove_overlays: false     # Set this to true to remove all overlays
+    - file: config/overlays/country.yml
+    - pmm: ribbon                # This is a file within PMM's defaults folder
+    - pmm: languages
+    - pmm: resolution
+    - file: config/overlays/content_rating_de.yml
+    - file: config/overlays/content_rating_de.yml
+      template_variables:
+        builder_level: season
+    - pmm: languages
+    - pmm: resolution
+    - file: config/overlays/content_rating_de.yml
+      template_variables:
+        builder_level: episode
+    operations:
+      assets_for_all: true
+        # see the wiki for how to use local files, folders, URLs, or files from git
+
+settings:
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: true
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
+  sync_mode: sync
+  minimum_items: 2
+  default_collection_order:
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_options: false
+  show_missing: true
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: deu
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_sync_to_users: all
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  custom_repo:
+  check_nightly: false
+
+plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.0.112:32400
+  token: QasAR9UFztWvL-g-aKnz
+  timeout: 60
+  db_cache:
+  clean_bundles: true
+  empty_trash: true
+  optimize: false
+tmdb:                            # REQUIRED for the script to run
+  apikey: 102da0fccef74d9e7eae099eb5a82387
+  language: de
+  cache_expiration: 60
+  region:
+tautulli:                        # Can be individually specified per library as well
+  url: http://plexpy.noyse.net:8181/
+  apikey: 615849e3289044f0835cafc25ed98889
+trakt:
+  trakt:
+  client_id: 10d97bea857ed4140b784d9bb02fa610a4974a4c660a126e21cd3bdd367949fa
+  client_secret: 998c8064b51c74c490126d45650f217a46cd7777458a21ab2f67d240a1c8b64f
+  pin:
+  authorization:
+    access_token: 64c935d3fb27ebedeed9fe1cae1e40925837936c41f91bec30a02131c29a7957
+    token_type: Bearer
+    expires_in: 7889238
+    refresh_token: 5b3c43f3dda22d656c0e21514a7b52e4ae03d310d1f39b194c84dde550106845
+    scope: public
+    created_at: 1702383108

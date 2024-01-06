@@ -1,0 +1,594 @@
+##############################################################################
+#                   Audio/Subtitle Language Flags Overlays                   #
+#           Created by Yozora, Bullmoose20, Cpt Kuesel, & Sohjiro            #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#    https://metamanager.wiki/en/latest/defaults/overlays/languages.html     #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    conditionals:
+      final_align:
+        default: left
+        conditions:
+          - flag_alignment: right
+            value: right
+          - use_subtitles: true
+            value: right
+      final_text:
+        default: <<text>>
+        conditions:
+          - use_lowercase: true
+            value: <<key>>
+      final_style:
+        default: round
+        conditions:
+          - style: [square, half]
+            value: square
+      back_radius:
+        conditions:
+          - style: [round, half]
+            value: 26
+          - style: square
+            value:
+      pmm_<<key>>:
+        conditions:
+          - file.exists: false
+            url.exists: false
+            git.exists: false
+            repo.exists: false
+            value: flag/<<final_style>>/<<country_<<key>>>>
+    default:
+      style: round
+      country: <<key>>
+      country_<<key>>: <<country>>
+      offset: 10
+      width: 190
+    queue: flags
+    addon_position: <<final_align>>
+    addon_offset: <<offset>>
+    back_color: "#00000099"
+    back_width: <<width>>
+    back_align: <<final_align>>
+    font: fonts/Inter-Bold.ttf
+    font_size: 50
+    final_name: text(<<final_text>>)
+
+vars:
+  top_left: &top_left           {vertical_align: top,     horizontal_align: left}
+  top_center: &top_center       {vertical_align: top,     horizontal_align: center}
+  top_right: &top_right         {vertical_align: top,     horizontal_align: right}
+  center_left: &center_left     {vertical_align: center,  horizontal_align: left}
+  center_center: &center_center {vertical_align: center,  horizontal_align: center}
+  center_right: &center_right   {vertical_align: center,  horizontal_align: right}
+  bottom_left: &bottom_left     {vertical_align: bottom,  horizontal_align: left}
+  bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
+  bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
+
+  v1-1: &v1-1 {vertical_offset: 15}
+  v1-2: &v1-2 {vertical_offset: 76}
+  v1-3: &v1-3 {vertical_offset: 137}
+  v1-4: &v1-4 {vertical_offset: 198}
+  v1-5: &v1-5 {vertical_offset: 259}
+
+  v0-1: &v0-1 {vertical_offset: -122}
+  v0-2: &v0-2 {vertical_offset: -61}
+  v0-3: &v0-3 {vertical_offset: 0}
+  v0-4: &v0-4 {vertical_offset: 61}
+  v0-5: &v0-5 {vertical_offset: 122}
+
+  v2-1: &v2-1 {vertical_offset: 150}
+  v2-2: &v2-2 {vertical_offset: 211}
+  v2-3: &v2-3 {vertical_offset: 272}
+  v2-4: &v2-4 {vertical_offset: 333}
+  v2-5: &v2-5 {vertical_offset: 394}
+
+  v3-1: &v3-1 {vertical_offset: 223}
+  v3-2: &v3-2 {vertical_offset: 284}
+  v3-3: &v3-3 {vertical_offset: 345}
+  v3-4: &v3-4 {vertical_offset: 406}
+  v3-5: &v3-5 {vertical_offset: 467}
+
+  vc-c: &vc-c {vertical_offset: 0}
+  vc-t: &vc-t {vertical_offset: -30}
+  vc-b: &vc-b {vertical_offset: 30}
+
+  h1-1: &h1-1 {horizontal_offset: 15}
+  h1-2: &h1-2 {horizontal_offset: 206}
+  h1-3: &h1-3 {horizontal_offset: 397}
+  h1-4: &h1-4 {horizontal_offset: 588}
+  h1-5: &h1-5 {horizontal_offset: 779}
+
+  h0-1: &h0-1 {horizontal_offset: 0}
+  h0-2: &h0-2 {horizontal_offset: 191}
+  h0-3: &h0-3 {horizontal_offset: -191}
+  h0-4: &h0-4 {horizontal_offset: 382}
+  h0-5: &h0-5 {horizontal_offset: -382}
+
+  hc-c: &hc-c {horizontal_offset: 0}
+  hc-l: &hc-l {horizontal_offset: -95}
+  hc-r: &hc-r {horizontal_offset: 95}
+
+
+queues:
+  flags:
+    default:
+      conditionals:
+        horizontal_position:
+          default: left
+          conditions:
+            - use_subtitles: true
+              value: right
+        vertical_position:
+          default: top3
+          conditions:
+            - builder_level: episode
+              value: top2
+            - overlay_level: episode
+              value: top2
+      position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
+      group_alignment: vertical
+      overlay_limit: 3
+
+    vertical_top_left:                      [<<: [*top_left,      *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_left2:                     [<<: [*top_left,      *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center_left:               [<<: [*top_center,    *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center:                    [<<: [*top_center,    *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_center_right:              [<<: [*top_center,    *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_right2:                    [<<: [*top_right,     *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_right:                     [<<: [*top_right,     *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+
+    vertical_top2_left:                     [<<: [*top_left,      *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_left2:                    [<<: [*top_left,      *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center_left:              [<<: [*top_center,    *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center:                   [<<: [*top_center,    *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_center_right:             [<<: [*top_center,    *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_right2:                   [<<: [*top_right,     *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_right:                    [<<: [*top_right,     *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+
+    vertical_top3_left:                     [<<: [*top_left,      *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_left2:                    [<<: [*top_left,      *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center_left:              [<<: [*top_center,    *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center:                   [<<: [*top_center,    *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_center_right:             [<<: [*top_center,    *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_right2:                   [<<: [*top_right,     *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_right:                    [<<: [*top_right,     *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+
+    vertical_center_top_left:               [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_left2:              [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center_left:        [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center:             [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_center_right:       [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_right2:             [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_right:              [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+
+    vertical_center_left:                   [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_left2:                  [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center_left:            [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center:                 [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_center_right:           [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_right2:                 [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_right:                  [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+
+    vertical_center_bottom_left:            [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_left2:           [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center_left:     [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center:          [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_center_right:    [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_right2:          [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_right:           [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+
+    vertical_bottom3_left:                  [<<: [*bottom_left,   *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_left2:                 [<<: [*bottom_left,   *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center_left:           [<<: [*bottom_center, *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center:                [<<: [*bottom_center, *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_center_right:          [<<: [*bottom_center, *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_right2:                [<<: [*bottom_right,  *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_right:                 [<<: [*bottom_right,  *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+
+    vertical_bottom2_left:                  [<<: [*bottom_left,   *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_left2:                 [<<: [*bottom_left,   *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center_left:           [<<: [*bottom_center, *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center:                [<<: [*bottom_center, *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_center_right:          [<<: [*bottom_center, *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_right2:                [<<: [*bottom_right,  *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_right:                 [<<: [*bottom_right,  *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+
+    vertical_bottom_left:                   [<<: [*bottom_left,   *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_left2:                  [<<: [*bottom_left,   *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center_left:            [<<: [*bottom_center, *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center:                 [<<: [*bottom_center, *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_center_right:           [<<: [*bottom_center, *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_right2:                 [<<: [*bottom_right,  *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_right:                  [<<: [*bottom_right,  *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+
+
+    horizontal_top_left:                    [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_left2:                   [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_center_left:             [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_center:                  [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_center_right:            [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top_right2:                  [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_right:                   [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_top2_left:                   [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_left2:                  [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_center_left:            [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_center:                 [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_center_right:           [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top2_right2:                 [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_right:                  [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_top3_left:                   [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_left2:                  [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_center_left:            [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_center:                 [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_center_right:           [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_top3_right2:                 [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_right:                  [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_center_top_left:             [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_left2:            [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_center_left:      [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_center:           [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_center_right:     [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_top_right2:           [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_right:            [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_center_left:                 [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_left2:                [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_center_left:          [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_center:               [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_center_right:         [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_right2:               [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_right:                [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_center_bottom_left:          [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_left2:         [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_center_left:   [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_center:        [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_center_right:  [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_center_bottom_right2:        [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_right:         [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_bottom3_left:                [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_left2:               [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_center_left:         [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_center:              [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_center_right:        [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom3_right2:              [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_right:               [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_bottom2_left:                [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_left2:               [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_center_left:         [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_center:              [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_center_right:        [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom2_right2:              [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_right:               [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+    horizontal_bottom_left:                 [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_left2:                [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_center_left:          [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_center:               [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_center_right:         [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
+    horizontal_bottom_right2:               [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_right:                [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+
+templates:
+  flags:
+    default:
+      use_<<key>>: <<use>>
+      languages: ["en", "de", "fr", "es", "pt", "ja"]
+    conditionals:
+      use:
+        default: false
+        conditions:
+          - key: <<languages>>
+            value: true
+      search_attribute:
+        default: audio_language
+        conditions:
+          - use_subtitles: true
+            value: subtitle_language
+    ignore_blank_results: true
+    run_definition:
+      - <<use_<<key>>>>
+    plex_search:
+      all:
+        <<search_attribute>>: <<key>>
+
+overlays:
+
+  english:
+    variables: {key: en, text: EN, weight: 610, country: us}
+    template: [name: flags, name: standard]
+
+  german:
+    variables: {key: de, text: DE, weight: 600}
+    template: [name: flags, name: standard]
+
+  french:
+    variables: {key: fr, text: FR, weight: 590}
+    template: [name: flags, name: standard]
+
+  spanish:
+    variables: {key: es, text: ES, weight: 580}
+    template: [name: flags, name: standard]
+
+  portuguese:
+    variables: {key: pt, text: PT, weight: 570}
+    template: [name: flags, name: standard]
+
+  japanese:
+    variables: {key: ja, text: JA, weight: 560, country: jp}
+    template: [name: flags, name: standard]
+
+  korean:
+    variables: {key: ko, text: KO, weight: 550, country: kr}
+    template: [name: flags, name: standard]
+
+  chinese:
+    variables: {key: zh, text: ZH, weight: 540, country: cn}
+    template: [name: flags, name: standard]
+
+  danish:
+    variables: {key: da, text: DA, weight: 530, country: dk}
+    template: [name: flags, name: standard]
+
+  russian:
+    variables: {key: ru, text: RU, weight: 520}
+    template: [name: flags, name: standard]
+
+  italian:
+    variables: {key: it, text: IT, weight: 510}
+    template: [name: flags, name: standard]
+
+  hindi:
+    variables: {key: hi, text: HI, weight: 500, country: in}
+    template: [name: flags, name: standard]
+
+  telugu:
+    variables: {key: te, text: TE, weight: 490, country: in}
+    template: [name: flags, name: standard]
+
+  farsi:
+    variables: {key: fa, text: FA, weight: 480, country: ir}
+    template: [name: flags, name: standard]
+
+  thai:
+    variables: {key: th, text: TH, weight: 470}
+    template: [name: flags, name: standard]
+
+  dutch:
+    variables: {key: nl, text: NL, weight: 460}
+    template: [name: flags, name: standard]
+
+  norwegian:
+    variables: {key: no, text: NO, weight: 450}
+    template: [name: flags, name: standard]
+
+  icelandic:
+    variables: {key: is, text: IS, weight: 440}
+    template: [name: flags, name: standard]
+
+  swedish:
+    variables: {key: sv, text: SV, weight: 430, country: se}
+    template: [name: flags, name: standard]
+
+  turkish:
+    variables: {key: tr, text: TR, weight: 420}
+    template: [name: flags, name: standard]
+
+  polish:
+    variables: {key: pl, text: PL, weight: 410}
+    template: [name: flags, name: standard]
+
+  czech:
+    variables: {key: cs, text: CS, weight: 400, country: cz}
+    template: [name: flags, name: standard]
+
+  ukrainian:
+    variables: {key: uk, text: UK, weight: 390, country: ua}
+    template: [name: flags, name: standard]
+
+  hungarian:
+    variables: {key: hu, text: HU, weight: 380}
+    template: [name: flags, name: standard]
+
+  arabic:
+    variables: {key: ar, text: AR, weight: 370, country: eg}
+    template: [name: flags, name: standard]
+
+  bulgarian:
+    variables: {key: bg, text: BG, weight: 360}
+    template: [name: flags, name: standard]
+
+  bengali:
+    variables: {key: bn, text: BN, weight: 350, country: bd}
+    template: [name: flags, name: standard]
+
+  bosnian:
+    variables: {key: bs, text: BS, weight: 340, country: ba}
+    template: [name: flags, name: standard]
+
+  catalan:
+    variables: {key: ca, text: CA, weight: 330, country: ad}
+    template: [name: flags, name: standard]
+
+  welsh:
+    variables: {key: cy, text: CY, weight: 320, country: uk}
+    template: [name: flags, name: standard]
+
+  greek:
+    variables: {key: el, text: EL, weight: 310, country: gr}
+    template: [name: flags, name: standard]
+
+  estonian:
+    variables: {key: et, text: ET, weight: 300, country: ee}
+    template: [name: flags, name: standard]
+
+  basque:
+    variables: {key: eu, text: EU, weight: 290, country: es}
+    template: [name: flags, name: standard]
+
+  finnish:
+    variables: {key: fi, text: FI, weight: 280}
+    template: [name: flags, name: standard]
+
+  tagalog:
+    variables: {key: tl, text: FL, weight: 270, country: ph}
+    template: [name: flags, name: standard]
+    
+  filipino:
+    variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
+    template: [name: flags, name: standard]  
+
+  galician:
+    variables: {key: gl, text: GL, weight: 260, country: es}
+    template: [name: flags, name: standard]
+
+  hebrew:
+    variables: {key: he, text: HE, weight: 250, country: il}
+    template: [name: flags, name: standard]
+
+  croatian:
+    variables: {key: hr, text: HR, weight: 240}
+    template: [name: flags, name: standard]
+
+  indonesian:
+    variables: {key: id, text: ID, weight: 230}
+    template: [name: flags, name: standard]
+
+  georgian:
+    variables: {key: ka, text: KA, weight: 220, country: ge}
+    template: [name: flags, name: standard]
+
+  kazakh:
+    variables: {key: kk, text: KK, weight: 210, country: kz}
+    template: [name: flags, name: standard]
+
+  kannada:
+    variables: {key: kn, text: KN, weight: 200, country: in}
+    template: [name: flags, name: standard]
+
+  latin:
+    variables: {key: la, text: LA, weight: 190, country: it}
+    template: [name: flags, name: standard]
+
+  lithuanian:
+    variables: {key: lt, text: LT, weight: 180}
+    template: [name: flags, name: standard]
+
+  latvian:
+    variables: {key: lv, text: LV, weight: 170}
+    template: [name: flags, name: standard]
+
+  macedonian:
+    variables: {key: mk, text: MK, weight: 160}
+    template: [name: flags, name: standard]
+
+  malayalam:
+    variables: {key: ml, text: ML, weight: 150, country: in}
+    template: [name: flags, name: standard]
+
+  marathi:
+    variables: {key: mr, text: MR, weight: 140, country: in}
+    template: [name: flags, name: standard]
+
+  malay:
+    variables: {key: ms, text: MS, weight: 130, country: my}
+    template: [name: flags, name: standard]
+
+  norwegian bokmål:
+    variables: {key: nb, text: NB, weight: 120, country: no}
+    template: [name: flags, name: standard]
+
+  norwegian nynorsk:
+    variables: {key: nn, text: NN, weight: 110, country: no}
+    template: [name: flags, name: standard]
+
+  punjabi:
+    variables: {key: pa, text: PA, weight: 100, country: in}
+    template: [name: flags, name: standard]
+
+  romanian:
+    variables: {key: ro, text: RO, weight: 90}
+    template: [name: flags, name: standard]
+
+  slovak:
+    variables: {key: sk, text: SK, weight: 80}
+    template: [name: flags, name: standard]
+
+  slovenian:
+    variables: {key: sl, text: SL, weight: 70, country: si}
+    template: [name: flags, name: standard]
+
+  albanian:
+    variables: {key: sq, text: SQ, weight: 60, country: al}
+    template: [name: flags, name: standard]
+
+  serbian:
+    variables: {key: sr, text: SR, weight: 50, country: rs}
+    template: [name: flags, name: standard]
+
+  swahili:
+    variables: {key: sw, text: SW, weight: 40, country: tz}
+    template: [name: flags, name: standard]
+  
+  somali:
+    variables: {key: so, text: SO, weight: 35, country: so}
+    template: [name: flags, name: standard]
+
+  tamil:
+    variables: {key: ta, text: TA, weight: 30, country: in}
+    template: [name: flags, name: standard]
+
+  urdu:
+    variables: {key: ur, text: UR, weight: 20, country: pk}
+    template: [name: flags, name: standard]
+
+  vietnamese:
+    variables: {key: vi, text: VI, weight: 15, country: vn}
+    template: [name: flags, name: standard]
+
+  wolof:
+    variables: {key: wo, text: WO, weight: 10, country: sn}
+    template: [name: flags, name: standard]
+
+  mayan:
+    variables: {key: myn, text: MYN, weight: 8, country: mx, width: 230}
+    template: [name: flags, name: standard]
+
+  inuktitut:
+    variables: {key: iu, text: IK, weight: 7, country: ca}
+    template: [name: flags, name: standard]
+    
+  romani:
+    variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
+    template: [name: flags, name: standard]    
+    
+  amharic:
+    variables: {key: am, text: AM, weight: 5, country: et}
+    template: [name: flags, name: standard]    
+  
+  sundanese:
+    variables: {key: su, text: SU, weight: 4, country: id}
+    template: [name: flags, name: standard]    
+
+  zulu:
+    variables: {key: zu, text: ZU, weight: 3, country: za}
+    template: [name: flags, name: standard]
+
+  luxembourgish:
+    variables: {key: lb, text: LB, weight: 2, country: lu}
+    template: [name: flags, name: standard]  
+
+  mossi:
+    variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
+    template: [name: flags, name: standard]
+
+  lingala:
+    variables: {key: ln, text: LN, weight: 11, country: cd}
+    template: [name: flags, name: standard]

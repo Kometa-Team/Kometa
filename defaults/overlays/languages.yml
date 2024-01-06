@@ -280,7 +280,7 @@ templates:
   flags:
     default:
       use_<<key>>: <<use>>
-      languages: ["en", "de", "fr", "es", "pt", "ja"]
+      languages: ["en", "de", "fr", "es", "pt", "ja", "zh", "it", "nl"]
     conditionals:
       use:
         default: false

@@ -1,0 +1,55 @@
+##############################################################################
+#                            MediaStinger Overlay                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/mediastinger.html   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      horizontal_align: right
+      vertical_align: top
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align.exists: false
+            value: 200
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: <<overlay_name>>
+    allowed_libraries: movie
+    back_color: "#00000099"
+    back_width: 105
+    back_height: 105
+
+overlays:
+  Mediastinger:
+    template:
+      name: standard
+    plex_all: true
+    filters:
+      tmdb_keyword: aftercreditsstinger, duringcreditsstinger

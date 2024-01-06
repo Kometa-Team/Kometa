@@ -1,0 +1,44 @@
+##############################################################################
+#                            Episode Info Overlay                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/episode_info.html   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      horizontal_align: right
+      vertical_align: bottom
+    conditionals:
+      vertical_offset:
+        default: 15
+        conditions:
+          - vertical_align.exists: false
+            value: 150
+          - vertical_align: center
+            value: 0
+          - vertical_align: top
+            value: 15
+          - vertical_align: bottom
+            value: 30
+      horizontal_offset:
+        default: 15
+        conditions:
+          - horizontal_align: center
+            value: 0
+          - horizontal_align: [left, right]
+            value: 15
+    allowed_libraries: show
+    back_color: "#00000099"
+    back_width: 305
+    back_height: 105
+    builder_level: episode
+    final_name: text(S<<season_number0>>E<<episode_number0>>)
+
+overlays:
+  Episode Info:
+    template:
+      name: standard
+    plex_all: true
