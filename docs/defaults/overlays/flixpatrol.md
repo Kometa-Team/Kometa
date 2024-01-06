@@ -42,7 +42,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 
 ??? info "Click to expand"
 
-    ??? example "Default Templatye Variable Values (click to expand)"
+    ??? example "Default Template Variable Values (click to expand)"
 
         | Variable            | Default           |
         |:--------------------|:------------------|
