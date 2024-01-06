@@ -193,9 +193,9 @@ requirements of creating the collection.
 
     **Valid Library Types:** Movies and Shows
     
-    **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that year) 
+    **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that year) 
 
-    **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more then one award show that 
+    **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that 
     year)
 
     **Default `title_format`:** `<<key_name>>`
@@ -218,8 +218,8 @@ requirements of creating the collection.
             type: imdb_awards
             data:
               event_id: ev0000003
-              starting: current-15
-              ending: current
+              starting: latest-15
+              ending: latest
         ```
 
 ??? blank "`trakt_user_lists` - Collections based on Trakt Lists by users.<a class="headerlink" href="#trakt-user-lists" title="Permanent link">¶</a>"
