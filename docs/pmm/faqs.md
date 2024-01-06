@@ -368,7 +368,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
     
     There could be any number of reasons why this happens and it depends on what server PMM is talking to although its most likely coming from your Plex Server.
     
-    Most of the time these errors need to be resolved by changing something specific to your set up but some do come up that can be fixed (i.e. Plex throws one if you upload a photo larger then 10 MB)
+    Most of the time these errors need to be resolved by changing something specific to your set up but some do come up that can be fixed (i.e. Plex throws one if you upload a photo larger than 10 MB)
     
     Many Appbox Setups will throw this error when too many requests are sent, or if the central metadata repository is not properly configured to allow users to upload custom posters.
     
