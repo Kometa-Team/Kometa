@@ -13,20 +13,20 @@
         collection_files:
           - pmm: separator_award                          # An "index card"
           - pmm: bafta                                    # BAFTA Awards
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: golden                                   # Golden Globes Awards
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: oscars                                   # The Oscars
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: separator_chart                          # An "index card"
           - pmm: basic                                    # Some basic chart collections
           - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
@@ -73,20 +73,20 @@
         collection_files:
           - pmm: separator_award                          # An "index card"
           - pmm: bafta                                    # BAFTA Awards
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: golden                                   # Golden Globes Awards
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: oscars                                   # The Oscars
-            template_variables:                           # Show collections from current_year-10 onwards.
+            template_variables:                           # Show collections from latest-10 onwards.
               data:
-                starting: current_year-10
-                ending: current_year
+                starting: latest-10
+                ending: latest
           - pmm: separator_chart                          # An "index card"
           - pmm: basic                                    # Some basic chart collections
           - pmm: tmdb                                     # TMDb Charts (Popular, Trending, etc.)

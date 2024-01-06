@@ -135,8 +135,8 @@ libraries:
         template_variables:
           radarr_add_missing: true
           data:
-            starting: current_year-10
-            ending: current_year
+            starting: latest-10
+            ending: latest
 ```
 
 Or maybe you want to change the number of actor collections made using pmm: actor.
