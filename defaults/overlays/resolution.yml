@@ -3,7 +3,7 @@
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#    https://metamanager.wiki/en/latest/defaults/overlays/resolution.html    #
+#      https://metamanager.wiki/en/latest/defaults/overlays/resolution       #
 ##############################################################################
 
 external_templates:
@@ -208,7 +208,7 @@ templates:
           - alt: plus
             value: '(?i)\bhdr10(\+|p(lus)?\b)'
           - alt: dvhdr
-            value: '(?i)\bdv(.hdr10?\b)'
+            value: '(?i)\bdv((.hdr10?\b)|(.hdr10(\+|p(lus)?\b)))'
     optional:
       - all
       - use_<<key>>

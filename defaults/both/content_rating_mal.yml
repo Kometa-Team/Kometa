@@ -2,7 +2,7 @@
 #                       MAL Content Rating Collections                       #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#  https://metamanager.wiki/en/latest/defaults/both/content_rating_mal.html  #
+#    https://metamanager.wiki/en/latest/defaults/both/content_rating_mal     #
 ##############################################################################
 
 external_templates:
@@ -53,7 +53,6 @@ dynamic_collections:
         - gb/U
         - gb/0+
         - U
-        - G
         - 0
         - 1
         - 2
@@ -97,7 +96,6 @@ dynamic_collections:
         - 13
         - gb/12A
         - 12+
-        - PG-13
         - TV-13
         - gb/14+
         - gb/15
@@ -116,7 +114,6 @@ dynamic_collections:
         - gb/18
         - MA-17
         - NC-17
-        - R
         - TVMA
         - R - 17+ (violence & profanity)
         - no/15

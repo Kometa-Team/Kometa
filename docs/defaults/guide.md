@@ -1,6 +1,6 @@
 # Defaults Usage Guide
 
-Plex Meta Manager includes a pre-created set of Metadata Files and Overlay Files which can be found in the "defaults" folder in the root of your Plex Meta Manager installation directory.
+Plex Meta Manager includes a pre-created set of Collection Files and Overlay Files which can be found in the "defaults" folder in the root of your Plex Meta Manager installation directory.
 
 These files offer an easy-to-use and customizable set of Collections and Overlays that the user can achieve without having to worry about creating the files that make the collections and overlays possible.
 
@@ -14,7 +14,7 @@ Please consider [donating](https://github.com/sponsors/meisnate12) towards the p
 
 ## Collection Defaults
 
-See the [Collection Defaults](collections) Page for more information on the specifics of the Collection Defaults.
+See the [Collection Defaults](collections.md) Page for more information on the specifics of the Collection Defaults.
 
 ## Overlay Defaults
 
@@ -22,15 +22,15 @@ See the [Overlay Defaults](overlays.md) Page for more information on the specifi
 
 ## Configurations
 
-To run a default pmm Metadata or Overlay file you can simply add it to your `metadata_path` (For Metadata Files) or `overlay_path` (For Overlay Files) using `pmm` like so:
+To run a default pmm Collection or Overlay file you can simply add it to your `collection_files` (For Collection Files) or `overlay_files` (For Overlay Files) using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
     - pmm: actor
     - pmm: genre
-    overlay_path:
+    overlay_files:
     - pmm: ribbon
     - pmm: ratings
 ```
@@ -44,7 +44,7 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: imdb
         template_variables:
           use_popular: false
@@ -52,15 +52,16 @@ libraries:
           visible_library_top: true
           visible_home_top: true
           visible_shared_top: true
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings.md).
 
-**In addition to the defined `template_variables` almost all default Metadata and Overlay files have access to their respective [Metadata](collection_variables)/[Overlay](overlay_variables.md) Shared Variables.**
+**In addition to the defined `template_variables` almost all default Collection and Overlay files have access to their respective [Collection](collection_variables.md)/[Overlay](overlay_variables.md) Shared Variables.**
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}

@@ -2,7 +2,7 @@
 #                            Seasonal Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/movie/seasonal.html       #
+#         https://metamanager.wiki/en/latest/defaults/movie/seasonal         #
 ##############################################################################
 
 external_templates:
@@ -20,6 +20,7 @@ templates:
       tmdb_collection_<<key>>: <<tmdb_collection>>
       tmdb_movie_<<key>>: <<tmdb_movie>>
       imdb_list_<<key>>: <<imdb_list>>
+      imdb_search_<<key>>: <<imdb_search>>
       trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
       summary_<<key>>: <<summary_format>>
@@ -32,6 +33,7 @@ templates:
       - tmdb_movie
       - limit
       - imdb_list
+      - imdb_search
       - trakt_list
       - mdblist_list
       - summary_format
@@ -50,6 +52,7 @@ templates:
     tmdb_collection: <<tmdb_collection_<<key>>>>
     tmdb_movie: <<tmdb_movie_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
+    imdb_search: <<imdb_search_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     cache_builders: 1
@@ -98,6 +101,7 @@ dynamic_collections:
       - shared
       - arr
     template_variables:
+      # check1
       emoji:
         years: "🎊 "
         valentine: "💘 "
@@ -118,6 +122,7 @@ dynamic_collections:
         latinx: "🪅 "
         women: "🚺 "
         black_history: "✊ 🏿 "
+      # check2
       schedule:
         years: range(12/26-01/04)
         valentine: range(02/01-02/29)
@@ -138,6 +143,7 @@ dynamic_collections:
         lgbtq: range(05/31-06/30)
         latinx: range(09/15-10/15)
         women: range(02/28-03/31)
+      # check3
       imdb_list:
         years: https://www.imdb.com/list/ls066838460/
         valentine:
@@ -164,10 +170,13 @@ dynamic_collections:
           - https://www.imdb.com/list/ls000835734/
           - https://www.imdb.com/list/ls091597850/
         christmas: https://www.imdb.com/list/ls000096828/
+      # check4
+      imdb_search:
         women:
-          - https://www.imdb.com/search/keyword/?keywords=women-in-film&ref_=fn_kw_kw_9
-          - https://www.imdb.com/search/keyword/?keywords=women%27s-rights&ref_=fn_kw_kw_2
-          - https://www.imdb.com/search/keyword/?keywords=women%27s-suffrage&ref_=fn_kw_kw_13
+          keyword.any: women in film, womens rights, womens suffrage
+          sort_by: rating.desc
+          limit: 500
+      # check5
       tmdb_collection:
         halloween:
           - 185103    # Hotel Transylvania
@@ -180,9 +189,11 @@ dynamic_collections:
           - 8091      # Alien Collection
           - 2980      # Ghostbusters
           - 751156    # Hocus Pocus
+      # check6
       tmdb_movie:
         halloween:
           - 23437    # A Nightmare on Elm Street (2010)
+      # check7
       mdblist_list:
         aapi:
           - https://mdblist.com/lists/plexmetamanager/asian-american-pacific-islander-heritage-month
@@ -192,10 +203,12 @@ dynamic_collections:
           - https://mdblist.com/lists/plexmetamanager/lgbtq-pride-month
         latinx:
           - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
+      # check8
       trakt_list:
         black_history:
           - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
           - https://trakt.tv/users/bluephi8/lists/black-history?display=movie&sort=title,asc
+      # check9
       visible_home:
         default: true
       visible_shared:

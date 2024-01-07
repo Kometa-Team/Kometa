@@ -2,7 +2,7 @@
 #                             Network Overlay                                #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#    https://metamanager.wiki/en/latest/defaults/overlays/network.html       #
+#        https://metamanager.wiki/en/latest/defaults/overlays/network        #
 ##############################################################################
 
 external_templates:
@@ -11,18 +11,12 @@ external_templates:
     run_definition:
       - <<use_<<key>>>>
       - <<use_<<alt>>>>
-      - <<allowed_libraries>>
     default:
       key: <<overlay_name>>
-      standard_value: 305
       horizontal_align: left
       vertical_align: bottom
+      style: color
     conditionals:
-      back_height:
-        default: 105
-        conditions:
-          - style: standard
-            value: <<standard_value>>
       vertical_offset:
         default: 15
         conditions:
@@ -51,12 +45,13 @@ external_templates:
             git_<<key>>.exists: false
             repo.exists: false
             repo_<<key>>.exists: false
-            value: network/<<key>>
+            value: network/<<style>>/<<key>>
     allowed_libraries: show
     group: networks
-    vertical_offset: 15
     back_color: "#00000099"
+    back_radius: 30
     back_width: 305
+    back_height: 105
 
 templates:
   networks:
@@ -121,6 +116,10 @@ overlays:
   AMC:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [AMC, AMC.com]}]
+
+  AMC+:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Animal Planet:
     variables: { weight: 10}
@@ -506,6 +505,22 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  ITV2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV3:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITV4:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  ITVBe:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   ITVX:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -761,6 +776,10 @@ overlays:
   Spike:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Spike, Spike TV]}]
+
+  Stöð 2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Stan:
     variables: { weight: 10}

@@ -2,7 +2,7 @@
 #                    Academy Awards (Oscars) Collections                     #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/award/oscars.html        #
+#          https://metamanager.wiki/en/latest/defaults/award/oscars          #
 ##############################################################################
 
 external_templates:
@@ -22,7 +22,13 @@ collections:
         translation_key: oscars_picture
       - name: arr
       - name: custom
-    imdb_list: https://www.imdb.com/search/title/?groups=best_picture_winner
+    imdb_award:
+      event_id: ev0000003
+      event_year: all
+      category_filter:
+        - best picture
+        - best motion picture of the year
+      winning: true
 
   Oscars Best Director Winners:
     variables:
@@ -35,27 +41,36 @@ collections:
         translation_key: oscars_director
       - name: arr
       - name: custom
-    imdb_list: https://www.imdb.com/search/title/?groups=best_director_winner
+    imdb_award:
+      event_id: ev0000003
+      event_year: all
+      category_filter:
+        - best achievement in directing
+        - best director
+        - best director, comedy picture
+        - best director, dramatic picture
+      winning: true
 
 dynamic_collections:
   Oscars Winners Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-6
-      ending: current_year-1
+      event_id: ev0000003
+      starting: latest-5
+      ending: latest
     title_format: Oscars Winners <<key_name>>
     template:
       - use_year_collections
-      - imdb
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      imdb_list:
-        default: https://www.imdb.com/search/title/?release_date=<<key-1>>-01-01,<<key-1>>-12-31&groups=oscar_winner&sort=<<imdb_sort>>
-      imdb_sort:
-        default: moviemeter,asc
+      winning:
+        default: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:

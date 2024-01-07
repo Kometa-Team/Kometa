@@ -170,8 +170,10 @@ def quote(data):
 
 def download_image(title, image_url, download_directory, filename=None):
     response = requests.get(image_url, headers=header())
+    if response.status_code == 404:
+        raise Failed(f"Image Error: Not Found on Image URL: {image_url}")
     if response.status_code >= 400:
-        raise Failed(f"Image Error: Failed to download Image URL: {image_url}")
+        raise Failed(f"Image Error: {response.status_code} on Image URL: {image_url}")
     if "Content-Type" not in response.headers or response.headers["Content-Type"] not in image_content_types:
         raise Failed("Image Not PNG, JPG, or WEBP")
     new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
@@ -260,14 +262,14 @@ def get_int_list(data, id_type):
         except Failed as e:         logger.error(e)
     return int_values
 
-def validate_date(date_text, method, return_as=None):
+def validate_date(date_text, return_as=None):
     if isinstance(date_text, datetime):
         date_obg = date_text
     else:
         try:
             date_obg = datetime.strptime(str(date_text), "%Y-%m-%d" if "-" in str(date_text) else "%m/%d/%Y")
         except ValueError:
-            raise Failed(f"Collection Error: {method}: {date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
+            raise Failed(f"{date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
     return datetime.strftime(date_obg, return_as) if return_as else date_obg
 
 def validate_regex(data, col_type, validate=True):
@@ -416,31 +418,22 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
     if single and len(files_to_load) > 1:
         raise Failed(f"{err_type} Error: {method} can only have one entry")
     for file in files_to_load:
+        logger.info("")
         if isinstance(file, dict):
-            temp_vars = {}
-            if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
-                temp_vars = file["template_variables"]
-            for k, v in lib_vars.items():
-                if k not in temp_vars:
-                    temp_vars[k] = v
-            asset_directory = []
-            if "asset_directory" in file and file["asset_directory"]:
-                for asset_path in get_list(file["asset_directory"], split=False):
-                    if os.path.exists(asset_path):
-                        asset_directory.append(asset_path)
-                    else:
-                        logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
-
             current = []
             def check_dict(attr, name):
-                if attr in file:
+                if attr in file and (method != "metadata_files" or attr != "pmm"):
+                    logger.info(f"Reading {attr}: {file[attr]}")
                     if file[attr]:
-                        if attr == "git" and file[attr].startswith("PMM/"):
-                            current.append(("PMM Default", file[attr][4:], temp_vars, asset_directory))
+                        if attr == "pmm" and file[attr] == "other_award":
+                            logger.error(f"{err_type} Error: The PMM Default other_award has been deprecated. Please visit the wiki for the full list of available award files")
+                        elif attr == "git" and file[attr].startswith("PMM/"):
+                            current.append(("PMM Default", file[attr][4:]))
                         else:
-                            current.append((name, file[attr], temp_vars, asset_directory))
+                            current.append((name, file[attr]))
                     else:
                         logger.error(f"{err_type} Error: {method} {attr} is blank")
+                return ""
 
             check_dict("url", "URL")
             check_dict("git", "Git")
@@ -448,6 +441,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
             check_dict("repo", "Repo")
             check_dict("file", "File")
             if not single and "folder" in file:
+                logger.info(f"Reading folder: {file['folder']}")
                 if file["folder"] is None:
                     logger.error(f"{err_type} Error: {method} folder is blank")
                 elif not os.path.isdir(file["folder"]):
@@ -456,30 +450,52 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
                     yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
                     if yml_files:
-                        current.extend([("File", yml, temp_vars, asset_directory) for yml in yml_files])
+                        current.extend([("File", yml) for yml in yml_files])
                     else:
                         logger.error(f"{err_type} Error: No YAML (.yml|.yaml) files found in {file['folder']}")
 
+            temp_vars = {}
+            if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
+                temp_vars = file["template_variables"]
+            for k, v in lib_vars.items():
+                if k not in temp_vars:
+                    temp_vars[k] = v
+            if temp_vars:
+                logger.info(f"Template Variables: {temp_vars}")
+
+            asset_directory = []
+            if "asset_directory" in file and file["asset_directory"]:
+                logger.info(f"Asset Directory: {file['asset_directory']}")
+                for asset_path in get_list(file["asset_directory"], split=False):
+                    if os.path.exists(asset_path):
+                        asset_directory.append(asset_path)
+                    else:
+                        logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
+
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule
-                logger.debug(f"Value: {file['schedule']}")
+                logger.info(f"Schedule: {file['schedule']}")
                 err = None
+                schedule_str = None
                 try:
-                    schedule_check("schedule", file["schedule"], current_time, run_hour)
+                    schedule_str = schedule_check("schedule", file["schedule"], current_time, run_hour)
                 except NotScheduledRange as e:
                     err = e
+                    schedule_str = e
                 except NotScheduled as e:
                     if not ignore_schedules:
                         err = e
+                        schedule_str = e
+                if schedule_str:
+                    logger.info(f"Schedule Read:{schedule_str}\n")
+
                 if err:
                     had_scheduled = True
-                    logger.info(f"Metadata Schedule:{err}\n")
-                    for file_type, file_path, temp_vars, asset_directory in current:
-                        logger.warning(f"{file_type}: {file_path} not scheduled to run")
-                    logger.info("")
+                    logger.warning(f"This {'set of files' if len(current) > 1 else 'file'} not scheduled to run")
                     continue
-            files.extend(current)
+            files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
         else:
+            logger.info(f"Reading file: {file}")
             if os.path.exists(file):
                 files.append(("File", file, {}, None))
             else:
@@ -511,7 +527,10 @@ def is_date_filter(value, modifier, data, final, current_time):
                 or (modifier == ".not" and value and value >= threshold_date):
             return True
     elif modifier in [".before", ".after"]:
-        filter_date = validate_date(data, final)
+        try:
+            filter_date = validate_date(data)
+        except Failed as e:
+            raise Failed(f"Collection Error: {final}: {e}")
         if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
             return True
     elif modifier == ".regex":
@@ -739,25 +758,27 @@ def parse_and_or(error, attribute, data, test_list):
             out += ")"
     return out, final
 
-def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None):
+def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None, date_return=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
     if options is None and translation is not None:
         options = [o for o in translation]
     value = data[methods[attribute]] if methods and attribute in methods else data
 
-    if datatype in ["list", "commalist", "strlist", "lowerlist"]:
+    if datatype in ["list", "commalist", "strlist", "lowerlist", "upperlist"]:
         final_list = []
         if value:
-            if datatype in ["commalist", "strlist"] and isinstance(value, dict):
+            if isinstance(value, dict):
                 raise Failed(f"{error} Error: {display} {value} must be a list or string")
             if datatype == "commalist":
                 value = get_list(value)
             if datatype == "lowerlist":
                 value = get_list(value, lower=True)
+            if datatype == "upperlist":
+                value = get_list(value, upper=True)
             if not isinstance(value, list):
                 value = [value]
             for v in value:
-                if v:
+                if v or v == 0:
                     if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
                         final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:
@@ -838,11 +859,16 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
         if range_split:
             message = f"{message} separated by a {range_split}"
+    elif datatype == "date":
+        try:
+            return validate_date(datetime.now() if data == "today" else data, return_as=date_return)
+        except Failed as e:
+            message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or \
             (options is not None and translation is None and str(value).lower() not in options):
-        message = f"{display} {value} must be in {', '.join([str(o) for o in options])}"
+        message = f"{display} {value} must be in [{', '.join([str(o) for o in options])}]"
     else:
-        return translation[value] if translation is not None else value
+        return translation[str(value).lower()] if translation is not None else value
 
     if default is None:
         raise Failed(f"{error} Error: {message}")
@@ -983,6 +1009,7 @@ class YAML:
         self.path = path
         self.input_data = input_data
         self.yaml = ruamel.yaml.YAML()
+        self.yaml.width = 100000
         self.yaml.indent(mapping=2, sequence=2)
         try:
             if input_data:

@@ -1,9 +1,8 @@
 ##############################################################################
 #                         Cannes Awards Collections                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#             Credit to pjcob & maxwelldeux for the Trakt Lists              #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/award/cannes.html        #
+#          https://metamanager.wiki/en/latest/defaults/award/cannes          #
 ##############################################################################
 
 external_templates:
@@ -23,25 +22,32 @@ collections:
         translation_key: cannes_best
       - name: arr
       - name: custom
-    trakt_list: https://trakt.tv/users/maxwelldeux/lists/cannes-film-festival-palme-d-or
+    imdb_award:
+      event_id: ev0000147
+      event_year: all
+      award_filter: palme d'or
+      winning: true
 
 dynamic_collections:
   Cannes Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000147
+      starting: latest-5
+      ending: latest
     title_format: Cannes <<key_name>>
     template:
       - use_year_collections
-      - trakt
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      trakt_list:
-        default: https://trakt.tv/users/pjcob/lists/<<key>>-cannes
+      winning:
+        default: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:

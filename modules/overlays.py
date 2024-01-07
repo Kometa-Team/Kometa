@@ -370,7 +370,7 @@ class Overlays:
                     logger.info(e)
                     logger.info(type(e))
                     logger.stacktrace()
-                    logger.error("")
+                    logger.info("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
         logger.exorcise()
         for _, over in properties.items():
@@ -408,7 +408,7 @@ class Overlays:
                             builder.filter_and_save_items(builder.gather_ids(method, value))
                         except Failed as e:
                             if builder.ignore_blank_results:
-                                logger.warning("")
+                                logger.info("")
                                 logger.warning(e)
                             else:
                                 raise Failed(e)

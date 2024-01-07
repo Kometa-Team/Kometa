@@ -1,6 +1,7 @@
 # Audio Language Collections
 
-The `audio_language` Default Metadata File is used to dynamically create collections based on the audio languages available in your library.
+The `audio_language` Default Collection File is used to dynamically create collections based on the audio languages 
+available in your library.
 
 ![](../images/audio_language.png)
 
@@ -10,11 +11,11 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 090
 
-| Collection                                            | Key                                                                                      | Description                                                                 |
-|:------------------------------------------------------|:-----------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|
-| `Audio Language Collections`                          | `separator`                                                                              | [Separator Collection](../separators) to denote the Section of Collections. |
-| `<<Audio Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn` | Collection of Movies/Shows that have this Audio Language.                   |
-| `Other Audio`                                         | `other`                                                                                  | Collection of Movies/Shows that are less common Languages.                  |
+| Collection                                            | Key                                                                                      | Description                                                                    |
+|:------------------------------------------------------|:-----------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------|
+| `Audio Language Collections`                          | `separator`                                                                              | [Separator Collection](../separators.md) to denote the Section of Collections. |
+| `<<Audio Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn` | Collection of Movies/Shows that have this Audio Language.                      |
+| `Other Audio`                                         | `other`                                                                                  | Collection of Movies/Shows that are less common Languages.                     |
 
 ## Config
 
@@ -23,247 +24,114 @@ The below YAML in your config.yml will create the collections:
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: audio_language
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: audio_language
 ```
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-All [Shared Collection Variables](../collection_variables) are available as well as the additional Variables below which can be used to customize the file.
+??? abstract "Variable Lists (click to expand)"
 
-This file contains a [Separator](../separators) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
 
-| Variable                      | Description & Values                                                                                                                                                                                                                                                               |
-|:------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater then 0                                                                                                                                                            |
-| `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater then 0                                                                                                                                         |
-| `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                               |
-| `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../metadata/builders/smart.md#sort-options)                                                                         |
-| `include`                     | **Description:** Overrides the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)            |
-| `exclude`                     | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) |
-| `append_include`              | **Description:** Appends to the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)           |
-| `remove_include`              | **Description:** Removes from the [default include list](#default-include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)         |
-| `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                    |
-| `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                                                                                |
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+    === "File-Specific Template Variables"
 
-```yaml
-libraries:
-  Movies:
-    metadata_path:
-      - pmm: audio_language
-        template_variables:
-          use_other: false
-          use_separator: false
-          sep_style: purple
-          exclude:
-            - fr  # exclude French
-          sort_by: title.asc
-```
+        | Variable                      | Description & Values                                                                                                                                                                                                                                                               |
+        |:------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                                            |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                                         |
+        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                  |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                                            |
+        | `include`                     | **Description:** Overrides the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                    |
+        | `append_include`              | **Description:** Appends to the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                   |
+        | `remove_include`              | **Description:** Removes from the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                 |
+        | `exclude`                     | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) |
+        | `key_name_override`           | **Description:** Overrides the [default key_name_override dictionary](#default-key_name_override).<br>**Values:** Dictionary with `key: new_key_name` entries                                                                                                                      |
+        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                    |
+        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                                                                                |
 
-## Default values
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
 
-These are lists provided for reference to show what values will be in use if you do no customization.  If you want to customize these values, use the methods described above.  These do not show how to change a name or a list.
+    === "Shared Template Variables"
 
-### Default `include`
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+    
+    === "Shared Separator Variables"
 
-```yaml
-include:
-  - ab     # Abkhazian
-  - aa     # Afar
-  - af     # Afrikaans
-  - ak     # Akan
-  - sq     # Albanian
-  - am     # Amharic
-  - ar     # Arabic
-  - an     # Aragonese
-  - hy     # Armenian
-  - as     # Assamese
-  - av     # Avaric
-  - ae     # Avestan
-  - ay     # Aymara
-  - az     # Azerbaijani
-  - bm     # Bambara
-  - ba     # Bashkir
-  - eu     # Basque
-  - be     # Belarusian
-  - bn     # Bengali
-  - bi     # Bislama
-  - bs     # Bosnian
-  - br     # Breton
-  - bg     # Bulgarian
-  - my     # Burmese
-  - ca     # Catalan, Valencian
-  - km     # Central Khmer
-  - ch     # Chamorro
-  - ce     # Chechen
-  - ny     # Chichewa, Chewa, Nyanja
-  - zh     # Chinese
-  - cu     # Church Slavic, Old Slavonic, Church Slavonic, Old Bulgarian, Old Church Slavonic
-  - cv     # Chuvash
-  - kw     # Cornish
-  - co     # Corsican
-  - cr     # Cree
-  - hr     # Croatian
-  - cs     # Czech
-  - da     # Danish
-  - dv     # Divehi, Dhivehi, Maldivian
-  - nl     # Dutch, Flemish
-  - dz     # Dzongkha
-  - en     # English
-  - eo     # Esperanto
-  - et     # Estonian
-  - ee     # Ewe
-  - fo     # Faroese
-  - fj     # Fijian
-  - fil    # Filipino
-  - fi     # Finnish
-  - fr     # French
-  - ff     # Fulah
-  - gd     # Gaelic, Scottish Gaelic
-  - gl     # Galician
-  - lg     # Ganda
-  - ka     # Georgian
-  - de     # German
-  - el     # Greek, Modern (1453–)
-  - gn     # Guarani
-  - gu     # Gujarati
-  - ht     # Haitian, Haitian Creole
-  - ha     # Hausa
-  - he     # Hebrew
-  - hz     # Herero
-  - hi     # Hindi
-  - ho     # Hiri Motu
-  - hu     # Hungarian
-  - is     # Icelandic
-  - io     # Ido
-  - ig     # Igbo
-  - id     # Indonesian
-  - ia     # Interlingua (International Auxiliary Language Association)
-  - ie     # Interlingue, Occidental
-  - iu     # Inuktitut
-  - ik     # Inupiaq
-  - ga     # Irish
-  - it     # Italian
-  - ja     # Japanese
-  - jv     # Javanese
-  - kl     # Kalaallisut, Greenlandic
-  - kn     # Kannada
-  - kr     # Kanuri
-  - ks     # Kashmiri
-  - kk     # Kazakh
-  - ki     # Kikuyu, Gikuyu
-  - rw     # Kinyarwanda
-  - ky     # Kirghiz, Kyrgyz
-  - kv     # Komi
-  - kg     # Kongo
-  - ko     # Korean
-  - kj     # Kuanyama, Kwanyama
-  - ku     # Kurdish
-  - lo     # Lao
-  - la     # Latin
-  - lv     # Latvian
-  - li     # Limburgan, Limburger, Limburgish
-  - ln     # Lingala
-  - lt     # Lithuanian
-  - lu     # Luba-Katanga
-  - lb     # Luxembourgish, Letzeburgesch
-  - mk     # Macedonian
-  - mg     # Malagasy
-  - ms     # Malay
-  - ml     # Malayalam
-  - mt     # Maltese
-  - gv     # Manx
-  - mi     # Maori
-  - mr     # Marathi
-  - mh     # Marshallese
-  - myn    # Mayan
-  - mn     # Mongolian
-  - na     # Nauru
-  - nv     # Navajo, Navaho
-  - ng     # Ndonga
-  - ne     # Nepali
-  - nd     # North Ndebele
-  - se     # Northern Sami
-  - no     # Norwegian
-  - nb     # Norwegian Bokmål
-  - nn     # Norwegian Nynorsk
-  - oc     # Occitan
-  - oj     # Ojibwa
-  - or     # Oriya
-  - om     # Oromo
-  - os     # Ossetian, Ossetic
-  - pi     # Pali
-  - ps     # Pashto, Pushto
-  - fa     # Persian
-  - pl     # Polish
-  - pt     # Portuguese
-  - pa     # Punjabi, Panjabi
-  - qu     # Quechua
-  - ro     # Romanian, Moldavian, Moldovan
-  - rm     # Romansh
-  - rom    # Romany
-  - rn     # Rundi
-  - ru     # Russian
-  - sm     # Samoan
-  - sg     # Sango
-  - sa     # Sanskrit
-  - sc     # Sardinian
-  - sr     # Serbian
-  - sn     # Shona
-  - ii     # Sichuan Yi, Nuosu
-  - sd     # Sindhi
-  - si     # Sinhala, Sinhalese
-  - sk     # Slovak
-  - sl     # Slovenian
-  - so     # Somali
-  - nr     # South Ndebele
-  - st     # Southern Sotho
-  - es     # Spanish, Castilian
-  - su     # Sundanese
-  - sw     # Swahili
-  - ss     # Swati
-  - sv     # Swedish
-  - tl     # Tagalog
-  - ty     # Tahitian
-  - tai    # Tai
-  - tg     # Tajik
-  - ta     # Tamil
-  - tt     # Tatar
-  - te     # Telugu
-  - th     # Thai
-  - bo     # Tibetan
-  - ti     # Tigrinya
-  - to     # Tonga (Tonga Islands)
-  - ts     # Tsonga
-  - tn     # Tswana
-  - tr     # Turkish
-  - tk     # Turkmen
-  - tw     # Twi
-  - ug     # Uighur, Uyghur
-  - uk     # Ukrainian
-  - ur     # Urdu
-  - uz     # Uzbek
-  - ve     # Venda
-  - vi     # Vietnamese
-  - vo     # Volapük
-  - wa     # Walloon
-  - cy     # Welsh
-  - fy     # Western Frisian
-  - wo     # Wolof
-  - xh     # Xhosa
-  - yi     # Yiddish
-  - yo     # Yoruba
-  - za     # Zhuang, Chuang
-  - zu     # Zulu
-```
+        {%
+          include-markdown "../separator_variables.md"
+        %}
+
+???+ example "Example Template Variable Amendments"
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: audio_language
+            template_variables:
+              use_other: false #(1)!
+              use_separator: false #(2)!
+              exclude:
+                - fr  #(3)!
+              sort_by: title.asc
+    ```
+
+    1.  Do not create an "Other Audio" collection
+    2.  Do not create an "Audio Language Collections" separator
+    3.  Exclude "French" from having an Audio Collection
+
+## Default Values
+
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
+
+If you want to customize these values, use the methods described above.
+
+??? example "Default `include` (click to expand) <a class="headerlink" href="#include" title="Permanent link">¶</a>"
+
+    <div id="include" />
+
+    ```yaml
+    include: {%    
+      include-markdown "../../../defaults/both/audio_language.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="include:"
+      end="key_name_override:"
+    %}
+    ```
+
+??? example "Default `key_name_override` (click to expand) <a class="headerlink" href="#key-name-override" title="Permanent link">¶</a>"
+
+    <div id="key-name-override" />
+
+    ```yaml
+    key_name_override: {%    
+      include-markdown "../../../defaults/both/audio_language.yml" 
+      comments=false
+      preserve-includer-indent=false
+      start="key_name_override:"
+    %}
+    ```

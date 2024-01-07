@@ -21,6 +21,7 @@ logger = util.logger
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 search_translation = {
+    "episode_actor": "episode.actor",
     "episode_title": "episode.title",
     "network": "show.network",
     "edition": "editionTitle",
@@ -121,6 +122,7 @@ show_translation = {
     "trash": "episode.trash",
     "label": "show.label",
 }
+get_tags_translation = {"episode.actor": "actor"}
 modifier_translation = {
     "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
     ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": "", ".rated": ""
@@ -297,7 +299,7 @@ float_attributes = [
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
-    "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
+    "actor", "episode_actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
     "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
     "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_label", "artist_style", "album_genre", "album_mood",
     "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source", "track_label"
@@ -443,7 +445,6 @@ class Plex(Library):
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
-            pp_str = f"PlexPass: {self.PlexServer.myPlexSubscription}"
             srv_settings = self.PlexServer.settings
             try:
                 db_cache = srv_settings.get("DatabaseCacheSize")
@@ -454,13 +455,21 @@ class Plex(Library):
                     logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
             except NotFound:
                 logger.info(f"Plex DB cache setting: Unknown")
-            uc_str = f"Unknown update channel."
-            if srv_settings.get("butlerUpdateChannel").value == '16':
-                uc_str = f"Public update channel."
-            elif srv_settings.get("butlerUpdateChannel").value == '8':
-                uc_str = f"PlexPass update channel."
-            logger.info(f"{pp_str} on {uc_str}")
-            logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
+            try:
+                chl_num = srv_settings.get("butlerUpdateChannel").value
+                if chl_num == "16":
+                    uc_str = f"Public update channel."
+                elif chl_num == "8":
+                    uc_str = f"PlexPass update channel."
+                else:
+                    uc_str = f"Unknown update channel: {chl_num}."
+            except NotFound:
+                uc_str = f"Unknown update channel."
+            logger.info(f"PlexPass: {self.PlexServer.myPlexSubscription} on {uc_str}")
+            try:
+                logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
+            except NotFound:
+                logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
@@ -563,7 +572,7 @@ class Plex(Library):
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def fetchItems(self, uri_args):
-        return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{uri_args}")
+        return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
     def get_all(self, builder_level=None, load=False):
         if load and builder_level in [None, "show", "artist", "movie"]:
@@ -716,6 +725,28 @@ class Plex(Library):
             raise Failed("Overlay Error: No Poster found to reset")
         return image_url
 
+    def _reload(self, item):
+        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
+                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
+                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
+                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
+                    includeReviews=False, includeStations=False)
+        item._autoReload = False
+        return item
+
+    def load_from_cache(self, rating_key):
+        if rating_key in self.cached_items:
+            item, _ = self.cached_items[rating_key]
+            return item
+
+    def load_list_from_cache(self, rating_keys):
+        item_list = []
+        for rating_key in rating_keys:
+            item = self.load_from_cache(rating_key)
+            if item:
+                item_list.append(item)
+        return item_list
+
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def reload(self, item, force=False):
         is_full = False
@@ -723,12 +754,7 @@ class Plex(Library):
             item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                            includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                            includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                            includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
-                            includeReviews=False, includeStations=False)
-                item._autoReload = False
+                self._reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
@@ -782,6 +808,7 @@ class Plex(Library):
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
+        final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
         try:
             names = []
             choices = {}
@@ -869,24 +896,10 @@ class Plex(Library):
                  r._data.attrib.get('promotedToOwnHome'), r._data.attrib.get('promotedToSharedHome'))
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
-    def alter_collection(self, item, collection, smart_label_collection=False, add=True):
-        if smart_label_collection:
-            self.query_data(item.addLabel if add else item.removeLabel, collection)
-        else:
-            locked = True
-            item = self.reload(item)
-            if self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
-                field = next((f for f in item.fields if f.name == "collection"), None)
-                locked = field is not None
-            try:
-                self.query_collection(item, collection, locked=locked, add=add)
-            except TypeError:
-                logger.info(item.collections)
-                for col in item.collections:
-                    logger.info(col.id)
-                    logger.info(col.key)
-                    logger.info(col.tag)
-                raise
+    def alter_collection(self, items, collection, smart_label_collection=False, add=True):
+        self.Plex.batchMultiEdits(items)
+        self.query_data(getattr(self.Plex, f"{'add' if add else 'remove'}{'Label' if smart_label_collection else 'Collection'}"), collection)
+        self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
@@ -1138,6 +1151,9 @@ class Plex(Library):
     def get_tvdb_from_map(self, item):
         return self.show_rating_key_map[item.ratingKey] if item.ratingKey in self.show_rating_key_map else None
 
+    def get_imdb_from_map(self, item):
+        return self.imdb_rating_key_map[item.ratingKey] if item.ratingKey in self.imdb_rating_key_map else None
+
     def search_item(self, data, year=None, edition=None):
         kwargs = {}
         if year is not None:
@@ -1361,7 +1377,7 @@ class Plex(Library):
                 else:
                     starting = item
                 if not starting.locations:
-                    raise Failed(f"Asset Warning: No video filepath found fo {item.title}")
+                    raise Failed(f"Asset Warning: No video filepath found for {item.title}")
                 path_test = str(starting.locations[0])
                 if not os.path.dirname(path_test):
                     path_test = path_test.replace("\\", "/")
@@ -1454,6 +1470,8 @@ class Plex(Library):
             tmdb_id = self.get_tmdb_from_map(item)
         if not tmdb_id and not tvdb_id and self.is_show:
             tvdb_id = self.get_tvdb_from_map(item)
+        if not imdb_id:
+            imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
     def get_locked_attributes(self, item, titles=None):

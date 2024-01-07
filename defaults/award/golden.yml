@@ -1,9 +1,8 @@
 ##############################################################################
 #                      Golden Globes Awards Collections                      #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#                 Credit to maxwelldeux for the Trakt Lists                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/award/golden.html        #
+#          https://metamanager.wiki/en/latest/defaults/award/golden          #
 ##############################################################################
 
 external_templates:
@@ -23,13 +22,25 @@ collections:
         translation_key: golden_picture
       - name: arr
       - name: custom
-        collection_order: release.desc
     delete_collections_named:
       - Golden Globe Best Motion Pictures
-    tmdb_list: 
-      - 8191011 # Drama
-      - 8191022 # Musical or Comedy
-      - 8235497 # Animation
+    imdb_award:
+      event_id: ev0000292
+      event_year: all
+      category_filter:
+        - best motion picture - animated
+        - best motion picture - comedy
+        - best motion picture - comedy or musical
+        - best motion picture - drama
+        - best motion picture - foreign language
+        - best motion picture - musical
+        - best motion picture - musical or comedy
+        - best motion picture - non-english language
+        - best motion picture, animated
+        - best motion picture, drama
+        - best motion picture, musical or comedy
+        - best motion picture, non-english language
+      winning: true
 
   Golden Globes Best Director Winners:
     variables:
@@ -42,27 +53,35 @@ collections:
         translation_key: golden_director
       - name: arr
       - name: custom
-    tmdb_list: 8235502
+    imdb_award:
+      event_id: ev0000292
+      event_year: all
+      category_filter:
+        - best director
+        - best director - motion picture
+        - best director, motion picture
+      winning: true
     
 dynamic_collections:
   Golden Globes Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000292
+      starting: latest-5
+      ending: latest
     title_format: Golden Globe <<key_name>>
     template:
       - use_year_collections
-      - imdb
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      imdb_list:
-        default: https://www.imdb.com/search/title/?release_date=<<key-1>>-01-01,<<key-1>>-12-31&groups=golden_globe_winner&sort=<<imdb_sort>>
-      imdb_sort:
-        default: moviemeter,asc
+      winning:
+        default: true
+      collection_order:
+        default: release
       image:
         default: award/golden/winner/<<key>>
       translation_key:

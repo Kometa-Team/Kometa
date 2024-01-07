@@ -2,22 +2,22 @@
 
 This Default can use the `style` template variable to easily change the posters styles.
 
-### Black & White Style (Default)
+??? tip "Black & White Style (Default) (click to expand)"
 
-![](../images/person_bw.png)
+    ![](images/person_bw.png)
 
-### Rainier Style
+??? tip "Rainier Style (click to expand)"
 
-![](../images/person_rainier.png)
+    ![](images/person_rainier.png)
 
-### Signature Style
+??? tip "Signature Style (click to expand)"
 
-![](../images/person_signature.png)
+    ![](images/person_signature.png)
 
-### Diiivoy Style
+??? tip "Diiivoy Style (click to expand)"
 
-![](../images/person_diiivoy.png)
+    ![](images/person_diiivoy.png)
 
-### Diiivoy Color Style
+??? tip "Diiivoy Color Style (click to expand)"
 
-![](../images/person_diiivoycolor.png)
+    ![](images/person_diiivoycolor.png)

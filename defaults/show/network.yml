@@ -2,7 +2,7 @@
 #                            Network Collections                             #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/show/network.html        #
+#          https://metamanager.wiki/en/latest/defaults/show/network          #
 ##############################################################################
 
 external_templates:
@@ -31,7 +31,9 @@ dynamic_collections:
       search_term:
         default: network
       image:
-        default: network/<<key_encoded>>
+        default: network/<<style>>/<<key_encoded>>
+      style:
+        default: color
       translation_key:
         default: network
       dynamic:
@@ -50,6 +52,7 @@ dynamic_collections:
     - ALTBalaji
     - Amazon Kids+
     - AMC
+    - AMC+
     - Animal Planet
     - Antena 3
     - Apple TV+
@@ -148,6 +151,10 @@ dynamic_collections:
     - ITV
     - ITV Encore
     - ITV1
+    - ITV2
+    - ITV3
+    - ITV4
+    - ITVBe
     - ITVX
     - joyn
     - Kan 11
@@ -212,6 +219,7 @@ dynamic_collections:
     - Space
     - Spectrum
     - Spike
+    - Stöð 2
     - Stan
     - Starz
     - STAR+

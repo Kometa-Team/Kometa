@@ -1,4 +1,4 @@
-# Separators Default Metadata Files
+# Separators Default Collection Files
 
 Separators are a special form of collections which are used similar to index cards in a library, they help to "split up" collections by identifying categories (such as "Studio Collections" and "Holiday Collections").
 
@@ -45,22 +45,11 @@ Template Variables can be used to manipulate the file in various ways to slightl
 
 Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
 
-**[Shared Variables](collection_variables) are NOT available to separator collections in any default file.**
+**[Shared Variables](collection_variables.md) are NOT available to separator collections in any default file.**
 
-| Variable                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                  |
-|:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_separator`          | **Description:** Turn the [Separator Collection](#use-separators) off.<br>**Values:** `false` to turn of the collection                                                                                                                                                                                                                                                               |
-| `sep_style`              | **Description:** Choose the [Separator Style](#separator-styles).<br>**Default:** `orig`<br>**Values:** `amethyst`, `aqua`, `blue`, `forest`, `fuchsia`, `gold`, `gray`, `green`, `navy`, `ocean`, `olive`, `orchid`, `orig`, `pink`, `plum`, `purple`, `red`, `rust`, `salmon`, `sand`, `stb`, or `tan`                                                                           |         
-| `sort_prefix`            | **Description:** Changes the prefix of the sort title.<br>**Default:** `!`<br>**Values:** Any String                                                                                                                                                                                                                                                                                  |
-| `sort_title`             | **Description:** Changes the sort title of all collections.<br>**Default:** `<<sort_prefix>><<collection_section>>_!<<title>>`<br>**Values:** Any String                                                                                                                                                                                                                              |
-| `placeholder_tmdb_movie` | **Description:** Add a placeholder Movie to the Separator.  Only valid for Movie libraries.<br>**Values:** TMDb Movie ID                                                                                                                                                                                                                                                              |
-| `placeholder_tvdb_show`  | **Description:** Add a placeholder Show to the Separator.  Only valid for Show libraries.<br>**Values:** TVDb Show ID                                                                                                                                                                                                                                                                 |
-| `placeholder_imdb_id`    | **Description:** Add a placeholder Movie/Show to the Separator.  Valid for Movie or Show libraries assuming the ID points to an item of the correct type.<br>**Values:** IMDb ID                                                                                                                                                                                                      |
-| `name_separator`         | **Description:** Changes the name of the specified key's collection.<br>**Values:** New Collection Name                                                                                                                                                                                                                                                                               |
-| `summary_separator`      | **Description:** Changes the summary of the specified key's collection.<br>**Values:** New Collection Summary                                                                                                                                                                                                                                                                         |
-| `collection_section`     | **Description:** Changes the sort order of the collection sections against other default collection sections.<br>**Values:** Any number                                                                                                                                                                                                                                               |
-| `collection_mode`        | **Description:** Controls the collection mode of all collections in a Defaults file.<br>**Values:**<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table> |
-| `url_poster_separator`   | **Description:** Changes the poster url of the specified key's collection.<br>**Values:** URL directly to the Image                                                                                                                                                                                                                                                                   |
+{%
+  include-markdown "./separator_variables.md"
+%}
 
 ## Use Separators
 
@@ -80,7 +69,7 @@ And at the file-level
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
         template_variables:
           use_separator: false
@@ -98,7 +87,7 @@ The available styles available are:
 | Amethyst | `amethyst` |  
 | Aqua     | `aqua`     |   
 | Blue     | `blue`     |  
-| Forest   | `green`    | 
+| Forest   | `forest`   | 
 | Fuchsia  | `fuchsia`  |
 | Gold     | `gold`     |   
 | Gray     | `gray`     |  
@@ -135,7 +124,7 @@ And at the file-level
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: studio
         template_variables:
           sep_style: stb

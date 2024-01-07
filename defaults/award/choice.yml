@@ -1,9 +1,8 @@
 ##############################################################################
 #                     Critics Choice Awards Collections                      #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#                    Credit to pjcob for the Trakt Lists                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/award/choice.html        #
+#          https://metamanager.wiki/en/latest/defaults/award/choice          #
 ##############################################################################
 
 external_templates:
@@ -11,34 +10,47 @@ external_templates:
   template_variables:
     collection_section: 130
 
+collections:
+  Critics Choice Best Picture Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: Choice !
+        allowed_libraries: movie
+        image: award/choice/winner
+        translation_key: choice_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000133
+      event_year: all
+      category_filter: best picture
+      winning: true
+
 dynamic_collections:
   Critics Choice Awards:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000133
+      starting: latest-5
+      ending: latest
     title_format: Critics Choice Awards <<key_name>>
     template:
       - use_year_collections
-      - trakt
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      trakt_list:
-        default: https://trakt.tv/users/pjcob/lists/<<key>>-<<url>>-choice
+      winning:
+        default: true
+      collection_order:
+        default: release
       image:
         default: award/choice/<<key>>
       translation_key:
         default: choice_year
-      url:
-        default: critic-s
-        2019: critics
-        2018: critics
-        2017: critics
-        2016: critics
-        2015: critics
-        2014: critics
       dynamic:
         default: true
