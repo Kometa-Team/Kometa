@@ -17,6 +17,14 @@ Introduced [IMDb Search Builder](https://metamanager.wiki/en/latest/files/builde
 - `imdb_list` can no longer be used for Title or Keyword Searches, these must be transferred to `imdb_search` builders.
 Introduced [IMDb Award Builder](https://metamanager.wiki/en/latest/files/builders/imdb/#imdb-award).
 Added IMDb Awards to [Dynamic Collection Types](https://metamanager.wiki/en/latest/files/dynamic_types/#imdb-awards)
+PMM Default `other_awards` has been deprecated and replace with new award PMM Default files:
+  - [`berlinale`](https://metamanager.wiki/en/latest/defaults/award/berlinale/) - Berlin International Film Festival Awards
+  - [`cesar`](https://metamanager.wiki/en/latest/defaults/award/cesar/) - César Awards
+  - [`nfr`](https://metamanager.wiki/en/latest/defaults/award/nfr/) - National Film Registry
+  - [`pca`](https://metamanager.wiki/en/latest/defaults/award/pca/) - People's Choice Awards
+  - [`razzie`](https://metamanager.wiki/en/latest/defaults/award/razzie/) - Razzie Awards
+  - [`tiff`](https://metamanager.wiki/en/latest/defaults/award/tiff/) - Toronto International Film Festival Awards
+  - [`venice`](https://metamanager.wiki/en/latest/defaults/award/venice/) - Venice Film Festival Awards
 Reintroduced [Flixpatrol Builder](https://metamanager.wiki/en/latest/builders/flixpatrol/) following introduction of paywalled API.
 Added a JSON Schema file which will assist users in validating their configuration file when using a code-aware text editor such as VSCode and VSCodium. This is a work in progress and will help identify basic errors such as specifying "yes" when the available options are "true" and "false"
 - If you run into any validation issues which you don't understand, ask in our Discord Server
@@ -26,7 +34,7 @@ Redesigned Wiki with new landing page and new layout using mkdocs.
 Introduced batchMultiEdits - this is a major feature introduction that we hope will increase performance for all users. This is a behind-the-scenes change that the user does not need to do anything to take advantage of.
 Updated `overlay_path` to `overlay_files` and split `metadata_path` into `collection_files` and `metadata_files`.
 Moved `remove_overalys`, `reapply_overlays`, and `reset_overlays` to the [library level](https://metamanager.wiki/en/latest/config/libraries/#remove-overlays) instead of under `overlay_path`.
-Removed `schedule` from under `overlay_path` and replaced it with the library level attribute [`schedule_overlays`](https://metamanager.wiki/en/nightly/config/libraries/#schedule-overlays).
+Removed `schedule` from under `overlay_path` and replaced it with the library level attribute [`schedule_overlays`](https://metamanager.wiki/en/latest/config/libraries/#schedule-overlays).
 Removed library-level and collection-level logging, all logging is handled in the meta.log
 Added the `score` attribute to the [`anilist_userlist`](https://metamanager.wiki/en/latest/files/builders/anilist/#anilist-userlist) builder.
 Added the `episode_actor` attribute to the [`plex_search`](https://metamanager.wiki/en/latest/files/builders/plex/#plex-search) builder.
