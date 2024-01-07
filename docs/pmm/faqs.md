@@ -398,16 +398,18 @@ With the release of PMM 1.20, several changes have taken place that we would lik
 
     Whilst this error can be ignored, we strongly advise you to move over to the new attributes, which can be done following this guidance:
 
-    :fontawesome-solid-1: If your YAML file contains `collections:` or is a PMM Defaults Collection File then it belongs under `collection_files`. 
+    :fontawesome-solid-1: If your YAML file creates collections or is a PMM Defaults Collection File then it belongs under `collection_files`. 
     
-    :fontawesome-solid-2: If your YAML file contains `overlays:` or is a PMM Defaults Overlay File then it belongs under `overlay_files`
+    :fontawesome-solid-2: If your YAML file creates overlays or is a PMM Defaults Overlay File then it belongs under `overlay_files`
     
-    :fontawesome-solid-3: If your YAML file contains `metadata:` then it belongs under `metadata_files`
+    :fontawesome-solid-3: If your YAML file edits item metadata ([see this example](../files/metadata.md/#__tabbed_1_1)) then it belongs under `metadata_files`
     
-    If your file contains both `collections:` and `metadata:` then it should go in both `collection_files` and `metadata_files`
+    If your file creates collections AND edits item metadata, then it should go in both `collection_files` and `metadata_files`
     
-    If you are unsure on the above, the majority of `metadata_path` items will now fall under `collection_files`, but you can ask on the Discord.
-    
+    If you are unsure on the above, the majority of `metadata_path` files  will now fall under `collection_files`, and all `overlay_path` files will now fall under `overlay_files`.
+
+    If you require any assistance with this, please visit our Discord Server where we can assist you.
+
     Below is an example of the new attributes in use:
 
     ```yaml
