@@ -1,4 +1,4 @@
-import argparse, os, platform, sys, time, uuid
+import argparse, os, platform, re, sys, time, uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
@@ -26,22 +26,21 @@ arguments = {
     "config": {"args": "c", "type": "str", "help": "Run with desired *.yml file"},
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
     "run": {"args": "r", "type": "bool", "help": "Run without the scheduler"},
-    "tests": {"args": ["rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
+    "tests": {"args": ["ts", "rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "PMM Global Timeout (Default: 180)"},
-    "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection operations"},
-    "playlists-only": {"args": ["po", "playlist-only"], "type": "bool", "help": "Run only playlist operations"},
+    "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
+    "metadata-only": {"args": ["mo", "metadatas-only"], "type": "bool", "help": "Run only metadata files"},
+    "playlists-only": {"args": ["po", "playlist-only"], "type": "bool", "help": "Run only playlist files"},
     "operations-only": {"args": ["op", "operation", "operations", "lo", "library-only", "libraries-only", "operation-only"], "type": "bool", "help": "Run only operations"},
-    "overlays-only": {"args": ["ov", "overlay", "overlays", "overlay-only"], "type": "bool", "help": "Run only overlays"},
+    "overlays-only": {"args": ["ov", "overlay", "overlays", "overlay-only"], "type": "bool", "help": "Run only overlay files"},
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
-    "run-metadata-files": {"args": ["rm", "m", "metadata", "metadata-files"], "type": "str", "help": "Process only specified Metadata files (pipe-separated list '|')"},
-    "libraries-first": {"args": ["lf", "library-first"], "type": "bool", "help": "Run library operations before collections"},
+    "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
-    "cache-libraries": {"args": ["ca", "cache-library"], "type": "bool", "help": "Cache Library load for 1 day"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
     "delete-labels": {"args": ["dl", "delete-label"], "type": "bool", "help": "Deletes all Labels in the Plex Library before running"},
     "resume": {"args": "re", "type": "str", "help": "Resume collection run from a specific collection"},
@@ -60,7 +59,7 @@ for arg_key, arg_data in arguments.items():
     kwargs = {"dest": arg_key.replace("-", "_"), "help": arg_data["help"]}
     if arg_data["type"] == "bool":
         kwargs["action"] = "store_true"
-        kwargs["default"] = False
+        kwargs["default"] = False # noqa
     else:
         kwargs["type"] = int if arg_data["type"] == "int" else str
 
@@ -136,12 +135,12 @@ for env_name, env_data in os.environ.items():
         secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
 
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
-for _, v in secret_args.items():
-    if v in run_arg:
-        run_arg = run_arg.replace(v, "(redacted)")
+for _, sv in secret_args.items():
+    if sv in run_arg:
+        run_arg = run_arg.replace(sv, "(redacted)")
 
 try:
-    from git import Repo, InvalidGitRepositoryError
+    from git import Repo, InvalidGitRepositoryError # noqa
     try:
         git_branch = Repo(path=".").head.ref.name # noqa
     except InvalidGitRepositoryError:
@@ -238,7 +237,16 @@ def start(attrs):
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
-    logger.info(f"    PlexAPI library version: {plexapi.VERSION}")
+    required_version = None
+    if not is_docker and not is_linuxserver:
+        try:
+            with open("requirements.txt", "r") as file:
+                required_version = next(ln.strip()[9:] for ln in file.readlines() if ln.strip().startswith("PlexAPI=="))
+        except FileNotFoundError:
+            logger.error("    File Error: requirements.txt not found")
+    logger.info(f"    PlexAPI Version: {plexapi.VERSION}")
+    if required_version is not None and required_version != plexapi.VERSION:
+        logger.info(f"    PlexAPI Requires an Update to Version: {required_version}")
     logger.info(f"    Platform: {platform.platform()}")
     logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
@@ -258,6 +266,7 @@ def start(attrs):
     attrs["no_missing"] = run_args["no-missing"]
     attrs["no_report"] = run_args["no-report"]
     attrs["collection_only"] = run_args["collections-only"]
+    attrs["metadata_only"] = run_args["metadata-only"]
     attrs["playlist_only"] = run_args["playlists-only"]
     attrs["operations_only"] = run_args["operations-only"]
     attrs["overlays_only"] = run_args["overlays-only"]
@@ -266,8 +275,9 @@ def start(attrs):
     logger.separator(debug=True)
     logger.debug(f"Run Command: {run_arg}")
     for akey, adata in arguments.items():
-        ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
-        logger.debug(f"--{akey} (PMM_{akey.upper()}): {ext}{run_args[akey]}{ext}")
+        if isinstance(adata["help"], str):
+            ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
+            logger.debug(f"--{akey} (PMM_{akey.upper()}): {ext}{run_args[akey]}{ext}")
     logger.debug("")
     if secret_args:
         logger.debug("PMM Secrets Read:")
@@ -303,14 +313,63 @@ def start(attrs):
         version_line = f"{version_line}        Newest Version: {new_version}"
     try:
         log_data = {}
+        no_overlays = []
+        no_overlays_count = 0
+        convert_errors = {}
+
+        other_log_groups = [
+            ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
+            ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
+            ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
+            ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
+            ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
+            ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
+            ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
+            ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
+            ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
+            ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
+            ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
+            ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+        ]
+        other_message = {}
+
         with open(logger.main_log, encoding="utf-8") as f:
             for log_line in f:
                 for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                     if f"[{err_type}]" in log_line:
                         log_line = log_line.split("|")[1].strip()
-                        if err_type not in log_data:
-                            log_data[err_type] = []
-                        log_data[err_type].append(log_line)
+                        other = False
+                        for key, reg in other_log_groups:
+                            if log_line.startswith(key):
+                                other = True
+                                _name = re.match(reg, log_line).group(1)
+                                if key not in other_message:
+                                    other_message[key] = {"list": [], "count": 0}
+                                other_message[key]["count"] += 1
+                                if _name not in other_message[key]:
+                                    other_message[key]["list"].append(_name)
+                        if other is False:
+                            if err_type not in log_data:
+                                log_data[err_type] = []
+                            log_data[err_type].append(log_line)
+
+        if "No Items found for" in other_message:
+            logger.separator(f"Overlay Errors Summary", space=False, border=False)
+            logger.info("")
+            logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
+            logger.info("")
+
+        convert_title = False
+        for key, _ in other_log_groups:
+            if key.startswith("Convert Warning") and key in other_message:
+                if convert_title is False:
+                    logger.separator("Convert Summary", space=False, border=False)
+                    logger.info("")
+                    convert_title = True
+                logger.info(f"{key[17:]}")
+                logger.info(", ".join(other_message[key]["list"]))
+        if convert_title:
+            logger.info("")
 
         for err_type in ["WARNING", "ERROR", "CRITICAL"]:
             if err_type not in log_data:
@@ -335,8 +394,8 @@ def run_config(config, stats):
 
     playlist_status = {}
     playlist_stats = {}
-    if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_metadata_files:
-        logger.add_playlists_handler()
+    if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
+        #logger.add_playlists_handler()
         if config.playlist_files:
             playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
@@ -357,7 +416,7 @@ def run_config(config, stats):
                 logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
                 for playlist_name, users in report.items():
                     logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
-        logger.remove_playlists_handler()
+        #logger.remove_playlists_handler()
 
     amount_added = 0
     if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
@@ -371,15 +430,14 @@ def run_config(config, stats):
             logger.info("")
             logger.separator("Run Again")
             logger.info("")
-            for x in range(1, config.general["run_again_delay"] + 1):
-                logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x + 1} minutes")
-                for y in range(60):
-                    time.sleep(1)
+            for x in range(0, config.general["run_again_delay"]):
+                logger.ghost(f"Waiting to run again in {config.general['run_again_delay'] - x} minutes")
+                time.sleep(60)
             logger.exorcise()
             for library in config.libraries:
                 if library.run_again:
                     try:
-                        logger.re_add_library_handler(library.mapping_name)
+                        #logger.re_add_library_handler(library.mapping_name)
                         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                         logger.info("")
                         logger.separator(f"{library.name} Library Run Again")
@@ -395,7 +453,7 @@ def run_config(config, stats):
                                 library.notify(e, collection=builder.name, critical=False)
                                 logger.stacktrace()
                                 logger.error(e)
-                        logger.remove_library_handler(library.mapping_name)
+                        #logger.remove_library_handler(library.mapping_name)
                     except Exception as e:
                         library.notify(e)
                         logger.stacktrace()
@@ -485,7 +543,7 @@ def run_libraries(config):
             continue
         library_status[library.name] = {}
         try:
-            logger.add_library_handler(library.mapping_name)
+            #logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
@@ -493,6 +551,7 @@ def run_libraries(config):
 
             logger.debug("")
             logger.debug(f"Library Name: {library.name}")
+            logger.debug(f"Run Order: {', '.join(library.run_order)}")
             logger.debug(f"Folder Name: {library.mapping_name}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
@@ -544,7 +603,7 @@ def run_libraries(config):
                 for library_type in library_types:
                     for item in library.get_all(builder_level=library_type):
                         try:
-                            sync = ["Overlay"] if "Overlay" in [i.tag for i in item.labels] else []
+                            sync = ["Overlay"] if "Overlay" in [lbl.tag for lbl in item.labels] else []
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
@@ -553,20 +612,13 @@ def run_libraries(config):
             time_start = datetime.now()
             temp_items = None
             list_key = None
-            expired = None
             if config.Cache:
-                list_key, expired = config.Cache.query_list_cache("library", library.mapping_name, 1)
-                if run_args["cache-libraries"] and list_key and expired is False:
-                    logger.info(f"Library: {library.mapping_name} loaded from Cache")
-                    temp_items = config.Cache.query_list_ids(list_key)
+                list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
 
             if not temp_items:
                 temp_items = library.cache_items()
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
-                if config.Cache and run_args["cache-libraries"]:
-                    list_key = config.Cache.update_list_cache("library", library.mapping_name, expired, 1)
-                    config.Cache.update_list_ids(list_key, [(i.ratingKey, i.guid) for i in temp_items])
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
@@ -574,66 +626,73 @@ def run_libraries(config):
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
-            def run_operations_and_overlays():
-                if not run_args["tests"] and not run_args["collections-only"] and not run_args["playlists-only"] and not config.requested_metadata_files:
-                    if not run_args["overlays-only"] and library.library_operation:
-                        library_status[library.name]["Library Operations"] = library.Operations.run_operations()
-                    if not run_args["operations-only"] and (library.overlay_files or library.remove_overlays):
-                        library_status[library.name]["Library Overlays"] = library.Overlays.run_overlays()
-
-            if run_args["libraries-first"]:
-                run_operations_and_overlays()
-
-            if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
-                time_start = datetime.now()
-                for images in library.images_files:
-                    images_name = images.get_file_name()
-                    if config.requested_metadata_files and images_name not in config.requested_metadata_files:
+            runs = {
+                "metadata": all([not run_args[x] for x in ["tests", "operations-only", "overlays-only", "playlists-only", "collections-only"]]),
+                "collections": all([not run_args[x] for x in ["operations-only", "overlays-only", "playlists-only", "metadata-only"]]),
+                "operations": all([not run_args[x] for x in ["tests", "collections-only", "overlays-only", "playlists-only", "metadata-only"]]),
+                "overlays": all([not run_args[x] for x in ["tests", "collections-only", "operations-only", "playlists-only", "metadata-only"]]),
+            }
+            for run_type in library.run_order:
+                if run_type == "collections" and runs[run_type]:
+                    time_start = datetime.now()
+                    for metadata in library.collection_files:
+                        metadata_name = metadata.get_file_name()
+                        if config.requested_files and metadata_name not in config.requested_files:
+                            logger.info("")
+                            logger.separator(f"Skipping {metadata_name} Collection File")
+                            continue
                         logger.info("")
-                        logger.separator(f"Skipping {images_name} Images File")
-                        continue
-                    logger.info("")
-                    logger.separator(f"Running {images_name} Images File\n{images.path}")
-                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
-                        try:
-                            images.update_metadata()
-                        except Failed as e:
-                            library.notify(e)
-                            logger.error(e)
-                library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
-
-                time_start = datetime.now()
-                for metadata in library.metadata_files:
-                    metadata_name = metadata.get_file_name()
-                    if config.requested_metadata_files and metadata_name not in config.requested_metadata_files:
+                        logger.separator(f"Running {metadata_name} Collection File\n{metadata.path}")
+                        collections_to_run = metadata.get_collections(config.requested_collections)
+                        if run_args["resume"] and run_args["resume"] not in collections_to_run:
+                            logger.info("")
+                            logger.warning(f"Collection: {run_args['resume']} not in Collection File: {metadata.path}")
+                            continue
+                        if collections_to_run:
+                            logger.info("")
+                            logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
+                            # logger.remove_library_handler(library.mapping_name)
+                            run_collection(config, library, metadata, collections_to_run)
+                            # logger.re_add_library_handler(library.mapping_name)
+                    library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split('.')[0]
+                elif run_type == "metadata" and runs[run_type]:
+                    time_start = datetime.now()
+                    for images in library.images_files:
+                        images_name = images.get_file_name()
+                        if config.requested_files and images_name not in config.requested_files:
+                            logger.info("")
+                            logger.separator(f"Skipping {images_name} Images File")
+                            continue
                         logger.info("")
-                        logger.separator(f"Skipping {metadata_name} Metadata File")
-                        continue
-                    logger.info("")
-                    logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
-                    if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
+                        logger.separator(f"Running {images_name} Images File\n{images.path}")
+                        if not run_args["tests"] and not run_args["resume"] and not run_args["collections-only"]:
+                            try:
+                                images.update_metadata()
+                            except Failed as e:
+                                library.notify(e)
+                                logger.error(e)
+                    library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
+
+                    time_start = datetime.now()
+                    for metadata in library.metadata_files:
+                        metadata_name = metadata.get_file_name()
+                        if config.requested_files and metadata_name not in config.requested_files:
+                            logger.info("")
+                            logger.separator(f"Skipping {metadata_name} Metadata File")
+                            continue
+                        logger.info("")
+                        logger.separator(f"Running {metadata_name} Metadata File\n{metadata.path}")
                         try:
                             metadata.update_metadata()
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
-                    collections_to_run = metadata.get_collections(config.requested_collections)
-                    if run_args["resume"] and run_args["resume"] not in collections_to_run:
-                        logger.info("")
-                        logger.warning(f"Collection: {run_args['resume']} not in Metadata File: {metadata.path}")
-                        continue
-                    if collections_to_run:
-                        logger.info("")
-                        logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
-                        logger.remove_library_handler(library.mapping_name)
-                        run_collection(config, library, metadata, collections_to_run)
-                        logger.re_add_library_handler(library.mapping_name)
-                library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
-
-            if not run_args["libraries-first"]:
-                run_operations_and_overlays()
-
-            logger.remove_library_handler(library.mapping_name)
+                    library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
+                elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
+                elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
+                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
+            #logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(e)
             logger.stacktrace()
@@ -670,7 +729,7 @@ def run_collection(config, library, metadata, requested_collections):
             collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
-        logger.add_collection_handler(library.mapping_name, collection_log_name)
+        #logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
@@ -824,7 +883,7 @@ def run_collection(config, library, metadata, requested_collections):
         library.status[str(mapping_name)]["run_time"] = collection_run_time
         logger.info("")
         logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
-        logger.remove_collection_handler(library.mapping_name, collection_log_name)
+        #logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
@@ -854,7 +913,7 @@ def run_playlists(config):
                 playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
-            logger.add_playlist_handler(playlist_log_name)
+            #logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             library_names = None
@@ -1005,13 +1064,13 @@ def run_playlists(config):
             status[mapping_name]["run_time"] = playlist_run_time
             logger.info("")
             logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
-            logger.remove_playlist_handler(playlist_log_name)
+            #logger.remove_playlist_handler(playlist_log_name)
     return status, stats
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-metadata-files"] or run_args["resume"]:
-            process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "metadata_files": run_args["run-metadata-files"]})
+        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"]:
+            process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
             times_to_run = util.get_list(run_args["times"])
             valid_times = []

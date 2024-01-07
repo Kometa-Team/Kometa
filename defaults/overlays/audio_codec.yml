@@ -3,7 +3,7 @@
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#   https://metamanager.wiki/en/latest/defaults/overlays/audio_codec.html    #
+#      https://metamanager.wiki/en/latest/defaults/overlays/audio_codec      #
 ##############################################################################
 
 external_templates:
@@ -66,7 +66,7 @@ templates:
           - key: dtsx
             value: '(?i)\bdts[ ._-]?x\b'
           - key: plus_atmos
-            value: '(?i)^(?=.*\b(dd[p+])|(dolby digital plus)\b)(?=.*\batmos(\b|\d))'
+            value: '(?i)^(?=.*\b((dd[p+])|(dolby[ ._-]digital[ ._-]plus)|(e[ ._-]?ac3)\b))(?=.*\batmos(\b|\d))'
           - key: dolby_atmos
             value: '(?i)\batmos(\b|\d)'
           - key: truehd
@@ -80,7 +80,7 @@ templates:
           - key: hra
             value: '(?i)\bdts[ ._-]?(hd[ ._-])?(hr|hra|hi|ra)(\b|\d)'
           - key: plus
-            value: '(?i)\b(dd[p+])|(dolby digital plus)|(e[ ._-]?ac3)\b'
+            value: '(?i)\b(dd[p+])|(dolby[ ._-]digital[ ._-]plus)|(e[ ._-]?ac3)\b'
           - key: dtses
             value: '(?i)\bdts[ ._-]?es(\b|\d)'
           - key: dts

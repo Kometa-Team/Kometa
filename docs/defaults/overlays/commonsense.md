@@ -1,6 +1,7 @@
-# CommonSense Age Rating Overlay
+# Common Sense Age Rating Overlay
 
-The `commonsense` Default Overlay File is used to create an overlay based on the CommonSense Age Rating on each item within your library.
+The `commonsense` Default Overlay File is used to create an overlay based on the Common Sense Age Rating on each item 
+within your library.
 
 ![](images/commonsense.png)
 
@@ -8,9 +9,11 @@ The `commonsense` Default Overlay File is used to create an overlay based on the
 
 Supported library types: Movie & Show
 
-Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating.
+Requirements: Use the [Mass Content Rating Update Library 
+Operation](../../config/operations.md#mass-content-rating-update) with either `mdb_commonsense` or `mdb_commonsense0` to 
+update Plex to the Common Sense Rating.
 
-## Supported CommonSense Age Rating
+## Supported Common Sense Age Rating
 
 | Rating | Key  |
 |:-------|:-----|
@@ -41,10 +44,10 @@ The below YAML in your config.yml will create the overlays:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: commonsense
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: commonsense
       - pmm: commonsense
         template_variables:
@@ -56,46 +59,58 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-All [Shared Overlay Variables](../overlay_variables) are available with the default values below as well as the additional Variables below which can be used to customize the file.
+??? abstract "Variable Lists (click to expand)"
 
-| Variable            | Default     |
-|:--------------------|:------------|
-| `horizontal_offset` | `15`        |
-| `horizontal_align`  | `left`      |
-| `vertical_offset`   | `270`       |
-| `vertical_align`    | `bottom`    |
-| `back_color`        | `#00000099` |
-| `back_radius`       | `30`        |
-| `back_width`        | `305`       |
-| `back_height`       | `105`       |
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
 
-| Variable         | Description & Values                                                                                                                                                |
-|:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `font`           | **Description:** Choose the font for the Overlay.<br>**Default:** `fonts/Inter-Medium.ttf`<br>**Values:** Path to font file                                         |
-| `font_style`     | **Description:** Font style for Variable Fonts.<br>**Values:** Variable Font Style                                                                                  |
-| `font_size`      | **Description:** Choose the font size for the Overlay.<br>**Default:** `55`<br>**Values:** Any Number greater then 0                                                |
-| `font_color`     | **Description:** Choose the font color for the Overlay.<br>**Default:** `#FFFFFF`<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA` |
-| `stroke_width`   | **Description:** Font Stroke Width for the Text Overlay.<br>**Values:** Any Number greater then 0                                                                   |
-| `stroke_color`   | **Description:** Font Stroke Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA`                          |
-| `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any Number greater then 0                                               |
-| `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom`                         |
-| `pre_text`       | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                                          |
-| `post_text`      | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                                                       |
-| `pre_nr_text`    | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                                                     |
-| `post_nr_text`   | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                                                      |
-| `builder_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                     |
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+    ??? example "Default Template Variable Values (click to expand)"
 
-```yaml
-libraries:
-  Movies:
-    overlay_path:
-      - pmm: commonsense
-        template_variables:
-          pre_text: "CS"
-```
+        | Variable            | Default     |
+        |:--------------------|:------------|
+        | `horizontal_offset` | `15`        |
+        | `horizontal_align`  | `left`      |
+        | `vertical_offset`   | `270`       |
+        | `vertical_align`    | `bottom`    |
+        | `back_color`        | `#00000099` |
+        | `back_radius`       | `30`        |
+        | `back_width`        | `305`       |
+        | `back_height`       | `105`       |
+
+    === "File-Specific Template Variables"
+
+        | Variable         | Description & Values                                                                                                                        |
+        |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
+        | `addon_offset`   | **Description:** Text Addon Image Offset from the text.<br>**Default:** `15`<br>**Values:** Any number greater than 0                       |
+        | `addon_position` | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `left`<br>**Values:** `left`, `right`, `top`, `bottom` |
+        | `pre_text`       | **Description:** Choose the text before the key for the Overlay.<br>**Values:** Any String                                                  |
+        | `post_text`      | **Description:** Choose the text after the key for the Overlay.<br>**Default:** `+`<br>**Values:** Any String                               |
+        | `pre_nr_text`    | **Description:** Choose the text before the `nr` key for the Overlay.<br>**Values:** Any String                                             |
+        | `post_nr_text`   | **Description:** Choose the text after the `nr` key for the Overlay.<br>**Values:** Any String                                              |
+        | `builder_level`  | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                             |
+
+    === "Overlay Template Variables"
+
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
+
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
+    
+    ```yaml
+    libraries:
+      Movies:
+        overlay_files:
+          - pmm: commonsense
+            template_variables:
+              pre_text: "CS"
+    ```

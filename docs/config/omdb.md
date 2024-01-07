@@ -11,11 +11,14 @@ omdb:
   cache_expiration: 60
 ```
 
-| Attribute          | Allowed Values                                                             | Default | Required |
-|:-------------------|:---------------------------------------------------------------------------|:--------|:--------:|
-| `apikey`           | OMDb API Key                                                               | N/A     | &#9989;  |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      | &#10060; |
+| Attribute          | Allowed Values                                                             | Default |                  Required                  |
+|:-------------------|:---------------------------------------------------------------------------|:--------|:------------------------------------------:|
+| `apikey`           | OMDb API Key                                                               | N/A     | :fontawesome-solid-circle-check:{ .green } |
+| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-* The OMDb apikey can be generated [here](http://www.omdbapi.com/apikey.aspx).
+???+ tip
 
-* The free apikey is limited to 1000 requests per day so if you hit your limit the program should be able to pick up where it left off the next day as long as the `cache` [Setting](settings.md#cache) is enabled 
+    The OMDb apikey can be generated [here](http://www.omdbapi.com/apikey.aspx).
+
+    The free apikey is limited to 1000 requests per day so if you hit your limit the program should be able to pick up 
+    where it left off the next day as long as the `cache` [Setting](settings.md#cache) is enabled. 

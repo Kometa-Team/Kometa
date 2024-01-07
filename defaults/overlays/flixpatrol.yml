@@ -2,7 +2,7 @@
 #                            FlixPatrol Overlays                             #
 #           Created by Yozora, Bullmoose20, anon_fawkes, & Sohjiro           #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#    https://metamanager.wiki/en/latest/defaults/overlays/flixpatrol.html    #
+#      https://metamanager.wiki/en/latest/defaults/overlays/flixpatrol       #
 ##############################################################################
 
 external_templates:
@@ -54,10 +54,10 @@ templates:
   flixpatrol:
     default:
       slug: <<key>>
-      time_window: last_week
-      time_window_<<key>>: <<time_window>>
       location: world
       location_<<key>>: <<location>>
+      in_the_last: 1
+      in_the_last_<<key>>: <<in_the_last>>
       limit: 10
       limit_<<key>>: <<limit>>
     conditionals:
@@ -70,15 +70,15 @@ templates:
     flixpatrol_top:
       platform: <<slug>>
       location: <<actual_location>>
-      time_window: <<time_window_<<key>>>>
+      in_the_last: <<in_the_last_<<key>>>>
       limit: <<limit_<<key>>>>
 
 overlays:
-  
+
   Netflix:
     variables: {key: netflix, weight: 60}
     template: [name: standard, name: flixpatrol]
-    
+
   Disney:
     variables: {key: disney, weight: 50}
     template: [name: standard, name: flixpatrol]
@@ -94,11 +94,11 @@ overlays:
   Paramount:
     variables: {key: paramount, weight: 20, slug: paramount_plus}
     template: [name: standard, name: flixpatrol]
-    
+
   Prime:
     variables: {key: prime, weight: 10, slug: amazon_prime}
     template: [name: standard, name: flixpatrol]
-    
+
   Apple:
     variables: {key: apple, weight: 9, slug: apple_tv}
     template: [name: standard, name: flixpatrol]

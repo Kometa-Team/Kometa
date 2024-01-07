@@ -1,0 +1,65 @@
+##############################################################################
+#           Toronto International Film Festival Awards Collections           #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://metamanager.wiki/en/latest/defaults/award/tiff            #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Toronto People's Choice Award Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: Toronto International Film Festival !
+        allowed_libraries: movie
+        image: award/tiff/winner
+        translation_key: tiff_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000659
+      event_year: all
+      award_filter:
+        - people's choice award
+        - grolsch people's choice award
+      category_filter:
+        - best film
+        - people's choice award
+        - grolsch people's choice award
+        - gala or special presentations
+      winning: true
+
+dynamic_collections:
+  Toronto International Film Festival Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000659
+      starting: latest-5
+      ending: latest
+    title_format: Toronto International Film Festival <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/tiff/<<key>>
+      translation_key:
+        default: tiff_year
+      dynamic:
+        default: true

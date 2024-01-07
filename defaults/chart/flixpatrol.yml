@@ -2,7 +2,7 @@
 #                       FlixPatrol Charts Collections                        #
 #           Created by Yozora, Bullmoose20, anon_fawkes, & Sohjiro           #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#     https://metamanager.wiki/en/latest/defaults/chart/flixpatrol.html      #
+#        https://metamanager.wiki/en/latest/defaults/chart/flixpatrol        #
 ##############################################################################
 
 external_templates:
@@ -16,8 +16,8 @@ templates:
     default:
       location: world
       location_<<key>>: <<location>>
-      time_window: last_week
-      time_window_<<key>>: <<time_window>>
+      in_the_last: 1
+      in_the_last_<<key>>: <<in_the_last>>
       limit: 10
       limit_<<key>>: <<limit>>
     conditionals:
@@ -30,7 +30,7 @@ templates:
     flixpatrol_top:
       platform: <<platform>>
       location: <<actual_location>>
-      time_window: <<time_window_<<key>>>>
+      in_the_last: <<in_the_last_<<key>>>>
       limit: <<limit_<<key>>>>
 
 dynamic_collections:

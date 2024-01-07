@@ -1,4 +1,4 @@
-# <img src="https://metamanager.wiki/en/latest/_static/logo-full.png" alt="PMM">
+# <img src="https://metamanager.wiki/en/latest/assets/logo-full.webp" alt="PMM">
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/meisnate12/Plex-Meta-Manager?style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/releases)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/meisnate12/plex-meta-manager?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/meisnate12/plex-meta-manager)
@@ -6,7 +6,7 @@
 [![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
 [![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
 
-[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://discord.gg/plexmetamanager)
+[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://metamanager.wiki/en/latest/discord/)
 [![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
 [![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
 [![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/projects/plex-meta-manager/#languages)
@@ -14,79 +14,106 @@
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
 [![Feature Requests](https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic)](https://features.metamanager.wiki/)
 
-Plex Meta Manager is an open source Python 3 project that has been designed to ease the creation and maintenance of metadata, collections, and playlists within a Plex Media Server. The script is designed to be run continuously and be able to update information based on sources outside your plex environment. Plex Meta Manager supports Movie/TV/Music libraries and Playlists.
+Plex Meta Manager is a powerful tool designed to give you complete control over your media libraries. With Plex Meta Manager, you can take your customization to the next level, with granular control over metadata, collections, overlays, and much more.
+
+Transform your media library with Plex Meta Manager and discover its full potential! Connect to third-party services like TMDb, Trakt, and IMDb, among others, to create one-of-a-kind collections, overlays and more. Your media library will stand out and be tailored to your specific needs.
 
 ## What Can Plex-Meta-Manager Do?
 
-Plex Meta Manager can
+### Overhaul Your Media Libraries
 
-1. Create and maintain collections in Plex libraries using external lists, Plex searches, or filters.
+-  Elevate your library with beautifully crafted metadata - customize artwork, titles, summaries, and more to create a stunning library.
 
-2. Create, maintain, and share playlists on Plex servers using the same or similar criteria.
+### PMM Defaults
 
-3. Manage metadata [artwork, titles, summaries, release year, etc.] for anything on your Plex server.
+-  Take advantage of pre-made modular Collections & Overlays to reduce the manual effort and get to the good stuff with less effort!
 
-4. Add overlays to item artwork to display various details [ratings, resolution, edition, etc.].
+### Third-Party Integrations
 
-5. Send missing items from external lists [for example the IMDB 250] to Radarr or Sonarr for download.
+-  Harness the power of Trakt, TMDb, IMDb, Flixpatrol and more to create collections and overlays!
+-  Integrate with Sonarr and Radarr to automate your library growth.
 
-6. and more.
+### And More!
+
+-  We're constantly working on new features to take your library management experience to the next level.
+-  Consider sponsoring the project to allow us to continue building great features for you!
+
+## Example Plex Meta Manager Libraries 
+
+Here are some examples of the things you can achieve using Plex Meta Manager!
+
+**Example Movie Collections using the [Plex Meta Manager Defaults](https://metamanager.wiki/en/latest/defaults/collections/)** (click to enlarge):
+
+![Movie Collection Preview](https://metamanager.wiki/en/latest/images/movie-collection-preview.png)
+
+**Example Show Overlays using the [Plex Meta Manager Defaults](https://metamanager.wiki/en/latest/defaults/collections/overlays)** (click to enlarge):
+
+![Show Library Preview](https://metamanager.wiki/en/latest/images/show-library-preview.png)
+
+## Plex Meta Manager Defaults
+
+Want your library to look like the above images?  With the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide/) you can! These powerful and modular files were designed by the Plex Meta Manager team to make it simple to create a personalized, one-of-a-kind media collection without the hassle of manually defining each one.
+
+Want to see what the community has to offer? Check out the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs) repository on GitHub to see user-submitted configuration files, or even add your own to the mix!
+
+With Plex Meta Manager, you can also manage metadata for all your media types, from movies and shows to music and more. And since your metadata is managed outside your libraries, you'll never have to worry about losing your customizations in the event of a media server database loss, you can simply reapply them! It is also easy to move your customizations between servers if you need to.
 
 ## Getting Started
 
-These are the high-level steps you must take to get Plex Meta Manager up and running:
+To get started with Plex Meta Manager, follow these simple steps:
 
-1. Install Plex Meta Manager; this process is described [here](https://metamanager.wiki/en/latest/home/installation.html).
+1. Install Plex Meta Manager on your device. You can find the installation instructions for a variety of platforms [here](https://metamanager.wiki/en/latest/pmm/install/overview/).
 
-2. Once installed, you have to create a [Configuration File](https://metamanager.wiki/en/latest/config/configuration.html), which contains URLs and credentials and the like which are used to connect to services like Plex and TMDb.
+2. Once you have installed Plex Meta Manager, create your [Configuration File](https://metamanager.wiki/en/latest/config/overview/). This file contains important information such as URLs and credentials needed to connect to services like Plex and TMDb
 
-3. After that you can start updating Metadata and building automatic Collections by creating a [Metadata File](https://metamanager.wiki/en/latest/metadata/metadata.html) for each Library you want to interact with.
+3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a [Collection File](https://metamanager.wiki/en/latest/files/collections/) for each Library you want to work with. If you'd rather use some of our pre-made Collection Files, take a look at the [Plex Meta Manager Defaults](https://metamanager.wiki/en/latest/defaults/guide/)
 
-4. After that, explore the [Wiki](https://metamanager.wiki/) to see all the different Collection Builders that can be used to create collections.
+4. Finally, check out the [Wiki](https://metamanager.wiki/), you'll find new and exciting ways to truly unlock the potential of your libraries.
 
-## Walkthroughs
+## Step-by-Step Guides
 
-If you find steps 1-3 above daunting, there are some walkthroughs available that will take you through those three steps: getting Plex Meta Manager installed, creating a config file, and creating a couple collections to show how the process works.
+If you're a beginner to the concepts of Python, Git and/or Plex Meta Manager and find the above steps challenging, don't worry. We've got some step-by-step guides that can help you get started. These guides will take you through the process of installing Plex Meta Manager, creating your Configuration File and getting some basic Collections up and running.
 
-   1. The [Local Walkthrough](https://metamanager.wiki/en/latest/home/guides/local.html) covers installing the script natively [not in docker] on your local computer or a remote server.
-   2. The [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) covers the same thing, running the script via Docker.
-   3. The [unRAID Walkthrough](https://metamanager.wiki/en/latest/home/guides/unraid.html) gets you started configuring the script in UNRaid.  It doesn't go through the same steps with regard to creating the config file and metadata file, so you may want to go through the [Docker Walkthrough](https://metamanager.wiki/en/latest/home/guides/docker.html) first on your computer to gain that understanding.
+For those who need full installation walkthroughs, please refer to the following walkthrough guides:
+
+  * [Local Walkthrough](https://metamanager.wiki/en/latest/pmm/install/local/) - follow this if you are running the script directly on Windows, OS X, or Linux
+  * [Docker Walkthrough](https://metamanager.wiki/en/latest/pmm/install/docker/) - this discusses using Docker at the command line
+
+If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to Docker container setup for each system:
+
+**this doesn't cover the PMM setup specifics found in the guides above with regard to creating the config file and collection file, so you may want to go through the [Docker Walkthrough](https://metamanager.wiki/en/latest/pmm/install/docker/) first on your computer to gain that understanding.**
+
+  * [unRAID Walkthrough](https://metamanager.wiki/en/latest/pmm/install/unraid/)
+  * [Kubernetes Walkthrough](https://metamanager.wiki/en/latest/pmm/install/kubernetes/)
+  * [QNAP Walkthrough](https://metamanager.wiki/en/latest/pmm/install/qnap/)
+  * [Synology Walkthrough](https://metamanager.wiki/en/latest/pmm/install/synology/)
 
 ## Example Usage
 
-Plex Meta Manager gives the user the power to curate a set of Collections to make discovering and organizing media easy. They can be built either using plex-based searches/filters, or by using popular builders such as TMDb, IMDb, Trakt, MDBList, MyAnimeList and many more.
+Plex Meta Manager puts you in control of your media library by letting you create custom Collections that make discovering and organizing your content a breeze. With powerful search and filtering options, you can build Collections based on popular builders like TMDb, IMDb, Trakt, and many more.
 
-Some example collections that can be created are:
-  * Trending/Popular (based on TMDb, IMDb, Trakt, etc.)
-  * Streaming Service (such as Netflix, Disney+, etc.)
+Imagine having Collections like these at your fingertips:
+
+  * Trending and Popular (based on TMDb, IMDb, Trakt, etc.)
+  * Streaming Services (like Netflix, Disney+, and more)
   * Networks
   * Studios
   * Genres
   * Actors
   * Decades
 
-Below are some user-curated collections which have been created by Plex Meta Manager using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html).
+Plex Meta Manager gives you endless possibilities to curate and organize your media library any way you want. Create custom Collections and Overlays that fit your unique preferences and make discovering your content effortless.
 
-### Example Movie Collection
-![Movie Collection Preview](https://metamanager.wiki/en/latest/_images/movie-collection-preview.png)
-
-### Example Movie Overlays
-![Movie Library Preview](https://metamanager.wiki/en/latest/_images/movie-library-preview.png)
-
-### Example Show Collection
-![Show Collection Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
-
-### Example Show Overlays
-![Show Library Preview](https://metamanager.wiki/en/latest/_images/show-collection-preview.png)
+But if you don't want to spend time manually creating Collections and Overlays, we've got you covered. Check out the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide/) - a handcrafted selection of tried-and-tested Collections and Overlays made by the Plex Meta Manager team.
 
 ## Develop & Nightly Branches
 
-Develop and Nightly branches are deemed as "beta" branches which are updated far more frequently than the master branch. Bug fixes, new features and any other code added to Plex Meta Manager first goes to the nightly branch, followed by the develop branch, before finally being released to the master branch.
+The Develop and Nightly branches are "beta" versions of Plex Meta Manager that are updated more frequently than the stable version (Master branch). These branches are where bug fixes, new features, and other changes are added before being released to the Master branch.
 
-These branches (particularly the nightly branch) are only recommended for those who have a technical knowledge of Plex Meta Manager, and are happy with having to frequently update to receive the latest changes, and accept the risk that these branches may suffer breakages at any point.
+However, these branches (especially Nightly) are recommended for more technical users who don't mind updating frequently to get the latest changes. Keep in mind that these beta branches may have bugs or other issues that could cause problems with Plex Meta Manager or your media server. So, if you're not comfortable with technical issues, it's best to stick with the Master branch.
 
 <details class="details-tabs">
-  <summary>Develop Branch - Click to Expand</summary>
+  <summary>Develop Branch (click to expand)</summary>
 
 [![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/develop)
 
@@ -117,7 +144,7 @@ If switching to the develop branch, it is recommended to also use the [develop b
 <br>
 
 <details class="details-tabs">
-  <summary>Nightly Branch - Click to Expand</summary>
+  <summary>Nightly Branch  (click to expand)</summary>
 
 [![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
 
@@ -144,28 +171,27 @@ git checkout master
 ```
 ````
 
-As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager).
+As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://metamanager.wiki/en/nightly/) branch of the wiki and all discussions relating to changes made in the nightly branch will be held within the [Plex Meta Manager Discord Server](https://metamanager.wiki/en/latest/discord/).
 </details>
 
-## Defaults and User Metadata/Overlay Files
-
-The overlays and collection built in the images above can be easily added to any plex by using the [PMM Defaults](https://metamanager.wiki/en/latest/defaults/guide.html). These Files were created by the PMM team to make it easier than ever to have customized collections and overlays.
-
-To see user submitted Metadata configuration files, and you to even add your own, go to the [Plex Meta Manager Configs](https://github.com/meisnate12/Plex-Meta-Manager-Configs).
-
-Plex Meta Manager can manage the metadata fields for movies, shows, seasons, episodes, artists, albums, tracks, and collections, which can allow you to have a full backup of your customizations in case of a database loss.
 
 ## Discord Support Server
-Before posting on GitHub about an enhancement, error, or configuration question please visit the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager). we have a dedicated support thread system so that your query can be dealt with efficiently by our team and community.
+
+If you're looking for support for any questions or issues you might have, or if you just want to be a part of our growing community, Join the [Plex Meta Manager Discord Server](https://metamanager.wiki/en/latest/discord/).
 
 ## Feature Requests
-If you have an idea for how to enhance Plex Meta Manager or just want to vote on what should be added next please visit the [Feature Request](https://features.metamanager.wiki/features) Page.
+
+At Plex Meta Manager, we value our community's input and actively seek feedback to drive the evolution of our product. We want to hear your ideas on how to enhance Plex Meta Manager, and we encourage you to visit our [Feature Request](https://features.metamanager.wiki/features) page to share your thoughts or vote on what features you would like to see added next. Your voice matters and helps shape the future of Plex Meta Manager, so please don't hesitate to join in the conversation and be a part of our community-driven development process.
 
 ## Errors and Configuration Questions
-If you are unable to use the [Plex Meta Manager Discord Server](https://discord.gg/plexmetamanager), please follow this guidance:
-* If you're getting an Error please update to the latest version and then open a [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) if the error persists.
-* If you see a mistake/typo with the [Plex Meta Manager Wiki](https://metamanager.wiki/) or have an idea of how we can improve it please open a [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+)
-* If you have a metadata configuration query please post in the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions).
+
+If you're having trouble, we recommend first joining the [Plex Meta Manager Discord Server](https://metamanager.wiki/en/latest/discord/) and seeking support there. If that isn't possible for you, here's what you can do:
+
+* If you get an error, update to the latest version and check if the issue persists. If it does, report the bug by filling out the [Bug Report](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+bug&template=bug_report.md&title=Bug%3A+) template.
+* If you spot a mistake or have an idea to improve the [Plex Meta Manager Wiki](https://metamanager.wiki/), submit a request using the [Wiki Request](https://github.com/meisnate12/Plex-Meta-Manager/issues/new?assignees=meisnate12&labels=status%3Anot-yet-viewed%2C+documentation&template=3.docs_request.yml&title=%5BDocs%5D%3A+) template.
+* If you have a question about metadata configuration, start a discussion on the [Discussions](https://github.com/meisnate12/Plex-Meta-Manager/discussions). Remember, the community helps shape the future of Plex Meta Manager, so your input is valuable!
+
+For support on any of the above, visit the [Discord server](https://metamanager.wiki/en/latest/discord/).
 
 ## Contributing
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.

@@ -1,12 +1,14 @@
 # List of Defaults Files
 
-The below table outlines the available Defaults files which can be called via `metadata_path` (for Collections), `overlay_path` (for Overlays) and `playlist_files` (for Playlists).
+The below table outlines the available Defaults files which can be called via `collection_files` (for Collections), `overlay_files` (for Overlays) and `playlist_files` (for Playlists).
 
-```{include} collection_list.md
-```
+{%
+   include-markdown "./collection_list.md"
+%}
 
-```{include} overlay_list.md
-```
+{%
+   include-markdown "./overlay_list.md"
+%}
 
 ## Playlists
 
@@ -14,6 +16,6 @@ These files apply playlists to the "Playlists" section of Plex and are applied b
 
 ### Playlist Files
 
-| Default              | path       | Example Overlays                                       |
-|:---------------------|:-----------|:-------------------------------------------------------|
-| [Playlist](playlist) | `playlist` | Arrowverse (Timeline Order), Pokémon (Timeline Order)  |
+| Default                   | path        | Example Overlays                                       |
+|:--------------------------|:------------|:-------------------------------------------------------|
+| [Playlist](playlist.md)   | `playlist`  | Arrowverse (Timeline Order), Pokémon (Timeline Order)  |

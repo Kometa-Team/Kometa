@@ -24,6 +24,7 @@ class Library(ABC):
         self.image_styles = {}
         self.collection_images = {}
         self.queue_current = 0
+        self.collection_files = []
         self.metadata_files = []
         self.overlay_files = []
         self.images_files = []
@@ -41,9 +42,10 @@ class Library(ABC):
         self.config = config
         self.name = params["name"]
         self.original_mapping_name = params["mapping_name"]
-        self.metadata_path = params["metadata_path"]
-        self.overlay_path = params["overlay_path"]
-        self.image_sets = params["image_sets"]
+        self.scanned_collection_files = params["collection_files"]
+        self.scanned_metadata_files = params["metadata_files"]
+        self.scanned_overlay_files = params["overlay_files"]
+        self.scanned_image_files = params["image_files"]
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
@@ -54,6 +56,7 @@ class Library(ABC):
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
         self.report_data = {}
+        self.run_order = params["run_order"]
         self.asset_folders = params["asset_folders"]
         self.create_asset_folders = params["create_asset_folders"]
         self.dimensional_asset_rename = params["dimensional_asset_rename"]
@@ -80,6 +83,7 @@ class Library(ABC):
         self.ignore_ids = params["ignore_ids"]
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
         self.assets_for_all = params["assets_for_all"]
+        self.assets_for_all_collections = False
         self.delete_collections = params["delete_collections"]
         self.mass_studio_update = params["mass_studio_update"]
         self.mass_genre_update = params["mass_genre_update"]
@@ -93,7 +97,6 @@ class Library(ABC):
         self.mass_original_title_update = params["mass_original_title_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
-        self.mass_episode_imdb_parental_labels = params["mass_episode_imdb_parental_labels"]
         self.mass_poster_update = params["mass_poster_update"]
         self.mass_background_update = params["mass_background_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
@@ -121,13 +124,13 @@ class Library(ABC):
                                                or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                                or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
                                                or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
-                                               or self.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
+                                               or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
                                                or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
         self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
                                          or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
                                          or self.metadata_backup or self.update_blank_track_titles else False
         self.meta_operations = [i["source"] if isinstance(i, dict) else i for i in [getattr(self, o) for o in operations.meta_operations] if i]
-        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.mass_episode_imdb_parental_labels else False
+        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels else False
 
         if self.asset_directory:
             logger.info("")
@@ -138,13 +141,24 @@ class Library(ABC):
             logger.info("")
             logger.info(output)
 
-    def scan_files(self, operations_only, overlays_only, collection_only):
-        if not operations_only and not overlays_only:
-            for file_type, metadata_file, temp_vars, asset_directory in self.metadata_path:
+    def scan_files(self, operations_only, overlays_only, collection_only, metadata_only):
+        if not operations_only and not overlays_only and not metadata_only:
+            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_collection_files:
                 try:
-                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory)
+                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
+                    self.collection_files.append(meta_obj)
+                except Failed as e:
+                    logger.error(e)
+                    logger.info("Collection File Failed To Load")
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Collection File")
+        if not operations_only and not overlays_only and not collection_only:
+            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_metadata_files:
+                try:
+                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "metadata")
                     if meta_obj.metadata:
                         self.metadatas.extend([m for m in meta_obj.metadata])
                     self.metadata_files.append(meta_obj)
@@ -154,8 +168,8 @@ class Library(ABC):
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Metadata File")
-        if not operations_only and not collection_only:
-            for file_type, overlay_file, temp_vars, asset_directory in self.overlay_path:
+        if not operations_only and not collection_only and not metadata_only:
+            for file_type, overlay_file, temp_vars, asset_directory in self.scanned_overlay_files:
                 try:
                     overlay_obj = OverlayFile(self.config, self, file_type, overlay_file, temp_vars, asset_directory, self.queue_current)
                     self.overlay_files.append(overlay_obj)
@@ -165,14 +179,20 @@ class Library(ABC):
                 except Failed as e:
                     logger.error(e)
                     logger.info("Overlay File Failed To Load")
-        if not operations_only and not overlays_only:
-            for file_type, images_file, temp_vars, asset_directory in self.image_sets:
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Overlay File")
+        if not operations_only and not overlays_only and not collection_only:
+            for file_type, images_file, temp_vars, asset_directory in self.scanned_image_files:
                 try:
-                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, image_set_file=True)
+                    images_obj = MetadataFile(self.config, self, file_type, images_file, temp_vars, asset_directory, "image")
                     self.images_files.append(images_obj)
                 except Failed as e:
                     logger.error(e)
-                    logger.info("Images File Failed To Load")
+                    logger.info("Image File Failed To Load")
+                except NotScheduled as e:
+                    logger.info("")
+                    logger.separator(f"Skipping {e} Image File")
 
     def upload_images(self, item, poster=None, background=None, overlay=False):
         poster_uploaded = False
@@ -188,12 +208,12 @@ class Library(ABC):
                             item.removeLabel("Overlay")
                     self._upload_image(item, poster)
                     poster_uploaded = True
-                    logger.info(f"Detail: {poster.attribute} updated {poster.message}")
+                    logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
-                    logger.info(f"Detail: {poster.prefix}poster update not needed")
+                    logger.info(f"Metadata: {poster.prefix}poster update not needed")
             except Failed:
                 logger.stacktrace()
-                logger.error(f"Detail: {poster.attribute} failed to update {poster.message}")
+                logger.error(f"Metadata: {poster.attribute} failed to update {poster.message}")
 
         background_uploaded = False
         if background is not None:
@@ -204,12 +224,12 @@ class Library(ABC):
                 if not image_compare or str(background.compare) != str(image_compare):
                     self._upload_image(item, background)
                     background_uploaded = True
-                    logger.info(f"Detail: {background.attribute} updated {background.message}")
+                    logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
-                    logger.info(f"Detail: {background.prefix}background update not needed")
+                    logger.info(f"Metadata: {background.prefix}background update not needed")
             except Failed:
                 logger.stacktrace()
-                logger.error(f"Detail: {background.attribute} failed to update {background.message}")
+                logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
         if self.config.Cache:
             if poster_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
@@ -275,7 +295,7 @@ class Library(ABC):
             exif_tags = image.getexif()
         if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
             os.remove(image_path)
-            raise Failed("Poster already has an Overlay")
+            raise Failed("This item's poster already has an Overlay. There is no PMM setting to change; manual attention required.")
         if remove:
             os.remove(image_path)
         else:

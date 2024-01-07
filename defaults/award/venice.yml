@@ -1,0 +1,66 @@
+##############################################################################
+#                         Venice Awards Collections                          #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://metamanager.wiki/en/latest/defaults/award/venice          #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Venice Golden Lions:
+    variables:
+      key: golden
+    template:
+      - name: shared
+        sort: Venice !
+        allowed_libraries: movie
+        image: award/venice/winner
+        translation_key: venice_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000681
+      event_year: all
+      award_filter:
+        - golden lion
+        - international critics award
+        - grand international award
+      category_filter:
+        - golden lion
+        - best feature film
+        - best film
+        - grand international award
+      winning: true
+
+dynamic_collections:
+  Venice Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000681
+      starting: latest-5
+      ending: latest
+    title_format: Venice <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/venice/<<key>>
+      translation_key:
+        default: venice_year
+      dynamic:
+        default: true

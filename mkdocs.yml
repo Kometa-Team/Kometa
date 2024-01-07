@@ -1,0 +1,337 @@
+site_name: Plex Meta Manager Wiki
+site_author: meisnate12
+site_description: Plex Meta Manager is an open-source python project allowing you to unlock the potential of your media server.
+site_url: https://<slug>.metamanager.wiki/en/latest/
+repo_name: Plex Meta Manager
+repo_url: https://github.com/meisnate12/Plex-Meta-Manager
+
+theme:
+  name: material
+  logo: assets/icon.png
+  favicon: assets/favicon.png
+  custom_dir: docs/overrides
+  features:
+    - content.code.annotate
+    - content.tabs.link
+    - content.code.copy
+    - header.autohide
+    - announce.dismiss
+    - navigation.footer
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+  language: en
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  icon:
+    alternate: material/file-document-multiple-outline
+plugins:
+  - glightbox
+  - search:
+      lang: en
+  - include-markdown
+  - redirects:
+      redirect_maps:
+        'discord.md': 'https://metamanager.wiki/en/nightly/link/'
+        'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
+        'link.md': 'https://discord.gg/FNqqw5jRSz'
+        'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
+        'traktauth.md': 'https://replit.com/@chazlarson/TraktAuth'
+  - material-plausible
+extra:
+  alternate:
+    - name: Latest Docs
+      link: /en/latest/
+      lang: en
+    - name: Develop Docs
+      link: /en/develop/
+      lang: en
+    - name: Nightly Docs
+      link: /en/nightly/
+      lang: en
+  social:
+    - icon: fontawesome/solid/heart
+      class: md-social__link heart
+      link: 'https://github.com/sponsors/meisnate12'
+      name: Donate
+    - icon: fontawesome/brands/discord
+      class: md-social__link
+      link: 'https://metamanager.wiki/en/latest/discord/'
+      name: Discord
+    - icon: fontawesome/brands/github
+      class: md-social__link
+      link: 'https://github.com/meisnate12/Plex-Meta-Manager'
+      name: GitHub
+  analytics:
+    provider: plausible
+    domain: metamanager.wiki/en/latest
+    src: "https://analytics.metamanager.wiki/js/script.js"
+copyright: Copyright &copy; 2024 meisnate12
+markdown_extensions:
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.tilde
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - neoteroi.cards
+extra_css:
+  - stylesheets/cards.css
+  - stylesheets/extra.css
+  - stylesheets/termynal.css
+  - stylesheets/custom.css
+
+extra_javascript:
+  - stylesheets/termynal.js
+  - stylesheets/custom.js
+  - stylesheets/branch.js
+
+nav:
+  - PLEX META MANAGER:
+      - Welcome: home.md
+      - INSTALLATION:
+        - Installing PMM: pmm/install/overview.md
+        - Docker Images: pmm/install/images.md
+        - Walkthroughs:
+          - Local Walkthrough (Win/Mac/Linux): pmm/install/local.md
+          - Docker Walkhrough: pmm/install/docker.md
+          - unRAID Walkthrough: pmm/install/unraid.md
+          - Kubernetes Walkthrough: pmm/install/kubernetes.md
+          - QNAP Walkthrough: pmm/install/qnap.md
+          - Synology Walkthrough: pmm/install/synology.md
+      - POST-INSTALL:
+        - Run Commands & Env Variables: pmm/environmental.md
+        - YAML Files Explained: pmm/yaml.md
+        - Log Files & Common Errors:  pmm/logs.md
+        - Frequently Asked Questions: pmm/faqs.md
+        - Explanation Guides: &guides
+          - Overview: pmm/guides/overview.md
+          - Plex Ratings Explained: pmm/guides/ratings.md
+          - Scheduling PMM Runs Guide: pmm/guides/scheduling.md
+          - Image Asset Directory Guide: pmm/guides/assets.md
+          - Formula 1 Metadata Guide: pmm/guides/formula.md
+        - Companion Scripts: &scripts
+          - Overview: pmm/scripts/overview.md
+          - Plex Image Cleanup: pmm/scripts/image-cleanup.md
+          - PMM Overlay Reset: pmm/scripts/overlay-reset.md
+      - USEFUL LINKS: &links
+        - Feature Requests: https://features.metamanager.wiki/
+        - Bugs & Issues: https://github.com/meisnate12/Plex-Meta-Manager/issues
+        - User Configs Repository: https://github.com/meisnate12/Plex-Meta-Manager-Configs
+        - Discord Server: https://metamanager.wiki/en/latest/discord/
+        - Donate/Sponsor PMM: https://github.com/sponsors/meisnate12
+        - Acknowledgements: pmm/acknowledgements.md
+  - CONFIGURATION FILE:
+      - Overview: config/overview.md
+      - STRUCTURE:
+        - Library Attributes: config/libraries.md
+        - File Blocks: config/files.md
+        - Scheduling Parts: config/schedule.md
+        - Library Operations: config/operations.md
+        - Playlist Files: config/playlists.md
+        - Settings: config/settings.md
+        - Webhooks: config/webhooks.md
+      - CONNECTORS:
+        - Plex: config/plex.md
+        - TMDb: config/tmdb.md
+        - Trakt: config/trakt.md
+        - Radarr: config/radarr.md
+        - Sonarr: config/sonarr.md
+        - Notifiarr: config/notifiarr.md
+        - Tautulli: config/tautulli.md
+        - Github: config/github.md
+        - MdbList: config/mdblist.md
+        - OMDb: config/omdb.md
+        - AniDB: config/anidb.md
+        - MyAnimeList: config/myanimelist.md
+  - PMM DEFAULTS:
+      - Defaults Usage Guide: defaults/guide.md
+      - Defaults Files: defaults/files.md
+      - COLLECTIONS DEFAULTS:
+        - Collections: defaults/collections.md
+        - Shared Variables: defaults/collection_variables.md
+        - Separators: defaults/separators.md
+        - Award:
+          - Separator: defaults/award/separator.md
+          - Academy Awards (Oscars): defaults/award/oscars.md
+          - Berlin Film Festival Awards: defaults/award/berlinale.md
+          - British Academy of Film Awards: defaults/award/bafta.md
+          - Cannes Film Festival Awards: defaults/award/cannes.md
+          - César Awards: defaults/award/cesar.md
+          - Critics Choice Awards: defaults/award/choice.md
+          - Emmy Awards: defaults/award/emmy.md
+          - Golden Globe Awards: defaults/award/golden.md
+          - Independent Spirit Awards: defaults/award/spirit.md
+          - National Film Registry: defaults/award/nfr.md
+          - People's Choice Awards: defaults/award/pca.md
+          - Razzie Awards: defaults/award/razzie.md
+          - Sundance Film Festival Awards: defaults/award/sundance.md
+          - Toronto International Film Festival: defaults/award/tiff.md
+          - Venice Film Festival Awards: defaults/award/venice.md
+        - Chart:
+          - Separator: defaults/chart/separator.md
+          - Basic Charts: defaults/chart/basic.md
+          - AniList Charts: defaults/chart/anilist.md
+          - Flixpatrol Charts: defaults/chart/flixpatrol.md
+          - IMDb Charts: defaults/chart/imdb.md
+          - MyAnimeList Charts: defaults/chart/myanimelist.md
+          - Tautulli Charts: defaults/chart/tautulli.md
+          - TMDb Charts: defaults/chart/tmdb.md
+          - Trakt Charts: defaults/chart/trakt.md
+          - Other Charts: defaults/chart/other.md
+        - Content:
+          - Genres: defaults/both/genre.md
+          - Franchises (Movie): defaults/movie/franchise.md
+          - Franchises (Show): defaults/show/franchise.md
+          - Universes: defaults/both/universe.md
+          - Based On...: defaults/both/based.md
+          - Collectionless: defaults/both/collectionless.md
+        - Content Rating:
+          - US Content Ratings (Movie): defaults/movie/content_rating_us.md
+          - US Content Ratings (Show): defaults/show/content_rating_us.md
+          - UK Content Ratings: defaults/both/content_rating_uk.md
+          - DE Content Ratings: defaults/both/content_rating_de.md
+          - MyAnimeList Content Ratings: defaults/both/content_rating_mal.md
+          - Common Sense Media Content Ratings: defaults/both/content_rating_cs.md
+        - Location:
+          - Countries (Movie): defaults/movie/country.md
+          - Countries (Show): defaults/show/country.md
+          - Regions (Movie): defaults/movie/region.md
+          - Regions (Show): defaults/show/region.md
+          - Continents (Movie): defaults/movie/continent.md
+          - Continents (Show): defaults/show/continent.md
+        - Media:
+          - Aspect Ratio: defaults/both/aspect.md
+          - Resolutions: defaults/both/resolution.md
+          - Audio Languages: defaults/both/audio_language.md
+          - Subtitle Languages: defaults/both/subtitle_language.md
+        - Production:
+          - Networks: defaults/show/network.md
+          - Streaming: defaults/both/streaming.md
+          - Studios: defaults/both/studio.md
+        - People:
+          - Actors: defaults/both/actor.md
+          - Directors: defaults/movie/director.md
+          - Producers: defaults/movie/producer.md
+          - Writers: defaults/movie/writer.md
+        - Time:
+          - Seasonal: defaults/movie/seasonal.md
+          - Years: defaults/both/year.md
+          - Decades (Movie): defaults/movie/decade.md
+          - Decades (Show): defaults/show/decade.md
+      - PLAYLIST DEFAULTS:
+        - Playlists: defaults/playlist.md
+      - OVERLAY DEFAULTS:
+        - Overlays: defaults/overlays.md
+        - Shared Variables: defaults/overlay_variables.md
+        - Chart:
+          - FlixPatrol Top: defaults/overlays/flixpatrol.md
+          - Ribbon: defaults/overlays/ribbon.md
+        - Content:
+          - Episode Info: defaults/overlays/episode_info.md
+          - MediaStinger: defaults/overlays/mediastinger.md
+          - Ratings: defaults/overlays/ratings.md
+          - Status: defaults/overlays/status.md
+        - Content Rating:
+          - US Content Ratings (Movie): defaults/overlays/content_rating_us_movie.md
+          - US Content Ratings (Show): defaults/overlays/content_rating_us_show.md
+          - UK Content Ratings: defaults/overlays/content_rating_uk.md
+          - DE Content Ratings: defaults/overlays/content_rating_de.md
+          - Common Sense Age Ratings: defaults/overlays/commonsense.md
+        - Media:
+          - Aspect Ratio: defaults/overlays/aspect.md
+          - Audio Codec: defaults/overlays/audio_codec.md
+          - Audio/Subtitle Language Count: defaults/overlays/language_count.md
+          - Audio/Subtitle Language Flags: defaults/overlays/languages.md
+          - Resolution/Edition: defaults/overlays/resolution.md
+          - Runtimes: defaults/overlays/runtimes.md
+          - Versions: defaults/overlays/versions.md
+          - Video Format: defaults/overlays/video_format.md
+        - Production:
+          - Networks: defaults/overlays/network.md
+          - Streaming: defaults/overlays/streaming.md
+          - Studios: defaults/overlays/studio.md
+        - Utility:
+          - Direct Play Only: defaults/overlays/direct_play.md
+  - FILES & BUILDERS:
+      - Overview: files/overview.md
+      - FILES:
+        - Collection Files: files/collections.md
+        - Overlay Files: files/overlays.md
+        - Playlist Files: files/playlists.md
+        - Metadata Files: files/metadata.md
+        - Definition Templates: files/templates.md
+        - Dynamic Collections: files/dynamic.md
+        - Dynamic Collection Types & Data: files/dynamic_types.md
+      - DEFINITION ATTRIBUTES:
+        - Builders:
+          - Overview: files/builders/overview.md
+          - Dumb Plex Builders: files/builders/plex.md
+          - Smart Plex Builders: files/builders/smart.md
+          - TMDb Builders: files/builders/tmdb.md
+          - TVDb Builders: files/builders/tvdb.md
+          - IMDb Builders: files/builders/imdb.md
+          - Trakt Builders: files/builders/trakt.md
+          - Tautulli Builders: files/builders/tautulli.md
+          - Radarr Builders: files/builders/radarr.md
+          - Sonarr Builders: files/builders/sonarr.md
+          - MdbList Builders: files/builders/mdblist.md
+          - Letterboxd Builders: files/builders/letterboxd.md
+          - ICheckMovies Builders: files/builders/icheckmovies.md
+          - FlixPatrol Builders: files/builders/flixpatrol.md
+          - Reciperr Builders: files/builders/reciperr.md
+          - StevenLu Builders: files/builders/stevenlu.md
+          - AniDB Builders: files/builders/anidb.md
+          - AniList Builders: files/builders/anilist.md
+          - MyAnimeList Builders: files/builders/myanimelist.md
+        - Filters: files/filters.md
+        - Definition Settings: files/settings.md
+        - Radarr/Sonarr Settings: files/arr.md
+        - Collection/Playlist Metadata Updates: files/updates.md
+        - Item Metadata Updates: files/item_updates.md
+  - MISCELLANEOUS:
+    - EXPLANATION GUIDES: *guides
+    - COMPANION SCRIPTS: *scripts
+    - USEFUL LINKS: *links
+  - SPONSOR: https://github.com/sponsors/meisnate12
+#  - SHOWCASE:
+#    - Overlays Showcase: showcase/overlays.md

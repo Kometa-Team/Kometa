@@ -4,17 +4,18 @@ There are many Default Overlay Files built into PMM itself which offer an easy-t
 
 This is the simplest way to create Overlays using Plex Meta Manager.
 
-```{include} overlay_list.md
-```
+{%
+   include-markdown "./overlay_list.md"
+%}
 
 ## Configurations
 
-To run a default pmm Overlay file you can simply add it to your `overlay_path` using `pmm` like so:
+To run a default pmm Overlay file you can simply add it to your `overlay_files` using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: ribbon
       - pmm: ratings
 ```
@@ -32,9 +33,8 @@ libraries:
 ```yaml
 libraries:
   Movies:
-    overlay_path:
-      - remove_overlays: false
-      - reapply_overlay: true
+    remove_overlays: false
+    overlay_files:
       - pmm: resolution                                                    # 1, 4
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -78,9 +78,8 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
-      - remove_overlays: false
-      - reapply_overlay: true
+    remove_overlays: false
+    overlay_files:
       - pmm: resolution                                                    # 1
       - pmm: audio_codec                                                   # 2
       - pmm: mediastinger                                                  # 3
@@ -121,18 +120,17 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
-      - remove_overlays: false
-      - reapply_overlay: true
+    remove_overlays: false
+    overlay_files:
       - pmm: resolution                                                    # 1
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: audio_codec                                                   # 2
         template_variables:
-          overlay_level: season
+          builder_level: season
       - pmm: video_format                                                  # 3
         template_variables:
-          overlay_level: season
+          builder_level: season
 ```
 </details>
 
@@ -147,15 +145,14 @@ libraries:
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
-      - remove_overlays: false
-      - reapply_overlay: true
+    remove_overlays: false
+    overlay_files:
       - pmm: resolution                                                    # 1
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: audio_codec                                                   # 2
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: ratings                                                       # 3, 4
         template_variables:
   
@@ -170,16 +167,16 @@ libraries:
           rating2_font_size: 70                                            # 4 adjusted font size to fit rating
   
           horizontal_position: right                                       # the set of ratings is on the right of the poster
-          overlay_level: episode
+          builder_level: episode
       - pmm: video_format                                                  # 5
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: episode_info                                                  # 6
         template_variables:
-          overlay_level: episode
+          builder_level: episode
       - pmm: runtimes                                                      # 7
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 
     operations:
       mass_episode_critic_rating_update: imdb                            # 3 This operation will update the episodes critic rating in plex with IMDb ratings information
@@ -203,11 +200,11 @@ Plex has three available spots in the Plex DB to store ratings and thus Plex Met
 
 To be able to insert the ratings you want, Plex Meta Manager operations need to be defined. In this example below, User ratings (`#1`) are being filled with Rotten Tomatoes Critics Ratings. Critic ratings (`#2`) are filled with IMDb, and Audience ratings (`#3`) are filled with TMDb.
 
-**mass_*_rating_update** sources can be found here: [operations](../config/operations)
+**mass_*_rating_update** sources can be found here: [operations](../config/operations.md)
 
 ![](images/ratings_operations.png)
 
-Finally, to show the ratings on the poster, the following was added to the `overlay_path` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
+Finally, to show the ratings on the poster, the following was added to the `overlay_files` section in the `config.yml` file to post Rotten Tomatoes Critics Ratings in (`#1`), IMDb ratings in (`#2`), and TMDb ratings in (`#3`)
 
 ![](images/ratings_overlay_path.png)
 
@@ -220,17 +217,18 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    overlay_path:
+    overlay_files:
       - pmm: ratings
         template_variables:
-          overlay_level: episode
+          builder_level: episode
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: ratings` has a page [here](overlays/ratings.md).
 
-**In addition to the defined `template_variables` almost all default Overlay files have access to the [Shared Variables](collection_variables).**
+**In addition to the defined `template_variables` almost all default Overlay files have access to the [Shared Variables](collection_variables.md).**
 
 ### Examples
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}

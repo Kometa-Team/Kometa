@@ -1,9 +1,8 @@
 ##############################################################################
 #                        Sundance Awards Collections                         #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#             Credit to pjcob & maxwelldeux for the Trakt Lists              #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/award/sundance.html       #
+#         https://metamanager.wiki/en/latest/defaults/award/sundance         #
 ##############################################################################
 
 external_templates:
@@ -23,25 +22,32 @@ collections:
         translation_key: sundance_best
       - name: arr
       - name: custom
-    trakt_list_details: https://trakt.tv/users/maxwelldeux/lists/sundance-film-festival-grand-jury-prize
+    imdb_award:
+      event_id: ev0000631
+      event_year: all
+      award_filter: grand jury prize
+      winning: true
 
 dynamic_collections:
   Sundance Film Festival:
-    type: number
+    type: imdb_awards
     sync: true
     data:
-      starting: current_year-5
-      ending: current_year
+      event_id: ev0000631
+      starting: latest-5
+      ending: latest
     title_format: Sundance Film Festival <<key_name>>
     template:
       - use_year_collections
-      - trakt
+      - imdb_award
       - shared
       - arr
       - custom
     template_variables:
-      trakt_list:
-        default: https://trakt.tv/users/pjcob/lists/<<key>>-sundance
+      winning:
+        default: true
+      collection_order:
+        default: release
       allowed_libraries:
         default: movie
       image:

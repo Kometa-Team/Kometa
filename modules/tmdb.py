@@ -103,8 +103,8 @@ class TMDBObj:
         self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
         self.language_iso = data["language_iso"] if isinstance(data, dict) else data.original_language.iso_639_1 if data.original_language else None
         self.language_name = data["language_name"] if isinstance(data, dict) else data.original_language.english_name if data.original_language else None
-        self.genres = data["genres"].split("|") if isinstance(data, dict) else [g.name for g in data.genres if g]
-        self.keywords = data["keywords"].split("|") if isinstance(data, dict) else [k.name for k in data.keywords if k]
+        self.genres = [g for g in data["genres"].split("|") if g] if isinstance(data, dict) else [g.name for g in data.genres if g]
+        self.keywords = [k for k in data["keywords"].split("|") if k] if isinstance(data, dict) else [k.name for k in data.keywords if k]
 
 
 class TMDbMovie(TMDBObj):
@@ -132,7 +132,10 @@ class TMDbMovie(TMDBObj):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            raise Failed(f"TMDb Error: No Movie found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
+        except TMDbException as e:
+            logger.stacktrace()
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 
 class TMDbShow(TMDBObj):
@@ -166,7 +169,10 @@ class TMDbShow(TMDBObj):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
         except NotFound:
-            raise Failed(f"TMDb Error: No Show found for TMDb ID {self.tmdb_id}")
+            raise Failed(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
+        except TMDbException as e:
+            logger.stacktrace()
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 class TMDb:
     def __init__(self, config, params):
@@ -338,7 +344,10 @@ class TMDb:
             limit = int(attrs.pop("limit"))
             for date_attr in date_methods:
                 if date_attr in attrs:
-                    attrs[date_attr] = util.validate_date(attrs[date_attr], f"tmdb_discover attribute {date_attr}", return_as="%Y-%m-%d")
+                    try:
+                        attrs[date_attr] = util.validate_date(attrs[date_attr], return_as="%Y-%m-%d")
+                    except Failed as e:
+                        raise Failed(f"Collection Error: tmdb_discover attribute {date_attr}: {e}")
             if is_movie and region and "region" not in attrs:
                 attrs["region"] = region
             logger.trace(f"Params: {attrs}")
@@ -356,7 +365,7 @@ class TMDb:
             if method == "tmdb_list":
                 results = self.get_list(tmdb_id)
                 tmdb_name = results.name
-                ids = [(i.id, "tmdb" if isinstance(i, Movie) else "tmdb_show") for i in results.get_results(results.total_results)]
+                ids = [(i.id, "tmdb" if isinstance(i, Movie) else "tmdb_show") for i in results.get_results()]
             elif method == "tmdb_movie":
                 tmdb_name = self.get_movie(tmdb_id).title
                 ids.append((tmdb_id, "tmdb"))

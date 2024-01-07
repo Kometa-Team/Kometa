@@ -2,7 +2,7 @@
 #                             Studio Collections                             #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/both/studio.html        #
+#          https://metamanager.wiki/en/latest/defaults/both/studio           #
 ##############################################################################
 
 external_templates:
@@ -39,7 +39,7 @@ dynamic_collections:
       dynamic:
         default: true
     include:
-#### ANIMES ########################################################################################################
+      #### ANIMES ########################################################################################################
       - 8bit
       - A-1 Pictures
       - A.C.G.T.
@@ -164,7 +164,9 @@ dynamic_collections:
       - Shogakukan
       - Shuka
       - Signal.MD
+      - Silver
       - SILVER LINK.
+      - Square Enix
       - Staple Entertainment
       - Studio 3Hz
       - Studio A-CAT
@@ -218,7 +220,7 @@ dynamic_collections:
       - Zexcs
 
 
-#### MOVIES & TV SHOWS ###############################################################################################
+      #### MOVIES & TV SHOWS ###############################################################################################
       - 3 Arts Entertainment
       - 6th & Idaho
       - 20th Century Animation
@@ -241,6 +243,7 @@ dynamic_collections:
       - Amazon Studios
       - Amblin Entertainment
       - AMC Studios
+      - Anima Sola Productions
       - Annapurna Pictures
       - Ardustry Entertainment
       - Artisan Entertainment
@@ -256,6 +259,7 @@ dynamic_collections:
       - BBC Studios
       - Bill Melendez Productions
       - Blade
+      - Bleecker Street
       - Blown Deadline Productions
       - Blue Ice Pictures
       - Blue Sky Studios
@@ -275,6 +279,7 @@ dynamic_collections:
       - Canal+
       - Carnival Films
       - Carolco
+      - Cartoon Saloon
       - Carsey-Werner Company
       - Castle Rock Entertainment
       - CBS Productions
@@ -313,6 +318,7 @@ dynamic_collections:
       - FilmNation Entertainment
       - Flynn Picture Company
       - Focus Features
+      - Food Network
       - Fortiche Production
       - Fox Television Studios
       - Freckle Films
@@ -332,11 +338,13 @@ dynamic_collections:
       - HartBeat Productions
       - Hartswood Films
       - Hasbro
-      - Heyday Films
       - HBO
+      - Heyday Films
+      - Hughes Entertainment
       - Hurwitz & Schlossberg Productions
       - Hyperobject Industries
       - Icon Entertainment International
+      - IFC Films
       - Illumination Entertainment
       - Imagin
       - Imperative Entertainment
@@ -352,12 +360,15 @@ dynamic_collections:
       - Kjam Media
       - Kudos
       - Kurtzman Orci
+      - Laika Entertainment
       - Landscape Entertainment
       - Laura Ziskin Productions
       - Leftfield Pictures
       - Legendary Pictures
       - Let's Not Turn This Into a Whole Big Production
+      - Lifetime
       - Levity Entertainment Group
+      - Lightstorm Entertainment
       - Likely Story
       - Lionsgate
       - Live Entertainment
@@ -368,7 +379,7 @@ dynamic_collections:
       - Mandalay Entertainment
       - Mandarin
       - Mandarin Motion Pictures Limited
-      - marv
+      - Marv Films
       - Marvel Animation
       - Marvel Studios
       - Matt Tolmach Productions
@@ -378,6 +389,7 @@ dynamic_collections:
       - Michael Patrick King Productions
       - Millennium Films
       - Miramax
+      - NEON
       - Netflix
       - New Line Cinema
       - Nickelodeon Animation Studio
@@ -407,6 +419,7 @@ dynamic_collections:
       - Radar Pictures
       - RadicalMedia
       - Railsplitter Pictures
+      - Rankin Bass Productions
       - RatPac Entertainment
       - Red Dog Culture House
       - Regency Pictures
@@ -436,12 +449,14 @@ dynamic_collections:
       - Sony Pictures
       - Sphère Média Plus
       - Spyglass Entertainment
+      - Stöð 2
       - Star Thrower Entertainment
       - Stark Raving Black Productions
       - StudioCanal
       - Studio 8
       - Studio Babelsberg
       - Studio Dragon
+      - STX Entertainment
       - Summit Entertainment
       - Syfy
       - Syncopy
@@ -458,6 +473,8 @@ dynamic_collections:
       - The Mark Gordon Company
       - The Sea Change Project
       - The Weinstein Company
+      - Tim Burton Productions
+      - TOHO
       - Thunder Road
       - Titmouse
       - Tomorrow Studios
@@ -467,6 +484,7 @@ dynamic_collections:
       - Triage Entertainment
       - Tribeca Productions
       - TriStar Pictures
+      - TSG Entertainment
       - Twisted Pictures
       - UCP
       - United Artists
@@ -475,12 +493,12 @@ dynamic_collections:
       - Universal Television
       - Vancouver Media
       - Vertigo Entertainment
-      - Videocraft International
       - Village Roadshow Pictures
       - W. Chump and Sons
       - Walden Media
       - Walt Disney Animation Studios
       - Walt Disney Pictures
+      - Walt Disney Productions
       - Warner Animation Group
       - Warner Bros. Pictures
       - Warner Bros. Television
@@ -488,6 +506,7 @@ dynamic_collections:
       - warparty
       - Waverly Films
       - Wayfare Entertainment
+      - Williams Street
       - Whitaker Entertainment
       - Wiedemann & Berg Television
       - Winkler Films
@@ -619,6 +638,9 @@ dynamic_collections:
         - PlatinumVision
       Production +h.:
         - Production +h
+      Rankin Bass Productions:
+        - Rankin/Bass Productions
+        - Videocraft International
       RatPac Entertainment:
         - Dune Entertainment
       Regency Pictures:
@@ -634,6 +656,8 @@ dynamic_collections:
         - Shogakukan Production
       Signal.MD:
         - Signal MD
+      Silver:
+        - Studio Silver
       SILVER LINK.:
         - Silver Link
       Sky studios:
@@ -649,14 +673,21 @@ dynamic_collections:
         - Studio Blanc
       Studio Deen:
         - Studio DEEN
+      STX Entertainment:
+        - STX Films
       The Kennedy-Marshall Company:
         - The Kennedy/Marshall Company
       The Mark Gordon Company:
         - Tiger Aspect Productions
+      TOHO:
+        - Toho Pictures
+        - Toho Pictures, Inc.
       TMS Entertainment:
         - Tokyo Movie Shinsha
+      Toei Animation:
+        - Toei
       TriStar Pictures:
-      - TriStar
+        - TriStar
       Universal Pictures:
         - Universal
         - Universal Animation Studios

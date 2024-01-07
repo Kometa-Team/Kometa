@@ -1,20 +1,22 @@
 # Collection Defaults
 
-There are many Default Metadata Files built into PMM itself which offer an easy-to-use and customizable set of Collections that the user can achieve without having to worry about creating the files that makes the collections possible.
+There are many Default Collection Files built into PMM itself which offer an easy-to-use and customizable set of Collections that the user can achieve without having to worry about creating the files that makes the collections possible.
 
 This is the simplest way to create Collections using Plex Meta Manager.
 
-```{include} collection_list.md
-```
+{%
+   include-markdown "./collection_list.md"
+
+%}
 
 ## Configurations
 
-To run a default pmm Metadata file you can simply add it to your `metadata_path` using `pmm` like so:
+To run a default pmm Metadata file you can simply add it to your `collection_files` using `pmm` like so:
 
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: actor
       - pmm: genre
 ```
@@ -41,63 +43,70 @@ libraries:
   LIBRARYNAME:
     template_variables:
       use_separator: false
-    metadata_path:
+    collection_files:
       - pmm: actor
       - pmm: genre
 ```
 
 ## Collection Section Order
 
-All Default Metadata Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
+All Default Collection Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
 
 For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
 
 This is the default PMM collection ordering:
 
-| Collection          | Collection Section |
-|:--------------------|:-------------------|
-| `seasonal`          | `000`              |
-| `basic`             | `010`              |
-| `anilist`           | `020`              |
-| `imdb`              | `020`              |
-| `flixpatrol`        | `020`              |
-| `myanimelist`       | `020`              |
-| `other_chart`       | `020`              |
-| `tautulli`          | `020`              |
-| `tmdb`              | `020`              |
-| `trakt`             | `020`              |
-| `streaming`         | `030`              |
-| `universe`          | `040`              |
-| `network`           | `050`              |
-| `genre`             | `060`              |
-| `studio`            | `070`              |
-| `studio_anime`      | `070`              |
-| `country`           | `080`              |
-| `region`            | `081`              |
-| `continent`         | `082`              |
-| `based`             | `085`              |
-| `audio_language`    | `090`              |
-| `subtitle_language` | `095`              |
-| `decade`            | `100`              |
-| `year`              | `105`              |
-| `content_rating_us` | `110`              |
-| `content_rating_uk` | `110`              |
-| `content_rating_cs` | `110`              |
-| `resolution`        | `120`              |
-| `aspect`            | `125`              |
-| `bafta`             | `130`              |
-| `cannes`            | `130`              |
-| `choice`            | `130`              |
-| `emmy`              | `130`              |
-| `golden`            | `130`              |
-| `oscars`            | `130`              |
-| `other_award`       | `130`              |  
-| `spirit`            | `130`              |
-| `sundance`          | `130`              |
-| `actor`             | `140`              |
-| `director`          | `150`              |
-| `producer`          | `160`              |
-| `writer`            | `170`              |
+| Collection           | Collection Section |
+|:---------------------|:-------------------|
+| `seasonal`           | `000`              |
+| `basic`              | `010`              |
+| `anilist`            | `020`              |
+| `imdb`               | `020`              |
+| `flixpatrol`         | `020`              |
+| `myanimelist`        | `020`              |
+| `other_chart`        | `020`              |
+| `tautulli`           | `020`              |
+| `tmdb`               | `020`              |
+| `trakt`              | `020`              |
+| `streaming`          | `030`              |
+| `universe`           | `040`              |
+| `network`            | `050`              |
+| `genre`              | `060`              |
+| `studio`             | `070`              |
+| `country`            | `080`              |
+| `region`             | `081`              |
+| `continent`          | `082`              |
+| `based`              | `085`              |
+| `audio_language`     | `090`              |
+| `subtitle_language`  | `095`              |
+| `decade`             | `100`              |
+| `year`               | `105`              |
+| `content_rating_us`  | `110`              |
+| `content_rating_uk`  | `110`              |
+| `content_rating_de`  | `110`              |
+| `content_rating_mal` | `110`              |
+| `content_rating_cs`  | `110`              |
+| `resolution`         | `120`              |
+| `aspect`             | `125`              |
+| `bafta`              | `130`              |
+| `berlinale`          | `130`              |
+| `cannes`             | `130`              |
+| `cesar`              | `130`              |
+| `choice`             | `130`              |
+| `emmy`               | `130`              |
+| `golden`             | `130`              |
+| `oscars`             | `130`              |
+| `spirit`             | `130`              |
+| `nfr`                | `130`              |
+| `pca`                | `130`              |
+| `razzie`             | `130`              |
+| `sundance`           | `130`              |
+| `tiff`               | `130`              |
+| `venice`             | `130`              |
+| `actor`              | `140`              |
+| `director`           | `150`              |
+| `producer`           | `160`              |
+| `writer`             | `170`              |
 
 ## Customizing Configs
 
@@ -108,7 +117,7 @@ This example changes the ratings overlay to work on episodes.
 ```yaml
 libraries:
   TV Shows:
-    metadata_path:
+    collection_files:
       - pmm: imdb
         template_variables:
           use_popular: false
@@ -118,9 +127,9 @@ libraries:
           visible_shared_top: true
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default `pmm: genre` has a page [here](both/genre.md).
 
-**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](collection_variables).**
+**In addition to the defined `template_variables` almost all default Metadata files have access to the [Shared Variables](collection_variables.md).**
 
 ### Examples
 
@@ -129,13 +138,13 @@ For example if you want yearly oscar collections that go back 10 years instead o
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: oscars
         template_variables:
           radarr_add_missing: true
           data:
-            starting: current_year-10
-            ending: current_year
+            starting: latest-10
+            ending: latest
 ```
 
 Or maybe you want to change the number of actor collections made using pmm: actor.
@@ -143,7 +152,7 @@ Or maybe you want to change the number of actor collections made using pmm: acto
 ```yaml
 libraries:
   Movies:
-    overlay_path:
+    overlay_files:
       - pmm: actor
         template_variables:
           collection_mode: hide
@@ -157,7 +166,7 @@ Or maybe you want to change the collection sort order of the genre collections u
 ```yaml
 libraries:
   Movies:
-    metadata_path:
+    collection_files:
       - pmm: genre
         template_variables:
           collection_section: 11
@@ -170,7 +179,7 @@ libraries:
   LIBRARYNAME:
     template_variables:
       use_separator: false
-    metadata_path:
+    collection_files:
       - ...
 ```
 
@@ -179,7 +188,7 @@ Alternatively it can be turned off individually per git file:
 ```yaml
 libraries:
   LIBRARYNAME:
-    metadata_path:
+    collection_files:
       - pmm: <file1>    # separator is disabled
         template_variables:
           use_separator: false
@@ -189,5 +198,6 @@ libraries:
           use_separator: false
 ```
 
-```{include} example.md
-```
+{%
+   include-markdown "./example.md"
+%}
