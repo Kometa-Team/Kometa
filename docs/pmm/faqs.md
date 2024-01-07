@@ -436,7 +436,7 @@ With the release of PMM 1.20, several changes have taken place that we would lik
 
     <div id="overlay-library-attributes" />
 
-    The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes and are called at the library level rather than within `overlay_path.
+    The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes and are called at the library level rather than within `overlay_path`.
 
     This change has been made to make these attributes consistent with other attributes of a similar nature.
 
