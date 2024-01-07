@@ -1,6 +1,7 @@
 # Based On... Collections
 
-The `based` Default Collection File is used to create collections with items that are based on or inspired by various media outlets (such as Books or Video Games).
+The `based` Default Collection File is used to create collections with items that are based on or inspired by various 
+media outlets (such as Books or Video Games).
 
 ![](../images/based.png)
 
@@ -34,19 +35,22 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Shared Template Variables" tab for additional variables.
-
-        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
         | Variable                        | Description & Values                                                                                                                                                                                                                                                                             |
         |:--------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -60,20 +64,27 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `name_format`                   | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `Based on a <<key_name>>`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                             |
         | `summary_format`                | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s based on or inspired by <<translated_key_name>>s.`<br>**Values:** Any string.                                                                                                 |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
+    
+    === "Shared Template Variables"
 
-### Example Template Variable Amendments
+        {%
+          include-markdown "../collection_variables.md"
+        %}
+    
+    === "Shared Separator Variables"
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        {%
+          include-markdown "../separator_variables.md"
+        %}
 
-???+ tip
+???+ example "Example Template Variable Amendments"
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:
@@ -90,7 +101,8 @@ The below is an example config.yml extract with some Template Variables added in
 
     1.  Use the navy [Separator Style](../separators.md#separator-styles)
     2.  Do not create a "Based on a Comic" collection
-    3.  Make the "Based on a True Story" collection appear in the collection list before the other collections in this file
+    3.  Make the "Based on a True Story" collection appear in the collection list before the other collections in this 
+    file
     4.  Pin the "Based on a Video Game" collection to the Recommended tab of the library
     5.  Pin the "Based on a Video Game" collection to the home screen of the server owner
     6.  Pin the "Based on a Video Game" collection to the home screen of other users of the server

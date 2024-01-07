@@ -1,10 +1,14 @@
 # Playlists
 
-The `playlist` Default Collection File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
+The `playlist` Default Collection File is used to create playlists based on popular Movie/TV Show universes (such as the
+Marvel Cinematic Universe or Star Trek).
 
 This Default file requires [Trakt Authentication](../config/trakt.md)
 
-This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries, use the `libraries` template variable which is outlined in the [Template Variables](#template-variables) table.
+This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to 
+use alternative/additional libraries, use the `libraries` template variable which is outlined in the 
+[Template Variables](#template-variables) table.
+
 ![](images/playlist.png)
 
 ## Playlists
@@ -32,15 +36,21 @@ playlist_files:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-**[Shared Variables](collection_variables.md) are NOT available to this default file.**
+??? abstract "Variable Lists (click to expand)"
 
-??? info "Click to expand"
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
 
-    The below template variables are available specifically for this PMM Defaults file.
+    ???+ warning
+
+        [Shared Collection Variables](collection_variables.md) are NOT available to this default file.
+
+    === "File-Specific Template Variables"
 
     | Variable                                 | Description & Values                                                                                                                                                                                                                                                                      |
     |:-----------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -76,31 +86,36 @@ Note that the `template_variables:` section only needs to be used if you do want
     | `item_sonarr_tag_<<key>>`<sup>1</sup>    | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr of the specified key's playlist.<br>**Default:** `item_sonarr_tag`<br>**Values:** List or comma-separated string of tags                                                          |
     
     1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
-
-    ### Example Template Variable Amendments
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
+
+    Click the :fontawesome-solid-circle-plus: icon to learn more
     
     ```yaml
     playlist_files:
       - pmm: playlist
         template_variables:
-          radarr_add_missing: true
+          radarr_add_missing: true #(1)!
     ```
+
+    1.  Adds items from the source list which are not in Plex to Radarr
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 
 ??? example "Default Template Variable `trakt_list` (click to expand) <a class="headerlink" href="#trakt-list" title="Permanent link">¶</a>"
     
+    <div id="trakt-list" />
+
     ???+ tip 
     
         Pass `trakt_list_<<key>>` to the file as template variables to change this value per playlist.
-
-    <div id="trakt-list" />
 
     ```yaml
     {%

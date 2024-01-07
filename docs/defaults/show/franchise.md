@@ -1,10 +1,13 @@
 # Franchise Collections
 
-The `franchise` Default Collection File is used to create collections based on popular TV Show franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
+The `franchise` Default Collection File is used to create collections based on popular TV Show franchises, and can be 
+used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
-Unlike most Default Collection Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Pretty Little Liars" franchise collection will appear next to the "Pretty Little Liars" show in your library so that you have easy access to the other shows in the franchise.
+Unlike most Default Collection Files, Franchise works by placing collections inline with the main library items if your 
+library allows it. For example, the "Pretty Little Liars" franchise collection will appear next to the "Pretty Little 
+Liars" show in your library so that you have easy access to the other shows in the franchise.
 
-**This file has a Movie Library [Counterpart](../movie/franchise.md).**
+**[This file has a Movie Library Counterpart.](../movie/franchise.md)**
 
 ![](../images/showfranchise.png)
 
@@ -29,20 +32,23 @@ libraries:
       - pmm: franchise
 ```
 
-
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
 
-    === "Template Variables"
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
 
-        The below template variables are available specifically for this PMM Defaults file.
+    ???+ warning
 
-        **[Shared Collection Variables](../collection_variables.md) are NOT available to this default file.**
+        [Shared Collection Variables](../collection_variables.md) are NOT available to this default file.
+
+    === "File-Specific Template Variables"
 
         | Variable                                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
         |:-----------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,40 +81,38 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `item_sonarr_tag`                        | **Description:** Used to append a tag in Sonarr for every show found by the builders that's in Sonarr for all collections in a Defaults file.<br>**Values:** List or comma-separated string of tags                                                                                                                                                                                                                                                                                                                                       |
         | `item_sonarr_tag_<<key>>`<sup>1</sup>    | **Description:** Used to append a tag in Sonarr for every show found by the builders that's in Sonarr of the specified key's collection.<br>**Default:** `item_sonarr_tag`<br>**Values:** List or comma-separated string of tags                                                                                                                                                                                                                                                                                                          |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
+    
+    ???+ example "Example Template Variable Amendments"
 
-    ### Example Template Variable Amendments
-
-    The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
-    ```yaml
-    libraries:
-      TV Shows:
-        collection_files:
-          - pmm: franchise
-            template_variables:
-              append_data:
-                "31917": Pretty Little Liars  #(1)!
-              append_addons:
-                31917: [46958, 79863, 110531]  #(2)!
-              sonarr_add_missing: true  #(3)!
-    ```
-
-    1.  Add [TMDb Show 31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) to the data dictionary
-    2.  Add [TMDb Shows 46958](https://www.themoviedb.org/tv/46958), [79863](https://www.themoviedb.org/tv/79863) and [110531](https://www.themoviedb.org/tv/110531) as addons of [TMDb Show 31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) so that they appear in the same collection
-    3.  Add items missing from your library in Plex to Sonarr
+        The below is an example config.yml extract with some Template Variables added in to change how the file works.
+    
+        Click the :fontawesome-solid-circle-plus: icon to learn more
+        
+        ```yaml
+        libraries:
+          TV Shows:
+            collection_files:
+              - pmm: franchise
+                template_variables:
+                  append_data:
+                    "31917": Pretty Little Liars  #(1)!
+                  append_addons:
+                    31917: [46958, 79863, 110531]  #(2)!
+                  sonarr_add_missing: true  #(3)!
+        ```
+    
+        1.  Add [TMDb Show 31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) to the data dictionary
+        2.  Add [TMDb Shows 46958](https://www.themoviedb.org/tv/46958), [79863](https://www.themoviedb.org/tv/79863) 
+        and [110531](https://www.themoviedb.org/tv/110531) as addons of [TMDb Show 
+        31917](https://www.themoviedb.org/tv/31917-pretty-little-liars) so that they appear in the same collection
+        3.  Add items missing from your library in Plex to Sonarr
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 

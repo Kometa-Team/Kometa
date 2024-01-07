@@ -10,6 +10,48 @@ external_templates:
   template_variables:
     collection_section: 130
 
+collections:
+  Emmys Best in Category Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: Emmys !
+        allowed_libraries: show
+        image: award/emmys/winner
+        translation_key: emmy_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000223
+      event_year: all
+      category_filter:
+        - best comedy series
+        - best comedy show
+        - best dramatic anthology series
+        - best dramatic program
+        - best dramatic series
+        - best dramatic series - less than one hour
+        - best dramatic series - one hour or longer
+        - best series - half hour or less
+        - best series - one hour or more
+        - outstanding animated program
+        - outstanding animated program (for programming less than one hour)
+        - outstanding animated program (for programming more than one hour)
+        - outstanding animated program (for programming one hour or less)
+        - outstanding animated program (for programming one hour or more)
+        - outstanding animated programming
+        - outstanding comedy series
+        - outstanding drama series
+        - outstanding drama series - continuing
+        - outstanding drama/comedy - limited episodes
+        - outstanding dramatic program
+        - outstanding dramatic series
+        - outstanding miniseries
+        - outstanding series - comedy
+        - outstanding series - drama
+      winning: true
+
 dynamic_collections:
   Emmy Awards:
     type: imdb_awards

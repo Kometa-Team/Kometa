@@ -1,6 +1,7 @@
 # Streaming Services Overlay
 
-The `streaming` Default Overlay File is used to create an overlay based on the streaming service the file is found on for each item within your library.
+The `streaming` Default Overlay File is used to create an overlay based on the streaming service the file is found on 
+for each item within your library.
 
 ![](images/streaming.png)
 
@@ -33,6 +34,19 @@ Supported Overlay Level: Movie, Show
 | hayu              | `hayu`        | `10`   |
 
 
+## Regional Variants
+
+Some logic is applied to allow for regional streaming service lists to be available to users depending on where they 
+are, as detailed below:
+
+| Region           | Key                              | Description                                                                                                                         |
+|:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| any besides `us` | `amazon`, `disney`, `netflix`    | These overlays will use regional variant lists to ensure the overlays are applied to what is available in the region specified      |
+| any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `ca` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
+| `ca`             | `max`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+
+
 ## Config
 
 The below YAML in your config.yml will create the overlays:
@@ -49,11 +63,17 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -70,17 +90,14 @@ Note that the `template_variables:` section only needs to be used if you do want
         
     === "File-Specific Template Variables"
 
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
-
         | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                            |
         |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `region`                     | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                     |
         | `originals_only`             | **Description:** Changes Streaming Service overlays to only apply to original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces overlays for `amazon`, `appletv`, `disney`, `max`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false` |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                    |
 
-        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` 
+        with when calling.
 
     === "Overlay Template Variables"
 
@@ -88,21 +105,10 @@ Note that the `template_variables:` section only needs to be used if you do want
            include-markdown "../overlay_variables.md"
         %}
 
-    ## Regional Variants
-
-    Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
-
-    | Region           | Key                              | Description                                                                                                                         |
-    |:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-    | any besides `us` | `amazon`, `disney`, `netflix`    | These overlays will use regional variant lists to ensure the overlays are applied to what is available in the region specified      |
-    | any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
-    | any besides `ca` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
-    | `ca`             | `max`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
-
-    ### Example Template Variable Amendments
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
+    
     ```yaml
     libraries:
       Movies:

@@ -3195,7 +3195,6 @@ class CollectionBuilder:
                             title = f"{title[len(op):].strip()}, {op.strip()}"
                             break
                     new_sort_title = new_sort_title.replace("<<title>>", title)
-                logger.info(new_sort_title)
                 if new_sort_title != str(self.obj.titleSort):
                     self.obj.editSortTitle(new_sort_title)
                     batch_display += f"\nSort Title | {new_sort_title}"

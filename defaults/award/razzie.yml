@@ -1,0 +1,58 @@
+##############################################################################
+#                         Razzie Awards Collections                          #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://metamanager.wiki/en/latest/defaults/award/razzie          #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Razzies Golden Raspberry Winners:
+    variables:
+      key: golden
+    template:
+      - name: shared
+        sort: Razzie !
+        allowed_libraries: movie
+        image: award/razzie/winner
+        translation_key: razzie_worst
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000558
+      event_year: all
+      category_filter: worst picture
+      winning: true
+
+dynamic_collections:
+  Razzie Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000558
+      starting: latest-5
+      ending: latest
+    title_format: Razzie <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/razzie/<<key>>
+      translation_key:
+        default: razzie_year
+      dynamic:
+        default: true

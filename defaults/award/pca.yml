@@ -1,0 +1,64 @@
+##############################################################################
+#                    People's Choice Awards Collections                      #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://metamanager.wiki/en/latest/defaults/award/pca            #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Peoples Choice Award Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: People's Choice Awards !
+        image: award/pca/winner
+        translation_key: pca_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000530
+      event_year: all
+      category_filter:
+        - all-time favorite tv program
+        - favorite all-time motion picture
+        - favorite motion picture
+        - favorite movie
+        - favorite non-musical motion picture
+        - favorite overall motion picture
+        - favorite tv show
+        - the movie of 2022
+        - the show of 2021
+      winning: true
+
+dynamic_collections:
+  Peoples Choice Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000530
+      starting: latest-5
+      ending: latest
+    title_format: People's Choice Awards <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      image:
+        default: award/pca/<<key>>
+      translation_key:
+        default: pca_year
+      dynamic:
+        default: true

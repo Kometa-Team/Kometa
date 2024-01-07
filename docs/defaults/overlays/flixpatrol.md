@@ -1,6 +1,7 @@
 # FlixPatrol Top Overlays
 
-The `flixpatrol` Default Overlay File is used to create an overlay based on the Top Lists from FlixPatrol on items within your library.
+The `flixpatrol` Default Overlay File is used to create an overlay based on the Top Lists from FlixPatrol on items 
+within your library.
 
 ![](images/flixpatrol.png)
 
@@ -36,11 +37,19 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+
+    * **Overlay Text Template Variables** are additional variables shared across the PMM Text Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -55,12 +64,12 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `back_width`        | `160`             |
         | `back_height`       | `160`             |
         | `back_padding`      | `15`              |
+
+    ???+ bug "Warning"
+
+        `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are NOT available for use in this file
         
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
         | Variable                          | Description & Values                                                                                                                                                                                                 |
         |:----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -77,34 +86,25 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `addon_offset`                    | **Description:** Text Addon Image Offset from the text.<br>**Default:** `30`<br>**Values:** Any Number greater than 0                                                                                                |
         | `addon_position`                  | **Description:** Text Addon Image Alignment in relation to the text.<br>**Default:** `top`<br>**Values:** `left`, `right`, `top`, `bottom`                                                                           |
 
-        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` 
+        with when calling.
 
     === "Overlay Template Variables"
 
         {%
+           include-markdown "../overlay_variables.md"
+        %}
+
+    === "Overlay Text Template Variables"
+
+        {%
            include-markdown "../overlay_text_variables.md"
         %}
-
-        {%
-           include-markdown "../overlay_variables.md"
-           end="Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored."
-        %}
-
-        ???+ bug "Warning"
-
-            `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` are NOT available for use in this file
-
-        {%
-           include-markdown "../overlay_variables.md"
-           start="The below template variables are available for this PMM Defaults file."
-        %}
-
-
-    ### Example Template Variable Amendments
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-
+    
     ```yaml
     libraries:
       Movies:

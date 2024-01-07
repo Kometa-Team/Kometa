@@ -1,4 +1,3 @@
-The below additional template variables are available for this PMM Defaults file as it is a text-based overlay.
 
 | Variable               | Description & Values                                                                                                                                                       |
 |:-----------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

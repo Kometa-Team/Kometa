@@ -71,8 +71,9 @@ templates:
       order: ""
       order_<<key>>: <<order>>
       schedule_<<key>>: <<schedule>>
+      sort: <<title>>
       sort_prefix: "!"
-      sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>
+      sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<sort>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg

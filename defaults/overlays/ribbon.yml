@@ -152,9 +152,35 @@ overlays:
   Emmys Winner:
     variables: {key: emmys, weight: 90}
     template: [name: standard, name: ribbon]
-    imdb_search:
-      event.winning: emmy
-      limit: 1000
+    imdb_award:
+      event_id: ev0000223
+      event_year: all
+      category_filter:
+        - best comedy series
+        - best comedy show
+        - best dramatic anthology series
+        - best dramatic program
+        - best dramatic series
+        - best dramatic series - less than one hour
+        - best dramatic series - one hour or longer
+        - best series - half hour or less
+        - best series - one hour or more
+        - outstanding animated program
+        - outstanding animated program (for programming less than one hour)
+        - outstanding animated program (for programming more than one hour)
+        - outstanding animated program (for programming one hour or less)
+        - outstanding animated program (for programming one hour or more)
+        - outstanding animated programming
+        - outstanding comedy series
+        - outstanding drama series
+        - outstanding drama series - continuing
+        - outstanding drama/comedy - limited episodes
+        - outstanding dramatic program
+        - outstanding dramatic series
+        - outstanding miniseries
+        - outstanding series - comedy
+        - outstanding series - drama
+      winning: true
 
   Critics Choice Winners:
     variables: {key: choice, weight: 80}

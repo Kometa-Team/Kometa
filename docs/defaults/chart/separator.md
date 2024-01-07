@@ -30,33 +30,36 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified is its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-**[Shared Collection Variables](../collection_variables.md) are NOT available to this default file.**
+??? abstract "Variable Lists (click to expand)"
 
-This file contains only a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available.
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
-### Example Template Variable Amendments
+    === "Shared Separator Variables"
 
-The below is an example config.yml extract with some Template Variables added in to change how the file works.
+        {%
+          include-markdown "../separator_variables.md"
+        %}
 
-???+ tip
+???+ example "Example Template Variable Amendments"
 
-    Anywhere you see this icon:
-   
-    > :fontawesome-solid-circle-plus:
-   
-    That's a tooltip, you can press them to get more information.
+    The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-```yaml
-libraries:
-  Movies:
-    collection_files:
-      - pmm: separator_chart
-        template_variables:
-          sep_style: purple #(1)!
-```
+    Click the :fontawesome-solid-circle-plus: icon to learn more
 
-1.  Use the purple [Separator Style](../separators.md#separator-styles)
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - pmm: separator_chart
+            template_variables:
+              sep_style: purple #(1)!
+    ```
+
+    1.  Use the purple [Separator Style](../separators.md#separator-styles)

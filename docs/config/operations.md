@@ -147,8 +147,8 @@ You can create individual blocks of operations by using a list under `operations
     
     <table class="clearTable">
       <tr><td>`mdb`</td><td>Use MdbList for Content Ratings</td></tr>
-      <tr><td>`mdb_commonsense`</td><td>Use Commonsense Rating through MDbList for Content Ratings</td></tr>
-      <tr><td>`mdb_commonsense0`</td><td>Use Commonsense Rating with Zero Padding through MDbList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDbList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDbList for Content Ratings</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList for Content Ratings</td></tr>
       <tr><td>`lock`</td><td>Lock Content Rating Field</td></tr>

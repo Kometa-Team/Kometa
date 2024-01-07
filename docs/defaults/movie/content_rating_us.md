@@ -1,10 +1,12 @@
 # US Content Rating Collections
 
-The `content_rating_us` Default Collection File is used to dynamically create collections based on the content ratings available in your library.
+The `content_rating_us` Default Collection File is used to dynamically create collections based on the content ratings 
+available in your library.
 
-If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to the respective rating system.
+If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to
+the respective rating system.
 
-**This file has a Show Library [Counterpart](../show/content_rating_us.md).**
+**[This file has a Show Library Counterpart.](../show/content_rating_us.md)**
 
 ![](../images/moviecontent_rating_us.png)
 
@@ -16,11 +18,11 @@ Recommendation: Set the Certification Country within your library's advanced set
 
 ## Collections Section 110
 
-| Collection                                             | Key                                      | Description                                                                       |
-|:-------------------------------------------------------|:-----------------------------------------|:----------------------------------------------------------------------------------|
-| `Country Collections`                                  | `separator`                              | [Separator Collection](../separators.md) to denote the Section of Collections.    |
-| `<<Content Rating>> Movies`<br>**Example:** `R Movies` | `<<Content Rating>>`<br>**Example:** `R` | Collection of Movies that have this Content Rating.                               |
-| `Not Rated Movies`                                     | `other`                                  | Collection of Movies that are Unrated, Not Rated or any other uncommon Ratings.   |
+| Collection                                             | Key                                      | Description                                                                     |
+|:-------------------------------------------------------|:-----------------------------------------|:--------------------------------------------------------------------------------|
+| `Country Collections`                                  | `separator`                              | [Separator Collection](../separators.md) to denote the Section of Collections.  |
+| `<<Content Rating>> Movies`<br>**Example:** `R Movies` | `<<Content Rating>>`<br>**Example:** `R` | Collection of Movies that have this Content Rating.                             |
+| `Not Rated Movies`                                     | `other`                                  | Collection of Movies that are Unrated, Not Rated or any other uncommon Ratings. |
 
 ## Config
 
@@ -35,19 +37,22 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Shared Template Variables" tab for additional variables.
-
-        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
         | Variable                      | Description & Values                                                                                                                                                                                                                                            |
         |:------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -65,7 +70,8 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                             |
         | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that are rated <<key_name>>.`<br>**Values:** Any string.                                                                                     |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
 
     === "Shared Template Variables"
 
@@ -73,18 +79,18 @@ Note that the `template_variables:` section only needs to be used if you do want
           include-markdown "../collection_variables.md"
         %}
 
-    ### Example Template Variable Amendments
+    === "Shared Separator Variables"
+
+        {%
+          include-markdown "../separator_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:
@@ -102,11 +108,13 @@ Note that the `template_variables:` section only needs to be used if you do want
     1.  Use the blue [Separator Style](../separators.md#separator-styles)
     2.  Do not create a "Not Rated Movies" collection
     3.  Defines a collection which will be called "R", this does not need to already exist in your library
-    4.  Adds the "de/18" content rating to the "R" addon list, "de/18" must exist in your library if the "R" content rating does not
+    4.  Adds the "de/18" content rating to the "R" addon list, "de/18" must exist in your library if the "R" content 
+    rating does not
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 

@@ -2,7 +2,7 @@
 
 The `country` Default Collection File is used to dynamically create collections based on the countries available in your library.
 
-**This file has a Movie Library [Counterpart](../movie/country.md).**
+**[This file has a Movie Library Counterpart.](../movie/country.md).**
 
 ![](../images/country1.png)
 
@@ -78,37 +78,31 @@ Note that the `template_variables:` section only needs to be used if you do want
         {%
           include-markdown "../collection_variables.md"
         %}
+    
+    ???+ example "Example Template Variable Amendments"
 
-    ### Example Template Variable Amendments
-
-    The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
-    ```yaml
-    libraries:
-      Movies:
-        collection_files:
-          - pmm: country
-            template_variables:
-              use_other: false #(1)!
-              use_separator: false #(2)!
-              style: color #(3)!
-              exclude:
-                - France #(4)!
-              sort_by: title.asc
-    ```
-
-    1.  Do not create the "Other Countries" collection
-    2.  Do not create a "Country Collections" separator
-    3.  Set the [Color Style](#color-style)
-    4.  Exclude "France" from the list of collections that are created
+        The below is an example config.yml extract with some Template Variables added in to change how the file works.
+    
+        Click the :fontawesome-solid-circle-plus: icon to learn more
+        
+        ```yaml
+        libraries:
+          Movies:
+            collection_files:
+              - pmm: country
+                template_variables:
+                  use_other: false #(1)!
+                  use_separator: false #(2)!
+                  style: color #(3)!
+                  exclude:
+                    - France #(4)!
+                  sort_by: title.asc
+        ```
+    
+        1.  Do not create the "Other Countries" collection
+        2.  Do not create a "Country Collections" separator
+        3.  Set the [Color Style](#color-style)
+        4.  Exclude "France" from the list of collections that are created
 
 ## Default Values
 

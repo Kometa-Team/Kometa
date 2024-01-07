@@ -1,0 +1,58 @@
+##############################################################################
+#                         Berlinale Awards Collections                       #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#        https://metamanager.wiki/en/latest/defaults/award/berlinale         #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Berlinale Golden Bears:
+    variables:
+      key: golden
+    template:
+      - name: shared
+        sort: Berlinale !
+        allowed_libraries: movie
+        image: award/berlinale/winner
+        translation_key: berlinale_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000091
+      event_year: all
+      award_filter: golden berlin bear
+      winning: true
+
+dynamic_collections:
+  Berlinale Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000091
+      starting: latest-5
+      ending: latest
+    title_format: Berlinale <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/berlinale/<<key>>
+      translation_key:
+        default: berlinale_year
+      dynamic:
+        default: true

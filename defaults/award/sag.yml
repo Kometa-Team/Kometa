@@ -1,0 +1,61 @@
+##############################################################################
+#                   Screen Actors Guild Awards Collections                   #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://metamanager.wiki/en/latest/defaults/award/sag            #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  Screen Actors Guild Award Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: Screen Actors Guild !
+        image: award/sag/winner
+        translation_key: sag_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000598
+      event_year: all
+      category_filter:
+        - outstanding performance by a cast
+        - outstanding performance by a cast in a motion picture
+        - outstanding performance by a cast in a theatrical motion picture
+        - outstanding performance by an ensemble in a comedy series
+        - outstanding performance by an ensemble in a drama series
+        - outstanding performance by the cast of a theatrical motion picture
+      winning: true
+
+dynamic_collections:
+ Screen Actors Guild Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000598
+      starting: latest-5
+      ending: latest
+    title_format: Screen Actors Guild <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      image:
+        default: award/sag/<<key>>
+      translation_key:
+        default: sag_year
+      dynamic:
+        default: true

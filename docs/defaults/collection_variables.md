@@ -1,4 +1,3 @@
-The below shared template variables are available for this file.
 
 | Variable                                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                               |
 |:-----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -54,4 +53,5 @@ The below shared template variables are available for this file.
 | `item_sonarr_tag`                        | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr for all collections in a Defaults file.<br>**Values:** List or comma-separated string of tags                                                                                                                                                                                              |
 | `item_sonarr_tag_<<key>>`<sup>1</sup>    | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr of the specified key's collection.<br>**Default:** `item_sonarr_tag`<br>**Values:** List or comma-separated string of tags                                                                                                                                                                 |
 
-1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with 
+when calling.

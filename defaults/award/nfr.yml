@@ -1,0 +1,57 @@
+##############################################################################
+#                 National Film Registry Awards Collections                  #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://metamanager.wiki/en/latest/defaults/award/nfr            #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  National Film Registry All Time:
+    variables:
+      key: all_time
+    template:
+      - name: shared
+        sort: National Film Registry !
+        allowed_libraries: movie
+        image: award/nfr/all_time
+        translation_key: nfr_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000468
+      event_year: all
+      winning: true
+
+dynamic_collections:
+  National Film Registry Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000468
+      starting: latest-5
+      ending: latest
+    title_format: National Film Registry <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/nfr/<<key>>
+      translation_key:
+        default: nfr_year
+      dynamic:
+        default: true
