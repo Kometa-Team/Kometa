@@ -1,6 +1,7 @@
 # Year Collections
 
-The `year` Default Collection File is used to dynamically create collections based on the years available in your library, sorted by critic rating to create a "best of <year>"
+The `year` Default Collection File is used to dynamically create collections based on the years available in your 
+library, sorted by critic rating to create a "best of <year>"
 
 ![](../images/year.png)
 
@@ -31,19 +32,22 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Shared Template Variables" tab for additional variables.
-
-        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
         | Variable                      | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
         |:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -54,7 +58,8 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `data`                        | **Description:** Replaces the `data` dynamic collection value.<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>starting</code></td><td>Controls the starting year for collections<br><strong>Default:</strong> current_year-10<br><strong>Values:</strong> Number greater than 0</td></tr><tr><td><code>ending</code></td><td>Controls the ending year for collections<br><strong>Default:</strong> current_year<br><strong>Values:</strong> Number greater than 1</td></tr><tr><td><code>increment</code></td><td>Controls the increment (i.e. every 5th year)<br><strong>Default:</strong> 1<br><strong>Values:</strong> Number greater than 0</td><td></td></tr></table><ul><li><strong><code>starting</code> and <code>ending</code> can also have the value <code>current_year</code></strong></li><li><strong>You can also use a value relative to the <code>current_year</code> by doing <code>current_year-5</code></strong></li></ul> |
         | `exclude`                     | **Description:** Exclude these Years from creating a Dynamic Collection.<br>**Values:** List of Years                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
 
     === "Shared Template Variables"
 
@@ -62,35 +67,18 @@ Note that the `template_variables:` section only needs to be used if you do want
           include-markdown "../collection_variables.md"
         %}
 
-    ### Example Template Variable Amendments
-
-    The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
+    === "Shared Separator Variables"
 
         {%
-          include-markdown "../collection_variables.md"
+          include-markdown "../separator_variables.md"
         %}
-
-    ### Example Template Variable Amendments
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
-
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:
@@ -104,4 +92,3 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     1.  Use the purple [Separator Style](../separators.md#separator-styles)
     2.  Set the sort order for "Best of 2022" to release date descending
-

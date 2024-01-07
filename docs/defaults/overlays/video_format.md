@@ -1,6 +1,7 @@
 # Video Format Overlay
 
-The `video_format` Default Overlay File is used to create an overlay based on the video format available on each item within your library.
+The `video_format` Default Overlay File is used to create an overlay based on the video format available on each item
+within your library.
 
 ![](images/video_format.png)
 
@@ -43,11 +44,19 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+
+    * **Overlay Text Template Variables** are additional variables shared across the PMM Text Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -64,10 +73,6 @@ Note that the `template_variables:` section only needs to be used if you do want
         
     === "File-Specific Template Variables"
 
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
-
         | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                         |
         |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `builder_level`              | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode`                                                                                                                                                                                                                                                                                                                              |
@@ -75,23 +80,25 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                 |
         | `regex_<<key>>`<sup>1</sup>  | **Description:** Controls the regex of the Overlay Search.<br>**Values:** Any Proper Regex                                                                                                                                                                                                                                                                                                                   |
 
-        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` with when calling.
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` 
+        with when calling.
 
     === "Overlay Template Variables"
-
-        {%
-           include-markdown "../overlay_text_variables.md"
-        %}
 
         {%
            include-markdown "../overlay_variables.md"
         %}
 
-    ### Example Template Variable Amendments
+    === "Overlay Text Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-
+    
     ```yaml
     libraries:
       Movies:

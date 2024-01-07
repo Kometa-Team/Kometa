@@ -1,0 +1,59 @@
+##############################################################################
+#                         Cesar Awards Collections                           #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://metamanager.wiki/en/latest/defaults/award/cesar           #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: 130
+
+collections:
+  César Best Film Winners:
+    variables:
+      key: best
+    template:
+      - name: shared
+        sort: Cesar !
+        allowed_libraries: movie
+        image: award/cesar/winner
+        translation_key: cesar_best
+      - name: arr
+      - name: custom
+    imdb_award:
+      event_id: ev0000157
+      event_year: all
+      award_filter: César
+      category_filter: best film (meilleur film)
+      winning: true
+
+dynamic_collections:
+  Cesar Awards:
+    type: imdb_awards
+    sync: true
+    data:
+      event_id: ev0000157
+      starting: latest-5
+      ending: latest
+    title_format: Cesar <<key_name>>
+    template:
+      - use_year_collections
+      - imdb_award
+      - shared
+      - arr
+      - custom
+    template_variables:
+      winning:
+        default: true
+      collection_order:
+        default: release
+      allowed_libraries:
+        default: movie
+      image:
+        default: award/cesar/<<key>>
+      translation_key:
+        default: cesar_year
+      dynamic:
+        default: true

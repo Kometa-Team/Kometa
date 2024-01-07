@@ -1,4 +1,3 @@
-The below additional template variables are available for this PMM Defaults file as it is an Overlay file.
 
 | Variable                   | Description & Values                                                                                                                                                                                                                  |
 |:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -24,4 +23,5 @@ The below additional template variables are available for this PMM Defaults file
 | `back_line_color`          | **Description:** Controls the Backdrop Line Color for the Text Overlay.<br>**Values:** Color Hex Code in format `#RGB`, `#RGBA`, `#RRGGBB` or `#RRGGBBAA``AA` is transparency; 00 [transparent] to FF [opaque]                        |
 | `back_line_width`          | **Description:** Controls the Backdrop Line Width for the Text Overlay.<br>**Values:** Any number greater than 0                                                                                                                      |
 
-1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+1. Each default overlay has a `key` that when calling to effect a specific collection you must replace `<<key>>` with 
+when calling.

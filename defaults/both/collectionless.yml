@@ -8,9 +8,11 @@
 templates:
   collectionless:
     default:
+      # check1
       exclude_prefix:
         - "!"
         - "~"
+        # check2
       sort_title: ~_Collectionless
       collection_order: alpha
       url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/collectionless.jpg

@@ -1,6 +1,7 @@
 # MediaStinger Overlay
 
-The `mediastinger` Default Overlay File is used to create an overlay based on if there's an after/during credit scene on each movie within your library.
+The `mediastinger` Default Overlay File is used to create an overlay based on if there's an after/during credit scene on
+each movie within your library.
 
 ![](images/mediastinger.png)
 
@@ -21,11 +22,15 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -40,15 +45,16 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `back_width`        | `105`       |
         | `back_height`       | `105`       |
 
-    {%
-       include-markdown "../overlay_variables.md"
-    %}
+    === "Overlay Template Variables"
 
-    ### Example Template Variable Amendments
+        {%
+           include-markdown "../overlay_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-
+    
     ```yaml
     libraries:
       Movies:

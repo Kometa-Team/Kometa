@@ -1,6 +1,7 @@
 # Content Rating US Movie Overlay
 
-The `content_rating_us_movie` Default Overlay File is used to create an overlay based on the MPAA Age Rating on each item within your library.
+The `content_rating_us_movie` Default Overlay File is used to create an overlay based on the MPAA Age Rating on each 
+item within your library.
 
 ![](images/content_rating_us_movie.png)
 
@@ -8,7 +9,9 @@ The `content_rating_us_movie` Default Overlay File is used to create an overlay 
 
 Supported library types: Movie
 
-Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the MPAA Rating.
+Requirements: Use the [Mass Content Rating Update Library 
+Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the MPAA 
+Rating.
 
 ## Supported Content Rating US
 
@@ -34,11 +37,17 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -51,10 +60,6 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `vertical_align`    | `bottom` |
         
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
 
         | Variable         | Description & Values                                                                                                                        |
         |:-----------------|:--------------------------------------------------------------------------------------------------------------------------------------------|
@@ -71,11 +76,11 @@ Note that the `template_variables:` section only needs to be used if you do want
         {%
            include-markdown "../overlay_variables.md"
         %}
-
-    ### Example Template Variable Amendments
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
+    
     ```yaml
     libraries:
       Movies:

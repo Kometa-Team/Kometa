@@ -43,11 +43,19 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+
+    * **Overlay Text Template Variables** are additional variables shared across the PMM Text Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -64,30 +72,30 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     === "File-Specific Template Variables"
 
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
-
         | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
         |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `text_<<key>>`<sup>1</sup>   | **Description:** Choose the text for the Overlay.<br>**Default:** <table class="clearTable"><tr><th>Key</th><th>Default</th></tr><tr><td>`1.33`</td><td>`1.33`</td></tr><tr><td>`1.65`</td><td>`1.65`</td></tr><tr><td>`1.66`</td><td>`1.66`</td></tr><tr><td>`1.78`</td><td>`1.78`</td></tr><tr><td>`1.85`</td><td>`1.85`</td></tr><tr><td>`2.2`</td><td>`2.2`</td></tr><tr><td>`2.35`</td><td>`2.35`</td></tr><tr><td>`2.77`</td><td>`2.77`</td></tr></table>**Values:** Any String |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                                                                                                                                                                          |
 
-    === "Overlay Template Variables"
+        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` 
+        with when calling.
 
-        {%
-           include-markdown "../overlay_text_variables.md"
-        %}
+    === "Overlay Template Variables"
 
         {%
            include-markdown "../overlay_variables.md"
         %}
 
+    === "Overlay Text Template Variables"
 
-    ### Example Template Variable Amendments
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
+    
     ```yaml
     libraries:
       Movies:

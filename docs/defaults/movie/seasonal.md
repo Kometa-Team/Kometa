@@ -46,19 +46,22 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+
+    * **Shared Separator Variables** are additional variables available since this Default contains a 
+    [Separator](../separators.md).
 
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Shared Template Variables" tab for additional variables.
-
-        This file contains a [Separator](../separators.md) so all [Shared Separator Variables](../separators.md#shared-separator-variables) are available as well.
 
         | Variable                              | Description & Values                                                                                                                                                                                                                                                                             |
         |:--------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -85,7 +88,8 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `name_format`                         | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                              |
         | `summary_format`                      | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `A collection of <<key_name>> <<library_translation>>s that may relate to the season.`<br>**Values:** Any string.                                                                                        |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
 
     === "Shared Template Variables"
 
@@ -93,18 +97,18 @@ Note that the `template_variables:` section only needs to be used if you do want
           include-markdown "../collection_variables.md"
         %}
 
-    ### Example Template Variable Amendments
+    === "Shared Separator Variables"
+
+        {%
+          include-markdown "../separator_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:
@@ -127,11 +131,13 @@ Note that the `template_variables:` section only needs to be used if you do want
     4.  Create a new Seasonal collection called "Planet of the Apes Day", and set the key for this collection to `apes`
     5.  Set a scheduled range for the "Planet of the Apes Day" collection.  Planet Of The Apes Day is 11/25.
     6.  Add an IMDb List to be used for the "Planet of the Apes Day" collection
-    7.  Add the 🐵 emoji to the "Planet of the Apes Day" collection so that the title in Plex is "🐵 Planet of the Apes Day Movies"
+    7.  Add the 🐵 emoji to the "Planet of the Apes Day" collection so that the title in Plex is "🐵 Planet of the Apes 
+    Day Movies"
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 
@@ -158,12 +164,13 @@ If you want to customize these values, use the methods described above.
         Pass `emoji_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      emoji: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check1"
-      end="schedule:"
+      end="# check2"
     %}
     ```
 
@@ -176,12 +183,13 @@ If you want to customize these values, use the methods described above.
         Pass `schedule_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      schedule: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check2"
-      end="imdb_list:"
+      end="# check3"
     %}
     ```
 
@@ -194,12 +202,13 @@ If you want to customize these values, use the methods described above.
         Pass `imdb_list_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      imdb_list: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check3"
-      end="imdb_search:"
+      end="# check4"
     %}
     ```
 
@@ -212,12 +221,13 @@ If you want to customize these values, use the methods described above.
         Pass `imdb_search_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      imdb_search: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check4"
-      end="tmdb_collection:"
+      end="# check5"
     %}
     ```
 
@@ -230,12 +240,13 @@ If you want to customize these values, use the methods described above.
         Pass `tmdb_collection_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      tmdb_collection: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check5"
-      end="tmdb_movie:"
+      end="# check6"
     %}
     ```
 
@@ -248,12 +259,13 @@ If you want to customize these values, use the methods described above.
         Pass `tmdb_movie_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      tmdb_movie: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check6"
-      end="mdblist_list:"
+      end="# check7"
     %}
     ```
 
@@ -266,12 +278,13 @@ If you want to customize these values, use the methods described above.
         Pass `mdblist_list_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      mdblist_list: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check7"
-      end="trakt_list:"
+      end="# check8"
     %}
     ```
 
@@ -284,11 +297,12 @@ If you want to customize these values, use the methods described above.
         Pass `trakt_list_<<key>>` to the file as template variables to change this value per collection.
 
     ```yaml
-      trakt_list: {%    
+    {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check8"
-      end="visible_home:"
+      end="# check9"
     %}
     ```

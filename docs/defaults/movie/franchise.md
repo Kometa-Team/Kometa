@@ -1,10 +1,13 @@
 # Franchise Collections
 
-The `franchise` Default Collection File is used to create collections based on popular Movie franchises, and can be used as a replacement to the TMDb Collections that Plex creates out-of-the-box.
+The `franchise` Default Collection File is used to create collections based on popular Movie franchises, and can be used 
+as a replacement to the TMDb Collections that Plex creates out-of-the-box.
 
-Unlike most Default Collection Files, Franchise works by placing collections inline with the main library items if your library allows it. For example, the "Iron Man" franchise collection will appear next to the "Iron Man" movies within your library.
+Unlike most Default Collection Files, Franchise works by placing collections inline with the main library items if your 
+library allows it. For example, the "Iron Man" franchise collection will appear next to the "Iron Man" movies within 
+your library.
 
-**This file has a Show Library [Counterpart](../show/franchise.md).**
+**[This file has a Show Library Counterpart.](../show/franchise.md)**
 
 ![](../images/moviefranchise.png)
 
@@ -31,17 +34,21 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
 
-    === "Template Variables"
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
 
-        The below template variables are available specifically for this PMM Defaults file.
+    ???+ warning
 
-        **[Shared Collection Variables](../collection_variables.md) are NOT available to this default file.**
+        [Shared Collection Variables](../collection_variables.md) are NOT available to this default file.
+
+    === "File-Specific Template Variables"
 
         | Variable                                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
         |:-----------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -73,21 +80,15 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `item_radarr_tag`                        | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr for all collections in a Defaults file.<br>**Values:** List or comma-separated string of tags                                                                                                                                                                                                                                                                                                                                      |
         | `item_radarr_tag_<<key>>`<sup>1</sup>    | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr of the specified key's collection.<br>**Default:** `item_radarr_tag`<br>**Values:** List or comma-separated string of tags                                                                                                                                                                                                                                                                                                         |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
-
-
-    ### Example Template Variable Amendments
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:
@@ -99,13 +100,17 @@ Note that the `template_variables:` section only needs to be used if you do want
               radarr_add_missing: true #(3)!
     ```
 
-    1.  Do not create any physical collections in Plex (normally used when you want to perform an "operation" instead, see the third tooltip for the example)
-    2.  Add [TMDb Movie 336560](https://www.themoviedb.org/movie/336560-lake-placid-vs-anaconda) to [TMDb Collection 105995](https://www.themoviedb.org/collection/105995-anaconda-collection) 
-    3.  Add items missing from your library in Plex to Radarr. When used in this particular file, hundreds if not thousands of items may be sent to Radarr - proceed with caution!
+    1.  Do not create any physical collections in Plex (normally used when you want to perform an "operation" instead, 
+    see the third tooltip for the example)
+    2.  Add [TMDb Movie 336560](https://www.themoviedb.org/movie/336560-lake-placid-vs-anaconda) to 
+    [TMDb Collection 105995](https://www.themoviedb.org/collection/105995-anaconda-collection) 
+    3.  Add items missing from your library in Plex to Radarr. When used in this particular file, hundreds if not 
+    thousands of items may be sent to Radarr - proceed with caution!
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not show how to change a name or a list.**
+These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 
@@ -127,8 +132,6 @@ If you want to customize these values, use the methods described above.
 
     <div id="title-override" />
 
-    **Default `title_override`**:
-
     ```yaml
     title_override: {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
@@ -148,11 +151,13 @@ If you want to customize these values, use the methods described above.
         Pass `movie_<<key>>` to the file as template variables to change this value per collection. 
 
     ```yaml
-      movie: {%    
+    {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check1"
-      end="name_mapping:"
+      end="# check2"
     %}
     ```
 
@@ -165,10 +170,11 @@ If you want to customize these values, use the methods described above.
         Pass `name_mapping_<<key>>` to the file as template variables to change this value per collection. 
     
     ```yaml
-      name_mapping: {%    
+    {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false
-      preserve-includer-indent=false
+      preserve-includer-indent=true
+      dedent=true
       start="# check2"
     %}
     ```

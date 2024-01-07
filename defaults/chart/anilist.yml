@@ -22,12 +22,12 @@ templates:
   season:
     default:
       limit: 100
-      limit_trending: <<limit>>
+      limit_season: <<limit>>
     anilist_search:
       season: current
       year:
       sort_by: popular
-      limit: <<limit_trending>>
+      limit: <<limit_season>>
 
 collections:
   AniList Popular:

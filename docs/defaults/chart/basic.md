@@ -31,17 +31,19 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
 
     === "File-Specific Template Variables"
-
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
         | Variable                          | Description & Values                                                                                                                                                                                                                            |
         |:----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -51,26 +53,21 @@ Note that the `template_variables:` section only needs to be used if you do want
         | `sort_by_<<key>>`<sup>1</sup>     | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                         |
         | `in_the_last_<<key>>`<sup>1</sup> | **Description:** Changes how far back the Smart Filter looks.<table class="clearTable"><tr><td>**Default:**</td></tr><tr><td>`released`</td><td>`90`</td></tr><tr><td>`episodes`</td><td>`7`</td></tr></table>**Values:** Number greater than 0 |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
+        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
+        `<<key>>` with when calling.
 
     === "Shared Template Variables"
 
         {%
           include-markdown "../collection_variables.md"
         %}
-
-    ### Example Template Variable Amendments
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
 
-    ???+ tip
-
-        Anywhere you see this icon:
-      
-        > :fontawesome-solid-circle-plus:
-      
-        That's a tooltip, you can press them to get more information.
-
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
     ```yaml
     libraries:
       Movies:

@@ -101,8 +101,8 @@ dynamic_collections:
       - shared
       - arr
     template_variables:
+      # check1
       emoji:
-        # check1
         years: "🎊 "
         valentine: "💘 "
         patrick: "☘ "
@@ -122,8 +122,8 @@ dynamic_collections:
         latinx: "🪅 "
         women: "🚺 "
         black_history: "✊ 🏿 "
+      # check2
       schedule:
-        # check2
         years: range(12/26-01/04)
         valentine: range(02/01-02/29)
         patrick: range(03/01-03/18)
@@ -143,8 +143,8 @@ dynamic_collections:
         lgbtq: range(05/31-06/30)
         latinx: range(09/15-10/15)
         women: range(02/28-03/31)
+      # check3
       imdb_list:
-        # check3
         years: https://www.imdb.com/list/ls066838460/
         valentine:
           - https://www.imdb.com/list/ls000094398/
@@ -170,14 +170,14 @@ dynamic_collections:
           - https://www.imdb.com/list/ls000835734/
           - https://www.imdb.com/list/ls091597850/
         christmas: https://www.imdb.com/list/ls000096828/
+      # check4
       imdb_search:
-        # check4
         women:
           keyword.any: women in film, womens rights, womens suffrage
           sort_by: rating.desc
           limit: 500
+      # check5
       tmdb_collection:
-        # check5
         halloween:
           - 185103    # Hotel Transylvania
           - 11716     # Addams Family
@@ -189,12 +189,12 @@ dynamic_collections:
           - 8091      # Alien Collection
           - 2980      # Ghostbusters
           - 751156    # Hocus Pocus
+      # check6
       tmdb_movie:
-        # check6
         halloween:
           - 23437    # A Nightmare on Elm Street (2010)
+      # check7
       mdblist_list:
-        # check7
         aapi:
           - https://mdblist.com/lists/plexmetamanager/asian-american-pacific-islander-heritage-month
         disabilities:
@@ -203,11 +203,12 @@ dynamic_collections:
           - https://mdblist.com/lists/plexmetamanager/lgbtq-pride-month
         latinx:
           - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
+      # check8
       trakt_list:
-        # check8
         black_history:
           - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
           - https://trakt.tv/users/bluephi8/lists/black-history?display=movie&sort=title,asc
+      # check9
       visible_home:
         default: true
       visible_shared:

@@ -97,8 +97,8 @@ dynamic_collections:
       535313: Godzilla (MonsterVerse)
       535790: Godzilla (Anime)
     template_variables:
+      # check1
       movie:
-        # check1
         105995: 336560    # Anaconda: Lake Placid vs. Anaconda
         176097: 14177     # Barbershop: Beauty Shop
         448150: 567604    # Deadpool: Once Upon a Deadpool
@@ -125,8 +125,8 @@ dynamic_collections:
         10194: 130925 # Toy Story: Partysaurus Rex
         63043: 73362  # TRON: TRON: The Next Day
         748: 567604 # X-Men: Once Upon a Deadpool
+      # check2
       name_mapping:
-        # check2
         1565: 28 Days-Weeks Later
         508334: Angels in the
         115838: Escape From

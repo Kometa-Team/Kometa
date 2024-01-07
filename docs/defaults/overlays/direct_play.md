@@ -1,6 +1,7 @@
 # Direct Play Overlay
 
-The `direct_play` Default Overlay File is used to create an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)
+The `direct_play` Default Overlay File is used to create an overlay to indicate items that cannot be transcoded and 
+instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)
 
 ![](images/direct_play.png)
 
@@ -24,11 +25,19 @@ libraries:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
+make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
+work. Any value not specified will use its default value if it has one if not it's just ignored.
 
-??? info "Click to expand"
+??? abstract "Variable Lists (click to expand)"
+
+    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+
+    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+
+    * **Overlay Text Template Variables** are additional variables shared across the PMM Text Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -45,10 +54,6 @@ Note that the `template_variables:` section only needs to be used if you do want
         
     === "File-Specific Template Variables"
 
-        The below template variables are available specifically for this PMM Defaults file.
-
-        Be sure to also check out the "Overlay Template Variables" tab for additional variables.
-
         | Variable        | Description & Values                                                            |
         |:----------------|:--------------------------------------------------------------------------------|
         | `builder_level` | **Description:** Choose the Overlay Level.<br>**Values:** `season` or `episode` |
@@ -56,18 +61,19 @@ Note that the `template_variables:` section only needs to be used if you do want
     === "Overlay Template Variables"
 
         {%
-           include-markdown "../overlay_text_variables.md"
-        %}
-
-        {%
            include-markdown "../overlay_variables.md"
         %}
 
-    ### Example Template Variable Amendments
+    === "Overlay Text Template Variables"
+
+        {%
+           include-markdown "../overlay_text_variables.md"
+        %}
+    
+???+ example "Example Template Variable Amendments"
 
     The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-
+    
     ```yaml
     libraries:
       Movies:
