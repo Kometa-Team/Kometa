@@ -743,7 +743,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {data[methods['blank_collection']]}")
             self.blank_collection = util.parse(self.Type, "blank_collection", self.data, datatype="bool", methods=methods, default=False)
 
-        self.sync = self.library.sync_mode == "sync"
+        self.sync = self.library.sync_mode == "sync" and self.type != "overlay"
         if "sync_mode" in methods and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: sync_mode")

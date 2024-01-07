@@ -63,10 +63,6 @@ strong {
     text-transform: uppercase;
 }
 
-.md-typeset code {
-    word-break: unset;
-}
-
 [data-md-color-scheme="slate"] .md-typeset code {
     background-color: hsl(225deg 8.87% 10.98%);
 }
