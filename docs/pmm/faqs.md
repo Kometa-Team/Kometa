@@ -492,3 +492,11 @@ With the release of PMM 1.20, several changes have taken place that we would lik
     Due to FlixPatrol moving a lot of their data behind a paywall, the existing setup no longer works.
 
     We have reintroduced FlixPatrol as a [Builder](../files/builders/flixpatrol.md) and [PMM Defaults File](../defaults/chart/flixpatrol.md), we recommdend reading the documentation and updating your config/YAML files to suit.
+
+??? blank "PMM Default `other_award` replaced with individual Award files (click to expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
+
+    <div id="awards" />
+
+    The PMM Default file `other_award` is now deprecated and will no longer function.
+
+    Individual PMM Default files have been introduced for several Awards, see the [Awards List](../defaults/collection_list.md#award-collections) for more information on the new options.
