@@ -71,18 +71,22 @@ extra:
       link: /en/nightly/
       lang: en
   social:
-  - icon: fontawesome/solid/heart
-    class: md-social__link heart
-    link: 'https://github.com/sponsors/meisnate12'
-    name: Donate
-  - icon: fontawesome/brands/discord
-    class: md-social__link
-    link: 'https://metamanager.wiki/en/latest/discord/'
-    name: Discord
-  - icon: fontawesome/brands/github
-    class: md-social__link
-    link: 'https://github.com/meisnate12/Plex-Meta-Manager'
-    name: GitHub
+    - icon: fontawesome/solid/heart
+      class: md-social__link heart
+      link: 'https://github.com/sponsors/meisnate12'
+      name: Donate
+    - icon: fontawesome/brands/discord
+      class: md-social__link
+      link: 'https://metamanager.wiki/en/latest/discord/'
+      name: Discord
+    - icon: fontawesome/brands/github
+      class: md-social__link
+      link: 'https://github.com/meisnate12/Plex-Meta-Manager'
+      name: GitHub
+  analytics:
+    provider: plausible
+    domain: metamanager.wiki/en/latest
+    src: "https://analytics.metamanager.wiki/js/script.js"
 copyright: Copyright &copy; 2024 meisnate12
 markdown_extensions:
   - pymdownx.tasklist:
