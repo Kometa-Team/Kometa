@@ -59,6 +59,7 @@ plugins:
         'link.md': 'https://discord.gg/FNqqw5jRSz'
         'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
         'traktauth.md': 'https://replit.com/@chazlarson/TraktAuth'
+  - material-plausible
 extra:
   alternate:
     - name: Latest Docs
