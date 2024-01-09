@@ -714,6 +714,27 @@ The available setting attributes which can be set at each level are outlined bel
           save_report: false
         ```
 
+??? blank "`report_path` - Used to specify the location of `save_report`.<a class="headerlink" href="#report-path" title="Permanent link">¶</a>"
+
+    <div id="report-path" />Specify the location where `save_report` is saved.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `report_path`
+
+    **Levels with this Attribute:** Library
+
+    **Accepted Values:** YAML file path location
+
+    **Default Value:** `[Directory containing YAML config]/[Library Mapping Name]_report.yml`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          report_path: config/TV_missing_report.yml
+        ```
+
 ??? blank "`tvdb_language` - Specify the language to query TVDb in.<a class="headerlink" href="#tvdb-language" title="Permanent link">¶</a>"
 
     <div id="tvdb-language" />Specify the language to query TVDb in.
