@@ -26,8 +26,10 @@ collections:
       event_id: ev0000003
       event_year: all
       category_filter:
-        - best picture
         - best motion picture of the year
+        - best picture
+        - best picture, production
+        - best picture, unique and artistic production
       winning: true
 
   Oscars Best Director Winners:
