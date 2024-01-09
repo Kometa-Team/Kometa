@@ -106,7 +106,7 @@ class Mdblist:
             response = self.config.get_json(url, params=final_params)
         except JSONDecodeError:
             raise Failed("Mdblist Error: JSON Decoding Failed")
-        if "response" in response and response["response"] is False or response["response"] == "False":
+        if "response" in response and (response["response"] is False or response["response"] == "False"):
             if response["error"] in ["API Limit Reached!", "API Rate Limit Reached!"]:
                 self.limit = True
                 raise LimitReached(f"MdbList Error: {response['error']}")
