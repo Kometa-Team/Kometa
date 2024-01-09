@@ -15,6 +15,10 @@ strong {
     color: #00bc8c;
 }
 
+table tr td code {
+  white-space: nowrap;
+}
+
 .md-banner {
     background-color: #252525;
     color: var(--md-footer-fg-color);

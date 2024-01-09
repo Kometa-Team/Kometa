@@ -534,7 +534,7 @@ def is_date_filter(value, modifier, data, final, current_time):
         if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
             return True
     elif modifier == ".regex":
-        jailbreak = True
+        jailbreak = False
         for check_data in data:
             if re.compile(check_data).match(value.strftime("%m/%d/%Y")):
                 jailbreak = True
