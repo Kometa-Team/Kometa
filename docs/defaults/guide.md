@@ -39,7 +39,9 @@ libraries:
 
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` will be given to every template call in the file which allows them to affect how that file runs.
 
-This example changes the ratings overlay to work on episodes.
+For collections, this example disables two keys, which will prevent those collections from being created. It also sets the visibility of one of the keys so that it is visible on the library tab, the server owner's homescreen and shared user's homescreens (assuming they server owner and/or the shared users have the library pinned to their homescreen)
+
+For overlays, this example changes the ratings overlay to apply to episodes rather than shows.
 
 ```yaml
 libraries:
