@@ -470,7 +470,7 @@ class Trakt:
                     if "certifications" in dict_methods:
                         final_dict["certifications"] = util.parse(err_type, "certifications", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_certifications if is_movie else self.show_certifications)
                     if "networks" in dict_methods and not is_movie:
-                        final_dict["networks"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
+                        final_dict["network_ids"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
                     if "status" in dict_methods and not is_movie:
                         final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=status)
                     valid_dicts.append(final_dict)
@@ -501,7 +501,7 @@ class Trakt:
             params = {"limit": data["limit"]}
             chart_limit = f"{data['limit']} {data['time_period'].capitalize()}" if data["time_period"] else data["limit"]
             logger.info(f"Processing {pretty}: {chart_limit} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
-            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "networks", "status"]:
+            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "network_ids", "status"]:
                 if attr in data:
                     logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
                     values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
