@@ -9,7 +9,7 @@ Updated lxml requirement to 5.1.0
 
 # Bug Fixes
 Fixed the Rate Limit on MDbList calls
-- Users who do not have VIP status on MDBList will be limited to 1 request per second. Users with VIP status are limited to 5 requests per second
+- As per Mdblist's limitations, users who do not have VIP status on MDBList will be limited to 1 request per second and users who do have VIP status are limited to 5 requests per second - users may notice that this slows down mass operations as we now abide by these restrictions to avoid the user being rate limited.
 Fixed collection fields being locked during batch edits when they shouldn't be.
 
 Various other Minor Fixes
