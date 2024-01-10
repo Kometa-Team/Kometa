@@ -75,6 +75,9 @@ class Race:
         except (ValueError, TypeError):
             self.date = None
 
+    def __str__(self):
+        return f"Season {self.season} Round {self.round}: {self.name}"
+
     def format_name(self, round_prefix, shorten_gp):
         if self._language:
             output = f"GP {self.name.replace(' Grand Prix', '')}" if shorten_gp else self.name
