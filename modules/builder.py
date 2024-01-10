@@ -3171,7 +3171,7 @@ class CollectionBuilder:
             if summary[1]:
                 if str(summary[1]) != str(self.obj.summary):
                     try:
-                        self.obj.edit(summary=str(summary[1]))
+                        self.obj.editSummary(str(summary[1]))
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")

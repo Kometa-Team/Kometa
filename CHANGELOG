@@ -9,6 +9,6 @@ Updated lxml requirement to 5.1.0
 
 # Bug Fixes
 Fixed the Rate Limit on MDbList calls
-Fixed collection fields being locked during batch edits when they shouldn't be.
+Fixed collection fields being locked during batch edits when they shouldn't be
 
 Various other Minor Fixes

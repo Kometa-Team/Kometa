@@ -1856,7 +1856,8 @@ class MetadataFile(DataFile):
         asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
-        logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
+        if "f1_season" not in methods:
+            logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         update_seasons = self.update_seasons
         if "update_seasons" in methods and self.library.is_show:
@@ -2130,9 +2131,10 @@ class MetadataFile(DataFile):
                     f1_language = str(meta[methods["f1_language"]]).lower()
                 else:
                     logger.error(f"{self.type_str} Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
-            logger.info(f"Setting {self.type_str} of {item.title} to F1 Season {f1_season}")
+            logger.info(f"Setting {item.title} of {self.type_str} to F1 Season {f1_season}")
             races = self.config.Ergast.get_races(f1_season, f1_language)
             race_lookup = {r.round: r for r in races}
+            logger.trace(race_lookup)
             for season in item.seasons():
                 if not season.seasonNumber:
                     continue
