@@ -67,7 +67,7 @@ This section aims to explain some commonly seen event messages that are produced
 
 #### CRITICAL
 
-This table details examples of the most commonly-seen `CRITICAL` events and what they mean for the user.
+This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
 
 | Type       | Short Info                                          | Description                                                                   | Recommendation                                                                                              |
 |:-----------|:----------------------------------------------------|:------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
