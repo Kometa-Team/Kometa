@@ -847,8 +847,8 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         if range_split:
             range_values = str(value).split(range_split)
             if len(range_values) == 2:
-                start = check_int(range_values[0])
-                end = check_int(range_values[1])
+                start = check_int(range_values[0], datatype=datatype, minimum=minimum, maximum=maximum)
+                end = check_int(range_values[1], datatype=datatype, minimum=minimum, maximum=maximum)
                 if start and end and start < end:
                     return f"{start}{range_split}{end}"
         else:

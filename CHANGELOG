@@ -1,9 +1,11 @@
 # Requirements Update (requirements will need to be reinstalled)
 Updated lxml requirement to 5.1.0
+Updated gitpython requirement to 3.1.41
 
 # New Features
 
 # Updates
+Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
 
 # Defaults
 
