@@ -1000,27 +1000,28 @@ class MetadataFile(DataFile):
                             _, event_years = self.config.IMDb.get_event_years(event_id)
                             year_options = [event_years[len(event_years) - i] for i in range(1, len(event_years) + 1)]
 
-                            def get_position(attr, pos_add=0):
+                            def get_position(attr):
                                 if attr not in award_methods:
                                     return 0 if attr == "starting" else len(year_options)
                                 position_value = str(dynamic_data[award_methods[attr]])
                                 if not position_value:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute is blank")
                                 if position_value.startswith(("first", "latest", "current_year")):
-                                    int_values = position_value.split("+" if position_value.startswith("first") else "-")
+                                    is_first = position_value.startswith("first")
+                                    int_values = position_value.split("+" if is_first else "-")
                                     try:
                                         if len(int_values) == 1:
-                                            return 0 if position_value.startswith("first") else len(year_options)
+                                            return 1 if is_first else len(year_options)
                                         else:
-                                            return int(int_values[1].strip()) * (1 if position_value.startswith("first") else -1)
+                                            return (int(int_values[1].strip()) + (1 if is_first else 0)) * (1 if is_first else -1)
                                     except ValueError:
                                         raise Failed(f"Config Error: {map_name} data {attr} attribute modifier invalid '{int_values[1]}'")
                                 elif position_value in year_options:
-                                    return year_options.index(position_value) + pos_add
+                                    return year_options.index(position_value) + 1
                                 else:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute invalid: {position_value}")
 
-                            found_options = year_options[get_position("starting"):get_position("ending")]
+                            found_options = year_options[get_position("starting") - 1:get_position("ending")]
 
                             if not found_options:
                                 raise Failed(f"Config Error: {map_name} data starting/ending range found no valid events")
