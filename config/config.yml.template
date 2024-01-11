@@ -6,7 +6,7 @@ libraries:                       # This is called out once within the config.yml
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
+    overlay_files:
       - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
@@ -15,7 +15,7 @@ libraries:                       # This is called out once within the config.yml
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
+    overlay_files:
       - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
