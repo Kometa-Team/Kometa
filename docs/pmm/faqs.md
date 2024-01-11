@@ -447,13 +447,14 @@ With the release of PMM 1.20, several changes have taken place that we would lik
       Movies:
         remove_overlays: false
         reapply_overlays: false #(1)!
-        reset_overlays: false
+        # reset_overlays: plex #(2)!
         schedule_overlays: daily
         overlay_files:
           - pmm: audio_codec
     ```
 
     1.  We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/image-cleanup.md)
+    2.  This is purely an example, you do not need to specify `reset_overlays` or any of these attributes unless you specifically need to use them.
 
 ??? blank "`imdb_list` no longer works for Title or Keyword search URLs (click to expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
 
