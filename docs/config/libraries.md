@@ -271,7 +271,7 @@ The available attributes for each library are as follows:
 
     ???+ warning "Proceed with Caution"
 
-        Utill set to `false` or removed this will remove all overlays from your library every run, but will not delete 
+        When set to `true`, this will remove all overlays from your library every run, but will not delete 
         the overlaid images from your system, resulting in [image bloat](../pmm/scripts/image-cleanup.md).
 
     <hr style="margin: 0px;">
@@ -300,7 +300,7 @@ The available attributes for each library are as follows:
 
     ???+ warning "Proceed with Caution"
 
-        Utill set to `false` or removed this will reapply all overlays on each run, which will result in 
+        When set to `true`, this will reapply all overlays on each run even if there is no need to do so, which will result in 
         [image bloat](../pmm/scripts/image-cleanup.md).
 
     <hr style="margin: 0px;">
@@ -330,7 +330,7 @@ The available attributes for each library are as follows:
 
     ???+ warning "Proceed with Caution"
 
-        Utill set to `false` or removed this will reset all posters to the desired source on each run and will reapply 
+        This will reset all posters to the desired source on each run and will reapply 
         all overlays on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
 
     <hr style="margin: 0px;">
