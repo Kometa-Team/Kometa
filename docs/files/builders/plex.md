@@ -254,7 +254,7 @@ Tag search can take multiple values as a **list or a comma-separated string**.
 | `track_source`             | Uses the Track's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 | `track_label`              | Uses the Track's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 
-<sup>1</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
+<sup>1</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
 ## Date Searches
 
@@ -334,7 +334,7 @@ No number search can take multiple values.
 | `album_critic_rating`      | Uses the Album's critic rating attribute to match<br>**Range:** `0.0` - `10.0`                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 | `track_user_rating`        | Uses the Track's user rating attribute to match<br>**Range:** `0.0` - `10.0`                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 
-<sup>1</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current-2`
+<sup>1</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
 ## Boolean Searches
 

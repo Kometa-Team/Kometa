@@ -698,6 +698,7 @@ class Operations:
                         item_title = self.library.get_item_sort_title(ep, atr="title")
                         logger.info("")
                         logger.info(f"Processing {item_title}")
+                        item_edits = ""
                         episode_locked_fields = [f.name for f in ep.fields if f.locked]
 
                         for attribute, item_attr in episode_ops:
