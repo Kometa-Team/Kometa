@@ -21,6 +21,7 @@ from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
 from modules.reciperr import Reciperr
+from modules.jsonurl import JsonUrl
 from modules.mdblist import Mdblist
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
@@ -705,6 +706,7 @@ class ConfigFile:
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
             self.Reciperr = Reciperr(self)
+            self.JsonUrl = JsonUrl(self)
             self.Ergast = Ergast(self)
 
             logger.separator()
