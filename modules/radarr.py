@@ -30,6 +30,7 @@ class Radarr:
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.upgrade_existing = params["upgrade_existing"]
+        self.monitor_existing = params["monitor_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.availability = params["availability"]
@@ -56,6 +57,7 @@ class Radarr:
             logger.debug(tmdb_id)
         logger.trace("")
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
+        monitor_existing = options["monitor_existing"] if "monitor_existing" in options else self.monitor_existing
         ignore_cache = options["ignore_cache"] if "ignore_cache" in options else self.ignore_cache
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = options["monitor"] if "monitor" in options else self.monitor
@@ -64,6 +66,7 @@ class Radarr:
         tags = options["tag"] if "tag" in options else self.tag
         search = options["search"] if "search" in options else self.search
         logger.trace(f"Upgrade Existing: {upgrade_existing}")
+        logger.trace(f"Monitor Existing: {monitor_existing}")
         logger.trace(f"Ignore Cache: {ignore_cache}")
         logger.trace(f"Folder: {folder}")
         logger.trace(f"Monitor: {monitor}")
@@ -157,13 +160,22 @@ class Radarr:
             logger.info("")
             if len(exists) > 0:
                 upgrade_qp = []
+                remonitor_existing = []
                 for movie in exists:
+                    if movie.monitored != True and monitor_existing:
+                        remonitor_existing.append(movie)
+                    else:
+                        logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
                     if movie.qualityProfileId != qp.id and upgrade_existing:
                         upgrade_qp.append(movie)
                     else:
                         logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
                     if self.config.Cache:
                         self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
+                if remonitor_existing:
+                    self.api.edit_multiple_movies(remonitor_existing, monitored=True)
+                    for movie in remonitor_existing:
+                        logger.info(f"Remonitored in Radarr | {movie.tmdbId:<7} | {movie.title}")
                 if upgrade_qp:
                     self.api.edit_multiple_movies(upgrade_qp, quality_profile=qp)
                     for movie in upgrade_qp:
