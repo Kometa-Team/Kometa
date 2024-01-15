@@ -49,13 +49,10 @@ To connect to Trakt.tv you must create a Trakt application and supply Plex Meta 
 
     Run Plex Meta Manager shortly after obtaining your PIN; the PIN may expire at some point.
 
-## Online Authorization Script
+## Online Authorization
 
 Plex Meta Manager requires interactive mode to be able to enter the Client ID and Client Secret. Some systems (namely 
-NAS) make this difficult to accomplish. Chazlarson has developed an online script that can be run to generate the MAL 
-and Trakt authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration 
-file.
+NAS) make this difficult to accomplish. Chazlarson has provided an online tool to generate the MAL and Trakt 
+authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration file.
 
-The Online Auth tool can be found [here](https://replit.com/@chazlarson/TraktAuth).
-
-Simply press the play button, wait a little bit, and then follow the on-screen prompts.
+The tool can be found [here](auth.md). 

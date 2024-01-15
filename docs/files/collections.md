@@ -17,7 +17,7 @@ list will be added/removed from the collection in the Plex library.
 
     ```yaml
     collections: #(1)!
-       Top 50 Grossing Films of All Time (Worldwide):
+      Top 50 Grossing Films of All Time (Worldwide):
         tmdb_list: 10 #(2)!
         collection_order: custom #(3)!
         sync_mode: sync #(4)!
