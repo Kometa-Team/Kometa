@@ -183,6 +183,7 @@ nav:
         - OMDb: config/omdb.md
         - AniDB: config/anidb.md
         - MyAnimeList: config/myanimelist.md
+        - Trakt and MyAnimeList Authentication: config/auth.md
   - PMM DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
