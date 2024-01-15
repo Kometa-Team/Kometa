@@ -14,6 +14,7 @@ from modules.github import GitHub
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
 from modules.meta import PlaylistFile
+from modules.mojo import BoxOfficeMojo
 from modules.notifiarr import Notifiarr
 from modules.omdb import OMDb
 from modules.overlays import Overlays
@@ -704,6 +705,7 @@ class ConfigFile:
             self.FlixPatrol = FlixPatrol(self)
             self.ICheckMovies = ICheckMovies(self)
             self.Letterboxd = Letterboxd(self)
+            self.BoxOfficeMojo = BoxOfficeMojo(self)
             self.Reciperr = Reciperr(self)
             self.Ergast = Ergast(self)
 
