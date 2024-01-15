@@ -34,7 +34,11 @@ No configuration is required for these builders.
     ??? blank "`range_data` - Determines the actual time range of the Box Office"
         
         Determines the actual time range of the Box Office. The input for this value changes depending on the value
-        of `range`. This attribute is required for all ranges expect the `yearly` range.
+        of `range`. 
+
+        ??? warning
+    
+            This attribute is required for all ranges except the `yearly` range.
 
         **Daily Allowed Values:** Date in the format `MM-DD-YYYY`, `current`, or relative current (`current-#`; where
         `#` is the number of days before the current)
@@ -87,6 +91,7 @@ No configuration is required for these builders.
           Last Months Top 10 Domestic Box Office:
             mojo_domestic:
               range: monthly
+              range_data: current
               year: current-1
               limit: 10
         ```
@@ -129,7 +134,11 @@ No configuration is required for these builders.
     ??? blank "`range_data` - Determines the actual time range of the Box Office"
         
         Determines the actual time range of the Box Office. The input for this value changes depending on the value
-        of `range`. This attribute is required for all ranges expect the `yearly` range.
+        of `range`. 
+
+        ??? warning
+
+            This attribute is required for all ranges except the `yearly` range.
 
         **Weekend Allowed Values:** Week Number between 1-53, `current`, or relative current (`current-#`; where `#` 
         is the number of days before the current)
@@ -168,6 +177,7 @@ No configuration is required for these builders.
           Last Months Top 10 German Box Office:
             mojo_international:
               range: monthly
+              range_data: current
               chart: germany
               year: current-1
               limit: 10
@@ -316,18 +326,18 @@ No configuration is required for these builders.
         ```yaml
         collections:
 
-          Top 100 Domestic Never #1:
+          "Top 100 Domestic Never #1":
             mojo_never:
               chart: domestic
               limit: 100
 
-          Top 100 Domestic Never #10:
+          "Top 100 Domestic Never #10":
             mojo_never:
               chart: domestic
               never: 10
               limit: 100
 
-          Top 100 German Never #1:
+          "Top 100 German Never #1":
             mojo_never:
               chart: germany
               limit: 100
