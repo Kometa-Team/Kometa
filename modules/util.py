@@ -76,10 +76,12 @@ mod_displays = {
     ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal", ".regex": "is"
 }
 pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+lower_days = {v.lower(): k for k, v in pretty_days.items()}
 pretty_months = {
     1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
+lower_months = {v.lower(): k for k, v in pretty_months.items()}
 seasons = ["current", "winter", "spring", "summer", "fall"]
 advance_tags_to_edit = {
     "Movie": ["metadata_language", "use_original_title"],
@@ -782,7 +784,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                     if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
                         final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:
-                        raise Failed(f"{error} Error: {display} {v} is invalid; Options include: {', '.join(options)}")
+                        raise Failed(f"{error} Error: {display} {v} is invalid; Options include: {', '.join([o for o in options])}")
         return final_list
     elif datatype == "intlist":
         if value:
@@ -861,7 +863,9 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             message = f"{message} separated by a {range_split}"
     elif datatype == "date":
         try:
-            return validate_date(datetime.now() if data == "today" else data, return_as=date_return)
+            if default in ["today", "current"]:
+                default = validate_date(datetime.now(), return_as=date_return)
+            return validate_date(datetime.now() if data in ["today", "current"] else data, return_as=date_return)
         except Failed as e:
             message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or \

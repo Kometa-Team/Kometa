@@ -30,6 +30,11 @@ Builders use third-party services to source items to be added to the collection.
   image: ../../../assets/icons/imdb.png
   url: "../imdb"
 
+- title: Box Office Mojo
+  content: Grabs items based on metadata and lists on Boxofficemojo.com
+  image: ../../../assets/icons/boxofficemojo.png
+  url: "../boxofficemojo"
+
 - title: Trakt
   content: Grabs items based on metadata and lists on Trakt.tv
   image: ../../../assets/icons/trakt.png
