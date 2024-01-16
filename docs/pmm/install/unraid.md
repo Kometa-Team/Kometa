@@ -20,7 +20,7 @@ The specific steps you will be taking:
 
 5. Then, iteratively:
 
-    1. use `unRAID >_Console` to run the commmands
+    1. use `unRAID >_Console` to run the commands
     2. use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
 
 If the idea of editing YAML files by hand is daunting, this may not be the tool for you.  All the configuration of PMM is done via YAML text files, so if you are unable or unwilling to learn how those work, you should stop here.
@@ -101,20 +101,6 @@ We'll create it here so the error doesn't show up later.
     mkdir config/assets
     ```
 
-=== ":fontawesome-brands-apple: macOS"
-
-    [type this into your terminal]
-    ```
-    mkdir config/assets
-    ```
-
-=== ":fontawesome-brands-windows: Windows"
-
-    [type this into your terminal]
-    ```
-    mkdir config\assets
-    ```
-
 ### Setting up the initial config file
 
 {%
@@ -132,19 +118,6 @@ First, make a copy of the template:
     curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
     ```
 
-=== ":fontawesome-brands-apple: macOS"
-
-    Get a copy of the template to edit [type this into your terminal]:
-    ```
-    curl -fLvo config/config.yml https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template
-    ```
-
-=== ":fontawesome-brands-windows: Windows"
-
-    Go to [this URL](https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
-    ```
-    C:\Users\YOURUSERNAME\plex-meta-manager\config\config.yml
-    ```
 Now open the copy in an editor on the machine of your choice(All 3 are fine. Just decide on one):
 
 {%
