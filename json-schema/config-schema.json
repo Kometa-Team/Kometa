@@ -592,7 +592,19 @@
                     "minimum": 1
                 },
                 "default_collection_order": {
-                    "type": "string"
+                    "type": ["string", "null"],
+                    "enum": [
+                        "added.asc", "added.desc", "audience_rating.asc",
+                        "audience_rating.desc", "bitrate.asc", "bitrate.desc",
+                        "content_rating.asc", "content_rating.desc", "critic_rating.asc",
+                        "critic_rating.desc", "duration.asc", "duration.desc",
+                        "originally_available.asc", "originally_available.desc",
+                        "plays.asc", "plays.desc", "progress.asc", "progress.desc",
+                        "random", "release.asc", "release.desc",
+                        "resolution.asc", "resolution.desc", "title.asc", "title.desc",
+                        "user_rating.asc", "user_rating.desc", "viewed.asc", "viewed.desc",
+                        "year.asc", "year.desc", null
+                    ]
                 },
                 "delete_below_minimum": {
                     "type": "boolean"
