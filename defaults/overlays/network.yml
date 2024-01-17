@@ -691,7 +691,7 @@ overlays:
 
   Prime Video:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [Prime Video, Amazon Prime Video]}]
 
   Rai 1:
     variables: { weight: 10}
