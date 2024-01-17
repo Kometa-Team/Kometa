@@ -66,7 +66,8 @@
                 },
                 "timeout": {
                     "description": "Connection timeout for this Plex server",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "db_cache": {
                     "description": "Sets DB Cache value for this Plex server",
@@ -111,7 +112,8 @@
                 },
                 "timeout": {
                     "description": "Connection timeout in seconds for this Plex server",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "db_cache": {
                     "description": "Sets DB Cache value for this Plex server",
@@ -137,12 +139,13 @@
             "title": "plex"
         },
         "tmdb-api": {
-            "description": "API Key to connect to TMDB; REQUIRED for the script to run",
+            "description": "API Information to connect to TMDB; REQUIRED for the script to run",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "apikey": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "API Key to connect to TMDB; REQUIRED for the script to run"
                 },
                 "language": {
                     "type": ["string", "null"],
@@ -169,10 +172,13 @@
                 },
                 "region": {
                     "type": "string",
-                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"]
+                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"],
+                    "description": "This field can be either null or a valid ISO 3166-1 Code."
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0"
                 }
             },
             "required": [
@@ -234,7 +240,9 @@
                     "type": "string"
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0"
                 }
             },
             "required": [
@@ -251,7 +259,9 @@
                     "type": "string"
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0"
                 }
             },
             "required": [
@@ -281,7 +291,8 @@
                     "type": "string"
                 },
                 "version": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "language": {
                     "type": ["string", "null"],
@@ -307,7 +318,9 @@
                     "description": "This field can be either null or a valid ISO 639 language code."
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0"
                 },
                 "username": {
                     "type": "string"
@@ -585,7 +598,8 @@
                 },
                 "cache_expiration": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "description": "An integer greater than 0"
                 },
                 "run_order": {
                     "type": "array", "uniqueItems": true, "items": {"enum": ["operations", "metadata", "collections", "overlays"]}
@@ -715,7 +729,8 @@
                     "type": "null"
                 },
                 "item_refresh_delay": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "playlist_sync_to_users": {
                     "type": [ "string", "null" ]
