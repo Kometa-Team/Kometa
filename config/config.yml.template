@@ -113,7 +113,7 @@ radarr:                          # Can be individually specified per library as 
   token: ################################
   add_missing: false
   add_existing: false
-  root_folder_path: S:/Movies
+  root_folder_path: "S:/Movies"
   monitor: true
   availability: announced
   quality_profile: HD-1080p
