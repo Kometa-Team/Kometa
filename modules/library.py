@@ -17,6 +17,7 @@ class Library(ABC):
         self.Operations = Operations(config, self)
         self.Overlays = None
         self.Notifiarr = None
+        self.Gotify = None
         self.collections = []
         self.collection_names = []
         self.metadatas = []

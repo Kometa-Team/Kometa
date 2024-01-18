@@ -472,6 +472,9 @@ mdblist:
   cache_expiration: 60
 notifiarr:
   apikey: this-is-a-placeholder-string
+gotify:
+  url: http://192.168.1.12:80
+  apikey: this-is-a-placeholder-string
 anidb:                           # Not required for AniDB builders unless you want mature content
   username: this-is-a-placeholder-string
   password: this-is-a-placeholder-string

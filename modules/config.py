@@ -15,6 +15,7 @@ from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
 from modules.meta import PlaylistFile
 from modules.notifiarr import Notifiarr
+from modules.gotify import Gotify
 from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
@@ -286,6 +287,7 @@ class ConfigFile:
         if "omdb" in self.data:                        self.data["omdb"] = self.data.pop("omdb")
         if "mdblist" in self.data:                     self.data["mdblist"] = self.data.pop("mdblist")
         if "notifiarr" in self.data:                   self.data["notifiarr"] = self.data.pop("notifiarr")
+        if "gotify" in self.data:                      self.data["gotify"] = self.data.pop("gotify")
         if "anidb" in self.data:                       self.data["anidb"] = self.data.pop("anidb")
         if "radarr" in self.data:
             if "monitor" in self.data["radarr"] and isinstance(self.data["radarr"]["monitor"], bool):
@@ -532,6 +534,42 @@ class ConfigFile:
             "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True)
         }
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory)
+        try:
+            self.Webhooks.start_time_hooks(self.start_time)
+            if self.version[0] != "Unknown" and self.latest_version[0] != "Unknown" and self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2]):
+                self.Webhooks.version_hooks(self.version, self.latest_version)
+        except Failed as e:
+            logger.stacktrace()
+            logger.error(f"Webhooks Error: {e}")
+
+        logger.save_errors = True
+        logger.separator()
+
+        self.GotifyFactory = None
+        if "gotify" in self.data:
+            logger.info("Connecting to Gotify...")
+            try:
+                self.GotifyFactory = Gotify(self, {"url": check_for_attribute(self.data, "url", parent="gotify", throw=True),
+                                                   "apikey": check_for_attribute(self.data, "apikey", parent="gotify", throw=True)})
+            except Failed as e:
+                if str(e).endswith("is blank"):
+                    logger.warning(e)
+                else:
+                    logger.stacktrace()
+                    logger.error(e)
+            logger.info(f"Gotify Connection {'Failed' if self.GotifyFactory is None else 'Successful'}")
+        else:
+            logger.info("gotify attribute not found")
+
+        self.webhooks = {
+            "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
+            "version": check_for_attribute(self.data, "version", parent="webhooks", var_type="list", default_is_none=True),
+            "run_start": check_for_attribute(self.data, "run_start", parent="webhooks", var_type="list", default_is_none=True),
+            "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
+            "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True),
+            "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True)
+        }
+        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.GotifyFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
             if self.version[0] != "Unknown" and self.latest_version[0] != "Unknown" and self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2]):
@@ -1173,7 +1211,7 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
-                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory)
+                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory or self.GotifyFactory,)
                 library.Overlays = Overlays(self, library)
 
                 logger.info("")
