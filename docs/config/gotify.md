@@ -1,7 +1,7 @@
 # Gotify Attributes
 
 Configuring [Gotify](https://gotify.net/) is optional but can allow you to send the [webhooks](webhooks.md) 
-straight to gotify..
+straight to gotify.
 
 A `gotify` mapping is in the root of the config file.
 
