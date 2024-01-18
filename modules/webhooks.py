@@ -1,4 +1,4 @@
-from json import JSONDecodeError, dumps
+from json import JSONDecodeError
 from modules import util
 from modules.util import Failed, YAML
 
@@ -337,15 +337,6 @@ class Webhooks:
         message = ""
         if json.get("event") == "run_end":
              title = "Run Completed"
-             message = [
-                    [("Start Time", json["start_time"]), ("End Time", json["end_time"]), ("Run Time", json["run_time"])],
-                    [("Collections", None)],
-                    [
-                        ("Created", json["collections_created"] if json["collections_created"] else "0"),
-                        ("Modified", json["collections_modified"] if json["collections_modified"] else "0"),
-                        ("Deleted", json["collections_deleted"] if json["collections_deleted"] else "0")
-                    ]
-                ]
              message = f"Start Time: {json['start_time']}\nEnd Time: {json['end_time']}\nRun Time: {json['run_time']}\nCollections Created: {json['collections_created']}\nCollections Modified: {json['collections_modified']}\nCollections Deleted: {json['collections_deleted']}"
         if json.get("added_to_radarr"):
             message = message + (f"{json['added_to_radarr']} Movies Added To Radarr\n", None)
@@ -356,10 +347,6 @@ class Webhooks:
             message = json["start_time"]
         elif json.get("event") == "version":
             title = "New Version Available"
-            message = [
-                [("Current", json["current"]), ("Latest", json["latest"])],
-                [("New Commits", json["notes"])]
-            ]
             message = f"Current : {json['current']}\nLatest: {json['latest']}\nNew Commits: {json['notes']}"
         else:
             message1 = ""
