@@ -51,6 +51,7 @@ plugins:
   - glightbox
   - search:
       lang: en
+  - open-in-new-tab
   - include-markdown
   - redirects:
       redirect_maps:
