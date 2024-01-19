@@ -160,26 +160,25 @@ class Radarr:
             logger.info("")
             if len(exists) > 0:
                 upgrade_qp = []
-                remonitor_existing = []
+                remonitor = []
                 for movie in exists:
-                    if movie.monitored != True and monitor_existing:
-                        remonitor_existing.append(movie)
-                    else:
-                        logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
-                    if movie.qualityProfileId != qp.id and upgrade_existing:
-                        upgrade_qp.append(movie)
+                    if (movie.monitored != monitor and monitor_existing) or (movie.qualityProfileId != qp.id and upgrade_existing):
+                        if movie.monitored != monitor and monitor_existing:
+                            remonitor.append(movie)
+                        if movie.qualityProfileId != qp.id and upgrade_existing:
+                            upgrade_qp.append(movie)
                     else:
                         logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
                     if self.config.Cache:
                         self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
-                if remonitor_existing:
-                    self.api.edit_multiple_movies(remonitor_existing, monitored=True)
-                    for movie in remonitor_existing:
-                        logger.info(f"Remonitored in Radarr | {movie.tmdbId:<7} | {movie.title}")
                 if upgrade_qp:
                     self.api.edit_multiple_movies(upgrade_qp, quality_profile=qp)
                     for movie in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {movie.tmdbId:<7} | {movie.title}")
+                if remonitor:
+                    self.api.edit_multiple_movies(remonitor, monitored=monitor)
+                    for movie in remonitor:
+                        logger.info(f"Monitored: {monitor} in Radarr | {movie.tmdbId:<7} | {movie.title}")
             if len(skipped) > 0:
                 logger.info(f"Skipped In Cache: {skipped}")
             logger.info("")

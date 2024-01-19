@@ -113,6 +113,8 @@ radarr:                          # Can be individually specified per library as 
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
   root_folder_path: S:/Movies
   monitor: true
   availability: announced
@@ -126,6 +128,8 @@ sonarr:                          # Can be individually specified per library as 
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
   root_folder_path: "S:/TV Shows"
   monitor: all
   quality_profile: HD-1080p

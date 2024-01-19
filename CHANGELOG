@@ -3,6 +3,8 @@ Updated lxml requirement to 5.1.0
 Updated gitpython requirement to 3.1.41
 
 # New Features
+Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
+
 
 # Updates
 Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission

@@ -10,6 +10,7 @@ default unless otherwise specified.
 | `radarr_add_missing`      | **Description:** Override Radarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                       |
 | `radarr_add_existing`     | **Description:** Override Radarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                      |
 | `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                  |
+| `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                  |
 | `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                      |
 | `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                        |
 | `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `movie`, `collection`, or `none`                                                                            |
@@ -31,6 +32,7 @@ default unless otherwise specified.
 | `sonarr_add_missing`      | **Description:** Override Sonarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                        |
 | `sonarr_add_existing`     | **Description:** Override Sonarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                       |
 | `sonarr_upgrade_existing` | **Description:** Override Sonarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                   |
+| `sonarr_monitor_existing` | **Description:** Override Sonarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                   |
 | `sonarr_ignore_cache`     | **Description:** Override Sonarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                       |
 | `sonarr_folder`           | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                         |
 | `sonarr_monitor`          | **Description:** Override Sonarr `monitor` attribute<br>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                   |

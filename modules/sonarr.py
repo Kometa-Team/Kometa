@@ -46,6 +46,7 @@ class Sonarr:
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.upgrade_existing = params["upgrade_existing"]
+        self.monitor_existing = params["monitor_existing"]
         self.root_folder_path = params["root_folder_path"]
         self.monitor = params["monitor"]
         self.quality_profile = params["quality_profile"]
@@ -75,6 +76,7 @@ class Sonarr:
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
+        monitor_existing = options["monitor_existing"] if "monitor_existing" in options else self.monitor_existing
         ignore_cache = options["ignore_cache"] if "ignore_cache" in options else self.ignore_cache
         folder = options["folder"] if "folder" in options else self.root_folder_path
         monitor = monitor_translation[options["monitor"] if "monitor" in options else self.monitor]
@@ -87,6 +89,7 @@ class Sonarr:
         search = options["search"] if "search" in options else self.search
         cutoff_search = options["cutoff_search"] if "cutoff_search" in options else self.cutoff_search
         logger.trace(f"Upgrade Existing: {upgrade_existing}")
+        logger.trace(f"Monitor Existing: {monitor_existing}")
         logger.trace(f"Ignore Cache: {ignore_cache}")
         logger.trace(f"Folder: {folder}")
         logger.trace(f"Monitor: {monitor}")
@@ -181,9 +184,13 @@ class Sonarr:
             logger.info("")
             if len(exists) > 0:
                 upgrade_qp = []
+                remonitor = []
                 for series in exists:
-                    if series.qualityProfileId != qp.id and upgrade_existing:
-                        upgrade_qp.append(series)
+                    if monitor_existing or (series.qualityProfileId != qp.id and upgrade_existing):
+                        if monitor_existing:
+                            remonitor.append(series)
+                        if series.qualityProfileId != qp.id and upgrade_existing:
+                            upgrade_qp.append(series)
                     else:
                         logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
                     if self.config.Cache:
@@ -192,6 +199,10 @@ class Sonarr:
                     self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
+                if remonitor:
+                    self.api.edit_multiple_series(remonitor, monitor=monitor)
+                    for series in remonitor:
+                        logger.info(f"Monitored: {monitor} in Sonarr | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:
                 logger.info(f"Skipped In Cache: {skipped}")
             logger.info("")
