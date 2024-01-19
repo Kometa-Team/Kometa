@@ -751,25 +751,43 @@
                 },
                 "ignore_ids": {
                     "description": "List of TMDb/TVDb IDs to ignore. Set a null, a single TMDb/TVDb ID, or a comma-separated string of TMDb/TVDb IDs to ignore in all collections.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "type": "null"
                         },
                         {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1
+                        },
+                        {
                             "type": "string",
                             "pattern": "^(\\d+)(,(\\d+))*$"
+                        },
+                        {
+                            "type": "integer"
                         }
                     ]
                 },
                 "ignore_imdb_ids": {
                     "description": "List of IMDb IDs to ignore. Set a null, a single IMDb ID, or a comma-separated string of IMDb IDs to ignore in all collections.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "type": "null"
                         },
                         {
                             "type": "string",
                             "pattern": "^(tt\\d{7})(,(tt\\d{7}))*$"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^tt\\d{7}$"
+                            },
+                            "minItems": 1
                         }
                     ]
                 },
