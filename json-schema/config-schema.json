@@ -375,6 +375,10 @@
                     "type": "string",
                     "enum": ["all","future","missing","existing","pilot","first","latest","none"]
                 },
+                "monitor_existing": {
+                    "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
+                    "type": "boolean"
+                },
                 "quality_profile": {
                     "type": "string"
                 },
@@ -446,6 +450,10 @@
                     "type": "string",
                     "enum": ["all","future","missing","existing","pilot","first","latest","none"]
                 },
+                "monitor_existing": {
+                    "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
+                    "type": "boolean"
+                },
                 "quality_profile": {
                     "type": "string"
                 },
@@ -503,6 +511,9 @@
                     "type": "string"
                 },
                 "monitor": {
+                    "type": "boolean"
+                },
+                "monitor_existing": {
                     "type": "boolean"
                 },
                 "quality_profile": {
@@ -564,6 +575,9 @@
                     "type": "string"
                 },
                 "monitor": {
+                    "type": "boolean"
+                },
+                "monitor_existing": {
                     "type": "boolean"
                 },
                 "quality_profile": {
@@ -1156,15 +1170,19 @@
                             "$ref": "#/definitions/template-variables-library"
                         },
                         "schedule": {
+                            "description": "Used to schedule when a library is run using the schedule options.",
                             "type": "string"
                         },
                         "remove_overlays": {
+                            "description": "Used to remove overlays from this library only. \nWhen set to true, this will remove all overlays from your library every run, but will not delete the overlaid images from your system, resulting in image bloat.",
                             "type": "boolean"
                         },
                         "reapply_overlays": {
+                            "description": "Used to reapply overlays from this library only. This will reapply overlays to every item in your library.\nWhen set to true, this will reapply all overlays on each run even if there is no need to do so, which will result in image bloat.",
                             "type": "boolean"
                         },
                         "reset_overlays": {
+                            "description": "Used to reset overlays from this library only. This will reset overlays to every item in your library to your source choice. This will use the reset image when overlaying items in your library.\nThis will reset all posters to the desired source on each run and will reapply all overlays on each run, which will result in image bloat.",
                             "type": "string",
                             "enum": ["tmdb","plex"]
                         },
