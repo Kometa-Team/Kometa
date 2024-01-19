@@ -1455,36 +1455,36 @@
         "template-variables-collections": {
             "type": "object",
             "properties": {
-            "data": {
+              "data": {
                 "type": "object",
                 "properties": {
-                "starting": {
+                  "starting": {
                     "oneOf": [
-                    { "type": "integer", "minimum": 0 },
-                    { "type": "string", "pattern": "^current_year(-\\d+)?$" }
+                      { "type": "integer", "minimum": 0 },
+                      { "type": "string", "pattern": "^(current_year(-\\d+)?|first)$" }
                     ]
-                },
-                "ending": {
+                  },
+                  "ending": {
                     "oneOf": [
-                    { "type": "integer", "minimum": 1 },
-                    { "type": "string", "pattern": "^current_year(-\\d+)?$" }
+                      { "type": "integer", "minimum": 1 },
+                      { "type": "string", "pattern": "^(current_year(-\\d+)?|first)$" }
                     ]
-                },
-                "increment": { "type": "integer", "minimum": 0 },
-                "depth": { "type": "integer", "minimum": 1 },
-                "limit": { "type": "integer", "minimum": 1 }
+                  },
+                  "increment": { "type": "integer", "minimum": 0 },
+                  "depth": { "type": "integer", "minimum": 1 },
+                  "limit": { "type": "integer", "minimum": 1 }
                 },
                 "additionalProperties": false
-            },
-            "style": {
+              },
+              "style": {
                 "type": "string",
                 "enum": ["color", "white", "bw", "diiivoy", "diiivoycolor", "rainier", "signature", "orig", "transparent", "default", "standards"]
-            }
+              }
             },
             "required": [],
             "dependentRequired": {},
             "title": "template_variables"
-        },
+          },
         "template-variables-overlays": {
             "type": "object",
             "additionalProperties": false,
