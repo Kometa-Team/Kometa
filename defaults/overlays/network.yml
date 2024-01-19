@@ -180,7 +180,7 @@ overlays:
   BBC Scotland:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   BBC Three:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -200,7 +200,7 @@ overlays:
   bilibili:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   Binge:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -296,7 +296,7 @@ overlays:
   Crackle:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   Crave:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -392,11 +392,10 @@ overlays:
   EXXEN:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   E!:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-   
 
   Facebook Watch:
     variables: { weight: 10}
@@ -553,11 +552,11 @@ overlays:
   JioCinema:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   joyn:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   JTBC:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -597,7 +596,7 @@ overlays:
   Logo:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   Magnolia Network:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Magnolia Network, DIY Network]}]
@@ -613,7 +612,7 @@ overlays:
   MBC:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   MBN:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -997,11 +996,11 @@ overlays:
   USA Network:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   U+ Mobile TV:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   VH1:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [VH1, VH1 Classic]}]
@@ -1033,7 +1032,7 @@ overlays:
   VRT 1:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-    
+
   VRT Max:
     variables: { weight: 10}
     template: [name: standard, name: networks]
