@@ -410,7 +410,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          sync_mode: sync
+          default_collection_order: release
         ```
 
 ??? blank "`minimum_items` - Used to control minimum items requires to build a collection/playlist.<a class="headerlink" href="#minimum-items" title="Permanent link">¶</a>"
