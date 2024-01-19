@@ -505,6 +505,7 @@ The available attributes for each library are as follows:
           add_missing: true
           add_existing: false
           upgrade_existing: false
+          monitor_existing: false
           root_folder_path: /movies
           monitor: movie
           availability: released
@@ -576,6 +577,7 @@ The available attributes for each library are as follows:
           add_missing: false
           add_existing: false
           upgrade_existing: false
+          monitor_existing: false
           root_folder_path: /data/media/shows/ozzy
           monitor: all
           quality_profile: Good
