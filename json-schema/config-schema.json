@@ -1459,18 +1459,22 @@
             "type": "object",
             "properties": {
             "sep_style": {
+                "description": "Multiple styles are available for Separators, to match Plex's 'categories' feature.",
                 "type": "string",
                 "enum": ["amethyst", "aqua", "blue", "forest", "fuchsia", "gold", "gray", "green", "navy", "ocean", "olive", "orchid", "orig", "pink", "plum", "purple", "red", "rust", "salmon", "sand", "stb", "tan"]
             },
             "collection_mode": {
+                "description": "Controls the collection mode of all collections in a Defaults file.",
                 "type": "string",
                 "enum": ["default", "hide", "hide_items", "show_items"]
             },
             "language": {
+                "description": "Set the language of Collection Names and Summaries that PMM has been translated to with weblate",
                 "type": "string",
                 "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv"]
             },
             "placeholder_imdb_id": {
+                "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
                 "type": "string",
                 "pattern": "^tt\\d{7}$"
             }
