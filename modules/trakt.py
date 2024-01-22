@@ -508,8 +508,9 @@ class Trakt:
                     params[attr] = ",".join(values) if isinstance(values, list) else values
             return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)
         elif method == "trakt_userlist":
-            logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
-            return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"], ignore_other=True)
+            userlist = "collection" if data["userlist"] == "collected" else data["userlist"]
+            logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {userlist.capitalize()}")
+            return self._userlist(userlist, data["user"], is_movie, sort_by=data["sort_by"], ignore_other=True)
         elif method == "trakt_boxoffice":
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             return self._charts("boxoffice", is_movie, {"limit": data})
