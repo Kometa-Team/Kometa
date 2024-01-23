@@ -1491,13 +1491,13 @@
                         "starting": {
                             "oneOf": [
                                 { "type": "integer", "minimum": 0 },
-                                { "type": "string", "pattern": "^(current_year(-\\d+)?|first)$" }
+                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
                             ]
                         },
                         "ending": {
                             "oneOf": [
                                 { "type": "integer", "minimum": 1 },
-                                { "type": "string", "pattern": "^(current_year(-\\d+)?|first)$" }
+                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
                             ]
                         },
                         "increment": { "type": "integer", "minimum": 0 },
@@ -1557,7 +1557,7 @@
                 "rating1": { "type": "string", "enum": ["critic", "audience", "user"] },
                 "rating1_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
                 "rating1_font": { "type": "string" },
-                "rating1_font_size": { "type": "integer", "minimum": 1 },        
+                "rating1_font_size": { "type": "integer", "minimum": 1 },
                 "rating2": { "type": "string", "enum": ["critic", "audience", "user"] },
                 "rating2_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
                 "rating2_font": { "type": "string" },
