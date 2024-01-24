@@ -446,7 +446,7 @@ class IMDb:
             if data["event_year"] == "all":
                 event_years = self.events_validation[data["event_id"]]["years"]
             elif data["event_year"] == "latest":
-                event_years = self.events_validation[data["event_id"]]["years"][0]
+                event_years = [self.events_validation[data["event_id"]]["years"][0]]
             else:
                 event_years = data["event_year"]
             for event_year in event_years:
