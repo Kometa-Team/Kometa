@@ -2,21 +2,21 @@
 
 libraries:                       # This is called out once within the config.yml file
   Movies:                        # These are names of libraries in your Plex
+    remove_overlays: false       # Set this to true to remove all overlays
     collection_files:
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-      - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
+    remove_overlays: false       # Set this to true to remove all overlays
     collection_files:
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-      - remove_overlays: false   # Set this to true to remove all overlays
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
