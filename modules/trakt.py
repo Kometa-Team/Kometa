@@ -23,6 +23,7 @@ status_translation = {
     "returning": "returning series", "production": "in production",
     "planned": "planned", "canceled": "canceled", "ended": "ended"
 }
+userlist_options = ["favorites", "watched", "collection", "watchlist"]
 periods = ["daily", "weekly", "monthly", "yearly", "all"]
 id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
 id_types = {
@@ -493,17 +494,28 @@ class Trakt:
                         final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=status)
                     valid_dicts.append(final_dict)
                 else:
-                    userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommendations", "watched", "collected", "watchlist"])
+                    if "userlist" not in dict_methods:
+                        raise Failed(f"{err_type} Error: {method_name} userlist attribute not found")
+                    og_list = trakt_dict[dict_methods["year"]]
+                    if not og_list:
+                        raise Failed(f"{err_type} Error: {method_name} userlist attribute is blank")
+                    if og_list == "collected":
+                        logger.warning(f"{err_type} Warning: userlist value collected has been deprecated using collection")
+                        userlist = "collection"
+                    elif og_list == "recommendations":
+                        raise Failed(f"{err_type} Error: {method_name} userlist value recommendations has been deprecated")
+                    else:
+                        userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=userlist_options)
                     user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
                     sort_by = None
-                    if userlist in ["recommendations", "watchlist"] and "sort_by" in dict_methods:
+                    if userlist in ["favorites", "watchlist"] and "sort_by" in dict_methods:
                         sort_by = util.parse(err_type, "sort_by", trakt_dict, methods=dict_methods, parent=method_name, default="rank", options=["rank", "added", "released", "title"])
-                    self._userlist("collection" if userlist == "collected" else userlist, user, is_movie, sort_by=sort_by)
+                    self._userlist(userlist, user, is_movie, sort_by=sort_by)
                     valid_dicts.append({"userlist": userlist, "user": user, "sort_by": sort_by})
             except Failed as e:
                 logger.error(e)
         if len(valid_dicts) == 0:
-            raise Failed(f"Trakt Error: No valid Trakt {method_name[6:].capitalize()}")
+            raise Failed(f"{err_type} Error: No valid Trakt {method_name[6:].capitalize()}")
         return valid_dicts
 
     def get_trakt_ids(self, method, data, is_movie):
