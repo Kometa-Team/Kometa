@@ -2109,7 +2109,7 @@ class CollectionBuilder:
             elif method_name in ["trakt_watchlist", "trakt_collection"]:
                 trakt_dicts = []
                 for trakt_user in util.get_list(method_data, split=False):
-                    trakt_dicts.append({"userlist": "watchlist" if "trakt_watchlist" else "collected", "user": trakt_user})
+                    trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
                 final_method = "trakt_userlist"
             else:
                 terms = method_name.split("_")
