@@ -875,7 +875,7 @@ class ConfigFile:
                                 continue
                             if op == "mass_imdb_parental_labels":
                                 section_final[op] = check_for_attribute(config_op, op, test_list=data_type, default_is_none=True, save=False)
-                            elif isinstance(data_type, list):
+                            elif isinstance(data_type, dict):
                                 try:
                                     if not config_op[op]:
                                         raise Failed("is blank")
