@@ -415,7 +415,7 @@ class Operations:
                     if self.library.mass_genre_update:
                         new_genres = []
                         extra_option = None
-                        for option in self.library.mass_studio_update:
+                        for option in self.library.mass_genre_update:
                             if option in ["lock", "unlock", "remove", "reset"]:
                                 extra_option = option
                                 break
@@ -477,7 +477,7 @@ class Operations:
                     if self.library.mass_content_rating_update:
                         new_rating = None
                         extra_option = None
-                        for option in self.library.mass_studio_update:
+                        for option in self.library.mass_content_rating_update:
                             if option in ["lock", "unlock", "remove", "reset"]:
                                 extra_option = option
                                 break
