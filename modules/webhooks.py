@@ -5,7 +5,7 @@ from modules.util import Failed, YAML
 logger = util.logger
 
 class Webhooks:
-    def __init__(self, config, system_webhooks, library=None, notifiarr=None):
+    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None):
         self.config = config
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
         self.version_webhooks = system_webhooks["version"] if "version" in system_webhooks else []
@@ -14,6 +14,7 @@ class Webhooks:
         self.delete_webhooks = system_webhooks["delete"] if "delete" in system_webhooks else []
         self.library = library
         self.notifiarr = notifiarr
+        self.gotify = gotify
 
     def _request(self, webhooks, json):
         logger.trace("")
@@ -24,16 +25,15 @@ class Webhooks:
         for webhook in list(set(webhooks)):
             response = None
             logger.trace(f"Webhook: {webhook}")
-            if webhook == "notifiarr" or webhook == "gotify":
+            if webhook == "notifiarr":
                 if self.notifiarr:
                     for x in range(6):
-                        if webhook == "gotify":
-                            json = self.gotify(json)
-                            response = self.notifiarr.notification(json)
-                        else:
-                            response = self.notifiarr.notification(json)
+                        response = self.notifiarr.notification(json)
                         if response.status_code < 500:
                             break
+            elif webhook == "gotify":
+                if self.gotify:
+                    self.gotify.notification(json)
             else:
                 if webhook.startswith("https://discord.com/api/webhooks"):
                     json = self.discord(json)
@@ -44,17 +44,16 @@ class Webhooks:
                 try:
                     response_json = response.json()
                     logger.trace(f"Response: {response_json}")
-                    if (webhook == "notifiarr" or webhook == "gotify") and self.notifiarr and response.status_code == 400:
+                    if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
                         def remove_from_config(text, hook_cat):
                             if response_json["details"]["response"] == text:
                                 yaml = YAML(self.config.config_path)
                                 changed = False
                                 if hook_cat in yaml.data and yaml.data["webhooks"][hook_cat]:
-                                    if isinstance(yaml.data["webhooks"][hook_cat], list) and ("notifiarr" in yaml.data["webhooks"][hook_cat] or "gotify" in yaml.data["webhooks"][hook_cat]):
+                                    if isinstance(yaml.data["webhooks"][hook_cat], list) and "notifiarr" in yaml.data["webhooks"][hook_cat]:
                                         changed = True
                                         yaml.data["webhooks"][hook_cat].pop("notifiarr")
-                                        yaml.data["webhooks"][hook_cat].pop("gotify")
-                                    elif yaml.data["webhooks"][hook_cat] == "notifiarr" or yaml.data["webhooks"][hook_cat] == "gotify":
+                                    elif yaml.data["webhooks"][hook_cat] == "notifiarr":
                                         changed = True
                                         yaml.data["webhooks"][hook_cat] = None
                                 if changed:
@@ -67,7 +66,7 @@ class Webhooks:
                         remove_from_config("PMM start/complete trigger is not enabled", "run_end")
                         remove_from_config("PMM app updates trigger is not enabled", "version")
                     if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
-                        raise Failed(f"Notifiarr/Gotify Error: {response_json['details']['response']}")
+                        raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
                     if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
                         raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
                 except JSONDecodeError:
@@ -332,65 +331,3 @@ class Webhooks:
             new_json["embeds"][0]["fields"] = fields
         return new_json
 
-
-    def gotify(self, json: dict):
-        message = ""
-        if json.get("event") == "run_end":
-             title = "Run Completed"
-             message = f"Start Time: {json['start_time']}\nEnd Time: {json['end_time']}\nRun Time: {json['run_time']}\nCollections Created: {json['collections_created']}\nCollections Modified: {json['collections_modified']}\nCollections Deleted: {json['collections_deleted']}"
-        if json.get("added_to_radarr"):
-            message = message + (f"{json['added_to_radarr']} Movies Added To Radarr\n", None)
-        if json.get("added_to_sonarr"):
-            message = message + (f"{json['added_to_sonarr']} Series Added To Sonarr\n", None)
-        elif json.get("event") == "run_start":
-            title = "Run Started"
-            message = json["start_time"]
-        elif json.get("event") == "version":
-            title = "New Version Available"
-            message = f"Current : {json['current']}\nLatest: {json['latest']}\nNew Commits: {json['notes']}"
-        else:
-            message1 = ""
-            text = ""
-            if "server_name" in json:
-                message1 = message1 + f"Server: {json['server_name']}\n"
-            if "library_name" in json:
-                message1 = message1 + f"Library: {json['library_name']}\n"
-            if "collection" in json:
-                text = "Collection"
-                message1 = message1 + f"Collection: {json['collection']}\n"
-            elif "playlist" in json:
-                text = "Playlist"
-                message1 = message1 + f"Playlist: {json['playlist']}\n"
-            if message1:
-                message1 = message1 + "\n"
-            if json["event"] == "delete":
-                title = json["message"]
-            elif "error" in json:
-                title = f"{'Critical ' if json['critical'] else ''}Error"
-                message = message + f"Error Message: {json['error']}\n"
-            else:
-                title = f"{text} {'Created' if json['created'] else 'Modified'}"
-
-                def get_field_text(items_list):
-                    field_text = ""
-                    for i, item in enumerate(items_list, 1):
-                            field_text += f"\n{i}. {item['title']}"
-                    return field_text
-
-                if json["additions"]:
-                    message = message + f"Items Added: { get_field_text(json['additions'])}\n"
-                if json["removals"]:
-                    message = message + f"Items Removed: { get_field_text(json['removals'])}\n"
-
-        gotify_json =  {
-            "message": "",
-            "priority": 1,
-            "title": ""
-        }
-        if message:
-            gotify_json["message"] = message
-        
-        if title:
-            gotify_json["title"] = title
-
-        return gotify_json

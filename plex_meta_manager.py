@@ -927,11 +927,11 @@ def run_playlists(config):
             #logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
-            library_names = None
             try:
                 builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, extra=output_str)
                 stats["names"].append(builder.name)
                 logger.info("")
+                server_name = builder.libraries[0].PlexServer.friendlyName
 
                 logger.separator(f"Running {mapping_name} Playlist", space=False, border=False)
 
@@ -1049,7 +1049,7 @@ def run_playlists(config):
             except Deleted as e:
                 logger.info(e)
                 status[mapping_name]["status"] = "Deleted"
-                config.notify_delete(e)
+                config.notify_delete(e, server=server_name)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
@@ -1059,13 +1059,13 @@ def run_playlists(config):
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
-                config.notify(e, server=server_name, library=library_names, playlist=mapping_name)
+                config.notify(e, server=server_name, playlist=mapping_name)
                 logger.stacktrace()
                 logger.error(e)
                 status[mapping_name]["status"] = "PMM Failure"
                 status[mapping_name]["errors"].append(e)
             except Exception as e:
-                config.notify(f"Unknown Error: {e}", server=server_name, library=library_names, playlist=mapping_name)
+                config.notify(f"Unknown Error: {e}", server=server_name, playlist=mapping_name)
                 logger.stacktrace()
                 logger.error(f"Unknown Error: {e}")
                 status[mapping_name]["status"] = "Unknown Error"

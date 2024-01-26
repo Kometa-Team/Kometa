@@ -16,8 +16,6 @@ class Library(ABC):
         self.Webhooks = None
         self.Operations = Operations(config, self)
         self.Overlays = None
-        self.Notifiarr = None
-        self.Gotify = None
         self.collections = []
         self.collection_names = []
         self.metadatas = []

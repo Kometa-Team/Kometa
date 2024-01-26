@@ -10,13 +10,13 @@ Below is a `gotify` mapping example and the full set of attributes:
 ```yaml
 gotify:
   url: ####################################
-  apikey: ####################################
+  token: ####################################
 ```
 
-| Attribute | Allowed Values                           |                  Required                  |
-|:----------|:-----------------------------------------|:------------------------------------------:|
-| `url`     | Gotify Server Url                        | :fontawesome-solid-circle-check:{ .green } |
-| `apikey`  | Gotify Application API Key               | :fontawesome-solid-circle-check:{ .green } |
+| Attribute | Allowed Values           |                  Required                  |
+|:----------|:-------------------------|:------------------------------------------:|
+| `url`     | Gotify Server Url        | :fontawesome-solid-circle-check:{ .green } |
+| `token`   | Gotify Application Token | :fontawesome-solid-circle-check:{ .green } |
 
 Once you have added the apikey your config.yml you have to add `gotify` to any [webhook](webhooks.md) to send that 
 notification to Gotify.
