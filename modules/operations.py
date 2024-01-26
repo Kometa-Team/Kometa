@@ -428,8 +428,8 @@ class Operations:
                                     new_genres = omdb_obj().genres # noqa
                                 elif option == "tvdb":
                                     new_genres = tvdb_obj().genres # noqa
-                                elif option in anidb.weights:
-                                    new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[option]] # noqa
+                                elif str(option) in anidb.weights:
+                                    new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]] # noqa
                                 elif option == "mal":
                                     new_genres = mal_obj().genres # noqa
                                 else:
