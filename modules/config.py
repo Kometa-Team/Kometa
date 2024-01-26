@@ -55,8 +55,10 @@ mass_genre_options = {
 }
 mass_content_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating", "mdb_commonsense": "Use Commonsense Rating through MDbList",
-    "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDbList", "mal": "Use MyAnimeList Rating"
+    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating",
+    "mdb_commonsense": "Use Commonsense Rating through MDbList", "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDbList",
+    "mdb_age_rating": "Use MDbList Age Rating", "mdb_age_rating0": "Use MDbList Age Rating with Zero Padding",
+    "mal": "Use MyAnimeList Rating"
 }
 mass_studio_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
@@ -69,7 +71,7 @@ mass_original_title_options = {
 }
 mass_available_options = {
     "lock": "Lock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
-    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "tvdb": "Use TVDb Release",
+    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "mdb_digital": "Use MdbList Digital Release", "tvdb": "Use TVDb Release",
     "anidb": "Use AniDB Release", "mal": "Use MyAnimeList Release"
 }
 mass_image_options = {
@@ -845,8 +847,32 @@ class ConfigFile:
                         for op, data_type in library_operations.items():
                             if op not in config_op:
                                 continue
-                            if isinstance(data_type, list):
+                            if op == "mass_imdb_parental_labels":
                                 section_final[op] = check_for_attribute(config_op, op, test_list=data_type, default_is_none=True, save=False)
+                            elif isinstance(data_type, list):
+                                try:
+                                    if not config_op[op]:
+                                        raise Failed("is blank")
+                                    input_list = config_op[op] if isinstance(config_op[op], list) else [config_op[op]]
+                                    final_list = []
+                                    for list_attr in input_list:
+                                        if not list_attr:
+                                            raise Failed(f"has a blank value")
+                                        if str(list_attr).lower() in data_type:
+                                            final_list.append(str(list_attr).lower())
+                                        elif op in ["mass_content_rating_update", "mass_studio_update", "mass_original_title_update"]:
+                                            final_list.append(str(list_attr))
+                                        elif op == "mass_genre_update":
+                                            final_list.append(list_attr if isinstance(list_attr, list) else [list_attr])
+                                        elif op == "mass_originally_available_update":
+                                            final_list.append(util.validate_date(list_attr))
+                                        elif op.endswith("rating_update"):
+                                            final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
+                                        else:
+                                            raise Failed(f"has an invalid value: {list_attr}")
+                                    section_final[op] = final_list
+                                except Failed as e:
+                                    logger.error(f"Config Error: {op} {e}")
                             elif op == "mass_collection_mode":
                                 section_final[op] = util.check_collection_mode(config_op[op])
                             elif data_type == "dict":
@@ -901,24 +927,28 @@ class ConfigFile:
                                 logger.warning(f"Config Warning: Operation {k} already scheduled")
                     for k, v in final_operations.items():
                         params[k] = v
-                def error_check(err_attr, service):
-                    logger.error(f"Config Error: Operation {err_attr} cannot be {params[err_attr]} without a successful {service} Connection")
-                    params[err_attr] = None
 
                 for mass_key in operations.meta_operations:
                     if not params[mass_key]:
                         continue
-                    source = params[mass_key]["source"] if isinstance(params[mass_key], dict) else params[mass_key]
-                    if source == "omdb" and self.OMDb is None:
-                        error_check(mass_key, "OMDb")
-                    if source and source.startswith("mdb") and not self.Mdblist.has_key:
-                        error_check(mass_key, "MdbList")
-                    if source and source.startswith("anidb") and not self.AniDB.is_authorized:
-                        error_check(mass_key, "AniDB")
-                    if source and source.startswith("mal") and self.MyAnimeList is None:
-                        error_check(mass_key, "MyAnimeList")
-                    if source and source.startswith("trakt") and self.Trakt is None:
-                        error_check(mass_key, "Trakt")
+                    sources = params[mass_key]["source"] if isinstance(params[mass_key], dict) else params[mass_key]
+                    if not isinstance(sources, list):
+                        sources = [sources]
+                    try:
+                        for source in sources:
+                            if source == "omdb" and self.OMDb is None:
+                                raise Failed(f"{source} without a successful OMDb Connection")
+                            if source and source.startswith("mdb") and not self.Mdblist.has_key:
+                                raise Failed(f"{source} without a successful MdbList Connection")
+                            if source and source.startswith("anidb") and not self.AniDB.is_authorized:
+                                raise Failed(f"{source} without a successful AniDB Connection")
+                            if source and source.startswith("mal") and self.MyAnimeList is None:
+                                raise Failed(f"{source} without a successful MyAnimeList Connection")
+                            if source and source.startswith("trakt") and self.Trakt is None:
+                                raise Failed(f"{source} without a successful Trakt Connection")
+                    except Failed as e:
+                        logger.error(f"Config Error: {mass_key} cannot use {e}")
+                        params[mass_key] = None
 
                 lib_vars = {}
                 if lib and "template_variables" in lib and lib["template_variables"] and isinstance(lib["template_variables"], dict):

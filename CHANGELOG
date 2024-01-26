@@ -13,6 +13,9 @@ Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/build
 Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
 Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
 Trakt Builder `trakt_userlist` value `recommendations` removed and `favorites` added.
+Mass Update operations now can be given a list of sources to fall back on when one fails including a manual source.
+`mass_content_rating_update` has a new source `mdb_age_rating`
+`mass_originally_available_update` has a new source `mdb_digital`
 
 # Defaults
 
