@@ -55,7 +55,7 @@ class TVDbObj:
             try:
                 data = self._tvdb.get_request(item_url)
             except Failed:
-                raise Failed(f"TVDb Error: {'Movie' if is_movie else 'Series'} not found at {item_url}")
+                raise Failed(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
 
         def parse_page(xpath, is_list=False):
             parse_results = data.xpath(xpath)

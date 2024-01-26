@@ -394,7 +394,7 @@ def run_config(config, stats):
 
     playlist_status = {}
     playlist_stats = {}
-    if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
+    if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["metadata-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
         #logger.add_playlists_handler()
         if config.playlist_files:
             playlist_status, playlist_stats = run_playlists(config)
@@ -556,8 +556,15 @@ def run_libraries(config):
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
             logger.debug(f"Asset Folders: {library.asset_folders}")
+            logger.debug(f"Asset Depth: {library.asset_depth}")
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
+            logger.debug(f"Prioritize Assets: {library.prioritize_assets}")
+            logger.debug(f"Dimensional Asset Rename: {library.dimensional_asset_rename}")
             logger.debug(f"Download URL Assets: {library.download_url_assets}")
+            logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
+            logger.debug(f"Show Missing Season Assets: {library.show_missing_season_assets}")
+            logger.debug(f"Show Missing Episode Assets: {library.show_missing_episode_assets}")
+            logger.debug(f"Show Assets Not Needed: {library.show_asset_not_needed}")
             logger.debug(f"Sync Mode: {library.sync_mode}")
             logger.debug(f"Minimum Items: {library.minimum_items}")
             logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
@@ -566,11 +573,15 @@ def run_libraries(config):
             logger.debug(f"Missing Only Released: {library.missing_only_released}")
             logger.debug(f"Only Filter Missing: {library.only_filter_missing}")
             logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
+            logger.debug(f"Show Unconfigured: {library.show_unconfigured}")
             logger.debug(f"Show Filtered: {library.show_filtered}")
+            logger.debug(f"Show Options: {library.show_options}")
             logger.debug(f"Show Missing: {library.show_missing}")
-            logger.debug(f"Show Missing Assets: {library.show_missing_assets}")
             logger.debug(f"Save Report: {library.save_report}")
             logger.debug(f"Report Path: {library.report_path}")
+            logger.debug(f"Ignore IDs: {library.ignore_ids}")
+            logger.debug(f"Ignore IMDb IDs: {library.ignore_imdb_ids}")
+            logger.debug(f"Item Refresh Delay: {library.item_refresh_delay}")
             logger.debug(f"Clean Bundles: {library.clean_bundles}")
             logger.debug(f"Empty Trash: {library.empty_trash}")
             logger.debug(f"Optimize: {library.optimize}")

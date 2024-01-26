@@ -177,6 +177,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  BBC Scotland:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   BBC Three:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -194,6 +198,10 @@ overlays:
     template: [name: standard, name: networks]
 
   bilibili:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Binge:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -289,6 +297,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Crave:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Criterion Channel:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -348,6 +360,10 @@ overlays:
   DR1:
     variables: { weight: 10}
     template: [name: standard, name: networks]
+    
+  Dropout:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Eden:
     variables: { weight: 10}
@@ -361,6 +377,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  ENA: 
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+    
   Epix:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -368,6 +388,10 @@ overlays:
   ESPN:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [ESPN, ESPN2, ESPN+, ESPN Classic, ESPNU, ESPNews, ESPN Australia, Sony ESPN, ESPN.com, ESPN Deportes]}]
+
+  EXXEN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   E!:
     variables: { weight: 10}
@@ -525,7 +549,15 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  JioCinema:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   joyn:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  JTBC:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -565,6 +597,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Magnolia Network:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Magnolia Network, DIY Network]}]
+
   MasterClass:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -574,6 +610,10 @@ overlays:
     template: [name: standard, {name: networks, search: [Max, HBO Go, HBO Max]}]
 
   MBC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  MBN:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -759,7 +799,7 @@ overlays:
 
   Sky:
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [Sky, Sky One, Sky Atlantic, Sky Arts, Sky History, Sky Living, Sky Crime, Sky Uno, Sky Max, Sky Sports, Sky Documentaries, Sky Nature, Sky News, Sky Cinema, Sky News Australia, Sky Italia, Sky Comedy, Sky Sports F1, Sky Two, Sky Witness, sky Travel, Sky Vision, Sky News Weather Channel, SkyShowtime]}]
+    template: [name: standard, {name: networks, search: [Sky, Sky One, Sky Atlantic, Sky Arts, Sky History, Sky Living, Sky Crime, Sky Uno, Sky Max, Sky Sports, Sky Documentaries, Sky Nature, Sky News, Sky Cinema, Sky News Australia, Sky Italia, Sky Comedy, Sky Sports F1, Sky Two, Sky Witness, sky Travel, Sky Vision, Sky News Weather Channel, SkyShowtime, Sky Atlantic (IT)]}]
 
   Smithsonian:
     variables: { weight: 10}
@@ -920,6 +960,10 @@ overlays:
   TVNZ 1:
     variables: { weight: 10}
     template: [name: standard, name: networks]
+    
+  TVNZ 2:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   TVP1:
     variables: { weight: 10}
@@ -953,6 +997,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  U+ Mobile TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   VH1:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [VH1, VH1 Classic]}]
@@ -982,6 +1030,10 @@ overlays:
     template: [name: standard, name: networks]
 
   VRT 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  VRT Max:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 

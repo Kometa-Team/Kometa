@@ -84,7 +84,7 @@ dynamic_collections:
       # check1
       trakt_url:
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
-        trek: https://trakt.tv/users/wdvhucb/lists/star-trek
+        trek: https://trakt.tv/users/dgw/lists/star-trek-canon
         middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
       # check2
       mdblist_url:

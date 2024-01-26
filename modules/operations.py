@@ -698,6 +698,7 @@ class Operations:
                         item_title = self.library.get_item_sort_title(ep, atr="title")
                         logger.info("")
                         logger.info(f"Processing {item_title}")
+                        item_edits = ""
                         episode_locked_fields = [f.name for f in ep.fields if f.locked]
 
                         for attribute, item_attr in episode_ops:
@@ -906,6 +907,7 @@ class Operations:
             all_collections = self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
+                col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
                 if (less is not None or managed is not None or configured is not None) \
                         and (less is None or col.childCount < less) \

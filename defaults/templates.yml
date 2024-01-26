@@ -240,7 +240,11 @@ templates:
       radarr_tag_<<key>>: <<radarr_tag>>
       sonarr_tag_<<key>>: <<sonarr_tag>>
       radarr_monitor_<<key>>: <<radarr_monitor>>
+      radarr_upgrade_existing_<<key>>: <<radarr_upgrade_existing>>
+      radarr_monitor_existing_<<key>>: <<radarr_monitor_existing>>
       sonarr_monitor_<<key>>: <<sonarr_monitor>>
+      sonarr_upgrade_existing_<<key>>: <<sonarr_upgrade_existing>>
+      sonarr_monitor_existing_<<key>>: <<sonarr_monitor_existing>>
       radarr_search_<<key>>: <<radarr_search>>
       sonarr_search_<<key>>: <<sonarr_search>>
     optional:
@@ -251,7 +255,11 @@ templates:
       - radarr_tag
       - sonarr_tag
       - radarr_monitor
+      - radarr_upgrade_existing
+      - radarr_monitor_existing
       - sonarr_monitor
+      - sonarr_upgrade_existing
+      - sonarr_monitor_existing
       - radarr_search
       - sonarr_search
     radarr_add_missing: <<radarr_add_missing_<<key>>>>
@@ -261,7 +269,11 @@ templates:
     radarr_tag: <<radarr_tag_<<key>>>>
     sonarr_tag: <<sonarr_tag_<<key>>>>
     radarr_monitor: <<radarr_monitor_<<key>>>>
+    radarr_upgrade_existing: <<radarr_upgrade_existing_<<key>>>>
+    radarr_monitor_existing: <<radarr_monitor_existing_<<key>>>>
     sonarr_monitor: <<sonarr_monitor_<<key>>>>
+    sonarr_upgrade_existing: <<sonarr_upgrade_existing_<<key>>>>
+    sonarr_monitor_existing: <<sonarr_monitor_existing_<<key>>>>
     radarr_search: <<radarr_search_<<key>>>>
     sonarr_search: <<sonarr_search_<<key>>>>
 

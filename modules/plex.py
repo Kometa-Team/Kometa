@@ -897,9 +897,29 @@ class Plex(Library):
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
-        self.Plex.batchMultiEdits(items)
-        self.query_data(getattr(self.Plex, f"{'add' if add else 'remove'}{'Label' if smart_label_collection else 'Collection'}"), collection)
-        self.Plex.saveMultiEdits()
+        maintain_status = True
+        locked_items = []
+        unlocked_items = []
+        if not smart_label_collection and maintain_status and self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
+            for item in items:
+                item = self.reload(item)
+                if next((f for f in item.fields if f.name == "collection"), None) is not None:
+                    locked_items.append(item)
+                else:
+                    unlocked_items.append(item)
+        else:
+            locked_items = items
+
+        for _items, locked in [(locked_items, True), (unlocked_items, False)]:
+            if _items:
+                self.Plex.batchMultiEdits(_items)
+                if smart_label_collection:
+                    self.query_data(self.Plex.addLabel if add else self.Plex.removeLabel, collection)
+                elif add:
+                    self.Plex.addCollection(collection, locked=locked)
+                else:
+                    self.Plex.removeCollection(collection, locked=locked)
+                self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"

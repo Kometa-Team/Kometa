@@ -2,21 +2,21 @@
 
 libraries:                       # This is called out once within the config.yml file
   Movies:                        # These are names of libraries in your Plex
+    remove_overlays: false       # Set this to true to remove all overlays
     collection_files:
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
-      - remove_overlays: false   # Set this to true to remove all overlays
+    overlay_files:
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
+    remove_overlays: false       # Set this to true to remove all overlays
     collection_files:
       - pmm: basic               # This is a file within PMM's defaults folder
       - pmm: imdb                # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
-    overlay_path:
-      - remove_overlays: false   # Set this to true to remove all overlays
+    overlay_files:
       - pmm: ribbon              # This is a file within PMM's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
@@ -113,6 +113,8 @@ radarr:                          # Can be individually specified per library as 
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
   root_folder_path: "S:/Movies"
   monitor: true
   availability: announced
@@ -126,6 +128,8 @@ sonarr:                          # Can be individually specified per library as 
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
   root_folder_path: "S:/TV Shows"
   monitor: all
   quality_profile: HD-1080p
