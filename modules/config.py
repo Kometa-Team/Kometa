@@ -739,11 +739,17 @@ class ConfigFile:
                 "url": check_for_attribute(self.data, "url", parent="plex", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="plex", default_is_none=True),
                 "timeout": check_for_attribute(self.data, "timeout", parent="plex", var_type="int", default=60),
-                "db_cache": check_for_attribute(self.data, "db_cache", parent="plex", var_type="int", default_is_none=True),
-                "clean_bundles": check_for_attribute(self.data, "clean_bundles", parent="plex", var_type="bool", default=False),
-                "empty_trash": check_for_attribute(self.data, "empty_trash", parent="plex", var_type="bool", default=False),
-                "optimize": check_for_attribute(self.data, "optimize", parent="plex", var_type="bool", default=False)
+                "db_cache": check_for_attribute(self.data, "db_cache", parent="plex", var_type="int", default_is_none=True)
             }
+            for attr in ["clean_bundles", "empty_trash", "optimize"]:
+                try:
+                    self.general["plex"][attr] = check_for_attribute(self.data, attr, parent="plex", var_type="bool", default=False, throw=True)
+                except Failed as e:
+                    if "plex" in self.data and attr in self.data["plex"] and self.data["plex"][attr]:
+                        self.general["plex"][attr] = self.data["plex"][attr]
+                    else:
+                        self.general["plex"][attr] = False
+                        logger.warning(str(e).replace("Error", "Warning"))
             self.general["radarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="radarr", default_is_none=True),
@@ -956,15 +962,15 @@ class ConfigFile:
                         sources = [sources]
                     try:
                         for source in sources:
-                            if source == "omdb" and self.OMDb is None:
+                            if source and source == "omdb" and self.OMDb is None:
                                 raise Failed(f"{source} without a successful OMDb Connection")
-                            if source and source.startswith("mdb") and not self.Mdblist.has_key:
+                            if source and str(source).startswith("mdb") and not self.Mdblist.has_key:
                                 raise Failed(f"{source} without a successful MdbList Connection")
-                            if source and source.startswith("anidb") and not self.AniDB.is_authorized:
+                            if source and str(source).startswith("anidb") and not self.AniDB.is_authorized:
                                 raise Failed(f"{source} without a successful AniDB Connection")
-                            if source and source.startswith("mal") and self.MyAnimeList is None:
+                            if source and str(source).startswith("mal") and self.MyAnimeList is None:
                                 raise Failed(f"{source} without a successful MyAnimeList Connection")
-                            if source and source.startswith("trakt") and self.Trakt is None:
+                            if source and str(source).startswith("trakt") and self.Trakt is None:
                                 raise Failed(f"{source} without a successful Trakt Connection")
                     except Failed as e:
                         logger.error(f"Config Error: {mass_key} cannot use {e}")
@@ -1121,11 +1127,21 @@ class ConfigFile:
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
                         "timeout": check_for_attribute(lib, "timeout", parent="plex", var_type="int", default=self.general["plex"]["timeout"], save=False),
-                        "db_cache": check_for_attribute(lib, "db_cache", parent="plex", var_type="int", default=self.general["plex"]["db_cache"], default_is_none=True, save=False),
-                        "clean_bundles": check_for_attribute(lib, "clean_bundles", parent="plex", var_type="bool", default=self.general["plex"]["clean_bundles"], save=False),
-                        "empty_trash": check_for_attribute(lib, "empty_trash", parent="plex", var_type="bool", default=self.general["plex"]["empty_trash"], save=False),
-                        "optimize": check_for_attribute(lib, "optimize", parent="plex", var_type="bool", default=self.general["plex"]["optimize"], save=False)
+                        "db_cache": check_for_attribute(lib, "db_cache", parent="plex", var_type="int", default=self.general["plex"]["db_cache"], default_is_none=True, save=False)
                     }
+                    for attr in ["clean_bundles", "empty_trash", "optimize"]:
+                        try:
+                            params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
+                        except Failed as er:
+                            test = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
+                            params["plex"][attr] = False
+                            if test is not True and test is not False:
+                                try:
+                                    util.schedule_check(attr, test, current_time, self.run_hour)
+                                    params["plex"][attr] = True
+                                except NotScheduled:
+                                    logger.info(f"Skipping Operation Not Scheduled for {test}")
+
                     if params["plex"]["url"].lower() == "env":
                         params["plex"]["url"] = self.env_plex_url
                     if params["plex"]["token"].lower() == "env":
