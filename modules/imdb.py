@@ -643,6 +643,9 @@ class IMDb:
     def get_rating(self, imdb_id):
         return self.ratings[imdb_id] if imdb_id in self.ratings else None
 
+    def get_genres(self, imdb_id):
+        return self.genres[imdb_id] if imdb_id in self.genres else []
+
     def get_episode_rating(self, imdb_id, season_num, episode_num):
         season_num = str(season_num)
         episode_num = str(episode_num)
