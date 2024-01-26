@@ -16,6 +16,7 @@ Trakt Builder `trakt_userlist` value `recommendations` removed and `favorites` a
 Mass Update operations now can be given a list of sources to fall back on when one fails including a manual source.
 `mass_content_rating_update` has a new source `mdb_age_rating`
 `mass_originally_available_update` has a new source `mdb_digital`
+`plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
 
 # Defaults
 
