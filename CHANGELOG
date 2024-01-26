@@ -6,7 +6,7 @@ Updated python-dotenv requirement to 1.0.1
 
 # New Features
 Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
-
+Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
 
 # Updates
 Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission

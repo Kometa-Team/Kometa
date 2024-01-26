@@ -293,13 +293,13 @@
                 "url": {
                     "type": "string"
                 },
-                "apikey": {
+                "token": {
                     "type": "string"
                 }
             },
             "required": [
                 "url",
-                "apikey"
+                "token"
                 
             ],
             "title": "gotify"
