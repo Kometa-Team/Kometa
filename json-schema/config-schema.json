@@ -695,16 +695,16 @@
                     "minimum": 1
                 },
                 "default_collection_order": {
-                    "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by PMM unless the collection has a specific collection_order",
+                    "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by PMM unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
                     "type": ["string", "null"],
                     "enum": [
-                        "added.asc", "added.desc", "audience_rating.asc",
+                        "added.asc", "added.desc", "alpha", "audience_rating.asc",
                         "audience_rating.desc", "bitrate.asc", "bitrate.desc",
                         "content_rating.asc", "content_rating.desc", "critic_rating.asc",
-                        "critic_rating.desc", "duration.asc", "duration.desc",
+                        "critic_rating.desc", "custom", "duration.asc", "duration.desc",
                         "originally_available.asc", "originally_available.desc",
                         "plays.asc", "plays.desc", "progress.asc", "progress.desc",
-                        "random", "release.asc", "release.desc",
+                        "random", "release", "release.asc", "release.desc",
                         "resolution.asc", "resolution.desc", "title.asc", "title.desc",
                         "user_rating.asc", "user_rating.desc", "viewed.asc", "viewed.desc",
                         "year.asc", "year.desc", null
@@ -944,7 +944,7 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_cs","content_rating_de","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
                 },
                 "schedule": {
                     "type": "string"
@@ -1594,7 +1594,7 @@
                 "repo": { "type": "string" },
                 "stroke_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "stroke_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray"] },
+                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray", "color", "white"] },
                 "text": { "type": "string" },
                 "time_window": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
                 "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
@@ -1608,6 +1608,7 @@
             },
             "patternProperties": {
                 "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^country_.*$": { "type": "string", "pattern": "^[A-Z]{2}$" },
                 "^file_.*$": { "type": "string" },
                 "^git_.*$": { "type": "string" },
