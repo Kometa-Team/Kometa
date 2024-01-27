@@ -161,7 +161,7 @@ In addition, templates also have a few special attributes that they can use:
 
     3. Using the exists modifier by appending `.exists` to the key template variable:
 
-        * While `ture` the template variable specified must exist in the template call.
+        * While `true` the template variable specified must exist in the template call.
         * While anything but `true` the template variable specified must not exist in the template call.
 
     ???+ example "Example"
