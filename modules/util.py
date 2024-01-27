@@ -724,13 +724,16 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             raise NotScheduled(schedule_str)
     return schedule_str
 
-def check_int(value, datatype="int", minimum=1, maximum=None):
+def check_int(value, datatype="int", minimum=1, maximum=None, throw=False):
     try:
         value = int(str(value)) if datatype == "int" else float(str(value))
         if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
             return value
     except ValueError:
-        pass
+        if throw:
+            message = f"{value} must be {'an integer' if datatype == 'int' else 'a number'}"
+            raise Failed(f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}")
+        return None
 
 def parse_and_or(error, attribute, data, test_list):
     out = ""

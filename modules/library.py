@@ -16,7 +16,6 @@ class Library(ABC):
         self.Webhooks = None
         self.Operations = Operations(config, self)
         self.Overlays = None
-        self.Notifiarr = None
         self.collections = []
         self.collection_names = []
         self.metadatas = []
@@ -129,7 +128,6 @@ class Library(ABC):
         self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
                                          or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
                                          or self.metadata_backup or self.update_blank_track_titles else False
-        self.meta_operations = [i["source"] if isinstance(i, dict) else i for i in [getattr(self, o) for o in operations.meta_operations] if i]
         self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels else False
 
         if self.asset_directory:

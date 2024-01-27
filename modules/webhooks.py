@@ -5,7 +5,7 @@ from modules.util import Failed, YAML
 logger = util.logger
 
 class Webhooks:
-    def __init__(self, config, system_webhooks, library=None, notifiarr=None):
+    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None):
         self.config = config
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
         self.version_webhooks = system_webhooks["version"] if "version" in system_webhooks else []
@@ -14,6 +14,7 @@ class Webhooks:
         self.delete_webhooks = system_webhooks["delete"] if "delete" in system_webhooks else []
         self.library = library
         self.notifiarr = notifiarr
+        self.gotify = gotify
 
     def _request(self, webhooks, json):
         logger.trace("")
@@ -30,6 +31,9 @@ class Webhooks:
                         response = self.notifiarr.notification(json)
                         if response.status_code < 500:
                             break
+            elif webhook == "gotify":
+                if self.gotify:
+                    self.gotify.notification(json)
             else:
                 if webhook.startswith("https://discord.com/api/webhooks"):
                     json = self.discord(json)
@@ -326,3 +330,4 @@ class Webhooks:
                     fields.append(field)
             new_json["embeds"][0]["fields"] = fields
         return new_json
+

@@ -105,6 +105,9 @@ mdblist:
   cache_expiration: 60
 notifiarr:
   apikey: ####################################
+gotify:
+  url: http://192.168.1.12:80
+  token: ####################################
 anidb:                           # Not required for AniDB builders unless you want mature content
   username: ######
   password: ######
