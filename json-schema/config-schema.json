@@ -25,6 +25,9 @@
         "notifiarr": {
             "$ref": "#/definitions/notifiarr-api"
         },
+        "gotify": {
+            "$ref": "#/definitions/gotify-api"
+        },
         "anidb": {
             "$ref": "#/definitions/anidb-api"
         },
@@ -282,6 +285,24 @@
                 "apikey"
             ],
             "title": "notifiarr"
+        },
+        "gotify-api": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "url",
+                "token"
+                
+            ],
+            "title": "gotify"
         },
         "anidb-api": {
             "type": "object",
@@ -1116,7 +1137,7 @@
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|anidb|radarr|sonarr|trakt|mal).+$": { 
+                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|anidb|radarr|sonarr|trakt|mal).+$": { 
                     "additionalProperties": false,
                     "properties": {
                         "metadata_files": {

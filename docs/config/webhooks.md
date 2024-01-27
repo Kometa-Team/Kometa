@@ -28,6 +28,7 @@ webhooks:
 
 * Each Attribute can be either a webhook url as a string or a comma-separated list of webhooks urls.
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
+* To send notifications to [Gotify](gotify.md) just add `gotify` to a webhook instead of the webhook url.
 
 ## Error Notifications
 
@@ -77,7 +78,6 @@ level the error occurs.
   "error": str,                 // Error Message
   "critical": bool,             // Critical Error
   "server_name": str,           // Server Name
-  "library_name": str,          // Library Name
   "playlist": str               // Playlist Name
 }
 ```

@@ -178,6 +178,7 @@ nav:
         - Radarr: config/radarr.md
         - Sonarr: config/sonarr.md
         - Notifiarr: config/notifiarr.md
+        - Gotify: config/gotify.md
         - Tautulli: config/tautulli.md
         - Github: config/github.md
         - MdbList: config/mdblist.md

@@ -293,15 +293,15 @@ table.dualTable td, table.dualTable th {
     right: 0;
 }
 
-
-.md-typeset :is(.admonition, details) {
-    background-color: #1b1b1b;
-}
-
 /* Custom tooltips */
 .md-tooltip {
     background-color: var(--md-primary-fg-color);
     border-radius: 6px;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition.builder,
+.md-typeset details.quicklink {
+    background-color: #1b1b1b;
 }
 
 .md-typeset .admonition.builder,

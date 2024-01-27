@@ -28,6 +28,10 @@ class MDbObj:
             self.released = datetime.strptime(data["released"], "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released = None
+        try:
+            self.released_digital = datetime.strptime(data["released_digital"], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            self.released_digital = None
         self.type = data["type"]
         self.imdbid = data["imdbid"]
         self.traktid = util.check_num(data["traktid"])
@@ -64,6 +68,7 @@ class MDbObj:
                 self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
         self.content_rating = data["certification"]
         self.commonsense = data["commonsense"]
+        self.age_rating = data["age_rating"]
 
 
 class Mdblist:
