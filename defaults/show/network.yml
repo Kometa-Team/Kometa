@@ -40,6 +40,7 @@ dynamic_collections:
         default: true
     include:
     - "#0"
+    - 7mate
     - ABC
     - ABC Family
     - ABC Kids
@@ -54,6 +55,7 @@ dynamic_collections:
     - AMC
     - AMC+
     - Animal Planet
+    - Angel Studios
     - Antena 3
     - Apple TV+
     - ARD
@@ -166,6 +168,7 @@ dynamic_collections:
     - joyn
     - JTBC
     - Kan 11
+    - Kanal 5
     - KBS2
     - Kids WB
     - La 1
@@ -219,6 +222,7 @@ dynamic_collections:
     - SAT.1
     - SBS
     - Science
+    - Seven Network
     - Shahid
     - Showcase
     - Showmax
@@ -234,6 +238,8 @@ dynamic_collections:
     - Starz
     - STAR+
     - Sundance TV
+    - SVT
+    - SVT Play
     - SVT1
     - Syfy
     - Syndication
@@ -246,6 +252,7 @@ dynamic_collections:
     - Tencent Video
     - TF1
     - The CW
+    - The Daily Wire
     - The Roku Channel
     - The WB
     - TLC
@@ -261,6 +268,7 @@ dynamic_collections:
     - TV Tokyo
     - TV3
     - TV4
+    - TV4 Play
     - TVB Jade
     - tving
     - tvN
@@ -306,6 +314,8 @@ dynamic_collections:
       Animal Planet:
         - Animal Planet Brasil
         - Animal Planet Deutschland
+      Angel Studios:
+      - VidAngel
       BET:
         - BET Her
       Canal+:
