@@ -980,7 +980,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Illumination Entertainment:
-    template: [name: standard, {name: studios, search: [Illumination Entertainment, Illumination Films]}]
+    template: [name: standard, {name: studios, search: [Illumination, Illumination Entertainment, Illumination Films]}]
 
   Imagin:
     template: [name: standard, name: studios]
