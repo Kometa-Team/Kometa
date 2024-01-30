@@ -64,9 +64,11 @@ To install a container from docker hub, you will need community applications - a
 
 3. Choose which branch you want to run `latest`, `develop`, or `nightly`. 
 
-4. Click `Show more settings...` to set any [Environmental Variables](../environmental.md) you wish to use. **For the purposes of this walkthrough, the** `Container Path: /config` **path for the unRAID app is** `/mnt/user/appdata/plex-meta-manager`
+4. Set the `Console shell command:` to `Bash`
 
-5. Hit `Apply`, and allow unRAID to download the docker container.
+5. Click `Show more settings...` to set any [Environmental Variables](../environmental.md) you wish to use. **For the purposes of this walkthrough, the** `Container Path: /config` **path for the unRAID app is** `/mnt/user/appdata/plex-meta-manager`. Other than this, set the `PMM_TIME` variable to `5:00` under the `Show more settings...`
+
+6. Hit `Apply`, and allow unRAID to download the docker container.
 
 #### Important note on Docker images
 
@@ -74,19 +76,29 @@ This tutorial uses the official image, and you should, too.  Don't change `meisn
 
 The great thing about Docker is that all the setup you'd have to do to run PMM is already done inside the docker image.
 
-That means we can just jump right into running it.  Open a `Console` by left-clicking on the running Plex-Meta-Manager container and selecting `>_Console`. This will open up an interactive session within the container to be able to run the commands we want.
-
-```
-python plex_meta_manager.py --run
-```
+First let's start the container. Oops! The container won't start? 
 This is going to fail with an error. That's expected.
 
-You should see something like this:
+You should see something like this in the unRAID logs for the container:
 
 ```
 Config Error: config not found at //config
 ```
-This is going to fail with an error, which you will then fix.
+We need to have a file called `config.yml` in the correct directory for PMM to start. Open up an unRAID terminal session by clicking on the terminal icon `>_` in the top right of unRAID.
+
+=== ":fontawesome-brands-linux: Linux"
+
+    [type this into your terminal]
+    ```
+    mkdir /mnt/user/appdata/plex-meta-manager/config
+    touch /mnt/user/appdata/plex-meta-manager/config/config.yml
+    ```
+
+You can now close the unRAID terminal and start the PMM container.
+
+**_From this point forward, you can Console `>_Console` into the running container as it will stay running_**
+
+Open a Console by left-clicking on the running Plex-Meta-Manager container and selecting `>_Console`. This will open up an interactive session within the container to be able to run the commands we want.
 
 ### Create a directory to quiet an error later
 
