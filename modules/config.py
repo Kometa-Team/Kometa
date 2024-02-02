@@ -918,7 +918,7 @@ class ConfigFile:
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:
                                         logger.warning(f"Config Warning: path attribute not found using default: {default_path}")
-                                    if "path" in input_dict and not input_dict["path"]:
+                                    elif "path" in input_dict and not input_dict["path"]:
                                         logger.warning(f"Config Warning: path attribute blank using default: {default_path}")
                                     else:
                                         default_path = input_dict["path"]
