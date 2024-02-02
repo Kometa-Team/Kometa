@@ -1123,10 +1123,14 @@ class Operations:
                     if "year" in mv:
                         special_names[f"{mv['title']} ({mv['year']})"] = mk
             items = self.library.get_all(load=True)
-            titles = [i.title for i in items]
+            titles = []
+            year_titles = []
+            for item in items:
+                titles.append(item.title)
+                year_titles.append(f"{item.title} ({item.year})")
             for i, item in enumerate(items, 1):
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
-                map_key, attrs = self.library.get_locked_attributes(item, titles)
+                map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
                 og_dict = yaml.data["metadata"][map_key] if map_key in yaml.data["metadata"] and yaml.data["metadata"][map_key] and isinstance(yaml.data["metadata"][map_key], dict) else {}
