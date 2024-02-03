@@ -72,12 +72,6 @@ vars:
   v1-4: &v1-4 {vertical_offset: 198}
   v1-5: &v1-5 {vertical_offset: 259}
 
-  v0-1: &v0-1 {vertical_offset: -122}
-  v0-2: &v0-2 {vertical_offset: -61}
-  v0-3: &v0-3 {vertical_offset: 0}
-  v0-4: &v0-4 {vertical_offset: 61}
-  v0-5: &v0-5 {vertical_offset: 122}
-
   v2-1: &v2-1 {vertical_offset: 150}
   v2-2: &v2-2 {vertical_offset: 211}
   v2-3: &v2-3 {vertical_offset: 272}
@@ -89,6 +83,24 @@ vars:
   v3-3: &v3-3 {vertical_offset: 345}
   v3-4: &v3-4 {vertical_offset: 406}
   v3-5: &v3-5 {vertical_offset: 467}
+
+  vct-1: &vct-1 {vertical_offset: -244}
+  vct-2: &vct-2 {vertical_offset: -183}
+  vct-3: &vct-3 {vertical_offset: -122}
+  vct-4: &vct-4 {vertical_offset: -61}
+  vct-5: &vct-5 {vertical_offset: 0}
+
+  vc-1: &vc-1 {vertical_offset: -122}
+  vc-2: &vc-2 {vertical_offset: -61}
+  vc-3: &vc-3 {vertical_offset: 0}
+  vc-4: &vc-4 {vertical_offset: 61}
+  vc-5: &vc-5 {vertical_offset: 122}
+
+  vcb-1: &vcb-1 {vertical_offset: 0}
+  vcb-2: &vcb-2 {vertical_offset: 61}
+  vcb-3: &vcb-3 {vertical_offset: 122}
+  vcb-4: &vcb-4 {vertical_offset: 183}
+  vcb-5: &vcb-5 {vertical_offset: 244}
 
   vc-c: &vc-c {vertical_offset: 0}
   vc-t: &vc-t {vertical_offset: -30}
@@ -155,29 +167,29 @@ queues:
     vertical_top3_right2:                   [<<: [*top_right,     *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
     vertical_top3_right:                    [<<: [*top_right,     *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
 
-    vertical_center_top_left:               [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_left2:              [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_center_left:        [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_center:             [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_center_right:       [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_right2:             [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_top_right:              [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_top_left:               [<<: [*center_left,   *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_left2:              [<<: [*center_left,   *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_center_left:        [<<: [*center_center, *vct-1, *hc-l], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_center:             [<<: [*center_center, *vct-1, *hc-c], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_center_right:       [<<: [*center_center, *vct-1, *hc-r], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_right2:             [<<: [*center_right,  *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_right:              [<<: [*center_right,  *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
 
-    vertical_center_left:                   [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_left2:                  [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_center_left:            [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_center:                 [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_center_right:           [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_right2:                 [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_right:                  [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_left:                   [<<: [*center_left,   *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_left2:                  [<<: [*center_left,   *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_center_left:            [<<: [*center_center, *vc-1, *hc-l], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_center:                 [<<: [*center_center, *vc-1, *hc-c], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_center_right:           [<<: [*center_center, *vc-1, *hc-r], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_right2:                 [<<: [*center_right,  *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_right:                  [<<: [*center_right,  *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
 
-    vertical_center_bottom_left:            [<<: [*center_left,   *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_left2:           [<<: [*center_left,   *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_center_left:     [<<: [*center_center, *v0-1, *hc-l], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_center:          [<<: [*center_center, *v0-1, *hc-c], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_center_right:    [<<: [*center_center, *v0-1, *hc-r], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_right2:          [<<: [*center_right,  *v0-1, *h1-2], *v0-2, *v0-3, *v0-4, *v0-5]
-    vertical_center_bottom_right:           [<<: [*center_right,  *v0-1, *h1-1], *v0-2, *v0-3, *v0-4, *v0-5]
+    vertical_center_bottom_left:            [<<: [*center_left,   *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_left2:           [<<: [*center_left,   *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_center_left:     [<<: [*center_center, *vcb-1, *hc-l], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_center:          [<<: [*center_center, *vcb-1, *hc-c], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_center_right:    [<<: [*center_center, *vcb-1, *hc-r], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_right2:          [<<: [*center_right,  *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_right:           [<<: [*center_right,  *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
 
     vertical_bottom3_left:                  [<<: [*bottom_left,   *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
     vertical_bottom3_left2:                 [<<: [*bottom_left,   *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
