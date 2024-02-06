@@ -1040,18 +1040,18 @@ class ConfigFile:
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
                                         or ("remove_overlay" in file and file["remove_overlay"] is True) \
                                         or ("revert_overlays" in file and file["revert_overlays"] is True):
-                                    logger.warning("Config Warning: remove_overlays under overlay_files is depreciated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: remove_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
                                     params["remove_overlays"] = True
                                 if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
                                         or ("reapply_overlay" in file and file["reapply_overlay"] is True):
-                                    logger.warning("Config Warning: reapply_overlays under overlay_files is depreciated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: reapply_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
                                     params["reapply_overlays"] = True
                                 if "reset_overlays" in file or "reset_overlay" in file:
                                     attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                    logger.warning("Config Warning: reset_overlays under overlay_files is depreciated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: reset_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
                                     old_reset = file[attr]
                                 if "schedule" in file and file["schedule"]:
-                                    logger.warning("Config Warning: schedule under overlay_files is depreciated it now goes directly under the library attribute as schedule_overlays.")
+                                    logger.warning("Config Warning: schedule under overlay_files is deprecated it now goes directly under the library attribute as schedule_overlays.")
                                     old_schedule = file["schedule"]
                         params["overlay_files"] = files
                     except Failed as e:
