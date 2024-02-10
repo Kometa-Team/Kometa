@@ -48,7 +48,7 @@ overlays:
   u:
     template:
       - name: standard
-      - {name: cr_uk, rating: "U, 0, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, TV-G, TV-Y, G - All Ages, gb/U, gb/Uc, gb/0+, gb/6+, E, gb/E, A, no/A"}
+      - {name: cr_uk, rating: "U, 0, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, TV-G, TV-Y, G - All Ages, gb/U, gb/Uc, gb/0+, gb/6+, gb/Kids & Family, E, gb/E, A, no/A"}
 
   pg:
     template:
