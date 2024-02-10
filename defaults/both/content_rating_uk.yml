@@ -52,12 +52,15 @@ dynamic_collections:
     addons:
       U:
         - gb/U
+        - gb/Uc
         - gb/0+
+        - gb/6+
         - G
         - TV-Y
         - TV-G
         - E
         - gb/E
+        - 0
         - 1
         - 2
         - 3
@@ -76,6 +79,8 @@ dynamic_collections:
       PG:
         - gb/PG
         - gb/9+
+        - gb/7
+        - gb/7+
         - TV-PG
         - TV-Y7
         - TV-Y7-FV
@@ -96,6 +101,9 @@ dynamic_collections:
         - no/07
       12:
         - gb/12
+        - gb/A
+        - gb/Caution
+        - gb/G
         - PG-13 - Teens 13 or older
         - no/9
         - no/09
@@ -117,6 +125,9 @@ dynamic_collections:
       15:
         - gb/15
         - gb/14+
+        - gb/16
+        - gb/16+
+        - gb/AA
         - TV-14
         - 13
         - 14
@@ -125,6 +136,7 @@ dynamic_collections:
         - no/16
       18:
         - gb/18
+        - gb/18+ 
         - MA-17
         - TVMA
         - TV-MA
