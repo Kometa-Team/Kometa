@@ -1,9 +1,9 @@
-# Content Rating AU Overlay
+# Content Rating NZ Overlay
 
-The `content_rating_au` Default Overlay File is used to create an overlay based on the Australia Rating on each item within 
+The `content_rating_nz` Default Overlay File is used to create an overlay based on the New Zealand Rating on each item within 
 your library.
 
-![](images/content_rating_au.png)
+![](images/content_rating_nz.png)
 
 ## Requirements & Recommendations
 
@@ -13,7 +13,7 @@ Requirements: Use the [Mass Content Rating Update Library
 Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the BBFC 
 Rating.
 
-## Supported Content Rating AU
+## Supported Content Rating NZ
 
 | Rating | Key   |
 |:-------|:------|
@@ -33,14 +33,14 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: content_rating_au
+      - pmm: content_rating_nz
   TV Shows:
     overlay_files:
-      - pmm: content_rating_au
-      - pmm: content_rating_au
+      - pmm: content_rating_nz
+      - pmm: content_rating_nz
         template_variables:
           builder_level: season
-      - pmm: content_rating_au
+      - pmm: content_rating_nz
         template_variables:
           builder_level: episode
 ```
@@ -96,7 +96,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: content_rating_au
+          - pmm: content_rating_nz
             template_variables:
               color: false
     ```
