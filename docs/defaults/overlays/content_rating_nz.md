@@ -10,7 +10,7 @@ your library.
 Supported library types: Movie & Show
 
 Requirements: Use the [Mass Content Rating Update Library 
-Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the BBFC 
+Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the NZ 
 Rating.
 
 ## Supported Content Rating NZ
