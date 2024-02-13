@@ -1552,6 +1552,7 @@
                 "back_width": { "type": "integer", "exclusiveMinimum": 0 },
                 "builder_level": { "type": "string", "enum": ["show","season","episode"] },
                 "file": { "type": "string" },
+                "final_name": { "type": "string" },
                 "flag_alignment": { "type": "string", "enum": ["left","right"] },
                 "font_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "font_size": { "type": "integer", "exclusiveMinimum": 0 },
