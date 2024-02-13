@@ -402,7 +402,7 @@ class IMDb:
             "extensions": {
                 "persistedQuery": {
                     "version": 1,
-                    "sha256Hash": "7327d144ec84b57c93f761affe0d0609b0d495f85e8e47fdc76291679850cfda"
+                    "sha256Hash": "e7a1c7b10a7a9765731e5c874cef0342dfbd0dd7a87fa796e828778e54a07a20"
                 }
             }
         }
