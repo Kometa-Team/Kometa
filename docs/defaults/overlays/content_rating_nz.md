@@ -15,15 +15,20 @@ Rating.
 
 ## Supported Content Rating NZ
 
-| Rating | Key   |
-|:-------|:------|
-| G      | `g`   |
-| PG     | `pg`  |
-| M      | `m`   |
-| MA15+  | `ma`  |
-| R18+   | `r`   |
-| X18+   | `x`   |
-| NR     | `nr`  |
+| Rating | Key    |
+|:-------|:-------|
+| G      | `g`    |
+| PG     | `pg`   |
+| M      | `m`    |
+| R13    | `r13`  |
+| RP13   | `rp13` |
+| R15    | `r15`  |
+| R16    | `r16`  |
+| RP16   | `rp16` |
+| R18    | `R18`  |
+| RP18   | `rp18` |
+| R      | `r`    |
+| NR     | `nr`   |
 
 ## Config
 

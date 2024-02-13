@@ -46,9 +46,14 @@ dynamic_collections:
       - G
       - PG
       - M
-      - MA15+
-      - R18+
-      - X18+
+      - R13
+      - RP13
+      - R15
+      - R16
+      - RP16
+      - R18
+      - RP18
+      - R
     addons:
       G:
         - au/G
@@ -119,7 +124,12 @@ dynamic_collections:
         - PG-13 - Teens 13 or older
         - PG-13
         - no/15
-      MA15+:
+      R13:
+        - 13
+        - 14
+      RP13:
+        - 14
+      R15:
         - au/MA15+
         - de/16
         - no/16
@@ -130,7 +140,12 @@ dynamic_collections:
         - 16
         - 17
         - M/PG
-      R18+:
+      R16:
+        - 16
+        - 17
+      RP16:
+        - 17
+      R18:
         - au/R 18+
         - de/18
         - gb/18
@@ -145,7 +160,9 @@ dynamic_collections:
         - NC-17
         - R+ - Mild Nudity
         - Rx - Hentai
-      X18+:
+      RP18:
+        - 18
+      R:
         - au/X 18+
         - de/BPjM Restricted
         - BPjM Restricted

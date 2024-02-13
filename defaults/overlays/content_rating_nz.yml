@@ -60,8 +60,28 @@ overlays:
     template:
       - name: standard
       - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+  
+  r13:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
 
-  ma:
+  rp13:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+
+  r15:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+
+  r16:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+
+  rp16:
     template:
       - name: standard
       - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
@@ -71,10 +91,16 @@ overlays:
       - name: standard
       - {name: cr_nz, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
 
-  x:
+  r18:
     template:
       - name: standard
       - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+
+  rp18:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+
   nr:
     template:
       - {name: standard, key: nr}
