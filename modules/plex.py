@@ -1004,6 +1004,21 @@ class Plex(Library):
         except NotFound:
             raise Failed(f"Plex Error: Playlist {title} not found")
 
+    def get_playlist_from_users(self, title):
+        def scan_user(server, title):
+            try:
+                for playlist in server.playlists():
+                    if isinstance(playlist, Playlist):
+                        if playlist.title == title:
+                            return playlist
+            except requests.exceptions.ConnectionError:
+                pass
+        for user in self.users:
+            playlist_obj = scan_user(self.PlexServer.switchUser(user), title)
+            if playlist_obj:
+                return playlist_obj
+        raise Failed(f"Plex Error: Playlist {title} not found")
+
     def get_collection(self, data, force_search=False, debug=True):
         if isinstance(data, Collection):
             return data

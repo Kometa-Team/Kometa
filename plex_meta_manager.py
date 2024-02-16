@@ -1046,6 +1046,9 @@ def run_playlists(config):
 
                 builder.send_notifications(playlist=True)
 
+                if valid:
+                    builder.exclude_admin_from_playlist()
+
             except Deleted as e:
                 logger.info(e)
                 status[mapping_name]["status"] = "Deleted"
