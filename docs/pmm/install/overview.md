@@ -13,7 +13,7 @@ If you have some specific reason to avoid Docker, or you prefer running it as a 
 
 ## Where to install Plex Meta Manager
 
-Plex Meta Manager communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Plex Meta Manager does *not* have to be installed on the samne machine as Plex.  Plex Meta Manager does not require [nor would it use] access to the filesystem behind your Plex libraries.
+Plex Meta Manager communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Plex Meta Manager does *not* have to be installed on the same machine as Plex.  Plex Meta Manager does not require [nor would it use] access to the filesystem behind your Plex libraries.
 
 Perhaps your Plex server is remote and you want to run Plex Meta Manager on a machine in your home.  That's fine.  The relative locations of Plex Meta Manager and Plex have no effect on the installation [except perhaps the URL you would use in the config].
 
@@ -111,7 +111,7 @@ A `Dockerfile` is included within the GitHub repository for those who require it
 
 ## Customizing the docker-compose file with runtime flags and ENV vars
 
-Plex Meta Manager's behavior can be modified in a variety of ways using either runtime flags or environnment variables.  These flags and vars are detailed [here](../environmental.md).
+Plex Meta Manager's behavior can be modified in a variety of ways using either runtime flags or environment variables.  These flags and vars are detailed [here](../environmental.md).
 
 This is optional, and is not necessary to run PMM.  Many if not most users will have no reason to do this and can use something more like the basic docker-compose just above.
 
