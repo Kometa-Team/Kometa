@@ -74,6 +74,9 @@ external_templates:
         conditions:
           - type: resolution_dovetail
             value: <<horizontal_offset+30>>
+          - type: edition_dovetail
+            horizontal_align: center
+            value: <<horizontal_offset+30>>
       final_vertical_offset:
         default: <<vertical_offset>>
         conditions:
