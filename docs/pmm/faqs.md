@@ -10,7 +10,7 @@ If you have a question that is not answered here, try entering some keywords int
 
 ## Frequently Asked Questions
 
-This sections aims to answer the most commonly asked questions that users have.
+This section aims to answer the most commonly asked questions that users have.
 
 ### PMM Versions & Updating
 
@@ -304,7 +304,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
 
 ??? question "Any tips on increasing PMM performance?"
 
-    Use PMM Caching where possible, this allows PMM to temporarily store commonly-used information so that it can be retrieved more efficiently. There are [multipe things](https://metamanager.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within PMM.
+    Use PMM Caching where possible, this allows PMM to temporarily store commonly-used information so that it can be retrieved more efficiently. There are [multiple things](https://metamanager.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within PMM.
     
     Run PMM after PLEX Scheduled Tasks, as Plex's API tends to be slower at responding whilst it is performing the tasks. By default, PMM runs at 5AM to avoid the 3-5am window that Plex suggests for Scheduled Tasks.
     
@@ -325,11 +325,11 @@ Your PMM installation may not be located at the paths referenced below.  These a
         - Draw each overlay image on top of the source image
         - save final image to disk
         - Tell Plex to apply new image to the item
-        - Wait for Plex to responsd confirming that the change has been made
+        - Wait for Plex to respond confirming that the change has been made
 
-    The above two points can be greatly exasterbated if PMM has to update every episode within a Show library rather than just the Shows themselves, as there can often be hundreds of thousands of episodes to be updated with mass operations or overlays.
+    The above two points can be greatly exacerbated if PMM has to update every episode within a Show library rather than just the Shows themselves, as there can often be hundreds of thousands of episodes to be updated with mass operations or overlays.
 
-    Additionally, some collections requires a lot of computing resource to determine the critera of the collections that are to be made. This is commonly seen in the Defaults files for Actor/Director/Producer/Writer which need to get the crew information for each of the movies/shows within your library, and then calculate which ones appear the most to find out which are the most popular. The larger your library, the longer this process will take.
+    Additionally, some collections require a lot of computing resources to determine the critera of the collections that are to be made. This is commonly seen in the Defaults files for Actor/Director/Producer/Writer which need to get the crew information for each of the movies/shows within your library, and then calculate which ones appear the most to find out which are the most popular. The larger your library, the longer this process will take.
 
 
 ??? question "Can I schedule library operations and/or overlays to happen at a different time than collections?"
@@ -366,7 +366,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
 
     A 500 Internal Server Error happens when the server has an unexpected error when responding to an API request.
     
-    There could be any number of reasons why this happens and it depends on what server PMM is talking to although its most likely coming from your Plex Server.
+    There could be any number of reasons why this happens and it depends on what server PMM is talking to although it's most likely coming from your Plex Server.
     
     Most of the time these errors need to be resolved by changing something specific to your set up but some do come up that can be fixed (i.e. Plex throws one if you upload a photo larger than 10 MB)
     
@@ -492,7 +492,7 @@ With the release of PMM 1.20, several changes have taken place that we would lik
 
     Due to FlixPatrol moving a lot of their data behind a paywall, the existing setup no longer works.
 
-    We have reintroduced FlixPatrol as a [Builder](../files/builders/flixpatrol.md) and [PMM Defaults File](../defaults/chart/flixpatrol.md), we recommdend reading the documentation and updating your config/YAML files to suit.
+    We have reintroduced FlixPatrol as a [Builder](../files/builders/flixpatrol.md) and [PMM Defaults File](../defaults/chart/flixpatrol.md), we recommend reading the documentation and updating your config/YAML files to suit.
 
 ??? blank "PMM Default `other_award` replaced with individual Award files (click to expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
 
