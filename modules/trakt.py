@@ -496,7 +496,7 @@ class Trakt:
                 else:
                     if "userlist" not in dict_methods:
                         raise Failed(f"{err_type} Error: {method_name} userlist attribute not found")
-                    og_list = trakt_dict[dict_methods["year"]]
+                    og_list = trakt_dict[dict_methods["userlist"]]
                     if not og_list:
                         raise Failed(f"{err_type} Error: {method_name} userlist attribute is blank")
                     if og_list == "collected":
