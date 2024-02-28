@@ -64,7 +64,11 @@ def get_dict(attribute, attr_data, check_list=None, make_str=False):
 
 
 class DataFile:
-    def __init__(self, config, file_type, path, temp_vars, asset_directory):
+    def __init__(self, config, file_type, path, temp_vars, asset_directory, data_type):
+        if file_type != "Data":
+            logger.info("")
+            logger.info(f"Loading {data_type} {file_type}: {path}")
+            logger.info("")
         self.config = config
         self.library = None
         self.type = file_type
@@ -589,9 +593,9 @@ class DataFile:
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
+        super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
         self.data_type = "Collection"
         self.library = library
         self.metadata = None
@@ -604,9 +608,6 @@ class MetadataFile(DataFile):
         self.set_collections = {}
         self.style_priority = []
         if self.file_style == "image":
-            logger.info("")
-            logger.separator(f"Loading Image File {file_type}: {path}")
-            logger.info("")
             self.metadata = {}
             if self.type == "PMM Default":
                 if self.path.endswith(".yml"):
@@ -2173,11 +2174,8 @@ class MetadataFile(DataFile):
 
 class PlaylistFile(DataFile):
     def __init__(self, config, file_type, path, temp_vars, asset_directory):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
+        super().__init__(config, file_type, path, temp_vars, asset_directory, "Playlist File")
         self.data_type = "Playlist"
-        logger.info("")
-        logger.info(f"Loading Playlist {file_type}: {path}")
-        logger.info("")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
@@ -2188,13 +2186,10 @@ class PlaylistFile(DataFile):
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, queue_current):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
+        self.file_num = len(library.overlay_files)
+        super().__init__(config, file_type, path, temp_vars, asset_directory, f"Overlay File {self.file_num}")
         self.library = library
         self.data_type = "Overlay"
-        self.file_num = len(library.overlay_files)
-        logger.info("")
-        logger.info(f"Loading Overlay {self.file_num} {file_type}: {path}")
-        logger.info("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)

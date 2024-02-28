@@ -17,6 +17,7 @@ Mass Update operations now can be given a list of sources to fall back on when o
 `mass_content_rating_update` has a new source `mdb_age_rating`
 `mass_originally_available_update` has a new source `mdb_digital`
 `plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
+Allows users to use the Admin username when specifying playlist users. Thanks @benbou8231!
 
 # Defaults
 
@@ -26,5 +27,8 @@ Fixed collection fields being locked during batch edits when they shouldn't be
 Fixed awards dynamic collections where `latest` wasn't pulling the correct values
 Fixed `imdb_watchlist`
 Fixed `trakt_userlist`
+Fixed an issue where sometimes the resolution default overlay would be off center
+Fixed multiple issues with playlist deletion. Thanks @benbou8231!
+Fixed an issue where dynamic collection errors would sometimes appear before the title of the Dynamic Collection.
 
 Various other Minor Fixes
