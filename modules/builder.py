@@ -530,10 +530,7 @@ class CollectionBuilder:
                 self.exclude_users = config.general["playlist_exclude_users"]
                 logger.warning(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
-            plex_admin = self.library.account.username
-            _plex_users = self.library.users
-            plex_users = _plex_users.copy()
-            plex_users.append(plex_admin)
+            plex_users = self.library.users + [self.library.account.username]
 
             self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
             for user in self.exclude_users:
@@ -556,8 +553,7 @@ class CollectionBuilder:
                 logger.debug("Validating Method: delete_playlist")
                 logger.debug(f"Value: {data[methods['delete_playlist']]}")
                 if util.parse(self.Type, "delete_playlist", self.data, datatype="bool", methods=methods, default=False):
-                    playlist_getters = [self.library.get_playlist, self.library.get_playlist_from_users]
-                    for getter in playlist_getters:
+                    for getter in [self.library.get_playlist, self.library.get_playlist_from_users]:
                         try:
                             self.obj = getter(self.name)
                             break
@@ -2130,7 +2126,7 @@ class CollectionBuilder:
                 final_method = "trakt_chart"
             if method_name != final_method:
                 logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
-            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
+            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
                 self.builders.append((final_method, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
@@ -3544,19 +3540,15 @@ class CollectionBuilder:
 
         if self.playlist:
             for user in self.valid_users:
-                if user == self.library.account.username:
-                    try:
+                try:
+                    if user == self.library.account.username:
                         _ = self.library.get_playlist(title)  # Verify if this playlist exists in Admin to avoid log confusion
                         self.library.delete(self.obj)
-                        output += f"\nPlaylist deleted on {user}"
-                    except Failed:
-                        output += f"\nPlaylist not found on {user}"
-                else:
-                    try:
+                    else:
                         self.library.delete_user_playlist(title, user)
-                        output += f"\nPlaylist deleted on User {user}"
-                    except Failed:
-                        output += f"\nPlaylist not found on User {user}"
+                    output += f"\nPlaylist deleted on User {user}"
+                except Failed:
+                    output += f"\nPlaylist not found on User {user}"
         elif self.obj:
             self.library.delete(self.obj)
         return output
@@ -3572,8 +3564,7 @@ class CollectionBuilder:
                 except Failed:
                     pass
                 if user != self.library.account.username:
-                    new_playlist = self.obj.copyToUser(user)
-                    new_playlist = new_playlist.editSummary(summary=self.summaries["summary"]).reload()
+                    self.obj.copyToUser(user).editSummary(summary=self.obj.summary).reload()
                     logger.info(f"Playlist: {self.name} synced to {user}")
 
     def exclude_admin_from_playlist(self):
@@ -3583,9 +3574,9 @@ class CollectionBuilder:
             logger.info("")
             try:
                 self.library.delete(self.obj)
-                logger.info(f"Playlist: {self.name} deleted on {self.library.account.username}")
+                logger.info(f"Playlist: {self.name} deleted on User {self.library.account.username}")
             except Failed:
-                logger.info(f"Playlist: {self.name} not found on {self.library.account.username}")
+                logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
         if self.obj and self.details["changes_webhooks"] and \
