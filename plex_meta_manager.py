@@ -1043,11 +1043,9 @@ def run_playlists(config):
 
                 if valid:
                     builder.sync_playlist()
+                    builder.exclude_admin_from_playlist()
 
                 builder.send_notifications(playlist=True)
-
-                if valid:
-                    builder.exclude_admin_from_playlist()
 
             except Deleted as e:
                 logger.info(e)
