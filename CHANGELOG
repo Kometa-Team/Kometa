@@ -24,5 +24,7 @@ Mass Update operations now can be given a list of sources to fall back on when o
 Fixed the Rate Limit on MDbList calls
 Fixed collection fields being locked during batch edits when they shouldn't be
 Fixed awards dynamic collections where `latest` wasn't pulling the correct values
+Fixed `imdb_watchlist`
+Fixed `trakt_userlist`
 
 Various other Minor Fixes
