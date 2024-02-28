@@ -169,6 +169,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  A&E:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   BBC America:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -449,6 +453,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  funnyordie.com:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   FX:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -665,6 +673,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Network 10, Network Ten]}]
 
+  NFL Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   NHK:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -786,6 +798,10 @@ overlays:
     template: [name: standard, name: networks]
 
   Science:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Seeso:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -1078,6 +1094,10 @@ overlays:
     template: [name: standard, name: networks]
 
   WE tv:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Xbox Live:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
