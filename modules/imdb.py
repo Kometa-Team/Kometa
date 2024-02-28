@@ -189,9 +189,10 @@ class IMDb:
 
     def _watchlist(self, user, language):
         imdb_url = f"{base_url}/user/{user}/watchlist"
-        group = self._request(imdb_url, language=language, xpath="//span[@class='ab_widget']/script[@type='text/javascript']/text()")
-        if group:
-            return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
+        for text in self._request(imdb_url, language=language , xpath="//div[@class='article']/script/text()")[0].split("\n"):
+            if text.strip().startswith("IMDbReactInitialState.push"):
+                jsonline = text.strip()
+                return [f for f in json.loads(jsonline[jsonline.find('{'):-2])["starbars"]]
         raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
 
     def _total(self, imdb_url, language):
