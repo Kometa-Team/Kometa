@@ -11,74 +11,64 @@ external_templates:
     collection_section: "030"
 
 templates:
-  mdb_streaming:
+  streaming:
     optional:
       - use_<<key>>
+      - use_<<originals_key>>
       - allowed_libraries
       - originals_only
     conditionals:
-      url_part:
-        default: <<library_type>>
+      originals:
         conditions:
           - originals_only: true
-            key: [appletv, disney, max, hulu, netflix, paramount, peacock, amazon]
-            value: "original"
+            value: originals
+      discover_limit:
+        conditions:
+          - originals_only: false
+            value: <<limit>>
+      discover_with:
+        conditions:
+          - originals_only: false
+            value: <<key>>
+      discover_region:
+        conditions:
+          - originals_only: false
+            value: <<region>>
       allowed_streaming:
         conditions:
           - originals_only: true
-            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, showtime]
+            key: ["103", "1759", "151", "230", "283", "510", "39", "37", "188"]
             value: False
-          - region.not: uk
-            key: [all4, britbox, hayu, now]
+          - region.not: GB
+            key: ["103", "151", "39"]
             value: False
-          - region.not: ca
-            key: [crave]
+          - region.not: CA
+            key: ["230"]
             value: False
-          - region: ca
-            key: [max, showtime]
+          - region: CA
+            key: ["1899", "37"]
             value: False
-      watch_region:
-        default: ""
-        conditions:
-          - originals_only: true
-            value: ""
-          - region: ca
-            key: [amazon, disney, netflix]
-            value: "-ca"
-          - region: da
-            key: [amazon, disney, netflix]
-            value: "-da"
-          - region: de
-            key: [amazon, disney, netflix]
-            value: "-de"
-          - region: es
-            key: [amazon, disney, netflix]
-            value: "-es"
-          - region: fr
-            key: [amazon, disney, netflix]
-            value: "-fr"
-          - region: it
-            key: [amazon, disney, netflix]
-            value: "-it"
-          - region: pt-br
-            key: [amazon, disney, netflix]
-            value: "-pt-br"
-          - region: uk
-            key: [amazon, disney, netflix]
-            value: "-uk"
+
     default:
+      region: "US"
+      limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
       - <<use_<<key>>>>
+      - <<use_<<originals_key>>>>
       - <<allowed_libraries>>
       - <<allowed_streaming>>
     cache_builders: 1
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<url_part>>s<<watch_region>>
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<originals_key>>-<<originals>>
+    tmdb_discover:
+      limit: <<discover_limit>>
+      with_watch_providers: <<discover_with>>
+      watch_region: <<discover_region>>
 
 collections:
   Streaming Collections:
@@ -92,37 +82,57 @@ dynamic_collections:
   Streaming:
     type: custom
     data:
-      all4: All 4
-      appletv: Apple TV+
-      bet: BET+
-      britbox: BritBox
-      crave: Crave
-      crunchyroll: Crunchyroll
-      discovery: discovery+
-      disney: Disney+
-      hayu: hayu
-      max: Max
-      hulu: Hulu
-      netflix: Netflix
-      now: NOW
-      paramount: Paramount+
-      peacock: Peacock
-      amazon: Prime Video
-      showtime: Showtime
+      103: All 4
+      350: Apple TV+
+      1759: BET+
+      151: BritBox
+      230: Crave
+      283: Crunchyroll
+      510: discovery+
+      337: Disney+
+      1899: Max
+      223: Hayu
+      15: Hulu
+      8: Netflix
+      39: NOW
+      531: Paramount+
+      387: Peacock
+      9: Prime Video
+      37: Showtime
+      188: YouTube
     title_format: <<key_name>> <<library_typeU>>s
     template:
-      - mdb_streaming
+      - streaming
       - shared
       - arr
     template_variables:
       image:
         default: streaming/<<key_name_encoded>>
+      originals_key:
+        103: all4
+        350: appletv
+        1759: bet
+        151: britbox
+        230: crave
+        283: crunchyroll
+        510: discovery
+        337: disney
+        1899: max
+        223: hayu
+        15: hulu
+        8: netflix
+        39: now
+        531: paramount
+        387: peacock
+        9: amazon
+        37: showtime
+        188: youtube
       originals_only:
         default: false
       allowed_libraries:
-        hayu: show
-        discovery: show
-        crunchyroll: show
+        223: show
+        510: show
+        283: show
       translation_key:
         default: streaming
       dynamic:
