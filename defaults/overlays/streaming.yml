@@ -9,12 +9,6 @@
 external_templates:
   pmm: templates
   template_variables:
-    originals_only:
-      default: false
-    run_definition:
-      - <<use_<<key>>>>
-      - <<use_<<alt>>>>
-      - <<allowed_libraries>>
     group: streaming
     default:
       horizontal_align: left
@@ -55,131 +49,125 @@ external_templates:
 
 templates:
   mdb_streaming:
+    default:
+      originals_only: false
+    optional:
+      - use_<<key>>
+      - use_<<originals_key>>
+      - allowed_libraries
     run_definition:
+      - <<use_<<key>>>>
+      - <<use_<<originals_key>>>>
+      - <<allowed_libraries>>
       - <<allowed_streaming>>
     ignore_blank_results: true
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-<<url_part>>s<<watch_region>>
     conditionals:
-      url_part:
-        default: <<library_type>>
+      originals:
         conditions:
           - originals_only: true
-            key: [appletv, disney, max, hulu, netflix, paramount, peacock, amazon]
-            value: "original"
+            value: originals
+      discover_limit:
+        conditions:
+          - originals_only: false
+            value: <<limit>>
+      discover_with:
+        conditions:
+          - originals_only: false
+            value: <<key>>
+      discover_region:
+        conditions:
+          - originals_only: false
+            value: <<region>>
       allowed_streaming:
         conditions:
           - originals_only: true
-            key: [all4, bet, britbox, crave, crunchyroll, discovery, hayu, now, showtime]
+            key: ["103", "1759", "151", "230", "283", "510", "39", "37", "188"]
             value: False
-          - region.not: uk
-            key: [all4, britbox, hayu, now]
+          - region.not: GB
+            key: ["103", "151", "39"]
             value: False
-          - region.not: ca
-            key: [crave]
+          - region.not: CA
+            key: ["230"]
             value: False
-          - region: ca
-            key: [max, showtime]
+          - region: CA
+            key: ["1899", "37"]
             value: False
-      watch_region:
-        default: ""
-        conditions:
-          - originals_only: true
-            value: ""
-          - region: ca
-            key: [amazon, disney, netflix]
-            value: "-ca"
-          - region: da
-            key: [amazon, disney, netflix]
-            value: "-da"
-          - region: de
-            key: [amazon, disney, netflix]
-            value: "-de"
-          - region: es
-            key: [amazon, disney, netflix]
-            value: "-es"
-          - region: fr
-            key: [amazon, disney, netflix]
-            value: "-fr"
-          - region: it
-            key: [amazon, disney, netflix]
-            value: "-it"
-          - region: pt-br
-            key: [amazon, disney, netflix]
-            value: "-pt-br"
-          - region: uk
-            key: [amazon, disney, netflix]
-            value: "-uk"
+    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<originals_key>>-<<originals>>
+    tmdb_discover:
+      limit: <<discover_limit>>
+      with_watch_providers: <<discover_with>>
+      watch_region: <<discover_region>>
 
 overlays:
 
   Netflix:
-    variables: {key: netflix, weight: 160}
+    variables: {key: "8", originals_key: netflix, weight: 160}
     template: [name: standard, name: mdb_streaming]
 
   Prime:
-    variables: {key: amazon, weight: 150}
+    variables: {key: "9", originals_key: amazon, weight: 150}
     template: [name: standard, name: mdb_streaming]
 
   Disney:
-    variables: {key: disney, weight: 140}
+    variables: {key: "337", originals_key: disney, weight: 140}
     template: [name: standard, name: mdb_streaming]
 
   Max:
-    variables: {key: max, weight: 130}
+    variables: {key: "1899", originals_key: max, weight: 130}
     template: [name: standard, name: mdb_streaming]
 
   Crunchyroll:
-    variables: {key: crunchyroll, weight: 120, allowed_libraries: show}
+    variables: {key: "283", originals_key: crunchyroll, weight: 120, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
 
   YouTube:
-    variables: {key: youtube, weight: 110}
+    variables: {key: "188", originals_key: youtube, weight: 110}
     template: [name: standard, name: mdb_streaming]
 
   Hulu:
-    variables: {key: hulu, weight: 100}
+    variables: {key: "15", originals_key: hulu, weight: 100}
     template: [name: standard, name: mdb_streaming]
 
   Paramount:
-    variables: {key: paramount, weight: 90}
+    variables: {key: "531", originals_key: paramount, weight: 90}
     template: [name: standard, name: mdb_streaming]
 
   AppleTV:
-    variables: {key: appletv, weight: 80}
+    variables: {key: "350", originals_key: appletv, weight: 80}
     template: [name: standard, name: mdb_streaming]
 
   Peacock:
-    variables: {key: peacock, weight: 70}
+    variables: {key: "387", originals_key: peacock, weight: 70}
     template: [name: standard, name: mdb_streaming]
 
   Showtime:
-    variables: {key: showtime, weight: 60}
+    variables: {key: "37", originals_key: showtime, weight: 60}
     template: [name: standard, name: mdb_streaming]
 
   discovery+:
-    variables: {key: discovery, weight: 58, allowed_libraries: show}
+    variables: {key: "510", originals_key: discovery, weight: 58, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
 
   Crave:
-    variables: {key: crave, weight: 55}
+    variables: {key: "230", originals_key: crave, weight: 55}
     template: [name: standard, name: mdb_streaming]
 
   NOW:
-    variables: {key: now, weight: 50}
+    variables: {key: "39", originals_key: now, weight: 50}
     template: [name: standard, name: mdb_streaming]
 
   All 4:
-    variables: {key: all4, weight: 40}
+    variables: {key: "103", originals_key: all4, weight: 40}
     template: [name: standard, name: mdb_streaming]
 
   britbox:
-    variables: {key: britbox, weight: 30}
+    variables: {key: "151", originals_key: britbox, weight: 30}
     template: [name: standard, name: mdb_streaming]
 
   BET+:
-    variables: {key: bet, weight: 20}
+    variables: {key: "1759", originals_key: bet, weight: 20}
     template: [name: standard, name: mdb_streaming]
 
   hayu:
-    variables: {key: hayu, weight: 10, allowed_libraries: show}
+    variables: {key: "8", originals_key: hayu, weight: 10, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
