@@ -35,7 +35,7 @@ dynamic_collections:
     sync: true
     data:
       event_id: ev0000157
-      starting: latest-5
+      starting: latest-4
       ending: latest
     title_format: Cesar <<key_name>>
     template:

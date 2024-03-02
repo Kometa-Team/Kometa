@@ -48,17 +48,17 @@ overlays:
   u:
     template:
       - name: standard
-      - {name: cr_uk, rating: "U, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, TV-G, TV-Y, G - All Ages, gb/U, gb/0+, E, gb/E, A, no/A"}
+      - {name: cr_uk, rating: "U, 0, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, TV-G, TV-Y, G - All Ages, gb/U, gb/Uc, gb/0+, gb/6+, gb/Kids & Family, E, gb/E, A, no/A"}
 
   pg:
     template:
       - name: standard
-      - {name: cr_uk, rating: "gb/PG, gb/9+, TV-PG, TV-Y7, TV-Y7-FV, PG, 7, 07, 8, 08, 9, 09, 10, 11, PG - Children, no/5, no/05, no/6, no/06, no/7, no/07"}
+      - {name: cr_uk, rating: "gb/PG, gb/9+, gb/7, gb/7+, TV-PG, TV-Y7, TV-Y7-FV, PG, 7, 07, 8, 08, 9, 09, 10, 11, PG - Children, no/5, no/05, no/6, no/06, no/7, no/07"}
 
   12:
     template:
       - name: standard
-      - {name: cr_uk, rating: "gb/12, 12, PG-13 - Teens 13 or older, no/9, no/09, no/10, no/11, no/12"}
+      - {name: cr_uk, rating: "gb/12, gb/A, gb/Caution, gb/G, PG-13 - Teens 13 or older, no/9, no/09, no/10, no/11, no/12"}
 
   12a:
     template:
@@ -68,12 +68,12 @@ overlays:
   15:
     template:
       - name: standard
-      - {name: cr_uk, rating: "gb/15, gb/14+, TV-14, 13, 14, 15, PG-13 - Teens 13 or older, no/15, no/16"}
+      - {name: cr_uk, rating: "gb/15, gb/14+, gb/16, gb/16+, gb/AA, TV-14, 13, 14, 15, PG-13 - Teens 13 or older, no/15, no/16"}
 
   18:
     template:
       - name: standard
-      - {name: cr_uk, rating: "gb/18, MA-17, TVMA, TV-MA, R, 16, 17, 18, R - 17+ (violence & profanity), no/18"}
+      - {name: cr_uk, rating: "gb/18, gb/18+, MA-17, TVMA, TV-MA, R, 16, 17, 18, R - 17+ (violence & profanity), no/18"}
 
   r18:
     template:

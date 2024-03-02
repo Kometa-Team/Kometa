@@ -23,6 +23,7 @@ status_translation = {
     "returning": "returning series", "production": "in production",
     "planned": "planned", "canceled": "canceled", "ended": "ended"
 }
+userlist_options = ["favorites", "watched", "collection", "watchlist"]
 periods = ["daily", "weekly", "monthly", "yearly", "all"]
 id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
 id_types = {
@@ -129,14 +130,14 @@ class Trakt:
                 raise Failed("Input Timeout: Trakt pin required.")
         if not pin:
             raise Failed("Trakt Error: Trakt pin required.")
-        json = {
+        json_data = {
             "code": pin,
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code"
         }
-        response = self.config.post(f"{base_url}/oauth/token", json=json, headers={"Content-Type": "application/json"})
+        response = self.config.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
         if response.status_code != 200:
             raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
             #raise Failed("Trakt Error: Invalid trakt pin. If you're sure you typed it in correctly your client_id or client_secret may be invalid")
@@ -164,14 +165,14 @@ class Trakt:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            json = {
+            json_data = {
                 "refresh_token": self.authorization["refresh_token"],
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
                 "redirect_uri": redirect_uri,
                 "grant_type": "refresh_token"
               }
-            response = self.config.post(f"{base_url}/oauth/token", json=json, headers={"Content-Type": "application/json"})
+            response = self.config.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
             if response.status_code != 200:
                 return False
             return self._save(response.json())
@@ -197,7 +198,7 @@ class Trakt:
         return False
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def _request(self, url, params=None, json=None):
+    def _request(self, url, params=None, json_data=None):
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.authorization['access_token']}",
@@ -212,26 +213,26 @@ class Trakt:
         logger.trace(f"URL: {base_url}{url}")
         if params:
             logger.trace(f"Params: {params}")
-        if json:
-            logger.trace(f"JSON: {json}")
+        if json_data:
+            logger.trace(f"JSON: {json_data}")
         while current <= pages:
             if pages > 1:
                 params["page"] = current
-            if json is not None:
-                response = self.config.post(f"{base_url}{url}", json=json, headers=headers)
+            if json_data is not None:
+                response = self.config.post(f"{base_url}{url}", json=json_data, headers=headers)
             else:
                 response = self.config.get(f"{base_url}{url}", headers=headers, params=params)
             if pages == 1 and "X-Pagination-Page-Count" in response.headers and not params:
                 pages = int(response.headers["X-Pagination-Page-Count"])
             if response.status_code >= 400:
                 raise Failed(f"({response.status_code}) {response.reason}")
-            json_data = response.json()
+            response_json = response.json()
             logger.trace(f"Headers: {response.headers}")
-            logger.trace(f"Response: {json_data}")
-            if isinstance(json_data, dict):
-                return json_data
+            logger.trace(f"Response: {response_json}")
+            if isinstance(response_json, dict):
+                return response_json
             else:
-                output_json.extend(json_data)
+                output_json.extend(response_json)
             current += 1
         return output_json
 
@@ -335,7 +336,7 @@ class Trakt:
         add_ids = [id_set for id_set in ids if id_set not in current_ids]
         if add_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items", json=self._build_item_json(add_ids))
+            results = self._request(f"/users/me/lists/{slug}/items", json_data=self._build_item_json(add_ids))
             for object_type in ["movies", "shows", "seasons", "episodes"]:
                 read_result(results, object_type, "added")
             read_not_found(results, "Add")
@@ -344,7 +345,7 @@ class Trakt:
         remove_ids = [id_set for id_set in current_ids if id_set not in ids]
         if remove_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items/remove", json=self._build_item_json(remove_ids))
+            results = self._request(f"/users/me/lists/{slug}/items/remove", json_data=self._build_item_json(remove_ids))
             for object_type in ["movies", "shows", "seasons", "episodes"]:
                 read_result(results, object_type, "deleted", "Removed")
             read_not_found(results, "Remove")
@@ -353,7 +354,7 @@ class Trakt:
         trakt_ids = self._list(slug, urlparse=False, trakt_ids=True)
         trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
         rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
-        self._request(f"/users/me/lists/{slug}/items/reorder", json={"rank": rank_ids})
+        self._request(f"/users/me/lists/{slug}/items/reorder", json_data={"rank": rank_ids})
         logger.info("")
         logger.info("Trakt List Ordered Successfully")
 
@@ -461,6 +462,22 @@ class Trakt:
                         final_dict["runtimes"] = util.parse(err_type, "runtimes", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", range_split="-")
                     if "ratings" in dict_methods:
                         final_dict["ratings"] = util.parse(err_type, "ratings", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
+                    if "votes" in dict_methods:
+                        final_dict["votes"] = util.parse(err_type, "votes", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100000, range_split="-")
+                    if "tmdb_ratings" in dict_methods:
+                        final_dict["tmdb_ratings"] = util.parse(err_type, "tmdb_ratings", trakt_dict, methods=dict_methods, parent=method_name, datatype="float", minimum=0, maximum=10, range_split="-")
+                    if "tmdb_votes" in dict_methods:
+                        final_dict["tmdb_votes"] = util.parse(err_type, "tmdb_votes", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100000, range_split="-")
+                    if "imdb_ratings" in dict_methods:
+                        final_dict["imdb_ratings"] = util.parse(err_type, "imdb_ratings", trakt_dict, methods=dict_methods, parent=method_name, datatype="float", minimum=0, maximum=10, range_split="-")
+                    if "imdb_votes" in dict_methods:
+                        final_dict["imdb_votes"] = util.parse(err_type, "imdb_votes", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=3000000, range_split="-")
+                    if "rt_meters" in dict_methods:
+                        final_dict["rt_meters"] = util.parse(err_type, "rt_meters", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
+                    if "rt_user_meters" in dict_methods:
+                        final_dict["rt_user_meters"] = util.parse(err_type, "rt_user_meters", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
+                    if "metascores" in dict_methods:
+                        final_dict["metascores"] = util.parse(err_type, "metascores", trakt_dict, methods=dict_methods, parent=method_name, datatype="int", minimum=0, maximum=100, range_split="-")
                     if "genres" in dict_methods:
                         final_dict["genres"] = util.parse(err_type, "genres", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_genres if is_movie else self.show_genres)
                     if "languages" in dict_methods:
@@ -469,23 +486,36 @@ class Trakt:
                         final_dict["countries"] = util.parse(err_type, "countries", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_countries if is_movie else self.show_countries)
                     if "certifications" in dict_methods:
                         final_dict["certifications"] = util.parse(err_type, "certifications", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=self.movie_certifications if is_movie else self.show_certifications)
-                    if "networks" in dict_methods and not is_movie:
-                        final_dict["networks"] = util.parse(err_type, "networks", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
+                    if "studio_ids" in dict_methods and not is_movie:
+                        final_dict["studio_ids"] = util.parse(err_type, "studio_ids", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
+                    if "network_ids" in dict_methods and not is_movie:
+                        final_dict["network_ids"] = util.parse(err_type, "network_ids", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist")
                     if "status" in dict_methods and not is_movie:
                         final_dict["status"] = util.parse(err_type, "status", trakt_dict, methods=dict_methods, parent=method_name, datatype="commalist", options=status)
                     valid_dicts.append(final_dict)
                 else:
-                    userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=["recommendations", "watched", "collected", "watchlist"])
+                    if "userlist" not in dict_methods:
+                        raise Failed(f"{err_type} Error: {method_name} userlist attribute not found")
+                    og_list = trakt_dict[dict_methods["userlist"]]
+                    if not og_list:
+                        raise Failed(f"{err_type} Error: {method_name} userlist attribute is blank")
+                    if og_list == "collected":
+                        logger.warning(f"{err_type} Warning: userlist value collected has been deprecated using collection")
+                        userlist = "collection"
+                    elif og_list == "recommendations":
+                        raise Failed(f"{err_type} Error: {method_name} userlist value recommendations has been deprecated")
+                    else:
+                        userlist = util.parse(err_type, "userlist", trakt_dict, methods=dict_methods, parent=method_name, options=userlist_options)
                     user = util.parse(err_type, "user", trakt_dict, methods=dict_methods, parent=method_name, default="me")
                     sort_by = None
-                    if userlist in ["recommendations", "watchlist"] and "sort_by" in dict_methods:
+                    if userlist in ["favorites", "watchlist"] and "sort_by" in dict_methods:
                         sort_by = util.parse(err_type, "sort_by", trakt_dict, methods=dict_methods, parent=method_name, default="rank", options=["rank", "added", "released", "title"])
-                    self._userlist("collection" if userlist == "collected" else userlist, user, is_movie, sort_by=sort_by)
+                    self._userlist(userlist, user, is_movie, sort_by=sort_by)
                     valid_dicts.append({"userlist": userlist, "user": user, "sort_by": sort_by})
             except Failed as e:
                 logger.error(e)
         if len(valid_dicts) == 0:
-            raise Failed(f"Trakt Error: No valid Trakt {method_name[6:].capitalize()}")
+            raise Failed(f"{err_type} Error: No valid Trakt {method_name[6:].capitalize()}")
         return valid_dicts
 
     def get_trakt_ids(self, method, data, is_movie):
@@ -501,7 +531,7 @@ class Trakt:
             params = {"limit": data["limit"]}
             chart_limit = f"{data['limit']} {data['time_period'].capitalize()}" if data["time_period"] else data["limit"]
             logger.info(f"Processing {pretty}: {chart_limit} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
-            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "networks", "status"]:
+            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "network_ids", "studio_ids", "status", "votes", "tmdb_ratings", "tmdb_votes", "imdb_ratings", "imdb_votes", "rt_meters", "rt_user_meters", "metascores"]:
                 if attr in data:
                     logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
                     values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]

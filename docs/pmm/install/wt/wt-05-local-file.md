@@ -15,7 +15,7 @@ First, open the collection file [this will create the file if it doesn't already
     [type this into your terminal]
     
     ```
-    notepad "config\Movies.yml"
+    nano "config/Movies.yml"
     ```
 
 === ":fontawesome-brands-windows: Windows"

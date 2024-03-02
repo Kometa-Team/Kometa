@@ -104,7 +104,7 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_genre_update`
     
-    **Accepted Values:** 
+    **Accepted Values:** Source or List of sources to use in that order
 
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb for Genres</td></tr>
@@ -123,6 +123,7 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`unlock`</td><td>Unlock all Genre Field</td></tr>
       <tr><td>`remove`</td><td>Remove all Genres and Lock all Field</td></tr>
       <tr><td>`reset`</td><td>Remove all Genres and Unlock all Field</td></tr>
+      <tr><td colspan="2">List of Strings for Genres (<code>["String 1", "String 2"]</code>)</td></tr>
     </table>
 
     ???+ example "Example"
@@ -131,7 +132,10 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           Movies:
             operations:
-              mass_genre_update: imdb
+              mass_genre_update: 
+                - imdb
+                - tmdb
+                - ["Unknown"]
         ```
 
 ??? blank "`mass_content_rating_update` - Updates the content rating of every item in the library.<a class="headerlink" href="#mass-content-rating-update" title="Permanent link">¶</a>"
@@ -143,18 +147,21 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_content_rating_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`mdb`</td><td>Use MdbList for Content Ratings</td></tr>
       <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDbList for Content Ratings</td></tr>
       <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDbList for Content Ratings</td></tr>
+      <tr><td>`mdb_age_rating`</td><td>Use MDbList Age Rating for Content Ratings</td></tr>
+      <tr><td>`mdb_age_rating0`</td><td>Use MDbList Age Rating with Zero Padding for Content Ratings</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList for Content Ratings</td></tr>
       <tr><td>`lock`</td><td>Lock Content Rating Field</td></tr>
       <tr><td>`unlock`</td><td>Unlock Content Rating Field</td></tr>
       <tr><td>`remove`</td><td>Remove Content Rating and Lock Field</td></tr>
       <tr><td>`reset`</td><td>Remove Content Rating and Unlock Field</td></tr>
+      <tr><td colspan="2">Any String for Content Ratings</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -163,7 +170,10 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           Movies:
             operations:
-              mass_content_rating_update: omdb
+              mass_content_rating_update: 
+                - mdb_commonsense
+                - mdb_age_rating
+                - NR
         ```
 
 ??? blank "`mass_original_title_update` - Updates the original title of every item in the library.<a class="headerlink" href="#mass-original-title-update" title="Permanent link">¶</a>"
@@ -175,7 +185,7 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_original_title_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles</td></tr>
@@ -187,6 +197,7 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`unlock`</td><td>Unlock Original Title Field</td></tr>
       <tr><td>`remove`</td><td>Remove Original Title and Lock Field</td></tr>
       <tr><td>`reset`</td><td>Remove Original Title and Unlock Field</td></tr>
+      <tr><td colspan="2">Any String for Original Titles</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -195,7 +206,10 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           Anime:
             operations:
-              mass_original_title_update: anidb_official
+              mass_original_title_update: 
+                - anidb_official
+                - anidb
+                - Unknown
         ```
 
 ??? blank "`mass_studio_update` - Updates the studio of every item in the library.<a class="headerlink" href="#mass-studio-update" title="Permanent link">¶</a>"
@@ -206,16 +220,17 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_studio_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Studio for Studio</td></tr>
       <tr><td>`tmdb`</td><td>Use TMDb Studio for Studio</td></tr>
-      <tr><td>`lock`</td><td>Lock Original Title Field</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Original Title Field</td></tr>
-      <tr><td>`remove`</td><td>Remove Original Title and Lock Field</td></tr>
-      <tr><td>`reset`</td><td>Remove Original Title and Unlock Field</td></tr>
+      <tr><td>`lock`</td><td>Lock Studio Field</td></tr>
+      <tr><td>`unlock`</td><td>Unlock Studio Field</td></tr>
+      <tr><td>`remove`</td><td>Remove Studio and Lock Field</td></tr>
+      <tr><td>`reset`</td><td>Remove Studio and Unlock Field</td></tr>
+      <tr><td colspan="2">Any String for Studio</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -224,7 +239,10 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           Anime:
             operations:
-              mass_studio_update: mal
+              mass_studio_update: 
+                - mal
+                - anidb
+                - Unknown
         ```
 
 ??? blank "`mass_originally_available_update` - Updates the originally available date of every item in the library.<a class="headerlink" href="#mass-originally-available-update" title="Permanent link">¶</a>"
@@ -241,19 +259,21 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_originally_available_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Release Date</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb</td></tr>
       <tr><td>`mdb`</td><td>Use MdbList Release Date</td></tr>
+      <tr><td>`mdb_digital`</td><td>Use MdbList Digital Release Date</td></tr>
       <tr><td>`anidb`</td><td>Use AniDB Release Date</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Release Date</td></tr>
       <tr><td>`lock`</td><td>Lock Originally Available Field</td></tr>
       <tr><td>`unlock`</td><td>Unlock Originally Available Field</td></tr>
       <tr><td>`remove`</td><td>Remove Originally Available and Lock Field</td></tr>
       <tr><td>`reset`</td><td>Remove Originally Available and Unlock Field</td></tr>
+      <tr><td colspan="2">Any String in the Format: YYYY-MM-DD for Originally Available (<code>2022-05-28</code>)</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -262,7 +282,10 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           TV Shows:
             operations:
-              mass_originally_available_update: tvdb
+              mass_originally_available_update: 
+                - mdb_digital
+                - mdb
+                - 1900-01-01
         ```
 
 ??? blank "`mass_***_rating_update` - Updates the audience/critic/user rating of every item in the library.<a class="headerlink" href="#mass-star-rating-update" title="Permanent link">¶</a>"
@@ -284,7 +307,7 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
@@ -310,6 +333,7 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
       <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
       <tr><td>`reset`</td><td>Remove Rating and Unlock Field</td></tr>
+      <tr><td colspan="2">Any Number between 0.0-10.0 for Ratings</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -318,9 +342,17 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           Movies:
             operations:
-              mass_audience_rating_update: mdb_average
-              mass_critic_rating_update: mdb_metacritic
-              mass_user_rating_update: imdb
+              mass_audience_rating_update: 
+                - mdb
+                - mdb_average
+                - 2.0
+              mass_critic_rating_update:
+                - imdb
+                - omdb
+                - 2.0
+              mass_user_rating_update: 
+                - trakt_user
+                - 2.0
         ```
 
 ??? blank "`mass_episode_***_rating_update` - Updates the audience/critic/user rating of every episode in the library.<a class="headerlink" href="#mass-episode-star-rating-update" title="Permanent link">¶</a>"
@@ -342,7 +374,7 @@ You can create individual blocks of operations by using a list under `operations
     
     **Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
     
-    **Accepted Values:**
+    **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
@@ -351,6 +383,7 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
       <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
       <tr><td>`reset`</td><td>Remove Rating and Unlock Field</td></tr>
+      <tr><td colspan="2">Any Number between 0.0-10.0 for Ratings</td></tr>
     </table>                                                      
 
     ???+ example "Example"
@@ -359,9 +392,17 @@ You can create individual blocks of operations by using a list under `operations
         libraries:
           TV Shows:
             operations:
-              mass_episode_audience_rating_update: tmdb
-              mass_episode_critic_rating_update: remove
-              mass_episode_user_rating_update: imdb
+              mass_episode_audience_rating_update: 
+                - mdb
+                - mdb_average
+                - 2.0
+              mass_episode_critic_rating_update: 
+                - imdb
+                - omdb
+                - 2.0
+              mass_episode_user_rating_update: 
+                - trakt_user
+                - 2.0
         ```
 
 ??? blank "`mass_poster_update` - Updates the poster of every item in the library.<a class="headerlink" href="#mass-poster-update" title="Permanent link">¶</a>"

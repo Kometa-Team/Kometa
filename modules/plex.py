@@ -904,9 +904,29 @@ class Plex(Library):
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
-        self.Plex.batchMultiEdits(items)
-        self.query_data(getattr(self.Plex, f"{'add' if add else 'remove'}{'Label' if smart_label_collection else 'Collection'}"), collection)
-        self.Plex.saveMultiEdits()
+        maintain_status = True
+        locked_items = []
+        unlocked_items = []
+        if not smart_label_collection and maintain_status and self.agent in ["tv.plex.agents.movie", "tv.plex.agents.series"]:
+            for item in items:
+                item = self.reload(item)
+                if next((f for f in item.fields if f.name == "collection"), None) is not None:
+                    locked_items.append(item)
+                else:
+                    unlocked_items.append(item)
+        else:
+            locked_items = items
+
+        for _items, locked in [(locked_items, True), (unlocked_items, False)]:
+            if _items:
+                self.Plex.batchMultiEdits(_items)
+                if smart_label_collection:
+                    self.query_data(self.Plex.addLabel if add else self.Plex.removeLabel, collection)
+                elif add:
+                    self.Plex.addCollection(collection, locked=locked)
+                else:
+                    self.Plex.removeCollection(collection, locked=locked)
+                self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
@@ -990,6 +1010,16 @@ class Plex(Library):
             return self.PlexServer.playlist(title)
         except NotFound:
             raise Failed(f"Plex Error: Playlist {title} not found")
+
+    def get_playlist_from_users(self, playlist_title):
+        for user in self.users:
+            try:
+                for playlist in self.PlexServer.switchUser(user).playlists():
+                    if isinstance(playlist, Playlist) and playlist.title == playlist_title:
+                        return playlist
+            except requests.exceptions.ConnectionError:
+                pass
+        raise Failed(f"Plex Error: Playlist {playlist_title} not found")
 
     def get_collection(self, data, force_search=False, debug=True):
         if isinstance(data, Collection):
@@ -1481,27 +1511,40 @@ class Plex(Library):
             imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
-    def get_locked_attributes(self, item, titles=None):
+    def get_locked_attributes(self, item, titles=None, year_titles=None):
         item = self.reload(item)
         attrs = {}
+        match_dict = {}
         fields = {f.name: f for f in item.fields if f.locked}
         if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:
-            map_key = f"{item.title} ({item.year})"
-            attrs["title"] = item.title
-            attrs["year"] = item.year
+            if year_titles.count(f"{item.title} ({item.year})") > 1:
+                match_dict["title"] = item.title
+                match_dict["year"] = item.year
+                if item.editionTitle:
+                    map_key = f"{item.title} ({item.year}) [{item.editionTitle}]"
+                    match_dict["edition"] = item.editionTitle
+                else:
+                    map_key = f"{item.title} ({item.year})"
+                    match_dict["blank_edition"] = True
+            else:
+                map_key = f"{item.title} ({item.year})"
+                match_dict["title"] = item.title
+                match_dict["year"] = item.year
         elif isinstance(item, (Season, Episode, Track)) and item.index:
             map_key = int(item.index)
         else:
             map_key = item.title
 
         if "title" in fields:
+            attrs["title"] = item.title
             if isinstance(item, (Movie, Show)):
                 tmdb_id, tvdb_id, imdb_id = self.get_ids(item)
                 tmdb_item = self.config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=isinstance(item, Movie))
                 if tmdb_item:
-                    attrs["alt_title"] = tmdb_item.title
-            elif isinstance(item, (Season, Episode, Track)):
-                attrs["title"] = item.title
+                    match_dict["title"] = [item.title, tmdb_item.title]
+
+        if match_dict:
+            attrs["match"] = match_dict
 
         def check_field(plex_key, pmm_key, var_key=None):
             if plex_key in fields and pmm_key not in self.metadata_backup["exclude"]:
@@ -1519,6 +1562,7 @@ class Plex(Library):
                         attrs[pmm_key] = plex_value
 
         check_field("titleSort", "sort_title")
+        check_field("editionTitle", "edition")
         check_field("originalTitle", "original_artist" if self.is_music else "original_title")
         check_field("originallyAvailableAt", "originally_available")
         check_field("contentRating", "content_rating")

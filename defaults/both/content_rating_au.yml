@@ -1,0 +1,151 @@
+##############################################################################
+#                       AU Content Rating Collections                        #
+#                           Adapted by 2wenty2wo                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/content_rating_au   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    collection_section: "110"
+
+collections:
+  Ratings Collections:
+    template:
+      - name: separator
+        separator: content_rating
+        key_name: Ratings
+        translation_key: separator
+
+dynamic_collections:
+  AU Content Rating:
+    type: content_rating
+    title_format: <<key_name>> <<library_typeU>>s
+    other_name: Not Rated <<library_typeU>>s
+    template:
+      - smart_filter
+      - shared
+    other_template:
+      - other_collection
+      - smart_filter
+      - shared
+    template_variables:
+      search_term:
+        default: content_rating
+      image:
+        default: content_rating/au/<<key_name>>
+        other: content_rating/au/NR
+      translation_key:
+        default: content_rating
+        other: content_rating_other
+      dynamic:
+        default: true
+    include:
+      - G
+      - PG
+      - M
+      - MA15+
+      - R18+
+      - X18+
+    addons:
+      G:
+        - au/G
+        - de/0
+        - U
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+        - "05"
+        - "06"
+        - G
+        - TV-G
+        - TV-Y
+        - G - All Ages
+        - gb/U
+        - gb/0+
+        - E
+        - gb/E
+        - A
+        - no/A
+        - no/5
+        - no/05
+      PG:
+        - au/PG
+        - de/6
+        - gb/9+
+        - TV-PG
+        - TV-Y7
+        - TV-Y7-FV
+        - PG
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - "07"
+        - "08"
+        - "09"
+        - PG - Children
+        - no/6
+        - no/06
+        - no/7
+        - no/07
+        - no/9
+        - no/09
+        - no/10
+        - no/11
+      M:
+        - au/M
+        - de/12
+        - gb/12
+        - no/12
+        - gb/15
+        - gb/14+
+        - TV-14
+        - 12
+        - 13
+        - 14
+        - 15
+        - PG-13 - Teens 13 or older
+        - PG-13
+        - no/15
+      MA15+:
+        - au/MA15+
+        - de/16
+        - no/16
+        - A-17
+        - TVMA
+        - TV-MA
+        - R
+        - 16
+        - 17
+        - M/PG
+      R18+:
+        - au/R 18+
+        - de/18
+        - gb/18
+        - M
+        - 18
+        - R - 17+ (violence & profanity)
+        - no/18
+        - R18
+        - gb/R18
+        - gb/X
+        - X
+        - NC-17
+        - R+ - Mild Nudity
+        - Rx - Hentai
+      X18+:
+        - au/X 18+
+        - de/BPjM Restricted
+        - BPjM Restricted

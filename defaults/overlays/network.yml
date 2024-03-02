@@ -69,6 +69,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  7mate:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   ABC:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [ABC, ABC.com]}]
@@ -125,6 +129,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Animal Planet, Animal Planet Brasil, Animal Planet Deutschland]}]
 
+  Angel Studios:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Angel Studios, VidAngel]}]
+
   Antena 3:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -161,6 +169,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  A&E:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   BBC America:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -174,6 +186,10 @@ overlays:
     template: [name: standard, name: networks]
 
   BBC One:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  BBC Scotland:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -194,6 +210,10 @@ overlays:
     template: [name: standard, name: networks]
 
   bilibili:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Binge:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -289,6 +309,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Crave:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Criterion Channel:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -348,6 +372,10 @@ overlays:
   DR1:
     variables: { weight: 10}
     template: [name: standard, name: networks]
+    
+  Dropout:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Eden:
     variables: { weight: 10}
@@ -361,6 +389,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  ENA: 
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+    
   Epix:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -368,6 +400,10 @@ overlays:
   ESPN:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [ESPN, ESPN2, ESPN+, ESPN Classic, ESPNU, ESPNews, ESPN Australia, Sony ESPN, ESPN.com, ESPN Deportes]}]
+
+  EXXEN:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   E!:
     variables: { weight: 10}
@@ -414,6 +450,10 @@ overlays:
     template: [name: standard, {name: networks, search: [Freevee, Amazon Freevee]}]
 
   Fuji TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  funnyordie.com:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -525,11 +565,23 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  JioCinema:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   joyn:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  JTBC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Kan 11:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Kanal 5:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -565,6 +617,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Magnolia Network:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: [Magnolia Network, DIY Network]}]
+
   MasterClass:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -574,6 +630,10 @@ overlays:
     template: [name: standard, {name: networks, search: [Max, HBO Go, HBO Max]}]
 
   MBC:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  MBN:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -612,6 +672,10 @@ overlays:
   Network 10:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Network 10, Network Ten]}]
+
+  NFL Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   NHK:
     variables: { weight: 10}
@@ -737,6 +801,14 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Seeso:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Seven Network:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Shahid:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -759,7 +831,7 @@ overlays:
 
   Sky:
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [Sky, Sky One, Sky Atlantic, Sky Arts, Sky History, Sky Living, Sky Crime, Sky Uno, Sky Max, Sky Sports, Sky Documentaries, Sky Nature, Sky News, Sky Cinema, Sky News Australia, Sky Italia, Sky Comedy, Sky Sports F1, Sky Two, Sky Witness, sky Travel, Sky Vision, Sky News Weather Channel, SkyShowtime]}]
+    template: [name: standard, {name: networks, search: [Sky, Sky One, Sky Atlantic, Sky Arts, Sky History, Sky Living, Sky Crime, Sky Uno, Sky Max, Sky Sports, Sky Documentaries, Sky Nature, Sky News, Sky Cinema, Sky News Australia, Sky Italia, Sky Comedy, Sky Sports F1, Sky Two, Sky Witness, sky Travel, Sky Vision, Sky News Weather Channel, SkyShowtime, Sky Atlantic (IT)]}]
 
   Smithsonian:
     variables: { weight: 10}
@@ -796,6 +868,14 @@ overlays:
   Sundance TV:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Sundance TV, SundanceTV]}]
+
+  SVT:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  SVT Play:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   SVT1:
     variables: { weight: 10}
@@ -844,6 +924,10 @@ overlays:
   The CW:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [The CW, CW seed]}]
+
+  The Daily Wire:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   The Roku Channel:
     variables: { weight: 10}
@@ -905,6 +989,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  TV4 Play:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   TVB Jade:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -918,6 +1006,10 @@ overlays:
     template: [name: standard, name: networks]
 
   TVNZ 1:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+    
+  TVNZ 2:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
@@ -953,6 +1045,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  U+ Mobile TV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   VH1:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [VH1, VH1 Classic]}]
@@ -985,6 +1081,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  VRT Max:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   VTM:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -994,6 +1094,10 @@ overlays:
     template: [name: standard, name: networks]
 
   WE tv:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  Xbox Live:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 

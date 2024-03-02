@@ -51,6 +51,7 @@ plugins:
   - glightbox
   - search:
       lang: en
+  - open-in-new-tab
   - include-markdown
   - redirects:
       redirect_maps:
@@ -177,12 +178,14 @@ nav:
         - Radarr: config/radarr.md
         - Sonarr: config/sonarr.md
         - Notifiarr: config/notifiarr.md
+        - Gotify: config/gotify.md
         - Tautulli: config/tautulli.md
         - Github: config/github.md
         - MdbList: config/mdblist.md
         - OMDb: config/omdb.md
         - AniDB: config/anidb.md
         - MyAnimeList: config/myanimelist.md
+        - Trakt and MyAnimeList Authentication: config/auth.md
   - PMM DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
@@ -318,6 +321,7 @@ nav:
           - Letterboxd Builders: files/builders/letterboxd.md
           - ICheckMovies Builders: files/builders/icheckmovies.md
           - FlixPatrol Builders: files/builders/flixpatrol.md
+          - BoxOfficeMojo Builders: files/builders/mojo.md
           - Reciperr Builders: files/builders/reciperr.md
           - StevenLu Builders: files/builders/stevenlu.md
           - AniDB Builders: files/builders/anidb.md

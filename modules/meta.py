@@ -64,7 +64,11 @@ def get_dict(attribute, attr_data, check_list=None, make_str=False):
 
 
 class DataFile:
-    def __init__(self, config, file_type, path, temp_vars, asset_directory):
+    def __init__(self, config, file_type, path, temp_vars, asset_directory, data_type):
+        if file_type != "Data":
+            logger.info("")
+            logger.info(f"Loading {data_type} {file_type}: {path}")
+            logger.info("")
         self.config = config
         self.library = None
         self.type = file_type
@@ -589,9 +593,9 @@ class DataFile:
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
+        super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
         self.data_type = "Collection"
         self.library = library
         self.metadata = None
@@ -604,9 +608,6 @@ class MetadataFile(DataFile):
         self.set_collections = {}
         self.style_priority = []
         if self.file_style == "image":
-            logger.info("")
-            logger.separator(f"Loading Image File {file_type}: {path}")
-            logger.info("")
             self.metadata = {}
             if self.type == "PMM Default":
                 if self.path.endswith(".yml"):
@@ -1000,27 +1001,28 @@ class MetadataFile(DataFile):
                             _, event_years = self.config.IMDb.get_event_years(event_id)
                             year_options = [event_years[len(event_years) - i] for i in range(1, len(event_years) + 1)]
 
-                            def get_position(attr, pos_add=0):
+                            def get_position(attr):
                                 if attr not in award_methods:
                                     return 0 if attr == "starting" else len(year_options)
                                 position_value = str(dynamic_data[award_methods[attr]])
                                 if not position_value:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute is blank")
                                 if position_value.startswith(("first", "latest", "current_year")):
-                                    int_values = position_value.split("+" if position_value.startswith("first") else "-")
+                                    is_first = position_value.startswith("first")
+                                    int_values = position_value.split("+" if is_first else "-")
                                     try:
                                         if len(int_values) == 1:
-                                            return 0 if position_value.startswith("first") else len(year_options)
+                                            return 1 if is_first else len(year_options)
                                         else:
-                                            return int(int_values[1].strip()) * (1 if position_value.startswith("first") else -1)
+                                            return (int(int_values[1].strip()) + (1 if is_first else 0)) * (1 if is_first else -1)
                                     except ValueError:
                                         raise Failed(f"Config Error: {map_name} data {attr} attribute modifier invalid '{int_values[1]}'")
                                 elif position_value in year_options:
-                                    return year_options.index(position_value) + pos_add
+                                    return year_options.index(position_value) + 1
                                 else:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute invalid: {position_value}")
 
-                            found_options = year_options[get_position("starting"):get_position("ending")]
+                            found_options = year_options[get_position("starting") - 1:get_position("ending")]
 
                             if not found_options:
                                 raise Failed(f"Config Error: {map_name} data starting/ending range found no valid events")
@@ -1856,7 +1858,8 @@ class MetadataFile(DataFile):
         asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
-        logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
+        if "f1_season" not in methods:
+            logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         update_seasons = self.update_seasons
         if "update_seasons" in methods and self.library.is_show:
@@ -2130,9 +2133,10 @@ class MetadataFile(DataFile):
                     f1_language = str(meta[methods["f1_language"]]).lower()
                 else:
                     logger.error(f"{self.type_str} Error: f1_language must be a language code PMM has a translation for. Options: {ergast.translations}")
-            logger.info(f"Setting {self.type_str} of {item.title} to F1 Season {f1_season}")
+            logger.info(f"Setting {item.title} of {self.type_str} to F1 Season {f1_season}")
             races = self.config.Ergast.get_races(f1_season, f1_language)
             race_lookup = {r.round: r for r in races}
+            logger.trace(race_lookup)
             for season in item.seasons():
                 if not season.seasonNumber:
                     continue
@@ -2170,11 +2174,8 @@ class MetadataFile(DataFile):
 
 class PlaylistFile(DataFile):
     def __init__(self, config, file_type, path, temp_vars, asset_directory):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
+        super().__init__(config, file_type, path, temp_vars, asset_directory, "Playlist File")
         self.data_type = "Playlist"
-        logger.info("")
-        logger.info(f"Loading Playlist {file_type}: {path}")
-        logger.info("")
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
         self.templates = get_dict("templates", data)
@@ -2185,13 +2186,10 @@ class PlaylistFile(DataFile):
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, queue_current):
-        super().__init__(config, file_type, path, temp_vars, asset_directory)
+        self.file_num = len(library.overlay_files)
+        super().__init__(config, file_type, path, temp_vars, asset_directory, f"Overlay File {self.file_num}")
         self.library = library
         self.data_type = "Overlay"
-        self.file_num = len(library.overlay_files)
-        logger.info("")
-        logger.info(f"Loading Overlay {self.file_num} {file_type}: {path}")
-        logger.info("")
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
         self.templates = get_dict("templates", data)

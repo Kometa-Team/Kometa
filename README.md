@@ -46,7 +46,7 @@ Here are some examples of the things you can achieve using Plex Meta Manager!
 
 ![Movie Collection Preview](https://metamanager.wiki/en/latest/images/movie-collection-preview.png)
 
-**Example Show Overlays using the [Plex Meta Manager Defaults](https://metamanager.wiki/en/latest/defaults/collections/overlays)** (click to enlarge):
+**Example Show Overlays using the [Plex Meta Manager Defaults](https://metamanager.wiki/en/latest/defaults/overlays)** (click to enlarge):
 
 ![Show Library Preview](https://metamanager.wiki/en/latest/images/show-library-preview.png)
 

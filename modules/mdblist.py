@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from json import JSONDecodeError
 from modules import util
@@ -27,6 +28,10 @@ class MDbObj:
             self.released = datetime.strptime(data["released"], "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released = None
+        try:
+            self.released_digital = datetime.strptime(data["released_digital"], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            self.released_digital = None
         self.type = data["type"]
         self.imdbid = data["imdbid"]
         self.traktid = util.check_num(data["traktid"])
@@ -63,6 +68,7 @@ class MDbObj:
                 self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
         self.content_rating = data["certification"]
         self.commonsense = data["commonsense"]
+        self.age_rating = data["age_rating"]
 
 
 class Mdblist:
@@ -71,13 +77,18 @@ class Mdblist:
         self.apikey = None
         self.expiration = 60
         self.limit = False
+        self.supporter = False
+        self.rating_id_limit = 10
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
         logger.secret(self.apikey)
         self.expiration = expiration
         try:
-            self._request(imdb_id="tt0080684", ignore_cache=True)
+            response = self._request(f"{api_url}user")
+            self.supporter = response["limits"]["supporter"]
+            self.rating_id_limit = response["limits"]["rating_ids"]
+            self.get_item(imdb_id="tt0080684", ignore_cache=True)
         except LimitReached:
             self.limit = True
         except Failed:
@@ -88,8 +99,27 @@ class Mdblist:
     def has_key(self):
         return self.apikey is not None
 
-    def _request(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):
-        params = {"apikey": self.apikey}
+    def _request(self, url, params=None):
+        logger.trace(url)
+        final_params = {"apikey": self.apikey}
+        if params:
+            logger.trace(f"Params: {params}")
+            for k, v in params.items():
+                final_params[k] = v
+        try:
+            time.sleep(0.2 if self.supporter else 1)
+            response = self.config.get_json(url, params=final_params)
+        except JSONDecodeError:
+            raise Failed("Mdblist Error: JSON Decoding Failed")
+        if "response" in response and (response["response"] is False or response["response"] == "False"):
+            if response["error"] in ["API Limit Reached!", "API Rate Limit Reached!"]:
+                self.limit = True
+                raise LimitReached(f"MdbList Error: {response['error']}")
+            raise Failed(f"MdbList Error: {response['error']}")
+        return response
+
+    def get_item(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):
+        params = {}
         if imdb_id:
             params["i"] = imdb_id
             key = imdb_id
@@ -109,30 +139,19 @@ class Mdblist:
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
         logger.trace(f"ID: {key}")
-        logger.trace(f"Params: {params}")
-        try:
-            response = self.config.get_json(api_url, params=params)
-        except JSONDecodeError:
-            raise Failed("Mdblist Error: JSON Decoding Failed")
-        if "response" in response and response["response"] is False:
-            if response["error"] == "API Limit Reached!":
-                self.limit = True
-                raise LimitReached(f"MdbList Error: {response['error']}")
-            raise Failed(f"MdbList Error: {response['error']}")
-        else:
-            mdb = MDbObj(response)
-            if self.config.Cache and not ignore_cache:
-                self.config.Cache.update_mdb(expired, key, mdb, self.expiration)
-            return mdb
+        mdb = MDbObj(self._request(api_url, params=params))
+        if self.config.Cache and not ignore_cache:
+            self.config.Cache.update_mdb(expired, key, mdb, self.expiration)
+        return mdb
 
     def get_imdb(self, imdb_id):
-        return self._request(imdb_id=imdb_id)
+        return self.get_item(imdb_id=imdb_id)
 
     def get_series(self, tvdb_id):
-        return self._request(tvdb_id=tvdb_id, is_movie=False)
+        return self.get_item(tvdb_id=tvdb_id, is_movie=False)
 
     def get_movie(self, tmdb_id):
-        return self._request(tmdb_id=tmdb_id, is_movie=True)
+        return self.get_item(tmdb_id=tmdb_id, is_movie=True)
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []

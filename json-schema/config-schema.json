@@ -25,6 +25,9 @@
         "notifiarr": {
             "$ref": "#/definitions/notifiarr-api"
         },
+        "gotify": {
+            "$ref": "#/definitions/gotify-api"
+        },
         "anidb": {
             "$ref": "#/definitions/anidb-api"
         },
@@ -50,12 +53,12 @@
     ],
     "definitions": {
         "plex-server": {
-            "description": "Describes the primary Plex server to which PMM can connect. This attribute is REQUIRED.  It can be overridden at the library level.",
+            "description": "Describes the primary Plex server to which PMM can connect.\nThis attribute is REQUIRED.  It can be overridden at the library level.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
-                    "description": "URL at which PMM can connect to your plex server.  NOT app.plex.tv",
+                    "description": "URL at which PMM can connect to your plex server. NOT app.plex.tv",
                     "type": "string",
                     "format": "uri",
                     "pattern": "^(https?)://"
@@ -65,11 +68,12 @@
                     "type": "string"
                 },
                 "timeout": {
-                    "description": "Connection timeout for this Plex server",
-                    "type": "integer"
+                    "description": "Connection timeout in seconds for this Plex server",
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "db_cache": {
-                    "description": "Sets DB Cache value for this Plex server",
+                    "description": "Sets DB Cache value for this Plex server in MB",
                     "oneOf": [
                     { "type": "integer" },
                     { "type": "string", "pattern": "^$" }
@@ -114,10 +118,11 @@
                 },
                 "timeout": {
                     "description": "Connection timeout in seconds for this Plex server",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "db_cache": {
-                    "description": "Sets DB Cache value for this Plex server",
+                    "description": "Sets DB Cache value for this Plex server in MB",
                     "oneOf": [
                     { "type": "integer" },
                     { "type": "string", "pattern": "^$" }
@@ -140,22 +145,46 @@
             "title": "plex"
         },
         "tmdb-api": {
-            "description": "API Key to connect to TMDB; REQUIRED for the script to run",
+            "description": "API Information to connect to TMDB; REQUIRED for the script to run",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "apikey": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "API Key to connect to TMDB; REQUIRED for the script to run"
                 },
                 "language": {
-                    "type": "string"
+                    "type": ["string", "null"],
+                    "enum": [
+                        "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
+                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
+                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
+                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
+                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
+                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
+                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
+                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
+                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
+                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
+                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
+                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
+                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
+                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
+                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
+                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
+                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                    ],
+                    "description": "This field can be either null or a valid ISO 639 language code."
                 },
                 "region": {
                     "type": "string",
-                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"]
+                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"],
+                    "description": "This field can be either null or a valid ISO 3166-1 Code."
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0 in days"
                 }
             },
             "required": [
@@ -217,7 +246,9 @@
                     "type": "string"
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0 in days"
                 }
             },
             "required": [
@@ -234,7 +265,9 @@
                     "type": "string"
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0 in days"
                 }
             },
             "required": [
@@ -256,6 +289,24 @@
             ],
             "title": "notifiarr"
         },
+        "gotify-api": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "url",
+                "token"
+                
+            ],
+            "title": "gotify"
+        },
         "anidb-api": {
             "type": "object",
             "additionalProperties": false,
@@ -264,13 +315,36 @@
                     "type": "string"
                 },
                 "version": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "language": {
-                    "type": "string"
+                    "type": ["string", "null"],
+                    "enum": [
+                        "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
+                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
+                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
+                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
+                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
+                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
+                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
+                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
+                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
+                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
+                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
+                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
+                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
+                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
+                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
+                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
+                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                    ],
+                    "description": "This field can be either null or a valid ISO 639 language code."
                 },
                 "cache_expiration": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "An integer greater than 0 in days"
                 },
                 "username": {
                     "type": "string"
@@ -324,6 +398,10 @@
                 "monitor": {
                     "type": "string",
                     "enum": ["all","future","missing","existing","pilot","first","latest","none"]
+                },
+                "monitor_existing": {
+                    "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
+                    "type": "boolean"
                 },
                 "quality_profile": {
                     "type": "string"
@@ -396,6 +474,10 @@
                     "type": "string",
                     "enum": ["all","future","missing","existing","pilot","first","latest","none"]
                 },
+                "monitor_existing": {
+                    "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
+                    "type": "boolean"
+                },
                 "quality_profile": {
                     "type": "string"
                 },
@@ -453,6 +535,9 @@
                     "type": "string"
                 },
                 "monitor": {
+                    "type": "boolean"
+                },
+                "monitor_existing": {
                     "type": "boolean"
                 },
                 "quality_profile": {
@@ -516,6 +601,9 @@
                 "monitor": {
                     "type": "boolean"
                 },
+                "monitor_existing": {
+                    "type": "boolean"
+                },
                 "quality_profile": {
                     "type": "string"
                 },
@@ -544,124 +632,271 @@
             "additionalProperties": false,
             "properties": {
                 "cache": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Used to control PMM's cache database.\nAllow Plex Meta Manager to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
                 },
                 "cache_expiration": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "description": "Used to control how long data is cached for.\nSet the number of days before each cache mapping expires and has to be re-cached. An integer greater than 0 in days"
                 },
                 "run_order": {
+                    "description": "Used to specify the run order of the library components.\nSpecify the run order of the library components [Library Operations, Collection Files and Overlay Files]",
                     "type": "array", "uniqueItems": true, "items": {"enum": ["operations", "metadata", "collections", "overlays"]}
                 },
                 "asset_directory": {
+                    "description": "Used to define where local assets are located.\nSpecify the directories where assets (posters, backgrounds, etc) are located.",
                     "oneOf": [
                         { "type": "string"},
                         { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
                     ]
                 },
                 "asset_folders": {
+                    "description": "Used to control the asset directory folder structure.\nWhile true, PMM will search the asset_directory for a dedicated folder per item vs while false will look for an image.",
                     "type": "boolean"
                 },
                 "asset_depth": {
+                    "description": "Used to control the depth of search in the asset directory.\nAt each asset level, PMM will look for either medianame.ext [such as Star Wars.png] or a dedicated folder containing poster.ext. i.e. <path_to_assets>/Star Wars/poster.png and <path_to_assets>/Star Wars.png are both asset depth 0, whilst <path_to_assets>/Movies/Star Wars/poster.png and <path_to_assets>/Movies/Star Wars.png are both asset level 1.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "create_asset_folders": {
+                    "description": "Used to automatically create asset folders when none exist.\nWhilst searching for assets, if an asset folder cannot be found within the asset_directory one will be created. Asset Searches can happen in a number of ways.",
                     "type": "boolean"
                 },
                 "prioritize_assets": {
+                    "description": "Used to prioritize asset_directory images over all other images types.\nWhen determining which image to use on an item prioritize the asset_directory over all other images types.",
                     "type": "boolean"
                 },
                 "dimensional_asset_rename": {
+                    "description": "Used to automatically rename asset files based on their dimensions.\nWhilst searching for assets, scan the folders within the asset_directory and if an asset poster (i.e. /ASSET_NAME/poster.ext) was not found, rename the first image found that has a height greater than or equal to its width to poster.ext. If an asset background (i.e. /ASSET_NAME/background.ext), rename the first image found that has a width greater than its height to background.ext.",
                     "type": "boolean"
                 },
                 "download_url_assets": {
+                    "description": "Used to download url images into the asset directory.\nWhilst searching for assets, download images set within Collection/Metadata/Playlist files( i.e. images set by url_poster or url_background) into the asset folder if none are already present.",
                     "type": "boolean"
                 },
                 "show_missing_season_assets": {
+                    "description": " Used to show any missing season assets.\nWhilst searching for assets, when scanning for assets for a TV Show, if Season posters are found (i.e. /ASSET_NAME/Season##.ext), notify the user of any seasons which do not have an asset image.",
                     "type": "boolean"
                 },
                 "show_missing_episode_assets": {
+                    "description": "Used to show any missing episode assets.\nWhilst searching for assets, when scanning for assets for a TV Show, if an Episode Title Card is found (i.e. /ASSET_NAME/S##E##.ext), notify the user of any episodes which do not have an asset image.",
                     "type": "boolean"
                 },
                 "show_asset_not_needed": {
+                    "description": "Used to show/hide the update not needed messages.\nWhilst searching for assets, show or hide the update not needed messages.",
                     "type": "boolean"
                 },
                 "sync_mode": {
+                    "description": "Used to set the sync_mode for collections and playlists.\nSets the sync_mode for collections and playlists. Setting the sync_mode directly in a collection or playlist definition will override the sync_mode for that definition.",
                     "enum": ["sync", "append"]
                 },
                 "minimum_items": {
+                    "description": "Used to control minimum items requires to build a collection/playlist.\nSet the minimum number of items that must be found in order to build or update a collection/playlist.",
                     "type": "integer",
                     "minimum": 1
                 },
                 "default_collection_order": {
-                    "type": "string"
+                    "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by PMM unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
+                    "type": ["string", "null"],
+                    "enum": [
+                        "added.asc", "added.desc", "alpha", "audience_rating.asc",
+                        "audience_rating.desc", "bitrate.asc", "bitrate.desc",
+                        "content_rating.asc", "content_rating.desc", "critic_rating.asc",
+                        "critic_rating.desc", "custom", "duration.asc", "duration.desc",
+                        "originally_available.asc", "originally_available.desc",
+                        "plays.asc", "plays.desc", "progress.asc", "progress.desc",
+                        "random", "release", "release.asc", "release.desc",
+                        "resolution.asc", "resolution.desc", "title.asc", "title.desc",
+                        "user_rating.asc", "user_rating.desc", "viewed.asc", "viewed.desc",
+                        "year.asc", "year.desc", null
+                    ]
                 },
                 "delete_below_minimum": {
+                    "description": "Used to delete collections below minimum_items.\nWhen a collection is run, delete the collection if it is below the minimum number specified by minimum_items.",
                     "type": "boolean"
                 },
                 "delete_not_scheduled": {
+                    "description": "Used to delete collections not scheduled.\nIf a collection is skipped due to it not being scheduled, delete the collection.",
                     "type": "boolean"
                 },
                 "run_again_delay": {
+                    "description": "Used to control the number of minutes to delay running run_again collections.\nSet the number of minutes to delay running run_again collections after daily run is finished. For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run 'X' amount of time later so that any downloaded items are processed.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "missing_only_released": {
+                    "description": "Used to filter unreleased items from missing lists.\nWhilst running a collection or playlist, when PMM handles missing items to either report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.",
                     "type": "boolean"
                 },
                 "only_filter_missing": {
+                    "description": "Used to have the filter only apply to missing items.\nOnly items missing from a collection will be filtered. Only specific filters can filter missing. See Filters for more information.",
                     "type": "boolean"
                 },
                 "show_unmanaged": {
+                    "description": "Used to show collections not managed by PMM.\nList all collections not managed by Plex Meta Manager at the end of each run.",
                     "type": "boolean"
                 },
                 "show_unconfigured": {
+                    "description": "Used to show collections not in the current run.\nList all collections not configured in the current Plex Meta Manager run at the end of each run.",
                     "type": "boolean"
                 },
                 "show_filtered": {
+                    "description": "Used to show filtered items.\nList all items which have been filtered out of a collection or playlist (i.e. if it doesn't meet the filter criteria)",
                     "type": "boolean"
                 },
                 "show_options": {
+                    "description": "Used to show attribute options from plex.\nWhile show_options is true the available options for an attribute when using plex_search, smart_filter or filters will be shown. i.e. a smart_filter on the genre attribute will return all of the attributes within the specified library.",
                     "type": "boolean"
                 },
                 "show_missing": {
+                    "description": "Used to show missing items from collections or playlists.\nWhile show_missing is true items missing from collections or playlists will be displayed.",
                     "type": "boolean"
                 },
                 "show_missing_assets": {
+                    "description": "Used to print a message when assets are missing.\nDisplay missing asset warnings for items, collections, and playlists.",
                     "type": "boolean"
                 },
                 "save_report": {
+                    "description": "Used to save a report YAML file.\nSave a report of the items added, removed, filtered, or missing from collections to a YAML file in the same directory as the file run.",
                     "type": "boolean"
                 },
                 "tvdb_language": {
-                    "type": "string"
+                    "type": ["string", "null"],
+                    "enum": [
+                        "aar", "abk", "afr", "aka", "alb", "amh", "ara", "arg", "arm", "asm",
+                        "ava", "ave", "aym", "aze", "bak", "bam", "bel", "ben", "bih", "bis",
+                        "bod", "bos", "bre", "bul", "cat", "cha", "che", "chi", "chu", "chv",
+                        "cor", "cos", "cre", "ces", "dan", "deu", "div", "dzo", "ell", "eng",
+                        "epo", "est", "eus", "ewe", "fao", "fas", "fij", "fin", "fra", "fry",
+                        "ful", "gla", "gle", "glg", "glv", "grn", "guj", "hat", "hau", "heb",
+                        "her", "hin", "hmo", "hrv", "hun", "hye", "ibo", "ido", "iii", "iku",
+                        "ile", "ina", "ind", "ipk", "isl", "ita", "jav", "jpn", "kal", "kan",
+                        "kas", "kat", "kau", "kaz", "khm", "kik", "kin", "kir", "kom", "kon",
+                        "kor", "kua", "kur", "lao", "lat", "lav", "lim", "lin", "lit", "ltz",
+                        "lub", "lug", "mah", "mal", "mar", "mkd", "mlg", "mlt", "mon", "mri",
+                        "msa", "mya", "nau", "nav", "nbl", "nde", "ndo", "nep", "nld", "nno",
+                        "nob", "nor", "nya", "oci", "oji", "ori", "orm", "oss", "pan", "pli",
+                        "pol", "por", "pus", "que", "roh", "ron", "run", "rus", "sag", "san",
+                        "sin", "slk", "slv", "sme", "smo", "sna", "snd", "som", "sot", "spa",
+                        "srd", "srp", "ssw", "sun", "swa", "swe", "tah", "tam", "tat", "tel",
+                        "tgk", "tgl", "tha", "tir", "ton", "tsn", "tso", "tuk", "tur", "twi",
+                        "uig", "ukr", "urd", "uzb", "ven", "vie", "vol", "wln", "wol", "xho",
+                        "yid", "yor", "zha", "zho", "zul"
+                    ],
+                    "description": "Specify the language to query TVDb in.\nThis field can be either null or a valid ISO 639-2 language code."
                 },
                 "ignore_ids": {
-                    "type": "null"
+                    "description": "List of TMDb/TVDb IDs to ignore.\nSet a null, a single TMDb/TVDb ID, or a comma-separated string of TMDb/TVDb IDs to ignore in all collections.",
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 1
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^(\\d+)(,(\\d+))*$"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
                 },
                 "ignore_imdb_ids": {
-                    "type": "null"
+                    "description": "List of IMDb IDs to ignore.\nSet a null, a single IMDb ID, or a comma-separated string of IMDb IDs to ignore in all collections.",
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^(tt\\d{7})(,(tt\\d{7}))*$"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^tt\\d{7}$"
+                            },
+                            "minItems": 1
+                        }
+                    ]
                 },
                 "item_refresh_delay": {
-                    "type": "integer"
+                    "description": "Time to wait between each item_refresh.\nSpecify the amount of time to wait between each item_refresh of every movie/show in a collection/playlist.",
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "playlist_sync_to_users": {
-                    "type": [ "string", "null" ]
+                    "description": "Set the default playlist sync_to_users.\nTo Sync a playlist to only yourself, leave playlist_sync_to_users blank/null. Therefore, leaving it blank, 'all', a list of users, or a comma-separated string of users is accepted",
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "enum": ["all"]
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^([^,]+)(,[^,]+)*$"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
                 },
                 "playlist_exclude_users": {
-                    "type": "null"
+                    "description": "Set the default playlist exclude_users.\nProvide a null value, a list of users, or a comma-separated string of users to be excluded in the playlist.",
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^([^,]+)(,[^,]+)*$"
+                        }
+                    ]
                 },
                 "playlist_report": {
+                    "description": "Used to print out a playlist report.\nSet playlist_report to true to print out a playlist report at the end of the log.",
                     "type": "boolean"
                 },
                 "verify_ssl": {
+                    "description": "Turn SSL Verification on or off.",
                     "type": "boolean"
                 },
                 "custom_repo": {
-                    "type": "null"
+                    "description": "Used to set up the custom repo file block type.\nSpecify where the repo attribute's base is when defining collection_files, metadata_files, playlist_file, and overlay_files.",
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
                 },
                 "check_nightly": {
+                    "description": "Will check nightly for updates instead of develop.",
                     "type": "boolean"
                 }
             },
@@ -712,7 +947,7 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","cannes","choice","collectionless","content_rating_cs","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","oscars","other_award","other_chart","producer","region","resolution","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tmdb","trakt","universe","writer","year"]
+                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
                 },
                 "schedule": {
                     "type": "string"
@@ -905,31 +1140,39 @@
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|anidb|radarr|sonarr|trakt|mal).+$": { 
+                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|anidb|radarr|sonarr|trakt|mal).+$": { 
                     "additionalProperties": false,
                     "properties": {
                         "metadata_files": {
+                            "description": "The metadata_files attribute is used to define Metadata Files by specifying the path of the files that will be executed against the parent library.",
                             "$ref": "#/definitions/metadata-files"
                         },
                         "collection_files": {
+                            "description": "The collection_files attribute is used to define Collection Files by specifying the path type and path of the files that will be executed against the parent library.",
                             "$ref": "#/definitions/collection-files"
                         },
                         "overlay_files": {
+                            "description": "The overlay_files attribute is used to define Overlay Files by specifying the path type and path of the files that will be executed against the parent library.",
                             "$ref": "#/definitions/overlay-files"
                         },
                         "metadata_path": {
+                            "description": "DEPRECATED! Use: metadata_files.\nThe metadata_path attribute is used to define Metadata Files by specifying the path of the files that will be executed against the parent library.",
                             "$ref": "#/definitions/metadata-path"
                         },
                         "overlay_path": {
+                            "description": "DEPRECATED! Use: overlay_files.\nThe overlay_path attribute is used to define Overlay Files by specifying the path type and path of the files that will be executed against the parent library.",
                             "$ref": "#/definitions/overlay-path"
                         },
                         "operations": {
+                            "description": "Used to specify Library Operations to run.",
                             "$ref": "#/definitions/operations"
                         },
                         "library_name": {
+                            "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
                             "type": "string"
                         },
                         "report_path": {
+                            "description": "Location to save the YAML Report file for a library.\nThe report_path attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Collection, Metadata, Overlay or Playlist file. If your Collection file creates a collection with Movie 1, Movie 2 and Movie 3 but your Plex library only has Movie 1 and Movie 3, then the missing YAML file will be updated to inform the user that Movie 2 was missing from the library.",
                             "type": "string"
                         },
                         "settings": {
@@ -951,15 +1194,19 @@
                             "$ref": "#/definitions/template-variables-library"
                         },
                         "schedule": {
+                            "description": "Used to schedule when a library is run using the schedule options.",
                             "type": "string"
                         },
                         "remove_overlays": {
+                            "description": "Used to remove overlays from this library only. \nWhen set to true, this will remove all overlays from your library every run, but will not delete the overlaid images from your system, resulting in image bloat.",
                             "type": "boolean"
                         },
                         "reapply_overlays": {
+                            "description": "Used to reapply overlays from this library only. This will reapply overlays to every item in your library.\nWhen set to true, this will reapply all overlays on each run even if there is no need to do so, which will result in image bloat.",
                             "type": "boolean"
                         },
                         "reset_overlays": {
+                            "description": "Used to reset overlays from this library only. This will reset overlays to every item in your library to your source choice. This will use the reset image when overlaying items in your library.\nThis will reset all posters to the desired source on each run and will reapply all overlays on each run, which will result in image bloat.",
                             "type": "string",
                             "enum": ["tmdb","plex"]
                         },
@@ -1236,18 +1483,22 @@
             "type": "object",
             "properties": {
             "sep_style": {
+                "description": "Multiple styles are available for Separators, to match Plex's 'categories' feature.",
                 "type": "string",
                 "enum": ["amethyst", "aqua", "blue", "forest", "fuchsia", "gold", "gray", "green", "navy", "ocean", "olive", "orchid", "orig", "pink", "plum", "purple", "red", "rust", "salmon", "sand", "stb", "tan"]
             },
             "collection_mode": {
+                "description": "Controls the collection mode of all collections in a Defaults file.",
                 "type": "string",
                 "enum": ["default", "hide", "hide_items", "show_items"]
             },
             "language": {
+                "description": "Set the language of Collection Names and Summaries that PMM has been translated to with weblate",
                 "type": "string",
                 "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv"]
             },
             "placeholder_imdb_id": {
+                "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
                 "type": "string",
                 "pattern": "^tt\\d{7}$"
             }
@@ -1258,31 +1509,31 @@
         "template-variables-collections": {
             "type": "object",
             "properties": {
-            "data": {
-                "type": "object",
-                "properties": {
-                "starting": {
-                    "oneOf": [
-                    { "type": "integer", "minimum": 0 },
-                    { "type": "string", "pattern": "^current_year(-\\d+)?$" }
-                    ]
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "starting": {
+                            "oneOf": [
+                                { "type": "integer", "minimum": 0 },
+                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
+                            ]
+                        },
+                        "ending": {
+                            "oneOf": [
+                                { "type": "integer", "minimum": 1 },
+                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
+                            ]
+                        },
+                        "increment": { "type": "integer", "minimum": 0 },
+                        "depth": { "type": "integer", "minimum": 1 },
+                        "limit": { "type": "integer", "minimum": 1 }
+                    },
+                    "additionalProperties": false
                 },
-                "ending": {
-                    "oneOf": [
-                    { "type": "integer", "minimum": 1 },
-                    { "type": "string", "pattern": "^current_year(-\\d+)?$" }
-                    ]
-                },
-                "increment": { "type": "integer", "minimum": 0 },
-                "depth": { "type": "integer", "minimum": 1 },
-                "limit": { "type": "integer", "minimum": 1 }
-                },
-                "additionalProperties": false
-            },
-            "style": {
-                "type": "string",
-                "enum": ["color", "white", "bw", "diiivoy", "diiivoycolor", "rainier", "signature", "orig", "transparent", "default", "standards"]
-            }
+                "style": {
+                    "type": "string",
+                    "enum": ["color", "white", "bw", "diiivoy", "diiivoycolor", "rainier", "signature", "orig", "transparent", "default", "standards"]
+                }
             },
             "required": [],
             "dependentRequired": {},
@@ -1304,6 +1555,7 @@
                 "back_width": { "type": "integer", "exclusiveMinimum": 0 },
                 "builder_level": { "type": "string", "enum": ["show","season","episode"] },
                 "file": { "type": "string" },
+                "final_name": { "type": "string" },
                 "flag_alignment": { "type": "string", "enum": ["left","right"] },
                 "font_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "font_size": { "type": "integer", "exclusiveMinimum": 0 },
@@ -1320,17 +1572,18 @@
                 "location": { "type": "string", "enum": ["world","albania","argentina","armenia","australia","austria","azerbaijan","bahamas","bahrain","bangladesh","belarus","belgium","belize","benin","bolivia","bosnia_and_herzegovina","botswana","brazil","bulgaria","burkina_faso","cambodia","canada","chile","colombia","costa_rica","croatia","cyprus","czech_republic","denmark","dominican_republic","ecuador","egypt","estonia","finland","france","gabon","germany","ghana","greece","guatemala","guinea_bissau","haiti","honduras","hong_kong","hungary","iceland","india","indonesia","ireland","israel","italy","ivory_coast","jamaica","japan","jordan","kazakhstan","kenya","kuwait","kyrgyzstan","laos","latvia","lebanon","lithuania","luxembourg","malaysia","maldives","mali","malta","mexico","moldova","mongolia","montenegro","morocco","mozambique","namibia","netherlands","new_zealand","nicaragua","niger","nigeria","north_macedonia","norway","oman","pakistan","panama","papua_new_guinea","paraguay","peru","philippines","poland","portugal","qatar","romania","russia","rwanda","salvador","saudi_arabia","senegal","serbia","singapore","slovakia","slovenia","south_africa","south_korea","spain","sri_lanka","sweden","switzerland","taiwan","tajikistan","tanzania","thailand","togo","trinidad_and_tobago","turkey","turkmenistan","uganda","ukraine","united_arab_emirates","united_kingdom","united_states","uruguay","uzbekistan","venezuela","vietnam","zambia","zimbabwe"] },
                 "minimum": { "type": "integer"},
                 "offset": { "type": "integer", "minimum": 0 },
-                "overlay_limit": { "type": "integer", "minimum": 1, "maximum": 5 },
+                "originals_only": { "description": "Changes Streaming Service overlays to only apply to original content produced by the service.\nNote: Cannot be used with region, and only produces overlays for amazon, appletv, disney, max, hulu, netflix, paramount, peacock", "type": "boolean" },
+                "overlay_limit": { "description": "Choose the number of overlay this queue displays.\nDefault: 3\nValues: 1, 2, 3, 4, or 5", "type": "integer", "minimum": 1, "maximum": 5 },
                 "position": { "type": "string", "enum": ["left","right"] },
-                "post_nr_text": { "type": "string" },
-                "post_text": { "type": "string" },
-                "pre_nr_text": { "type": "string" },
-                "pre_text": { "type": "string" },
+                "post_nr_text": { "description": "Choose the text after the 'nr' key for the Overlay.\nValues: Any String", "type": "string" },
+                "post_text": { "description": "Choose the text after the key for the Overlay.\nDefault: +\nValues: Any String", "type": "string" },
+                "pre_nr_text": { "description": "Choose the text before the 'nr' key for the Overlay.\nValues: Any String","type": "string" },
+                "pre_text": { "description": "Choose the text before the key for the Overlay.\nValues: Any String", "type": "string" },
                 "rating_alignment": { "type": "string", "enum": ["vertical", "horizontal"] },
                 "rating1": { "type": "string", "enum": ["critic", "audience", "user"] },
                 "rating1_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
                 "rating1_font": { "type": "string" },
-                "rating1_font_size": { "type": "integer", "minimum": 1 },        
+                "rating1_font_size": { "type": "integer", "minimum": 1 },
                 "rating2": { "type": "string", "enum": ["critic", "audience", "user"] },
                 "rating2_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
                 "rating2_font": { "type": "string" },
@@ -1346,7 +1599,7 @@
                 "repo": { "type": "string" },
                 "stroke_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "stroke_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray"] },
+                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray", "color", "white"] },
                 "text": { "type": "string" },
                 "time_window": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
                 "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
@@ -1360,6 +1613,7 @@
             },
             "patternProperties": {
                 "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^country_.*$": { "type": "string", "pattern": "^[A-Z]{2}$" },
                 "^file_.*$": { "type": "string" },
                 "^git_.*$": { "type": "string" },

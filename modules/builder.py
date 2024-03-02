@@ -1,7 +1,8 @@
 import os, re, time
 from arrapi import ArrException
-from datetime import datetime
-from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, mojo, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import PMMImage
@@ -16,7 +17,7 @@ logger = util.logger
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
-               letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
+               letterboxd.builders + mal.builders + mojo.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders + radarr.builders + sonarr.builders
 show_only_builders = [
     "tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "tmdb_airing_today",
@@ -25,7 +26,8 @@ show_only_builders = [
 movie_only_builders = [
     "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing", "item_edition",
-    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist"
+    "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist",
+    "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
 ]
 music_only_builders = ["item_album_sorting"]
 summary_details = [
@@ -57,12 +59,13 @@ item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_tit
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
+none_builders = ["radarr_tag_list", "sonarr_taglist"]
 radarr_details = [
-    "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
-    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache"
+    "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
+    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
 ]
 sonarr_details = [
-    "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
+    "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
     "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag", "sonarr_ignore_cache"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
@@ -153,7 +156,8 @@ custom_sort_builders = [
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list", "flixpatrol_top",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio",
+    "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
@@ -526,7 +530,7 @@ class CollectionBuilder:
                 self.exclude_users = config.general["playlist_exclude_users"]
                 logger.warning(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
-            plex_users = self.library.users
+            plex_users = self.library.users + [self.library.account.username]
 
             self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
             for user in self.exclude_users:
@@ -549,10 +553,14 @@ class CollectionBuilder:
                 logger.debug("Validating Method: delete_playlist")
                 logger.debug(f"Value: {data[methods['delete_playlist']]}")
                 if util.parse(self.Type, "delete_playlist", self.data, datatype="bool", methods=methods, default=False):
-                    try:
-                        self.obj = self.library.get_playlist(self.name)
-                    except Failed as e:
-                        logger.error(e)
+                    for getter in [self.library.get_playlist, self.library.get_playlist_from_users]:
+                        try:
+                            self.obj = getter(self.name)
+                            break
+                        except Failed as e:
+                            error = e
+                    else:
+                        logger.error(error)
                     raise Deleted(self.delete())
         else:
             self.libraries.append(self.library)
@@ -963,7 +971,7 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                if method_data is None and method_name in all_builders + plex.searches:
+                if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
                     raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
                 elif method_data is None and method_final not in none_details:
                     logger.warning(f"Collection Warning: {method_final} attribute is blank")
@@ -1037,6 +1045,8 @@ class CollectionBuilder:
                     self._imdb(method_name, method_data)
                 elif method_name in mal.builders:
                     self._mal(method_name, method_data)
+                elif method_name in mojo.builders:
+                    self._mojo(method_name, method_data)
                 elif method_name in plex.builders or method_final in plex.searches:
                     self._plex(method_name, method_data)
                 elif method_name in reciperr.builders:
@@ -1326,7 +1336,7 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower() # noqa
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
@@ -1345,7 +1355,7 @@ class CollectionBuilder:
             self.builders.append((method_name, True))
 
     def _sonarr(self, method_name, method_data):
-        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
+        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
             self.sonarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
             self.sonarr_details[method_name[7:]] = method_data
@@ -1800,6 +1810,127 @@ class CollectionBuilder:
             final_text = f"MyAnimeList Search\n{method_name[4:].capitalize()}: {' or '.join([str(all_items[i]) for i in final_items])}"
             self.builders.append(("mal_search", ({"genres" if method_name == "mal_genre" else "producers": ",".join(final_items)}, final_text, 0)))
 
+    def _mojo(self, method_name, method_data):
+        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            dict_methods = {dm.lower(): dm for dm in dict_data}
+            final = {}
+            if method_name == "mojo_record":
+                final["chart"] = util.parse(self.Type, "chart", dict_data, methods=dict_methods, parent=method_name, options=mojo.top_options)
+            elif method_name == "mojo_world":
+                if "year" not in dict_methods:
+                    raise Failed(f"{self.Type} Error: {method_name} year attribute not found")
+                og_year = dict_data[dict_methods["year"]]
+                if not og_year:
+                    raise Failed(f"{self.Type} Error: {method_name} year attribute is blank")
+                if og_year == "current":
+                    final["year"] = str(self.current_year) # noqa
+                elif str(og_year).startswith("current-"):
+                    try:
+                        final["year"] = str(self.current_year - int(og_year.split("-")[1])) # noqa
+                        if final["year"] not in mojo.year_options:
+                            raise Failed(f"{self.Type} Error: {method_name} year attribute final value must be 1977 or greater: {og_year}")
+                    except ValueError:
+                        raise Failed(f"{self.Type} Error: {method_name} year attribute invalid: {og_year}")
+                else:
+                    final["year"] = util.parse(self.Type, "year", dict_data, methods=dict_methods, parent=method_name, options=mojo.year_options)
+            elif method_name == "mojo_all_time":
+                final["chart"] = util.parse(self.Type, "chart", dict_data, methods=dict_methods, parent=method_name, options=mojo.chart_options)
+                final["content_rating_filter"] = util.parse(self.Type, "content_rating_filter", dict_data, methods=dict_methods, parent=method_name, options=mojo.content_rating_options) if "content_rating_filter" in dict_methods else None
+            elif method_name == "mojo_never":
+                final["chart"] = util.parse(self.Type, "chart", dict_data, methods=dict_methods, parent=method_name, default="domestic", options=self.config.BoxOfficeMojo.never_options)
+                final["never"] = str(util.parse(self.Type, "never", dict_data, methods=dict_methods, parent=method_name, default="1", options=mojo.never_in_options)) if "never" in dict_methods else "1"
+            elif method_name in ["mojo_domestic", "mojo_international"]:
+                dome = method_name == "mojo_domestic"
+                final["range"] = util.parse(self.Type, "range", dict_data, methods=dict_methods, parent=method_name, options=mojo.dome_range_options if dome else mojo.intl_range_options)
+                if not dome:
+                    final["chart"] = util.parse(self.Type, "chart", dict_data, methods=dict_methods, parent=method_name, default="international", options=self.config.BoxOfficeMojo.intl_options)
+                chart_date = self.current_time
+                if final["range"] != "daily":
+                    _m = "range_data" if final["range"] == "yearly" and "year" not in dict_methods and "range_data" in dict_methods else "year"
+                    if _m not in dict_methods:
+                        raise Failed(f"{self.Type} Error: {method_name} {_m} attribute not found")
+                    og_year = dict_data[dict_methods[_m]]
+                    if not og_year:
+                        raise Failed(f"{self.Type} Error: {method_name} {_m} attribute is blank")
+                    if str(og_year).startswith("current-"):
+                        try:
+                            chart_date = self.current_time - relativedelta(years=int(og_year.split("-")[1]))
+                        except ValueError:
+                            raise Failed(f"{self.Type} Error: {method_name} {_m} attribute invalid: {og_year}")
+                    else:
+                        _y = util.parse(self.Type, _m, dict_data, methods=dict_methods, parent=method_name, default="current", options=mojo.year_options)
+                        if _y != "current":
+                            chart_date = self.current_time - relativedelta(years=self.current_time.year - _y)
+                if final["range"] != "yearly":
+                    if "range_data" not in dict_methods:
+                        raise Failed(f"{self.Type} Error: {method_name} range_data attribute not found")
+                    og_data = dict_data[dict_methods["range_data"]]
+                    if not og_data:
+                        raise Failed(f"{self.Type} Error: {method_name} range_data attribute is blank")
+
+                    if final["range"] == "holiday":
+                        final["range_data"] = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, options=mojo.holiday_options)
+                    elif final["range"] == "daily":
+                        if og_data == "current":
+                            final["range_data"] = datetime.strftime(self.current_time, "%Y-%m-%d") # noqa
+                        elif str(og_data).startswith("current-"):
+                            try:
+                                final["range_data"] = datetime.strftime(self.current_time - timedelta(days=int(og_data.split("-")[1])), "%Y-%m-%d") # noqa
+                            except ValueError:
+                                raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
+                        else:
+                            final["range_data"] = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", datatype="date", date_return="%Y-%m-%d")
+                            if final["range_data"] == "current":
+                                final["range_data"] = datetime.strftime(self.current_time, "%Y-%m-%d") # noqa
+                    elif final["range"] in ["weekend", "weekly"]:
+                        if str(og_data).startswith("current-"):
+                            try:
+                                final_date = chart_date - timedelta(weeks=int(og_data.split("-")[1]))
+                                final_iso = final_date.isocalendar()
+                                final["range_data"] = final_iso.week
+                                final["year"] = final_iso.year
+                            except ValueError:
+                                raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
+                        else:
+                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + [str(i) for i in range(1, 54)])
+                            current_iso = chart_date.isocalendar()
+                            final["range_data"] = current_iso.week if _v == "current" else _v
+                            final["year"] = current_iso.year
+                    elif final["range"] == "monthly":
+                        if str(og_data).startswith("current-"):
+                            try:
+                                final_date = chart_date - relativedelta(months=int(og_data.split("-")[1]))
+                                final["range_data"] = final_date.month
+                                final["year"] = final_date.year
+                            except ValueError:
+                                raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
+                        else:
+                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + util.lower_months)
+                            final["range_data"] = chart_date.month if _v == "current" else util.lower_months[_v]
+                    elif final["range"] == "quarterly":
+                        if str(og_data).startswith("current-"):
+                            try:
+                                final_date = chart_date - relativedelta(months=int(og_data.split("-")[1]) * 3)
+                                final["range_data"] = mojo.quarters[final_date.month]
+                                final["year"] = final_date.year
+                            except ValueError:
+                                raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
+                        else:
+                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=mojo.quarter_options)
+                            final["range_data"] = mojo.quarters[chart_date.month] if _v == "current" else _v
+                    elif final["range"] == "season":
+                        _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=mojo.season_options)
+                        final["range_data"] = mojo.seasons[chart_date.month] if _v == "current" else _v
+                else:
+                    final["range_data"] = chart_date.year
+                if "year" not in final:
+                    final["year"] = chart_date.year
+                if final["year"] < 1977:
+                    raise Failed(f"{self.Type} Error: {method_name} attribute final date value must be on year 1977 or greater: {final['year']}")
+
+            final["limit"] = util.parse(self.Type, "limit", dict_data, methods=dict_methods, parent=method_name, default=0, datatype="int", maximum=1000) if "limit" in dict_methods else 0
+            self.builders.append((method_name, final))
+
     def _plex(self, method_name, method_data):
         if method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.builder_level))
@@ -1983,7 +2114,7 @@ class CollectionBuilder:
             elif method_name in ["trakt_watchlist", "trakt_collection"]:
                 trakt_dicts = []
                 for trakt_user in util.get_list(method_data, split=False):
-                    trakt_dicts.append({"userlist": "watchlist" if "trakt_watchlist" else "collected", "user": trakt_user})
+                    trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
                 final_method = "trakt_userlist"
             else:
                 terms = method_name.split("_")
@@ -1995,7 +2126,7 @@ class CollectionBuilder:
                 final_method = "trakt_chart"
             if method_name != final_method:
                 logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
-            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts,  self.library.is_movie):
+            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
                 self.builders.append((final_method, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
@@ -2088,6 +2219,8 @@ class CollectionBuilder:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "reciperr" in method or "stevenlu" in method:
             ids = self.config.Reciperr.get_imdb_ids(method, value)
+        elif "mojo" in method:
+            ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "mdblist" in method:
             ids = self.config.Mdblist.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
@@ -3171,7 +3304,7 @@ class CollectionBuilder:
             if summary[1]:
                 if str(summary[1]) != str(self.obj.summary):
                     try:
-                        self.obj.edit(summary=str(summary[1]))
+                        self.obj.editSummary(str(summary[1]))
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
@@ -3397,7 +3530,6 @@ class CollectionBuilder:
         title = self.obj.title if self.obj else self.name
         if self.playlist:
             output = f"Deleting {self.Type} {title}"
-            output += f"\n{self.Type} {'deleted' if self.obj else 'not found'} on {self.library.account.username}"
         elif self.obj:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
@@ -3405,16 +3537,20 @@ class CollectionBuilder:
                     self.library.edit_tags("label", item, remove_tags=self.name)
         else:
             output = ""
-        if self.obj:
-            self.library.delete(self.obj)
 
-        if self.playlist and self.valid_users:
+        if self.playlist:
             for user in self.valid_users:
                 try:
-                    self.library.delete_user_playlist(title, user)
+                    if user == self.library.account.username:
+                        _ = self.library.get_playlist(title)  # Verify if this playlist exists in Admin to avoid log confusion
+                        self.library.delete(self.obj)
+                    else:
+                        self.library.delete_user_playlist(title, user)
                     output += f"\nPlaylist deleted on User {user}"
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
+        elif self.obj:
+            self.library.delete(self.obj)
         return output
 
     def sync_playlist(self):
@@ -3427,8 +3563,20 @@ class CollectionBuilder:
                     self.library.delete_user_playlist(self.obj.title, user)
                 except Failed:
                     pass
-                self.obj.copyToUser(user)
-                logger.info(f"Playlist: {self.name} synced to {user}")
+                if user != self.library.account.username:
+                    self.obj.copyToUser(user).editSummary(summary=self.obj.summary).reload()
+                    logger.info(f"Playlist: {self.name} synced to {user}")
+
+    def exclude_admin_from_playlist(self):
+        if self.obj and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
+            logger.info("")
+            logger.separator(f"Excluding Admin from Playlist", space=False, border=False)
+            logger.info("")
+            try:
+                self.library.delete(self.obj)
+                logger.info(f"Playlist: {self.name} deleted on User {self.library.account.username}")
+            except Failed:
+                logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
         if self.obj and self.details["changes_webhooks"] and \
