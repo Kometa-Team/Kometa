@@ -27,6 +27,8 @@ sonarr:
   token: ################################
   add_missing: false
   add_existing: false
+  upgrade_existing: false
+  monitor_existing: false
   root_folder_path: S:/Shows
   monitor: all
   quality_profile: HD-1080p
@@ -47,6 +49,7 @@ sonarr:
 | `add_missing`      | Adds all missing shows found from all collections to Sonarr.<br>Use the `sonarr_add_missing` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to add missing per collection.<br>**boolean:** true or false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | false         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `add_existing`     | Adds all existing shows in collections to Sonarr.<br>Use the `sonarr_add_existing` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to add existing per collection.<br>**boolean:** true or false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | false         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `upgrade_existing` | Upgrades all existing shows in collections to match the Quality Profile of the collection.<br>Use the `sonarr_upgrade_existing` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to upgrade the Quality Profile per collection.<br>**boolean:** true or false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | false         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `monitor_existing` | Ensures all existing shows in collections match your monitor setting.<br>Use the `sonarr_monitor_existing` [Sonarr Setting](../files/arr.md#sonarr-definition-settings) in the collection definition to match the monitor setting per collection.<br>**boolean:** true or false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | false         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `ignore_cache`     | Ignores PMM's cache when adding items to Sonarr.<br>Use the `sonarr_ignore_cache` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to ignore per collection.<br>**boolean:** true or false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | false         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `root_folder_path` | Default Root Folder Path to use when adding new shows.<br>Use the `sonarr_folder` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to set the Root Folder per collection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | N/A           | :fontawesome-solid-circle-check:{ .green } |
 | `monitor`          | Default Monitor to use when adding new shows.<br>Use the `sonarr_monitor` [Sonarr Settings](../files/arr.md#sonarr-definition-settings) in the collection definition to set the Monitor value per collection.<br>**Values:** <table class="clearTable"><tr><td>`all`</td><td>All episodes except specials</td></tr><tr><td>`future`</td><td>Episodes that have not aired yet</td></tr><tr><td>`missing`</td><td>Episodes that do not have files or have not aired yet</td></tr><tr><td>`existing`</td><td>Episodes that have files or have not aired yet</td></tr><tr><td>`pilot`</td><td>The first episode, all others will be ignored</td></tr><tr><td>`first`</td><td>All episodes of the first season, all others will be ignored</td></tr><tr><td>`latest`</td><td>All episodes of the latest season and future seasons</td></tr><tr><td>`none`</td><td>No episodes</td></tr></table> | `all`         |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -65,7 +68,7 @@ sonarr:
     The `token` can be found by going to `Sonarr > Settings > General > Security > API Key`
 
     The `quality_profile` and `language_profile` must be the exact name of the desired quality profile, including all 
-spaces and capitalization.
+    spaces and capitalization.
 
 * You can set most attributes per collection by using the [Sonarr Settings](../files/arr.md#sonarr-definition-settings) 
 in the collection definition.
@@ -81,6 +84,8 @@ sonarr:
   token: #
   add_missing: #
   add_existing: #
+  upgrade_existing: #
+  monitor_existing: #
   root_folder_path: /share
   monitor: all
   quality_profile: Any
@@ -149,6 +154,7 @@ sonarr:
   add_missing: false
   add_existing: false
   upgrade_existing: false
+  monitor_existing: false
   root_folder_path: /data/media/shows/ozzy
   monitor: all
   quality_profile: Good

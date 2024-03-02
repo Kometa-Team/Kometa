@@ -76,10 +76,12 @@ mod_displays = {
     ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal", ".regex": "is"
 }
 pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+lower_days = {v.lower(): k for k, v in pretty_days.items()}
 pretty_months = {
     1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
     7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
 }
+lower_months = {v.lower(): k for k, v in pretty_months.items()}
 seasons = ["current", "winter", "spring", "summer", "fall"]
 advance_tags_to_edit = {
     "Movie": ["metadata_language", "use_original_title"],
@@ -534,7 +536,7 @@ def is_date_filter(value, modifier, data, final, current_time):
         if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
             return True
     elif modifier == ".regex":
-        jailbreak = True
+        jailbreak = False
         for check_data in data:
             if re.compile(check_data).match(value.strftime("%m/%d/%Y")):
                 jailbreak = True
@@ -722,13 +724,16 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             raise NotScheduled(schedule_str)
     return schedule_str
 
-def check_int(value, datatype="int", minimum=1, maximum=None):
+def check_int(value, datatype="int", minimum=1, maximum=None, throw=False):
     try:
         value = int(str(value)) if datatype == "int" else float(str(value))
         if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
             return value
     except ValueError:
-        pass
+        if throw:
+            message = f"{value} must be {'an integer' if datatype == 'int' else 'a number'}"
+            raise Failed(f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}")
+        return None
 
 def parse_and_or(error, attribute, data, test_list):
     out = ""
@@ -782,7 +787,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
                     if options is None or (options and (v in options or (datatype == "strlist" and str(v) in options))):
                         final_list.append(str(v) if datatype == "strlist" else v)
                     elif options:
-                        raise Failed(f"{error} Error: {display} {v} is invalid; Options include: {', '.join(options)}")
+                        raise Failed(f"{error} Error: {display} {v} is invalid; Options include: {', '.join([o for o in options])}")
         return final_list
     elif datatype == "intlist":
         if value:
@@ -847,8 +852,8 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         if range_split:
             range_values = str(value).split(range_split)
             if len(range_values) == 2:
-                start = check_int(range_values[0])
-                end = check_int(range_values[1])
+                start = check_int(range_values[0], datatype=datatype, minimum=minimum, maximum=maximum)
+                end = check_int(range_values[1], datatype=datatype, minimum=minimum, maximum=maximum)
                 if start and end and start < end:
                     return f"{start}{range_split}{end}"
         else:
@@ -861,7 +866,9 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             message = f"{message} separated by a {range_split}"
     elif datatype == "date":
         try:
-            return validate_date(datetime.now() if data == "today" else data, return_as=date_return)
+            if default in ["today", "current"]:
+                default = validate_date(datetime.now(), return_as=date_return)
+            return validate_date(datetime.now() if data in ["today", "current"] else data, return_as=date_return)
         except Failed as e:
             message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or \

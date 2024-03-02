@@ -189,9 +189,10 @@ class IMDb:
 
     def _watchlist(self, user, language):
         imdb_url = f"{base_url}/user/{user}/watchlist"
-        group = self._request(imdb_url, language=language, xpath="//span[@class='ab_widget']/script[@type='text/javascript']/text()")
-        if group:
-            return [k for k in json.loads(str(group[0]).split("\n")[5][35:-2])["titles"]]
+        for text in self._request(imdb_url, language=language , xpath="//div[@class='article']/script/text()")[0].split("\n"):
+            if text.strip().startswith("IMDbReactInitialState.push"):
+                jsonline = text.strip()
+                return [f for f in json.loads(jsonline[jsonline.find('{'):-2])["starbars"]]
         raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
 
     def _total(self, imdb_url, language):
@@ -402,7 +403,7 @@ class IMDb:
             "extensions": {
                 "persistedQuery": {
                     "version": 1,
-                    "sha256Hash": "7327d144ec84b57c93f761affe0d0609b0d495f85e8e47fdc76291679850cfda"
+                    "sha256Hash": "e7a1c7b10a7a9765731e5c874cef0342dfbd0dd7a87fa796e828778e54a07a20"
                 }
             }
         }
@@ -446,7 +447,7 @@ class IMDb:
             if data["event_year"] == "all":
                 event_years = self.events_validation[data["event_id"]]["years"]
             elif data["event_year"] == "latest":
-                event_years = self.events_validation[data["event_id"]]["years"][0]
+                event_years = [self.events_validation[data["event_id"]]["years"][0]]
             else:
                 event_years = data["event_year"]
             for event_year in event_years:
@@ -642,6 +643,9 @@ class IMDb:
 
     def get_rating(self, imdb_id):
         return self.ratings[imdb_id] if imdb_id in self.ratings else None
+
+    def get_genres(self, imdb_id):
+        return self.genres[imdb_id] if imdb_id in self.genres else []
 
     def get_episode_rating(self, imdb_id, season_num, episode_num):
         season_num = str(season_num)

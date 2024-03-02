@@ -27,6 +27,7 @@ radarr:
   add_missing: false
   add_existing: false
   upgrade_existing: false
+  monitor_existing: false
   root_folder_path: S:/Movies
   monitor: movie
   availability: announced
@@ -44,6 +45,7 @@ radarr:
 | `add_missing`      | Adds all missing movies found from all collections to Radarr.<br>Use the `radarr_add_missing` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to add missing per collection.<br>**boolean:** true or false                                                    | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `add_existing`     | Adds all existing movies in collections to Radarr.<br>Use the `radarr_add_existing` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to add existing per collection.<br>**boolean:** true or false                                                             | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `upgrade_existing` | Upgrades all existing movies in collections to match the Quality Profile of the collection.<br>Use the `radarr_upgrade_existing` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to upgrade the Quality Profile per collection.<br>**boolean:** true or false | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `monitor_existing` | Ensures all existing movies in collections match your monitor setting.<br>Use the `radarr_monitor_existing` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to match the monitor setting per collection.<br>**boolean:** true or false                        | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `ignore_cache`     | Ignores PMM's cache when adding items to Radarr.<br>Use the `radarr_ignore_cache` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to ignore per collection.<br>**boolean:** true or false                                                                     | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `root_folder_path` | Default Root Folder Path to use when adding new movies.<br>Use the `radarr_folder` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Root Folder per collection.                                                                                     | N/A         | :fontawesome-solid-circle-check:{ .green } |
 | `monitor`          | Monitor the movie when adding new movies.<br>Use the `radarr_monitor` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Monitor value per collection.<br>**Options:** `true`, `false`                                                                | true        |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -76,6 +78,7 @@ radarr:
   add_missing: #
   add_existing: #
   upgrade_existing: #
+  monitor_existing: #
   root_folder_path: /movies
   monitor: movie
   availability: announced
@@ -141,6 +144,7 @@ radarr:
   add_missing: true
   add_existing: false
   upgrade_existing: false
+  monitor_existing: false
   root_folder_path: /movies
   monitor: movie
   availability: released

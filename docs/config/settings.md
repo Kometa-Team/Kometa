@@ -410,7 +410,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          sync_mode: sync
+          default_collection_order: release
         ```
 
 ??? blank "`minimum_items` - Used to control minimum items requires to build a collection/playlist.<a class="headerlink" href="#minimum-items" title="Permanent link">¶</a>"
@@ -712,6 +712,27 @@ The available setting attributes which can be set at each level are outlined bel
         ```yaml
         settings:
           save_report: false
+        ```
+
+??? blank "`report_path` - Used to specify the location of `save_report`.<a class="headerlink" href="#report-path" title="Permanent link">¶</a>"
+
+    <div id="report-path" />Specify the location where `save_report` is saved.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `report_path`
+
+    **Levels with this Attribute:** Library
+
+    **Accepted Values:** YAML file path location
+
+    **Default Value:** `[Directory containing YAML config]/[Library Mapping Name]_report.yml`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          report_path: config/TV_missing_report.yml
         ```
 
 ??? blank "`tvdb_language` - Specify the language to query TVDb in.<a class="headerlink" href="#tvdb-language" title="Permanent link">¶</a>"
@@ -1051,9 +1072,9 @@ libraries:
 settings:
   run_order: #(3)!
   - operations
-  - metadata
+  - overlays
   - collections
-  - operations
+  - metadata
   minimum_items: 1 #(4)!
 ```
 

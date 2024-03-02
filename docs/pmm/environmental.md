@@ -631,7 +631,7 @@ different ways to specify these things.
 ??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--pmm-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`PMM_***`<a class="headerlink" href="#pmm-vars" title="Permanent link">¶</a>"
 
     <div id="pmm-vars" />All Run Commands that are in the format `--pmm-***` and Environment Variables that are in the 
-    format `PMM_***`, where `***` is the name you want to call the vaiable, will be loaded in as Config Secrets.
+    format `PMM_***`, where `***` is the name you want to call the variable, will be loaded in as Config Secrets.
     
     These Config Secrets can be loaded into the config by placing `<<***>>` in any field in the config, where `***` is 
     whatever name you called the variable.  

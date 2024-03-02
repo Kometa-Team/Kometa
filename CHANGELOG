@@ -1,59 +1,34 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.7
-Updated GitPython requirement to 3.1.40
-Updated lxml requirement to 5.0.0
-Updated num2words requirement to 0.5.13
-Updated pillow requirement to 10.2.0
-Updated PlexAPI requirement to 4.15.7
-Updated psutil requirement to 5.9.7
-Updated ruamel.yaml requirement to 0.18.5
-Updated schedule requirement to 1.2.1
-Updated tmdbapis requirement to 1.2.6
-Added setuptools requirement at 69.0.3
+Updated gitpython requirement to 3.1.41
+Updated lxml requirement to 5.1.0
+Updated psutil requirement to 5.9.8
+Updated python-dotenv requirement to 1.0.1
 
 # New Features
-Introduced (Run Order)[https://metamanager.wiki/en/latest/config/settings/#run-order] attribute which allows the user to amend the way that each library is executed.
-Introduced [IMDb Search Builder](https://metamanager.wiki/en/latest/files/builders/imdb/#imdb-search) following IMDb UI rework.
-- `imdb_list` can no longer be used for Title or Keyword Searches, these must be transferred to `imdb_search` builders.
-Introduced [IMDb Award Builder](https://metamanager.wiki/en/latest/files/builders/imdb/#imdb-award).
-Added IMDb Awards to [Dynamic Collection Types](https://metamanager.wiki/en/latest/files/dynamic_types/#imdb-awards)
-PMM Default `other_awards` has been deprecated and replace with new award PMM Default files:
-  - [`berlinale`](https://metamanager.wiki/en/latest/defaults/award/berlinale/) - Berlin International Film Festival Awards
-  - [`cesar`](https://metamanager.wiki/en/latest/defaults/award/cesar/) - César Awards
-  - [`nfr`](https://metamanager.wiki/en/latest/defaults/award/nfr/) - National Film Registry
-  - [`pca`](https://metamanager.wiki/en/latest/defaults/award/pca/) - People's Choice Awards
-  - [`razzie`](https://metamanager.wiki/en/latest/defaults/award/razzie/) - Razzie Awards
-  - [`tiff`](https://metamanager.wiki/en/latest/defaults/award/tiff/) - Toronto International Film Festival Awards
-  - [`venice`](https://metamanager.wiki/en/latest/defaults/award/venice/) - Venice Film Festival Awards
-Reintroduced [Flixpatrol Builder](https://metamanager.wiki/en/latest/builders/flixpatrol/) following introduction of paywalled API.
-Added a JSON Schema file which will assist users in validating their configuration file when using a code-aware text editor such as VSCode and VSCodium. This is a work in progress and will help identify basic errors such as specifying "yes" when the available options are "true" and "false"
-- If you run into any validation issues which you don't understand, ask in our Discord Server
+Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
+Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
 
 # Updates
-Redesigned Wiki with new landing page and new layout using mkdocs.
-Introduced batchMultiEdits - this is a major feature introduction that we hope will increase performance for all users. This is a behind-the-scenes change that the user does not need to do anything to take advantage of.
-Updated `overlay_path` to `overlay_files` and split `metadata_path` into `collection_files` and `metadata_files`.
-Moved `remove_overalys`, `reapply_overlays`, and `reset_overlays` to the [library level](https://metamanager.wiki/en/latest/config/libraries/#remove-overlays) instead of under `overlay_path`.
-Removed `schedule` from under `overlay_path` and replaced it with the library level attribute [`schedule_overlays`](https://metamanager.wiki/en/latest/config/libraries/#schedule-overlays).
-Removed library-level and collection-level logging, all logging is handled in the meta.log
-Added the `score` attribute to the [`anilist_userlist`](https://metamanager.wiki/en/latest/files/builders/anilist/#anilist-userlist) builder.
-Added the `episode_actor` attribute to the [`plex_search`](https://metamanager.wiki/en/latest/files/builders/plex/#plex-search) builder.
+Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission
+Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
+Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
+Trakt Builder `trakt_userlist` value `recommendations` removed and `favorites` added.
+Mass Update operations now can be given a list of sources to fall back on when one fails including a manual source.
+`mass_content_rating_update` has a new source `mdb_age_rating`
+`mass_originally_available_update` has a new source `mdb_digital`
+`plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
+Allows users to use the Admin username when specifying playlist users. Thanks @benbou8231!
 
 # Defaults
-[PMM Default Award Files](https://metamanager.wiki/en/latest/defaults/files/#award-collections) have been reworked to use the `imdb_award` builder and `imdb_awards` dynamic collection type.
-Reintroduced [Flixpatrol Chart Defaults Collections](https://metamanager.wiki/en/latest/defaults/chart/flixpatrol/).
-Added Trakt Anticipated to [Trakt Chart Defaults Collections](https://metamanager.wiki/en/latest/defaults/chart/trakt/).
-Added DE Content Rating as a PMM Default [Collection](https://metamanager.wiki/en/latest/defaults/both/content_rating_de/) and [Overlay](https://metamanager.wiki/en/latest/defaults/overlays/content_rating_de/)
-Added `schedule` and `schedule_<<key>>` template variables to most defaults.
 
 # Bug Fixes
-Fixed `(404) not_found` error that presented itself in PMS 1.32.7, as outlined [here](https://discord.com/channels/822460010649878528/1099773891733377065/1174751954367422585)
-Fixed issue that would prevent `file_poster` from overriding `url_poster` in the PMM Defaults.
-Removed `--cache-libraries` Environment Variable due to inconsistent behaviour that could cause issues.
-Fixed issue with `mass_poster_update` incorrectly updating episode posters when it shouldn't.
-Fixed issue with `delete_collection_named` running in a collection even if the collection wasn't scheduled to run.
-
+Fixed the Rate Limit on MDbList calls
+Fixed collection fields being locked during batch edits when they shouldn't be
+Fixed awards dynamic collections where `latest` wasn't pulling the correct values
+Fixed `imdb_watchlist`
+Fixed `trakt_userlist`
+Fixed an issue where sometimes the resolution default overlay would be off center
+Fixed multiple issues with playlist deletion. Thanks @benbou8231!
+Fixed an issue where dynamic collection errors would sometimes appear before the title of the Dynamic Collection.
 
 Various other Minor Fixes
-
-GitHub issues closed: #1438, #1542, #1563, #1568, #1571, #1585, #1609, #1618, #1621, #1623, #1632, #1636, #1642, #1662, #1666, #1670, #1674, #1688, #1705, #1712, #1749, #1781, #1772, #1786,

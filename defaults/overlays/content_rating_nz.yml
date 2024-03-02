@@ -1,0 +1,107 @@
+##############################################################################
+#                         NZ Content Rating Overlay                          #
+#                           Adapted by nzvengeance                           #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#   https://metamanager.wiki/en/latest/defaults/overlays/content_rating_nz   #
+##############################################################################
+
+external_templates:
+  pmm: templates
+  template_variables:
+    default:
+      key: <<overlay_name>>
+    horizontal_offset: 15
+    horizontal_align: left
+    vertical_offset: 270
+    vertical_align: bottom
+    back_width: 305
+    back_height: 105
+    back_radius: 30
+    back_color: '#00000099'
+    conditionals:
+      inside_color:
+        default: "c"
+        conditions:
+          - color: false
+            value: ""
+      pmm:
+        conditions:
+          - file.exists: false
+            file_<<key>>.exists: false
+            url.exists: false
+            url_<<key>>.exists: false
+            git.exists: false
+            git_<<key>>.exists: false
+            repo.exists: false
+            repo_<<key>>.exists: false
+            value: cr/nz_<<overlay_name>><<inside_color>>
+
+templates:
+  cr_nz:
+    ignore_blank_results: true
+    plex_search:
+      validate: false
+      any:
+        content_rating: <<rating>>
+
+overlays:
+  g:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/G, de/0, U, 0, 1, 01, 2, 02, 3, 03, 4, 04, 5, 05, 6, 06, G, TV-G, TV-Y, G - All Ages, gb/U, gb/0+, E, gb/E, A, no/A, no/5, no/05"}
+
+  pg:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/PG, de/6, gb/9+, TV-PG, TV-Y7, TV-Y7-FV, PG, 7, 07, 8, 08, 9, 09, 10, 11, PG - Children, no/6, no/06, no/7, no/07, no/9, no/09, no/10, no/11"}
+
+  m:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+  
+  r13:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+
+  rp13:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+
+  r15:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+
+  r16:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+
+  rp16:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+
+  r:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
+
+  r18:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+
+  rp18:
+    template:
+      - name: standard
+      - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+
+  nr:
+    template:
+      - {name: standard, key: nr}
+      - {name: cr_nz, rating: "None, NR, Not Rated, Unrated, de/Unrated, de/Not Rated, au/Unrated, au/Not Rated"}
