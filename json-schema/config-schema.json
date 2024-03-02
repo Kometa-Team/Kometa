@@ -86,6 +86,9 @@
                 "optimize": {
                     "description": "true/false - If 'true', optimizes database on this Plex server",
                     "type": "boolean"
+                },
+                "verify_ssl": {
+                    "type": "boolean"
                 }
             },
             "required": [
