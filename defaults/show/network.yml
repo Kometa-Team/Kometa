@@ -357,6 +357,7 @@ dynamic_collections:
         - Discovery Life
         - Discovery World
         - Discovery Science
+        - Discovery Channel (UK)
       Disney Channel:
         - Toon Disney
         - Playhouse Disney
@@ -434,6 +435,7 @@ dynamic_collections:
         - National Geographic Brasil
         - National Geographic Latinoamerica
         - National Geographic India
+        - Nat Geo Wild
       NBC:
         - CNBC
         - MSNBC
@@ -506,3 +508,5 @@ dynamic_collections:
         - Viceland
         - Vice TV
         - Vice.com
+      YouTube:
+        - YouTube Premium
