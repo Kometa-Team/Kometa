@@ -65,7 +65,7 @@ templates:
       filepath.regex: <<regex_<<key>>>>
 
 overlays:
-    
+
   REMUX:
     variables: {key: remux, weight: 60}
     template: [name: standard, name: video_format]
