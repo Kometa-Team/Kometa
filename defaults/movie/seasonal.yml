@@ -173,7 +173,8 @@ dynamic_collections:
       # check4
       imdb_search:
         women:
-          keyword.any: women in film, womens rights, womens suffrage
+          type: movie
+          keyword.any: women in film, women's rights, women's suffrage, womens rights, womens suffrage
           sort_by: rating.desc
           limit: 500
       # check5
