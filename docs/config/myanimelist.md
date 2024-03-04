@@ -126,8 +126,7 @@ the container normally.
 
 ## Online Authorization
 
-Plex Meta Manager requires interactive mode to be able to enter the Client ID and Client Secret. Some systems (namely 
-NAS) make this difficult to accomplish. Chazlarson has provided an online tool to generate the MAL and Trakt 
-authentication outside of Plex Meta Manager and then paste the end-result directly into the configuration file.
-
-The tool can be found [here](auth.md). 
+{%    
+  include-markdown "./auth.md"
+  start="# Trakt and MyAnimeList Authentication"
+%}
