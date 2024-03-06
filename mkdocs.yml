@@ -214,7 +214,6 @@ nav:
           - Separator: defaults/chart/separator.md
           - Basic Charts: defaults/chart/basic.md
           - AniList Charts: defaults/chart/anilist.md
-          - Flixpatrol Charts: defaults/chart/flixpatrol.md
           - IMDb Charts: defaults/chart/imdb.md
           - MyAnimeList Charts: defaults/chart/myanimelist.md
           - Tautulli Charts: defaults/chart/tautulli.md
@@ -267,7 +266,6 @@ nav:
         - Overlays: defaults/overlays.md
         - Shared Variables: defaults/overlay_variables.md
         - Chart:
-          - FlixPatrol Top: defaults/overlays/flixpatrol.md
           - Ribbon: defaults/overlays/ribbon.md
         - Content:
           - Episode Info: defaults/overlays/episode_info.md
@@ -320,7 +318,6 @@ nav:
           - MdbList Builders: files/builders/mdblist.md
           - Letterboxd Builders: files/builders/letterboxd.md
           - ICheckMovies Builders: files/builders/icheckmovies.md
-          - FlixPatrol Builders: files/builders/flixpatrol.md
           - BoxOfficeMojo Builders: files/builders/mojo.md
           - Reciperr Builders: files/builders/reciperr.md
           - StevenLu Builders: files/builders/stevenlu.md

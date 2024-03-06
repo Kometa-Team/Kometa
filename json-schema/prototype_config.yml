@@ -32,7 +32,6 @@ libraries:
     - pmm: tautulli
     - pmm: imdb
     - pmm: trakt
-    - pmm: flixpatrol
     - pmm: anilist
     - pmm: myanimelist
     - pmm: other_chart
@@ -99,7 +98,6 @@ libraries:
     - url: https://foo.bar.com/something.yml
     - git: bing/bang/boing
     - repo: bing
-    - pmm: flixpatrol
     - pmm: episode_info
     - pmm: mediastinger
     - pmm: ratings
@@ -175,7 +173,6 @@ libraries:
     - pmm: tautulli
     - pmm: imdb
     - pmm: trakt
-    - pmm: flixpatrol
     - pmm: anilist
     - pmm: myanimelist
     - pmm: other_chart
@@ -248,7 +245,6 @@ libraries:
     - url: https://foo.bar.com/something.yml
     - git: bing/bang/boing
     - repo: bing
-    - pmm: flixpatrol
     - pmm: episode_info
     - pmm: mediastinger
     - pmm: ratings
@@ -289,7 +285,6 @@ libraries:
     - pmm: tautulli
     - pmm: imdb
     - pmm: trakt
-    - pmm: flixpatrol
     - pmm: anilist
     - pmm: myanimelist
     - pmm: other_chart
@@ -343,7 +338,6 @@ libraries:
     - remove_overlays: false                        # Set to true if you want to remove overlays
     # - reapply_overlay: false                        # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
     # - reset_overlays: tmdb                          # if you want to reset the poster to default poster from tmdb - can cause image bloat
-    - pmm: flixpatrol
     - pmm: mediastinger
     - pmm: ratings
     - pmm: status

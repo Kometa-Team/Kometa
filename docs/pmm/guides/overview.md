@@ -48,8 +48,6 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - How PMM stores the IMDB Award Lists
 - [PMM Mediastingers](https://github.com/meisnate12/PMM-Mediastingers)
     - How PMM stores the Mediastingers List
-- [PMM TOP10](https://github.com/meisnate12/PMM-TOP10)
-    - How PMM stores the Flixpatrol Top 10 Lists
 
 <br>
 

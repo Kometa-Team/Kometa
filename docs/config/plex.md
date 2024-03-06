@@ -20,6 +20,7 @@ plex:
   clean_bundles: true
   empty_trash: true
   optimize: false
+  verify_ssl:
 ```
 
 | Attribute       | Allowed Values                                                                                                                 | Default |                  Required                  |
@@ -31,6 +32,7 @@ plex:
 | `clean_bundles` | Runs Clean Bundles on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md)) | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `empty_trash`   | Runs Empty Trash on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))   | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `optimize`      | Runs Optimize on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))      | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `verify_ssl`    | Turns SSL verification on/off for only Plex                                                                                    | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ???+ warning
     

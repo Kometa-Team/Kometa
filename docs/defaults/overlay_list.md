@@ -18,7 +18,6 @@ config.yml
 
 | Default                              | Path         | Example Overlays                         |                   Movies                   |                   Shows                    |                 Seasons                  |                 Episodes                 |
 |:-------------------------------------|:-------------|:-----------------------------------------|:------------------------------------------:|:------------------------------------------:|:----------------------------------------:|:----------------------------------------:|
-| [FlixPatrol](overlays/flixpatrol.md) | `flixpatrol` | "Streaming service logo with words "TOP" | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 | [Ribbon](overlays/ribbon.md)         | `ribbon`     | IMDb Top 250 Ribbon, RT Fresh Ribbon     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 
 ### Content Overlays
