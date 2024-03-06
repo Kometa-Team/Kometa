@@ -412,9 +412,9 @@ class Operations:
                                     continue
 
                 if self.library.mass_genre_update or self.library.genre_mapper:
+                    new_genres = []
+                    extra_option = None
                     if self.library.mass_genre_update:
-                        new_genres = []
-                        extra_option = None
                         for option in self.library.mass_genre_update:
                             if option in ["lock", "unlock", "remove", "reset"]:
                                 extra_option = option
@@ -441,42 +441,42 @@ class Operations:
                             except Failed:
                                 continue
 
-                        item_genres = [g.tag for g in item.genres]
-                        if not new_genres and extra_option not in ["remove", "reset"]:
-                            new_genres = item_genres
-                        if self.library.genre_mapper:
-                            mapped_genres = []
-                            for genre in new_genres:
-                                if genre in self.library.genre_mapper:
-                                    if self.library.genre_mapper[genre]:
-                                        mapped_genres.append(self.library.genre_mapper[genre])
-                                else:
-                                    mapped_genres.append(genre)
-                            new_genres = mapped_genres
-                        _add = list(set(new_genres) - set(item_genres))
-                        _remove = list(set(item_genres) - set(new_genres))
-                        for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
-                            if genre_list:
-                                for g in genre_list:
-                                    if g not in genre_edits[edit_type]:
-                                        genre_edits[edit_type][g] = []
-                                    genre_edits[edit_type][g].append(item.ratingKey)
-                                item_edits += f"\n{edit_type.capitalize()} Genres (Batched) | {', '.join(genre_list)}"
-                        if extra_option in ["unlock", "reset"] and ("genre" in locked_fields or _add or _remove):
-                            if "genre" not in unlock_edits:
-                                unlock_edits["genre"] = []
-                            unlock_edits["genre"].append(item.ratingKey)
-                            item_edits += "\nUnlock Genre (Batched)"
-                        elif extra_option in ["lock", "remove"] and "genre" not in locked_fields and not _add and not _remove:
-                            if "genre" not in lock_edits:
-                                lock_edits["genre"] = []
-                            lock_edits["genre"].append(item.ratingKey)
-                            item_edits += "\nLock Genre (Batched)"
+                    item_genres = [g.tag for g in item.genres]
+                    if not new_genres and extra_option not in ["remove", "reset"]:
+                        new_genres = item_genres
+                    if self.library.genre_mapper:
+                        mapped_genres = []
+                        for genre in new_genres:
+                            if genre in self.library.genre_mapper:
+                                if self.library.genre_mapper[genre]:
+                                    mapped_genres.append(self.library.genre_mapper[genre])
+                            else:
+                                mapped_genres.append(genre)
+                        new_genres = mapped_genres
+                    _add = list(set(new_genres) - set(item_genres))
+                    _remove = list(set(item_genres) - set(new_genres))
+                    for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
+                        if genre_list:
+                            for g in genre_list:
+                                if g not in genre_edits[edit_type]:
+                                    genre_edits[edit_type][g] = []
+                                genre_edits[edit_type][g].append(item.ratingKey)
+                            item_edits += f"\n{edit_type.capitalize()} Genres (Batched) | {', '.join(genre_list)}"
+                    if extra_option in ["unlock", "reset"] and ("genre" in locked_fields or _add or _remove):
+                        if "genre" not in unlock_edits:
+                            unlock_edits["genre"] = []
+                        unlock_edits["genre"].append(item.ratingKey)
+                        item_edits += "\nUnlock Genre (Batched)"
+                    elif extra_option in ["lock", "remove"] and "genre" not in locked_fields and not _add and not _remove:
+                        if "genre" not in lock_edits:
+                            lock_edits["genre"] = []
+                        lock_edits["genre"].append(item.ratingKey)
+                        item_edits += "\nLock Genre (Batched)"
 
                 if self.library.mass_content_rating_update or self.library.content_rating_mapper:
+                    new_rating = None
+                    extra_option = None
                     if self.library.mass_content_rating_update:
-                        new_rating = None
-                        extra_option = None
                         for option in self.library.mass_content_rating_update:
                             if option in ["lock", "unlock", "remove", "reset"]:
                                 extra_option = option
@@ -516,50 +516,50 @@ class Operations:
                             except Failed:
                                 continue
 
-                        is_none = False
+                    is_none = False
+                    do_lock = False
+                    do_unlock = False
+                    current_rating = item.contentRating
+                    if not new_rating:
+                        new_rating = current_rating
+                    if self.library.content_rating_mapper:
+                        if new_rating in self.library.content_rating_mapper:
+                            new_rating = self.library.content_rating_mapper[new_rating]
+                            if not new_rating:
+                                is_none = True
+                    if extra_option == "reset":
+                        if current_rating:
+                            if "contentRating" not in reset_edits:
+                                reset_edits["contentRating"] = []
+                            reset_edits["contentRating"].append(item.ratingKey)
+                            item_edits += "\nReset Content Rating (Batched)"
+                        elif "contentRating" in locked_fields:
+                            do_unlock = True
+                    elif extra_option == "remove" or is_none:
+                        if current_rating:
+                            if "contentRating" not in remove_edits:
+                                remove_edits["contentRating"] = []
+                            remove_edits["contentRating"].append(item.ratingKey)
+                            item_edits += "\nRemove Content Rating (Batched)"
+                        elif "contentRating" not in locked_fields:
+                            do_lock = True
+                    elif new_rating and new_rating != current_rating:
+                        if new_rating not in content_edits:
+                            content_edits[new_rating] = []
+                        content_edits[new_rating].append(item.ratingKey)
+                        item_edits += f"\nUpdate Content Rating (Batched) | {new_rating}"
                         do_lock = False
-                        do_unlock = False
-                        current_rating = item.contentRating
-                        if not new_rating:
-                            new_rating = current_rating
-                        if self.library.content_rating_mapper:
-                            if new_rating in self.library.content_rating_mapper:
-                                new_rating = self.library.content_rating_mapper[new_rating]
-                                if not new_rating:
-                                    is_none = True
-                        if extra_option == "reset":
-                            if current_rating:
-                                if "contentRating" not in reset_edits:
-                                    reset_edits["contentRating"] = []
-                                reset_edits["contentRating"].append(item.ratingKey)
-                                item_edits += "\nReset Content Rating (Batched)"
-                            elif "contentRating" in locked_fields:
-                                do_unlock = True
-                        elif extra_option == "remove" or is_none:
-                            if current_rating:
-                                if "contentRating" not in remove_edits:
-                                    remove_edits["contentRating"] = []
-                                remove_edits["contentRating"].append(item.ratingKey)
-                                item_edits += "\nRemove Content Rating (Batched)"
-                            elif "contentRating" not in locked_fields:
-                                do_lock = True
-                        elif new_rating and new_rating != current_rating:
-                            if new_rating not in content_edits:
-                                content_edits[new_rating] = []
-                            content_edits[new_rating].append(item.ratingKey)
-                            item_edits += f"\nUpdate Content Rating (Batched) | {new_rating}"
-                            do_lock = False
 
-                        if extra_option == "lock" or do_lock:
-                            if "contentRating" not in lock_edits:
-                                lock_edits["contentRating"] = []
-                            lock_edits["contentRating"].append(item.ratingKey)
-                            item_edits += "\nLock Content Rating (Batched)"
-                        elif extra_option == "unlock" or do_unlock:
-                            if "contentRating" not in unlock_edits:
-                                unlock_edits["contentRating"] = []
-                            unlock_edits["contentRating"].append(item.ratingKey)
-                            item_edits += "\nUnlock Content Rating (Batched)"
+                    if extra_option == "lock" or do_lock:
+                        if "contentRating" not in lock_edits:
+                            lock_edits["contentRating"] = []
+                        lock_edits["contentRating"].append(item.ratingKey)
+                        item_edits += "\nLock Content Rating (Batched)"
+                    elif extra_option == "unlock" or do_unlock:
+                        if "contentRating" not in unlock_edits:
+                            unlock_edits["contentRating"] = []
+                        unlock_edits["contentRating"].append(item.ratingKey)
+                        item_edits += "\nUnlock Content Rating (Batched)"
 
                 if self.library.mass_original_title_update:
                     current_original = item.originalTitle
@@ -802,7 +802,7 @@ class Operations:
 
                 if any([x is not None for x, _ in episode_ops]):
 
-                    if any([x == "imdb" for x, _ in episode_ops]) and not imdb_id:
+                    if any(["imdb" in x for x, _ in episode_ops]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
                     for ep in item.episodes():
@@ -816,49 +816,59 @@ class Operations:
                         for attribute, item_attr in episode_ops:
                             if attribute:
                                 current = getattr(ep, item_attr)
-                                if attribute == "remove" and current is not None:
-                                    if item_attr not in ep_remove_edits:
-                                        ep_remove_edits[item_attr] = []
-                                    ep_remove_edits[item_attr].append(ep)
-                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
-                                elif attribute == "reset" and current is not None:
-                                    if item_attr not in ep_reset_edits:
-                                        ep_reset_edits[item_attr] = []
-                                    ep_reset_edits[item_attr].append(ep)
-                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
-                                elif attribute in ["unlock", "reset"] and item_attr in episode_locked_fields:
-                                    if item_attr not in ep_unlock_edits:
-                                        ep_unlock_edits[item_attr] = []
-                                    ep_unlock_edits[item_attr].append(ep)
-                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
-                                elif attribute in ["lock", "remove"] and item_attr not in episode_locked_fields:
-                                    if item_attr not in ep_lock_edits:
-                                        ep_lock_edits[item_attr] = []
-                                    ep_lock_edits[item_attr].append(ep)
-                                    item_edits += f"\nLock {name_display[item_attr]} (Batched)"
-                                elif attribute not in ["lock", "unlock", "remove", "reset"]:
-                                    try:
-                                        tmdb_item = tmdb_obj()
-                                    except Failed:
-                                        tmdb_item = None
-                                    found_rating = None
-                                    if tmdb_item and attribute == "tmdb":
-                                        try:
-                                            found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average # noqa
-                                        except Failed as er:
-                                            logger.error(er)
-                                    elif imdb_id and attribute == "imdb":
-                                        found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
-
-                                    if found_rating and float(found_rating) > 0:
-                                        found_rating = f"{float(found_rating):.1f}"
-                                        if str(current) != found_rating:
-                                            if found_rating not in ep_rating_edits[item_attr]:
-                                                ep_rating_edits[item_attr][found_rating] = []
-                                            ep_rating_edits[item_attr][found_rating].append(ep)
-                                            item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                for option in attribute:
+                                    if option in ["lock", "remove"]:
+                                        if option == "remove" and current:
+                                            if item_attr not in ep_remove_edits:
+                                                ep_remove_edits[item_attr] = []
+                                            ep_remove_edits[item_attr].append(ep.ratingKey)
+                                            item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                        elif item_attr not in locked_fields:
+                                            if item_attr not in ep_lock_edits:
+                                                ep_lock_edits[item_attr] = []
+                                            ep_lock_edits[item_attr].append(ep.ratingKey)
+                                            item_edits += f"\nLock {name_display[item_attr]} (Batched)"
+                                        break
+                                    elif option in ["unlock", "reset"]:
+                                        if option == "reset" and current:
+                                            if item_attr not in ep_reset_edits:
+                                                ep_reset_edits[item_attr] = []
+                                            ep_reset_edits[item_attr].append(ep.ratingKey)
+                                            item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                        elif item_attr in locked_fields:
+                                            if item_attr not in ep_unlock_edits:
+                                                ep_unlock_edits[item_attr] = []
+                                            ep_unlock_edits[item_attr].append(ep.ratingKey)
+                                            item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                        break
                                     else:
-                                        logger.info(f"No {name_display[item_attr]} Found")
+                                        try:
+                                            try:
+                                                tmdb_item = tmdb_obj()
+                                            except Failed:
+                                                tmdb_item = None
+                                            found_rating = None
+                                            if tmdb_item and attribute == "tmdb":
+                                                try:
+                                                    found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average  # noqa
+                                                except Failed as er:
+                                                    logger.error(er)
+                                            elif imdb_id and attribute == "imdb":
+                                                found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
+                                            else:
+                                                found_rating = option
+                                            if not found_rating:
+                                                logger.info(f"No {option} {name_display[item_attr]} Found")
+                                                raise Failed
+                                            found_rating = f"{float(found_rating):.1f}"
+                                            if str(current) != found_rating:
+                                                if found_rating not in ep_rating_edits[item_attr]:
+                                                    ep_rating_edits[item_attr][found_rating] = []
+                                                ep_rating_edits[item_attr][found_rating].append(ep.ratingKey)
+                                                item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                            break
+                                        except Failed:
+                                            continue
 
                         if len(item_edits) > 0:
                             logger.info(f"Item Edits:{item_edits}")
