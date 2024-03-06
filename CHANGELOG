@@ -1,14 +1,15 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated gitpython requirement to 3.1.41
-Updated lxml requirement to 5.1.0
-Updated psutil requirement to 5.9.8
-Updated python-dotenv requirement to 1.0.1
+Updated gitpython requirement to 3.1.42
+Updated plexapi requirement to 4.5.10
+Updated setuptools requirement to 69.1.1
+Updated tmdbapis requirement to 1.2.7
 
 # New Features
 Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
 Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
 
 # Updates
+Reworked PMM Default Streaming [Collections](https://metamanager.wiki/en/latest/defaults/both/streaming) and [Overlays](https://metamanager.wiki/en/latest/defaults/overlays/streaming) to utilize TMDB Watch Provider data, allowing users to customize regions without relying on mdblist. This data will be more accurate and up-to-date now.
 Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission
 Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
 Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
