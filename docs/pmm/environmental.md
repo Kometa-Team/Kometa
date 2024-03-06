@@ -30,6 +30,22 @@ those two things in two different fields, or some other way.  The examples below
 environment variable in a script or a `docker run` command.  Things like Portainer or a NAS Docker UI will have 
 different ways to specify these things.
 
+???+ warning "Combining Commands or Variables"
+
+![img.png](img.png)    Some Commands or Variables can be combined in a single run, this is mainly beneficial when you want to run a specific command and have it run immediately rather than waiting until the next scheduled run.
+
+    For example, if I want to run [Collections Only](#collections-only) to only run Collection Files, and [Run Immediately](#run) to skip waiting until my next scheduled run, I can use both commands at the same time:
+
+    !!! example
+        === "Local Environment"
+            ```
+            python plex_meta_manager.py --collections-only --run
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex-meta-manager --collections-only --run
+            ```
+
 ??? blank "Config Location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-c`/`--config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`PMM_CONFIG`<a class="headerlink" href="#config" title="Permanent link">¶</a>"
 
     <div id="config" />Specify the location of the configuration YAML file. Will default to `config/config.yml` when not 
