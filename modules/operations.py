@@ -3,6 +3,7 @@ from datetime import datetime
 from modules import plex, util, anidb
 from modules.util import Failed, LimitReached, YAML
 from plexapi.exceptions import NotFound
+from plexapi.video import Movie, Show
 
 logger = util.logger
 
@@ -811,7 +812,6 @@ class Operations:
                         logger.info("")
                         logger.info(f"Processing {item_title}")
                         item_edits = ""
-                        episode_locked_fields = [f.name for f in ep.fields if f.locked]
 
                         for attribute, item_attr in episode_ops:
                             if attribute:
@@ -821,24 +821,24 @@ class Operations:
                                         if option == "remove" and current:
                                             if item_attr not in ep_remove_edits:
                                                 ep_remove_edits[item_attr] = []
-                                            ep_remove_edits[item_attr].append(ep.ratingKey)
+                                            ep_remove_edits[item_attr].append(ep)
                                             item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
                                         elif item_attr not in locked_fields:
                                             if item_attr not in ep_lock_edits:
                                                 ep_lock_edits[item_attr] = []
-                                            ep_lock_edits[item_attr].append(ep.ratingKey)
+                                            ep_lock_edits[item_attr].append(ep)
                                             item_edits += f"\nLock {name_display[item_attr]} (Batched)"
                                         break
                                     elif option in ["unlock", "reset"]:
                                         if option == "reset" and current:
                                             if item_attr not in ep_reset_edits:
                                                 ep_reset_edits[item_attr] = []
-                                            ep_reset_edits[item_attr].append(ep.ratingKey)
+                                            ep_reset_edits[item_attr].append(ep)
                                             item_edits += f"\nReset {name_display[item_attr]} (Batched)"
                                         elif item_attr in locked_fields:
                                             if item_attr not in ep_unlock_edits:
                                                 ep_unlock_edits[item_attr] = []
-                                            ep_unlock_edits[item_attr].append(ep.ratingKey)
+                                            ep_unlock_edits[item_attr].append(ep)
                                             item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
                                         break
                                     else:
@@ -848,15 +848,18 @@ class Operations:
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
-                                            if tmdb_item and attribute == "tmdb":
+                                            if tmdb_item and option == "tmdb":
                                                 try:
                                                     found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average  # noqa
                                                 except Failed as er:
                                                     logger.error(er)
-                                            elif imdb_id and attribute == "imdb":
+                                            elif imdb_id and option == "imdb":
                                                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
                                             else:
-                                                found_rating = option
+                                                try:
+                                                    found_rating = float(option)
+                                                except ValueError:
+                                                    pass
                                             if not found_rating:
                                                 logger.info(f"No {option} {name_display[item_attr]} Found")
                                                 raise Failed
@@ -864,7 +867,7 @@ class Operations:
                                             if str(current) != found_rating:
                                                 if found_rating not in ep_rating_edits[item_attr]:
                                                     ep_rating_edits[item_attr][found_rating] = []
-                                                ep_rating_edits[item_attr][found_rating].append(ep.ratingKey)
+                                                ep_rating_edits[item_attr][found_rating].append(ep)
                                                 item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
                                             break
                                         except Failed:
@@ -1137,7 +1140,8 @@ class Operations:
             year_titles = []
             for item in items:
                 titles.append(item.title)
-                year_titles.append(f"{item.title} ({item.year})")
+                if isinstance(item, (Movie, Show)):
+                    year_titles.append(f"{item.title} ({item.year})")
             for i, item in enumerate(items, 1):
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
