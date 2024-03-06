@@ -343,7 +343,7 @@ overlays:
 
   Discovery:
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [Discovery, Discovery Health Channel, Discovery Channel, Discovery Home & Health Brasil, Discovery Family, Discovery Real Time, Discovery Asia, Discovery Home & Health, Discovery Life, Discovery World, Discovery Science]}]
+    template: [name: standard, {name: networks, search: [Discovery, Discovery Health Channel, Discovery Channel, Discovery Home & Health Brasil, Discovery Family, Discovery Real Time, Discovery Asia, Discovery Home & Health, Discovery Life, Discovery World, Discovery Science, Discovery Channel (UK)]}]
 
   Discovery Kids:
     variables: { weight: 10}
@@ -659,7 +659,7 @@ overlays:
 
   National Geographic:
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [National Geographic, National Geographic Channel, National Geographic Brasil, National Geographic Latinoamerica, National Geographic India]}]
+    template: [name: standard, {name: networks, search: [National Geographic, National Geographic Channel, National Geographic Brasil, National Geographic Latinoamerica, National Geographic India, Nat Geo Wild]}]
 
   NBC:
     variables: { weight: 10}
@@ -1111,7 +1111,7 @@ overlays:
 
   YouTube:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [YouTube, YouTube Premium]}]
 
   ZDF:
     variables: { weight: 10}
