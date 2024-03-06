@@ -89,7 +89,6 @@ playlists:
       key: dcau
     template:
       - name: playlist
-        trakt_list: https://trakt.tv/users/donxy/lists/dc-animated-series-universe
         summary_dcau: "The DC Animated Universe (DCAU) is a shared universe consisting primarily of superhero-based animated television series, produced by Warner Bros. Animation and based on characters that appear in American comic books published by DC Comics. The first TV series set in the DCAU was Batman: The Animated Series, which premiered in 1992; the last TV series was Justice League Unlimited, which ended its run in 2006."
       - name: arr
 
