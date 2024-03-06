@@ -160,6 +160,8 @@ class Operations:
                         topics_to_warn_on = []
                         if self.library.mass_does_the_dog_labels == "remove":
                             pass
+                        elif self.library.mass_does_the_dog_labels == "dog":
+                            topics_to_warn_on = [153] # 153 is the dog topic id
                         elif self.library.mass_does_the_dog_labels == "all":
                             topics_to_warn_on = self.config.DogDieChecker.get_all_topic_ids()
                         else:
