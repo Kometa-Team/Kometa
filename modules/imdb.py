@@ -604,7 +604,7 @@ class IMDb:
             if interface == "ratings":
                 data = {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
             elif interface == "basics":
-                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(t, delimiter="\t")}
+                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(t, delimiter="\t") if str(line[-1]) != "\\N"}
             else:
                 data = [line for line in csv.reader(t, delimiter="\t")]
 
