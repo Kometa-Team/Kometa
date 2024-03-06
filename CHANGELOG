@@ -35,6 +35,8 @@ Fixed `trakt_userlist`
 Fixed an issue where sometimes the resolution default overlay would be off center
 Fixed multiple issues with playlist deletion. Thanks @benbou8231!
 Fixed an issue where dynamic collection errors would sometimes appear before the title of the Dynamic Collection.
-Fix IMDb Null issue
+Fixed IMDb Null issue
+Fixed mapper operations not working without a mass update operation
+Fixed episode rating mass update operations
 
 Various other Minor Fixes
