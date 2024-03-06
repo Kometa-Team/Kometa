@@ -89,7 +89,7 @@ plex:                            # Can be individually specified per library as 
   clean_bundles: false
   empty_trash: false
   optimize: false
-  verify_ssl: true
+  verify_ssl:
 tmdb:                            # REQUIRED for the script to run
   apikey: ################################
   language: en

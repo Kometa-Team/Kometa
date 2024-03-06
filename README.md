@@ -30,7 +30,7 @@ Transform your media library with Plex Meta Manager and discover its full potent
 
 ### Third-Party Integrations
 
--  Harness the power of Trakt, TMDb, IMDb, Flixpatrol and more to create collections and overlays!
+-  Harness the power of Trakt, TMDb, IMDb and more to create collections and overlays!
 -  Integrate with Sonarr and Radarr to automate your library growth.
 
 ### And More!

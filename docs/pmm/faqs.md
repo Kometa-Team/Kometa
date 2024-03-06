@@ -486,13 +486,12 @@ With the release of PMM 1.20, several changes have taken place that we would lik
           keyword.any: spy, espionage
     ```
 
-??? blank "FlixPatrol Default File and Builder have been reworked (click to expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
+??? blank "FlixPatrol Default Files and Builders have been removed (click to expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
 
     <div id="flixpatrol" />
 
-    Due to FlixPatrol moving a lot of their data behind a paywall, the existing setup no longer works.
-
-    We have reintroduced FlixPatrol as a [Builder](../files/builders/flixpatrol.md) and [PMM Defaults File](../defaults/chart/flixpatrol.md), we recommend reading the documentation and updating your config/YAML files to suit.
+    Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and 
+    TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
 
 ??? blank "PMM Default `other_award` replaced with individual Award files (click to expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
 

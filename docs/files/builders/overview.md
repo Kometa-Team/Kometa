@@ -184,18 +184,6 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![FlixPatrol logo](../../../assets/icons/flixpatrol.png){ align=right }
-
-    **[FlixPatrol](../flixpatrol)** builders grab items based on metadata on FlixPatrol.com
-
-    [:octicons-home-16: View Builder](../flixpatrol){ .md-button .md-button--primary }
-
-    ??? quicklink "Popular Builders"
-
-        - [:material-police-badge: FlixPatrol Top](../flixpatrol/#flixpatrol-top) - Gets every item from FlixPatrol's Top Platform Lists based on the attributes provided.
-
-!!! builder
-
     ![AniDB logo](../../../assets/icons/anidb.png){ align=right }
 
     **[AniDB](../anidb)** builders grab items based on metadata and lists on AniDB.com

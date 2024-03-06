@@ -1173,7 +1173,7 @@ class MetadataFile(DataFile):
                         if "<<library_typeU>>" in title_format:
                             title_format = title_format.replace("<<library_typeU>>", library.type)
                         if "limit" in self.temp_vars and "<<limit>>" in title_format:
-                            title_format = title_format.replace("<<limit>>", self.temp_vars["limit"])
+                            title_format = title_format.replace("<<limit>>", str(self.temp_vars["limit"]))
                         template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
                         if "template" in methods:
                             template_names = util.parse("Config", "template", dynamic, parent=map_name, methods=methods, datatype="strlist")

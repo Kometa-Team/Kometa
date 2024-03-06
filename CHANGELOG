@@ -4,6 +4,9 @@ Updated plexapi requirement to 4.5.10
 Updated setuptools requirement to 69.1.1
 Updated tmdbapis requirement to 1.2.7
 
+# Removed Features
+Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
+
 # New Features
 Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
 Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
@@ -19,6 +22,7 @@ Mass Update operations now can be given a list of sources to fall back on when o
 `mass_originally_available_update` has a new source `mdb_digital`
 `plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
 Allows users to use the Admin username when specifying playlist users. Thanks @benbou8231!
+Allows `verify_ssl` to be set specifically for plex. Thanks @FestiveKyle!
 
 # Defaults
 
@@ -31,5 +35,6 @@ Fixed `trakt_userlist`
 Fixed an issue where sometimes the resolution default overlay would be off center
 Fixed multiple issues with playlist deletion. Thanks @benbou8231!
 Fixed an issue where dynamic collection errors would sometimes appear before the title of the Dynamic Collection.
+Fix IMDb Null issue
 
 Various other Minor Fixes

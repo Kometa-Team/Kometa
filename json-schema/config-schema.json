@@ -92,6 +92,7 @@
                     "type": "boolean"
                 },
                 "verify_ssl": {
+                    "description": "Turn SSL Verification on or off for only Plex.",
                     "type": "boolean"
                 }
             },
