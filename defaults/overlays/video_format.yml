@@ -55,6 +55,10 @@ templates:
             value: '(?i)\bdvd\b'
           - key: sdtv
             value: '(?i)\bsd[ ._-]?tv\b'
+          - key: cam
+            value: '(?i)\b(HQ|HD)?CAM\b'
+          - key: telesync
+            value: '(?i)\b(TS|HDTS|TELESYNC)\b'
     ignore_blank_results: true
     plex_all: true
     filters:
@@ -84,4 +88,12 @@ overlays:
 
   SDTV:
     variables: {key: sdtv, weight: 10}
+    template: [name: standard, name: video_format]
+
+  TELESYNC:
+    variables: {key: telesync, weight: 9}
+    template: [name: standard, name: video_format]
+
+  CAM:
+    variables: {key: cam, weight: 8}
     template: [name: standard, name: video_format]

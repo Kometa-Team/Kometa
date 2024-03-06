@@ -13,14 +13,16 @@ Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filenam
 
 ## Supported Video Formats
 
-| Video Format | Key      | Weight |
-|:-------------|:---------|:-------|
-| REMUX        | `remux`  | `60`   |
-| BLU-RAY      | `bluray` | `50`   |
-| WEB          | `web`    | `40`   |
-| HDTV         | `hdtv`   | `30`   |
-| DVD          | `dvd`    | `20`   |
-| SDTV         | `sdtv`   | `10`   |
+| Video Format   | Key        | Weight |
+|:---------------|:-----------|:-------|
+| REMUX          | `remux`    | `60`   |
+| BLU-RAY        | `bluray`   | `50`   |
+| WEB            | `web`      | `40`   |
+| HDTV           | `hdtv`     | `30`   |
+| DVD            | `dvd`      | `20`   |
+| SDTV           | `sdtv`     | `10`   |
+| TELESYNC       | `telesync` | `9`    |
+| CAM            | `cam`      | `8`    |
 
 ## Config
 
