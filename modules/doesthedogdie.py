@@ -270,11 +270,11 @@ class DogDieChecker:
     
     @classmethod
     def get_category_id_by_name(cls, name):
-        category = cls.category_map.get(name)
-        if category:
-            return category["id"]
-        else:
-            return None
+        lowercase_name = name.lower()
+        for category_name, category in cls.category_map.items():
+            if category_name.lower() == lowercase_name:
+                return category["id"]
+        return None
         
     @classmethod
     def get_topic_ids_by_category_id(cls, category_id):
