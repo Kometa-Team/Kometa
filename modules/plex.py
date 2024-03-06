@@ -1519,6 +1519,9 @@ class Plex(Library):
         attrs = {}
         match_dict = {}
         fields = {f.name: f for f in item.fields if f.locked}
+        if isinstance(item, (Artist, Album, Track)):
+            if item.userRating:
+                fields["userRating"] = item.userRating
         if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:
             if year_titles.count(f"{item.title} ({item.year})") > 1:
                 match_dict["title"] = item.title
@@ -1543,7 +1546,7 @@ class Plex(Library):
             if isinstance(item, (Movie, Show)):
                 tmdb_id, tvdb_id, imdb_id = self.get_ids(item)
                 tmdb_item = self.config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=isinstance(item, Movie))
-                if tmdb_item:
+                if tmdb_item and tmdb_item.title != item.title:
                     match_dict["title"] = [item.title, tmdb_item.title]
 
         if match_dict:

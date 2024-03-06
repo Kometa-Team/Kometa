@@ -38,5 +38,6 @@ Fixed an issue where dynamic collection errors would sometimes appear before the
 Fixed IMDb Null issue
 Fixed mapper operations not working without a mass update operation
 Fixed episode rating mass update operations
+Fixed metadata backup issue where Artist, Album, and Track ratings were not being backed up
 
 Various other Minor Fixes
