@@ -1143,6 +1143,11 @@ class Operations:
                 map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
+                if map_key not in yaml.data["metadata"]:
+                    yaml.data["metadata"][map_key] = {"match": {}}
+                yaml.data["metadata"][map_key]["match"]["title"] = item.title
+                yaml.data["metadata"][map_key]["match"]["year"] = item.year
+
                 og_dict = yaml.data["metadata"][map_key] if map_key in yaml.data["metadata"] and yaml.data["metadata"][map_key] and isinstance(yaml.data["metadata"][map_key], dict) else {}
                 if attrs or (self.library.metadata_backup["add_blank_entries"] and not og_dict):
 
