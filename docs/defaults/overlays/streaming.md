@@ -41,10 +41,9 @@ are, as detailed below:
 
 | Region           | Key                              | Description                                                                                                                         |
 |:-----------------|:---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| any besides `us` | `amazon`, `disney`, `netflix`    | These overlays will use regional variant lists to ensure the overlays are applied to what is available in the region specified      |
-| any besides `uk` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
-| any besides `ca` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
-| `ca`             | `max`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| any besides `GB` | `all4`, `britbox`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `CA` | `crave`                          | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
+| `CA`             | `max`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
 
 
 ## Config
@@ -92,7 +91,7 @@ work. Any value not specified will use its default value if it has one if not it
 
         | Variable                     | Description & Values                                                                                                                                                                                                                                                                                                            |
         |:-----------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `region`                     | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `us`<br>**Values:** `us`,`uk`,`ca`, `da`, `de`, `es`, `fr`, `it`, `pt-br`                                                                                                                     |
+        | `region`                     | **Description:** Changes some Streaming Service lists to regional variants (see below table for more information.<br>**Default:** `US`<br>**Values:** Any [ISO 3166-1 Code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes) of the region where the streaming information should be based on.                                                                                                                   |
         | `originals_only`             | **Description:** Changes Streaming Service overlays to only apply to original content produced by the service.<br>**Note**: Cannot be used with `region`, and only produces overlays for `amazon`, `appletv`, `disney`, `max`, `hulu`, `netflix`, `paramount`, `peacock`<br>**Default:** `false`<br>**Values:** `true`, `false` |
         | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number                                                                                                                                                                                                                    |
 
