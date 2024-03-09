@@ -54,7 +54,7 @@ imdb_label_options = {
     "moderate": "Add IMDb Parental Labels for Moderate or Severe",
     "severe": "Add IMDb Parental Labels for Severe"
 }
-dddd_label_options = {
+dtdd_label_options = {
     "dog": "Does the dog die",
     "default": "Default trigger warnings",
     "all": "Label all triggers (almost 200)"
@@ -152,7 +152,7 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_imdb_parental_labels": imdb_label_options,
-    "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options, "mass_does_the_dog_labels": dddd_label_options,
+    "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options, "mass_does_the_dog_labels": "dict",
     "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
     "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
@@ -1040,6 +1040,11 @@ class ConfigFile:
                                     section_final[op] = {
                                         "source": check_for_attribute(input_dict, "source", test_list=mass_collection_content_options, default_is_none=True, save=False),
                                         "ranking": check_for_attribute(input_dict, "ranking", var_type="list", default=content_rating_default, save=False),
+                                    }
+                                elif op == "mass_does_the_dog_labels":
+                                    section_final[op] = {
+                                        "label_mode": check_for_attribute(input_dict, "label_mode", default="dog", save=False),
+                                        "strict_search": check_for_attribute(input_dict, "strict_search", var_type="bool", default=False, save=False),
                                     }
                             else:
                                 section_final[op] = check_for_attribute(config_op, op, var_type=data_type, default=False, save=False)

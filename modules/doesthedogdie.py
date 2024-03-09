@@ -284,21 +284,21 @@ class DogDieChecker:
         response = requests.get(url, params=params, headers=self.api_headers)
         return response
 
-    def search_movie(self, movie_name, year=None, topic_ids=[]):
+    def search_movie(self, movie_name, year=None, topic_ids=[], strict_search_mode=False):
         search_params = {'q': movie_name}
         if year:
             search_params['year'] = year
         response = self._get_response(self.base_search_url, params=search_params)
         if response.status_code == 200:
             search_results = response.json()
-            movie_id = self._extract_movie_id(search_results, movie_name, year)
+            movie_id = self._extract_movie_id(search_results, movie_name, year, strict_search_mode)
             if movie_id:
                 movie_info = self._get_movie_info(movie_id)
                 topic_labels = self._get_topic_labels(movie_info, topic_ids)
                 return topic_labels
         return []
 
-    def _extract_movie_id(self, search_results, movie_name, year=None):
+    def _extract_movie_id(self, search_results, movie_name, year=None, strict_search_mode=False):
         filtered_results = [result for result in search_results.get('items', []) if result.get('name').lower() == movie_name.lower()]
         if year:
             filtered_results = [result for result in filtered_results if str(result.get('releaseYear')) == str(year)]
@@ -306,7 +306,10 @@ class DogDieChecker:
             return filtered_results[0].get('id')
         elif search_results.get('items'):
             # If no exact match found for the year, return the ID of the first item
-            return search_results['items'][0].get('id')
+            if strict_search_mode:
+                logger.info("Does the Dog.. Strict search is enabled and no match for both movie title " + movie_name + " and year " + str(year) + " so returning None")
+            else:
+                return search_results['items'][0].get('id')
         return None
 
     def _get_movie_info(self, movie_id):

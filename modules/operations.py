@@ -158,14 +158,14 @@ class Operations:
                 if self.library.mass_does_the_dog_labels:
                     try:
                         topics_to_warn_on = []
-                        if self.library.mass_does_the_dog_labels == "remove":
+                        if self.library.mass_does_the_dog_labels["label_mode"] == "remove":
                             pass
-                        elif self.library.mass_does_the_dog_labels == "dog":
-                            topics_to_warn_on = [153] # 153 is the dog topic id
-                        elif self.library.mass_does_the_dog_labels == "all":
+                        elif self.library.mass_does_the_dog_labels["label_mode"] == "all":
                             topics_to_warn_on = self.config.DogDieChecker.get_all_topic_ids()
+                        elif self.library.mass_does_the_dog_labels["label_mode"] == "dog":
+                            topics_to_warn_on = [153] # 153 is the dog topic id
                         else:
-                            for category_name in self.library.mass_does_the_dog_labels.split(","):
+                            for category_name in self.library.mass_does_the_dog_labels["label_mode"].split(","):
                                 category_id = self.config.DogDieChecker.get_category_id_by_name(category_name)
                                 if category_id:
                                     topic_ids = self.config.DogDieChecker.get_topic_ids_by_category_id(category_id)
@@ -179,7 +179,8 @@ class Operations:
                         dog_warning_labels = self.config.DogDieChecker.search_movie(
                             item.title,
                             item.year,
-                            topics_to_warn_on
+                            topics_to_warn_on,
+                            self.library.mass_does_the_dog_labels["strict_search"]
                         )
                         add_labels = [la for la in dog_warning_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in self.config.DogDieChecker.get_all_labels() and la not in dog_warning_labels]
