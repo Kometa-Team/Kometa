@@ -593,6 +593,38 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
               mass_imdb_parental_labels: severe
         ```
 
+###### Mass Does the Dog Die Labels
+        
+??? blank "`mass_does_the_dog_labels` - Adds Does The Dog Die warning labels to every item in the library.<a class="headerlink" href="#mass-does-the-dog-labels" title="Permanent link">¶</a>"
+
+    <div id="mass-does-the-dog-labels" />Updates every item's labels in the library to match Does The Dog Die warnings.
+
+    ???+ warning
+
+    Does The Dog Die does not match on ID, only on title and year. Please reference the `strict_search` property to configure this behavior.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `mass_does_the_dog_labels`
+    
+    **Accepted Values:**
+
+    <table class="clearTable">
+      <tr><td>`label_mode`</td><td>Mode for labeling. Simply `dog`, `all` for every category the site offers, `remove` to remove existing labels or comma separated list of categories</td></tr>
+      <tr><td>`strict_search`</td><td>If no exact match by year, setting this to True controls if we should discard results or if False take the top result. Defaults to False.</td></tr>
+    </table>
+    
+    ???+ example "Example"
+
+        ```yaml
+        libraries: 
+          Movies:
+            operations:
+              mass_does_the_dog_labels:
+                strict_search: false
+                label_mode: Animal,Abuse,Sexism,Addiction,Children
+        ```
+
 ###### Mass Collection Mode
 
 ??? blank "`mass_collection_mode` - Updates the Collection Mode of every item in the library.<a class="headerlink" href="#mass-collection-mode" title="Permanent link">¶</a>"
