@@ -123,6 +123,12 @@ Assets can be stored anywhere on the host system that PMM has visibility of (i.e
 
 * For **Shows**, **Seasons**, and **Episodes** replace `ASSET_NAME` with the exact name of the folder for the show as a whole.
 
+  That means the folder name exactly as it appears in the file system.
+  ```
+  /path/to/media/tv/THE NAME OF THE FOLDER HOWEVER LONG IT IS AND WHATEVER IT CONTAINS/Season 01/EPISODE_FILE.mkv
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+  ```
+
   For example, given this show:
   ```
   /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
