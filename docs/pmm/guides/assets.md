@@ -95,7 +95,13 @@ Assets can be stored anywhere on the host system that PMM has visibility of (i.e
   `ASSET_NAME` is "crazy-punctuation-collection"
 
 * For **Movies** replace `ASSET_NAME` with the exact name of the folder the video file is stored in.
-  
+
+  That means the folder name exactly as it appears in the file system.
+  ```
+  /path/to/media/movies/THE NAME OF THE FOLDER HOWEVER LONG IT IS AND WHATEVER IT CONTAINS/MOVIE_NAME.mp4
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+  ```
+
   For example, given this movie:
   ```
   /path/to/media/movies/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/Star Wars (1977) [1080p].mp4
