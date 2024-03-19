@@ -4,7 +4,7 @@ search:
 ---
 # FAQ & Knowledgebase
 
-This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our 
+This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://metamanager.wiki/en/latest/discord/).
 
 If you have a question that is not answered here, try entering some keywords into the search bar above, or join our [Discord Server](https://metamanager.wiki/en/latest/discord/).
 
@@ -14,9 +14,9 @@ This section aims to answer the most commonly asked questions that users have.
 
 ### PMM Versions & Updating
 
-The commands here should work in any terminal on the respective platforms, but that can't be guaranteed.  If you know shortcuts for some of these things, go ahead and use them.  For example, in many terminals, `cd ~/Plex-Meta-Manager` is the same as `cd /Users/YOUR_USERNAME/Plex-Meta-Manager`.  
+The commands here should work in any terminal on the respective platforms, but that can't be guaranteed. If you know shortcuts for some of these things, go ahead and use them. For example, in many terminals, `cd ~/Plex-Meta-Manager` is the same as `cd /Users/YOUR_USERNAME/Plex-Meta-Manager`.  
 
-Your PMM installation may not be located at the paths referenced below.  These are the paths used in the walkthroughs in this documentation, so if you installed it somewhere else you will have to change the path[s] to reflect your system and the choices you made during installation.
+Your PMM installation may not be located at the paths referenced below. These are the paths used in the walkthroughs in this documentation, so if you installed it somewhere else you will have to change the path[s] to reflect your system and the choices you made during installation.
 
 ??? question "How do I update to the latest version of Plex Meta Manager?"
 
@@ -36,7 +36,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     
     === ":fontawesome-brands-apple: macOS"
@@ -55,7 +55,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -74,7 +74,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -108,7 +108,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -127,7 +127,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -147,7 +147,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -179,7 +179,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -198,7 +198,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -218,7 +218,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -249,7 +249,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -268,7 +268,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -288,7 +288,7 @@ Your PMM installation may not be located at the paths referenced below.  These a
             git stash
             git stash clear
 
-        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED].  You shouldn't be doing this, so typically this will not lose any of your work.  If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to PMM-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -386,7 +386,7 @@ This section aims to provide some insight as to articles/information that we fee
 
 ### PMM 1.20 Release Changes
 
-With the release of PMM 1.20, several changes have taken place that we would like to make you aware of, please read the below document thoroughly!
+With the release of PMM 1.20, several changes have been made. Please read the document below thoroughly!
 
 ??? blank "`metadata_path` and `overlay_path` are now legacy attributes (click to expand).<a class="headerlink" href="#metadata-overlay-path" title="Permanent link">¶</a>"
 
