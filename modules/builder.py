@@ -1998,7 +1998,7 @@ class CollectionBuilder:
                     elif self.library.is_show and discover_attr in tmdb.discover_movie_only:
                         raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute only works for movie libraries")
                     elif discover_attr == "region":
-                        new_dictionary[discover_attr] = util.parse(self.Type, discover_method, discover_data, parent=method_name, regex=("^[A-Z]{2}$", "US"))
+                        new_dictionary[discover_attr] = util.parse(self.Type, discover_method, discover_data.upper(), parent=method_name, regex=("^[A-Z]{2}$", "US"))
                     elif discover_attr == "sort_by":
                         options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
                         new_dictionary[lower_method] = util.parse(self.Type, discover_method, discover_data, parent=method_name, options=options)
@@ -2014,7 +2014,7 @@ class CollectionBuilder:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with certification_country")
                     elif discover_attr == "watch_region":
                         if "with_watch_providers" in dict_data or "without_watch_providers" in dict_data or "with_watch_monetization_types" in dict_data:
-                            new_dictionary[lower_method] = discover_data
+                            new_dictionary[lower_method] = discover_data.upper()
                         else:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
