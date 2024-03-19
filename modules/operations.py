@@ -803,7 +803,7 @@ class Operations:
 
                 if any([x is not None for x, _ in episode_ops]):
 
-                    if any(["imdb" in x for x, _ in episode_ops]) and not imdb_id:
+                    if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
                     for ep in item.episodes():
