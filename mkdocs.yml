@@ -232,6 +232,8 @@ nav:
           - US Content Ratings (Show): defaults/show/content_rating_us.md
           - UK Content Ratings: defaults/both/content_rating_uk.md
           - DE Content Ratings: defaults/both/content_rating_de.md
+          - AU Content Ratings: defaults/both/content_rating_au.md
+          - NZ Content Ratings: defaults/both/content_rating_nz.md
           - MyAnimeList Content Ratings: defaults/both/content_rating_mal.md
           - Common Sense Media Content Ratings: defaults/both/content_rating_cs.md
         - Location:
@@ -277,6 +279,8 @@ nav:
           - US Content Ratings (Show): defaults/overlays/content_rating_us_show.md
           - UK Content Ratings: defaults/overlays/content_rating_uk.md
           - DE Content Ratings: defaults/overlays/content_rating_de.md
+          - AU Content Ratings: defaults/overlays/content_rating_au.md
+          - NZ Content Ratings: defaults/overlays/content_rating_nz.md
           - Common Sense Age Ratings: defaults/overlays/commonsense.md
         - Media:
           - Aspect Ratio: defaults/overlays/aspect.md
