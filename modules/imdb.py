@@ -73,6 +73,7 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 git_base = "https://raw.githubusercontent.com/meisnate12/PMM-IMDb-Awards/master"
+hash_url = "https://raw.githubusercontent.com/meisnate12/IMDb-Hash/master/HASH"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
@@ -84,6 +85,7 @@ class IMDb:
         self._episode_ratings = None
         self._events_validation = None
         self._events = {}
+        self._hash = None
         self.event_url_validation = {}
 
     def _request(self, url, language=None, xpath=None, params=None):
@@ -96,6 +98,12 @@ class IMDb:
 
     def _graph_request(self, json_data):
         return self.config.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
+
+    @property
+    def hash(self):
+        if self._hash is None:
+            self._hash = self.config.get(hash_url).text.strip()
+        return self._hash
 
     @property
     def events_validation(self):
@@ -400,12 +408,7 @@ class IMDb:
         return {
             "operationName": "AdvancedTitleSearch",
             "variables": out,
-            "extensions": {
-                "persistedQuery": {
-                    "version": 1,
-                    "sha256Hash": "65dd1bac6fea9c75c87e2c0435402c1296b5cc5dd908eb897269aaa31fff44b1"
-                }
-            }
+            "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
         }
 
     def _search(self, data):
