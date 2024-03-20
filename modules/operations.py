@@ -358,6 +358,8 @@ class Operations:
                                         found_rating = tmdb_obj().vote_average # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
+                                    elif attribute == "omdb":
+                                        found_rating = omdb_obj().imdb_rating # noqa
                                     elif option == "trakt_user":
                                         _ratings = trakt_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
