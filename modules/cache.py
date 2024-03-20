@@ -669,7 +669,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tmdb_show_data WHERE tmdb_id = ?", (tmdb_id,))
+                cursor.execute("SELECT * FROM tmdb_show_data2 WHERE tmdb_id = ?", (tmdb_id,))
                 row = cursor.fetchone()
                 if row:
                     tmdb_dict["title"] = row["title"] if row["title"] else ""
@@ -703,8 +703,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tmdb_show_data(tmdb_id) VALUES(?)", (obj.tmdb_id,))
-                update_sql = "UPDATE tmdb_show_data SET title = ?, original_title = ?, studio = ?, overview = ?, tagline = ?, imdb_id = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO tmdb_show_data2(tmdb_id) VALUES(?)", (obj.tmdb_id,))
+                update_sql = "UPDATE tmdb_show_data2 SET title = ?, original_title = ?, studio = ?, overview = ?, tagline = ?, imdb_id = ?, " \
                              "poster_url = ?, backdrop_url = ?, vote_count = ?, vote_average = ?, language_iso = ?, " \
                              "language_name = ?, genres = ?, keywords = ?, first_air_date = ?, last_air_date = ?, status = ?, " \
                              "type = ?, tvdb_id = ?, countries = ?, seasons = ?, expiration_date = ? WHERE tmdb_id = ?"
