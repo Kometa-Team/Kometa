@@ -447,9 +447,9 @@ class DataFile:
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
-                                if variables[name_var].startswith(f"{op} "):
+                                if not sort_name and variables[name_var].startswith(f"{op} "):
                                     sort_name = f"{variables[name_var][len(op):].strip()}, {op}"
-                                if variables["mapping_name"].startswith(f"{op} "):
+                                if not sort_mapping and variables["mapping_name"].startswith(f"{op} "):
                                     sort_mapping = f"{variables['mapping_name'][len(op):].strip()}, {op}"
                                 break if sort_name and sort_mapping
                         else:
