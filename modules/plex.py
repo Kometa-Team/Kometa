@@ -1822,8 +1822,9 @@ class Plex(Library):
                 has_match = False
                 for reg in filter_data:
                     for name in attrs:
-                        if re.compile(reg).search(name):
-                            has_match = True
+                        if isinstance(name, str)::
+                            if re.compile(reg).search(name):
+                                has_match = True
                 if has_match is False:
                     return False
             elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
