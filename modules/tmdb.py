@@ -79,11 +79,11 @@ class TMDbCountry:
 
 class TMDbSeason:
     def __init__(self, data):
-        self.season_number = data.split(":")[0] if isinstance(data, str) else data.season_number
-        self.name = data.split(":")[1] if isinstance(data, str) else data.name
+        self.season_number = data.split("%:%")[0] if isinstance(data, str) else data.season_number
+        self.name = data.split("%:%")[1] if isinstance(data, str) else data.name
 
     def __repr__(self):
-        return f"{self.season_number}:{self.name}"
+        return f"{self.season_number}%:%{self.name}"
 
 
 class TMDBObj:
@@ -158,7 +158,7 @@ class TMDbShow(TMDBObj):
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
         loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else [] # noqa
         self.countries = [TMDbCountry(c) for c in loop]
-        loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("|") if data["seasons"] else [] # noqa
+        loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else [] # noqa
         self.seasons = [TMDbSeason(s) for s in loop]
 
         if self._tmdb.config.Cache and not ignore_cache:

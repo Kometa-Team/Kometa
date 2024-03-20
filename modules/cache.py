@@ -30,6 +30,7 @@ class Cache:
                 cursor.execute("DROP TABLE IF EXISTS omdb_data2")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data")
                 cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
+                cursor.execute("DROP TABLE IF EXISTS tmdb_show_data")
                 cursor.execute("DROP TABLE IF EXISTS overlay_ratings")
                 cursor.execute("DROP TABLE IF EXISTS anidb_data")
                 cursor.execute("DROP TABLE IF EXISTS anidb_data2")
@@ -186,7 +187,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_show_data (
+                    """CREATE TABLE IF NOT EXISTS tmdb_show_data2 (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER UNIQUE,
                     title TEXT,
@@ -712,7 +713,7 @@ class Cache:
                     obj.vote_count, obj.vote_average, obj.language_iso, obj.language_name, "|".join(obj.genres), "|".join(obj.keywords),
                     obj.first_air_date.strftime("%Y-%m-%d") if obj.first_air_date else None,
                     obj.last_air_date.strftime("%Y-%m-%d") if obj.last_air_date else None,
-                    obj.status, obj.type, obj.tvdb_id, "|".join([str(c) for c in obj.countries]), "|".join([str(s) for s in obj.seasons]),
+                    obj.status, obj.type, obj.tvdb_id, "|".join([str(c) for c in obj.countries]), "%|%".join([str(s) for s in obj.seasons]),
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id
                 ))
 
