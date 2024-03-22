@@ -507,7 +507,7 @@ The available attributes for each library are as follows:
           upgrade_existing: false
           monitor_existing: false
           root_folder_path: /movies
-          monitor: movie
+          monitor: false
           availability: released
           tag:
           search: false
