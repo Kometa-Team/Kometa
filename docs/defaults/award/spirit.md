@@ -12,7 +12,7 @@ Supported Library Types: Movie
 
 | Collection                                                                            | Key                               | Description                                                        |
 |:--------------------------------------------------------------------------------------|:----------------------------------|:-------------------------------------------------------------------|
-| `Spirit Best Feature Winners`                                                         | `best`                            | Collection of Independent Spirit Best Feature Award Winners.       |
+| `Independent Spirit Best Feature Winners`                                             | `best`                            | Collection of Independent Spirit Best Feature Award Winners.       |
 | `Independent Spirit Awards <<year>>`<br>**Example:** `Independent Spirit Awards 2022` | `<<year>>`<br>**Example:** `2022` | Collection of Independent Spirit Award Winners for the given year. |
 
 ## Config
