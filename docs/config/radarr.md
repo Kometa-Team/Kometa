@@ -29,7 +29,7 @@ radarr:
   upgrade_existing: false
   monitor_existing: false
   root_folder_path: S:/Movies
-  monitor: movie
+  monitor: false
   availability: announced
   quality_profile: HD-1080p
   tag: pmm
@@ -80,7 +80,7 @@ radarr:
   upgrade_existing: #
   monitor_existing: #
   root_folder_path: /movies
-  monitor: movie
+  monitor: false
   availability: announced
   quality_profile: HD-1080p
   tag: 
@@ -146,7 +146,7 @@ radarr:
   upgrade_existing: false
   monitor_existing: false
   root_folder_path: /movies
-  monitor: movie
+  monitor: false
   availability: released
   tag:
   search: false
