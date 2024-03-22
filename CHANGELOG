@@ -41,3 +41,5 @@ Fixed episode rating mass update operations
 Fixed metadata backup issue where Artist, Album, and Track ratings were not being backed up
 
 Various other Minor Fixes
+
+Closed legacy issues on GitHub
