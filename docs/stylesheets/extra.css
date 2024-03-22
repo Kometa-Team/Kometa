@@ -295,7 +295,6 @@ table.dualTable td, table.dualTable th {
 
 /* Custom tooltips */
 .md-tooltip {
-    background-color: var(--md-primary-fg-color);
     border-radius: 6px;
 }
 
