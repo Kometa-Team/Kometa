@@ -12,7 +12,7 @@ external_templates:
     collection_section: "110"
 
 collections:
-  Ratings Collections:
+  AU Ratings Collections:
     template:
       - name: separator
         separator: content_rating
