@@ -148,6 +148,7 @@ nav:
           - Overview: pmm/guides/overview.md
           - Plex Ratings Explained: pmm/guides/ratings.md
           - Scheduling PMM Runs Guide: pmm/guides/scheduling.md
+          - Sort Options Guide: pmm/guides/sorts.md
           - Image Asset Directory Guide: pmm/guides/assets.md
           - Formula 1 Metadata Guide: pmm/guides/formula.md
         - Companion Scripts: &scripts
