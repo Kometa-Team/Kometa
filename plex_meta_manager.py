@@ -240,7 +240,7 @@ def start(attrs):
     required_version = None
     if not is_docker and not is_linuxserver:
         try:
-            with open("requirements.txt", "r") as file:
+            with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
                 required_version = next(ln.strip()[9:] for ln in file.readlines() if ln.strip().startswith("PlexAPI=="))
         except FileNotFoundError:
             logger.error("    File Error: requirements.txt not found")
