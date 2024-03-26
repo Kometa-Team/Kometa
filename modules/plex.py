@@ -209,7 +209,7 @@ date_sub_mods = {"s": "Seconds", "m": "Minutes", "h": "Hours", "d": "Days", "w":
 album_sorting_options = {"default": -1, "newest": 0, "oldest": 1, "name": 2}
 episode_sorting_options = {"default": -1, "oldest": 0, "newest": 1}
 keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "past_3": -3, "past_7": -7, "past_30": -30}
-delete_episodes_options = {"never": 0, "day": 1, "week": 7, "refresh": 100}
+delete_episodes_options = {"never": 0, "day": 1, "week": 7, "month": 30, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
 episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "aired", "tvdb_dvd": "dvd", "tvdb_absolute": "absolute"}
 plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US",
@@ -219,6 +219,12 @@ plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
+credits_detection_options = {"default": -1, "disabled": 0}
+audio_language_options = {lang.lower(): lang for lang in plex_languages}
+audio_language_options["en"] = "en"
+subtitle_language_options = {lang.lower(): lang for lang in plex_languages}
+subtitle_language_options["en"] = "en"
+subtitle_mode_options = {"default": -1, "manual": 0, "foreign": 1, "always": 2}
 collection_order_options = ["release", "alpha", "custom"]
 collection_filtering_options = ["user", "admin"]
 collection_mode_options = {
@@ -239,7 +245,11 @@ item_advance_keys = {
     "item_season_display": ("flattenSeasons", season_display_options),
     "item_episode_ordering": ("showOrdering", episode_ordering_options),
     "item_metadata_language": ("languageOverride", metadata_language_options),
-    "item_use_original_title": ("useOriginalTitle", use_original_title_options)
+    "item_use_original_title": ("useOriginalTitle", use_original_title_options),
+    "item_credits_detection": ("enableCreditsMarkerGeneration", credits_detection_options),
+    "item_audio_language": ("audioLanguage", audio_language_options),
+    "item_subtitle_language": ("subtitleLanguage", subtitle_language_options),
+    "item_subtitle_mode": ("subtitleMode", subtitle_mode_options)
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
 and_searches = [
@@ -1514,7 +1524,9 @@ class Plex(Library):
             imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
-    def get_locked_attributes(self, item, titles=None, year_titles=None):
+    def get_locked_attributes(self, item, titles=None, year_titles=None, item_type=None):
+        if not item_type:
+            item_type = self.type
         item = self.reload(item)
         attrs = {}
         match_dict = {}
@@ -1590,8 +1602,8 @@ class Plex(Library):
         check_field("mood", "mood", var_key="moods")
         check_field("style", "style", var_key="styles")
         check_field("similar", "similar_artist")
-        if self.type in util.advance_tags_to_edit:
-            for advance_edit in util.advance_tags_to_edit[self.type]:
+        if item_type in util.advance_tags_to_edit:
+            for advance_edit in util.advance_tags_to_edit[item_type]:
                 key, options = item_advance_keys[f"item_{advance_edit}"]
                 if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key):
                     continue
@@ -1599,10 +1611,10 @@ class Plex(Library):
                 if keys[getattr(item, key)] not in ["default", "all", "never"]:
                     attrs[advance_edit] = keys[getattr(item, key)]
 
-        def _recur(sub):
+        def _recur(sub, item_type_in=None):
             sub_items = {}
             for sub_item in getattr(item, sub)():
-                sub_item_key, sub_item_attrs = self.get_locked_attributes(sub_item)
+                sub_item_key, sub_item_attrs = self.get_locked_attributes(sub_item, item_type=item_type_in)
                 if sub_item_attrs:
                     sub_items[sub_item_key] = sub_item_attrs
             if sub_items:
@@ -1611,7 +1623,7 @@ class Plex(Library):
         if isinstance(item, Show):
             _recur("seasons")
         elif isinstance(item, Season):
-            _recur("episodes")
+            _recur("episodes", item_type_in="Season")
         elif isinstance(item, Artist):
             _recur("albums")
         elif isinstance(item, Album):

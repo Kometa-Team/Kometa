@@ -84,8 +84,9 @@ pretty_months = {
 lower_months = {v.lower(): k for k, v in pretty_months.items()}
 seasons = ["current", "winter", "spring", "summer", "fall"]
 advance_tags_to_edit = {
-    "Movie": ["metadata_language", "use_original_title"],
-    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title"],
+    "Movie": ["metadata_language", "use_original_title", "credits_detection"],
+    "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title", "credits_detection", "audio_language", "subtitle_language", "subtitle_mode"],
+    "Season": ["audio_language", "subtitle_language", "subtitle_mode"],
     "Artist": ["album_sorting"]
 }
 tags_to_edit = {

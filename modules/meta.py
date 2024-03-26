@@ -1924,6 +1924,29 @@ class MetadataFile(DataFile):
                                                              title=f"{item.title} Season {season.seasonNumber}",
                                                              image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
                                                              folder_name=folder_name, style_data=season_style_data)
+
+                        advance_edits = {}
+                        prefs = None
+                        for advance_edit in util.advance_tags_to_edit["Season"]:
+                            if advance_edit in season_methods:
+                                if season_dict[season_methods[advance_edit]]:
+                                    ad_key, options = plex.item_advance_keys[f"item_{advance_edit}"]
+                                    method_data = str(season_dict[season_methods[advance_edit]]).lower()
+                                    if prefs is None:
+                                        prefs = [p.id for p in season.preferences()]
+                                    if method_data not in options:
+                                        logger.error(f"{self.type_str} Error: {meta[methods[advance_edit]]} {advance_edit} attribute invalid")
+                                    elif ad_key in prefs and getattr(season, ad_key) != options[method_data]:
+                                        advance_edits[ad_key] = options[method_data]
+                                        logger.info(f"Metadata: {advance_edit} updated to {method_data}")
+                                else:
+                                    logger.error(f"{self.type_str} Error: {advance_edit} attribute is blank")
+                        if advance_edits:
+                            if self.library.edit_advance(season, advance_edits):
+                                updated = True
+                                logger.info("Advanced Metadata Update Successful")
+                            else:
+                                logger.error("Advanced Metadata Update Failed")
                         if ups:
                             updated = True
                         logger.info(f"Season {season_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
