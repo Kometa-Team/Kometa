@@ -1538,15 +1538,12 @@ class Plex(Library):
             if year_titles.count(f"{item.title} ({item.year})") > 1:
                 match_dict["title"] = item.title
                 match_dict["year"] = item.year
-                map_key = f"{item.title} ({item.year})"
-                match_dict["blank_edition"] = True
-                try:
-                    if item.editionTitle:
-                        map_key = f"{item.title} ({item.year}) [{item.editionTitle}]"
-                        match_dict["edition"] = item.editionTitle
-                        match_dict["blank_edition"] = False
-                except:
-                    dont_care = True
+                if hasattr(item, "editionTitle") and item.editionTitle:
+                    map_key = f"{item.title} ({item.year}) [{item.editionTitle}]"
+                    match_dict["edition"] = item.editionTitle
+                else:
+                    map_key = f"{item.title} ({item.year})"
+                    match_dict["blank_edition"] = True
             else:
                 map_key = f"{item.title} ({item.year})"
                 match_dict["title"] = item.title
@@ -1822,10 +1819,10 @@ class Plex(Library):
                     for part in media.parts:
                         if filter_attr == "audio_language":
                             for a in part.audioStreams():
-                                attrs.extend([a.language])
+                                attrs.extend([a.language, a.languageCode])
                         if filter_attr == "subtitle_language":
                             for s in part.subtitleStreams():
-                                attrs.extend([s.language])
+                                attrs.extend([s.language, s.languageCode])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",
