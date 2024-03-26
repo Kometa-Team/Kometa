@@ -51,7 +51,7 @@ templates:
   mdb_streaming:
     default:
       region: "US"
-      limit: "100000"
+      limit: "10000"
       originals_only: false
     optional:
       - use_<<key>>

@@ -19,7 +19,7 @@ strong {
 }
 
 table tr td code {
-  white-space: nowrap;
+  white-space: pre;
 }
 
 .md-banner {
