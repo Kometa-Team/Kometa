@@ -440,6 +440,7 @@ class DataFile:
                                 optional.append(f"{final_key}_encoded")
 
                     sort_name = None
+                    sort_mapping = None
                     if "move_prefix" in template or "move_collection_prefix" in template:
                         prefix = None
                         if "move_prefix" in template:
@@ -450,12 +451,15 @@ class DataFile:
                             prefix = template["move_collection_prefix"]
                         if prefix:
                             for op in util.get_list(prefix):
-                                if variables[name_var].startswith(f"{op} "):
+                                if not sort_name and variables[name_var].startswith(f"{op} "):
                                     sort_name = f"{variables[name_var][len(op):].strip()}, {op}"
-                                    break
+                                if not sort_mapping and variables["mapping_name"].startswith(f"{op} "):
+                                    sort_mapping = f"{variables['mapping_name'][len(op):].strip()}, {op}"
+                                break if sort_name and sort_mapping
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
                     variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
+                    variables["mapping_sort"] = sort_mapping if sort_mapping else variables["mapping_name"]
 
                     for key, value in variables.copy().items():
                         if "<<" in key and ">>" in key:
