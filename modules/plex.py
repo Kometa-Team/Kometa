@@ -1538,12 +1538,15 @@ class Plex(Library):
             if year_titles.count(f"{item.title} ({item.year})") > 1:
                 match_dict["title"] = item.title
                 match_dict["year"] = item.year
-                if item.editionTitle:
-                    map_key = f"{item.title} ({item.year}) [{item.editionTitle}]"
-                    match_dict["edition"] = item.editionTitle
-                else:
-                    map_key = f"{item.title} ({item.year})"
-                    match_dict["blank_edition"] = True
+                map_key = f"{item.title} ({item.year})"
+                match_dict["blank_edition"] = True
+                try:
+                    if item.editionTitle:
+                        map_key = f"{item.title} ({item.year}) [{item.editionTitle}]"
+                        match_dict["edition"] = item.editionTitle
+                        match_dict["blank_edition"] = False
+                except:
+                    dont_care = True
             else:
                 map_key = f"{item.title} ({item.year})"
                 match_dict["title"] = item.title
