@@ -417,31 +417,35 @@ class IMDb:
         imdb_ids = []
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
-        total = response_json["data"]["advancedTitleSearch"]["total"]
-        limit = data["limit"]
-        if limit < 1 or total < limit:
-            limit = total
-        remainder = limit % item_count
-        if remainder == 0:
-            remainder = item_count
-        num_of_pages = math.ceil(int(limit) / item_count)
-        end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
-        imdb_ids.extend([n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]])
-        if num_of_pages > 1:
-            for i in range(2, num_of_pages + 1):
-                start_num = (i - 1) * item_count + 1
-                logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
-                json_obj["variables"]["after"] = end_cursor
-                response_json = self._graph_request(json_obj)
-                end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
-                ids_found = [n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]]
-                if i == num_of_pages:
-                    ids_found = ids_found[:remainder]
-                imdb_ids.extend(ids_found)
-        logger.exorcise()
-        if len(imdb_ids) > 0:
-            return imdb_ids
-        raise Failed("IMDb Error: No IMDb IDs Found")
+        try:
+            total = response_json["data"]["advancedTitleSearch"]["total"]
+            limit = data["limit"]
+            if limit < 1 or total < limit:
+                limit = total
+            remainder = limit % item_count
+            if remainder == 0:
+                remainder = item_count
+            num_of_pages = math.ceil(int(limit) / item_count)
+            end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
+            imdb_ids.extend([n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]])
+            if num_of_pages > 1:
+                for i in range(2, num_of_pages + 1):
+                    start_num = (i - 1) * item_count + 1
+                    logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+                    json_obj["variables"]["after"] = end_cursor
+                    response_json = self._graph_request(json_obj)
+                    end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
+                    ids_found = [n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]]
+                    if i == num_of_pages:
+                        ids_found = ids_found[:remainder]
+                    imdb_ids.extend(ids_found)
+            logger.exorcise()
+            if len(imdb_ids) > 0:
+                return imdb_ids
+            raise Failed("IMDb Error: No IMDb IDs Found")
+        except KeyError:
+            logger.error(f"Response: {response_json}")
+            raise
 
     def _award(self, data):
         final_list = []

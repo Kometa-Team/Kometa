@@ -8,14 +8,14 @@ Updated tmdbapis requirement to 1.2.7
 Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
 
 # New Features
+Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission
 Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
 Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
+Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
 
 # Updates
 Reworked PMM Default Streaming [Collections](https://metamanager.wiki/en/latest/defaults/both/streaming) and [Overlays](https://metamanager.wiki/en/latest/defaults/overlays/streaming) to utilize TMDB Watch Provider data, allowing users to customize regions without relying on mdblist. This data will be more accurate and up-to-date now.
-Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission
 Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
-Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
 Trakt Builder `trakt_userlist` value `recommendations` removed and `favorites` added.
 Mass Update operations now can be given a list of sources to fall back on when one fails including a manual source.
 `mass_content_rating_update` has a new source `mdb_age_rating`
