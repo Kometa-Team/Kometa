@@ -455,7 +455,8 @@ class DataFile:
                                     sort_name = f"{variables[name_var][len(op):].strip()}, {op}"
                                 if not sort_mapping and variables["mapping_name"].startswith(f"{op} "):
                                     sort_mapping = f"{variables['mapping_name'][len(op):].strip()}, {op}"
-                                break if sort_name and sort_mapping
+                                if sort_name and sort_mapping:
+                                  break
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
                     variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
