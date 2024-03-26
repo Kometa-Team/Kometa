@@ -1819,10 +1819,10 @@ class Plex(Library):
                     for part in media.parts:
                         if filter_attr == "audio_language":
                             for a in part.audioStreams():
-                                attrs.extend([a.language, a.languageCode])
+                                attrs.extend([a.language])
                         if filter_attr == "subtitle_language":
                             for s in part.subtitleStreams():
-                                attrs.extend([s.language, s.languageCode])
+                                attrs.extend([s.language])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",
