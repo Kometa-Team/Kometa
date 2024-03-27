@@ -43,6 +43,8 @@ You can create individual blocks of operations by using a list under `operations
 
 ## Operation Attributes
 
+###### Assets For All
+
 ??? blank "`assets_for_all` - Used to search the asset directories for images for all items in the library.<a class="headerlink" href="#assets-for-all" title="Permanent link">¶</a>"
 
     <div id="assets-for-all" />Searches the asset directories for images for all items in the library.
@@ -61,6 +63,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               assets_for_all: false
         ```
+
+###### Delete Collections
 
 ??? blank "`delete_collections` - Deletes collections based on a set of given attribute.<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
 
@@ -95,6 +99,8 @@ You can create individual blocks of operations by using a list under `operations
                 configured: false
                 managed: true
         ```
+
+###### Mass Genre Update
 
 ??? blank "`mass_genre_update` - Updates the genres of every item in the library.<a class="headerlink" href="#mass-genre-update" title="Permanent link">¶</a>"
 
@@ -138,6 +144,8 @@ You can create individual blocks of operations by using a list under `operations
                 - ["Unknown"]
         ```
 
+###### Mass Content Rating Update
+
 ??? blank "`mass_content_rating_update` - Updates the content rating of every item in the library.<a class="headerlink" href="#mass-content-rating-update" title="Permanent link">¶</a>"
 
     <div id="mass-content-rating-update" />Updates every item's content rating in the library to the chosen site's 
@@ -176,6 +184,8 @@ You can create individual blocks of operations by using a list under `operations
                 - NR
         ```
 
+###### Mass Original Title Update
+
 ??? blank "`mass_original_title_update` - Updates the original title of every item in the library.<a class="headerlink" href="#mass-original-title-update" title="Permanent link">¶</a>"
 
     <div id="mass-original-title-update" />Updates every item's original title in the library to the chosen site's 
@@ -212,6 +222,8 @@ You can create individual blocks of operations by using a list under `operations
                 - Unknown
         ```
 
+###### Mass Studio Update
+
 ??? blank "`mass_studio_update` - Updates the studio of every item in the library.<a class="headerlink" href="#mass-studio-update" title="Permanent link">¶</a>"
 
     <div id="mass-studio-update" />Updates every item's studio in the library to the chosen site's studio.
@@ -244,6 +256,8 @@ You can create individual blocks of operations by using a list under `operations
                 - anidb
                 - Unknown
         ```
+
+###### Mass Originally Available Update
 
 ??? blank "`mass_originally_available_update` - Updates the originally available date of every item in the library.<a class="headerlink" href="#mass-originally-available-update" title="Permanent link">¶</a>"
 
@@ -287,6 +301,8 @@ You can create individual blocks of operations by using a list under `operations
                 - mdb
                 - 1900-01-01
         ```
+
+###### Mass Rating Update
 
 ??? blank "`mass_***_rating_update` - Updates the audience/critic/user rating of every item in the library.<a class="headerlink" href="#mass-star-rating-update" title="Permanent link">¶</a>"
 
@@ -355,6 +371,8 @@ You can create individual blocks of operations by using a list under `operations
                 - 2.0
         ```
 
+###### Mass Episode Rating Update
+
 ??? blank "`mass_episode_***_rating_update` - Updates the audience/critic/user rating of every episode in the library.<a class="headerlink" href="#mass-episode-star-rating-update" title="Permanent link">¶</a>"
 
     <div id="mass-episode-star-rating-update" />Updates every item's episode's audience/critic/user rating in the 
@@ -405,6 +423,8 @@ You can create individual blocks of operations by using a list under `operations
                 - 2.0
         ```
 
+###### Mass Poster Update
+
 ??? blank "`mass_poster_update` - Updates the poster of every item in the library.<a class="headerlink" href="#mass-poster-update" title="Permanent link">¶</a>"
 
     <div id="mas-_poster-update" />Updates every item's poster to the chosen sites poster. Will fall back to `plex` if 
@@ -438,6 +458,8 @@ You can create individual blocks of operations by using a list under `operations
                 seasons: false
                 episodes: false
         ```
+
+###### Mass Background Update
 
 ??? blank "`mass_background_update` - Updates the background of every item in the library.<a class="headerlink" href="#mass-background-update" title="Permanent link">¶</a>"
 
@@ -473,6 +495,8 @@ You can create individual blocks of operations by using a list under `operations
                 episodes: false
         ```
 
+###### Mass IMDb Parental Labels
+
 ??? blank "`mass_imdb_parental_labels` - Adds IMDb Parental labels of every item in the library.<a class="headerlink" href="#mass-imdb-parental-labels" title="Permanent link">¶</a>"
 
     <div id="mass-imdb-parental-labels" />Updates every item's labels in the library to match the IMDb Parental Guide.
@@ -498,6 +522,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               mass_imdb_parental_labels: severe
         ```
+
+###### Mass Collection Mode
 
 ??? blank "`mass_collection_mode` - Updates the Collection Mode of every item in the library.<a class="headerlink" href="#mass-collection-mode" title="Permanent link">¶</a>"
 
@@ -525,6 +551,8 @@ You can create individual blocks of operations by using a list under `operations
               mass_collection_mode: hide
         ```
 
+###### Update Blank Track Titles
+
 ??? blank "`update_blank_track_titles` - Updates blank track titles of every item in the library.<a class="headerlink" href="#update-blank-track-titles" title="Permanent link">¶</a>"
 
     <div id="update-blank-track-titles" />Search though every track in a music library and replace any blank track 
@@ -544,6 +572,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               update_blank_track_titles: true
         ```
+
+###### Remove Title Parentheses
 
 ??? blank "`remove_title_parentheses` - Removes title parentheses of every item in the library.<a class="headerlink" href="#remove-title-parentheses" title="Permanent link">¶</a>"
 
@@ -565,6 +595,8 @@ You can create individual blocks of operations by using a list under `operations
               remove_title_parentheses: true
         ```
 
+###### Split Duplicates
+
 ??? blank "`split_duplicates` - Splits all duplicate items found in this library.<a class="headerlink" href="#split-duplicates" title="Permanent link">¶</a>"
 
     <div id="split-duplicates" />Splits all duplicate items found in this library.
@@ -583,6 +615,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               split_duplicates: true
         ```
+
+###### Radarr Add All
 
 ??? blank "`radarr_add_all` - Adds every item in the library to Radarr.<a class="headerlink" href="#radarr-add-all" title="Permanent link">¶</a>"
 
@@ -609,6 +643,8 @@ You can create individual blocks of operations by using a list under `operations
               radarr_add_all: true
         ```
 
+###### Radarr Remove By Tag
+
 ??? blank "`radarr_remove_by_tag` - Removes every item from Radarr with the Tags given.<a class="headerlink" href="#radarr-remove-by-tag" title="Permanent link">¶</a>"
 
     <div id="radarr-remove-by-tag" />Removes every item from Radarr with the Tags given.
@@ -627,6 +663,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               radarr_remove_by_tag: mytag1, mytag2
         ```
+
+###### Sonarr Add All
 
 ??? blank "`sonarr_add_all` - Adds every item in the library to Sonarr.<a class="headerlink" href="#sonarr-add-all" title="Permanent link">¶</a>"
 
@@ -653,6 +691,8 @@ You can create individual blocks of operations by using a list under `operations
               sonarr_add_all: true
         ```
 
+###### Sonarr Remove By Tag
+
 ??? blank "`sonarr_remove_by_tag` - Removes every item from Sonarr with the Tags given.<a class="headerlink" href="#sonarr-remove-by-tag" title="Permanent link">¶</a>"
 
     <div id="sonarr-remove-by-tag" />Removes every item from Sonarr with the Tags given.
@@ -671,6 +711,8 @@ You can create individual blocks of operations by using a list under `operations
             operations:
               sonarr_remove_by_tag: mytag1, mytag2
         ```
+
+###### Genre Mapper
 
 ??? blank "`genre_mapper` - Maps genres in your library to be changed to other genres.<a class="headerlink" href="#genre-mapper" title="Permanent link">¶</a>"
 
@@ -719,6 +761,8 @@ You can create individual blocks of operations by using a list under `operations
         The above example will change go through every item in your library and change the genre `Action/Adventure` or 
         `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
 
+###### Content Rating Mapper
+
 ??? blank "`content_rating_mapper` - Maps content ratings in your library to be changed to other content ratings.<a class="headerlink" href="#content-rating-mapper" title="Permanent link">¶</a>"
 
     <div id="content-rating-mapper" />Maps content ratings in your library to be changed to other content ratings.
@@ -765,6 +809,8 @@ You can create individual blocks of operations by using a list under `operations
         
         The above example will change go through every item in your library and change the content rating `PG` or 
         `PG-13` to `Y-10` and remove every instance of the content rating `R`.
+
+###### Metadata Backup
 
 ??? blank "`metadata_backup` - Creates/Maintains a PMM Metadata File for the library.<a class="headerlink" href="#metadata-backup" title="Permanent link">¶</a>"
 
