@@ -1,4 +1,4 @@
-import os, plexapi, re, requests
+import os, plexapi, re, requests, time
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -791,6 +791,13 @@ class Plex(Library):
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_plex)
     def _upload_image(self, item, image):
         try:
+            if image.is_url and "theposterdb.com" in image.location:
+                now = datetime.now()
+                if self.config.tpdb_timer is not None:
+                    while self.config.tpdb_timer + timedelta(seconds=6) > now:
+                        time.sleep(1)
+                        now = datetime.now()
+                self.config.tpdb_timer = now
             if image.is_poster and image.is_url:
                 item.uploadPoster(url=image.location)
             elif image.is_poster:
