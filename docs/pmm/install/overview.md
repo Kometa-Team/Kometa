@@ -93,7 +93,6 @@ docker run -it -v "X:\Media\Plex Meta Manager\config:/config:rw" meisnate12/plex
 This is an example docker-compose which will have to be edited to suit your environment before use, but illustrates the minimal contents:
 
 ```yaml
-version: "2.1"
 services:
   plex-meta-manager:
     image: meisnate12/plex-meta-manager
@@ -120,7 +119,6 @@ This example docker-compose would create a container that runs immediately upon 
 As with the one above, this is an example docker-compose which will have to be edited to suit your environment before use.
 
 ```yaml
-version: "2.1"
 services:
   plex-meta-manager:
     image: meisnate12/plex-meta-manager
