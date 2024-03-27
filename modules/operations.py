@@ -166,7 +166,7 @@ class Operations:
                 _trakt_ratings = None
                 def trakt_ratings():
                     nonlocal _trakt_ratings
-                    if _tmdb_obj is None:
+                    if _trakt_ratings is None:
                         _trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie)
                     if not _trakt_ratings:
                         raise Failed
@@ -358,7 +358,7 @@ class Operations:
                                         found_rating = tmdb_obj().vote_average # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
-                                    elif attribute == "omdb":
+                                    elif option == "omdb":
                                         found_rating = omdb_obj().imdb_rating # noqa
                                     elif option == "trakt_user":
                                         _ratings = trakt_ratings()

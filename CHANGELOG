@@ -24,7 +24,8 @@ Mass Update operations now can be given a list of sources to fall back on when o
 `plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
 Allows users to use the Admin username when specifying playlist users. Thanks @benbou8231!
 Allows `verify_ssl` to be set specifically for plex. Thanks @FestiveKyle!
-Updated Plex Item Advance Preferences
+Updated Plex Item Advance Preferences.
+Add new [Overlay Special Text Options](https://metamanager.wiki/en/latest/files/overlays/#special-text-variables) to directly print ratings to overlays without operations.
 
 # Defaults
 
