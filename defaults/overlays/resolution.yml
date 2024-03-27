@@ -217,7 +217,7 @@ templates:
           - alt: plus
             value: '(?i)\bhdr10(\+|p(lus)?\b)'
           - alt: dvhdr
-            value: '(?i)\bdv((.hdr10?\b)'
+            value: '(?i)\bdv(.hdr10?\b)'
           - alt: dvhdrplus
             value: '(?i)\bdv.HDR10(\+|P(lus)?\b)'
     optional:
