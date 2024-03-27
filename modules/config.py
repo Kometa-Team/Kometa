@@ -169,6 +169,7 @@ class ConfigFile:
         self.overlays_only = attrs["overlays_only"] if "overlays_only" in attrs else False
         self.env_plex_url = attrs["plex_url"] if "plex_url" in attrs else ""
         self.env_plex_token = attrs["plex_token"] if "plex_token" in attrs else ""
+        self.tpdb_timer = None
         current_time = datetime.now()
 
         with open(self.config_path, encoding="utf-8") as fp:
