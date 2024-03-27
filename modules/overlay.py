@@ -12,14 +12,25 @@ portrait_dim = (1000, 1500)
 landscape_dim = (1920, 1080)
 square_dim = (1000, 1000)
 old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
-float_vars = ["audience_rating", "critic_rating", "user_rating"]
+rating_sources = [
+    "tmdb_rating", "imdb_rating", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating",
+    "mdb_imdb_rating", "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
+    "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
+    "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
+]
+float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
 int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
-    "movie_show_episode": ["audience_rating", "content_rating"],
-    "movie_show": ["original_title"],
+    "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
+    "movie_show": [
+        "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
+        "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
+        "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
+        "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
+    ],
     "movie_episode": ["versions", "bitrate"],
     "season_episode": ["show_title", "season_number"],
     "show_season": ["episode_count"],
@@ -27,23 +38,16 @@ types_for_var = {
     "episode": ["season_title", "episode_number"]
 }
 var_mods = {
-    "title": ["", "U", "L", "P"],
-    "content_rating": ["", "U", "L", "P"],
-    "original_title": ["", "U", "L", "P"],
-    "edition": ["", "U", "L", "P"],
-    "show_title": ["", "U", "L", "P"],
-    "season_title": ["", "U", "L", "P"],
     "bitrate": ["", "H", "L"],
-    "user_rating": ["", "%", "#", "/"],
-    "critic_rating": ["", "%", "#", "/"],
-    "audience_rating": ["", "%", "#", "/"],
     "originally_available": ["", "["],
     "runtime": ["", "H", "M"],
-    "season_number": ["", "W", "WU", "WL", "0", "00"],
-    "episode_number": ["", "W", "WU", "WL", "0", "00"],
-    "episode_count": ["", "W", "WU", "WL", "0", "00"],
-    "versions": ["", "W", "WU", "WL", "0", "00"],
 }
+for mod in float_vars:
+    var_mods[mod] = ["", "%", "#", "/"]
+for mod in ["title", "content_rating", "original_title", "edition", "show_title", "season_title"]:
+    var_mods[mod] = ["", "U", "L", "P"]
+for mod in ["season_number", "episode_number", "episode_count", "versions"]:
+    var_mods[mod] = ["", "W", "WU", "WL", "0", "00"]
 single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
 double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
 vars_by_type = {
