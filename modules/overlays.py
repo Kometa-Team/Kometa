@@ -2,7 +2,7 @@ import os, re
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, LimitReached
+from modules.util import Failed, FilterFailed, NotScheduled, LimitReached
 from num2words import num2words
 from plexapi.exceptions import BadRequest
 from plexapi.video import Season, Episode
@@ -255,15 +255,27 @@ class Overlays:
                                         elif format_var in overlay.rating_sources:
                                             found_rating = None
                                             try:
-                                                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
+                                                item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+                                                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item_to_id)
                                                 if format_var == "tmdb_rating":
-                                                    _item = self.config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=self.library.is_movie)
+                                                    _item = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=self.library.is_movie)
                                                     if _item:
-                                                        found_rating = _item.vote_average
+                                                        if isinstance(item, Episode):
+                                                            found_rating = self.config.TMDb.get_episode(_item.tmdb_id, item.seasonNumber, item.episodeNumber).vote_average
+                                                        elif isinstance(item, Season):
+                                                            for season in _item.seasons:
+                                                                if item.seasonNumber == season.season_number:
+                                                                    found_rating = season.average
+                                                                    break
+                                                        else:
+                                                            found_rating = _item.vote_average
                                                     else:
                                                         raise Failed(f"No TMDb ID for Guid: {item.guid}")
                                                 elif format_var == "imdb_rating":
-                                                    found_rating = self.config.IMDb.get_rating(imdb_id)
+                                                    if isinstance(item, Episode):
+                                                        found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
+                                                    else:
+                                                        found_rating = self.config.IMDb.get_rating(imdb_id)
                                                 elif format_var == "omdb_rating":
                                                     if self.config.OMDb.limit is not False:
                                                         raise Failed("Daily OMDb Limit Reached")
@@ -408,9 +420,9 @@ class Overlays:
                                             else:
                                                 final_value = int(actual_value / 60000)
                                         elif mod == "%":
-                                            final_value = int(actual_value * 10)
+                                            final_value = int(float(actual_value) * 10)
                                         elif mod == "#":
-                                            actual_value = f"{actual_value:.1f}"
+                                            actual_value = f"{float(actual_value):.1f}"
                                             final_value = actual_value[:-2] if actual_value.endswith(".0") else actual_value
                                         elif mod == "/":
                                             final_value = f"{float(actual_value) / 2:.1f}"
@@ -431,7 +443,7 @@ class Overlays:
                                         elif mod == "P":
                                             final_value = str(actual_value).title()
                                         elif format_var in overlay.rating_sources:
-                                            final_value = f"{actual_value:.1f}"
+                                            final_value = f"{float(actual_value):.1f}"
                                         else:
                                             final_value = actual_value
                                         if sub_value:

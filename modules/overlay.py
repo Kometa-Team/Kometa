@@ -24,6 +24,7 @@ date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
+    "movie_show_season_episode": ["tmdb_rating"],
     "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
     "movie_show": [
         "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
