@@ -460,7 +460,6 @@ class ConfigFile:
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
-            "check_nightly": check_for_attribute(self.data, "check_nightly", parent="settings", var_type="bool", default=False),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.custom_repo = None
@@ -469,8 +468,7 @@ class ConfigFile:
             if "https://github.com/" in repo:
                 repo = repo.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/tree/", "/")
             self.custom_repo = repo
-        self.check_nightly = self.general["check_nightly"]
-        self.latest_version = util.current_version(self.version, branch=self.branch, nightly=self.check_nightly)
+        self.latest_version = util.current_version(self.version, branch=self.branch)
 
         add_operations = True if "operations" not in self.general["run_order"] else False
         add_metadata = True if "metadata" not in self.general["run_order"] else False

@@ -122,8 +122,8 @@ def guess_branch(version, env_version, git_branch):
     else:
         return "master"
 
-def current_version(version, branch=None, nightly=False):
-    if nightly or branch == "nightly":
+def current_version(version, branch=None):
+    if branch == "nightly":
         return get_nightly()
     elif branch == "develop":
         return get_develop()
