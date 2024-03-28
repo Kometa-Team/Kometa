@@ -77,10 +77,7 @@ class GitHub:
     def configs_url(self):
         if self._configs_url is None:
             self._configs_url = f"{configs_raw_url}/master/"
-            if self.config.version[1] in self.config_tags and (
-                    self.config.latest_version[1] != self.config.version[1]
-                    or (not self.config.check_nightly and 0 <= self.config.version[2] <= util.get_develop()[2])
-            ):
+            if self.config.version[1] in self.config_tags and (self.config.latest_version[1] != self.config.version[1] or self.config.branch == "master"):
                 self._configs_url = f"{configs_raw_url}/v{self.config.version[1]}/"
         return self._configs_url
 

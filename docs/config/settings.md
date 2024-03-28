@@ -988,34 +988,6 @@ The available setting attributes which can be set at each level are outlined bel
           verify_ssl: false
         ```
 
-??? blank "`check_nightly` - Will check nightly for updates instead of develop.<a class="headerlink" href="#check-nightly" title="Permanent link">¶</a>"
-
-    <div id="check-nightly" />Will check nightly for updates instead of develop. 
-    
-    ???+ note
-    
-        This does not affect which version of PMM is grabbed when using `git pull` or any other update mechanism, it is 
-        only used for the initial version check when PMM runs to specify if a new version is available.
-        
-        It is recommended to set this to `true` if you primarily use the `nightly` branch
-
-    <hr style="margin: 0px;">
-    
-    **Attribute:** `check_nightly`
-
-    **Levels with this Attribute:** Global
-    
-    **Accepted Values:** `true` or `false`
-
-    **Default Value:** `false`
-
-    ???+ example "Example"
-        
-        ```yaml
-        settings:
-          check_nightly: true
-        ```
-
 ## Default Values
 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the 

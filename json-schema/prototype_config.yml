@@ -435,7 +435,6 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
-  check_nightly: false
 webhooks:                        # Can be individually specified per library as well
   error:
   version:

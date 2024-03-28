@@ -895,10 +895,6 @@
                             "type": "string"
                         }
                     ]
-                },
-                "check_nightly": {
-                    "description": "Will check nightly for updates instead of develop.",
-                    "type": "boolean"
                 }
             },
             "required": [
