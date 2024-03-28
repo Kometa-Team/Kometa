@@ -329,7 +329,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `audience_rating`             | Plex Audience Rating                    | `Movies`, `Shows`, or `Episodes`            |
 | `critic_rating`               | Plex Critic Rating                      | `Movies`, `Shows`, or `Episodes`            |
 | `user_rating`                 | Plex User Rating                        | `Movies`, `Shows`, `Seasons`, or `Episodes` |
-| `tmdb_rating`                 | TMDb Rating                             | `Movies`, `Shows`, or `Episodes`            |
+| `tmdb_rating`                 | TMDb Rating                             | `Movies`, `Shows`, `Seasons`, or `Episodes` |
 | `imdb_rating`                 | IMDb Rating                             | `Movies`, `Shows`, or `Episodes`            |
 | `trakt_user_rating`           | Trakt User Rating                       | `Movies` or `Shows`                         |
 | `omdb_rating`                 | OMDb Rating                             | `Movies` or `Shows`                         |

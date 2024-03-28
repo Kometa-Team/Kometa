@@ -79,11 +79,12 @@ class TMDbCountry:
 
 class TMDbSeason:
     def __init__(self, data):
-        self.season_number = data.split("%:%")[0] if isinstance(data, str) else data.season_number
+        self.season_number = int(data.split("%:%")[0]) if isinstance(data, str) else data.season_number
         self.name = data.split("%:%")[1] if isinstance(data, str) else data.name
+        self.average = float(data.split("%:%")[2]) if isinstance(data, str) else data.vote_average
 
     def __repr__(self):
-        return f"{self.season_number}%:%{self.name}"
+        return f"{self.season_number}%:%{self.name}%:%{self.average}"
 
 
 class TMDBObj:
