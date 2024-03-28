@@ -1240,6 +1240,9 @@ overlays:
   Sean Daniel Company:
     template: [name: standard, name: studios]
 
+  Searchlight Pictures:
+    template: [name: standard, {name: studios, search: [Searchlight Pictures, Fox Searchlight Pictures]}]
+
   Secret Hideout:
     template: [name: standard, name: studios]
 
