@@ -128,7 +128,7 @@ extra_javascript:
 
 nav:
   - PLEX META MANAGER:
-      - Welcome: home.md
+      - Home: index.md
       - INSTALLATION:
         - Installing PMM: pmm/install/overview.md
         - Docker Images: pmm/install/images.md

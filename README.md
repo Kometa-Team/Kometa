@@ -7,7 +7,7 @@
 [![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/meisnate12/plex-meta-manager/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/meisnate12/Plex-Meta-Manager/tree/nightly)
 
 [![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://metamanager.wiki/en/latest/discord/)
-[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/PlexMetaManager?color=%2300bc8c&label=r%2FPlexMetaManager&style=plastic)](https://www.reddit.com/r/PlexMetaManager/)
+[![Reddit](https://img.shields.io/badge/%2Fr%2Fplexmetamanager-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c)](https://www.reddit.com/r/PlexMetaManager/)
 [![Wiki](https://img.shields.io/readthedocs/plex-meta-manager?color=%2300bc8c&style=plastic)](https://metamanager.wiki)
 [![Translations](https://img.shields.io/weblate/progress/plex-meta-manager?color=00bc8c&server=https%3A%2F%2Ftranslations.metamanager.wiki&style=plastic)](https://translations.metamanager.wiki/projects/plex-meta-manager/#languages)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
@@ -37,6 +37,13 @@ Transform your media library with Plex Meta Manager and discover its full potent
 
 -  We're constantly working on new features to take your library management experience to the next level.
 -  Consider sponsoring the project to allow us to continue building great features for you!
+
+## Demo Video
+
+The below YouTube video has been created by one of our community members to showcase some of the things that Plex Meta Manager can do for you. 
+
+<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 
 ## Example Plex Meta Manager Libraries 
 
