@@ -292,6 +292,10 @@ class Overlay:
             self.backdrop_text = self.name[5:-1]
         elif self.name.startswith("backdrop"):
             self.backdrop_box = self.back_box
+            if self.horizontal_offset is None:
+                self.horizontal_offset = 0
+            if self.vertical_offset is None:
+                self.vertical_offset = 0
         else:
             if not self.path:
                 clean_name, _ = util.validate_filename(self.name)

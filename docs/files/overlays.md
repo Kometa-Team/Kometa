@@ -271,7 +271,7 @@ overlays:
       name: backdrop
       back_color: "#00000099"
       back_height: 100
-      vertical_position: top
+      vertical_align: top
     plex_all: true
 ```
 
@@ -298,7 +298,7 @@ overlays:
       name: backdrop
       back_color: "#00000099"
       back_height: 100
-      vertical_position: top
+      vertical_align: top
     plex_all: true
   mytext:
     overlay:
@@ -413,7 +413,7 @@ overlays:
       name: backdrop
       back_color: "#00000099"
       back_height: 100
-      vertical_position: top
+      vertical_align: top
     plex_all: true
   mytext:
     overlay:
@@ -444,7 +444,7 @@ overlays:
       name: backdrop
       back_color: "#00000099"
       back_height: 100
-      vertical_position: top
+      vertical_align: top
     plex_all: true
   mytext:
     overlay:
@@ -469,7 +469,7 @@ overlays:
       name: backdrop
       back_color: "#00000099"
       back_height: 100
-      vertical_position: top
+      vertical_align: top
     plex_all: true
   season_episode_info:
     builder_level: episode
