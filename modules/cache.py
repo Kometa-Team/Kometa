@@ -772,7 +772,7 @@ class Cache:
                              "vote_count = ?, vote_average = ?, imdb_id = ?, tvdb_id = ?, " \
                              "expiration_date = ? WHERE tmdb_id = ? AND season_number = ? AND episode_number = ?"
                 cursor.execute(update_sql, (
-                    obj.title, obj.air_date.strftime("%Y-%m-%d"), obj.overview, obj.still_url,
+                    obj.title, obj.air_date.strftime("%Y-%m-%d") if obj.air_date else None, obj.overview, obj.still_url,
                     obj.vote_count, obj.vote_average, obj.imdb_id, obj.tvdb_id,
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id, obj.season_number, obj.episode_number
                 ))
