@@ -215,6 +215,22 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS tmdb_episode_data (
+                    key INTEGER PRIMARY KEY,
+                    tmdb_id INTEGER UNIQUE,
+                    title TEXT,
+                    air_date TEXT,
+                    overview TEXT,
+                    episode_number INTEGER,
+                    season_number INTEGER,
+                    still_url TEXT,
+                    vote_count INTEGER,
+                    vote_average REAL,
+                    imdb_id TEXT,
+                    tvdb_id INTEGER,
+                    expiration_date TEXT)"""
+                )
+                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tvdb_data3 (
                     key INTEGER PRIMARY KEY,
                     tvdb_id INTEGER UNIQUE,
@@ -716,6 +732,49 @@ class Cache:
                     obj.last_air_date.strftime("%Y-%m-%d") if obj.last_air_date else None,
                     obj.status, obj.type, obj.tvdb_id, "|".join([str(c) for c in obj.countries]), "%|%".join([str(s) for s in obj.seasons]),
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id
+                ))
+
+    def query_tmdb_episode(self, tmdb_id, season_number, episode_number, expiration):
+        tmdb_dict = {}
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(
+                    "SELECT * FROM tmdb_episode_data WHERE tmdb_id = ? AND season_number = ? AND episode_number = ?",
+                    (tmdb_id, season_number, episode_number)
+                )
+                row = cursor.fetchone()
+                if row:
+                    tmdb_dict["title"] = row["title"] if row["title"] else ""
+                    tmdb_dict["air_date"] = datetime.strptime(row["air_date"], "%Y-%m-%d") if row["air_date"] else None
+                    tmdb_dict["overview"] = row["overview"] if row["overview"] else ""
+                    tmdb_dict["still_url"] = row["still_url"] if row["still_url"] else ""
+                    tmdb_dict["vote_count"] = row["vote_count"] if row["vote_count"] else 0
+                    tmdb_dict["vote_average"] = row["vote_average"] if row["vote_average"] else 0
+                    tmdb_dict["imdb_id"] = row["imdb_id"] if row["imdb_id"] else ""
+                    tmdb_dict["tvdb_id"] = row["tvdb_id"] if row["tvdb_id"] else None
+                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                    time_between_insertion = datetime.now() - datetime_object
+                    expired = time_between_insertion.days > expiration
+        return tmdb_dict, expired
+
+    def update_tmdb_episode(self, expired, obj, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO tmdb_episode_data(tmdb_id, season_number, episode_number) VALUES(?)",
+                    (obj.tmdb_id, obj.season_number, obj.episode_number)
+                )
+                update_sql = "UPDATE tmdb_episode_data SET title = ?, air_date = ?, overview = ?, still_url = ?, " \
+                             "vote_count = ?, vote_average = ?, imdb_id = ?, tvdb_id = ?, " \
+                             "expiration_date = ? WHERE tmdb_id = ? AND season_number = ? AND episode_number = ?"
+                cursor.execute(update_sql, (
+                    obj.title, obj.air_date.strftime("%Y-%m-%d"), obj.overview, obj.still_url,
+                    obj.vote_count, obj.vote_average, obj.imdb_id, obj.tvdb_id,
+                    expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id, obj.season_number, obj.episode_number
                 ))
 
     def query_tvdb(self, tvdb_id, is_movie, expiration):
