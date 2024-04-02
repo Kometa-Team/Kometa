@@ -40,7 +40,7 @@ the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 | 576P DV        | `576p_dv`        | `60`   |
 | 576P HDR       | `576p_hdr`       | `50`   |
 | 576P           | `576p`           | `40`   |
-| 480P DV/HDR10+ | `480p_dvhdrplus  | `39`   |
+| 480P DV/HDR10+ | `480p_dvhdrplus` | `39`   |
 | 480P DV/HDR    | `480p_dvhdr`     | `38`   |
 | 480P HDR10+    | `480p_plus`      | `35`   |
 | 480P DV        | `480p_dv`        | `30`   |
