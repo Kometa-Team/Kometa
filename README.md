@@ -42,8 +42,7 @@ Transform your media library with Plex Meta Manager and discover its full potent
 
 The below YouTube video has been created by one of our community members to showcase some of the things that Plex Meta Manager can do for you. 
 
-<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
+[![Plex Meta Manager](https://img.youtube.com/vi/nTfCUtKWTYI/0.jpg)](https://www.youtube.com/watch?v=nTfCUtKWTYI "Plex Meta Manager")
 
 ## Example Plex Meta Manager Libraries 
 
