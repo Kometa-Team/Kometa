@@ -175,6 +175,43 @@ class TMDbShow(TMDBObj):
             logger.stacktrace()
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
+class TMDbEpisode:
+    def __init__(self, tmdb, tmdb_id, season_number, episode_number, ignore_cache=False):
+        self._tmdb = tmdb
+        self.tmdb_id = tmdb_id
+        self.season_number = season_number
+        self.episode_number = episode_number
+        self.ignore_cache = ignore_cache
+        expired = None
+        data = None
+        if self._tmdb.config.Cache and not ignore_cache:
+            data, expired = self._tmdb.config.Cache.query_tmdb_episode(self.tmdb_id, self.season_number, self.episode_number, self._tmdb.expiration)
+        if expired or not data:
+            data = self.load_episode()
+
+        self.title = data["title"] if isinstance(data, dict) else data.title
+        self.air_date = data["air_date"] if isinstance(data, dict) else data.air_date
+        self.overview = data["overview"] if isinstance(data, dict) else data.overview
+        self.still_url = data["still_url"] if isinstance(data, dict) else data.still_url
+        self.vote_count = data["vote_count"] if isinstance(data, dict) else data.vote_count
+        self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
+        self.imdb_id = data["imdb_id"] if isinstance(data, dict) else data.imdb_id
+        self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
+
+        if self._tmdb.config.Cache and not ignore_cache:
+            self._tmdb.config.Cache.update_tmdb_episode(expired, self, self._tmdb.expiration)
+
+    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    def load_episode(self):
+        try:
+            return self._tmdb.TMDb.tv_episode(self.tmdb_id, self.season_number, self.episode_number)
+        except NotFound as e:
+            raise Failed(f"TMDb Error: No Episode found for TMDb ID {self.tmdb_id} Season {self.season_number} Episode {self.episode_number}: {e}")
+        except TMDbException as e:
+            logger.stacktrace()
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
+
+
 class TMDb:
     def __init__(self, config, params):
         self.config = config
@@ -240,10 +277,8 @@ class TMDb:
         try:                            return self.TMDb.tv_season(tmdb_id, season_number, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Season found for TMDb ID {tmdb_id} Season {season_number}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
-    def get_episode(self, tmdb_id, season_number, episode_number, partial=None):
-        try:                            return self.TMDb.tv_episode(tmdb_id, season_number, episode_number, partial=partial)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Episode found for TMDb ID {tmdb_id} Season {season_number} Episode {episode_number}: {e}")
+    def get_episode(self, tmdb_id, season_number, episode_number, ignore_cache=False):
+        return TMDbEpisode(self, tmdb_id, season_number, episode_number, ignore_cache=ignore_cache)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_collection(self, tmdb_id, partial=None):
