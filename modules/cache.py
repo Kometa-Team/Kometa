@@ -765,7 +765,7 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(
-                    "INSERT OR IGNORE INTO tmdb_episode_data(tmdb_id, season_number, episode_number) VALUES(?)",
+                    "INSERT OR IGNORE INTO tmdb_episode_data(tmdb_id, season_number, episode_number) VALUES(?, ?, ?)",
                     (obj.tmdb_id, obj.season_number, obj.episode_number)
                 )
                 update_sql = "UPDATE tmdb_episode_data SET title = ?, air_date = ?, overview = ?, still_url = ?, " \
