@@ -2695,7 +2695,7 @@ class CollectionBuilder:
             return util.get_list(data, upper=True)
         elif attribute in ["original_language", "tmdb_keyword"]:
             return util.get_list(data, lower=True)
-        elif attribute in ["tmdb_genre"]:
+        elif attribute in ["tmdb_genre", "tvdb_genre"]:
             return util.get_list(data)
         elif attribute == "history":
             try:
