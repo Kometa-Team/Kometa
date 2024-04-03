@@ -1,7 +1,13 @@
 # Requirements Update (requirements will need to be reinstalled)
-Updated gitpython requirement to 3.1.42
-Updated plexapi requirement to 4.5.10
-Updated setuptools requirement to 69.1.1
+Updated gitpython requirement to 3.1.43
+Updated lxml requirement to 5.2.1
+Updated pillow requirement to 10.3.0
+Updated plexapi requirement to 4.15.11
+Updated psutil requirement to 5.9.8
+Updated python-dotenv requirement to 1.0.1
+Updated python-dateutil requirement to 2.9.0.post0
+Updated ruamel.yaml requirement to 0.18.6
+Updated setuptools requirement to 69.2.0
 Updated tmdbapis requirement to 1.2.9
 
 # Removed Features
@@ -13,6 +19,9 @@ Added `monitor_existing` to sonarr and radarr. To update the monitored status of
 Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
 Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
 Added TVDb filters
+Cache TMDb Episode Calls
+Added Direct Rating Overlays without having to update the rating in plex
+Added TPDb Rate Limit
 
 # Updates
 Reworked PMM Default Streaming [Collections](https://metamanager.wiki/en/latest/defaults/both/streaming) and [Overlays](https://metamanager.wiki/en/latest/defaults/overlays/streaming) to utilize TMDB Watch Provider data, allowing users to customize regions without relying on mdblist. This data will be more accurate and up-to-date now.
@@ -43,6 +52,8 @@ Fixed IMDb Null issue
 Fixed mapper operations not working without a mass update operation
 Fixed episode rating mass update operations
 Fixed metadata backup issue where Artist, Album, and Track ratings were not being backed up
+Fixed an issue with the IMDb hash changing
+Fixes #1960 and #1962
 
 Various other Minor Fixes
 
