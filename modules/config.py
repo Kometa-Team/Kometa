@@ -63,6 +63,17 @@ mass_content_options = {
     "mdb_age_rating": "Use MDbList Age Rating", "mdb_age_rating0": "Use MDbList Age Rating with Zero Padding",
     "mal": "Use MyAnimeList Rating"
 }
+mass_collection_content_options = {
+    "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
+    "highest": "Highest Rating in the collection", "lowest": "Lowest Rating in the collection",
+    "average": "Highest Rating in the collection"
+}
+content_rating_default = {
+    1: [
+
+    ]
+
+}
 mass_studio_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Studio", "anidb": "Use AniDB Animation Work", "mal": "Use MyAnimeList Studio"
@@ -113,7 +124,8 @@ reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex 
 library_operations = {
     "assets_for_all": "bool", "split_duplicates": "bool", "update_blank_track_titles": "bool", "remove_title_parentheses": "bool",
     "radarr_add_all_existing": "bool", "radarr_remove_by_tag": "str", "sonarr_add_all_existing": "bool", "sonarr_remove_by_tag": "str",
-    "mass_genre_update": mass_genre_options, "mass_content_rating_update": mass_content_options, "mass_studio_update": mass_studio_options,
+    "mass_content_rating_update": mass_content_options, "mass_collection_content_rating_update": "dict",
+    "mass_genre_update": mass_genre_options, "mass_studio_update": mass_studio_options,
     "mass_audience_rating_update": mass_rating_options, "mass_episode_audience_rating_update": mass_episode_rating_options,
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
@@ -904,18 +916,18 @@ class ConfigFile:
                                 section_final[op] = util.check_collection_mode(config_op[op])
                             elif data_type == "dict":
                                 input_dict = config_op[op]
-                                if op in ["mass_poster_update", "mass_background_update"] and input_dict and not isinstance(input_dict, dict):
+                                if op in ["mass_poster_update", "mass_background_update", "mass_collection_content_rating_update"] and input_dict and not isinstance(input_dict, dict):
                                     input_dict = {"source": input_dict}
 
                                 if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
-                                if op in ["mass_poster_update", "mass_background_update"]:
+                                elif op in ["mass_poster_update", "mass_background_update"]:
                                     section_final[op] = {
                                         "source": check_for_attribute(input_dict, "source", test_list=mass_image_options, default_is_none=True, save=False),
                                         "seasons": check_for_attribute(input_dict, "seasons", var_type="bool", default=True, save=False),
                                         "episodes": check_for_attribute(input_dict, "episodes", var_type="bool", default=True, save=False),
                                     }
-                                if op == "metadata_backup":
+                                elif op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:
                                         logger.warning(f"Config Warning: path attribute not found using default: {default_path}")
@@ -929,7 +941,7 @@ class ConfigFile:
                                         "sync_tags": check_for_attribute(input_dict, "sync_tags", var_type="bool", default=False, save=False),
                                         "add_blank_entries": check_for_attribute(input_dict, "add_blank_entries", var_type="bool", default=True, save=False)
                                     }
-                                if "mapper" in op:
+                                elif "mapper" in op:
                                     section_final[op] = {}
                                     for old_value, new_value in input_dict.items():
                                         if not old_value:
@@ -938,11 +950,16 @@ class ConfigFile:
                                             logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
                                             section_final[op][str(old_value)] = str(new_value) if new_value else None # noqa
-                                if op == "delete_collections":
+                                elif op == "delete_collections":
                                     section_final[op] = {
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
                                         "configured": check_for_attribute(input_dict, "configured", var_type="bool", default_is_none=True, save=False),
                                         "less": check_for_attribute(input_dict, "less", var_type="int", default_is_none=True, save=False, int_min=1),
+                                    }
+                                elif op == "mass_collection_content_rating_update":
+                                    section_final[op] = {
+                                        "source": check_for_attribute(input_dict, "source", test_list=mass_collection_content_options, default_is_none=True, save=False),
+                                        "ranking": check_for_attribute(input_dict, "ranking", var_type="list", default=content_rating_default, save=False),
                                     }
                             else:
                                 section_final[op] = check_for_attribute(config_op, op, var_type=data_type, default=False, save=False)

@@ -1,4 +1,4 @@
-import requests, time
+import re, requests, time
 from datetime import datetime
 from lxml import html
 from lxml.etree import ParserError
@@ -74,6 +74,7 @@ class TVDbObj:
             self.poster_url = data["poster_url"]
             self.background_url = data["background_url"]
             self.release_date = data["release_date"]
+            self.status = data["status"]
             self.genres = data["genres"].split("|")
         else:
             self.title, self.summary = parse_title_summary(lang=self._tvdb.language)
@@ -95,6 +96,7 @@ class TVDbObj:
                 self.release_date = datetime.strptime(released, "%B %d, %Y") if released else released # noqa
             except ValueError:
                 self.release_date = None
+            self.status = parse_page("//strong[text()='Status']/parent::li/span/text()[normalize-space()]")
 
             self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
@@ -249,3 +251,30 @@ class TVDb:
             return self._ids_from_url(data)
         else:
             raise Failed(f"TVDb Error: Method {method} not supported")
+
+    def item_filter(self, item, filter_attr, modifier, filter_final, filter_data):
+        if filter_attr == "tvdb_title":
+            if util.is_string_filter([item.title], modifier, filter_data):
+                return False
+        elif filter_attr == "tvdb_status":
+            if util.is_string_filter([item.status], modifier, filter_data):
+                return False
+        elif filter_attr == "tvdb_genre":
+            attrs = item.genres
+            if modifier == ".regex":
+                has_match = False
+                for reg in filter_data:
+                    for name in attrs:
+                        if re.compile(reg).search(name):
+                            has_match = True
+                if has_match is False:
+                    return False
+            elif modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
+                test_number = len(attrs) if attrs else 0
+                modifier = f".{modifier[7:]}"
+                if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
+                    return False
+            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
+                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+                return False
+        return True
