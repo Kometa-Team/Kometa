@@ -2123,6 +2123,8 @@ class CollectionBuilder:
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
                 item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
+                if item.summary:
+                    self.summaries[method_name] = item.summary
                 if item.background_url:
                     self.backgrounds[method_name] = item.background_url
                 if item.poster_url:
