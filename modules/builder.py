@@ -89,7 +89,7 @@ filters_by_type = {
     "show_season": ["episodes"],
     "artist_album": ["tracks"],
     "movie": ["edition", "has_edition", "stinger_rating", "has_stinger"],
-    "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"],
+    "show": ["seasons", "tmdb_status", "tmdb_type", "origin_country", "network", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tvdb_title", "tvdb_status", "tvdb_genre"],
     "artist": ["albums"],
     "album": ["record_label"]
 }
@@ -106,15 +106,16 @@ tmdb_filters = [
     "original_language", "origin_country", "tmdb_vote_count", "tmdb_vote_average", "tmdb_year", "tmdb_keyword", "tmdb_genre",
     "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never", "tmdb_status", "tmdb_type", "tmdb_title"
 ]
+tvdb_filters = ["tvdb_title", "tvdb_status", "tvdb_genre"]
 imdb_filters = ["imdb_keyword"]
 string_filters = [
     "title", "summary", "studio", "edition", "record_label", "folder", "filepath", "audio_track_title", "subtitle_track_title", "tmdb_title",
-    "audio_codec", "audio_profile", "video_codec", "video_profile"
+    "audio_codec", "audio_profile", "video_codec", "video_profile", "tvdb_title", "tvdb_status"
 ]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
     "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
-    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "imdb_keyword"
+    "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "imdb_keyword", "tvdb_genre"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
 boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vision", "has_stinger"]
@@ -2886,6 +2887,13 @@ class CollectionBuilder:
                 return False
         return True
 
+    def check_tvdb_filters(self, tvdb_item, filters_in):
+        for filter_method, filter_data in filters_in:
+            filter_attr, modifier, filter_final = self.library.split(filter_method)
+            if self.config.TVDb.item_filter(tvdb_item, filter_attr, modifier, filter_final, filter_data) is False:
+                return False
+        return True
+
     def check_imdb_filters(self, imdb_info, filters_in):
         for filter_method, filter_data in filters_in:
             filter_attr, modifier, filter_final = self.library.split(filter_method)
@@ -2943,14 +2951,18 @@ class CollectionBuilder:
             item = self.library.reload(item)
             final_return = False
             tmdb_item = None
+            tvdb_item = None
             imdb_info = None
             for filter_list in self.filters:
                 tmdb_f = []
+                tvdb_f = []
                 imdb_f = []
                 plex_f = []
                 for k, v in filter_list:
                     if k.split(".")[0] in tmdb_filters:
                         tmdb_f.append((k, v))
+                    elif k.split(".")[0] in tvdb_filters:
+                        tvdb_f.append((k, v))
                     elif k.split(".")[0] in imdb_filters:
                         imdb_f.append((k, v))
                     else:
@@ -2971,6 +2983,19 @@ class CollectionBuilder:
                                 logger.error(e)
                                 or_result = False
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.library.movie_rating_key_map) is False:
+                        or_result = False
+                if tvdb_f:
+                    if not tvdb_item and isinstance(item, Show):
+                        if item.ratingKey not in self.library.show_rating_key_map:
+                            logger.warning(f"Filter Error: No TVDb ID found for {item.title}")
+                            or_result = False
+                        else:
+                            try:
+                                tvdb_item = self.config.TVDb.get_tvdb_obj(self.library.show_rating_key_map[item.ratingKey])
+                            except Failed as e:
+                                logger.error(e)
+                                or_result = False
+                    if not tvdb_item or self.check_tvdb_filters(tvdb_item, tvdb_f) is False:
                         or_result = False
                 if imdb_f:
                     if not imdb_info and isinstance(item, (Movie, Show)):

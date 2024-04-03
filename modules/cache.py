@@ -17,26 +17,13 @@ class Cache:
                     logger.info(f"Initializing cache database at {self.cache_path}")
                 else:
                     logger.info(f"Using cache database at {self.cache_path}")
-                cursor.execute("DROP TABLE IF EXISTS guids")
-                cursor.execute("DROP TABLE IF EXISTS guid_map")
-                cursor.execute("DROP TABLE IF EXISTS imdb_to_tvdb_map")
-                cursor.execute("DROP TABLE IF EXISTS tmdb_to_tvdb_map")
-                cursor.execute("DROP TABLE IF EXISTS imdb_map")
-                cursor.execute("DROP TABLE IF EXISTS mdb_data")
-                cursor.execute("DROP TABLE IF EXISTS mdb_data2")
-                cursor.execute("DROP TABLE IF EXISTS mdb_data3")
-                cursor.execute("DROP TABLE IF EXISTS mdb_data4")
-                cursor.execute("DROP TABLE IF EXISTS omdb_data")
-                cursor.execute("DROP TABLE IF EXISTS omdb_data2")
-                cursor.execute("DROP TABLE IF EXISTS tvdb_data")
-                cursor.execute("DROP TABLE IF EXISTS tvdb_data2")
-                cursor.execute("DROP TABLE IF EXISTS tmdb_show_data")
-                cursor.execute("DROP TABLE IF EXISTS tmdb_show_data2")
-                cursor.execute("DROP TABLE IF EXISTS overlay_ratings")
-                cursor.execute("DROP TABLE IF EXISTS anidb_data")
-                cursor.execute("DROP TABLE IF EXISTS anidb_data2")
-                cursor.execute("DROP TABLE IF EXISTS anidb_data3")
-                cursor.execute("DROP TABLE IF EXISTS mal_data")
+                for old_table in [
+                    "guids", "guid_map", "imdb_to_tvdb_map", "tmdb_to_tvdb_map", "imdb_map",
+                    "mdb_data", "mdb_data2", "mdb_data3", "mdb_data4", "omdb_data", "omdb_data2",
+                    "tvdb_data", "tvdb_data2", "tvdb_data3", "tmdb_show_data", "tmdb_show_data2",
+                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data"
+                ]:
+                    cursor.execute(f"DROP TABLE IF EXISTS {old_table}")
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
@@ -231,11 +218,12 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tvdb_data3 (
+                    """CREATE TABLE IF NOT EXISTS tvdb_data4 (
                     key INTEGER PRIMARY KEY,
                     tvdb_id INTEGER UNIQUE,
                     type TEXT,
                     title TEXT,
+                    status TEXT,
                     summary TEXT,
                     poster_url TEXT,
                     background_url TEXT,
@@ -783,12 +771,13 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tvdb_data3 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                cursor.execute("SELECT * FROM tvdb_data4 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
                 row = cursor.fetchone()
                 if row:
                     tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
                     tvdb_dict["type"] = row["type"] if row["type"] else ""
                     tvdb_dict["title"] = row["title"] if row["title"] else ""
+                    tvdb_dict["status"] = row["status"] if row["status"] else ""
                     tvdb_dict["summary"] = row["summary"] if row["summary"] else ""
                     tvdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tvdb_dict["background_url"] = row["background_url"] if row["background_url"] else ""
@@ -804,12 +793,12 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tvdb_data3(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
-                update_sql = "UPDATE tvdb_data3 SET title = ?, summary = ?, poster_url = ?, background_url = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO tvdb_data4(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                update_sql = "UPDATE tvdb_data4 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, " \
                              "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
                 tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
                 cursor.execute(update_sql, (
-                    obj.title, obj.summary, obj.poster_url, obj.background_url, tvdb_date, "|".join(obj.genres),
+                    obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, tvdb_date, "|".join(obj.genres),
                     expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"
                 ))
 
