@@ -171,7 +171,7 @@ def parse_version(version, text="develop"):
 def quote(data):
     return requests.utils.quote(str(data))
 
-def download_image(title, image_url, download_directory, filename=None):
+def download_image(title, image_url, download_directory, is_poster=True, filename=None):
     response = requests.get(image_url, headers=header())
     if response.status_code == 404:
         raise Failed(f"Image Error: Not Found on Image URL: {image_url}")
@@ -188,7 +188,7 @@ def download_image(title, image_url, download_directory, filename=None):
         new_image += ".png"
     with open(new_image, "wb") as handler:
         handler.write(response.content)
-    return ImageData("asset_directory", new_image, prefix=f"{title}'s ", is_url=False)
+    return ImageData("asset_directory", new_image, prefix=f"{title}'s ", is_poster=is_poster, is_url=False)
 
 def get_image_dicts(group, alias):
     posters = {}
@@ -226,7 +226,7 @@ def pick_image(title, images, prioritize_assets, download_url_assets, item_dir, 
                         return images["asset_directory"]
                     else:
                         try:
-                            return download_image(title, images[attr], item_dir, image_name)
+                            return download_image(title, images[attr], item_dir, is_poster=is_poster, filename=image_name)
                         except Failed as e:
                             logger.error(e)
                 if attr in ["asset_directory", f"pmm_{image_type}"]:
