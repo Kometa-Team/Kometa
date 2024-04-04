@@ -245,8 +245,6 @@ class ConfigFile:
                     if "save_missing" in self.data["libraries"][library]["settings"]:
                         self.data["libraries"][library]["settings"]["save_report"] = self.data["libraries"][library]["settings"].pop("save_missing")
                 if "radarr" in self.data["libraries"][library] and self.data["libraries"][library]["radarr"]:
-                    if "monitor" in self.data["libraries"][library]["radarr"] and isinstance(self.data["libraries"][library]["radarr"]["monitor"], bool):
-                        self.data["libraries"][library]["radarr"]["monitor"] = True if self.data["libraries"][library]["radarr"]["monitor"] else False
                     if "add" in self.data["libraries"][library]["radarr"]:
                         self.data["libraries"][library]["radarr"]["add_missing"] = self.data["libraries"][library]["radarr"].pop("add")
                 if "sonarr" in self.data["libraries"][library] and self.data["libraries"][library]["sonarr"]:
@@ -308,8 +306,6 @@ class ConfigFile:
         if "gotify" in self.data:                      self.data["gotify"] = self.data.pop("gotify")
         if "anidb" in self.data:                       self.data["anidb"] = self.data.pop("anidb")
         if "radarr" in self.data:
-            if "monitor" in self.data["radarr"] and isinstance(self.data["radarr"]["monitor"], bool):
-                self.data["radarr"]["monitor"] = True if self.data["radarr"]["monitor"] else False
             temp = self.data.pop("radarr")
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
@@ -772,7 +768,7 @@ class ConfigFile:
                 "monitor_existing": check_for_attribute(self.data, "monitor_existing", parent="radarr", var_type="bool", default=False),
                 "ignore_cache": check_for_attribute(self.data, "ignore_cache", parent="radarr", var_type="bool", default=False),
                 "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="radarr", default_is_none=True),
-                "monitor": check_for_attribute(self.data, "monitor", parent="radarr", var_type="bool", default=True),
+                "monitor": check_for_attribute(self.data, "monitor", parent="radarr", test_list=radarr.monitor_descriptions, default="movie"),
                 "availability": check_for_attribute(self.data, "availability", parent="radarr", test_list=radarr.availability_descriptions, default="announced"),
                 "quality_profile": check_for_attribute(self.data, "quality_profile", parent="radarr", default_is_none=True),
                 "tag": check_for_attribute(self.data, "tag", parent="radarr", var_type="lower_list", default_is_none=True),
@@ -1196,7 +1192,7 @@ class ConfigFile:
                             "monitor_existing": check_for_attribute(lib, "monitor_existing", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor_existing"], save=False),
                             "ignore_cache": check_for_attribute(lib, "ignore_cache", parent="radarr", var_type="bool", default=self.general["radarr"]["ignore_cache"], save=False),
                             "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="radarr", default=self.general["radarr"]["root_folder_path"], req_default=True, save=False),
-                            "monitor": check_for_attribute(lib, "monitor", parent="radarr", var_type="bool", default=self.general["radarr"]["monitor"], save=False),
+                            "monitor": check_for_attribute(lib, "monitor", parent="radarr", test_list=radarr.monitor_descriptions, default=self.general["radarr"]["monitor"], save=False),
                             "availability": check_for_attribute(lib, "availability", parent="radarr", test_list=radarr.availability_descriptions, default=self.general["radarr"]["availability"], save=False),
                             "quality_profile": check_for_attribute(lib, "quality_profile", parent="radarr", default=self.general["radarr"]["quality_profile"], req_default=True, save=False),
                             "tag": check_for_attribute(lib, "tag", parent="radarr", var_type="lower_list", default=self.general["radarr"]["tag"], default_is_none=True, save=False),
