@@ -29,7 +29,7 @@ radarr:
   upgrade_existing: false
   monitor_existing: false
   root_folder_path: S:/Movies
-  monitor: false
+  monitor: none
   availability: announced
   quality_profile: HD-1080p
   tag: pmm
@@ -48,7 +48,7 @@ radarr:
 | `monitor_existing` | Ensures all existing movies in collections match your monitor setting.<br>Use the `radarr_monitor_existing` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to match the monitor setting per collection.<br>**boolean:** true or false                        | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `ignore_cache`     | Ignores PMM's cache when adding items to Radarr.<br>Use the `radarr_ignore_cache` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to ignore per collection.<br>**boolean:** true or false                                                                     | false       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `root_folder_path` | Default Root Folder Path to use when adding new movies.<br>Use the `radarr_folder` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Root Folder per collection.                                                                                     | N/A         | :fontawesome-solid-circle-check:{ .green } |
-| `monitor`          | Monitor the movie when adding new movies.<br>Use the `radarr_monitor` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Monitor value per collection.<br>**Options:** `true`, `false`                                                                | true        |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `monitor`          | Monitor the movie when adding new movies.<br>Use the `radarr_monitor` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Monitor value per collection.<br>**Options:** `movie`, `collection`, or `none`                                               | true        |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `availability`     | Default Minimum Availability to use when adding new movies.<br>Use the `radarr_availability` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Availability per collection.<br>**Options:** `announced`, `cinemas`, `released`, `db`                 | `announced` | :fontawesome-solid-circle-check:{ .green } |
 | `quality_profile`  | Default Quality Profile to use when adding new movies.<br>Use the `radarr_quality` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Quality Profile per collection.                                                                                 | N/A         | :fontawesome-solid-circle-check:{ .green } |
 | `tag`              | Default list or comma-separated string of tags to use when adding new movies.<br>Use the `radarr_tag` [Radarr Setting](../files/arr.md#radarr-definition-settings) in the collection definition to set the Tags per collection.                                                                         | ` `         |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -80,7 +80,7 @@ radarr:
   upgrade_existing: #
   monitor_existing: #
   root_folder_path: /movies
-  monitor: false
+  monitor: none
   availability: announced
   quality_profile: HD-1080p
   tag: 
@@ -146,7 +146,7 @@ radarr:
   upgrade_existing: false
   monitor_existing: false
   root_folder_path: /movies
-  monitor: false
+  monitor: none
   availability: released
   tag:
   search: false
