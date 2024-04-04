@@ -1,59 +1,16 @@
 # Requirements Update (requirements will need to be reinstalled)
 Updated gitpython requirement to 3.1.43
-Updated lxml requirement to 5.2.1
-Updated pillow requirement to 10.3.0
-Updated plexapi requirement to 4.15.11
-Updated psutil requirement to 5.9.8
-Updated python-dotenv requirement to 1.0.1
-Updated python-dateutil requirement to 2.9.0.post0
-Updated ruamel.yaml requirement to 0.18.6
-Updated setuptools requirement to 69.2.0
-Updated tmdbapis requirement to 1.2.9
 
 # Removed Features
-Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
 
 # New Features
-Added new [BoxOfficeMojo Builder](https://metamanager.wiki/en/latest/files/builders/mojo/) - credit to @nwithan8 for the suggestion and initial code submission
-Added `monitor_existing` to sonarr and radarr. To update the monitored status of items existing in plex to match the `monitor` declared.
-Added [Gotify](https://gotify.net/) as a notification service. Thanks @krstn420 for the initial code.
-Added [Trakt and MyAnimeList Authentication Page](https://metamanager.wiki/en/latest/config/auth/) allowing users to authenticate against those services directly from the wiki. credit to @chazlarson for developing the script
-Added TVDb filters
-Cache TMDb Episode Calls
-Added Direct Rating Overlays without having to update the rating in plex
-Added TPDb Rate Limit
 
 # Updates
-Reworked PMM Default Streaming [Collections](https://metamanager.wiki/en/latest/defaults/both/streaming) and [Overlays](https://metamanager.wiki/en/latest/defaults/overlays/streaming) to utilize TMDB Watch Provider data, allowing users to customize regions without relying on mdblist. This data will be more accurate and up-to-date now.
-* As a result of this change, if you are using custom images with this defaults file, you must replace any mention of <<key>> in the filename with <<originals_key>>.
-Added new [`trakt_chart` attributes](https://metamanager.wiki/en/latest/files/builders/trakt/#trakt-chart) `network_ids`, `studio_ids`, `votes`, `tmdb_ratings`, `tmdb_votes`, `imdb_ratings`, `imdb_votes`, `rt_meters`, `rt_user_meters`, `metascores` and removed the deprecated `network` attribute
-Trakt Builder `trakt_userlist` value `recommendations` removed and `favorites` added.
-Mass Update operations now can be given a list of sources to fall back on when one fails including a manual source.
-`mass_content_rating_update` has a new source `mdb_age_rating`
-`mass_originally_available_update` has a new source `mdb_digital`
-`plex` attributes `clean_bundles`, `empty_trash`, and `optimize` can now take any schedule options to be run only when desired.
-Allows users to use the Admin username when specifying playlist users. Thanks @benbou8231!
-Allows `verify_ssl` to be set specifically for plex. Thanks @FestiveKyle!
-Updated Plex Item Advance Preferences.
-Add new [Overlay Special Text Options](https://metamanager.wiki/en/latest/files/overlays/#special-text-variables) to directly print ratings to overlays without operations.
 
 # Defaults
 
 # Bug Fixes
-Fixed the Rate Limit on MDbList calls
-Fixed collection fields being locked during batch edits when they shouldn't be
-Fixed awards dynamic collections where `latest` wasn't pulling the correct values
-Fixed `imdb_watchlist`
-Fixed `trakt_userlist`
-Fixed an issue where sometimes the resolution default overlay would be off center
-Fixed multiple issues with playlist deletion. Thanks @benbou8231!
-Fixed an issue where dynamic collection errors would sometimes appear before the title of the Dynamic Collection.
-Fixed IMDb Null issue
-Fixed mapper operations not working without a mass update operation
-Fixed episode rating mass update operations
-Fixed metadata backup issue where Artist, Album, and Track ratings were not being backed up
-Fixed an issue with the IMDb hash changing
-Fixes #1960 and #1962
+Fixes #1965 `download_url_assets` was causing `url_background` to upload as a poster
 
 Various other Minor Fixes
 
