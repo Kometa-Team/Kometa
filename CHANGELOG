@@ -8,6 +8,7 @@ Add Page Topics Options to `imdb_search`
 Add `lxml` Docker Version using an old lxml version that supports more cpus
 
 # Updates
+Let conditional `.not` and `.exists` work with default variables
 
 # Defaults
 

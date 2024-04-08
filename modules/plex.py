@@ -1615,8 +1615,11 @@ class Plex(Library):
                 if advance_edit in self.metadata_backup["exclude"] or not hasattr(item, key) or not getattr(item, key):
                     continue
                 keys = {v: k for k, v in options.items()}
-                if keys[getattr(item, key)] not in ["default", "all", "never"]:
-                    attrs[advance_edit] = keys[getattr(item, key)]
+                attr = getattr(item, key)
+                if attr not in keys:
+                    logger.error(f"Item {item.title} {advance_edit} {attr} Not Found rating key: {item.ratingKey}")
+                elif keys[attr] not in ["default", "all", "never"]:
+                    attrs[advance_edit] = keys[attr]
 
         def _recur(sub, item_type_in=None):
             sub_items = {}
