@@ -284,7 +284,7 @@ class IMDb:
                 range_name = [range_name]
             for i, attr in enumerate(bases):
                 attrs = [(f"{attr}.{m}" if m else attr, m, im) for m, im in mods]
-                if any([m in data for m, _ in attrs]):
+                if any([m in data for m, _, _ in attrs]):
                     if constraint not in out:
                         out[constraint] = {}
                     range_data = {}
