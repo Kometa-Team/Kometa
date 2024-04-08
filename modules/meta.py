@@ -391,13 +391,14 @@ class DataFile:
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
+                                    var_name = var_key[:-7]
                                     con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if con_var_value:
-                                        if var_key[:-7] not in variables or variables[var_key[:-7]] is None:
+                                        if (var_name not in variables or variables[var_name] is None) and (var_name not in default and default[var_name] is None):
                                             error_text = "- does not exist"
-                                    elif var_key[:-7] in variables and variables[var_key[:-7]] is not None:
+                                    elif (var_name in variables and variables[var_name] is not None) or (var_name in default and default[var_name] is not None):
                                         error_text = "- exists"
-                                    con_var_value = var_key[:-7]
+                                    con_var_value = var_name
                                 elif var_key.endswith(".not"):
                                     var_name = var_key[:-4]
                                     if var_name in variables or var_name in default:
