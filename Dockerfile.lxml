@@ -4,7 +4,7 @@ ENV BRANCH_NAME ${BRANCH_NAME}
 ENV TINI_VERSION v0.19.0
 ENV PMM_DOCKER True
 COPY requirements.txt requirements.txt
-RUN sed -i -E "s/(lxml==.+)version/\15.1.1/" requirements.txt
+RUN sed -i -E "s/(lxml==).+/\15.1.1/" requirements.txt
 RUN echo "**** install system packages ****" \
  && apt-get update \
  && apt-get upgrade -y --no-install-recommends \
