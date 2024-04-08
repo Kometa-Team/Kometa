@@ -40,6 +40,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./Dockerfile.lxml
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:lxml
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Discord Success Notification
         uses: meisnate12/discord-notifications@master
         if: success()
