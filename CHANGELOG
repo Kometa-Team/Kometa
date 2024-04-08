@@ -12,6 +12,7 @@ Add Page Topics Options to `imdb_search`
 
 # Bug Fixes
 Fixes #1965 `download_url_assets` was causing `url_background` to upload as a poster
+Fixes #1969 Ignore validating TPDb links
 
 Various other Minor Fixes
 

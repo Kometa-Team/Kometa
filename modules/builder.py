@@ -1181,9 +1181,10 @@ class CollectionBuilder:
     def _poster(self, method_name, method_data):
         if method_name == "url_poster":
             try:
-                image_response = self.config.get(method_data, headers=util.header())
-                if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in util.image_content_types:
-                    raise ConnectionError
+                if not method_data.startswith("https://theposterdb.com/api/assets/"):
+                    image_response = self.config.get(method_data, headers=util.header())
+                    if image_response.status_code >= 400 or image_response.headers["Content-Type"] not in util.image_content_types:
+                        raise ConnectionError
                 self.posters[method_name] = method_data
             except ConnectionError:
                 logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
