@@ -46,6 +46,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./Dockerfile.lxml
+          build-args: |
+            "BRANCH_NAME=nightly"
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:lxml
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Send Discord Commit Notification
         uses: meisnate12/discord-notifications@master
         with:

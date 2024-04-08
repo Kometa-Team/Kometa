@@ -5,6 +5,7 @@ Updated gitpython requirement to 3.1.43
 
 # New Features
 Add Page Topics Options to `imdb_search`
+Add `lxml` Docker Version using an old lxml version that supports more cpus
 
 # Updates
 
