@@ -1579,6 +1579,8 @@ class CollectionBuilder:
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, parent=method_name)
                     elif search_attr == "type":
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name, options=imdb.title_type_options)
+                    elif search_attr == "topic":
+                        new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name, options=imdb.topic_options)
                     elif search_attr == "release":
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="date", parent=method_name, date_return="%Y-%m-%d")
                     elif search_attr == "rating":
@@ -1642,7 +1644,7 @@ class CollectionBuilder:
                                 countries.append(str(country))
                         if countries:
                             new_dictionary[lower_method] = countries
-                    elif search_attr in ["keyword", "language"]:
+                    elif search_attr in ["keyword", "language", "alternate_version", "crazy_credit", "location", "goof", "plot", "quote", "soundtrack", "trivia"]:
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name)
                     elif search_attr == "cast":
                         casts = []
