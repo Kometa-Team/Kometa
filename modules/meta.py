@@ -394,7 +394,7 @@ class DataFile:
                                     var_name = var_key[:-7]
                                     con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if con_var_value:
-                                        if (var_name not in variables or variables[var_name] is None) and (var_name not in default and default[var_name] is None):
+                                        if (var_name not in variables or variables[var_name] is None) and (var_name not in default or default[var_name] is None):
                                             error_text = "- does not exist"
                                     elif (var_name in variables and variables[var_name] is not None) or (var_name in default and default[var_name] is not None):
                                         error_text = "- exists"
