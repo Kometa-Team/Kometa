@@ -1,0 +1,16 @@
+arrapi==1.4.7
+GitPython==3.1.43
+lxml==5.1.1
+num2words==0.5.13
+pathvalidate==3.2.0
+pillow==10.3.0
+PlexAPI==4.15.11
+psutil==5.9.8
+python-dotenv==1.0.1
+python-dateutil==2.9.0.post0
+requests==2.31.0
+retrying==1.3.4
+ruamel.yaml==0.18.6
+schedule==1.2.1
+setuptools==69.2.0
+tmdbapis==1.2.9
