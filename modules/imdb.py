@@ -47,6 +47,19 @@ genre_options = {a.lower(): a for a in [
     "News", "Short", "Western", "Sport", "Reality-TV", "Horror", "Fantasy", "Film-Noir", "Music", "Romance",
     "Talk-Show", "Thriller", "War", "Sci-Fi", "Musical", "Mystery", "Game-Show"
 ]}
+topic_options = {
+    "alternate_version": "ALTERNATE_VERSION",
+    "award": "AWARD",
+    "business_info": "BUSINESS_INFO",
+    "crazy_credit": "CRAZY_CREDIT",
+    "goof": "GOOF",
+    "location": "LOCATION",
+    "plot": "PLOT",
+    "quote": "QUOTE",
+    "soundtrack": "SOUNDTRACK",
+    "technical": "TECHNICAL",
+    "trivia": "TRIVIA",
+}
 company_options = {
     "fox": ["co0000756", "co0176225", "co0201557", "co0017497"],
     "dreamworks": ["co0067641", "co0040938", "co0252576", "co0003158"],
@@ -253,7 +266,7 @@ class IMDb:
     def _search_json(self, data):
         out = {
             "locale": "en-US",
-            "first": data["limit"] if "limit" in data and data["limit"] < 250 else 250,
+            "first": data["limit"] if "limit" in data and 0 < data["limit"] < 250 else 250,
             "titleTypeConstraint": {"anyTitleTypeIds": [title_type_options[t] for t in data["type"]] if "type" in data else []},
         }
         sort = data["sort_by"] if "sort_by" in data else "popularity.asc"
@@ -261,43 +274,44 @@ class IMDb:
         out["sortBy"] = sort_by_options[sort_by]
         out["sortOrder"] = sort_order.upper()
 
-        if "type.not" in data:
-            out["titleTypeConstraint"]["excludeTitleTypeIds"] = [title_type_options[t] for t in data["type.not"]]
+        def check_constraint(bases, mods, constraint, lower="", translation=None, range_name=None):
+            if not isinstance(bases, list):
+                bases = [bases]
+            if range_name and not isinstance(range_name, list):
+                range_name = [range_name]
+            for i, attr in enumerate(bases):
+                attrs = [(f"{attr}.{m}" if m else attr, m, im) for m, im in mods]
+                if any([m in data for m, _ in attrs]):
+                    if constraint not in out:
+                        out[constraint] = {}
+                    range_data = {}
+                    for full_attr, mod, imdb_mod in attrs:
+                        if full_attr in data:
+                            if range_name is not None:
+                                range_data[imdb_mod] = data[full_attr]
+                            elif translation is None:
+                                out[constraint][f"{imdb_mod}{lower}"] = data[full_attr]
+                            elif isinstance(translation, tuple):
+                                out[constraint][f"{imdb_mod}{lower}"] = [d.replace(translation[0], translation[1]) for d in data[full_attr]]
+                            elif isinstance(translation, dict):
+                                out[constraint][f"{imdb_mod}{lower}"] = [translation[d] for d in data[full_attr]]
+                    if range_data:
+                        out[constraint][range_name[i]] = range_data
 
-        if "release.after" in data or "release.before" in data:
-            num_range = {}
-            if "release.after" in data:
-                num_range["start"] = data["release.after"]
-            if "release.before" in data:
-                num_range["end"] = data["release.before"]
-            out["releaseDateConstraint"] = {"releaseDateRange": num_range}
-
-        if "title" in data:
-            out["titleTextConstraint"] = {"searchTerm": data["title"]}
-
-        if any([a in data for a in ["rating.gte", "rating.lte", "votes.gte", "votes.lte"]]):
-            out["userRatingsConstraint"] = {}
-            num_range = {}
-            if "rating.gte" in data:
-                num_range["min"] = data["rating.gte"]
-            if "rating.lte" in data:
-                num_range["max"] = data["rating.lte"]
-            out["userRatingsConstraint"]["aggregateRatingRange"] = num_range
-            num_range = {}
-            if "votes.gte" in data:
-                num_range["min"] = data["votes.gte"]
-            if "votes.lte" in data:
-                num_range["max"] = data["votes.lte"]
-            out["userRatingsConstraint"]["ratingsCountRange"] = num_range
-
-        if any([a in data for a in ["genre", "genre.any", "genre.not"]]):
-            out["genreConstraint"] = {}
-            if "genre" in data:
-                out["genreConstraint"]["allGenreIds"] = [genre_options[g] for g in data["genre"]]
-            if "genre.any" in data:
-                out["genreConstraint"]["anyGenreIds"] = [genre_options[g] for g in data["genre.any"]]
-            if "genre.not" in data:
-                out["genreConstraint"]["excludeGenreIds"] = [genre_options[g] for g in data["genre.not"]]
+        check_constraint("type", [("not", "excludeTitleTypeIds")], "titleTypeConstraint", translation=title_type_options)
+        check_constraint("release", [("after", "start"), ("before", "end")], "releaseDateConstraint", range_name="releaseDateRange")
+        check_constraint("title", [("", "searchTerm")], "titleTextConstraint")
+        check_constraint(["rating", "votes"], [("gte", "min"), ("lte", "max")], "userRatingsConstraint", range_name=["aggregateRatingRange", "ratingsCountRange"])
+        check_constraint("genre", [("", "all"), ("any", "any"), ("not", "exclude")], "genreConstraint", lower="GenreIds", translation=genre_options)
+        check_constraint("topic", [("", "all"), ("any", "any"), ("not", "no")], "withTitleDataConstraint", lower="DataAvailable", translation=topic_options)
+        check_constraint("alternate_version", [("", "all"), ("any", "any")], "alternateVersionMatchingConstraint", lower="AlternateVersionTextTerms")
+        check_constraint("crazy_credit", [("", "all"), ("any", "any")], "crazyCreditMatchingConstraint", lower="CrazyCreditTextTerms")
+        check_constraint("location", [("", "all"), ("any", "any")], "filmingLocationConstraint", lower="Locations")
+        check_constraint("goof", [("", "all"), ("any", "any")], "goofMatchingConstraint", lower="GoofTextTerms")
+        check_constraint("plot", [("", "all"), ("any", "any")], "plotMatchingConstraint", lower="PlotTextTerms")
+        check_constraint("quote", [("", "all"), ("any", "any")], "quoteMatchingConstraint", lower="QuoteTextTerms")
+        check_constraint("soundtrack", [("", "all"), ("any", "any")], "soundtrackMatchingConstraint", lower="SoundtrackTextTerms")
+        check_constraint("trivia", [("", "all"), ("any", "any")], "triviaMatchingConstraint", lower="TriviaTextTerms")
 
         if "event" in data or "event.winning" in data:
             input_list = []
@@ -325,21 +339,8 @@ class IMDb:
                 ranges.append({"rankRange": num_range, "rankedTitleListType": "TITLE_METER"})
             out["rankedTitleListConstraint"] = {"allRankedTitleLists": ranges}
 
-        if any([a in data for a in ["series", "series.not"]]):
-            out["episodicConstraint"] = {}
-            if "series" in data:
-                out["episodicConstraint"]["anySeriesIds"] = data["series"]
-            if "series.not" in data:
-                out["episodicConstraint"]["excludeSeriesIds"] = data["series.not"]
-
-        if any([a in data for a in ["list", "list.any", "list.not"]]):
-            out["listConstraint"] = {}
-            if "list" in data:
-                out["listConstraint"]["inAllLists"] = data["list"]
-            if "list.any" in data:
-                out["listConstraint"]["inAnyList"] = data["list.any"]
-            if "list.not" in data:
-                out["listConstraint"]["notInAnyList"] = data["list.not"]
+        check_constraint("series", [("", "any"), ("not", "exclude")], "episodicConstraint", lower="SeriesIds")
+        check_constraint("list", [("", "inAllLists"), ("any", "inAnyList"), ("not", "notInAnyList")], "listConstraint")
 
         if "company" in data:
             company_ids = []
@@ -350,56 +351,12 @@ class IMDb:
                     company_ids.append(c)
             out["creditedCompanyConstraint"] = {"anyCompanyIds": company_ids}
 
-        if "content_rating" in data:
-            out["certificateConstraint"] = {"anyRegionCertificateRatings": data["content_rating"]}
-
-        if any([a in data for a in ["country", "country.any", "country.not", "country.origin"]]):
-            out["originCountryConstraint"] = {}
-            if "country" in data:
-                out["originCountryConstraint"]["allCountries"] = data["country"]
-            if "country.any" in data:
-                out["originCountryConstraint"]["anyCountries"] = data["country.any"]
-            if "country.not" in data:
-                out["originCountryConstraint"]["excludeCountries"] = data["country.not"]
-            if "country.origin" in data:
-                out["originCountryConstraint"]["anyPrimaryCountries"] = data["country.origin"]
-
-        if any([a in data for a in ["keyword", "keyword.any", "keyword.not"]]):
-            out["keywordConstraint"] = {}
-            if "keyword" in data:
-                out["keywordConstraint"]["allKeywords"] = [k.replace(" ", "-") for k in data["keyword"]]
-            if "keyword.any" in data:
-                out["keywordConstraint"]["anyKeywords"] = [k.replace(" ", "-") for k in data["keyword.any"]]
-            if "keyword.not" in data:
-                out["keywordConstraint"]["excludeKeywords"] = [k.replace(" ", "-") for k in data["keyword.not"]]
-
-        if any([a in data for a in ["language", "language.any", "language.not", "language.primary"]]):
-            out["languageConstraint"] = {}
-            if "language" in data:
-                out["languageConstraint"]["allLanguages"] = data["language"]
-            if "language.any" in data:
-                out["languageConstraint"]["anyLanguages"] = data["language.any"]
-            if "language.not" in data:
-                out["languageConstraint"]["excludeLanguages"] = data["language.not"]
-            if "language.primary" in data:
-                out["languageConstraint"]["anyPrimaryLanguages"] = data["language.primary"]
-
-        if any([a in data for a in ["cast", "cast.any", "cast.not"]]):
-            out["creditedNameConstraint"] = {}
-            if "cast" in data:
-                out["creditedNameConstraint"]["allNameIds"] = data["cast"]
-            if "cast.any" in data:
-                out["creditedNameConstraint"]["anyNameIds"] = data["cast.any"]
-            if "cast.not" in data:
-                out["creditedNameConstraint"]["excludeNameIds"] = data["cast.not"]
-
-        if "runtime.gte" in data or "runtime.lte" in data:
-            num_range = {}
-            if "runtime.gte" in data:
-                num_range["min"] = data["runtime.gte"]
-            if "runtime.lte" in data:
-                num_range["max"] = data["runtime.lte"]
-            out["runtimeConstraint"] = {"runtimeRangeMinutes": num_range}
+        check_constraint("content_rating", [("", "anyRegionCertificateRatings")], "certificateConstraint")
+        check_constraint("country", [("", "all"), ("any", "any"), ("not", "exclude"), ("origin", "anyPrimary")], "originCountryConstraint", lower="Countries")
+        check_constraint("keyword", [("", "all"), ("any", "any"), ("not", "exclude")], "keywordConstraint", lower="Keywords", translation=(" ", "-"))
+        check_constraint("language", [("", "all"), ("any", "any"), ("not", "exclude"), ("primary", "anyPrimary")], "languageConstraint", lower="Languages")
+        check_constraint("cast", [("", "all"), ("any", "any"), ("not", "exclude")], "creditedNameConstraint", lower="NameIds")
+        check_constraint("runtime", [("gte", "min"), ("lte", "max")], "runtimeConstraint", range_name="runtimeRangeMinutes")
 
         if "adult" in data and data["adult"]:
             out["explicitContentConstraint"] = {"explicitContentFilter": "INCLUDE_ADULT"}
