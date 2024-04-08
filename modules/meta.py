@@ -391,15 +391,22 @@ class DataFile:
                                 var_key = replace_var(var_key, [variables, default])
                                 var_value = replace_var(var_value, [variables, default])
                                 if var_key.endswith(".exists"):
-                                    var_name = var_key[:-7]
                                     con_var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
                                     if con_var_value:
-                                        if (var_name not in variables or variables[var_name] is None) and (var_name not in default or default[var_name] is None):
+                                        if var_key[:-7] not in variables or variables[var_key[:-7]] is None:
                                             error_text = "- does not exist"
-                                    elif (var_name in variables and variables[var_name] is not None) or (var_name in default and default[var_name] is not None):
+                                    elif var_key[:-7] in variables and variables[var_key[:-7]] is not None:
                                         error_text = "- exists"
-                                    con_var_value = var_name
+                                    con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):
+                                    if var_key[:-4] in variables:
+                                        con_var_value = variables[var_key[:-4]]
+                                        if isinstance(var_value, list):
+                                            if con_var_value in var_value:
+                                                error_text = f'in {var_value}'
+                                        elif str(con_var_value) == str(var_value):
+                                            error_text = f'is "{var_value}"'
+                                elif var_key.endswith(".notdefault"):
                                     var_name = var_key[:-4]
                                     if var_name in variables or var_name in default:
                                         con_var_value = variables[var_name] if var_name in variables else default[var_name]
