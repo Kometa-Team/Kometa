@@ -109,6 +109,7 @@ for arg_key, arg_data in arguments.items():
 env_version = get_env("BRANCH_NAME", "master")
 is_docker = get_env("PMM_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("PMM_LINUXSERVER", False, arg_bool=True)
+is_lxml = get_env("PMM_LXML", False, arg_bool=True)
 
 secret_args = {}
 plex_url = None
@@ -231,7 +232,14 @@ def start(attrs):
     logger.info_center("|  __/| |  __/>  <  | |  | |  __/ || (_| | | |  | | (_| | | | | (_| | (_| |  __/ |   ")
     logger.info_center("|_|   |_|\\___/_/\\_\\ |_|  |_|\\___|\\__\\__,_| |_|  |_|\\__,_|_| |_|\\__,_|\\__, |\\___|_|   ")
     logger.info_center("                                                                     |___/           ")
-    system_ver = "Docker" if is_docker else "Linuxserver" if is_linuxserver else f"Python {platform.python_version()}"
+    if is_lxml:
+        system_ver = "lxml Docker"
+    elif is_linuxserver:
+        system_ver = "Linuxserver"
+    elif is_docker:
+        system_ver = "Docker"
+    else:
+        system_ver = f"Python {platform.python_version()}"
     logger.info(f"    Version: {version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
     latest_version = util.current_version(version, branch=branch)
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
