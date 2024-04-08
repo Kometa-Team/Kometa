@@ -407,7 +407,7 @@ class DataFile:
                                         elif str(con_var_value) == str(var_value):
                                             error_text = f'is "{var_value}"'
                                 elif var_key.endswith(".notdefault"):
-                                    var_name = var_key[:-4]
+                                    var_name = var_key[:-11]
                                     if var_name in variables or var_name in default:
                                         con_var_value = variables[var_name] if var_name in variables else default[var_name]
                                         if isinstance(var_value, list):
