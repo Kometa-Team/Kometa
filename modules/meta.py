@@ -399,8 +399,9 @@ class DataFile:
                                         error_text = "- exists"
                                     con_var_value = var_key[:-7]
                                 elif var_key.endswith(".not"):
-                                    if var_key[:-4] in variables:
-                                        con_var_value = variables[var_key[:-4]]
+                                    var_name = var_key[:-4]
+                                    if var_name in variables or var_name in default:
+                                        con_var_value = variables[var_name] if var_name in variables else default[var_name]
                                         if isinstance(var_value, list):
                                             if con_var_value in var_value:
                                                 error_text = f'in {var_value}'
