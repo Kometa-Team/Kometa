@@ -32,7 +32,7 @@ different ways to specify these things.
 
 ???+ warning "Combining Commands or Variables"
 
-![img.png](img.png)    Some Commands or Variables can be combined in a single run, this is mainly beneficial when you want to run a specific command and have it run immediately rather than waiting until the next scheduled run.
+    Some Commands or Variables can be combined in a single run, this is mainly beneficial when you want to run a specific command and have it run immediately rather than waiting until the next scheduled run.
 
     For example, if I want to run [Collections Only](#collections-only) to only run Collection Files, and [Run Immediately](#run) to skip waiting until my next scheduled run, I can use both commands at the same time:
 
