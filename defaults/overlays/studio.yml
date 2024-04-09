@@ -814,6 +814,9 @@ overlays:
   Cinergi Pictures Entertainment:
     template: [name: standard, name: studios]
 
+  Codeblack Entertainment:
+    template: [name: standard, name: studios]
+
   Columbia Pictures:
     template: [name: standard, {name: studios, search: [Columbia Pictures, Columbia TriStar]}]
 
@@ -834,6 +837,9 @@ overlays:
 
   DC Comics:
     template: [name: standard, {name: studios, search: [DC Comics, DC Films, DC Entertainment]}]
+
+  Dimension Films:
+    template: [name: standard, name: studios]
 
   Dino De Laurentiis Company:
     template: [name: standard, name: studios]
