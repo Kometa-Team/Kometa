@@ -171,5 +171,5 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   hayu:
-    variables: {key: "8", originals_key: hayu, weight: 10, allowed_libraries: show}
+    variables: {key: "223", originals_key: hayu, weight: 10, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
