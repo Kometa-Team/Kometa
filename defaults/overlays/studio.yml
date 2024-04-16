@@ -766,6 +766,9 @@ overlays:
   Brandywine Productions:
     template: [name: standard, name: studios]
 
+  Broken Lizard Industries:
+    template: [name: standard, name: studios]
+
   Broken Road Productions:
     template: [name: standard, name: studios]
 
@@ -1071,6 +1074,9 @@ overlays:
 
   Lucasfilm Ltd:
     template: [name: standard, {name: studios, search: [Lucasfilm Ltd, Lucasfilm Ltd., Lucasfilm, Lucasfilm Animation]}]
+
+  Magic Light Pictures:
+    template: [name: standard, name: studios]
 
   Magnolia Pictures:
     template: [name: standard, name: studios]
