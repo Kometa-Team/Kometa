@@ -129,6 +129,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Animal Planet, Animal Planet Brasil, Animal Planet Deutschland]}]
 
+  ANIMAX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Angel Studios:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Angel Studios, VidAngel]}]
