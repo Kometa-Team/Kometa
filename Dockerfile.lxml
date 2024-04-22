@@ -2,8 +2,8 @@ FROM python:3.11-slim-buster
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME ${BRANCH_NAME}
 ENV TINI_VERSION v0.19.0
-ENV PMM_DOCKER True
-ENV PMM_LXML True
+ENV KOMETA_DOCKER True
+ENV KOMETA_LXML True
 COPY requirements.txt requirements.txt
 RUN sed -i -E "s/(lxml==).+/\15.1.1/" requirements.txt
 RUN echo "**** install system packages ****" \
@@ -23,4 +23,4 @@ RUN echo "**** install system packages ****" \
  && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
  COPY . /
 VOLUME /config
-ENTRYPOINT ["/tini", "-s", "python3", "plex_meta_manager.py", "--"]
+ENTRYPOINT ["/tini", "-s", "python3", "kometa.py", "--"]

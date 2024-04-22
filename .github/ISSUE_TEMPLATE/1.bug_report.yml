@@ -8,8 +8,8 @@ body:
     attributes:
       value: >
         **THIS IS NOT THE PLACE TO ASK FOR SUPPORT OR FEATURE REQUESTS!**
-        Please use [Plex Meta Manager Discord](https://metamanager.wiki/en/latest/discord/) and post your question under the `pmm-help` channel for support issues.
-        Please use [Plex Meta Manager Features](https://features.metamanager.wiki/) to request and upvote features.
+        Please use [Kometa Discord](https://kometa.wiki/en/latest/discord/) and post your question under the ` kometa-help` channel for support issues.
+        Please use [Kometa Features](https://features.kometa.wiki/) to request and upvote features.
   - type: input
     id: version
     attributes:

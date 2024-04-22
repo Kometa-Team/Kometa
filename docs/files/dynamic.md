@@ -1,6 +1,6 @@
 # Dynamic Collections
 
-Plex Meta Manager can dynamically create collections based on different criteria, such as
+Kometa can dynamically create collections based on different criteria, such as
 
 * Collections based on the Collections from TMDb for every item in the library. (
 [Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), 
@@ -163,7 +163,7 @@ by this dynamic collection.
     
     **Attribute:** `addons`
     
-    **Accepted Values:** [Dictionary](../pmm/yaml.md#dictionaries) where the key is the `dynamic key` and the value is a
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` and the value is a
     list of `dynamic keys` to combine.
 
     ???+ example "Example"
@@ -237,8 +237,8 @@ by this dynamic collection.
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../pmm/yaml.md#dictionaries) where the key is the template variable and the value 
-    is another [Dictionary](../pmm/yaml.md#dictionaries) where the key is the `dynamic key` of the collection you want 
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the template variable and the value 
+    is another [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` of the collection you want 
     change the template variable for and the value is the new value for the template variable.
 
     ???+ example "Example"
@@ -351,7 +351,7 @@ by this dynamic collection.
     
     **Attribute:** `key_name_override`
     
-    **Accepted Values:** [Dictionary](../pmm/yaml.md#dictionaries) where the key is the key name you want to change and 
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the key name you want to change and 
     the value is what to change that key name to. 
 
     ???+ example "Example"
@@ -379,7 +379,7 @@ by this dynamic collection.
     
     **Attribute:** `title_override`
     
-    **Accepted Values:** [Dictionary](../pmm/yaml.md#dictionaries) where the key is the `dynamic key` you want to change 
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` you want to change 
     and the value is what to change the title to. 
 
     ???+ example "Example"

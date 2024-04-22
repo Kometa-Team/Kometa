@@ -2,11 +2,11 @@
 #                           Streaming Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/both/streaming         #
+#           https://kometa.wiki/en/latest/defaults/both/streaming            #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "030"
 
@@ -64,7 +64,7 @@ templates:
     cache_builders: 1
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<originals_key>>-<<originals>>
+    mdblist_list: https://mdblist.com/lists/k0meta/<<originals_key>>-<<originals>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>

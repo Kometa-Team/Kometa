@@ -36,7 +36,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -48,25 +48,25 @@ jobs:
           file: ./Dockerfile.lxml
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:lxml-latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:lxml-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Discord Success Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: "latest build: **Success**"
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
 
       - name: Discord Failure Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
@@ -74,8 +74,8 @@ jobs:
           message: <@&1079153184007790652>
           title: "latest build: **Failure**"
           color: 0xe30c43
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png

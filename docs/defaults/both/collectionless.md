@@ -35,12 +35,12 @@ libraries:
     template_variables:
       collection_mode: hide_items
     collection_files:
-      - pmm: collectionless
+      - default: collectionless
   TV Shows:
     template_variables:
       collection_mode: hide_items
     collection_files:
-      - pmm: collectionless
+      - default: collectionless
 ```
 
 ## Template Variables
@@ -53,7 +53,7 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
     ???+ warning
 
@@ -83,7 +83,7 @@ work. Any value not specified will use its default value if it has one if not it
         template_variables:
           collection_mode: hide_items
         collection_files:
-          - pmm: collectionless
+          - default: collectionless
             template_variables:
               exclude:
                 - Marvel Cinematic Universe

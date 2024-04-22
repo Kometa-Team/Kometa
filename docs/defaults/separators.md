@@ -70,7 +70,7 @@ And at the file-level
 libraries:
   Movies:
     collection_files:
-      - pmm: studio
+      - default: studio
         template_variables:
           use_separator: false
 ```
@@ -125,7 +125,7 @@ And at the file-level
 libraries:
   Movies:
     collection_files:
-      - pmm: studio
+      - default: studio
         template_variables:
           sep_style: stb
 ```

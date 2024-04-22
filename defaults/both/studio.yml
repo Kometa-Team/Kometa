@@ -2,11 +2,11 @@
 #                             Studio Collections                             #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#          https://metamanager.wiki/en/latest/defaults/both/studio           #
+#            https://kometa.wiki/en/latest/defaults/both/studio              #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "070"
 
@@ -274,6 +274,7 @@ dynamic_collections:
       - Bosque Ranch Productions
       - Box to Box Films
       - Brandywine Productions
+      - Broken Lizard Industries
       - Broken Road Productions
       - Calt Production
       - Canal+
@@ -290,6 +291,7 @@ dynamic_collections:
       - Chimp Television
       - Chris Morgan Productions
       - Cinergi Pictures Entertainment
+      - Codeblack Entertainment
       - Columbia Pictures
       - Constantin Film
       - Cowboy Films
@@ -297,6 +299,7 @@ dynamic_collections:
       - Dark Horse Entertainment
       - Davis Entertainment
       - DC Comics
+      - Dimension Films
       - Dino De Laurentiis Company
       - Don Simpson Jerry Bruckheimer Films
       - Doozer
@@ -374,6 +377,7 @@ dynamic_collections:
       - Live Entertainment
       - Lord Miller Productions
       - Lucasfilm Ltd
+      - Magic Light Pictures
       - Magnolia Pictures
       - Malevolent Films
       - Mandalay Entertainment

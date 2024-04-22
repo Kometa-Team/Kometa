@@ -2,11 +2,11 @@
 #                       US Content Rating Collections                        #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#     https://metamanager.wiki/en/latest/defaults/both/content_rating_us     #
+#       https://kometa.wiki/en/latest/defaults/both/content_rating_us        #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "110"
 

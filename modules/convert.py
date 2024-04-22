@@ -5,7 +5,7 @@ from plexapi.exceptions import BadRequest
 
 logger = util.logger
 
-anime_lists_url = "https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Anime-IDs/master/pmm_anime_ids.json"
+anime_lists_url = "https://raw.githubusercontent.com/Kometa-Team/Anime-IDs/master/anime_ids.json"
 
 class Convert:
     def __init__(self, config):

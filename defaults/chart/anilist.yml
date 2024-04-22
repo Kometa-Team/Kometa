@@ -2,11 +2,11 @@
 #                         AniList Charts Collections                         #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/chart/anilist          #
+#           https://kometa.wiki/en/latest/defaults/chart/anilist             #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "020"
     image: chart/<<mapping_name_encoded>>

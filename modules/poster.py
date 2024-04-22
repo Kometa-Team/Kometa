@@ -123,9 +123,9 @@ class Component(ImageBase):
         self.addon_offset = util.parse("Posters", "addon_offset", self.data, datatype="int", methods=self.methods, default=0, minimum=0) if "stroke_width" in self.methods else 0
         if "text" in self.methods:
             font_base = os.path.join(self.code_base, "fonts")
-            pmm_fonts = os.listdir(font_base)
+            kometa_fonts = os.listdir(font_base)
             all_fonts = {s: s for s in util.get_system_fonts()}
-            for font_name in pmm_fonts:
+            for font_name in kometa_fonts:
                 all_fonts[font_name] = os.path.join(font_base, font_name)
             self.text = util.parse("Posters", "text", self.data, methods=self.methods, default="<<title>>")
             self.font_name, self.font_compare = self.check_file("font", all_fonts, local=True)
@@ -321,7 +321,7 @@ class Component(ImageBase):
 
         return generated_layer, main_point, image
 
-class PMMImage(ImageBase):
+class KometaImage(ImageBase):
     def __init__(self, config, data, image_attr, playlist=False):
         super().__init__(config, data)
         self.image_attr = image_attr

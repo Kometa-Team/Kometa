@@ -27,10 +27,10 @@ Attributes set at the collection level will take priority over any library or gl
 
 The available setting attributes which can be set at each level are outlined below:
 
-??? blank "`cache` - Used to control PMM's cache database.<a class="headerlink" href="#cache" title="Permanent link">¶</a>"
+??? blank "`cache` - Used to control Kometa's cache database.<a class="headerlink" href="#cache" title="Permanent link">¶</a>"
 
-    <div id="cache" />Allow Plex Meta Manager to create and maintain a local cache database for faster subsequent 
-    processing. The cache file is created in the same directory as the configuration file.
+    <div id="cache" />Allow Kometa to create and maintain a local cache database for faster subsequent processing. The 
+    cache file is created in the same directory as the configuration file.
 
     <hr style="margin: 0px;">
     
@@ -76,8 +76,8 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip 
     
-        Assets can be stored anywhere on the host system that PMM has visibility of (i.e. if using docker, the directory 
-        must be mounted/visible to the docker container).
+        Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the 
+        directory must be mounted/visible to the docker container).
     
     <hr style="margin: 0px;">
     
@@ -105,7 +105,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
 
-    <div id="asset-folders" />While `true`, PMM will search the `asset_directory` for a dedicated folder per item vs 
+    <div id="asset-folders" />While `true`, Kometa will search the `asset_directory` for a dedicated folder per item vs 
     while false will look for an image. 
     
     i.e. When `true` the example path would be `<asset_directory_path>/Star Wars/poster.png` instead of 
@@ -132,7 +132,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     <div id="asset-depth" />Specify how many folder levels to scan for an item within the asset directory.
     
-    At each asset level, PMM will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder 
+    At each asset level, Kometa will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder 
     containing `poster.ext`.
     
     i.e. `<path_to_assets>/Star Wars/poster.png` and `<path_to_assets>/Star Wars.png` are both asset depth 0, whilst 
@@ -381,7 +381,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`default_collection_order` - Used to set the `collection_order` for every collection run.<a class="headerlink" href="#default-collection-order" title="Permanent link">¶</a>"
 
-    <div id="default-collection-order" />Set the `collection_order` for every collection run by PMM unless the 
+    <div id="default-collection-order" />Set the `collection_order` for every collection run by Kometa unless the 
     collection has a specific `collection_order`.
     
     ???+ tip
@@ -515,8 +515,9 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`missing_only_released` - Used to filter unreleased items from missing lists.<a class="headerlink" href="#missing-only-released" title="Permanent link">¶</a>"
 
-    <div id="missing-only-released" />Whilst running a collection or playlist, when PMM handles missing items to either 
-    report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.
+    <div id="missing-only-released" />Whilst running a collection or playlist, when Kometa handles missing items to 
+    either report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be 
+    filtered out.
 
     <hr style="margin: 0px;">
     
@@ -535,9 +536,9 @@ The available setting attributes which can be set at each level are outlined bel
           missing_only_released: true
         ```
 
-??? blank "`show_unmanaged` - Used to show collections not managed by PMM.<a class="headerlink" href="#show-unmanaged" title="Permanent link">¶</a>"
+??? blank "`show_unmanaged` - Used to show collections not managed by Kometa.<a class="headerlink" href="#show-unmanaged" title="Permanent link">¶</a>"
 
-    <div id="show-unmanaged" />List all collections not managed by Plex Meta Manager at the end of each run.
+    <div id="show-unmanaged" />List all collections not managed by Kometa at the end of each run.
 
     <hr style="margin: 0px;">
     
@@ -558,8 +559,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`show_unconfigured` - Used to show collections not in the current run.<a class="headerlink" href="#show-unconfigured" title="Permanent link">¶</a>"
 
-    <div id="show-unconfigured" />List all collections not configured in the current Plex Meta Manager run at the end of 
-    each run.
+    <div id="show-unconfigured" />List all collections not configured in the current Kometa run at the end of each run.
 
     <hr style="margin: 0px;">
     
@@ -944,7 +944,7 @@ The available setting attributes which can be set at each level are outlined bel
     ???+ note
     
         Ensure you are using the raw GitHub link (i.e. 
-        https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12 )
+        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12)
 
     <hr style="margin: 0px;">
     
@@ -960,7 +960,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          custom_repo: https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/meisnate12
+          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
         ```
 
 ??? blank "`verify_ssl` - Turn SSL Verification on or off.<a class="headerlink" href="#verify-ssl" title="Permanent link">¶</a>"

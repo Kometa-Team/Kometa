@@ -2,11 +2,11 @@
 #                            Network Collections                             #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#          https://metamanager.wiki/en/latest/defaults/show/network          #
+#            https://kometa.wiki/en/latest/defaults/show/network             #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "050"
 
@@ -55,6 +55,7 @@ dynamic_collections:
     - AMC
     - AMC+
     - Animal Planet
+    - ANIMAX
     - Angel Studios
     - Antena 3
     - Apple TV+

@@ -21,7 +21,8 @@ Both Tautulli Popular and Tautulli Watched have the same sub-attributes detailed
 | `list_minimum` | Minimum Number of Users Watching/Plays to add to the list. | :fontawesome-solid-circle-xmark:{ .red } |   `0`   |
 | `list_size`    | Number of Movies/Shows to add to this list.                | :fontawesome-solid-circle-xmark:{ .red } |  `10`   |
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order. 
 
 ```yaml
 collections:

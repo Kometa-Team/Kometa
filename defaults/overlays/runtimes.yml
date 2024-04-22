@@ -2,11 +2,11 @@
 #                              Runtimes Overlay                              #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/overlays/runtimes        #
+#          https://kometa.wiki/en/latest/defaults/overlays/runtimes          #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       text: "Runtime: "

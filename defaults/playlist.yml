@@ -2,11 +2,11 @@
 #                                 Playlists                                  #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#            https://metamanager.wiki/en/latest/defaults/playlist            #
+#              https://kometa.wiki/en/latest/defaults/playlist               #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
 
 templates:
   playlist:
@@ -36,7 +36,7 @@ templates:
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       trakt_list_<<key>>: <<trakt_list>>
-      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/playlist/<<mapping_name_encoded>>.jpg
+      url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/<<mapping_name_encoded>>.jpg
       name_<<key>>: <<mapping_name>>
       sync_to_users_<<key>>: <<sync_to_users>>
       exclude_users_<<key>>: <<exclude_users>>

@@ -19,17 +19,21 @@ Finds every item in the Trakt List.
 
 The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order. 
 
-**Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own the list.**
+**Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own 
+the list.**
 
 ???+ tip
 
-    If you have [authorized Trakt](../../config/trakt.md) then you can use private Trakt Lists, this is not possible if you have not authorized Trakt.
+    If you have [authorized Trakt](../../config/trakt.md) then you can use private Trakt Lists, this is not possible if 
+    you have not authorized Trakt.
 
 ???+ warning
 
-    Trakt lists and users come and go, and PMM has no control over this.  The list URLs found in this documentation are used here as examples and are available and working at time of writing, but they may disappear at any time.  Do not take their use here as a guarantee that they exist or are working when you read this.
+    Trakt lists and users come and go, and Kometa has no control over this.  The list URLs found in this documentation 
+    are used here as examples and are available and working at time of writing, but they may disappear at any time.  Do not take their use here as a guarantee that they exist or are working when you read this.
 
 ```yaml
 collections:
@@ -48,7 +52,8 @@ collections:
 ```
 
 * You can update the collection details with the Trakt List's description by using `trakt_list_details`.
-* You can specify multiple collections in `trakt_list_details` but it will only use the first one to update the collection summary.
+* You can specify multiple collections in `trakt_list_details` but it will only use the first one to update the 
+collection summary.
 
 ```yaml
 collections:
@@ -62,7 +67,8 @@ collections:
 
 Finds the movies/shows in the Trakt Chart. The options are detailed below.
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order.
 
 | Attribute        | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |:-----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -126,7 +132,8 @@ collections:
 
 Finds every movie/show in the Trakt Userlist.
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order.
 
 | Attribute  | Description & Values                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -165,7 +172,8 @@ Finds the movies/shows in Trakt's Recommendations for [Movies](https://trakt.doc
 
 The expected input is a single integer value of how many movies/shows to query. 
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order. 
 
 ```yaml
 collections:
@@ -181,7 +189,8 @@ Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/b
 
 The expected input is true. 
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order. 
 
 ```yaml
 collections:
@@ -193,7 +202,8 @@ collections:
 
 ## Syncing Plex Collections to Trakt Lists
 
-A combination of PMM settings/attributes can be utilized to create a collection via PMM and then sync them to a blank or existing Trakt List.
+A combination of Kometa settings/attributes can be utilized to create a collection via Kometa and then sync them to a 
+blank or existing Trakt List.
 
 NOTE: You must either create an empty Trakt list or specify an existing Trakt list which you have write access to.
 
@@ -201,13 +211,15 @@ NOTE: You must either create an empty Trakt list or specify an existing Trakt li
 collections:
   My Favourite Movies:
     sync_to_trakt_list: myfilms
-    # trakt_list: https://trakt.tv/users/plexmetamanager/lists/myfilms  OPTIONAL TWO-WAY SYNC
+    # trakt_list: https://trakt.tv/users/k0meta/lists/myfilms  OPTIONAL TWO-WAY SYNC
     plex_search:
       any:
         rating.gte: 8
         sort_by: user_rating.desc
 ```
 
-In this example, PMM will generate a Plex collection with any films that I have rated 8.0 or above (using the `plex_search`). The `sync_to_trakt_list` will take those films and then sync them to my `myfilms` Trakt list.
+In this example, Kometa will generate a Plex collection with any films that I have rated 8.0 or above (using the 
+`plex_search`). The `sync_to_trakt_list` will take those films and then sync them to my `myfilms` Trakt list.
 
-I can optionally also enable the `trakt_list` to create a two-way sync between Plex and Trakt. This allows me to add films to the Trakt list that I want in my Plex collection, and then sync them to Plex.
+I can optionally also enable the `trakt_list` to create a two-way sync between Plex and Trakt. This allows me to add 
+films to the Trakt list that I want in my Plex collection, and then sync them to Plex.

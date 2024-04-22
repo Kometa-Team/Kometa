@@ -47,7 +47,7 @@ recommended to use `HTTPS`.
 
 # Multi-Plex Instance Setup:
 
-The below config.yml extract details how to set up multiple Plex servers within the one PMM instance, in this example 
+The below config.yml extract details how to set up multiple Plex servers within the one Kometa instance, in this example 
 there are two plex servers which are receiving the same Collection File:
 
 ```yaml

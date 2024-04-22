@@ -2,11 +2,11 @@
 #                         Aspect Ratio Overlay                               #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/aspect         #
+#           https://kometa.wiki/en/latest/defaults/overlays/aspect           #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       text_<<key>>: <<overlay_name>>

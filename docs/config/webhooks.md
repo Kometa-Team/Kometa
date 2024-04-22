@@ -10,7 +10,7 @@ Below is a `webhooks` mapping example and the full set of attributes:
 
 ```yaml
 webhooks:
-  error: https://www.myspecialdomain.com/pmm
+  error: https://www.myspecialdomain.com/kometa
   version:
   run_start:
   run_end:

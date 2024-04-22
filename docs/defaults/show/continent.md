@@ -26,7 +26,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   TV Shows:
     collection_files:
-      - pmm: continent
+      - default: continent
 ```
 
 ## Color Style
@@ -45,7 +45,7 @@ Note that the `template_variables:` section only needs to be used if you do want
 
     === "File-Specific Template Variables"
 
-        The below template variables are available specifically for this PMM Defaults file.
+        The below template variables are available specifically for this Kometa Defaults file.
 
         Be sure to also check out the "Shared Template Variables" tab for additional variables.
 
@@ -89,7 +89,7 @@ Note that the `template_variables:` section only needs to be used if you do want
         libraries:
           Movies:
             collection_files:
-              - pmm: continent
+              - default: continent
                 template_variables:
                   use_other: false #(1)!
                   use_separator: false #(2)!

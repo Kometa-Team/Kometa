@@ -2,11 +2,11 @@
 #                       Subtitle Language Collections                        #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#     https://metamanager.wiki/en/latest/defaults/both/subtitle_language     #
+#       https://kometa.wiki/en/latest/defaults/both/subtitle_language        #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "095"
 

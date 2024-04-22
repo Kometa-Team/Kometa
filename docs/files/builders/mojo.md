@@ -14,7 +14,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_domestic`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`range` - Determines the type of time range of the Box Office"
         
@@ -106,7 +106,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_international`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`range` - Determines the type of time range of the Box Office"
         
@@ -193,7 +193,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_world`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`year` - The year of the Worldwide Box Office"
         
@@ -240,7 +240,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_all_time`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`chart` - Determines the chart you want to use"
 
@@ -296,7 +296,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_never`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`chart` - Determines the chart you want to use"
 
@@ -355,7 +355,7 @@ No configuration is required for these builders.
     
     **Builder Attribute:** `mojo_record`
 
-    **Builder Value:** [Dictionary](../../pmm/yaml.md#dictionaries) of Attributes
+    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`chart` - Determines the record you want to use"
 

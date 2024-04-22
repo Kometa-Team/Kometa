@@ -2,11 +2,11 @@
 #                            Universe Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/both/universe          #
+#           https://kometa.wiki/en/latest/defaults/both/universe             #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "040"
 
@@ -88,18 +88,18 @@ dynamic_collections:
         middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
       # check2
       mdblist_url:
-        avp: https://mdblist.com/lists/plexmetamanager/external/16872
-        arrow: https://mdblist.com/lists/plexmetamanager/external/15113
-        dca: https://mdblist.com/lists/plexmetamanager/external/15405
-        dcu: https://mdblist.com/lists/plexmetamanager/external/15107
-        fast: https://mdblist.com/lists/plexmetamanager/external/9246
-        marvel: https://mdblist.com/lists/plexmetamanager/external/15110
-        mummy: https://mdblist.com/lists/plexmetamanager/external/9249
-        rocky: https://mdblist.com/lists/plexmetamanager/external/9248
-        star: https://mdblist.com/lists/plexmetamanager/external/15105
-        askew: https://mdblist.com/lists/plexmetamanager/external/15362
-        wizard: https://mdblist.com/lists/plexmetamanager/external/23683
-        xmen: https://mdblist.com/lists/plexmetamanager/external/9244
+        avp: https://mdblist.com/lists/k0meta/external/16872
+        arrow: https://mdblist.com/lists/k0meta/external/15113
+        dca: https://mdblist.com/lists/k0meta/external/15405
+        dcu: https://mdblist.com/lists/k0meta/external/15107
+        fast: https://mdblist.com/lists/k0meta/external/9246
+        marvel: https://mdblist.com/lists/k0meta/external/15110
+        mummy: https://mdblist.com/lists/k0meta/external/9249
+        rocky: https://mdblist.com/lists/k0meta/external/9248
+        star: https://mdblist.com/lists/k0meta/external/15105
+        askew: https://mdblist.com/lists/k0meta/external/15362
+        wizard: https://mdblist.com/lists/k0meta/external/23683
+        xmen: https://mdblist.com/lists/k0meta/external/9244
       # check3
       image:
         default: universe/<<key>>

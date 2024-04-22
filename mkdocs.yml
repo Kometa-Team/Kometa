@@ -1,15 +1,18 @@
-site_name: Plex Meta Manager Wiki
+site_name: Kometa Wiki
 site_author: meisnate12
-site_description: Plex Meta Manager is an open-source python project allowing you to unlock the potential of your media server.
-site_url: https://<slug>.metamanager.wiki/en/latest/
-repo_name: Plex Meta Manager
-repo_url: https://github.com/meisnate12/Plex-Meta-Manager
+site_description: Kometa is an open-source python project allowing you to unlock the potential of your media server.
+site_url: https://<slug>.kometa.wiki/en/latest/
+repo_name: Kometa
+repo_url: https://github.com/Kometa-Team/Kometa
 
 theme:
   name: material
   logo: assets/icon.png
   favicon: assets/favicon.png
   custom_dir: docs/overrides
+  font:
+    text: Open Sans
+    code: Fira Code
   features:
     - content.code.annotate
     - content.tabs.link
@@ -32,7 +35,6 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: custom
-      accent: deep purple
       toggle:
         icon: material/weather-night
         name: Switch to light mode
@@ -41,7 +43,6 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: custom
-      accent: deep purple
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
@@ -55,7 +56,7 @@ plugins:
   - include-markdown
   - redirects:
       redirect_maps:
-        'discord.md': 'https://metamanager.wiki/en/nightly/link/'
+        'discord.md': 'https://kometa.wiki/en/nightly/link/'
         'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
         'link.md': 'https://discord.gg/FNqqw5jRSz'
         'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
@@ -79,16 +80,16 @@ extra:
       name: Donate
     - icon: fontawesome/brands/discord
       class: md-social__link
-      link: 'https://metamanager.wiki/en/latest/discord/'
+      link: 'https://kometa.wiki/en/latest/discord/'
       name: Discord
     - icon: fontawesome/brands/github
       class: md-social__link
-      link: 'https://github.com/meisnate12/Plex-Meta-Manager'
+      link: 'https://github.com/Kometa-Team/Kometa'
       name: GitHub
   analytics:
     provider: plausible
-    domain: metamanager.wiki/en/latest
-    src: "https://analytics.metamanager.wiki/js/script.js"
+    domain: kometa.wiki/en/latest
+    src: "https://analytics.kometa.wiki/js/script.js"
 copyright: Copyright &copy; 2024 meisnate12
 markdown_extensions:
   - pymdownx.tasklist:
@@ -127,40 +128,41 @@ extra_javascript:
   - stylesheets/branch.js
 
 nav:
-  - PLEX META MANAGER:
+  - KOMETA:
       - Home: index.md
       - INSTALLATION:
-        - Installing PMM: pmm/install/overview.md
-        - Docker Images: pmm/install/images.md
-        - Walkthroughs:
-          - Local Walkthrough (Win/Mac/Linux): pmm/install/local.md
-          - Docker Walkhrough: pmm/install/docker.md
-          - unRAID Walkthrough: pmm/install/unraid.md
-          - Kubernetes Walkthrough: pmm/install/kubernetes.md
-          - QNAP Walkthrough: pmm/install/qnap.md
-          - Synology Walkthrough: pmm/install/synology.md
+        - Installing Kometa: kometa/install/overview.md
+        - Docker Images: kometa/install/images.md
+        - Walkthroughs: &walkthroughs
+          - Local (Win/Mac/Linux): kometa/install/local.md
+          - Docker: kometa/install/docker.md
+          - unRAID: kometa/install/unraid.md
+          - Kubernetes: kometa/install/kubernetes.md
+          - QNAP: kometa/install/qnap.md
+          - Synology: kometa/install/synology.md
       - POST-INSTALL:
-        - Run Commands & Env Variables: pmm/environmental.md
-        - YAML Files Explained: pmm/yaml.md
-        - Log Files & Common Errors:  pmm/logs.md
-        - Frequently Asked Questions: pmm/faqs.md
+        - Run Commands & Env Variables: kometa/environmental.md
+        - YAML Files Explained: kometa/yaml.md
+        - Log Files & Common Errors: kometa/logs.md
+        - Frequently Asked Questions: kometa/faqs.md
         - Explanation Guides: &guides
-          - Overview: pmm/guides/overview.md
-          - Plex Ratings Explained: pmm/guides/ratings.md
-          - Scheduling PMM Runs Guide: pmm/guides/scheduling.md
-          - Image Asset Directory Guide: pmm/guides/assets.md
-          - Formula 1 Metadata Guide: pmm/guides/formula.md
+          - Overview: kometa/guides/overview.md
+          - Plex Ratings Explained: kometa/guides/ratings.md
+          - Scheduling Kometa Runs Guide: kometa/guides/scheduling.md
+          - Image Asset Directory Guide: kometa/guides/assets.md
+          - Formula 1 Metadata Guide: kometa/guides/formula.md
+          - MediUX Assets Guide: kometa/guides/mediux.md
         - Companion Scripts: &scripts
-          - Overview: pmm/scripts/overview.md
-          - Plex Image Cleanup: pmm/scripts/image-cleanup.md
-          - PMM Overlay Reset: pmm/scripts/overlay-reset.md
+          - Overview: kometa/scripts/overview.md
+          - ImageMaid: kometa/scripts/imagemaid.md
+          - Kometa Overlay Reset: kometa/scripts/overlay-reset.md
       - USEFUL LINKS: &links
-        - Feature Requests: https://features.metamanager.wiki/
-        - Bugs & Issues: https://github.com/meisnate12/Plex-Meta-Manager/issues
-        - User Configs Repository: https://github.com/meisnate12/Plex-Meta-Manager-Configs
-        - Discord Server: https://metamanager.wiki/en/latest/discord/
-        - Donate/Sponsor PMM: https://github.com/sponsors/meisnate12
-        - Acknowledgements: pmm/acknowledgements.md
+        - Feature Requests: https://features.kometa.wiki/
+        - Bugs & Issues: https://github.com/Kometa-Team/Kometa/issues
+        - Community Configs: https://github.com/Kometa-Team/Community-Configs
+        - Discord Server: https://kometa.wiki/en/latest/discord/
+        - Donate/Sponsor Kometa: https://github.com/sponsors/meisnate12
+        - Acknowledgements: kometa/acknowledgements.md
   - CONFIGURATION FILE:
       - Overview: config/overview.md
       - STRUCTURE:
@@ -186,7 +188,7 @@ nav:
         - AniDB: config/anidb.md
         - MyAnimeList: config/myanimelist.md
         - Trakt and MyAnimeList Authentication: config/auth.md
-  - PMM DEFAULTS:
+  - KOMETA DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
       - COLLECTIONS DEFAULTS:

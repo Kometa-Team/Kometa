@@ -22,10 +22,10 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     collection_files:
-      - pmm: separator_chart
+      - default: separator_chart
   TV Shows:
     collection_files:
-      - pmm: separator_chart
+      - default: separator_chart
 ```
 
 ## Template Variables
@@ -57,7 +57,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         collection_files:
-          - pmm: separator_chart
+          - default: separator_chart
             template_variables:
               sep_style: purple #(1)!
     ```

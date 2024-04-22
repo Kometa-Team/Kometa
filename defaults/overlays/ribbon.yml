@@ -2,11 +2,11 @@
 #                               Ribbon Overlay                               #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/ribbon         #
+#           https://kometa.wiki/en/latest/defaults/overlays/ribbon           #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       style: yellow
@@ -20,7 +20,7 @@ external_templates:
             value: black
           - style: red
             value: red
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false
@@ -42,7 +42,7 @@ templates:
     optional:
       - mdb_key
       - imdb_key
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<mdb_key>><<library_type>>s
+    mdblist_list: https://mdblist.com/lists/k0meta/<<mdb_key>><<library_type>>s
     imdb_chart: <<imdb_key>>_<<library_type>>s
 
 overlays:

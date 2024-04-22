@@ -6,9 +6,9 @@ search:
 # Library Attributes
 
 Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants
-Plex Meta Manager to act on.
+Kometa to act on.
 
-Attributes are used to instruct Plex Meta Manager what actions to take, such as "load the following libraries" or 
+Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or 
 "execute the following Collection Definition files". These attributes can be specified individually per library, or can 
 be inherited from the global value if it has been set. If an attribute is specified at both the library and global 
 level, then the library level attribute will take priority.
@@ -21,7 +21,7 @@ The available attributes for each library are as follows:
 
     <div id="library-name" />*Required only when trying to use multiple servers with the same name.*
 
-    Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. 
+    Each library that the user wants Kometa to interact with must be documented with a library attribute. 
 
     A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name 
     that correlates with a library of the same name within the Plex Media Server.
@@ -81,12 +81,12 @@ The available attributes for each library are as follows:
           TV Shows:
             collection_files:
               - file: config/TV Shows.yml
-              - pmm: tmdb
-              - pmm: network
+              - default: tmdb
+              - default: network
         ```
 
-        By default, when `collection_files` is missing Plex Meta Manager will look within the root PMM directory for a 
-        collection file called `<MAPPING_NAME>.yml`. In this example, Plex Meta Manager will look for a file named 
+        By default, when `collection_files` is missing Kometa will look within the root Kometa directory for a 
+        collection file called `<MAPPING_NAME>.yml`. In the example below, Kometa will look for a file named 
         `TV Shows.yml`.
         
         ```yaml
@@ -102,11 +102,11 @@ The available attributes for each library are as follows:
 
     ???+ tip
     
-        As of Plex Meta Manager 1.20.0 "Metadata Files" refers to YAML files which refers to managing the metadata of 
+        As of Kometa 1.20.0 "Metadata Files" refers to YAML files which refers to managing the metadata of 
         items [movies, shows, music] within your library, and "Collection Files" refers to YAML files which define 
         Collections.
     
-        In previous version of Plex Meta Manager, "Metadata Files" could mean either of the above.
+        In previous version of Kometa, "Metadata Files" could mean either of the above.
 
     <hr style="margin: 0px;">
     
@@ -200,7 +200,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../pmm/yaml.md#dictionaries) of values specified by each particular file.
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) of values specified by each particular file.
 
     **Default Value:** `None`
 
@@ -259,7 +259,7 @@ The available attributes for each library are as follows:
         libraries:
           Movies:
             collection_files:
-              - pmm: imdb
+              - default: imdb
             operations:
               mass_critic_rating_update: tmdb
               split_duplicates: true
@@ -272,7 +272,7 @@ The available attributes for each library are as follows:
     ???+ warning "Proceed with Caution"
 
         When set to `true`, this will remove all overlays from your library every run, but will not delete 
-        the overlaid images from your system, resulting in [image bloat](../pmm/scripts/image-cleanup.md).
+        the overlaid images from your system, resulting in [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
     
@@ -301,7 +301,7 @@ The available attributes for each library are as follows:
     ???+ warning "Proceed with Caution"
 
         When set to `true`, this will reapply all overlays on each run even if there is no need to do so, which will result in 
-        [image bloat](../pmm/scripts/image-cleanup.md).
+        [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
     
@@ -331,7 +331,7 @@ The available attributes for each library are as follows:
     ???+ warning "Proceed with Caution"
 
         This will reset all posters to the desired source on each run and will reapply 
-        all overlays on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
+        all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
     
@@ -357,7 +357,7 @@ The available attributes for each library are as follows:
 
     <div id="schedule-overlays" />Used to schedule overlays to run when desired. Overlays are applied all at once in a 
     batch therefore you cannot schedule individual Overlay Files, as any unscheduled overlay file will be removed each 
-    time PMM is run.
+    time Kometa is run.
 
     <hr style="margin: 0px;">
     
@@ -397,7 +397,7 @@ The available attributes for each library are as follows:
         libraries:
           Movies:
             collection_files:
-              - pmm: imdb
+              - default: imdb
             settings:
               asset_directory: config/asssets/Movies
         ```
@@ -639,18 +639,18 @@ This example is an advanced version of the library mappings which highlights som
       Movies:
         collection_files:
           - file: config/Movies.yml
-          - pmm: imdb
-          - pmm: studio
-          - pmm: genre
-          - pmm: actor
+          - default: imdb
+          - default: studio
+          - default: genre
+          - default: actor
         operations:
           mass_critic_rating_update: tmdb
           split_duplicates: true
       TV Shows:
         collection_files:
           - file: config/TV Shows.yml
-          - pmm: tmdb
-          - pmm: network
+          - default: tmdb
+          - default: network
         remove_overlays: false
         overlay_files:
           - file: config/Overlays.yml
@@ -661,12 +661,12 @@ This example is an advanced version of the library mappings which highlights som
           token: ####################
         collection_files:
           - file: config/TV Shows.yml
-          - pmm: tmdb
-          - pmm: network
+          - default: tmdb
+          - default: network
       Anime:
         collection_files:
           - file: config/Anime.yml
-          - pmm: myanimelist
+          - default: myanimelist
         radarr:
           url: http://192.168.1.45:7878
           token: ################################
@@ -684,6 +684,6 @@ This example is an advanced version of the library mappings which highlights som
       monitor: true
       availability: announced
       quality_profile: HD-1080p
-      tag: pmm
+      tag: kometa
       search: false
     ```

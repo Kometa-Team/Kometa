@@ -144,3 +144,8 @@ code {
   margin-top: 2em;
   margin-bottom: 2em;
 }
+
+.md-typeset img[alt="Logo"] {
+    height: auto;
+    max-width: 45%;
+}

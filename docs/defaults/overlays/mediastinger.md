@@ -17,7 +17,7 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: mediastinger
+      - default: mediastinger
 ```
 
 ## Template Variables
@@ -30,7 +30,7 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -59,7 +59,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: mediastinger
+          - default: mediastinger
             template_variables:
               font_color: "#FFFFFF99"
     ```

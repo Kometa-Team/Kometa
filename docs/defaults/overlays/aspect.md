@@ -29,14 +29,14 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: aspect
+      - default: aspect
   TV Shows:
     overlay_files:
-      - pmm: aspect
-      - pmm: aspect
+      - default: aspect
+      - default: aspect
         template_variables:
           builder_level: episode
-      - pmm: aspect
+      - default: aspect
         template_variables:
           builder_level: season
 ```
@@ -51,11 +51,11 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
 
-    * **Overlay Text Template Variables** are additional variables shared across the PMM Text Overlay Defaults.
+    * **Overlay Text Template Variables** are additional variables shared across the Kometa Text Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -100,22 +100,22 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: aspect
+          - default: aspect
             template_variables:
               text_1.33: "4:9"
               text_1.77: "16:9"
       TV Shows:
         overlay_files:
-          - pmm: aspect
+          - default: aspect
             template_variables:
               text_1.33: "4:9"
               text_1.77: "16:9"
-          - pmm: aspect
+          - default: aspect
             template_variables:
               overlay_level: episode
               text_1.33: "4:9"
               text_1.77: "16:9"
-          - pmm: aspect
+          - default: aspect
             template_variables:
               overlay_level: season
               text_1.33: "4:9"

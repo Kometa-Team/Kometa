@@ -11,7 +11,9 @@ templates:
       url_<<key>>: <<url>>
       git_<<key>>: <<git>>
       repo_<<key>>: <<repo>>
-      pmm_<<key>>: <<pmm>> 
+      default: <<pmm>>
+      pmm_<<key>>: <<default>>
+      default_<<key>>: <<pmm_<<key>>>>
       font_<<key>>: <<font>>
       font_size_<<key>>: <<font_size>>
       font_color_<<key>>: <<font_color>>
@@ -83,7 +85,7 @@ templates:
       url: <<url_<<key>>>>
       git: <<git_<<key>>>>
       repo: <<repo_<<key>>>>
-      pmm: <<pmm_<<key>>>>
+      default: <<default_<<key>>>>
       group: <<group>>
       queue: <<queue>>
       weight: <<weight_<<key>>>>

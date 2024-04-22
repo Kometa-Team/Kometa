@@ -2,11 +2,11 @@
 #                               Status Overlay                               #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/status         #
+#           https://kometa.wiki/en/latest/defaults/overlays/status           #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     text_<<key>>: <<text>>
     group: status

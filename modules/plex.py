@@ -1571,8 +1571,8 @@ class Plex(Library):
         if match_dict:
             attrs["match"] = match_dict
 
-        def check_field(plex_key, pmm_key, var_key=None):
-            if plex_key in fields and pmm_key not in self.metadata_backup["exclude"]:
+        def check_field(plex_key, kometa_key, var_key=None):
+            if plex_key in fields and kometa_key not in self.metadata_backup["exclude"]:
                 if not var_key:
                     var_key = plex_key
                 if hasattr(item, var_key):
@@ -1580,11 +1580,11 @@ class Plex(Library):
                     if isinstance(plex_value, list):
                         plex_tags = [t.tag for t in plex_value]
                         if len(plex_tags) > 0 or self.metadata_backup["sync_tags"]:
-                            attrs[f"{pmm_key}.sync" if self.metadata_backup["sync_tags"] else pmm_key] = None if not plex_tags else plex_tags[0] if len(plex_tags) == 1 else plex_tags
+                            attrs[f"{kometa_key}.sync" if self.metadata_backup["sync_tags"] else kometa_key] = None if not plex_tags else plex_tags[0] if len(plex_tags) == 1 else plex_tags
                     elif isinstance(plex_value, datetime):
-                        attrs[pmm_key] = datetime.strftime(plex_value, "%Y-%m-%d")
+                        attrs[kometa_key] = datetime.strftime(plex_value, "%Y-%m-%d")
                     else:
-                        attrs[pmm_key] = plex_value
+                        attrs[kometa_key] = plex_value
 
         check_field("titleSort", "sort_title")
         check_field("editionTitle", "edition")

@@ -29,7 +29,7 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     collection_files:
-      - pmm: franchise
+      - default: franchise
 ```
 
 ## Template Variables
@@ -42,7 +42,7 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
     ???+ warning
 
@@ -93,7 +93,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         collection_files:
-          - pmm: franchise
+          - default: franchise
             template_variables:
               build_collection: false #(1)!
               movie_105995: 336560 #(2)!
