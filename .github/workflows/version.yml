@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  docker-version:
+  docker:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,7 +44,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:${{ steps.get_version.outputs.VERSION }}
+          tags: kometateam/kometa:${{ steps.get_version.outputs.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -56,7 +56,7 @@ jobs:
           file: ./Dockerfile.lxml
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:lxml-${{ steps.get_version.outputs.VERSION }}
+          tags: kometateam/kometa:lxml-${{ steps.get_version.outputs.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -64,10 +64,10 @@ jobs:
         uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
-          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "${{ steps.get_version.outputs.VERSION }} build: **Success**"
-          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ secrets.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: 844716
           username: Kobota
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
           author: Docker
@@ -77,12 +77,11 @@ jobs:
         uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
-          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "${{ steps.get_version.outputs.VERSION }} build: **Failure**"
-          color: 0xe30c43
-          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          title: "${{ secrets.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: 14879811
           username: Kobota
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
           author: Docker

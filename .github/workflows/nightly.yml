@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  docker-nightly:
+  docker:
     runs-on: ubuntu-latest
     steps:
 
@@ -42,7 +42,7 @@ jobs:
             "BRANCH_NAME=nightly"
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:nightly
+          tags: kometateam/kometa:nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -56,31 +56,30 @@ jobs:
             "BRANCH_NAME=nightly"
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:lxml-nightly
+          tags: kometateam/kometa:lxml-nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Send Discord Commit Notification
         uses: Kometa-Team/discord-notifications@master
         with:
-          webhook_id: ${{ secrets.NIGHTLY_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.NIGHTLY_WEBHOOK_TOKEN }}
-          title: Nightly Commits
+          webhook_id_token: ${{ secrets.DEVELOP_WEBHOOK }}
+          title: Commits
           message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           commits: "true"
           username: Kobota
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
-          author: Kometa Nightly Release
+          author: ${{ secrets.REPO_NAME }} Nightly Release
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/release.png
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
-          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
-          title: "nightly build: **Success**"
-          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ secrets.REPO_NAME }} nightly: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: 844716
           username: Kobota
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
           author: Docker
@@ -90,12 +89,11 @@ jobs:
         uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
-          webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "nightly build: **Failure**"
-          color: 0xe30c43
-          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          title: "${{ secrets.REPO_NAME }} nightly: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: 14879811
           username: Kobota
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
           author: Docker
