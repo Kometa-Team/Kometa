@@ -33,7 +33,7 @@ from retrying import retry
 
 logger = util.logger
 
-mediastingers_url = "https://raw.githubusercontent.com/meisnate12/PMM-Mediastingers/master/stingers.yml"
+mediastingers_url = "https://raw.githubusercontent.com/Kometa-Team/Mediastingers/master/stingers.yml"
 run_order_options = {
     "collections": "Represents Collection Updates",
     "metadata": "Represents Metadata Updates",

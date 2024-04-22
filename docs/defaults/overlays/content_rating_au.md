@@ -33,14 +33,14 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: content_rating_au
+      - default: content_rating_au
   TV Shows:
     overlay_files:
-      - pmm: content_rating_au
-      - pmm: content_rating_au
+      - default: content_rating_au
+      - default: content_rating_au
         template_variables:
           builder_level: season
-      - pmm: content_rating_au
+      - default: content_rating_au
         template_variables:
           builder_level: episode
 ```
@@ -55,9 +55,9 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -96,7 +96,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: content_rating_au
+          - default: content_rating_au
             template_variables:
               color: false
     ```

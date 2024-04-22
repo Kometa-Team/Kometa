@@ -2,7 +2,7 @@
 #                         Collectionless Collection                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/both/collectionless       #
+#         https://kometa.wiki/en/latest/defaults/both/collectionless         #
 ##############################################################################
 
 templates:
@@ -15,7 +15,7 @@ templates:
         # check2
       sort_title: ~_Collectionless
       collection_order: alpha
-      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/collectionless.jpg
+      url_poster: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/collectionless.jpg
     optional:
       - collection_mode
       - exclude

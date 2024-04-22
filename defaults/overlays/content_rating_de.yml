@@ -2,11 +2,11 @@
 #                        DE Content Rating Overlay                           #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#   https://metamanager.wiki/en/latest/defaults/overlays/content_rating_de   #
+#     https://kometa.wiki/en/latest/defaults/overlays/content_rating_de      #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       key: <<overlay_name>>
@@ -24,7 +24,7 @@ external_templates:
         conditions:
           - color: false
             value: ""
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false

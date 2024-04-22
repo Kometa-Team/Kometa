@@ -3,11 +3,11 @@
 #       Created by Adam Pope, bartolomesorianol, Bullmoose20 & Sohjiro       #
 #          Artwork Credit to Duhniel, Bullmoose20, and Wiki Commons          #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/show/continent         #
+#           https://kometa.wiki/en/latest/defaults/show/continent            #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "082"
 

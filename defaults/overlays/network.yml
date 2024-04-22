@@ -2,11 +2,11 @@
 #                             Network Overlay                                #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/network        #
+#          https://kometa.wiki/en/latest/defaults/overlays/network           #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     run_definition:
       - <<use_<<key>>>>
@@ -35,7 +35,7 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false
@@ -128,6 +128,10 @@ overlays:
   Animal Planet:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [Animal Planet, Animal Planet Brasil, Animal Planet Deutschland]}]
+
+  ANIMAX:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   Angel Studios:
     variables: { weight: 10}

@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Feature Requests
-    url: https://features.metamanager.wiki
+    url: https://features.kometa.wiki
     about: Please use the features site to submit and vote on features.
-  - name: Plex Meta Manager Wiki
-    url: https://metamanager.wiki
+  - name: Kometa Wiki
+    url: https://kometa.wiki
     about: Please check the wiki to see if your question has already been answered.
   - name: Discord
-    url: https://metamanager.wiki/en/latest/discord/
-    about: Please use the Plex Meta Manager Discord to ask for support.
+    url: https://kometa.wiki/en/latest/discord/
+    about: Please use the Kometa Discord to ask for support.

@@ -12,12 +12,14 @@ jobs:
     steps:
 
       - name: Send Discord Release Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id: ${{ secrets.RELEASE_WEBHOOK_ID }}
           webhook_token: ${{ secrets.RELEASE_WEBHOOK_TOKEN }}
           release: true
-          title: Plex Meta Manager Release VERSION
-          message: "<@&967002324646113290> - A new version of Plex Meta Manager has been released and is available to all users.\n\nWe **strongly** recommend users who previously switched to the `nightly` or `develop` branches to resolve any previous issues to now switch back to the `latest` branch now."
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/master/.github/pmm.png
+          title: Release VERSION
+          message: "<@&967002324646113290> - A new version of Kometa has been released and is available to all users.\n\nWe **strongly** recommend users who previously switched to the `nightly` or `develop` branches to resolve any previous issues to now switch back to the `latest` branch now."
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/logo.png
+          author: Kometa Release
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/release.png

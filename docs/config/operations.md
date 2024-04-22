@@ -16,7 +16,7 @@ When not using a list under `operations` the whole operations value is one block
     libraries:
       Movies:
         collection_files:
-          - pmm: imdb
+          - default: imdb
         operations:
           mass_critic_rating_update: tmdb
           split_duplicates: true
@@ -33,7 +33,7 @@ You can create individual blocks of operations by using a list under `operations
     libraries:
       Movies:
         collection_files:
-          - pmm: imdb
+          - default: imdb
         operations:
           - schedule: weekly(friday)
             mass_critic_rating_update: tmdb
@@ -78,10 +78,10 @@ You can create individual blocks of operations by using a list under `operations
     **Accepted Values:** There are a few different options to determine how the `delete_collections` works.
     
     <table class="clearTable">
-      <tr><td>`managed: true`</td><td>Collection must be Managed to be deleted<br>(collection has the `PMM` label)</td></tr>
-      <tr><td>`managed: false`</td><td>Collection must be Unmanaged to be deleted<br>(collection does not have the `PMM` label)</td></tr>
-      <tr><td>`configured: true`</td><td>Collection must be Configured to be deleted<br>(collection is in the config file of the specific PMM run)</td></tr>
-      <tr><td>`configured: false`</td><td>Collection must be Unconfigured to be deleted<br>(collection is not in the config file of the specific PMM run)</td></tr>
+      <tr><td>`managed: true`</td><td>Collection must be Managed to be deleted<br>(collection has the `Kometa` label)</td></tr>
+      <tr><td>`managed: false`</td><td>Collection must be Unmanaged to be deleted<br>(collection does not have the `Kometa` label)</td></tr>
+      <tr><td>`configured: true`</td><td>Collection must be Configured to be deleted<br>(collection is in the config file of the specific Kometa run)</td></tr>
+      <tr><td>`configured: false`</td><td>Collection must be Unconfigured to be deleted<br>(collection is not in the config file of the specific Kometa run)</td></tr>
       <tr><td>`less: ###`</td><td>Collection must contain less than the given number of items to be deleted.<br>### is a Number greater than 0<br>Optional value which if undefined means collections will be deleted regardless of how many items they have</td></tr>
     </table>
 
@@ -89,7 +89,7 @@ You can create individual blocks of operations by using a list under `operations
 
     ???+ example "Example"
 
-        Removes all Managed Collections (Collections with the `PMM` Label) that are not configured in the Current Run.
+        Removes all Managed Collections (Collections with the `Kometa` Label) that are not configured in the Current Run.
     
         ```yaml
         libraries:
@@ -316,8 +316,8 @@ You can create individual blocks of operations by using a list under `operations
         no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten 
         Tomatoes. The human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience 
         slot is the only party who knows that the ratings are no longer Rotten Tomatoes. One primary use of this feature
-        is to put ratings overlays on posters. More information on what PMM can do with these ratings can be found 
-        [here](../pmm/guides/ratings.md).
+        is to put ratings overlays on posters. More information on what Kometa can do with these ratings can be found 
+        [here](../kometa/guides/ratings.md).
 
     <hr style="margin: 0px;">
     
@@ -385,8 +385,8 @@ You can create individual blocks of operations by using a list under `operations
         no matter what happens with this mass rating update operation, the icons in the Plex UI will remain Rotten 
         Tomatoes. The human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience 
         slot is the only party who knows that the ratings are no longer Rotten Tomatoes. One primary use of this feature
-        is to put ratings overlays on posters.  More information on what PMM can do with these ratings can be found 
-        [here](../pmm/guides/ratings.md).
+        is to put ratings overlays on posters.  More information on what Kometa can do with these ratings can be found 
+        [here](../kometa/guides/ratings.md).
 
     <hr style="margin: 0px;">
     
@@ -432,8 +432,8 @@ You can create individual blocks of operations by using a list under `operations
     
     ???+ warning
     
-        When used in combination with Overlays, this could cause PMM to reset the poster and then reapply all overlays 
-        on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
+        When used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays 
+        on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
     
@@ -468,8 +468,8 @@ You can create individual blocks of operations by using a list under `operations
     
     ???+ warning
     
-        When used in combination with Overlays, this could cause PMM to reset the background and then reapply all 
-        overlays on each run, which will result in [image bloat](../pmm/scripts/image-cleanup.md).
+        When used in combination with Overlays, this could cause Kometa to reset the background and then reapply all 
+        overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
     
@@ -812,12 +812,12 @@ You can create individual blocks of operations by using a list under `operations
 
 ###### Metadata Backup
 
-??? blank "`metadata_backup` - Creates/Maintains a PMM Metadata File for the library.<a class="headerlink" href="#metadata-backup" title="Permanent link">¶</a>"
+??? blank "`metadata_backup` - Creates/Maintains a Kometa Metadata File for the library.<a class="headerlink" href="#metadata-backup" title="Permanent link">¶</a>"
 
-    <div id="metadata-backup" />Creates/Maintains a Plex Meta Manager Metadata File with a full `metadata` mapping based
+    <div id="metadata-backup" />Creates/Maintains a Kometa Metadata File with a full `metadata` mapping based
     on the library's items locked attributes.
 
-    If you point to an existing Metadata File then PMM will Sync the changes to the file, so you won't lose non plex 
+    If you point to an existing Metadata File then Kometa will Sync the changes to the file, so you won't lose non plex 
     changes in the file.
 
     <hr style="margin: 0px;">

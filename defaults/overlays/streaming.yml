@@ -3,11 +3,11 @@
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/overlays/streaming       #
+#         https://kometa.wiki/en/latest/defaults/overlays/streaming          #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     group: streaming
     default:
@@ -32,7 +32,7 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false
@@ -94,7 +94,7 @@ templates:
           - region: CA
             key: ["1899", "37"]
             value: False
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/<<originals_key>>-<<originals>>
+    mdblist_list: https://mdblist.com/lists/k0meta/<<originals_key>>-<<originals>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
@@ -171,5 +171,5 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   hayu:
-    variables: {key: "8", originals_key: hayu, weight: 10, allowed_libraries: show}
+    variables: {key: "223", originals_key: hayu, weight: 10, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]

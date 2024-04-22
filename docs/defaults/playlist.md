@@ -31,7 +31,7 @@ The below YAML in your config.yml will create the collections:
 
 ```yaml
 playlist_files:
-  - pmm: playlist
+  - default: playlist
 ```
 
 ## Template Variables
@@ -44,7 +44,7 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
     ???+ warning
 
@@ -95,7 +95,7 @@ work. Any value not specified will use its default value if it has one if not it
     
     ```yaml
     playlist_files:
-      - pmm: playlist
+      - default: playlist
         template_variables:
           radarr_add_missing: true #(1)!
     ```

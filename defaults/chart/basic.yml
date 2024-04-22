@@ -2,11 +2,11 @@
 #                          Basic Charts Collections                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#          https://metamanager.wiki/en/latest/defaults/chart/basic           #
+#            https://kometa.wiki/en/latest/defaults/chart/basic              #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "010"
     image: chart/<<mapping_name_encoded>>

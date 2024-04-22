@@ -158,7 +158,7 @@ def get_master():
 
 def get_version(level):
     try:
-        url = f"https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/{level}/VERSION"
+        url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{level}/VERSION"
         return parse_version(requests.get(url).content.decode().strip(), text=level)
     except requests.exceptions.ConnectionError:
         return "Unknown", "Unknown", 0
@@ -425,13 +425,13 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
         if isinstance(file, dict):
             current = []
             def check_dict(attr, name):
-                if attr in file and (method != "metadata_files" or attr != "pmm"):
+                if attr in file and (method != "metadata_files" or attr not in ["pmm", "default"]):
                     logger.info(f"Reading {attr}: {file[attr]}")
                     if file[attr]:
-                        if attr == "pmm" and file[attr] == "other_award":
-                            logger.error(f"{err_type} Error: The PMM Default other_award has been deprecated. Please visit the wiki for the full list of available award files")
+                        if attr in ["pmm", "default"] and file[attr] == "other_award":
+                            logger.error(f"{err_type} Error: The Kometa Default other_award has been deprecated. Please visit the wiki for the full list of available award files")
                         elif attr == "git" and file[attr].startswith("PMM/"):
-                            current.append(("PMM Default", file[attr][4:]))
+                            current.append(("Default", file[attr][4:]))
                         else:
                             current.append((name, file[attr]))
                     else:
@@ -440,7 +440,8 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
 
             check_dict("url", "URL")
             check_dict("git", "Git")
-            check_dict("pmm", "PMM Default")
+            check_dict("pmm", "Default")
+            check_dict("default", "Default")
             check_dict("repo", "Repo")
             check_dict("file", "File")
             if not single and "folder" in file:

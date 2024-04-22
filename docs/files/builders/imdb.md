@@ -148,7 +148,7 @@ Finds every item in an [IMDb Event](https://www.imdb.com/event/).
 
 ```yaml
 {%    
-  include-markdown "https://raw.githubusercontent.com/meisnate12/PMM-IMDb-Awards/master/event_ids.yml"
+  include-markdown "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master/event_ids.yml"
   comments=false
 %}
 ```

@@ -1,0 +1,46 @@
+name: Kometa Default Issue
+description: Post here if there is an issue with the Kometa defaults or for missing images for Kometa default overlays or posters.
+title: '[Defaults]: '
+labels: ['defaults']
+assignees: ['meisnate12', 'bullmoose20', 'YozoraXCII']
+
+body:
+  - type: markdown
+    attributes:
+      value: >
+        **THIS IS NOT THE PLACE TO ASK FOR SUPPORT OR FEATURE REQUESTS!**
+        Please use [Kometa Discord](https://kometa.wiki/en/latest/discord/) and post your question under the `kometa-support` channel for support issues.
+        Please use [Kometa Features](https://features.kometa.wiki/) to request and upvote features.
+  - type: input
+    id: file
+    attributes:
+      label: Link to File
+      description: Link to the config File in question
+      placeholder: show/network
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version Number
+      description: Can be found at the beginning of your log file
+      placeholder: eg. 1.18.0
+    validations:
+      required: true
+  - type: dropdown
+    id: branch
+    attributes:
+      label: What branch are you on?
+      options:
+        - master
+        - develop
+        - nightly
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of the bug.
+    validations:
+      required: true

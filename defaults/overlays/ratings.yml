@@ -2,7 +2,7 @@
 #                              Ratings Overlays                              #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/ratings        #
+#          https://kometa.wiki/en/latest/defaults/overlays/ratings           #
 ##############################################################################
 
 templates:
@@ -13,8 +13,8 @@ templates:
       rating<<rating_num>>_url: <<url>>
       rating<<rating_num>>_git: <<git>>
       rating<<rating_num>>_repo: <<repo>>
-      pmm: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
-      rating<<rating_num>>_pmm: <<pmm>>
+      default: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
+      rating<<rating_num>>_default: <<default>>
       weight: 100
       font: fonts/Inter-Bold.ttf
       rating<<rating_num>>_font: <<font>>
@@ -76,10 +76,10 @@ templates:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: rt_tomato
-            value: https://mdblist.com/lists/plexmetamanager/certifiedfresh<<library_type>>s
+            value: https://mdblist.com/lists/k0meta/certifiedfresh<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: metacritic
-            value: https://mdblist.com/lists/plexmetamanager/metacriticmustsee<<library_type>>s
+            value: https://mdblist.com/lists/k0meta/metacriticmustsee<<library_type>>s
       imdb_top:
         conditions:
           - image_level: Top
@@ -433,7 +433,7 @@ templates:
           - rating<<rating_num>>: [critic, audience, user]
             image_level: Rotten
             value: lt
-      rating<<rating_num>>_pmm:
+      rating<<rating_num>>_default:
         conditions:
           - file.exists: false
             url.exists: false
@@ -459,7 +459,7 @@ templates:
       url: <<rating<<rating_num>>_url>>
       git: <<rating<<rating_num>>_git>>
       repo: <<rating<<rating_num>>_repo>>
-      pmm: <<rating<<rating_num>>_pmm>>
+      default: <<rating<<rating_num>>_default>>
       group: rating<<rating_num>>_group
       weight: <<weight>>
       horizontal_offset: <<rating<<rating_num>>_horizontal_offset>>

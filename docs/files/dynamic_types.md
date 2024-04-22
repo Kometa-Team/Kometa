@@ -162,7 +162,7 @@ requirements of creating the collection.
     
     **`type` Value:** `imdb_awards`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`event_id` - Determines the [IMDb Event](https://www.imdb.com/event/) used.<a class="headerlink" href="#imdb-awards-event-id" title="Permanent link">¶</a>"
         
@@ -351,7 +351,7 @@ requirements of creating the collection.
     
     **`type` Value:** `actor`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`depth` - Determines how many "top" acting credits per item.<a class="headerlink" href="#actor-depth" title="Permanent link">¶</a>"
         
@@ -434,7 +434,7 @@ requirements of creating the collection.
     
     **`type` Value:** `director`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`depth` - Determines how many "top" directing credits per item.<a class="headerlink" href="#director-depth" title="Permanent link">¶</a>"
         
@@ -517,7 +517,7 @@ requirements of creating the collection.
     
     **`type` Value:** `writer`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`depth` - Determines how many "top" writing credits per item.<a class="headerlink" href="#writer-depth" title="Permanent link">¶</a>"
         
@@ -600,7 +600,7 @@ requirements of creating the collection.
     
     **`type` Value:** `producer`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`depth` - Determines how many "top" producing credits per item.<a class="headerlink" href="#producer-depth" title="Permanent link">¶</a>"
         
@@ -904,7 +904,7 @@ requirements of creating the collection.
 
         === "Show Default"
 
-            Shows don't inherently have a decade attribute so pmm just passes all years from the decade as a list.
+            Shows don't inherently have a decade attribute so Kometa just passes all years from the decade as a list.
 
             ```yaml
             default_template:
@@ -1404,7 +1404,7 @@ requirements of creating the collection.
     
     **`type` Value:** `number`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) of Attributes
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
 
     ??? blank "`starting` - Determines the starting number.<a class="headerlink" href="#number-starting" title="Permanent link">¶</a>"
         
@@ -1480,7 +1480,7 @@ requirements of creating the collection.
     
     **`type` Value:** `custom`
 
-    **`data` Value:** [Dictionary](../pmm/yaml.md#dictionaries) with the keys being the `dynamic key` and the values 
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) with the keys being the `dynamic key` and the values 
     being the `key name`
 
     **Valid Library Types:** Movies, Shows, Music, and Video
@@ -1505,8 +1505,8 @@ requirements of creating the collection.
             cache_builders: 1
             smart_label: release.desc
             sync_mode: sync
-            mdblist_list: https://mdblist.com/lists/plexmetamanager/<<key>>-movies
-            url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/streaming/<<key_name_encoded>>.jpg
+            mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-movies
+            url_poster: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/streaming/<<key_name_encoded>>.jpg
         
         dynamic_collections:
           Streaming:

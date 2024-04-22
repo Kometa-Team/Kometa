@@ -1,6 +1,6 @@
 # Collection Files
 
-Collection Files holds information on how Plex Meta Manager should create collections. There are a large number of 
+Collection Files holds information on how Kometa should create collections. There are a large number of 
 builders available to build collections, 
 
 ## Overview
@@ -46,10 +46,10 @@ I then call "MyCollections.yml" in my [Configuration File](../config/overview.md
     ```
 
     1.  This must match the name of a library in your Plex server
-    2.  `config` refers to the location that you mapped to `config` when following the PMM Installation Guides.
+    2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
-Whenever I execute Plex Meta Manager and the Movies library is run, MyCollections.yml will run and my "Top 50 Grossing 
-Films of All Time (Worldwide)" will be created/updated.
+Whenever I execute Kometa and the Movies library is run, MyCollections.yml will run and my "Top 50 Grossing Films of 
+All Time (Worldwide)" will be created/updated.
 
 ## File Attributes
 
@@ -66,7 +66,7 @@ Collection Files can utilize the following top-level attributes
 an error when trying to run the file against your library.
 
 * Example Files can be found in the 
-[Plex Meta Manager Configs Repository](https://github.com/meisnate12/Plex-Meta-Manager-Configs/tree/master/PMM)
+[Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
 
 ## Collection Operations & Attributes
 
@@ -95,12 +95,12 @@ Examples of these can be seen here
         ```yaml
         collections:
           Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/plexmetamanager/lists/christmas-extravaganza-non-tv-movie #(1)!
+            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
             sync_mode: append #(2!)
             collection_order: custom #(3)!
         ```
 
-        1.  This is a Trakt List builder, telling PMM to build a collection based on the items in this list
+        1.  This is a Trakt List builder, telling Kometa to build a collection based on the items in this list
         2.  If items are removed from the source list, having sync mode set to `append` means they will not be removed 
         from the collection in Plex. Set this to `sync` if you want the items removed in the collection too
         3.  Sort the collection in the order that it is received from the Trakt list
@@ -129,7 +129,7 @@ Examples of these can be seen here
             item_label: myplextag #(3)!
         ```
 
-        1.  Tells PMM to not physically build a collection, but it will still perform the actions of the collection
+        1.  Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
         2.  Find all items in Radarr that have the tag `mytag`
         3.  For each of the items with `mytag` in Radarr, apply the `myplextag` to the items in the Plex library
 
@@ -138,12 +138,12 @@ Examples of these can be seen here
         ```yaml
         collections:
           Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/plexmetamanager/lists/christmas-extravaganza-non-tv-movie #(1)!
+            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
             schedule: range(12/01-12/31) #(2)!
             delete_not_scheduled: true #(3)!
         ```
 
-        1.  Tells PMM to not physically build a collection, but it will still perform the actions of the collection
+        1.  Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
         2.  Only run this collection from December 1st through December 31st
         3.  If today is not part of the above scheduled range, delete the Christmas Extravaganza collection if it exists
         in the Plex library
@@ -186,7 +186,7 @@ collections:
 
 ## Dynamic Collections
 
-In addition to manually defining each Collection that you want in your library, Plex Meta Manager can also dynamically 
+In addition to manually defining each Collection that you want in your library, Kometa can also dynamically 
 create collections based on a variety of different criteria, such as
 
 * Collections for the top `X` popular people on TMDb (Bruce Willis, Tom Hanks etc.)

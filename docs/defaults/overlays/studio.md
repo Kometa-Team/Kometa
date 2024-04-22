@@ -23,10 +23,10 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: studio
+      - default: studio
   TV Shows:
     overlay_files:
-      - pmm: studio
+      - default: studio
 ```
 
 ## Template Variables
@@ -39,9 +39,9 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -77,13 +77,13 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: studio
+          - default: studio
             template_variables:
               vertical_offset: 390
       TV Shows:
         overlay_files:
-          - pmm: studio
-          - pmm: studio
+          - default: studio
+          - default: studio
             template_variables:
               builder_level: season
               vertical_align: bottom
@@ -91,7 +91,7 @@ work. Any value not specified will use its default value if it has one if not it
               horizontal_align: left
               horizontal_offset: 15
               style: bigger
-          - pmm: studio
+          - default: studio
             template_variables:
               builder_level: episode
               vertical_align: top

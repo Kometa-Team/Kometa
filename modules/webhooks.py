@@ -58,13 +58,13 @@ class Webhooks:
                                         yaml.data["webhooks"][hook_cat] = None
                                 if changed:
                                     yaml.save()
-                        remove_from_config("PMM updated trigger is not enabled", "changes")
-                        remove_from_config("PMM created trigger is not enabled", "changes")
-                        remove_from_config("PMM deleted trigger is not enabled", "changes")
-                        remove_from_config("PMM failure trigger is not enabled", "error")
-                        remove_from_config("PMM start/complete trigger is not enabled", "run_start")
-                        remove_from_config("PMM start/complete trigger is not enabled", "run_end")
-                        remove_from_config("PMM app updates trigger is not enabled", "version")
+                        remove_from_config("Kometa updated trigger is not enabled", "changes")
+                        remove_from_config("Kometa created trigger is not enabled", "changes")
+                        remove_from_config("Kometa deleted trigger is not enabled", "changes")
+                        remove_from_config("Kometa failure trigger is not enabled", "error")
+                        remove_from_config("Kometa start/complete trigger is not enabled", "run_start")
+                        remove_from_config("Kometa start/complete trigger is not enabled", "run_end")
+                        remove_from_config("Kometa app updates trigger is not enabled", "version")
                     if "result" in response_json and response_json["result"] == "error" and "details" in response_json and "response" in response_json["details"]:
                         raise Failed(f"Notifiarr Error: {response_json['details']['response']}")
                     if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
@@ -146,7 +146,7 @@ class Webhooks:
 
     def slack(self, json):
         if json["event"] == "run_end":
-            title = ":white_check_mark: Plex Meta Manager Has Finished a Run"
+            title = ":white_check_mark: Kometa Has Finished a Run"
             rows = [
                 [("*Start Time*", json["start_time"]), ("*End Time*", json["end_time"]), ("*Run Time*", json["run_time"])],
                 [],
@@ -164,10 +164,10 @@ class Webhooks:
                 rows.append([("*Added To Sonarr*", json['added_to_sonarr'])])
 
         elif json["event"] == "run_start":
-            title = ":information_source: Plex Meta Manager Has Started!"
+            title = ":information_source: Kometa Has Started!"
             rows = [[("*Start Time*", json["start_time"])]]
         elif json["event"] == "version":
-            title = "Plex Meta Manager Has a New Version Available"
+            title = "Kometa Has a New Version Available"
             rows = [
                 [("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])],
                 [(json["notes"], )]
@@ -191,7 +191,7 @@ class Webhooks:
             if json["event"] == "delete":
                 title = json["message"]
             elif "error" in json:
-                title = f":warning: Plex Meta Manager Encountered {'a Critical' if json['critical'] else 'an'} Error"
+                title = f":warning: Kometa Encountered {'a Critical' if json['critical'] else 'an'} Error"
                 rows.append([])
                 rows.append([(json["error"], )])
             else:
@@ -313,8 +313,8 @@ class Webhooks:
                     "color": 0x00bc8c
                 }
             ],
-            "username": "Metabot",
-            "avatar_url": "https://github.com/meisnate12/Plex-Meta-Manager/raw/master/.github/pmm.png"
+            "username": "Kobota",
+            "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/logo.png"
         }
         if description:
             new_json["embeds"][0]["description"] = description

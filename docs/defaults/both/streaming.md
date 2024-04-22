@@ -13,7 +13,7 @@ Supported Library Types: Movie, Show
 
 !!! important
 
-    As of Plex Meta Manager release 1.21, the keys associated with this Defaults file has changed.
+    As of Kometa release 1.21, the keys associated with this Defaults file has changed.
 
     If you are setting custom images, you will need to use `<<originals_key>>`
 
@@ -57,10 +57,10 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     collection_files:
-      - pmm: streaming
+      - default: streaming
   TV Shows:
     collection_files:
-      - pmm: streaming
+      - default: streaming
 ```
 
 ## Template Variables
@@ -73,9 +73,9 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+    * **Shared Template Variables** are additional variables shared across the Kometa Defaults.
 
     * **Shared Separator Variables** are additional variables available since this Default contains a 
     [Separator](../separators.md).
@@ -121,7 +121,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         collection_files:
-          - pmm: streaming
+          - default: streaming
             template_variables:
               region: FR #(1)!
               sep_style: amethyst #(2)!

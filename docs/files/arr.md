@@ -49,8 +49,8 @@ default unless otherwise specified.
 
 ## Adding to Arr
 You can add items to Radarr/Sonarr in two different ways.
-  1. Items found by PMM that are missing from your collections/playlists.
-  2. Items found by PMM that already exist in Plex but are not in Radarr/Sonarr.
+  1. Items found by Kometa that are missing from your collections/playlists.
+  2. Items found by Kometa that already exist in Plex but are not in Radarr/Sonarr.
 
 ### Arr Add Missing
 

@@ -3,11 +3,11 @@
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #                     Credit to Magic815 for base images                     #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#      https://metamanager.wiki/en/latest/defaults/overlays/resolution       #
+#         https://kometa.wiki/en/latest/defaults/overlays/resolution         #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     conditionals:
       suppress_overlays:
@@ -123,7 +123,7 @@ external_templates:
         conditions:
           - type: resolution_dovetail
             value: top
-      pmm:
+      default:
         conditions:
           - type: [edition, edition_dovetail]
             file.exists: false

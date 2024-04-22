@@ -1,9 +1,9 @@
 ##############################################################################
 #                           Franchise Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
-#                 Additional contributions by the PMM Community              #
+#              Additional contributions by the Kometa Community              #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/show/franchise         #
+#           https://kometa.wiki/en/latest/defaults/show/franchise            #
 ##############################################################################
 
 templates:
@@ -24,7 +24,7 @@ templates:
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       sonarr_monitor_<<key>>: <<sonarr_monitor>>
       collection_order_<<key>>: <<collection_order>>
-      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/franchise/<<key_name_encoded>>.jpg
+      url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/franchise/<<key_name_encoded>>.jpg
     optional:
       - name_<<key>>
       - summary_<<key>>

@@ -2,11 +2,11 @@
 #                            Seasonal Collections                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#         https://metamanager.wiki/en/latest/defaults/movie/seasonal         #
+#           https://kometa.wiki/en/latest/defaults/movie/seasonal            #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
 
 templates:
   holiday:
@@ -197,13 +197,13 @@ dynamic_collections:
       # check7
       mdblist_list:
         aapi:
-          - https://mdblist.com/lists/plexmetamanager/asian-american-pacific-islander-heritage-month
+          - https://mdblist.com/lists/k0meta/asian-american-pacific-islander-heritage-month
         disabilities:
-          - https://mdblist.com/lists/plexmetamanager/day-of-persons-with-disabilities
+          - https://mdblist.com/lists/k0meta/day-of-persons-with-disabilities
         lgbtq:
-          - https://mdblist.com/lists/plexmetamanager/lgbtq-pride-month
+          - https://mdblist.com/lists/k0meta/lgbtq-pride-month
         latinx:
-          - https://mdblist.com/lists/plexmetamanager/latinx-heritage-month
+          - https://mdblist.com/lists/k0meta/latinx-heritage-month
       # check8
       trakt_list:
         black_history:

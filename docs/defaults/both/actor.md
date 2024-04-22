@@ -26,10 +26,10 @@ The below YAML in your config.yml will create the collections:
 libraries:
   Movies:
     collection_files:
-      - pmm: actor
+      - default: actor
   TV Shows:
     collection_files:
-      - pmm: actor
+      - default: actor
 ```
 
 ## Template Variables
@@ -42,9 +42,9 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Shared Template Variables** are additional variables shared across the PMM Defaults.
+    * **Shared Template Variables** are additional variables shared across the Kometa Defaults.
 
     * **Shared Separator Variables** are additional variables available since this Default contains a 
     [Separator](../separators.md).
@@ -85,7 +85,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         collection_files:
-          - pmm: actor
+          - default: actor
             template_variables:
               data:
                 depth: 10 #(1)!

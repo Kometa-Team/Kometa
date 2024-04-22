@@ -5,7 +5,7 @@ templates:
       key: separator
       sep_style: orig
       collection_section: "00"
-      url_poster_<<key>>: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/separators/<<sep_style>>/<<separator>>.jpg
+      url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/separators/<<sep_style>>/<<separator>>.jpg
       sort_prefix: "!"
       sort_title: <<sort_prefix>><<collection_section>>_!<<title>>
     optional:
@@ -76,7 +76,7 @@ templates:
       sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<sort>>
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
-      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-Images/master/<<image>>.jpg
+      url_poster: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/<<image>>.jpg
       file_poster_<<key>>: <<file_poster>>
       url_background_<<key>>: <<url_background>>
       file_background_<<key>>: <<file_background>>
@@ -161,7 +161,7 @@ templates:
 
   tmdb_person:
     default:
-      url_poster: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager-People-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
+      url_poster: https://raw.githubusercontent.com/Kometa-Team/People-Images-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
       url_poster_<<key>>: <<url_poster>>
       tmdb_person_offset_<<key>>: <<tmdb_person_offset>>
     optional:

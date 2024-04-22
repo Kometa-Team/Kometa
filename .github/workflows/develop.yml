@@ -42,7 +42,7 @@ jobs:
             "BRANCH_NAME=develop"
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:develop
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -56,36 +56,38 @@ jobs:
             "BRANCH_NAME=develop"
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:lxml-develop
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:lxml-develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Send Discord Commit Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id: ${{ secrets.DEVELOP_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DEVELOP_WEBHOOK_TOKEN }}
-          title: Plex Meta Manager Develop Commits
-          message: "<@&954835263731949623> - An update to Plex Meta Manager has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
+          title: Develop Commits
+          message: "<@&954835263731949623> - An update to Kometa has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
           commits: "true"
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/pmm.png
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/logo.png
+          author: Kometa Develop Release
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/release.png
 
       - name: Discord Success Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: "develop build: **Success**"
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/docker.png
 
       - name: Discord Failure Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
@@ -93,8 +95,8 @@ jobs:
           message: <@&1079153184007790652>
           title: "develop build: **Failure**"
           color: 0xe30c43
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/develop/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/develop/.github/docker.png

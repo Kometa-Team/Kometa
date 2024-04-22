@@ -25,7 +25,7 @@ These are the File types that can be utilized against Plex servers:
           - file: config/TVShows.yml
           - folder: config/TV Shows/
         overlay_files:
-          - pmm: imdb
+          - default: imdb
           - repo: overlays
     playlist_files:
       - url: https://somewhere.com/Playlists.yml
@@ -33,16 +33,16 @@ These are the File types that can be utilized against Plex servers:
     
     **Unlike the others, Playlist Files are not defined per-library.**
 
-    Within the above example, PMM will:
+    Within the above example, Kometa will:
 
-    * First, look within the root of the PMM directory (also known as `config/`) for a collection file named 
-    `TVShows.yml`. If this file does not exist, PMM will skip the entry and move to the next one in the list.
+    * First, look within the root of the Kometa directory (also known as `config/`) for a collection file named 
+    `TVShows.yml`. If this file does not exist, Kometa will skip the entry and move to the next one in the list.
 
-    * Then, look within the root of the PMM directory (also known as `config/`) for a directory called `TV Shows`, and 
+    * Then, look within the root of the Kometa directory (also known as `config/`) for a directory called `TV Shows`, and 
     then load any collection files within that directory.
 
-    * Then, look in the [defaults folder](https://github.com/meisnate12/Plex-Meta-Manager/tree/master/defaults) within 
-    the local PMM folder [or docker container] for a file called `imdb.yml`.
+    * Then, look in the [defaults folder](https://github.com/Kometa-Team/Kometa/tree/master/defaults) within 
+    the local Kometa folder [or docker container] for a file called `imdb.yml`.
 
     * Then, look within the Custom Defined Repo for a file called `overlays.yml`.
 

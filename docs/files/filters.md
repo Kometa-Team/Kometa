@@ -218,9 +218,9 @@ Special Filters each have their own set of rules for how they're used.
 
 <sup>**2**</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
 
-<sup>**3**</sup> You can use `current_year` to have PMM use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current_year-2`
+<sup>**3**</sup> You can use `current_year` to have Kometa use the current years value. This can be combined with a `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
-<sup>**4**</sup> The actual numbers are pulled from the [PMM-Mediastingers](https://github.com/meisnate12/PMM-Mediastingers) Repo.
+<sup>**4**</sup> The actual numbers are pulled from the [Mediastingers](https://github.com/Kometa-Team/Mediastingers) Repo.
 
 <sup>**5**</sup> Also is a Tag Filter and can use all of those modifiers.
 

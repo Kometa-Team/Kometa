@@ -1,36 +1,36 @@
 ## This file is a template remove the .template to use the file
 
-libraries:                       # This is called out once within the config.yml file
-  Movies:                        # These are names of libraries in your Plex
-    remove_overlays: false       # Set this to true to remove all overlays
+libraries:                           # This is called out once within the config.yml file
+  Movies:                            # These are names of libraries in your Plex
+    remove_overlays: false           # Set this to true to remove all overlays
     collection_files:
-      - pmm: basic               # This is a file within PMM's defaults folder
-      - pmm: imdb                # This is a file within PMM's defaults folder
+      - default: basic               # This is a file within Kometa's defaults folder
+      - default: imdb                # This is a file within Kometa's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-      - pmm: ribbon              # This is a file within PMM's defaults folder
+      - default: ribbon              # This is a file within Kometa's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
-    remove_overlays: false       # Set this to true to remove all overlays
+    remove_overlays: false           # Set this to true to remove all overlays
     collection_files:
-      - pmm: basic               # This is a file within PMM's defaults folder
-      - pmm: imdb                # This is a file within PMM's defaults folder
+      - default: basic               # This is a file within Kometa's defaults folder
+      - default: imdb                # This is a file within Kometa's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-      - pmm: ribbon              # This is a file within PMM's defaults folder
+      - default: ribbon              # This is a file within Kometa's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
     collection_files:
-      - pmm: basic               # This is a file within PMM's defaults folder
-      - pmm: anilist             # This is a file within PMM's defaults folder
+      - default: basic               # This is a file within Kometa's defaults folder
+      - default: anilist             # This is a file within Kometa's defaults folder
       # see the wiki for how to use local files, folders, URLs, or files from git
   Music:
     collection_files:
-      - file: config/Music.yml   # This is a local file THAT YOU MIGHT CREATE
+      - file: config/Music.yml       # This is a local file THAT YOU MIGHT CREATE
 playlist_files:
-  - pmm: playlist                # This is a file within PMM's defaults folder
+  - default: playlist                # This is a file within Kometa's defaults folder
     template_variables:
-      libraries: Movies, TV Shows   # list of libraries that you want the PMM Defaults playlists to look at
+      libraries: Movies, TV Shows    # list of libraries that you want the Kometa Defaults playlists to look at
   # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
   run_order:
@@ -74,13 +74,13 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
-webhooks:                        # Can be individually specified per library as well
+webhooks:                            # Can be individually specified per library as well
   error:
   version:
   run_start:
   run_end:
   changes:
-plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
+plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
   timeout: 60
@@ -89,10 +89,10 @@ plex:                            # Can be individually specified per library as 
   empty_trash: false
   optimize: false
   verify_ssl:
-tmdb:                            # REQUIRED for the script to run
+tmdb:                                # REQUIRED for the script to run
   apikey: ################################
   language: en
-tautulli:                        # Can be individually specified per library as well
+tautulli:                            # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
 github:
@@ -108,10 +108,10 @@ notifiarr:
 gotify:
   url: http://192.168.1.12:80
   token: ####################################
-anidb:                           # Not required for AniDB builders unless you want mature content
+anidb:                               # Not required for AniDB builders unless you want mature content
   username: ######
   password: ######
-radarr:                          # Can be individually specified per library as well
+radarr:                              # Can be individually specified per library as well
   url: http://192.168.1.12:7878
   token: ################################
   add_missing: false
@@ -126,7 +126,7 @@ radarr:                          # Can be individually specified per library as 
   search: false
   radarr_path:
   plex_path:
-sonarr:                          # Can be individually specified per library as well
+sonarr:                              # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: ################################
   add_missing: false

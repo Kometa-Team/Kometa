@@ -180,8 +180,13 @@ class Overlay:
             return image_path
 
         if not self.name.startswith(("blur", "backdrop")):
-            if ("pmm" in self.data and self.data["pmm"]) or ("git" in self.data and self.data["git"] and self.data["git"].startswith("PMM/")):
-                temp_path = self.data["pmm"] if "pmm" in self.data and self.data["pmm"] else self.data["git"][4:]
+            if ("kometa" in self.data and self.data["kometa"]) or ("pmm" in self.data and self.data["pmm"]) or ("git" in self.data and self.data["git"] and self.data["git"].startswith("PMM/")):
+                if "kometa" in self.data and self.data["kometa"]:
+                    temp_path = self.data["kometa"]
+                elif "pmm" in self.data and self.data["pmm"]:
+                    temp_path = self.data["pmm"]
+                else:
+                    temp_path = self.data["git"][4:]
                 if temp_path.startswith("overlays/images/"):
                     temp_path = temp_path[16:]
                 if not temp_path.endswith(".png"):
@@ -244,11 +249,11 @@ class Overlay:
                 if not os.path.exists(font) and os.path.exists(os.path.join(code_base, font)):
                     font = os.path.join(code_base, font)
                 if not os.path.exists(font):
-                    pmm_fonts = os.listdir(font_base)
-                    fonts = util.get_system_fonts() + pmm_fonts
+                    kometa_fonts = os.listdir(font_base)
+                    fonts = util.get_system_fonts() + kometa_fonts
                     if font not in fonts:
                         raise Failed(f"Overlay Error: font: {os.path.abspath(font)} not found. Options: {', '.join(fonts)}")
-                    if font in pmm_fonts:
+                    if font in kometa_fonts:
                         font = os.path.join(font_base, font)
                 self.font_name = font
             self.font = ImageFont.truetype(self.font_name, self.font_size)

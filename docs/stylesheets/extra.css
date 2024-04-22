@@ -2,9 +2,13 @@
     --md-primary-fg-color:        #00bc8c;
     --md-primary-fg-color--light: #00bc8c;
     --md-primary-fg-color--dark:  #00bc8c;
-    --md-primary-bg-color--light: rgba(0,0,0,.54);
+    --md-primary-bg-color--light: #ffffffb3;
     --pg-light-border: rgb(47, 47, 47);
-
+    --md-typeset-a-color: #00bc8c;
+    --md-accent-fg-color: #1281c0;
+    --md-code-hl-keyword-color: #7ee787;
+    --md-code-hl-string-color: #a5d6ff;
+    --md-code-hl-comment-color: #8b949e;
 }
 :root, [data-md-color-scheme="slate"] {
     --md-primary-fg-color:        #00bc8c;
@@ -12,14 +16,22 @@
     --md-primary-fg-color--dark:  #00bc8c;
     --md-default-bg-color: #252525;
     --md-footer-bg-color--dark: var(--md-default-bg-color);
+    --md-primary-bg-color--light: #ffffffb3;
     --pg-light-border: rgb(47, 47, 47);
-}
-strong {
-    color: #00bc8c;
+    --md-typeset-a-color: #00bc8c;
+    --md-accent-fg-color: #1281c0;
+    --md-code-hl-keyword-color: #7ee787;
+    --md-code-hl-string-color: #a5d6ff;
+    --md-code-hl-comment-color: #8b949e;
 }
 
 table tr td code {
   white-space: pre;
+}
+
+.md-header, .md-tabs {
+    background-image: url(../assets/background.jpg);
+    background-size: cover;
 }
 
 .md-banner {
@@ -45,28 +57,32 @@ table tr td code {
   padding: 1px;
 }
 
+[data-md-color-scheme="default"] .md-typeset h1, [data-md-color-scheme="slate"] .md-typeset h2, [data-md-color-scheme="slate"] .md-typeset h3, [data-md-color-scheme="slate"] .md-typeset h4 {
+    color: #2f2f2f;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1, [data-md-color-scheme="slate"] .md-typeset h2, [data-md-color-scheme="slate"] .md-typeset h3, [data-md-color-scheme="slate"] .md-typeset h4 {
+    color: #f0f0f0;
+}
+
 .md-typeset h1, .md-typeset h2 {
     font-weight: bold;
-    color: #0e8a6a;
     text-transform: uppercase;
 }
 
 .md-typeset h2 {
     font-weight: bold;
-    color: #0e8a6a;
     text-transform: uppercase;
 
 }
 
 .md-typeset h3 {
     font-weight: bold;
-    color: #0e8a6a;
     text-transform: uppercase;
 }
 
 .md-typeset h4 {
     font-weight: bold;
-    color: #0e8a6a;
     text-transform: uppercase;
 }
 
@@ -194,12 +210,17 @@ table.dualTable td, table.dualTable th {
 }
 
 .md-typeset mark {
-    background-color: #ac0ce3;
+    background-color: initial;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
-    color: #ffffff;
+    color: #00bc8c;
     word-break: break-word;
 }
+
+.md-search-result .md-typeset h2 mark {
+    text-decoration: underline;
+}
+
 :root {
     --md-admonition-icon--blank: url()
 }
@@ -271,6 +292,45 @@ table.dualTable td, table.dualTable th {
     position: relative;
 }
 
+[data-md-color-scheme="default"] .md-typeset .grid.cards > :is(ul, ol) > li, .md-typeset .grid > .card { /* Firefox */
+    color: var(--md-typeset-color);
+    background: #f6f6f6;
+    border: 1px solid var(--pg-light-border);
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
+    transition: none;
+    position: relative;
+}
+
+[data-md-color-scheme="default"] .md-typeset .grid.cards>:-webkit-any(ul,ol)>li, .md-typeset .grid>.card { /* Webkit */
+    color: var(--md-typeset-color);
+    background: #f6f6f6;
+    border: 1px solid var(--pg-light-border);
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
+    transition: none;
+    position: relative;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > :is(ul, ol) > li, .md-typeset .grid > .card { /* Firefox */
+    color: var(--md-typeset-color);
+    background: #1b1b1b;
+    border: 1px solid var(--pg-light-border);
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
+    transition: none;
+    position: relative;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .grid.cards>:-webkit-any(ul,ol)>li, .md-typeset .grid>.card { /* Webkit */
+    color: var(--md-typeset-color);
+    background: #1b1b1b;
+    border: 1px solid var(--pg-light-border);
+    border-radius: 6px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
+    transition: none;
+    position: relative;
+}
 .md-typeset .grid.cards > :is(ul, ol) > li:is(:focus-within, :hover), .md-typeset .grid > .card:is(:focus-within, :hover) { /* Firefox */
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
     border-color: var(--md-accent-fg-color);

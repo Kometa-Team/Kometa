@@ -12,7 +12,7 @@ There are a few different types of attributes that can be used in any given Coll
 
 ### Builders
 
-[Builders](builders/overview.md) are attributes placed at the top level of the definition that tell PMM what items 
+[Builders](builders/overview.md) are attributes placed at the top level of the definition that tell Kometa what items 
 belong in a collection/overlay/playlist. Multiple builders can be used in one definition. These could come from a 
 variety of sources including but not limited to:
 
@@ -66,7 +66,7 @@ Running filters are often slower than builders so whenever possible use only bui
 
 ### Settings
 
-[Settings](settings.md) are attributes placed at the top level of the definition that tells PMM how to run the 
+[Settings](settings.md) are attributes placed at the top level of the definition that tells Kometa how to run the 
 definition. Each setting will affect how the definition is run or shown in the log.
 
 ???+ example "Setting Example"
@@ -86,7 +86,7 @@ definition. Each setting will affect how the definition is run or shown in the l
 
 ### Radarr/Sonarr Settings
 
-[Radarr/Sonarr Settings](arr.md) are attributes placed at the top level of the definition that tells PMM how 
+[Radarr/Sonarr Settings](arr.md) are attributes placed at the top level of the definition that tells Kometa how 
 Radarr/Sonarr is handled in this specific definition.
 
 ???+ example "Setting Example"
@@ -106,7 +106,7 @@ Radarr/Sonarr is handled in this specific definition.
 
 ### Collection/Playlist Metadata Updates
 
-[Updates](updates.md) are attributes placed at the top level of the definition that tells PMM Metadata Changes for the 
+[Updates](updates.md) are attributes placed at the top level of the definition that tells Kometa Metadata Changes for the 
 Collection/Playlist. 
 
 ???+ example "Collection/Playlist Metadata Update Example"
@@ -122,7 +122,7 @@ Collection/Playlist.
 
 ### Item Metadata Updates
 
-[Item Updates](item_updates.md) are attributes placed at the top level of the definition that tells PMM Metadata Changes 
+[Item Updates](item_updates.md) are attributes placed at the top level of the definition that tells Kometa Metadata Changes 
 for every item found in the Collection/Playlist. 
 
 ???+ example "Item Metadata Update Example"

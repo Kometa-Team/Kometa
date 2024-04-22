@@ -2,11 +2,11 @@
 #                         "Based On..." Collections                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#           https://metamanager.wiki/en/latest/defaults/both/based           #
+#             https://kometa.wiki/en/latest/defaults/both/based              #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "085"
 
@@ -33,7 +33,7 @@ dynamic_collections:
       - arr
     template_variables:
       mdblist_list:
-        default: https://mdblist.com/lists/plexmetamanager/based_on_<<key>>_<<library_type>>s
+        default: https://mdblist.com/lists/k0meta/based_on_<<key>>_<<library_type>>s
       image:
         default: based/<<key_name_encoded>>
       translation_key:

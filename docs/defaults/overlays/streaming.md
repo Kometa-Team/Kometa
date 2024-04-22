@@ -14,7 +14,7 @@ Supported Overlay Level: Movie, Show
 
 !!! important
 
-    As of Plex Meta Manager release 1.21, the keys associated with this Defaults file has changed.
+    As of Kometa release 1.21, the keys associated with this Defaults file has changed.
 
     If you are setting custom images, you will need to use `<<originals_key>>`
 
@@ -60,10 +60,10 @@ The below YAML in your config.yml will create the overlays:
 libraries:
   Movies:
     overlay_files:
-      - pmm: streaming
+      - default: streaming
   TV Shows:
     overlay_files:
-      - pmm: streaming
+      - default: streaming
 ```
 
 ## Template Variables
@@ -76,9 +76,9 @@ work. Any value not specified will use its default value if it has one if not it
 
 ??? abstract "Variable Lists (click to expand)"
 
-    * **File-Specific Template Variables** are variables available specifically for this PMM Defaults file.
+    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
 
-    * **Overlay Template Variables** are additional variables shared across the PMM Overlay Defaults.
+    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
 
     ??? example "Default Template Variable Values (click to expand)"
 
@@ -118,7 +118,7 @@ work. Any value not specified will use its default value if it has one if not it
     libraries:
       Movies:
         overlay_files:
-          - pmm: streaming
+          - default: streaming
             template_variables:
               originals_only: true
               use_peacock: false

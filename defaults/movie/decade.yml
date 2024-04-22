@@ -2,11 +2,11 @@
 #                             Decade Collections                             #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#          https://metamanager.wiki/en/latest/defaults/movie/decade          #
+#            https://kometa.wiki/en/latest/defaults/movie/decade             #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "100"
 

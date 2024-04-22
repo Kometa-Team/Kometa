@@ -2,11 +2,11 @@
 #                          Other Charts Collections                          #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#          https://metamanager.wiki/en/latest/defaults/chart/other           #
+#            https://kometa.wiki/en/latest/defaults/chart/other              #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     collection_section: "020"
     image: chart/<<mapping_name_encoded>>
@@ -18,7 +18,7 @@ templates:
     anidb_popular: <<limit_anidb>>
 
   commonsense:
-    mdblist_list: https://mdblist.com/lists/plexmetamanager/cssfamilies<<library_type>>s
+    mdblist_list: https://mdblist.com/lists/k0meta/cssfamilies<<library_type>>s
 
 collections:
   AniDB Popular:

@@ -2,11 +2,11 @@
 #                   Audio/Subtitle Language Flags Overlays                   #
 #           Created by Yozora, Bullmoose20, Cpt Kuesel, & Sohjiro            #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#       https://metamanager.wiki/en/latest/defaults/overlays/languages       #
+#         https://kometa.wiki/en/latest/defaults/overlays/languages          #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     conditionals:
       final_align:
@@ -32,7 +32,7 @@ external_templates:
             value: 26
           - style: square
             value:
-      pmm_<<key>>:
+      default_<<key>>:
         conditions:
           - file.exists: false
             url.exists: false

@@ -938,11 +938,11 @@
             ],
             "title": "trakt"
         },
-        "pmm-collection-path": {
+        "lib-collection-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "pmm": {
+                "default": {
                     "type": "string",
                     "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
                 },
@@ -960,14 +960,14 @@
                 }
             },
             "required": [
-                "pmm"
+                "default"
             ]
         },
-        "pmm-overlay-path": {
+        "lib-overlay-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "pmm": {
+                "default": {
                     "type": "string",
                     "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
                 },
@@ -1000,11 +1000,11 @@
             "required": [
             ]
         },
-        "pmm-playlist-path": {
+        "lib-playlist-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "pmm": {
+                "default": {
                     "type": "string",
                     "enum": ["playlist"]
                 },
@@ -1022,7 +1022,7 @@
                 }
             },
             "required": [
-                "pmm"
+                "default"
             ]
         },
         "file-path": {
@@ -1243,7 +1243,7 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-collection-path"
+                        "$ref": "#/definitions/lib-collection-path"
                     }, {
                         "$ref": "#/definitions/file-path"
                     }, {
@@ -1265,7 +1265,7 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-overlay-path"
+                        "$ref": "#/definitions/lib-overlay-path"
                     }, {
                         "$ref": "#/definitions/file-path"
                     }, {
@@ -1287,7 +1287,7 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-collection-path"
+                        "$ref": "#/definitions/lib-collection-path"
                     }, {
                         "$ref": "#/definitions/file-path"
                     }, {
@@ -1310,7 +1310,7 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-overlay-path"
+                        "$ref": "#/definitions/lib-overlay-path"
                     }, {
                         "$ref": "#/definitions/file-path"
                     }, {
@@ -1332,7 +1332,7 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-playlist-path"
+                        "$ref": "#/definitions/lib-playlist-path"
                     }, {
                         "$ref": "#/definitions/file-path"
                     }, {

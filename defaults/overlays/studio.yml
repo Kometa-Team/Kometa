@@ -2,11 +2,11 @@
 #                               Studio Overlay                               #
 #       Created by Yozora, Bullmoose20, anon_fawkes Arial-Z & Sohjiro        #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#        https://metamanager.wiki/en/latest/defaults/overlays/studios        #
+#          https://kometa.wiki/en/latest/defaults/overlays/studios           #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       width_value: 470
@@ -44,7 +44,7 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false
@@ -766,6 +766,9 @@ overlays:
   Brandywine Productions:
     template: [name: standard, name: studios]
 
+  Broken Lizard Industries:
+    template: [name: standard, name: studios]
+
   Broken Road Productions:
     template: [name: standard, name: studios]
 
@@ -814,6 +817,9 @@ overlays:
   Cinergi Pictures Entertainment:
     template: [name: standard, name: studios]
 
+  Codeblack Entertainment:
+    template: [name: standard, name: studios]
+
   Columbia Pictures:
     template: [name: standard, {name: studios, search: [Columbia Pictures, Columbia TriStar]}]
 
@@ -834,6 +840,9 @@ overlays:
 
   DC Comics:
     template: [name: standard, {name: studios, search: [DC Comics, DC Films, DC Entertainment]}]
+
+  Dimension Films:
+    template: [name: standard, name: studios]
 
   Dino De Laurentiis Company:
     template: [name: standard, name: studios]
@@ -1065,6 +1074,9 @@ overlays:
 
   Lucasfilm Ltd:
     template: [name: standard, {name: studios, search: [Lucasfilm Ltd, Lucasfilm Ltd., Lucasfilm, Lucasfilm Animation]}]
+
+  Magic Light Pictures:
+    template: [name: standard, name: studios]
 
   Magnolia Pictures:
     template: [name: standard, name: studios]

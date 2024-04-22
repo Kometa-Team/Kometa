@@ -4,7 +4,7 @@ search:
 ---
 # TMDb Attributes
 
-Configuring [TheMovieDb](https://www.themoviedb.org/) is required in order to run Plex Meta Manager. 
+Configuring [TheMovieDb](https://www.themoviedb.org/) is required in order to run Kometa. 
 
 A `tmdb` mapping is in the root of the config file.
 

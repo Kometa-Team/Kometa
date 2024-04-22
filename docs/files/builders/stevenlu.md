@@ -14,7 +14,8 @@ Finds every movie on [StevenLu's Popular Movies List](https://movies.stevenlu.co
 
 The expected input is `true`.
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
+and in a specific order. 
 
 ```yaml
 collections:

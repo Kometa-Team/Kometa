@@ -47,7 +47,7 @@ All the following attributes update the poster of the collection/playlist from v
 
 **All of these details work with Playlists.**
 
-If no poster is specified the script will look in the library's [Image Asset Directories](../pmm/guides/assets.md) for a
+If no poster is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
 folder named either the collection/playlist name or the `name_mapping` if specified and look for a `poster.ext` file in 
 that folder (replacing .ext with the image extension).
 
@@ -67,7 +67,7 @@ All the following attributes update the background of the collection/playlist fr
 
 **All of these details work with Playlists.**
 
-If no background is specified the script will look in the library's [Image Asset Directories](../pmm/guides/assets.md) 
+If no background is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) 
 for a folder named either the collection/playlist name or the `name_mapping` if specified and look for a 
 `background.ext` file in that folder (replacing .ext with the image extension).
 

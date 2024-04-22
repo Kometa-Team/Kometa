@@ -202,7 +202,7 @@ mapping name as `title` for matching.
 2. When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the 
 mapping name as `mapping_id` for matching.
 
-3. When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, PMM will check 
+3. When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check 
 the movie's filepath for `{edition-...}` to determine what the edition is.
 
 ??? example "Matching Examples (click to expand)"
@@ -396,7 +396,7 @@ The available attributes for editing movies are as follows
 |:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------|
 | `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false`                                          | `Movies`, `Shows`, `Artists` |
 | `tmdb_show`       | TMDb Show ID to use for metadata. Used when the Movie in your library is actually a miniseries on TMDb. (Example: [Halo 4: Forward Unto Dawn](https://www.themoviedb.org/tv/56295) or [IT](https://www.themoviedb.org/tv/19614)) **This is not used to say this movie is the given ID.** | `Movies`                     |
-| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../pmm/guides/formula.md) for more information.                                                                                                                                           | `Shows`                      |
+| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../kometa/guides/formula.md) for more information.                                                                                                                                           | `Shows`                      |
 | `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                                                                       | `Shows`                      |
 | `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                                                                 | `Shows`                      |
 | `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                                                                   | `Shows`                      |
@@ -406,7 +406,7 @@ The available attributes for editing movies are as follows
 | `albums`          | Attribute used to edit album metadata. The mapping name is the album name.                                                                                                                                                                                                               | `Artists`                    |
 | `tracks`          | Attribute used to edit track metadata. The mapping name is the track number on that Album, or the title of the Track.                                                                                                                                                                    | `Albums`                     |
 
-1. If the server does not have a Plex Pass then the Edition Field is not accessible. In this case PMM will check the 
+1. If the server does not have a Plex Pass then the Edition Field is not accessible. In this case Kometa will check the 
 movies filepath for `{edition-MOVIES EDITION}` to determine what the edition is.
 
 ### General Attributes

@@ -23,7 +23,8 @@ collections:
 
 Gets Series from Sonarr based on their tags. 
 
-Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated string. 
+Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated 
+string. 
 
 ```yaml
 collections:

@@ -2,11 +2,11 @@
 #                            Episode Info Overlay                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#     https://metamanager.wiki/en/latest/defaults/overlays/episode_info      #
+#        https://kometa.wiki/en/latest/defaults/overlays/episode_info        #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       horizontal_align: right

@@ -2,11 +2,11 @@
 #                            MediaStinger Overlay                            #
 #                 Created by Yozora, Bullmoose20, & Sohjiro                  #
 #          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
-#     https://metamanager.wiki/en/latest/defaults/overlays/mediastinger      #
+#        https://kometa.wiki/en/latest/defaults/overlays/mediastinger        #
 ##############################################################################
 
 external_templates:
-  pmm: templates
+  default: templates
   template_variables:
     default:
       horizontal_align: right
@@ -30,7 +30,7 @@ external_templates:
             value: 0
           - horizontal_align: [left, right]
             value: 15
-      pmm:
+      default:
         conditions:
           - file.exists: false
             file_<<key>>.exists: false

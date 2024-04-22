@@ -17,7 +17,7 @@ list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names
 base_url = "https://mdblist.com/lists"
 api_url = "https://mdblist.com/api/"
 
-headers = {"User-Agent": "Plex-Meta-Manager"}
+headers = {"User-Agent": "Kometa"}
 
 class MDbObj:
     def __init__(self, data):

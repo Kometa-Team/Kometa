@@ -42,7 +42,7 @@ jobs:
             "BRANCH_NAME=nightly"
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:nightly
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -56,36 +56,38 @@ jobs:
             "BRANCH_NAME=nightly"
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/plex-meta-manager:lxml-nightly
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/kometa:lxml-nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Send Discord Commit Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id: ${{ secrets.NIGHTLY_WEBHOOK_ID }}
           webhook_token: ${{ secrets.NIGHTLY_WEBHOOK_TOKEN }}
           title: Nightly Commits
-          message: "<@&967002147520675840> - An update to Plex Meta Manager has now been published and is available to users of the **nightly** branch."
+          message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           commits: "true"
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
+          author: Kometa Nightly Release
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/release.png
 
       - name: Discord Success Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.BUILD_WEBHOOK_TOKEN }}
           title: "nightly build: **Success**"
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
 
       - name: Discord Failure Notification
-        uses: meisnate12/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
           webhook_id: ${{ secrets.BUILD_WEBHOOK_ID }}
@@ -93,8 +95,8 @@ jobs:
           message: <@&1079153184007790652>
           title: "nightly build: **Failure**"
           color: 0xe30c43
-          url: https://github.com/meisnate12/Plex-Meta-Manager/actions/runs/${{ github.run_id }}
-          username: Metabot
-          avatar_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/pmm.png
+          url: https://github.com/Kometa-Team/Kometa/actions/runs/${{ github.run_id }}
+          username: Kobota
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
           author: Docker
-          author_icon_url: https://raw.githubusercontent.com/meisnate12/Plex-Meta-Manager/nightly/.github/docker.png
+          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
