@@ -1,4 +1,4 @@
-arrapi==1.4.7
+arrapi==1.4.10
 GitPython==3.1.43
 lxml==5.2.1
 num2words==0.5.13
