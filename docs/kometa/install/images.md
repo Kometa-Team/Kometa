@@ -18,45 +18,23 @@ To address this issue, we have implemented 'lxml' variants for each Kometa branc
 
 To transition to the lxml branch, simply prepend 'lxml-' to the branch name you are currently utilizing. For instance, `kometateam/kometa:lxml-master`, `kometateam/kometa:lxml-develop` and `kometateam/kometa:lxml-nightly`.
 
+This should cover it:
+
 ## LinuxServer
 
 The first image offered in unRAID for Kometa is the Linuxserver.io image [`linuxserver/kometa`]
 
-This image is different to the official image [kometateam/kometa] in a few ways that cause a variety of problems particularly for new users.
-
-One typical error is something like:
-
-```
-Path does not exist: /run/s6/services/kometa/config/SOMETHING
-```
-
-The result is that the stock config file and a lot of the examples found in the wiki and config repo don't work.
+This image is different to the official image [`kometateam/kometa`] in a couple ways that could cause issues for users who follow our installation guides.
 
 If you use the LSIO image you should be aware of the following.
 
 The LSIO image:
 
-1. Requires absolute paths in the config. /config/Movies.yml, not config/Movies.yml. Because of this most of the examples in the wiki and config repo don't work as-is with lsio. Config files that work outside of docker often fail because of this with an error referring to `/run/s6/services/...`.
+1. Advises and provides examples of absolute paths in the config, for example `/config/Movies.yml` and not `config/Movies.yml`, however, relative paths should still work as expected.
 
-2. Only has `latest` version, no `develop` or `nightly`. If you want to switch to `develop` or `nightly` to try a new feature, they aren't available with LSIO image.
+2. Resets ownership of entire `/config` dir on startup based on the values of the PUID/PGID environment variables. If not set, the ownership of the `/config` dir and its contents is set to 911:911, which can cause permissions issues.
 
-3. Doesn't support [runtime flags](../environmental.md), only ENV vars. This means that a command like:
-
-   ```
-   docker run -it --rm -v /opt/kometa/config:/config linuxserver/kometa --config config/config.yml -r --run-libraries "Movies - 4K DV"
-   ```
-
-   doesn't work with the LSIO image; it would have to be:
-
-   ```
-   docker run -it --rm -v /opt/kometa/config:/config -e KOMETA_CONFIG=/config/config.yml -e KOMETA_RUN=true -e KOMETA_LIBRARIES="Movies - 4K DV" linuxserver/kometa
-   ```
-
-4. Doesn't do manual runs correctly; they loop over and over. That command in the previous bullet point [which uses `KOMETA_RUN` to run it right now] will run over and over until you manually kill the container.  The same thing using the official image will run once and quit, as expected.
-
-5. Resets ownership of entire config dir every run. In tests, the ownership of the config dir and its contents was set to 911:911 with each run.
-
-Generally speaking, we suggest you use the official image instead of lsio.
+Generally speaking, we suggest you use the official image instead of LSIO. We do not provide support for issues which relate to using third-party images [LSIO or other].
 
 ## Others
 
