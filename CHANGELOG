@@ -1,5 +1,10 @@
+# Plex Meta Manager is now rebranded as Kometa!
+
 # Requirements Update (requirements will need to be reinstalled)
-Updated gitpython requirement to 3.1.43
+Updated arrapi requirement to 1.4.11
+Updated PlexAPI requirement to 4.15.12
+Updated setuptools requirement to 69.5.1
+Updated tmdbapis requirement to 1.2.14
 
 # Removed Features
 
