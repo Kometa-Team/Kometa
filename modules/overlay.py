@@ -180,9 +180,9 @@ class Overlay:
             return image_path
 
         if not self.name.startswith(("blur", "backdrop")):
-            if ("kometa" in self.data and self.data["kometa"]) or ("pmm" in self.data and self.data["pmm"]) or ("git" in self.data and self.data["git"] and self.data["git"].startswith("PMM/")):
-                if "kometa" in self.data and self.data["kometa"]:
-                    temp_path = self.data["kometa"]
+            if ("default" in self.data and self.data["default"]) or ("pmm" in self.data and self.data["pmm"]) or ("git" in self.data and self.data["git"] and self.data["git"].startswith("PMM/")):
+                if "default" in self.data and self.data["default"]:
+                    temp_path = self.data["default"]
                 elif "pmm" in self.data and self.data["pmm"]:
                     temp_path = self.data["pmm"]
                 else:
