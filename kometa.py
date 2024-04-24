@@ -885,6 +885,9 @@ def run_collection(config, library, metadata, requested_collections):
         except NonExisting as e:
             logger.warning(e)
             library.status[str(mapping_name)]["status"] = "Ignored"
+            if builder.item_details:
+                no_items = True
+                builder.update_item_details(no_items)
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):

@@ -3153,10 +3153,19 @@ class CollectionBuilder:
         if not self.items:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
-    def update_item_details(self):
-        logger.info("")
-        logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
-        logger.info("")
+    def update_item_details(self, no_items=False):
+        if (no_items and "non_item_remove_label" in self.item_details) or not no_items:
+            logger.info("")
+            logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
+            logger.info("")
+
+        if "non_item_remove_label" in self.item_details:
+            rk_compare = [item.ratingKey for item in self.items]
+            for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
+                if non_item.ratingKey not in rk_compare:
+                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
+            if no_items:
+                return
 
         add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
@@ -3165,12 +3174,6 @@ class CollectionBuilder:
         add_genres = self.item_details["item_genre"] if "item_genre" in self.item_details else None
         remove_genres = self.item_details["item_genre.remove"] if "item_genre.remove" in self.item_details else None
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
-
-        if "non_item_remove_label" in self.item_details:
-            rk_compare = [item.ratingKey for item in self.items]
-            for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
-                if non_item.ratingKey not in rk_compare:
-                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
 
         tmdb_paths = []
         tvdb_paths = []
