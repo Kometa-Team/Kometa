@@ -13,6 +13,7 @@ Add Page Topics Options to `imdb_search`
 Add `lxml` Docker Version using an old lxml version that supports more cpus
 
 # Updates
+Add `use_all` template variable to default collections, which allows all collections to be disabled with one variable.
 Let conditional `.not` and `.exists` work with default variables
 
 # Defaults
