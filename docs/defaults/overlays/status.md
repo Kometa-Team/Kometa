@@ -3,6 +3,8 @@
 The `status` Default Overlay File is used to create an overlay on a show detailing its Current Airing Status for all 
 shows in your library.
 
+Show status is sourced from TMDB.
+
 ![](images/status.png)
 
 ## Requirements & Recommendations
