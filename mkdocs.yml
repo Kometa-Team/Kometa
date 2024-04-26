@@ -166,28 +166,34 @@ nav:
   - CONFIGURATION FILE:
       - Overview: config/overview.md
       - STRUCTURE:
-        - Library Attributes: config/libraries.md
-        - File Blocks: config/files.md
+        - LIBRARIES:
+          - Library Attributes: config/libraries.md
+          - File Blocks: config/files.md
+          - Library Operations: config/operations.md
+        - PLAYLISTS:
+          - Playlist Files: config/playlists.md
+        - SETTINGS:
+          - Settings: config/settings.md
+        - WEBHOOKS:
+          - Webhooks: config/webhooks.md
+        - REQUIRED CONNECTIONS:
+          - Plex: config/plex.md
+          - TMDb: config/tmdb.md
+        - OPTIONAL CONNECTIONS:
+          - Tautulli: config/tautulli.md
+          - Github: config/github.md
+          - OMDb: config/omdb.md
+          - MdbList: config/mdblist.md
+          - Notifiarr: config/notifiarr.md
+          - Gotify: config/gotify.md
+          - AniDB: config/anidb.md
+          - Radarr: config/radarr.md
+          - Sonarr: config/sonarr.md
+          - Trakt: config/trakt.md
+          - MyAnimeList: config/myanimelist.md
+          - Trakt and MyAnimeList Authentication: config/auth.md
+    - OTHER:
         - Scheduling Parts: config/schedule.md
-        - Library Operations: config/operations.md
-        - Playlist Files: config/playlists.md
-        - Settings: config/settings.md
-        - Webhooks: config/webhooks.md
-      - CONNECTORS:
-        - Plex: config/plex.md
-        - TMDb: config/tmdb.md
-        - Trakt: config/trakt.md
-        - Radarr: config/radarr.md
-        - Sonarr: config/sonarr.md
-        - Notifiarr: config/notifiarr.md
-        - Gotify: config/gotify.md
-        - Tautulli: config/tautulli.md
-        - Github: config/github.md
-        - MdbList: config/mdblist.md
-        - OMDb: config/omdb.md
-        - AniDB: config/anidb.md
-        - MyAnimeList: config/myanimelist.md
-        - Trakt and MyAnimeList Authentication: config/auth.md
   - KOMETA DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
