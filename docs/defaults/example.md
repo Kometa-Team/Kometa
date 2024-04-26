@@ -47,7 +47,9 @@
           - default: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
           
         remove_overlays: false                          # Set to true if you want to remove overlays
-        reapply_overlays: false                         # If you are doing a lot of testing and changes like me, keep this to true to always reapply overlays - can cause image bloat
+        reapply_overlays: false                         # Set to true if you want to force-reapply overlays to everything
+                                                        # THERE IS RARELY IF EVER A REASON TO DO THIS AS IT WILL EXTEND RUN TIMES ANS CAUSE IMAGE BLOAT
+                                                        # IF YOU THINK YOU WANT TO DO THIS YOU ARE ALMOST CERTAINLY MISTAKEN
         #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
         
         overlay_files:
