@@ -366,7 +366,7 @@ python -m pip install -r requirements.txt
 ```
 
 You should see something like this [I’ve removed a few lines for space, and the specific versions may have changed since this was captured]:
-Studio: 441 and 1807 and 2495 and 1286 and 2503 and 2264
+
 ```
 Collecting PlexAPI==4.7.0
   Downloading PlexAPI-4.7.0-py3-none-any.whl (133 kB)
