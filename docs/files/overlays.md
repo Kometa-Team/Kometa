@@ -58,20 +58,6 @@ I then call "MyOverlays.yml" in my [Configuration File](../config/overview.md) w
     1.  This must match the name of a library in your Plex server
     2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
-???+ example "config.yml Example Collection File Addition"
-
-    Click the :fontawesome-solid-circle-plus: icon to learn more
-
-    ```yaml
-    libraries:
-      Movies: #(1)!
-        Overlay_files:
-          - file: config/MyOverlays.yml #(2)!
-    ```
-
-    1.  This must match the name of a library in your Plex server
-    2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
-
 Whenever I execute Kometa and the Movies library is run, MyOverlays.yml will run and my "Direct Play" overlay will appear on all items with a 4K resolution.
 
 ## File Attributes
