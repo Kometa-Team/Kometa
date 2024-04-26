@@ -244,10 +244,13 @@ class Convert:
             if item_type == "plex":
                 try:
                     for guid_tag in item.guids:
-                        url_parsed = requests.utils.urlparse(guid_tag.id)
-                        if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
-                        elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
-                        elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
+                        try:
+                            url_parsed = requests.utils.urlparse(guid_tag.id)
+                            if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
+                            elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
+                        except ValueError:
+                            pass
                 except requests.exceptions.ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
