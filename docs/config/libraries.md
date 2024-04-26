@@ -298,10 +298,16 @@ The available attributes for each library are as follows:
 
     <div id="reapply-overlays" />Used to reapply overlays from this library only. This will reapply overlays to every item in your library.
 
+    Note that this is typically NEVER required.  Kometa will automatically update overlays as needed as part of a regular overlay run.
+
     ???+ warning "Proceed with Caution"
 
         When set to `true`, this will reapply all overlays on each run even if there is no need to do so, which will result in 
         [image bloat](../kometa/scripts/imagemaid.md).
+
+        If you think you need to use this setting, please think hard about why you have that impression, as you are almost certainly mistaken.
+
+        In general use, this setting will only extend runtimes and cause image bloat in the Plex metadata for no good reason.
 
     <hr style="margin: 0px;">
     
