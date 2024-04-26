@@ -8,15 +8,8 @@ on:
 jobs:
 
   docker:
+    if: ${{ startsWith(github.ref, 'refs/tags/v1') || startsWith(github.ref, 'refs/tags/v2') }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node:
-          - tag: ""
-            file: Dockerfile
-          - tag: lxml-
-            file: Dockerfile.lxml
-
     steps:
 
       - name: Check Out Repo
@@ -43,15 +36,27 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
+      - name: Build and Push LXML
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./Dockerfile.lxml
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: kometateam/kometa:lxml-${{ steps.get_version.outputs.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and Push
         id: docker_build
         uses: docker/build-push-action@v5
         with:
           context: ./
-          file: ./${{ matrix.node.file }}
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: kometateam/kometa:${{ matrix.node.tag }}${{ steps.get_version.outputs.VERSION }}
+          tags: kometateam/kometa:${{ steps.get_version.outputs.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -81,21 +86,6 @@ jobs:
           avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
-
-  commit-notification:
-    runs-on: ubuntu-latest
-    if: ${{ success() }}
-    needs: [docker]
-    steps:
-
-      - name: Check Out Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get the version
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Checkout Configs Repo
         uses: actions/checkout@v4
