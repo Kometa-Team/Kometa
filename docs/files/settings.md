@@ -58,3 +58,21 @@ An example of using `default_percent` which is used in an external yml file and 
     filters:
       filepath.regex: 'HDR10\+|HDR10P'
 ```
+An example of using `server_preroll` which is also used in an external yml file and not within config.yml:
+
+```yml
+templates:
+  preroll:
+    default:  # HERE
+      location: "\\path\\to\\file"
+    build_collection: false
+    schedule: <<schedule>>
+    server_preroll: <<location>>
+collections:
+  base:
+    template: {name: preroll, location: "\\path\\to\\file", schedule: daily}
+  date1:
+    template: {name: preroll, location: "\\path\\to\\file", schedule: range(12/01-12/31)}
+  date2:
+    template: {name: preroll, location: "\\path\\to\\file2", schedule: range(01/01-01/31)}
+```
