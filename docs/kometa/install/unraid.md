@@ -58,7 +58,7 @@ To install a container from docker hub, you will need community applications - a
 
 ### Installing Kometa in unRAID
 
-1. Head to the `Apps` tab of unRAID (Community Applications), and search `kometa` in the upper right search box. There will be a couple of results shown, but you should ignore them ([Why?](images.md)) and use the official image.
+1. Head to the `Apps` tab of unRAID (Community Applications), and search `kometa` in the upper left search box. There will be a couple of results shown, but you should ignore them ([Why?](images.md)) and use the official image.
 
 2. Click the `Install` button on the Template from Sohjiro's Repository Tools.
 
@@ -66,7 +66,7 @@ To install a container from docker hub, you will need community applications - a
 
 4. Set the `Console shell command:` to `Bash`
 
-5. Click `Show more settings...` to set any [Environmental Variables](../environmental.md) you wish to use. **For the purposes of this walkthrough, the** `Container Path: /config` **path for the unRAID app is** `/mnt/user/appdata/kometa/config` (_**Note the case is ALL lower case**_). Other than this, set the `KOMETA_TIME` variable to `5:00` under the `Show more settings...`
+5. Click `Show more settings...` to set any [Environmental Variables](../environmental.md) you wish to use. **For the purposes of this walkthrough, the** `Container Path: /config` **path for the unRAID app is** `/mnt/user/appdata/Kometa/config` (_**Note the case of Kometa**_). Other than this, set the `KOMETA_TIME` variable to `5:00` under the `Show more settings...`
 
 6. Hit `Apply`, and allow unRAID to download the container.
 
@@ -90,8 +90,8 @@ We need to have a file called `config.yml` in the correct directory for Kometa t
 
     [type this into your terminal]
     ```
-    mkdir /mnt/user/appdata/kometa/config
-    touch /mnt/user/appdata/kometa/config/config.yml
+    mkdir /mnt/user/appdata/Kometa/config
+    touch /mnt/user/appdata/Kometa/config/config.yml
     ```
 
 You can now close the unRAID terminal and start the Kometa container.
