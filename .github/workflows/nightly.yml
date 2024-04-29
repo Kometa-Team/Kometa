@@ -56,11 +56,11 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ env.REPO_NAME }} ${{ matrix.node.tag }}: **Build Successful**"
-          url: https://github.com/Kometa-Team/${{ env.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ matrix.node.tag }}: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 844716
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
 
@@ -70,11 +70,11 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "${{ env.REPO_NAME }} ${{ matrix.node.tag }}: **Build Failed**"
-          url: https://github.com/Kometa-Team/${{ env.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ matrix.node.tag }}: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 14879811
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
 
@@ -92,6 +92,6 @@ jobs:
           message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           commits: "true"
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
-          author: ${{ env.REPO_NAME }} Nightly Release
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
+          author: ${{ vars.REPO_NAME }} Nightly Release
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/release.png

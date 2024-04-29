@@ -37,7 +37,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Build and Push LXML
-        id: docker_build
+        id: docker_build_lxml
         uses: docker/build-push-action@v5
         with:
           context: ./
@@ -65,11 +65,11 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ env.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Successful**"
-          url: https://github.com/Kometa-Team/${{ env.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 844716
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
 
@@ -79,11 +79,11 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "${{ env.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Failed**"
-          url: https://github.com/Kometa-Team/${{ env.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 14879811
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
 
