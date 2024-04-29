@@ -938,6 +938,31 @@
             ],
             "title": "trakt"
         },
+        "pmm-lib-collection-path": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pmm": {
+                    "type": "string",
+                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-collections"
+                }
+            },
+            "required": [
+                "pmm"
+            ]
+        },
         "lib-collection-path": {
             "type": "object",
             "additionalProperties": false,
@@ -1243,6 +1268,9 @@
             "items": {
                 "anyOf": [
                     {
+                        "$ref": "#/definitions/pmm-lib-collection-path",
+                        "deprecated": true
+                    }, {
                         "$ref": "#/definitions/lib-collection-path"
                     }, {
                         "$ref": "#/definitions/file-path"
@@ -1287,6 +1315,8 @@
             "items": {
                 "anyOf": [
                     {
+                        "$ref": "#/definitions/pmm-lib-collection-path"
+                    }, {
                         "$ref": "#/definitions/lib-collection-path"
                     }, {
                         "$ref": "#/definitions/file-path"
@@ -1390,28 +1420,136 @@
                     "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
                 },
                 "mass_audience_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_critic_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_user_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_episode_audience_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_episode_critic_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_episode_user_rating_update": {
-                    "type": "string",
-                    "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                    "anyOf": [
+                        { 
+                            "type": "number"
+                        },
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"type": "number"}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_poster_update": {
                     "type": "string",
