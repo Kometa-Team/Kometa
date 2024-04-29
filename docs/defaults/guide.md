@@ -43,7 +43,7 @@ A given default may have variables that are specific to it, and may also leverag
 
 ## Customizing individual components
 
-Each default file uses "keys" to refer to the collections and overlays that it creates, and you can use those keys to modify the behavior of the defaults file.
+Each default file uses "keys" to refer to the collections and overlays that it creates, and you can use those keys to modify the behavior of individual collections or overlays created by the file.
 
 For, example, the IMDB default creates three collections, each with their own "key":
 
@@ -86,7 +86,7 @@ In addition to the keys, each default can be customized with other template vari
 
 This example uses a file-specific variable to change the order of all the IMDB chart collections to alphabetical by title and a shared variable to schedule these IMDB collections to be run only on Wednesdays.
 
-For the overlays, it uses a file-specific variable to disable all the "edition" overlays and a shared variable to align the overlay on the right side of the poster.
+On the `resolution` overlay, it uses a file-specific variable to disable all the "edition" overlays and a shared variable to align the overlay on the right side of the poster.
 
 ```yaml
 libraries:
@@ -115,7 +115,7 @@ All of the default files are customized in this basic fashion.
 
 Each of these default files has a page on the wiki showing its keys, available `template_variables`, and default settings.  For example, the default overlay `default: resolution` has a page [here](overlays/resolution.md).
 
-The shared template variables can be reviewed here for [Collections](collection_variables.md) and [Overlays](overlay_variables.md).  These are also linked from each default file's wiki page.
+The shared template variables can be reviewed here for [Collections](collection_variables.md) and [Overlays](overlay_variables.md).  These are also linked from each default file's wiki page.  Keep in mind that *most*, but not all default files have access to the shared variables.  This will be noted on the individual files' page.
 
 ## Collection Defaults
 
