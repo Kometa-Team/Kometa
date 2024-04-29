@@ -192,8 +192,8 @@ nav:
           - Trakt: config/trakt.md
           - MyAnimeList: config/myanimelist.md
           - Trakt and MyAnimeList Authentication: config/auth.md
-    - OTHER:
-        - Scheduling Parts: config/schedule.md
+  - OTHER:
+    - Scheduling Parts: config/schedule.md
   - KOMETA DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
