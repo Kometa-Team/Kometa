@@ -300,19 +300,19 @@ First, make a copy of the template:
    
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometa-team/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-apple: macOS"
 
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometa-team/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-windows: Windows"
 
-      Go to [this URL](https://raw.githubusercontent.com/kometa-team/kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
+      Go to [this URL](https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
       ```
       C:\Users\YOURUSERNAME\kometa\config\config.yml
       ```
@@ -445,7 +445,7 @@ docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:deve
                                                                                                   ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+This may not work if you are not using the official image.
 
 ### I want to use the nightly branch
 
@@ -456,7 +456,7 @@ docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:nigh
                                                                                                   ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+This may not work if you are not using the official image.
 
 ### I want to ensure I am using the master branch
 
@@ -466,6 +466,3 @@ Add the `latest` tag to the image name in your run command [or wherever you spec
 docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:latest --run
                                                                                                   ^^^^^^
 ```
-
-This is the only version tag supplied by the lsio image.
-
