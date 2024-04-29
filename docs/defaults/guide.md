@@ -37,7 +37,7 @@ libraries:
 
 Configs can be customized using the `template_variables` attribute when calling the file.
 
-These template variables can be used to customize individual colelctions/overlays or the set as a whole.
+These template variables can be used to customize individual collections/overlays or the set as a whole.
 
 A given default may have variables that are specific to it, and may also leverage a common set of shared template variables.  These lists are shown on each default file's wiki page.
 
