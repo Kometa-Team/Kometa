@@ -119,13 +119,13 @@ libraries:
 
     operations:
       mass_audience_rating_update: 
-       - mdb_average
-       - imdb
-       - 2.0
+      - mdb_average
+      - imdb
+      - 2.0
       mass_episode_audience_rating_update: 
-       - tmdb
-       - imdb
-       - 2.0
+      - tmdb
+      - imdb
+      - 2.0
       split_duplicates: false
       assets_for_all: false
       genre_mapper:
