@@ -300,19 +300,19 @@ First, make a copy of the template:
    
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-apple: macOS"
 
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-windows: Windows"
 
-      Go to [this URL](https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
+      Go to [this URL](https://raw.githubusercontent.com/Kometa-Team/kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
       ```
       C:\Users\YOURUSERNAME\kometa\config\config.yml
       ```
