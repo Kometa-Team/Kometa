@@ -6,8 +6,7 @@ search:
 
 ## Overview
 
-The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Plex 
-Meta Manager.
+The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Kometa.
 
 Examples of these settings include the ability to:
 
