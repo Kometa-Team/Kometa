@@ -1609,8 +1609,6 @@
                 "vertical_position": { "type": "string", "enum": ["top","top2","top3","center","center_top","center_bottom","bottom","bottom2","bottom3"] }
             },
             "patternProperties": {
-                "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^country_.*$": { "type": "string", "pattern": "^[A-Z]{2}$" },
                 "^file_.*$": { "type": "string" },
                 "^git_.*$": { "type": "string" },
@@ -1623,7 +1621,25 @@
                 "^time_window_.*$": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
                 "^url_.*$": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
                 "^use_.*$": { "type": "boolean" },
-                "^weight_.*$": { "type": "integer" }
+                "^weight_.*$": { "type": "integer" },
+                "^font_.*$": { "type": "string" },
+                "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^font_size_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^font_style_.*$": { "type": "string", "enum": ["Any","Italic","Normal","Oblique"] },
+                "^horizontal_align_.*$": { "type": "string", "enum": ["left","center","right"] },
+                "^horizontal_offset_.*$": { "type": "integer", "minimum": 0 },
+                "^vertical_align_.*$": { "type": "string", "enum": ["top","center","bottom"] },
+                "^vertical_offset_.*$": { "type": "integer", "minimum": 0 },
+                "^stroke_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^stroke_width_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^back_align_.*$": { "type": "string", "enum": ["left","right","center","top","bottom"] },
+                "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^back_height_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^back_line_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "^back_line_width_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^back_padding_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^back_radius_.*$": { "type": "integer", "exclusiveMinimum": 0 },
+                "^back_width_.*$": { "type": "integer", "exclusiveMinimum": 0 }
             },
             "required": [
             ],
