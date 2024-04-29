@@ -77,6 +77,7 @@ spec:
               name: tv-config
           restartPolicy: OnFailure
 ```
+> :warning: If you are using [Longhorn](https://longhorn.io/) as your storage class, you should omit the `spec.jobTemplate.spec.template.spec.securityContext` node to fix file permission errors.
 
 This CronJob also requires
 
