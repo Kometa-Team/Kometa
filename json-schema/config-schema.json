@@ -895,6 +895,16 @@
                             "type": "string"
                         }
                     ]
+                },
+                "overlay_filetype": {
+                    "description": "Used to control the filetype used with overlay images.",
+                    "enum": ["jpg", "png"]
+                },
+                "overlay_quality": {
+                    "description": "Used to control the JPG quality used with overlay images.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
                 }
             },
             "required": [
