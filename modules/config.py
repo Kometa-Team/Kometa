@@ -857,8 +857,8 @@ class ConfigFile:
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
-                params["overlay_filetype"] = check_for_attribute(lib, "overlay_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_filetype"], do_print=False, save=False),
-                params["overlay_quality"] = check_for_attribute(lib, "overlay_quality", parent="settings", var_type="int", default=self.general["delete_not_scheduled"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False),
+                params["overlay_filetype"] = check_for_attribute(lib, "overlay_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_filetype"], do_print=False, save=False)
+                params["overlay_quality"] = check_for_attribute(lib, "overlay_quality", parent="settings", var_type="int", default=self.general["overlay_quality"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
                 if lib and "report_path" in lib and lib["report_path"]:
