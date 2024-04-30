@@ -507,8 +507,11 @@ class Overlays:
                                             else:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
-                                temp = os.path.join(self.library.overlay_folder, "temp.jpg")
-                                new_poster.save(temp, exif=exif_tags)
+                                temp = os.path.join(self.library.overlay_folder, f"temp.{self.library.overlay_filetype}")
+                                if self.library.overlay_filetype == "jpg" and self.library.overlay_quality:
+                                    new_poster.save(temp, exif=exif_tags, quality=self.library.overlay_quality)
+                                else:
+                                    new_poster.save(temp, exif=exif_tags)
                                 self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                                 poster_compare = poster.compare if poster else item.thumb

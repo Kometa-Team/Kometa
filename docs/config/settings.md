@@ -935,6 +935,31 @@ The available setting attributes which can be set at each level are outlined bel
           - metadata
         ```
 
+??? blank "`verify_ssl` - Turn SSL Verification on or off.<a class="headerlink" href="#verify-ssl" title="Permanent link">¶</a>"
+
+    <div id="verify-ssl" />Turn SSL Verification on or off.
+    
+    ???+ note
+    
+        set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `verify_ssl`
+
+    **Levels with this Attribute:** Global
+    
+    **Accepted Values:** `true` or `false`
+
+    **Default Value:** `true`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          verify_ssl: false
+        ```
+
 ??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
 
     <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, 
@@ -962,29 +987,51 @@ The available setting attributes which can be set at each level are outlined bel
           custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
         ```
 
-??? blank "`verify_ssl` - Turn SSL Verification on or off.<a class="headerlink" href="#verify-ssl" title="Permanent link">¶</a>"
+??? blank "`overlay_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
 
-    <div id="verify-ssl" />Turn SSL Verification on or off.
-    
-    ???+ note
-    
-        set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
+    <div id="overlay-filetype" />Used to control the filetype used with overlay images.
 
     <hr style="margin: 0px;">
     
-    **Attribute:** `verify_ssl`
+    **Attribute:** `overlay_filetype`
 
-    **Levels with this Attribute:** Global
+    **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** `true` or `false`
+    **Accepted Values:**
 
-    **Default Value:** `true`
+    <table class="clearTable">
+      <tr><td>`jpg`</td><td>Use JPG files for saving Overlays</td></tr>
+      <tr><td>`png`</td><td>Use PNG files for saving Overlays</td></tr>
+    </table>
+
+    **Default Value:** `jpg`
 
     ???+ example "Example"
         
         ```yaml
         settings:
-          verify_ssl: false
+          overlay_filetype: png
+        ```
+
+??? blank "`overlay_quality` - Used to control the JPG quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+
+    <div id="overlay-quality" />Used to control the JPG quality used with overlay images.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `overlay_quality`
+
+    **Levels with this Attribute:** Global/Library
+    
+    **Accepted Values:** Any Integer 1-100
+
+    **Default Value:** `75`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          overlay_quality: 95
         ```
 
 ## Default Values

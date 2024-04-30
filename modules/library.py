@@ -81,6 +81,8 @@ class Library(ABC):
         self.only_filter_missing = params["only_filter_missing"]
         self.ignore_ids = params["ignore_ids"]
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
+        self.overlay_quality = params["overlay_quality"]
+        self.overlay_filetype = params["overlay_filetype"]
         self.assets_for_all = params["assets_for_all"]
         self.assets_for_all_collections = False
         self.delete_collections = params["delete_collections"]

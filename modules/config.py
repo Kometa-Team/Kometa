@@ -41,6 +41,10 @@ run_order_options = {
     "operations": "Represents Operations Updates"
 }
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
+filetype_list = {
+    "jpg": "Use JPG files for saving Overlays",
+    "png": "Use PNG files for saving Overlays"
+}
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
@@ -340,7 +344,7 @@ class ConfigFile:
         if self.secrets:
             check_next(self.data)
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0):
+        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0, int_max=None):
             endline = ""
             if parent is not None:
                 if data and parent in data:
@@ -373,9 +377,10 @@ class ConfigFile:
                 if isinstance(data[attribute], bool):                               return data[attribute]
                 else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
-                if isinstance(data[attribute], bool):                               message = f"{text} must an integer >= {int_min}"
-                elif isinstance(data[attribute], int) and data[attribute] >= int_min: return data[attribute]
-                else:                                                               message = f"{text} must an integer >= {int_min}"
+                if isinstance(data[attribute], int) and data[attribute] >= int_min and (not int_max or data[attribute] <= int_max):
+                    return data[attribute]
+                else:
+                    message = f"{text} must an integer greater than or equal to {int_min}{f' and less than or equal to {int_max}'}"
             elif var_type == "path":
                 if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
                 else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
@@ -472,6 +477,8 @@ class ConfigFile:
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
+            "overlay_filetype": check_for_attribute(self.data, "overlay_filetype", parent="settings", test_list=filetype_list, default="jpg"),
+            "overlay_quality": check_for_attribute(self.data, "overlay_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.custom_repo = None
@@ -850,6 +857,8 @@ class ConfigFile:
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
+                params["overlay_filetype"] = check_for_attribute(lib, "overlay_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_filetype"], do_print=False, save=False),
+                params["overlay_quality"] = check_for_attribute(lib, "overlay_quality", parent="settings", var_type="int", default=self.general["delete_not_scheduled"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False),
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
                 if lib and "report_path" in lib and lib["report_path"]:

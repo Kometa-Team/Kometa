@@ -1,26 +1,17 @@
-# Plex Meta Manager is now rebranded as Kometa!
-
 # Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.13
-Updated PlexAPI requirement to 4.15.12
-Updated setuptools requirement to 69.5.1
-Updated tmdbapis requirement to 1.2.16
 
 # Removed Features
 
 # New Features
-Add Page Topics Options to `imdb_search`
-Add `lxml` Docker Version using an old lxml version that supports more cpus
+Added `overlay_filetype` and `overlay_quality` settings to control the filetype and quality of overlay images.
 
 # Updates
-Add `use_all` template variable to default collections, which allows all collections to be disabled with one variable.
-Let conditional `.not` and `.exists` work with default variables
-
+Added `starting_only` template variable to the `mal` Collection Default.
 # Defaults
 
 # Bug Fixes
-Fixes #1965 `download_url_assets` was causing `url_background` to upload as a poster
-Fixes #1969 Ignore validating TPDb links
+Catch bad ID data from Plex
+Fixes `- git` file calls
 
 Various other Minor Fixes
 
