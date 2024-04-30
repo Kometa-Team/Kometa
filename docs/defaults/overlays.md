@@ -23,13 +23,13 @@ libraries:
 
 ### Example Poster Overlays
 
+**Note: These examples use fonts not packaged with Kometa. See [bullmoose20's Configs](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20)**
+
 ![](images/movie-overlays1-annotated.png)
 ![](images/movie-overlays2-annotated.png)
 
 <details>
   <summary>Click to expand sample config.yml Movies overlays section:</summary>
-
-**Note: This uses fonts not packaged with Kometa. See [bullmoose20's Configs](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20)**
 
 ```yaml
 libraries:
@@ -73,8 +73,6 @@ libraries:
 ![](images/tvshow-poster-annotated.png)
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Show Poster:</summary>
-
-**Note: This uses fonts not packaged with Kometa. See [bullmoose20's Configs](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20)**
 
 ```yaml
 libraries:
@@ -141,8 +139,6 @@ libraries:
 <details>
   <summary>Click to expand sample config.yml TV Shows overlays section for the Episode Poster:</summary>
   
-**Note: This uses fonts not packaged with Kometa. See [bullmoose20's Configs](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20)**
-
 ```yaml
 libraries:
   TV Shows:
@@ -238,6 +234,10 @@ Each file has a page on the wiki showing the available `template_variables` for 
 
 **In addition to the defined `template_variables` almost all default Overlay files have access to the 
 [Shared Variables](collection_variables.md).**
+
+### Custom fonts used in these examples:
+
+See [bullmoose20's Configs](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20)
 
 ### Examples
 
