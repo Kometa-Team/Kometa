@@ -23,10 +23,14 @@ templates:
     default:
       limit: 100
       limit_season: <<limit>>
+      starting_only_season: <<starting_only>>
+    optional:
+      - starting_only
     mal_season:
       season: current
       sort_by: score
       limit: <<limit_season>>
+      starting_only: <<starting_only_season>>
 
 collections:
   MyAnimeList Popular:
