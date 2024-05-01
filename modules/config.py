@@ -478,8 +478,8 @@ class ConfigFile:
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
-            "overlay_filetype": check_for_attribute(self.data, "overlay_filetype", parent="settings", test_list=filetype_list, default="jpg"),
-            "overlay_quality": check_for_attribute(self.data, "overlay_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
+            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, default="jpg"),
+            "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.custom_repo = None
@@ -858,8 +858,8 @@ class ConfigFile:
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
-                params["overlay_filetype"] = check_for_attribute(lib, "overlay_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_filetype"], do_print=False, save=False)
-                params["overlay_quality"] = check_for_attribute(lib, "overlay_quality", parent="settings", var_type="int", default=self.general["overlay_quality"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False)
+                params["overlay_artwork_filetype"] = check_for_attribute(lib, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_artwork_filetype"], do_print=False, save=False)
+                params["overlay_artwork_quality"] = check_for_attribute(lib, "overlay_artwork_quality", parent="settings", var_type="int", default=self.general["overlay_artwork_quality"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
                 if lib and "report_path" in lib and lib["report_path"]:

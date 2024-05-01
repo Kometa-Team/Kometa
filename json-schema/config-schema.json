@@ -896,11 +896,11 @@
                         }
                     ]
                 },
-                "overlay_filetype": {
+                "overlay_artwork_filetype": {
                     "description": "Used to control the filetype used with overlay images.",
                     "enum": ["jpg", "png", "webp"]
                 },
-                "overlay_quality": {
+                "overlay_artwork_quality": {
                     "description": "Used to control the JPG or WEBP quality used with overlay images.",
                     "type": "integer",
                     "minimum": 1,
