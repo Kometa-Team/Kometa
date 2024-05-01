@@ -3,18 +3,17 @@
 # Removed Features
 
 # New Features
-Added `overlay_filetype` and `overlay_quality` settings to control the filetype and quality of overlay images.
+Added `overlay_filetype` and `overlay_quality` settings to control the filetype and quality of overlay images. Users can select from JPG, PNG and WEBP.
 
 # Updates
 
 # Defaults
 Added `starting_only` template variable to the `mal` Collection Default.
 Changed streaming defaults to use names as their keys vs their TMDb IDs as keys
+Fixed `amazon` ID in `streaming` when region is `CA`
 
 # Bug Fixes
 Catch bad ID data from Plex
 Fixes `- git` file calls
 
 Various other Minor Fixes
-
-Closed legacy issues on GitHub

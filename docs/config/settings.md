@@ -1002,6 +1002,7 @@ The available setting attributes which can be set at each level are outlined bel
     <table class="clearTable">
       <tr><td>`jpg`</td><td>Use JPG files for saving Overlays</td></tr>
       <tr><td>`png`</td><td>Use PNG files for saving Overlays</td></tr>
+      <tr><td>`webp`</td><td>Use WEBP files for saving Overlays</td></tr>
     </table>
 
     **Default Value:** `jpg`
@@ -1009,13 +1010,14 @@ The available setting attributes which can be set at each level are outlined bel
     ???+ example "Example"
         
         ```yaml
+        ```yaml
         settings:
           overlay_filetype: png
         ```
 
-??? blank "`overlay_quality` - Used to control the JPG quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+??? blank "`overlay_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
 
-    <div id="overlay-quality" />Used to control the JPG quality used with overlay images.
+    <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.
 
     <hr style="margin: 0px;">
     

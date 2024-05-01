@@ -43,7 +43,8 @@ run_order_options = {
 sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": "Add & Remove Items from the Collection or Playlist"}
 filetype_list = {
     "jpg": "Use JPG files for saving Overlays",
-    "png": "Use PNG files for saving Overlays"
+    "png": "Use PNG files for saving Overlays",
+    "webp": "Use WEBP files for saving Overlays"
 }
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
