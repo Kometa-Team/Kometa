@@ -11,33 +11,26 @@ Supported Overlay Level: Movie, Show
 
 ## Supported Streaming Services
 
-
-!!! important
-
-    As of Kometa release 1.21, the keys associated with this Defaults file has changed.
-
-    If you are setting custom images, you will need to use `<<originals_key>>`
-
-| Streaming Service | Key    | `originals_key` | Weight |
-|:------------------|--------|:----------------|:-------|
-| Netflix           | `8`    | `netflix`       | `160`  |
-| Prime Video       | `9`    | `amazon`        | `150`  |
-| Disney+           | `337`  | `disney`        | `140`  |
-| Max               | `1189` | `max`           | `130`  |
-| Crunchyroll       | `283`  | `Crunchyroll`   | `120`  |
-| YouTube           | `188`  | `youtube`       | `110`  |
-| Hulu              | `15`   | `hulu`          | `100`  |
-| Paramount+        | `531`  | `paramount`     | `90`   |
-| AppleTV           | `350`  | `appletv`       | `80`   |
-| Peacock           | `387`  | `peacock`       | `70`   |
-| Showtime          | `37`   | `showtime`      | `60`   |
-| discovery+        | `510`  | `discovery`     | `58`   |
-| Crave             | `230`  | `crave`         | `55`   |
-| NOW               | `39`   | `now`           | `50`   |
-| All 4             | `103`  | `all4`          | `40`   |
-| britbox           | `151`  | `britbox`       | `30`   |
-| BET+              | `1759` | `bet`           | `20`   |
-| hayu              | `223`  | `hayu`          | `10`   |
+| Streaming Service | Key           | Weight |
+|:------------------|:--------------|:-------|
+| Netflix           | `netflix`     | `160`  |
+| Prime Video       | `amazon`      | `150`  |
+| Disney+           | `disney`      | `140`  |
+| Max               | `max`         | `130`  |
+| Crunchyroll       | `Crunchyroll` | `120`  |
+| YouTube           | `youtube`     | `110`  |
+| Hulu              | `hulu`        | `100`  |
+| Paramount+        | `paramount`   | `90`   |
+| AppleTV           | `appletv`     | `80`   |
+| Peacock           | `peacock`     | `70`   |
+| Showtime          | `showtime`    | `60`   |
+| discovery+        | `discovery`   | `58`   |
+| Crave             | `crave`       | `55`   |
+| NOW               | `now`         | `50`   |
+| All 4             | `all4`        | `40`   |
+| britbox           | `britbox`     | `30`   |
+| BET+              | `bet`         | `20`   |
+| hayu              | `hayu`        | `10`   |
 
 
 ## Regional Variants

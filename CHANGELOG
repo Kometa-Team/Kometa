@@ -6,8 +6,10 @@
 Added `overlay_filetype` and `overlay_quality` settings to control the filetype and quality of overlay images.
 
 # Updates
-Added `starting_only` template variable to the `mal` Collection Default.
+
 # Defaults
+Added `starting_only` template variable to the `mal` Collection Default.
+Changed streaming defaults to use names as their keys vs their TMDb IDs as keys
 
 # Bug Fixes
 Catch bad ID data from Plex
