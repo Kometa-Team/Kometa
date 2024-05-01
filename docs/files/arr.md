@@ -62,7 +62,7 @@ Radarr/Sonarr.
 When `radarr_add_existing`/`sonarr_add_existing` are true the items that exist in the collection/playlist will be added 
 to Radarr/Sonarr. 
 
-If your Radarr/Sonarr has different file system mappings from your plex use `radarr_path`/`sonarr_path` along with 
+If your Radarr/Sonarr has different file system mappings from your Plex use `radarr_path`/`sonarr_path` along with 
 `plex_path` from your [Radarr](../config/radarr.md)/[Sonarr](../config/sonarr.md) global config settings.
 
 ### Radarr Add Settings

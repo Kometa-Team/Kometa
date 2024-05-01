@@ -183,7 +183,7 @@ nav:
           - Tautulli: config/tautulli.md
           - Github: config/github.md
           - OMDb: config/omdb.md
-          - MdbList: config/mdblist.md
+          - MDBList: config/mdblist.md
           - Notifiarr: config/notifiarr.md
           - Gotify: config/gotify.md
           - AniDB: config/anidb.md
@@ -327,7 +327,7 @@ nav:
           - Tautulli Builders: files/builders/tautulli.md
           - Radarr Builders: files/builders/radarr.md
           - Sonarr Builders: files/builders/sonarr.md
-          - MdbList Builders: files/builders/mdblist.md
+          - MDBList Builders: files/builders/mdblist.md
           - Letterboxd Builders: files/builders/letterboxd.md
           - ICheckMovies Builders: files/builders/icheckmovies.md
           - BoxOfficeMojo Builders: files/builders/mojo.md

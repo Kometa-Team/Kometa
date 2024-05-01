@@ -229,10 +229,10 @@ class Operations:
                     nonlocal _mdb_obj
                     if _mdb_obj is None:
                         _mdb_obj = False
-                        if self.config.Mdblist.limit is False:
+                        if self.config.MDBList.limit is False:
                             if self.library.is_show and tvdb_id:
                                 try:
-                                    _mdb_obj = self.config.Mdblist.get_series(tvdb_id)
+                                    _mdb_obj = self.config.MDBList.get_series(tvdb_id)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:
@@ -242,7 +242,7 @@ class Operations:
                                     raise
                             if self.library.is_movie and tmdb_id:
                                 try:
-                                    _mdb_obj = self.config.Mdblist.get_movie(tmdb_id)
+                                    _mdb_obj = self.config.MDBList.get_movie(tmdb_id)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:
@@ -252,7 +252,7 @@ class Operations:
                                     raise
                             if imdb_id and not _mdb_obj:
                                 try:
-                                    _mdb_obj = self.config.Mdblist.get_imdb(imdb_id)
+                                    _mdb_obj = self.config.MDBList.get_imdb(imdb_id)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:

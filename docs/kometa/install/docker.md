@@ -102,13 +102,13 @@ This message shows that your installation appears to be working correctly.
 ...
 ```
 
-If that doesn't work, stop here until you fix that.  Diagnoing and repairing Docker install problems is out of the scope of this walkthrough.
+If that doesn't work, stop here until you fix that.  Diagnosing and repairing Docker install problems is out of the scope of this walkthrough.
 
 ---
 
 #### Important note on Docker images
 
-This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other; other images may have [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
+This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other; other images may have [idiosyncrasies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
 
 The great thing about Docker is that all the setup you'd have to do to run Kometa is already done inside the docker image.
 

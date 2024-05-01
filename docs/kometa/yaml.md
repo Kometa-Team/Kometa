@@ -184,25 +184,25 @@ message: 3: YAML                      # breaks as a : is a special character
 "message: 3": YAML                    # Works as the key string is quoted
 ```
 
-#### Multiline Strings 
+#### Multi-Line Strings 
 
-Strings can be interpreted as multiline using the pipe (`|`) character.
+Strings can be interpreted as multi-line using the pipe (`|`) character.
 
 ```yaml
 message: |
  this is
- a real multiline
+ a real multi-line
  message
 ```
 
-This would be read as `this is\na real multiline\nmessage`
+This would be read as `this is\na real multi-line\nmessage`
 
 ## Comments
 
 YAML file also supports comments, unlike JSON. A comment starts with #.
 
 ```yaml
-# Strats with a top level Dictionary with keys `libraries` and `settings`
+# Starts with a top level Dictionary with keys `libraries` and `settings`
 libraries:                        # Value is a Dictionary with keys `Movies` and `TV Shows`
 ```
 

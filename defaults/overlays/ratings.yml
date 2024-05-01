@@ -122,7 +122,7 @@ templates:
       rating<<rating_num>>_image_url:
         conditions:
           - rating<<rating_num>>_image: anidb
-            value: Anidb
+            value: AniDB
           - rating<<rating_num>>_image: imdb
             value: IMDb
           - rating<<rating_num>>_image: letterboxd

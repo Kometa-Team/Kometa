@@ -17,7 +17,7 @@ These guides will walk you through installing Kometa on your system.
 
 ## Explanations
 
-The below guides and recipes have been created to assist users with various aspects of Komets and its companion scripts.
+The below guides and recipes have been created to assist users with various aspects of Kometa's and its companion scripts.
 
 - [Plex Ratings Explained](ratings.md)
 - [Scheduling Kometa Runs Guide](scheduling.md)
@@ -80,10 +80,10 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - Stores the Rainier actor posters
 - [People Images Signature (signature)](https://github.com/Kometa-Team/People-Images-signature)
     - Stores the Signature actor posters
-- [People Images DIIVOY (diiivoy)](https://github.com/Kometa-Team/People-Images-diiivoy)
-    - Stores the DIIVOY actor posters
-- [People Images DIIVOY Color (diiivoycolor)](https://github.com/Kometa-Team/People-Images-diiivoycolor)
-    - Stores the DIIVOY Color actor posters
+- [People Images DIIIVOY (diiivoy)](https://github.com/Kometa-Team/People-Images-diiivoy)
+    - Stores the DIIIVOY actor posters
+- [People Images DIIIVOY Color (diiivoycolor)](https://github.com/Kometa-Team/People-Images-diiivoycolor)
+    - Stores the DIIIVOY Color actor posters
 - [People Images Transparent (transparent)](https://github.com/Kometa-Team/People-Images-transparent)
     - Stores the Transparent actor posters
 

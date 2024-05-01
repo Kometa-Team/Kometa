@@ -65,7 +65,7 @@ Now let's use the `sort_title` attribute to reorder these collections slightly
         sort_title: "%&'Collection 2"
     ```
 
-You will often see users using sort titles such as `+++++++_My Collection` or `!010_My Collection` in order to force a specific order of collections. Whilst it may not seem logical at a glance, the ASCII sort order allows a lot of fleixibility for power users to be able to tailor the ordering of collections.
+You will often see users using sort titles such as `+++++++_My Collection` or `!010_My Collection` in order to force a specific order of collections. Whilst it may not seem logical at a glance, the ASCII sort order allows a lot of flexibility for power users to be able to tailor the ordering of collections.
 
 ### Kometa Default Collection Sorting
 

@@ -72,7 +72,7 @@ To install a container from docker hub, you will need community applications - a
 
 #### Important note on Docker images
 
-This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other. Other images may have [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
+This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other. Other images may have [idiosyncrasies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
 
 The great thing about Docker is that all the setup you'd have to do to run Kometa is already done inside the docker image.
 
@@ -98,7 +98,7 @@ You can now close the unRAID terminal and start the Kometa container.
 
 **_From this point forward, you can Console `>_Console` into the running container as it will stay running_**
 
-Open a Console by left-clicking on the running Kometcontainer and selecting `>_Console`. This will open up an interactive session within the container to be able to run the commands we want.
+Open a Console by left-clicking on the running Kometa Container and selecting `>_Console`. This will open up an interactive session within the container to be able to run the commands we want.
 
 ### Create a directory to quiet an error later
 

@@ -8,8 +8,8 @@ For best results *with this walkthrough*, your test library will contain:
 
  - At least two comedy movies released since 2012.
  - At least two movies from the [IMDB top 250](https://www.imdb.com/chart/top/).
- - At least two movies from [IMDB's Popular list](https://www.imdb.com/chart/moviemeter).
- - At least two movies from [IMDB's Lowest Rated](https://www.imdb.com/chart/bottom).
+ - At least two movies from [IMDb's Popular list](https://www.imdb.com/chart/moviemeter).
+ - At least two movies from [IMDb's Lowest Rated](https://www.imdb.com/chart/bottom).
  - A couple different resolutions among the movies.
 
 That will ensure there's something to go into each of the example collections that will be created.

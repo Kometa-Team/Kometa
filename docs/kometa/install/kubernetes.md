@@ -287,7 +287,7 @@ the cronjob starts each time.  This can be done by including an init container w
 
 ### Including the Init Container in the Cron Job
 
-NOTE the environment value nameed `JINJA_DEST_FILE` is the resulting name of the generated config file.
+NOTE the environment value named `JINJA_DEST_FILE` is the resulting name of the generated config file.
 
 ```
 apiVersion: batch/v1

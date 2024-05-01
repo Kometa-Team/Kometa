@@ -158,11 +158,11 @@ You can create individual blocks of operations by using a list under `operations
     **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
-      <tr><td>`mdb`</td><td>Use MdbList for Content Ratings</td></tr>
-      <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDbList for Content Ratings</td></tr>
-      <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDbList for Content Ratings</td></tr>
-      <tr><td>`mdb_age_rating`</td><td>Use MDbList Age Rating for Content Ratings</td></tr>
-      <tr><td>`mdb_age_rating0`</td><td>Use MDbList Age Rating with Zero Padding for Content Ratings</td></tr>
+      <tr><td>`mdb`</td><td>Use MDBList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDBList for Content Ratings</td></tr>
+      <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDBList for Content Ratings</td></tr>
+      <tr><td>`mdb_age_rating`</td><td>Use MDBList Age Rating for Content Ratings</td></tr>
+      <tr><td>`mdb_age_rating0`</td><td>Use MDBList Age Rating with Zero Padding for Content Ratings</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList for Content Ratings</td></tr>
       <tr><td>`lock`</td><td>Lock Content Rating Field</td></tr>
@@ -279,8 +279,8 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`tmdb`</td><td>Use TMDb Release Date</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb</td></tr>
-      <tr><td>`mdb`</td><td>Use MdbList Release Date</td></tr>
-      <tr><td>`mdb_digital`</td><td>Use MdbList Digital Release Date</td></tr>
+      <tr><td>`mdb`</td><td>Use MDBList Release Date</td></tr>
+      <tr><td>`mdb_digital`</td><td>Use MDBList Digital Release Date</td></tr>
       <tr><td>`anidb`</td><td>Use AniDB Release Date</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Release Date</td></tr>
       <tr><td>`lock`</td><td>Lock Originally Available Field</td></tr>
@@ -330,17 +330,17 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
       <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating</td></tr>
       <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
-      <tr><td>`mdb`</td><td>Use MdbList Score</td></tr>
-      <tr><td>`mdb_average`</td><td>Use MdbList Average Score</td></tr>
-      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDbList</td></tr>
-      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDbList</td></tr>
-      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDbList</td></tr>
-      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDbList</td></tr>
-      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDbList</td></tr>
-      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDbList</td></tr>
-      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDbList</td></tr>
-      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDbList</td></tr>
-      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDbList</td></tr>
+      <tr><td>`mdb`</td><td>Use MDBList Score</td></tr>
+      <tr><td>`mdb_average`</td><td>Use MDBList Average Score</td></tr>
+      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDBList</td></tr>
+      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDBList</td></tr>
+      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDBList</td></tr>
+      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDBList</td></tr>
+      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDBList</td></tr>
+      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDBList</td></tr>
+      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDBList</td></tr>
+      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDBList</td></tr>
+      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDBList</td></tr>
       <tr><td>`anidb_rating`</td><td>Use AniDB Rating</td></tr>
       <tr><td>`anidb_average`</td><td>Use AniDB Average</td></tr>
       <tr><td>`anidb_score`</td><td>Use AniDB Review Score</td></tr>
