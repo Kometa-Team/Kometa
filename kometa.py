@@ -141,10 +141,11 @@ plex_token = get_env("KOMETA_PLEX_TOKEN", plex_token)
 
 env_secrets = []
 for env_name, env_data in os.environ.items():
-    if str(env_name).upper().startswith("KOMETA_") and str(env_name).upper() not in static_envs:
-        secret_args[str(env_name).lower()[7:].replace("_", "-")] = env_data
-    elif str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
-        secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
+    if env_data is not None and str(env_data).strip():
+        if str(env_name).upper().startswith("KOMETA_") and str(env_name).upper() not in static_envs:
+            secret_args[str(env_name).lower()[7:].replace("_", "-")] = env_data
+        elif str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
+            secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 for _, sv in secret_args.items():
     if sv in run_arg:

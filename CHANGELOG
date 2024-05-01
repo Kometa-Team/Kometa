@@ -15,5 +15,6 @@ Fixed `amazon` ID in `streaming` when region is `CA`
 # Bug Fixes
 Catch bad ID data from Plex
 Fixes `- git` file calls
+Ignore empty Environment Variables
 
 Various other Minor Fixes
