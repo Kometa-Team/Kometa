@@ -11,33 +11,27 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 030
 
-!!! important
-
-    As of Kometa release 1.21, the keys associated with this Defaults file has changed.
-
-    If you are setting custom images, you will need to use `<<originals_key>>`
-
-| Collection                 | Key           | `originals_key`  | Description                                                                    |
-|:---------------------------|---------------|:-----------------|:-------------------------------------------------------------------------------|
-| `Streaming Collections`    | `separator`   | `separator`      | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `All 4 Movies/Shows`       | `103`         | `all4`           | Collection of Movies/Shows Streaming on All 4.                                 |
-| `Apple TV+ Movies/Shows`   | `350`         | `appletv`        | Collection of Movies/Shows Streaming on Apple TV+.                             |
-| `BET+ Movies/Shows`        | `1759`        | `bet`            | Collection of Movies/Shows Streaming on BET+.                                  |
-| `BritBox Movies/Shows`     | `151`         | `britbox`        | Collection of Movies/Shows Streaming on BritBox.                               |
-| `Crave Movies/Shows`       | `230`         | `crave`          | Collection of Movies/Shows Streaming on Crave.                                 |
-| `Crunchyroll Shows`        | `283`         | `crunchyroll`    | Collection of Shows Streaming on Crunchyroll.                                  |
-| `discovery+ Shows`         | `510`         | `discovery`      | Collection of Shows Streaming on discovery+.                                   |
-| `Disney+ Movies/Shows`     | `337`         | `disney`         | Collection of Movies/Shows Streaming on Disney+.                               |
-| `Max Movies/Shows`         | `1189`        | `max`            | Collection of Movies/Shows Streaming on Max.                                   |
-| `Hayu Shows`               | `223`         | `hayu`           | Collection of Shows Streaming on Hulu.                                         |
-| `Hulu Movies/Shows`        | `15`          | `hulu`           | Collection of Movies/Shows Streaming on Hulu.                                  |
-| `Netflix Movies/Shows`     | `8`           | `netflix`        | Collection of Movies/Shows Streaming on Netflix.                               |
-| `NOW Movies/Shows`         | `39`          | `now`            | Collection of Movies/Shows Streaming on NOW.                                   |
-| `Paramount+ Movies/Shows`  | `531`         | `paramount`      | Collection of Movies/Shows Streaming on Paramount+.                            |
-| `Peacock Movies/Shows`     | `387`         | `peacock`        | Collection of Movies/Shows Streaming on Peacock.                               |
-| `Prime Video Movies/Shows` | `9`           | `amazon`         | Collection of Movies/Shows Streaming on Prime Video.                           |
-| `Showtime Movies/Shows`    | `37`          | `showtime`       | Collection of Movies/Shows Streaming on Showtime.                              |
-| `YouTube Movies/Shows`     | `188`         | `youtube`        | Collection of Movies/Shows Streaming on YouTube.                               |
+| Collection                 | Key           | Description                                                                    |
+|:---------------------------|:--------------|:-------------------------------------------------------------------------------|
+| `Streaming Collections`    | `separator`   | [Separator Collection](../separators.md) to denote the Section of Collections. |
+| `All 4 Movies/Shows`       | `all4`        | Collection of Movies/Shows Streaming on All 4.                                 |
+| `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.                             |
+| `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.                                  |
+| `BritBox Movies/Shows`     | `britbox`     | Collection of Movies/Shows Streaming on BritBox.                               |
+| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.                                 |
+| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.                                  |
+| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.                                   |
+| `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.                               |
+| `Max Movies/Shows`         | `max`         | Collection of Movies/Shows Streaming on Max.                                   |
+| `Hayu Shows`               | `hayu`        | Collection of Shows Streaming on Hulu.                                         |
+| `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.                                  |
+| `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.                               |
+| `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.                                   |
+| `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.                            |
+| `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.                               |
+| `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video.                           |
+| `Showtime Movies/Shows`    | `showtime`    | Collection of Movies/Shows Streaming on Showtime.                              |
+| `YouTube Movies/Shows`     | `youtube`     | Collection of Movies/Shows Streaming on YouTube.                               |
 
 ## Regional Variants
 
