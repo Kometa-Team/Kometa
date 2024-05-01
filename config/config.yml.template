@@ -74,8 +74,8 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
-  overlay_filetype: jpg
-  overlay_quality: 75
+  overlay_artwork_filetype: jpg
+  overlay_artwork_quality: 75
 webhooks:                            # Can be individually specified per library as well
   error:
   version:

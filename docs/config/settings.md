@@ -987,13 +987,13 @@ The available setting attributes which can be set at each level are outlined bel
           custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
         ```
 
-??? blank "`overlay_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
+??? blank "`overlay_artwork_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
 
     <div id="overlay-filetype" />Used to control the filetype used with overlay images.
 
     <hr style="margin: 0px;">
     
-    **Attribute:** `overlay_filetype`
+    **Attribute:** `overlay_artwork_filetype`
 
     **Levels with this Attribute:** Global/Library
     
@@ -1012,16 +1012,16 @@ The available setting attributes which can be set at each level are outlined bel
         ```yaml
         ```yaml
         settings:
-          overlay_filetype: png
+          overlay_artwork_filetype: png
         ```
 
-??? blank "`overlay_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+??? blank "`overlay_artwork_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
 
     <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.
 
     <hr style="margin: 0px;">
     
-    **Attribute:** `overlay_quality`
+    **Attribute:** `overlay_artwork_quality`
 
     **Levels with this Attribute:** Global/Library
     
@@ -1033,7 +1033,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          overlay_quality: 95
+          overlay_artwork_quality: 95
         ```
 
 ## Default Values
