@@ -61,7 +61,8 @@ class Overlays:
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
                 self.remove_overlay(item, item_title, "Overlay", [
                     os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"),
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
                 ])
             logger.exorcise()
         else:
@@ -176,11 +177,15 @@ class Overlays:
                             os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"))
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"))
+                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
+                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp"))
                     elif has_overlay:
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
+                            has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
                         if self.library.reset_overlays:
                             reset_list = self.library.reset_overlays
                         elif has_original is None and not self.library.reset_overlays:
@@ -508,7 +513,7 @@ class Overlays:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                 temp = os.path.join(self.library.overlay_folder, f"temp.{self.library.overlay_filetype}")
-                                if self.library.overlay_filetype == "jpg" and self.library.overlay_quality:
+                                if self.library.overlay_quality and self.library.overlay_filetype in ["jpg", "webp"]:
                                     new_poster.save(temp, exif=exif_tags, quality=self.library.overlay_quality)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)

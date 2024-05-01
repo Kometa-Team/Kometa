@@ -26,27 +26,33 @@ templates:
         conditions:
           - originals_only: false
             value: <<limit>>
-      discover_with:
-        conditions:
-          - originals_only: false
-            value: <<tmdb_key>>
       discover_region:
         conditions:
           - originals_only: false
             value: <<region>>
+      final_tmdb_key:
+        default: <<tmdb_key>>
+        conditions:
+          - region: CA
+            tmdb_key: [9]
+            value: 119
+      discover_with:
+        conditions:
+          - originals_only: false
+            value: <<final_tmdb_key>>
       allowed_streaming:
         conditions:
           - originals_only: true
-            tmdb_key: ["103", "1759", "151", "230", "283", "510", "39", "37", "188"]
+            tmdb_key: [103, 1759, 151, 230, 283, 510, 39, 37, 188]
             value: False
           - region.not: GB
-            tmdb_key: ["103", "151", "39"]
+            tmdb_key: [103, 151, 39]
             value: False
           - region.not: CA
-            tmdb_key: ["230"]
+            tmdb_key: [230]
             value: False
           - region: CA
-            tmdb_key: ["1899", "37"]
+            tmdb_key: [1899, 37]
             value: False
 
     default:
