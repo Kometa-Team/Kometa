@@ -61,15 +61,15 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![MdbList logo](../../../assets/icons/mdblist.png){ align=right }
+    ![MDBList logo](../../../assets/icons/mdblist.png){ align=right }
 
-    **[MdbList](../mdblist)** builders grab items based on lists on MdbList.com
+    **[MDBList](../mdblist)** builders grab items based on lists on MDBList.com
 
     [:octicons-home-16: View Builder](../mdblist){ .md-button .md-button--primary }
 
     ??? quicklink "Popular Builders"
 
-        - [:octicons-list-ordered-16: MdbList List](../mdblist/#mdblist-list) - Gets every movie/show in a MDbList List.
+        - [:octicons-list-ordered-16: MDBList List](../mdblist/#mdblist-list) - Gets every movie/show in a MDBList List.
 
 !!! builder
 
@@ -98,7 +98,7 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:material-television-guide: TVDb Show](../tvdb/#tvdb-show) - Grabs the specified series.
         - [:material-television-guide: TVDb Movie](../tvdb/#tvdb-movie) - Gets the specified movies.
-        - [:material-television-guide: TVDb List](../tvdb/#tvdb-list) - Gets every item in a TVDb List or TVDb Userlist.
+        - [:material-television-guide: TVDb List](../tvdb/#tvdb-list) - Gets every item in a TVDb List or TVDb UserList.
 
 !!! builder
 

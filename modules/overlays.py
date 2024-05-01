@@ -301,10 +301,10 @@ class Overlays:
                                                         raise Failed("No Trakt User Rating Found")
                                                 elif str(format_var).startswith("mdb"):
                                                     mdb_item = None
-                                                    if self.config.Mdblist.limit is False:
+                                                    if self.config.MDBList.limit is False:
                                                         if self.library.is_show and tvdb_id:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_series(tvdb_id)
+                                                                mdb_item = self.config.MDBList.get_series(tvdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:
@@ -314,7 +314,7 @@ class Overlays:
                                                                 raise
                                                         if self.library.is_movie and tmdb_id:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_movie(tmdb_id)
+                                                                mdb_item = self.config.MDBList.get_movie(tmdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:
@@ -324,7 +324,7 @@ class Overlays:
                                                                 raise
                                                         if imdb_id and not mdb_item:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_imdb(imdb_id)
+                                                                mdb_item = self.config.MDBList.get_imdb(imdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:

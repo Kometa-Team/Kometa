@@ -12,7 +12,7 @@ Then open your config file in an editor that supports the use of JSON schema.
 
 For example, VS Code with the Red Hat YAML extension.
 
-This will give you context-sensitve hints and auto-complete for much of the Kometa `config.yml`
+This will give you context-sensitive hints and auto-complete for much of the Kometa `config.yml`
 
 ![image](https://github.com/Kometa-Team/Kometa/assets/3865541/62133e59-ed12-4764-a4da-23595824d4da)
 

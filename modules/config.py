@@ -22,7 +22,7 @@ from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
 from modules.reciperr import Reciperr
-from modules.mdblist import Mdblist
+from modules.mdblist import MDBList
 from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
@@ -63,9 +63,9 @@ mass_genre_options = {
 }
 mass_content_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MdbList Rating",
-    "mdb_commonsense": "Use Commonsense Rating through MDbList", "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDbList",
-    "mdb_age_rating": "Use MDbList Age Rating", "mdb_age_rating0": "Use MDbList Age Rating with Zero Padding",
+    "omdb": "Use IMDb Rating through OMDb", "mdb": "Use MDBList Rating",
+    "mdb_commonsense": "Use Commonsense Rating through MDBList", "mdb_commonsense0": "Use Commonsense Rating with Zero Padding through MDBList",
+    "mdb_age_rating": "Use MDBList Age Rating", "mdb_age_rating0": "Use MDBList Age Rating with Zero Padding",
     "mal": "Use MyAnimeList Rating"
 }
 mass_collection_content_options = {
@@ -90,7 +90,7 @@ mass_original_title_options = {
 }
 mass_available_options = {
     "lock": "Lock Originally Available", "unlock": "Unlock Originally Available", "remove": "Remove and Lock Originally Available", "reset": "Remove and Unlock Originally Available",
-    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MdbList Release", "mdb_digital": "Use MdbList Digital Release", "tvdb": "Use TVDb Release",
+    "tmdb": "Use TMDb Release", "omdb": "Use IMDb Release through OMDb", "mdb": "Use MDBList Release", "mdb_digital": "Use MDBList Digital Release", "tvdb": "Use TVDb Release",
     "anidb": "Use AniDB Release", "mal": "Use MyAnimeList Release"
 }
 mass_image_options = {
@@ -109,17 +109,17 @@ mass_rating_options = {
     "imdb": "Use IMDb Rating",
     "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
-    "mdb": "Use MdbList Score",
-    "mdb_average": "Use MdbList Average Score",
-    "mdb_imdb": "Use IMDb Rating through MDbList",
-    "mdb_metacritic": "Use Metacritic Rating through MDbList",
-    "mdb_metacriticuser": "Use Metacritic User Rating through MDbList",
-    "mdb_trakt": "Use Trakt Rating through MDbList",
-    "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDbList",
-    "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDbList",
-    "mdb_tmdb": "Use TMDb Rating through MDbList",
-    "mdb_letterboxd": "Use Letterboxd Rating through MDbList",
-    "mdb_myanimelist": "Use MyAnimeList Rating through MDbList",
+    "mdb": "Use MDBList Score",
+    "mdb_average": "Use MDBList Average Score",
+    "mdb_imdb": "Use IMDb Rating through MDBList",
+    "mdb_metacritic": "Use Metacritic Rating through MDBList",
+    "mdb_metacriticuser": "Use Metacritic User Rating through MDBList",
+    "mdb_trakt": "Use Trakt Rating through MDBList",
+    "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDBList",
+    "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDBList",
+    "mdb_tmdb": "Use TMDb Rating through MDBList",
+    "mdb_letterboxd": "Use Letterboxd Rating through MDBList",
+    "mdb_myanimelist": "Use MyAnimeList Rating through MDBList",
     "anidb_rating": "Use AniDB Rating",
     "anidb_average": "Use AniDB Average",
     "anidb_score": "Use AniDB Review Dcore",
@@ -624,21 +624,21 @@ class ConfigFile:
 
             logger.separator()
 
-            self.Mdblist = Mdblist(self)
+            self.MDBList = MDBList(self)
             if "mdblist" in self.data:
-                logger.info("Connecting to Mdblist...")
+                logger.info("Connecting to MDBList...")
                 try:
-                    self.Mdblist.add_key(
+                    self.MDBList.add_key(
                         check_for_attribute(self.data, "apikey", parent="mdblist", throw=True),
                         check_for_attribute(self.data, "cache_expiration", parent="mdblist", var_type="int", default=60, int_min=1)
                     )
-                    logger.info("Mdblist Connection Successful")
+                    logger.info("MDBList Connection Successful")
                 except Failed as e:
                     if str(e).endswith("is blank"):
                         logger.warning(e)
                     else:
                         logger.error(e)
-                    logger.info("Mdblist Connection Failed")
+                    logger.info("MDBList Connection Failed")
             else:
                 logger.info("mdblist attribute not found")
 
@@ -992,8 +992,8 @@ class ConfigFile:
                         for source in sources:
                             if source and source == "omdb" and self.OMDb is None:
                                 raise Failed(f"{source} without a successful OMDb Connection")
-                            if source and str(source).startswith("mdb") and not self.Mdblist.has_key:
-                                raise Failed(f"{source} without a successful MdbList Connection")
+                            if source and str(source).startswith("mdb") and not self.MDBList.has_key:
+                                raise Failed(f"{source} without a successful MDBList Connection")
                             if source and str(source).startswith("anidb") and not self.AniDB.is_authorized:
                                 raise Failed(f"{source} without a successful AniDB Connection")
                             if source and str(source).startswith("mal") and self.MyAnimeList is None:

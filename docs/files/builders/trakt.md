@@ -9,7 +9,7 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
 | [`trakt_list`](#trakt-list)                       | Finds every movie/show in the Trakt List                                                                                                                                                                                                                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`trakt_list_details`](#trakt-list)               | Finds every movie/show in the Trakt List and updates the collection summary with the list description                                                                                                                                                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`trakt_chart`](#trakt-chart)                     | Finds the movies/shows in the Trakt Chart                                                                                                                                                                                                                                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| [`trakt_userlist`](#trakt-userlist)               | Finds every movie/show in the Trakt Userlist                                                                                                                                                                                                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`trakt_userlist`](#trakt-userlist)               | Finds every movie/show in the Trakt UserList                                                                                                                                                                                                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`trakt_recommendations`](#trakt-recommendations) | Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | 
 | [`trakt_boxoffice`](#trakt-box-office)            | Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list                                                                                                                                                                              | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 
@@ -128,9 +128,9 @@ collections:
     sync_mode: sync
 ```
 
-## Trakt Userlist
+## Trakt UserList
 
-Finds every movie/show in the Trakt Userlist.
+Finds every movie/show in the Trakt UserList.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order.

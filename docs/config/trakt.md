@@ -52,6 +52,6 @@ To connect to Trakt.tv you must create a Trakt application and supply Kometa the
 ## Online Authorization
 
 {%    
-  include-markdown "./auth.md"
+  include-markdown "./authentication.md"
   start="# Trakt and MyAnimeList Authentication"
 %}

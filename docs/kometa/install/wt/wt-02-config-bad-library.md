@@ -58,7 +58,7 @@ You will ultimately need an entry here for each of the libraries on which you wa
 
 For now, delete the “TV Shows”, “Anime”, and "Music" sections from the config file and change the name of the “Movies” section to “Movies-NOSUCHLIBRARY":
 
-The top bit of your config file should now looke like this:
+The top bit of your config file should now look like this:
 
 ```yaml
 libraries:
@@ -74,5 +74,5 @@ playlist_files:
 
 This is intended to cause an error for illustration that you will then fix.
 
-Be very careful with the indentation and ensure it looks exactly like the above; each line indented using two spaces, NOT TABS, with `playlist_files:` all teh way over on the left.  Indentation is significant in YAML.
+Be very careful with the indentation and ensure it looks exactly like the above; each line indented using two spaces, NOT TABS, with `playlist_files:` all the way over on the left.  Indentation is significant in YAML.
 

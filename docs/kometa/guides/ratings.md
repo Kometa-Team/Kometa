@@ -202,7 +202,7 @@ The log will show Kometa updating those values.
 
 #### Use Trakt Rating
 
-Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDbList:
+Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDBList:
 
 ??? example "Updated config (click to expand)"
 
