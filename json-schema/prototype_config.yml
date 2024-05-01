@@ -441,7 +441,7 @@ settings:
   verify_ssl: true
   custom_repo:
   overlay_artwork_filetype: jpg
-  overlay_artwork_quality: jpg
+  overlay_artwork_quality: 72
 webhooks:                        # Can be individually specified per library as well
   error:
   version:

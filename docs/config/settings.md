@@ -962,8 +962,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
 
-    <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, 
-    `metadata_files`, `playlist_file` and `overlay_files`.
+    <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, `metadata_files`, `playlist_file` and `overlay_files`.
     
     ???+ note
     
@@ -989,7 +988,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`overlay_artwork_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
 
-    <div id="overlay-filetype" />Used to control the filetype used with overlay images.
+    <div id="overlay-filetype" />Used to control the filetype used with overlay images.  This setting will only be applied to images generated after the value is added to your config.
 
     <hr style="margin: 0px;">
     
@@ -1010,14 +1009,13 @@ The available setting attributes which can be set at each level are outlined bel
     ???+ example "Example"
         
         ```yaml
-        ```yaml
         settings:
           overlay_artwork_filetype: png
         ```
 
 ??? blank "`overlay_artwork_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
 
-    <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.
+    <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.  This setting will only be applied to images generated after the value is added to your config.
 
     <hr style="margin: 0px;">
     
@@ -1025,9 +1023,9 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** Any Integer 1-100
+    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, perhaps too large to be uploaded to Plex.
 
-    **Default Value:** `75`
+    **Default Value:** `75` [this default value will be used if no value is provided on this setting]
 
     ???+ example "Example"
         
