@@ -237,12 +237,12 @@ def start(attrs):
     logger.add_main_handler()
     logger.separator()
     logger.info("")
-    logger.info_center(" __  ___   ______   .___  ___.  _______ .___________.    ___      ")
-    logger.info_center("|  |/  /  /  __  \\  |   \\/   | |   ____||           |   /   \\     ")
-    logger.info_center("|  '  /  |  |  |  | |  \\  /  | |  |__   `---|  |----`  /  ^  \\    ")
-    logger.info_center("|    <   |  |  |  | |  |\\/|  | |   __|      |  |      /  /_\\  \\   ")
-    logger.info_center("|  .  \\  |  `--'  | |  |  |  | |  |____     |  |     /  _____  \\  ")
-    logger.info_center("|__|\\__\\  \\______/  |__|  |__| |_______|    |__|    /__/     \\__\\ ")
+    logger.info_center(" __  ___  ______    ___  ___   _______  __________    ___      ")
+    logger.info_center("|  |/  / /  __  \\  |   \\/   | |   ____||          |  /   \\     ")
+    logger.info_center("|  '  / |  |  |  | |  \\  /  | |  |__   `---|  |---` /  ^  \\    ")
+    logger.info_center("|    <  |  |  |  | |  |\\/|  | |   __|      |  |    /  /_\\  \\   ")
+    logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
+    logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
     logger.info("")
     if is_lxml:
         system_ver = "lxml Docker"
