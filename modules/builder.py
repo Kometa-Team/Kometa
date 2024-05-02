@@ -370,7 +370,7 @@ class CollectionBuilder:
                 trans_summary = apply_vars(trans_summary, trans_vars, trans_key, self.limit)
 
             delete_cols = []
-            if (self.name and self.name != en_name) or (not self.name and en_name != trans_name):
+            if (self.name and self.name != en_name) or (not self.name and trans_name and en_name != trans_name):
                 delete_cols.append(en_name)
             if self.name and self.name != trans_name and en_name != trans_name:
                 delete_cols.append(trans_name)
@@ -390,7 +390,7 @@ class CollectionBuilder:
 
             if not self.name:
                 self.name = trans_name if trans_name else en_name
-            logger.info(self.name)
+            logger.info(f"Final Name: {self.name}")
             if en_summary or trans_summary:
                 self.summaries["translation"] = trans_summary if trans_summary else en_summary
 
