@@ -16,5 +16,6 @@ Fixed `amazon` ID in `streaming` when region is `CA`
 Catch bad ID data from Plex
 Fixes `- git` file calls
 Ignore empty Environment Variables
+Fixes collections being deleted under certain conditions when using translations
 
 Various other Minor Fixes
