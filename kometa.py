@@ -9,7 +9,7 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 8:
     sys.exit(0)
 
 try:
-    import arrapi, git, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
+    import arrapi, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
     from dotenv import load_dotenv, version as dotenv_version
     from PIL import ImageFile
     from plexapi import server
@@ -21,7 +21,6 @@ except (ModuleNotFoundError, ImportError) as ie:
 
 system_versions = {
     "arrapi": arrapi.__version__,
-    "GitPython": git.__version__,
     "lxml": lxml.__version__,
     "pathvalidate": pathvalidate.__version__,
     "pillow": PIL.__version__,
@@ -168,6 +167,8 @@ for _, sv in secret_args.items():
         run_arg = run_arg.replace(sv, "(redacted)")
 
 try:
+    import git # noqa
+    system_versions["GitPython"] = git.__version__
     from git import Repo, InvalidGitRepositoryError # noqa
     try:
         git_branch = Repo(path=".").head.ref.name # noqa
