@@ -21,7 +21,9 @@ except (ModuleNotFoundError, ImportError) as ie:
 
 system_versions = {
     "arrapi": arrapi.__version__,
+    "GitPython": None,
     "lxml": lxml.__version__,
+    "num2words": None,
     "pathvalidate": pathvalidate.__version__,
     "pillow": PIL.__version__,
     "PlexAPI": plexapi.__version__,
@@ -29,7 +31,9 @@ system_versions = {
     "python-dotenv": dotenv_version.__version__,
     "python-dateutil": dateutil.__version__, # noqa
     "requests": requests.__version__,
+    "retrying": None,
     "ruamel.yaml": ruamel.yaml.__version__,
+    "schedule": None,
     "setuptools": setuptools.__version__,
     "tmdbapis": tmdbapis.__version__
 }
@@ -281,7 +285,7 @@ def start(attrs):
             with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
                 required_versions = {ln.split("==")[0]: ln.split("==")[1].strip() for ln in file.readlines()}
             for req_name, sys_ver in system_versions.items():
-                if sys_ver != required_versions[req_name]:
+                if sys_ver and sys_ver != required_versions[req_name]:
                     logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
         except FileNotFoundError:
             logger.error("    File Error: requirements.txt not found")
