@@ -39,7 +39,7 @@ That’s a command you’re going to type or paste into your unRAID Kometa `>_Co
 
 **IMPORTANT NOTES:**
 
-* If you were not aware, the unRAID app store leverages Docker containers. As such, we are tweaking the existing Docker container walkthrough to make it work on unRAID. This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get this going on unRAID, so I’m proceeding from the assumption that you want to be walked through every little detail.  You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
+* The unRAID app store leverages Docker containers. As such, we are tweaking the existing Docker container walkthrough to make it work on unRAID. This walkthrough is going to be pretty pedantic.  I’m assuming you’re reading it because you have no idea how to get this going on unRAID, so I’m proceeding from the assumption that you want to be walked through every little detail.  You’re going to deliberately cause errors and then fix them as you go through it.  This is to help you understand what exactly is going on behind the scenes so that when you see these sorts of problems in the wild you will have some background to understand what’s happening.  If I only give you the happy path walkthrough, then when you make a typo later on you’ll have no idea where that typo might be or why it’s breaking things.
 
 * You may want to take an hour to get familiar with Docker fundamentals with the [official tutorial](https://www.docker.com/101-tutorial/).
 
@@ -60,15 +60,19 @@ To install a container from docker hub, you will need community applications - a
 
 1. Head to the `Apps` tab of unRAID (Community Applications), and search `kometa` in the upper left search box. There will be a couple of results shown, but you should ignore them ([Why?](images.md)) and use the official image.
 
+   ![](images/unraid-options.png)
+
 2. Click the `Install` button on the Template from Sohjiro's Repository Tools.
 
 3. Choose which branch you want to run `latest`, `develop`, or `nightly`. 
 
 4. Set the `Console shell command:` to `Bash`
 
-5. Click `Show more settings...` to set any [Environmental Variables](../environmental.md) you wish to use. **For the purposes of this walkthrough, the** `Container Path: /config` **path for the unRAID app is** `/mnt/user/appdata/Kometa/config` (_**Note the case of Kometa**_). Other than this, set the `KOMETA_TIME` variable to `5:00` under the `Show more settings...`
+5. Verify that the `Container Path: /config` path for the unRAID app is `/mnt/user/appdata/Kometa/config`
 
-6. Hit `Apply`, and allow unRAID to download the container.
+   ![](images/unraid-appdata.png)
+
+6. Hit `Apply`, and allow unRAID to download the image and build the container.
 
 #### Important note on Docker images
 
@@ -239,10 +243,12 @@ Add the `develop` tag to the image name in your `Repository:` setting for the Ko
 
 ```
 kometateam/kometa:develop
-                             ^^^^^^^
+                  ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+Enter that here in the template:
+
+![](images/unraid-repo.png)
 
 ### I want to use the nightly branch
 
@@ -250,10 +256,12 @@ Add the `nightly` tag to the image name in your `Repository:` setting for the Ko
 
 ```
 kometateam/kometa:nightly
-                             ^^^^^^^
+                  ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+Enter that here in the template:
+
+![](images/unraid-repo.png)
 
 ### I want to ensure I am using the master branch
 
@@ -261,8 +269,9 @@ Add the `latest` tag to the image name in your `Repository:` setting for the Kom
 
 ```
 kometateam/kometa:latest
-                             ^^^^^^
+                  ^^^^^^
 ```
+Enter that here in the template:
 
-This is the only version tag supplied by the lsio image.
+![](images/unraid-repo.png)
 
