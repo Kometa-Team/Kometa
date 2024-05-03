@@ -15,8 +15,8 @@ try:
     from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
-except (ModuleNotFoundError, ImportError):
-    print("Requirements Error: Requirements are not installed")
+except (ModuleNotFoundError, ImportError) as ie:
+    print(f"Requirements Error: Requirements are not installed ({ie})")
     sys.exit(0)
 
 system_versions = {
