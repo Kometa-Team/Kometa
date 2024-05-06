@@ -44,7 +44,8 @@ sync_modes = {"append": "Only Add Items to the Collection or Playlist", "sync": 
 filetype_list = {
     "jpg": "Use JPG files for saving Overlays",
     "png": "Use PNG files for saving Overlays",
-    "webp": "Use WEBP files for saving Overlays"
+    "webp_lossy": "Use Lossy WEBP files for saving Overlays",
+    "webp_lossless": "Use Lossless WEBP files for saving Overlays"
 }
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
@@ -345,7 +346,7 @@ class ConfigFile:
         if self.secrets:
             check_next(self.data)
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0, int_max=None):
+        def check_for_attribute(data, attribute, parent=None, test_list=None, translations=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0, int_max=None):
             endline = ""
             if parent is not None:
                 if data and parent in data:
@@ -354,6 +355,9 @@ class ConfigFile:
                     data = None
                     do_print = False
                     save = False
+            final_value = data[attribute] if data and attribute in data else None
+            if translations and final_value in translations:
+                final_value = translations[final_value]
             if self.read_only:
                 save = False
             text = f"{attribute} attribute" if parent is None else f"{parent} sub-attribute {attribute}"
@@ -367,27 +371,27 @@ class ConfigFile:
                     else:                                                               endline = ""
                     yaml.save()
                 if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]: return default if default else []
-            elif data[attribute] is None:
+            elif final_value is None:
                 if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]: return default if default else []
                 elif default_is_none:                                               return None
                 else:                                                               message = f"{text} is blank"
             elif var_type == "url":
-                if data[attribute].endswith(("\\", "/")):                           return data[attribute][:-1]
-                else:                                                               return data[attribute]
+                if final_value.endswith(("\\", "/")):                               return final_value[:-1]
+                else:                                                               return final_value
             elif var_type == "bool":
-                if isinstance(data[attribute], bool):                               return data[attribute]
+                if isinstance(final_value, bool):                                   return final_value
                 else:                                                               message = f"{text} must be either true or false"
             elif var_type == "int":
-                if isinstance(data[attribute], int) and data[attribute] >= int_min and (not int_max or data[attribute] <= int_max):
-                    return data[attribute]
+                if isinstance(final_value, int) and final_value >= int_min and (not int_max or final_value <= int_max):
+                    return final_value
                 else:
                     message = f"{text} must an integer greater than or equal to {int_min}{f' and less than or equal to {int_max}'}"
             elif var_type == "path":
-                if os.path.exists(os.path.abspath(data[attribute])):                return data[attribute]
-                else:                                                               message = f"Path {os.path.abspath(data[attribute])} does not exist"
+                if os.path.exists(os.path.abspath(final_value)):                    return final_value
+                else:                                                               message = f"Path {os.path.abspath(final_value)} does not exist"
             elif var_type in ["list", "lower_list", "int_list"]:
                 output_list = []
-                for output_item in util.get_list(data[attribute], lower=var_type == "lower_list", split=var_type != "list", int_list=var_type == "int_list"):
+                for output_item in util.get_list(final_value, lower=var_type == "lower_list", split=var_type != "list", int_list=var_type == "int_list"):
                     if output_item not in output_list:
                         output_list.append(output_item)
                 failed_items = [o for o in output_list if o not in test_list] if test_list else []
@@ -398,7 +402,7 @@ class ConfigFile:
             elif var_type == "list_path":
                 temp_list = []
                 warning_message = ""
-                for p in util.get_list(data[attribute], split=False):
+                for p in util.get_list(final_value, split=False):
                     if os.path.exists(os.path.abspath(p)):
                         temp_list.append(p)
                     else:
@@ -409,13 +413,13 @@ class ConfigFile:
                     logger.warning(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
                 else:                                                               message = "No Paths exist"
-            elif test_list is None or data[attribute] in test_list:             return data[attribute]
-            else:                                                               message = f"{text}: {data[attribute]} is an invalid input"
+            elif test_list is None or final_value in test_list:                 return final_value
+            else:                                                               message = f"{text}: {final_value} is an invalid input"
             if var_type == "path" and default and os.path.exists(os.path.abspath(default)):
                 return default
             elif var_type == "path" and default:
-                if data and attribute in data and data[attribute]:
-                    message = f"neither {data[attribute]} or the default path {default} could be found"
+                if final_value:
+                    message = f"neither {final_value} or the default path {default} could be found"
                 else:
                     message = f"no {text} found and the default path {default} could not be found"
                 default = None
@@ -436,7 +440,7 @@ class ConfigFile:
                 raise Failed(f"Config Error: {message}")
             if do_print:
                 logger.warning(f"Config Warning: {message}")
-                if data and attribute in data and data[attribute] and test_list is not None and data[attribute] not in test_list:
+                if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
             return default
 
@@ -478,7 +482,7 @@ class ConfigFile:
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
-            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, default="jpg"),
+            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="jpg"),
             "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
@@ -858,7 +862,7 @@ class ConfigFile:
                 params["ignore_ids"].extend([i for i in self.general["ignore_ids"] if i not in params["ignore_ids"]])
                 params["ignore_imdb_ids"] = check_for_attribute(lib, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True, do_print=False, save=False)
                 params["ignore_imdb_ids"].extend([i for i in self.general["ignore_imdb_ids"] if i not in params["ignore_imdb_ids"]])
-                params["overlay_artwork_filetype"] = check_for_attribute(lib, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, default=self.general["overlay_artwork_filetype"], do_print=False, save=False)
+                params["overlay_artwork_filetype"] = check_for_attribute(lib, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default=self.general["overlay_artwork_filetype"], do_print=False, save=False)
                 params["overlay_artwork_quality"] = check_for_attribute(lib, "overlay_artwork_quality", parent="settings", var_type="int", default=self.general["overlay_artwork_quality"], default_is_none=True, int_min=1, int_max=100, do_print=False, save=False)
                 params["changes_webhooks"] = check_for_attribute(lib, "changes", parent="webhooks", var_type="list", default=self.webhooks["changes"], do_print=False, save=False, default_is_none=True)
                 params["report_path"] = None
