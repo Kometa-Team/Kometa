@@ -513,8 +513,10 @@ class Overlays:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                 temp = os.path.join(self.library.overlay_folder, f"temp.{self.library.overlay_artwork_filetype}")
-                                if self.library.overlay_artwork_quality and self.library.overlay_artwork_filetype in ["jpg", "webp"]:
+                                if self.library.overlay_artwork_quality and self.library.overlay_artwork_filetype in ["jpg", "webp_lossy"]:
                                     new_poster.save(temp, exif=exif_tags, quality=self.library.overlay_artwork_quality)
+                                elif self.library.overlay_artwork_filetype == "webp_lossless":
+                                    new_poster.save(temp, exif=exif_tags, lossless=True)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
                                 self.library.upload_poster(item, temp)

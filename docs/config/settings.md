@@ -1001,7 +1001,8 @@ The available setting attributes which can be set at each level are outlined bel
     <table class="clearTable">
       <tr><td>`jpg`</td><td>Use JPG files for saving Overlays</td></tr>
       <tr><td>`png`</td><td>Use PNG files for saving Overlays</td></tr>
-      <tr><td>`webp`</td><td>Use WEBP files for saving Overlays</td></tr>
+      <tr><td>`webp_lossy`</td><td>Use Lossy WEBP files for saving Overlays</td></tr>
+      <tr><td>`webp_lossless`</td><td>Use Lossless WEBP files for saving Overlays</td></tr>
     </table>
 
     **Default Value:** `jpg`
@@ -1013,9 +1014,10 @@ The available setting attributes which can be set at each level are outlined bel
           overlay_artwork_filetype: png
         ```
 
-??? blank "`overlay_artwork_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+??? blank "`overlay_artwork_quality` - Used to control the JPG or Lossy WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
 
-    <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.  This setting will only be applied to images generated after the value is added to your config.
+    <div id="overlay-quality" />Used to control the JPG or Lossy WEBP quality used with overlay images. This setting 
+    will only be applied to images generated after the value is added to your config.
 
     <hr style="margin: 0px;">
     
@@ -1023,9 +1025,10 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, perhaps too large to be uploaded to Plex.
+    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, 
+    perhaps too large to be uploaded to Plex.
 
-    **Default Value:** `75` [this default value will be used if no value is provided on this setting]
+    **Default Value:** `None` [when no value is provided the standard 75 is used]
 
     ???+ example "Example"
         

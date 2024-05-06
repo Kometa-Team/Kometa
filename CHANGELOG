@@ -6,6 +6,7 @@
 Checks requirement versions to print a message if one needs to be updated
 
 # Updates
+Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_lossless` while the old attribute `webp` will be treated as `webp_lossy`.
 
 # Defaults
 

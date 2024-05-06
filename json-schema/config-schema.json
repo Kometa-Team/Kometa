@@ -898,10 +898,10 @@
                 },
                 "overlay_artwork_filetype": {
                     "description": "Used to control the filetype used with overlay images.",
-                    "enum": ["jpg", "png", "webp"]
+                    "enum": ["jpg", "png", "webp_lossy", "webp_lossless"]
                 },
                 "overlay_artwork_quality": {
-                    "description": "Used to control the JPG or WEBP quality used with overlay images.",
+                    "description": "Used to control the JPG or Lossy WEBP quality used with overlay images.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 100
