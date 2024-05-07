@@ -93,3 +93,13 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - Stores the Kometa Unraid Templates
 - [Translations](https://github.com/Kometa-Team/Translations)
     - Stores the data for Kometa Translations
+
+
+## Demo Video
+
+This YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
+
+Caveat: it is very long, and the author has their own ideas as to what is "required".  For example, this video begins with setting up a third-party script that is not required to use Kometa.
+
+<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
