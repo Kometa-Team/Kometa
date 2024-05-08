@@ -1598,6 +1598,8 @@ class MetadataFile(DataFile):
                         item.extend([self.library.fetch_item(i) for i in self.library.show_map[mapping_id]])
                     elif mapping_id in self.library.imdb_map:
                         item.extend([self.library.fetch_item(i) for i in self.library.imdb_map[mapping_id]])
+                    elif self.library.is_show and mapping_id in self.library.tmdb_show_map:
+                        item.extend([self.library.fetch_item(i) for i in self.library.tmdb_show_map[mapping_id]])
                     else:
                         logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
                         continue

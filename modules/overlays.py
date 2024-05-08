@@ -360,12 +360,14 @@ class Overlays:
                                                 elif str(format_var).startswith(("anidb", "mal")):
                                                     anidb_id = None
                                                     if item.ratingKey in reverse_anidb:
-                                                        anidb_id = reverse_anidb[item.ratingKey]
-                                                    elif tvdb_id in self.config.Convert._tvdb_to_anidb:
-                                                        anidb_id = self.config.Convert._tvdb_to_anidb[tvdb_id]
-                                                    elif imdb_id in self.config.Convert._imdb_to_anidb:
-                                                        anidb_id = self.config.Convert._imdb_to_anidb[imdb_id]
-
+                                                        + = reverse_anidb[item.ratingKey]
+                                                    else:
+                                                        if tmdb_id:
+                                                            anidb_id = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
+                                                        if tvdb_id and not anidb_id:
+                                                            anidb_id = (self.config.Convert.tvdb_to_anidb(tvdb_id) or [[None]])[0][0]
+                                                        if imdb_id and not anidb_id:
+                                                            anidb_id = (self.config.Convert.imdb_to_anidb(imdb_id) or [None])[0]
                                                     if str(format_var).startswith("anidb"):
                                                         if anidb_id:
                                                             anidb_obj = self.config.AniDB.get_anime(anidb_id)
@@ -382,10 +384,12 @@ class Overlays:
                                                             mal_id = reverse_mal[item.ratingKey]
                                                         elif not anidb_id:
                                                             raise Failed(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                                                        elif anidb_id not in self.config.Convert._anidb_to_mal:
-                                                            raise Failed(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
-                                                        else:
-                                                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                                                        else
+                                                            mal_id = self.config.Convert.anidb_to_mal(anidb_id)
+                                                            if mal_id:
+                                                                mal_id = mal_id[0]
+                                                            else:
+                                                                raise Failed(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                                                         if mal_id:
                                                             found_rating = self.config.MyAnimeList.get_anime(mal_id).score
                                             except Failed as err:

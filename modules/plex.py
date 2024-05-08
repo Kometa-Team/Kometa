@@ -1084,7 +1084,7 @@ class Plex(Library):
             imdb_id = []
             if self.config.Cache:
                 cache_id, _, media_type, _ = self.config.Cache.query_guid_map(item.guid)
-                if cache_id:
+                if cache_id and media_type != "show_tmdb":
                     ids.extend([(t_id, "tmdb" if "movie" in media_type else "tvdb") for t_id in cache_id])
                     continue
             try:
@@ -1516,7 +1516,7 @@ class Plex(Library):
         imdb_id = None
         if self.config.Cache:
             t_id, i_id, guid_media_type, _ = self.config.Cache.query_guid_map(item.guid)
-            if t_id:
+            if t_id and guid_media_type != "show_tmdb":
                 if "movie" in guid_media_type:
                     tmdb_id = t_id[0]
                 else:

@@ -270,12 +270,16 @@ class Operations:
                 def get_anidb_id():
                     if item.ratingKey in reverse_anidb:
                         return reverse_anidb[item.ratingKey]
-                    elif tvdb_id in self.config.Convert._tvdb_to_anidb:
-                        return self.config.Convert._tvdb_to_anidb[tvdb_id]
-                    elif imdb_id in self.config.Convert._imdb_to_anidb:
-                        return self.config.Convert._imdb_to_anidb[imdb_id]
-                    else:
-                        return False
+                    else
+                        if tmdb_id:
+                            anidb_ids = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
+                        if tvdb_id and not anidb_id:
+                            anidb_ids = (self.config.Convert.tvdb_to_anidb(tvdb_id) or [[None]])[0][0]
+                        if imdb_id and not anidb_id:
+                            anidb_ids = (self.config.Convert.imdb_to_anidb(imdb_id) or [None])[0]
+                        if not anidb_ids:
+                            return False
+                        return anidb_ids
 
                 _anidb_obj = None
                 def anidb_obj():
@@ -307,10 +311,10 @@ class Operations:
                             mal_id = reverse_mal[item.ratingKey]
                         elif not anidb_id:
                             logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                        elif anidb_id not in self.config.Convert._anidb_to_mal:
-                            logger.warning(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
-                        else:
-                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                        else
+                            mal_id = (self.config.Convert.anidb_to_mal(anidb_id) or [None])[0]
+                            if not mal_id:
+                                logger.warning(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                         if mal_id:
                             try:
                                 _mal_obj = self.config.MyAnimeList.get_anime(mal_id)
