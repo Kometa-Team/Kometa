@@ -135,8 +135,8 @@ library_operations = {
     "mass_audience_rating_update": mass_rating_options, "mass_episode_audience_rating_update": mass_episode_rating_options,
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
-    "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
-    "mass_imdb_parental_labels": imdb_label_options,
+    "mass_original_title_update": mass_original_title_options, "mass_imdb_parental_labels": imdb_label_options,
+    "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options,
     "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
     "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
@@ -917,7 +917,7 @@ class ConfigFile:
                                             final_list.append(str(list_attr))
                                         elif op == "mass_genre_update":
                                             final_list.append(list_attr if isinstance(list_attr, list) else [list_attr])
-                                        elif op == "mass_originally_available_update":
+                                        elif op in ["mass_originally_available_update", "mass_added_at_update"]:
                                             final_list.append(util.validate_date(list_attr))
                                         elif op.endswith("rating_update"):
                                             final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
