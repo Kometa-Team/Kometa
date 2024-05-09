@@ -30,38 +30,38 @@ class Convert:
                 for mal_id in util.get_list(ids["mal_id"], int_list=True):
                     if mal_id not in self._mal_to_anidb:
                         self._mal_to_anidb[mal_id] = [anidb_id]
-                    else
+                    else:
                         self._mal_to_anidb[mal_id].append(anidb_id)
                     if anidb_id not in self._anidb_to_mal:
                         self._anidb_to_mal[anidb_id] = [mal_id]
-                    else
+                    else:
                         self._anidb_to_mal[anidb_id].append(mal_id)
             if "anilist_id" in ids:
                 for anilist_id in util.get_list(ids["anilist_id"], int_list=True):
                     if anilist_id not in self._anilist_to_anidb:
                         self._anilist_to_anidb[anilist_id] = [anidb_id]
-                    else
+                    else:
                         self._anilist_to_anidb[anilist_id].append(anidb_id)
             if "imdb_id" in ids:
                 for imdb_id in util.get_list(ids["imdb_id"]):
                     if str(imdb_id).startswith("tt"):
                         if imdb_id not in self._imdb_to_anidb:
                             self._imdb_to_anidb[imdb_id] = [anidb_id]
-                        else
+                        else:
                             self._imdb_to_anidb[imdb_id].append(anidb_id)
                         if anidb_id not in self._anidb_to_imdb:
                             self._anidb_to_imdb[anidb_id] = [imdb_id]
-                        else
+                        else:
                             self._anidb_to_imdb[anidb_id].append(imdb_id)
             if "tvdb_id" in ids:
                 tvdb_id = int(ids["tvdb_id"])
                 if tvdb_id not in self._tvdb_to_anidb:
                     self._tvdb_to_anidb[tvdb_id] = [(anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"]))]
-                else
-                    self._tvdb_to_anidb[tvdb_id].append((anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"]))]
+                else:
+                    self._tvdb_to_anidb[tvdb_id].append((anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"])))
                 if anidb_id not in self._anidb_to_tvdb:
                     self._anidb_to_tvdb[anidb_id] = [tvdb_id]
-                else
+                else:
                     self._anidb_to_tvdb[anidb_id].append(tvdb_id)
         for anidb_id, ids in self._anidb_ids_automated["anime"].items():
             anidb_id = int(anidb_id)
@@ -69,40 +69,40 @@ class Convert:
                 for mal_id in util.get_list(ids["resources"]["MAL"], int_list=True):
                     if mal_id not in self._mal_to_anidb:
                         self._mal_to_anidb[mal_id] = [anidb_id]
-                    else
+                    else:
                         self._mal_to_anidb[mal_id].append(anidb_id)
                     if anidb_id not in self._anidb_to_mal:
                         self._anidb_to_mal[anidb_id] = [mal_id]
-                    else
+                    else:
                         self._anidb_to_mal[anidb_id].append(mal_id)
             if "IMDB" in ids["resources"]:
                 for imdb_id in util.get_list(ids["resources"]["IMDB"]):
                     if str(imdb_id).startswith("tt"):
                         if imdb_id not in self._imdb_to_anidb:
                             self._imdb_to_anidb[imdb_id] = [anidb_id]
-                        else
+                        else:
                             self._imdb_to_anidb[imdb_id].append(anidb_id)
                         if anidb_id not in self._anidb_to_imdb:
                             self._anidb_to_imdb[anidb_id] = [imdb_id]
-                        else
+                        else:
                             self._anidb_to_imdb[anidb_id].append(imdb_id)
             if "TMDB" in ids["resources"]:
                 for tmdb_id in util.get_list(ids["resources"]["TMDB"]):
                     if tmdb_id not in self._anidb_to_tmdb:
                         self._anidb_to_tmdb[tmdb_id] = [anidb_id]
-                    else
+                    else:
                         self._anidb_to_tmdb[tmdb_id].append(anidb_id)
                     if str(tmdb_id).startswith("movie/"):
                         tmdb_id = int(tmdb_id[6:])
                         if anidb_id not in self._anidb_to_tmdb:
                             self._anidb_to_tmdb[anidb_id] = [(tmdb_id, "movie")]
-                        else
+                        else:
                             self._anidb_to_tmdb[anidb_id].append((tmdb_id, "movie"))
                     elif str(tmdb_id).startswith("tv/"):
                         tmdb_id = int(tmdb_id[3:])
                         if anidb_id not in self._anidb_to_tmdb:
                             self._anidb_to_tmdb[anidb_id] = [(tmdb_id, "show")]
-                        else
+                        else:
                             self._anidb_to_tmdb[anidb_id].append((tmdb_id, "show"))
 
     def anidb_to_imdb(self, anidb_id, fail=False):

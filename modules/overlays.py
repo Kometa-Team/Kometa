@@ -360,7 +360,7 @@ class Overlays:
                                                 elif str(format_var).startswith(("anidb", "mal")):
                                                     anidb_id = None
                                                     if item.ratingKey in reverse_anidb:
-                                                        + = reverse_anidb[item.ratingKey]
+                                                        anidb_id = reverse_anidb[item.ratingKey]
                                                     else:
                                                         if tmdb_id:
                                                             anidb_id = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
@@ -384,7 +384,7 @@ class Overlays:
                                                             mal_id = reverse_mal[item.ratingKey]
                                                         elif not anidb_id:
                                                             raise Failed(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                                                        else
+                                                        else:
                                                             mal_id = self.config.Convert.anidb_to_mal(anidb_id)
                                                             if mal_id:
                                                                 mal_id = mal_id[0]

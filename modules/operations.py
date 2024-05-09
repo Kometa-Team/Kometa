@@ -270,7 +270,7 @@ class Operations:
                 def get_anidb_id():
                     if item.ratingKey in reverse_anidb:
                         return reverse_anidb[item.ratingKey]
-                    else
+                    else:
                         if tmdb_id:
                             anidb_ids = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
                         if tvdb_id and not anidb_id:
@@ -311,7 +311,7 @@ class Operations:
                             mal_id = reverse_mal[item.ratingKey]
                         elif not anidb_id:
                             logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                        else
+                        else:
                             mal_id = (self.config.Convert.anidb_to_mal(anidb_id) or [None])[0]
                             if not mal_id:
                                 logger.warning(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
