@@ -56,74 +56,79 @@ class Convert:
             if "tvdb_id" in ids:
                 tvdb_id = int(ids["tvdb_id"])
                 if tvdb_id not in self._tvdb_to_anidb:
-                    self._tvdb_to_anidb[tvdb_id] = [(anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"]))]
+                    self._tvdb_to_anidb[tvdb_id] = [[anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"])]]
                 else:
-                    self._tvdb_to_anidb[tvdb_id].append((anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"])))
+                    self._tvdb_to_anidb[tvdb_id].append([anidb_id, int(ids["tvdb_season"]), int(ids["tvdb_epoffset"])])
                 if anidb_id not in self._anidb_to_tvdb:
                     self._anidb_to_tvdb[anidb_id] = [tvdb_id]
                 else:
                     self._anidb_to_tvdb[anidb_id].append(tvdb_id)
-        for anidb_id, ids in self._anidb_ids_automated["anime"].items():
-            anidb_id = int(anidb_id)
-            if "MAL" in ids["resources"]:
-                for mal_id in util.get_list(ids["resources"]["MAL"], int_list=True):
-                    if mal_id not in self._mal_to_anidb:
-                        self._mal_to_anidb[mal_id] = [anidb_id]
-                    else:
-                        self._mal_to_anidb[mal_id].append(anidb_id)
-                    if anidb_id not in self._anidb_to_mal:
-                        self._anidb_to_mal[anidb_id] = [mal_id]
-                    else:
-                        self._anidb_to_mal[anidb_id].append(mal_id)
-            if "IMDB" in ids["resources"]:
-                for imdb_id in util.get_list(ids["resources"]["IMDB"]):
-                    if str(imdb_id).startswith("tt"):
-                        if imdb_id not in self._imdb_to_anidb:
-                            self._imdb_to_anidb[imdb_id] = [anidb_id]
-                        else:
-                            self._imdb_to_anidb[imdb_id].append(anidb_id)
-                        if anidb_id not in self._anidb_to_imdb:
-                            self._anidb_to_imdb[anidb_id] = [imdb_id]
-                        else:
-                            self._anidb_to_imdb[anidb_id].append(imdb_id)
-            if "TMDB" in ids["resources"]:
-                for tmdb_id in util.get_list(ids["resources"]["TMDB"]):
-                    if tmdb_id not in self._anidb_to_tmdb:
-                        self._anidb_to_tmdb[tmdb_id] = [anidb_id]
-                    else:
-                        self._anidb_to_tmdb[tmdb_id].append(anidb_id)
-                    if str(tmdb_id).startswith("movie/"):
-                        tmdb_id = int(tmdb_id[6:])
-                        if anidb_id not in self._anidb_to_tmdb:
-                            self._anidb_to_tmdb[anidb_id] = [(tmdb_id, "movie")]
-                        else:
-                            self._anidb_to_tmdb[anidb_id].append((tmdb_id, "movie"))
-                    elif str(tmdb_id).startswith("tv/"):
-                        tmdb_id = int(tmdb_id[3:])
-                        if anidb_id not in self._anidb_to_tmdb:
-                            self._anidb_to_tmdb[anidb_id] = [(tmdb_id, "show")]
-                        else:
-                            self._anidb_to_tmdb[anidb_id].append((tmdb_id, "show"))
+        if "animes" in self._anidb_ids_automated:
+            for anidb_id, ids in self._anidb_ids_automated["animes"].items():
+                if "resources" in ids:
+                    anidb_id = int(anidb_id)
+                    if "MAL" in ids["resources"]:
+                        for mal_id in util.get_list(ids["resources"]["MAL"], int_list=True):
+                            if mal_id not in self._mal_to_anidb:
+                                self._mal_to_anidb[mal_id] = [anidb_id]
+                            else:
+                                self._mal_to_anidb[mal_id].append(anidb_id)
+                            if anidb_id not in self._anidb_to_mal:
+                                self._anidb_to_mal[anidb_id] = [mal_id]
+                            else:
+                                self._anidb_to_mal[anidb_id].append(mal_id)
+                    if "IMDB" in ids["resources"]:
+                        for imdb_id in util.get_list(ids["resources"]["IMDB"]):
+                            if str(imdb_id).startswith("tt"):
+                                if imdb_id not in self._imdb_to_anidb:
+                                    self._imdb_to_anidb[imdb_id] = [anidb_id]
+                                else:
+                                    self._imdb_to_anidb[imdb_id].append(anidb_id)
+                                if anidb_id not in self._anidb_to_imdb:
+                                    self._anidb_to_imdb[anidb_id] = [imdb_id]
+                                else:
+                                    self._anidb_to_imdb[anidb_id].append(imdb_id)
+                    if "TMDB" in ids["resources"]:
+                        for tmdb_id in util.get_list(ids["resources"]["TMDB"]):
+                            if tmdb_id not in self._tmdb_to_anidb:
+                                self._tmdb_to_anidb[tmdb_id] = [anidb_id]
+                            else:
+                                self._tmdb_to_anidb[tmdb_id].append(anidb_id)
+                            if str(tmdb_id).startswith("movie/"):
+                                tmdb_id = int(tmdb_id[6:])
+                                if anidb_id not in self._anidb_to_tmdb:
+                                    self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "movie"]]
+                                else:
+                                    self._anidb_to_tmdb[anidb_id].append([tmdb_id, "movie"])
+                            elif str(tmdb_id).startswith("tv/"):
+                                tmdb_id = int(tmdb_id[3:])
+                                if anidb_id not in self._anidb_to_tmdb:
+                                    self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "show"]]
+                                else:
+                                    self._anidb_to_tmdb[anidb_id].append([tmdb_id, "show"])
 
     def anidb_to_imdb(self, anidb_id, fail=False):
+        anidb_id = int(anidb_id)
         if anidb_id in self._anidb_to_imdb:
-            return self._anidb_to_imdb[int(anidb_id)]
+            return self._anidb_to_imdb[anidb_id]
         elif fail:
             raise Failed(f"IMDb ID not found for AniDB ID: {anidb_id}")
         else:
             return []
 
     def anidb_to_mal(self, anidb_id, fail=False):
+        anidb_id = int(anidb_id)
         if anidb_id in self._anidb_to_mal:
-            return self._anidb_to_mal[int(anidb_id)]
+            return self._anidb_to_mal[anidb_id]
         elif fail:
             raise Failed(f"MAL ID not found for AniDB ID: {anidb_id}")
         else:
             return []
 
     def anidb_to_tvdb(self, anidb_id, fail=False):
+        anidb_id = int(anidb_id)
         if anidb_id in self._anidb_to_tvdb:
-            return self._anidb_to_tvdb[int(anidb_id)]
+            return self._anidb_to_tvdb[anidb_id]
         elif fail:
             raise Failed(f"TVDb ID not found for AniDB ID: {anidb_id}")
         else:
@@ -131,16 +136,19 @@ class Convert:
 
     def anidb_to_tmdb(self, anidb_id, library_type=["movie","show"], fail=False):
         ids = []
+        anidb_id = int(anidb_id)
         library_type = library_type if isinstance(library_type, list) else [tmdb_type]
-        for anidb_id, tmdb_type in self._anidb_to_tmdb:
-            if (tmdb_type in library_type):
-                ids.append((anidb_id, tmdb_type))
+        if anidb_id in self._anidb_to_tmdb:
+            for tmdb_id, tmdb_type in self._anidb_to_tmdb[anidb_id]:
+                if (tmdb_type in library_type):
+                    ids.append([tmdb_id, tmdb_type])
         if fail and not ids:
             raise Failed(f"TMDb ID not found for AniDB ID: {anidb_id}")
         return ids
 
     def anilist_to_anidb(self, anilist_id, fail=False):
-        if imdb_id in self._anilist_to_anidb:
+        anilist_id = int(anilist_id)
+        if anilist_id in self._anilist_to_anidb:
             return self._anilist_to_anidb[anilist_id]
         elif fail:
             raise Failed(f"AniDB ID not found for AniList ID: {anilist_id}")
@@ -156,8 +164,9 @@ class Convert:
             return []
 
     def mal_to_anidb(self, mal_id, fail=False):
-        if int(mal_id) in self._mal_to_anidb:
-            return self._mal_to_anidb[int(mal_id)]
+        mal_id = int(mal_id)
+        if mal_id in self._mal_to_anidb:
+            return self._mal_to_anidb[mal_id]
         elif fail:
             raise Failed(f"AniDB ID not found for MAL ID: {mal_id}")
         else:
@@ -165,11 +174,13 @@ class Convert:
 
     def tvdb_to_anidb(self, tvdb_id, season=[1,-1], epoffset=[0], fail=False):
         ids = []
+        tvdb_id = int(tvdb_id)
         season = season if isinstance(season, list) else [season]
         epoffset = epoffset if isinstance(epoffset, list) else [epoffset]
-        for anidb_id, season_id, epoffset_id in self._tvdb_to_anidb:
-            if (season_id in season and epoffset_id in epoffset):
-                ids.append((anidb_id, season_id, epoffset_id))
+        if tvdb_id in self._tvdb_to_anidb:
+            for anidb_id, season_id, epoffset_id in self._tvdb_to_anidb[tvdb_id]:
+                if (season_id in season and epoffset_id in epoffset):
+                    ids.append([anidb_id, season_id, epoffset_id])
         if fail and not ids:
             raise Failed(f"AniDB ID not found for TVDb ID: {tvdb_id}")
         return ids
@@ -395,16 +406,21 @@ class Convert:
                     for guid_tag in item.guids:
                         try:
                             url_parsed = requests.utils.urlparse(guid_tag.id)
-                            if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
-                            elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
-                            elif url_parsed.scheme == "tmdb":               tmdb_movie_id.append(int(url_parsed.netloc))
+                            if url_parsed.scheme == "tvdb":
+                                tvdb_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "imdb":
+                                imdb_id.append(url_parsed.netloc)
+                            elif url_parsed.scheme == "tmdb" and check_id == "movie":
+                                tmdb_movie_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "tmdb" and check_id == "show":
+                                tmdb_show_id.append(int(url_parsed.netloc))
                         except ValueError:
                             pass
                 except requests.exceptions.ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
                     raise Failed("No External GUIDs found")
-                if not tvdb_id and not imdb_id and not tmdb_movie_id:
+                if not tvdb_id and not imdb_id and not tmdb_movie_id and not tmdb_show_id:
                     library.query(item.refresh)
                     raise Failed("Refresh Metadata")
             elif item_type == "imdb":                       imdb_id.append(check_id)

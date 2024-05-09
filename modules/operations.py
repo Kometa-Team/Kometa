@@ -272,14 +272,24 @@ class Operations:
                         return reverse_anidb[item.ratingKey]
                     else:
                         if tmdb_id:
-                            anidb_ids = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
-                        if tvdb_id and not anidb_id:
-                            anidb_ids = (self.config.Convert.tvdb_to_anidb(tvdb_id) or [[None]])[0][0]
-                        if imdb_id and not anidb_id:
-                            anidb_ids = (self.config.Convert.imdb_to_anidb(imdb_id) or [None])[0]
-                        if not anidb_ids:
-                            return False
-                        return anidb_ids
+                            anidb_ids = self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie)
+                            if anidb_ids:
+                                return anidb_ids[0]
+                            else:
+                                logger.warning(f"No AniDB ID for TMDb ID: {tmdb_id}")
+                        if tvdb_id:
+                            anidb_ids = self.config.Convert.tvdb_to_anidb(tvdb_id)
+                            if anidb_ids:
+                                return anidb_ids[0][0]
+                            else:
+                                logger.warning(f"No AniDB ID for TVDb ID: {tvdb_id}")
+                        if imdb_id:
+                            anidb_ids = self.config.Convert.imdb_to_anidb(imdb_id)
+                            if anidb_ids:
+                                return anidb_ids[0]
+                            else:
+                                logger.warning(f"No AniDB ID for IMDb ID: {imdb_id}")
+                        return False
 
                 _anidb_obj = None
                 def anidb_obj():
