@@ -76,14 +76,6 @@ Transform your media library with Kometa and discover its full potential! Connec
 
 </div>
 
-
-
-## Demo Video
-
-The below YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
-
-<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
 ## Example Kometa Libraries 
 
 Here are some examples of the things you can achieve using Kometa!
