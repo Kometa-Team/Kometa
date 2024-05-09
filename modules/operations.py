@@ -1,5 +1,5 @@
 import os, re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from modules import plex, util, anidb
 from modules.util import Failed, LimitReached, YAML
 from plexapi.exceptions import NotFound
@@ -10,14 +10,15 @@ logger = util.logger
 meta_operations = [
     "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
     "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
-    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update",
-    "mass_poster_update", "mass_background_update", "mass_studio_update"
+    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_added_at_update",
+    "mass_original_title_update", "mass_poster_update", "mass_background_update", "mass_studio_update"
 ]
 name_display = {
     "audienceRating": "Audience Rating",
     "rating": "Critic Rating",
     "userRating": "User Rating",
     "originallyAvailableAt": "Originally Available Date",
+    "addedAt": "Added At Date",
     "contentRating": "Content Rating"
 }
 
@@ -45,6 +46,7 @@ class Operations:
         logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
         logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
+        logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
@@ -88,7 +90,7 @@ class Operations:
             genre_edits = {"add": {}, "remove": {}}
             content_edits = {}
             studio_edits = {}
-            available_edits = {}
+            date_edits = {"originallyAvailableAt": {}, "addedAt": {}}
             remove_edits = {}
             reset_edits = {}
             lock_edits = {}
@@ -664,65 +666,69 @@ class Operations:
                             except Failed:
                                 continue
 
-                if self.library.mass_originally_available_update:
-                    current_available = item.originallyAvailableAt
-                    if current_available:
-                        current_available = current_available.strftime("%Y-%m-%d")
-                    for option in self.library.mass_originally_available_update:
-                        if option in ["lock", "remove"]:
-                            if option == "remove" and current_available:
-                                if "originallyAvailableAt" not in remove_edits:
-                                    remove_edits["originallyAvailableAt"] = []
-                                remove_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nRemove Originally Available Date (Batched)"
-                            elif "originallyAvailableAt" not in locked_fields:
-                                if "originallyAvailableAt" not in lock_edits:
-                                    lock_edits["originallyAvailableAt"] = []
-                                lock_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nLock Originally Available Date (Batched)"
-                            break
-                        elif option in ["unlock", "reset"]:
-                            if option == "reset" and current_available:
-                                if "originallyAvailableAt" not in reset_edits:
-                                    reset_edits["originallyAvailableAt"] = []
-                                reset_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nReset Originally Available Date (Batched)"
-                            elif "originallyAvailableAt" in locked_fields:
-                                if "originallyAvailableAt" not in unlock_edits:
-                                    unlock_edits["originallyAvailableAt"] = []
-                                unlock_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nUnlock Originally Available Date (Batched)"
-                            break
-                        else:
-                            try:
-                                if option == "tmdb":
-                                    new_available = tmdb_obj().release_date if self.library.is_movie else tmdb_obj().first_air_date # noqa
-                                elif option == "omdb":
-                                    new_available = omdb_obj().released # noqa
-                                elif option == "tvdb":
-                                    new_available = tvdb_obj().release_date # noqa
-                                elif option == "mdb":
-                                    new_available = mdb_obj().released # noqa
-                                elif option == "mdb_digital":
-                                    new_available = mdb_obj().released_digital # noqa
-                                elif option == "anidb":
-                                    new_available = anidb_obj().released # noqa
-                                elif option == "mal":
-                                    new_available = mal_obj().aired # noqa
-                                else:
-                                    new_available = option
-                                if not new_available:
-                                    logger.info(f"No {option} Originally Available Date Found")
-                                    raise Failed
-                                new_available = new_available.strftime("%Y-%m-%d")
-                                if current_available != new_available:
-                                    if new_available not in available_edits:
-                                        available_edits[new_available] = []
-                                    available_edits[new_available].append(item.ratingKey)
-                                    item_edits += f"\nUpdate Originally Available Date (Batched) | {new_available}"
+                for attribute, item_attr in [
+                    (self.library.mass_originally_available_update, "originallyAvailableAt"),
+                    (self.library.mass_added_at_update, "addedAt")
+                ]:
+                    if attribute:
+                        current = getattr(item, item_attr)
+                        if current:
+                            current = current.strftime("%Y-%m-%d")
+                        for option in attribute:
+                            if option in ["lock", "remove"]:
+                                if option == "remove" and current:
+                                    if item_attr not in remove_edits:
+                                        remove_edits[item_attr] = []
+                                    remove_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                elif item_attr not in locked_fields:
+                                    if item_attr not in lock_edits:
+                                        lock_edits[item_attr] = []
+                                    lock_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nLock {name_display[item_attr]} (Batched)"
                                 break
-                            except Failed:
-                                continue
+                            elif option in ["unlock", "reset"]:
+                                if option == "reset" and current:
+                                    if item_attr not in reset_edits:
+                                        reset_edits[item_attr] = []
+                                    reset_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                elif item_attr in locked_fields:
+                                    if item_attr not in unlock_edits:
+                                        unlock_edits[item_attr] = []
+                                    unlock_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                break
+                            else:
+                                try:
+                                    if option == "tmdb":
+                                        new_date = tmdb_obj().release_date if self.library.is_movie else tmdb_obj().first_air_date  # noqa
+                                    elif option == "omdb":
+                                        new_date = omdb_obj().released  # noqa
+                                    elif option == "tvdb":
+                                        new_date = tvdb_obj().release_date  # noqa
+                                    elif option == "mdb":
+                                        new_date = mdb_obj().released  # noqa
+                                    elif option == "mdb_digital":
+                                        new_date = mdb_obj().released_digital  # noqa
+                                    elif option == "anidb":
+                                        new_date = anidb_obj().released  # noqa
+                                    elif option == "mal":
+                                        new_date = mal_obj().aired  # noqa
+                                    else:
+                                        new_date = option
+                                    if not new_date:
+                                        logger.info(f"No {option} {name_display[item_attr]} Found")
+                                        raise Failed
+                                    new_date = new_date.strftime("%Y-%m-%d")
+                                    if current != new_date:
+                                        if new_date not in date_edits[item_attr]:
+                                            date_edits[item_attr][new_date] = []
+                                        date_edits[item_attr][new_date].append(item.ratingKey)
+                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {new_date}"
+                                    break
+                                except Failed:
+                                    continue
 
                 if len(item_edits) > 0:
                     logger.info(f"Item Edits{item_edits}")
@@ -920,11 +926,27 @@ class Operations:
                 self.library.Plex.editStudio(new_studio)
                 self.library.Plex.saveMultiEdits()
 
-            _size = len(available_edits.items())
-            for i, (new_available, rating_keys) in enumerate(sorted(available_edits.items()), 1):
-                logger.info(get_batch_info(i, _size, "originallyAvailableAt", len(rating_keys), display_value=new_available))
+            _size = len(date_edits["originallyAvailableAt"].items())
+            for i, (new_date, rating_keys) in enumerate(sorted(date_edits["originallyAvailableAt"].items()), 1):
+                logger.info(get_batch_info(i, _size, "originallyAvailableAt", len(rating_keys), display_value=new_date))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editOriginallyAvailable(new_available)
+                self.library.Plex.editOriginallyAvailable(new_date)
+                self.library.Plex.saveMultiEdits()
+
+            epoch = datetime(1970, 1, 1)
+            _size = len(date_edits["addedAt"].items())
+            for i, (new_date, rating_keys) in enumerate(sorted(date_edits["addedAt"].items()), 1):
+                logger.info(get_batch_info(i, _size, "addedAt", len(rating_keys), display_value=new_date))
+                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                new_date = datetime.strptime(new_date, "%Y-%m-%d")
+                logger.trace(new_date)
+                try:
+                    ts = int(round(new_date.timestamp()))
+                except (TypeError, OSError):
+                    offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
+                    ts = int((new_date - epoch).total_seconds()) - offset
+                logger.trace(epoch + timedelta(seconds=ts))
+                self.library.Plex.editAddedAt(ts)
                 self.library.Plex.saveMultiEdits()
 
             _size = len(remove_edits.items())

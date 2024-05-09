@@ -1429,6 +1429,10 @@
                     "type": "string",
                     "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
                 },
+                "mass_added_at_update": {
+                    "type": "string",
+                    "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
+                },
                 "mass_audience_rating_update": {
                     "anyOf": [
                         { 
