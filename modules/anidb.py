@@ -8,6 +8,7 @@ logger = util.logger
 builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
 base_url = "https://anidb.net"
 api_url = "http://api.anidb.net:9001/httpapi"
+cache_url = "https://raw.githubusercontent.com/notseteve/AnimeAggregations/main/anime"
 urls = {
     "anime": f"{base_url}/anime",
     "popular": f"{base_url}/latest/anime/popular/?h=1",
@@ -16,12 +17,151 @@ urls = {
     "login": f"{base_url}/perl-bin/animedb.pl"
 }
 weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
+language_matcher = {
+    "af" : "AFRIKAANS",
+    "sq" : "ALBANIAN",
+    "al" : "ALBANIAN",
+    "ar" : "ARABIC",
+    "bn" : "BENGALI",
+    "bd" : "BENGALI",
+    "bs" : "BOSNIAN",
+    "bg" : "BULGARIAN",
+    "my" : "BURMESE",
+    "zh" : "CHINESE",
+    "zh-nan" : "CHINESE_TAIWAN",
+    "zh-Hant" : "CHINESE_TRADITIONAL",
+    "x-zht" : "CHINESE_TRANSLITERATED",
+    "zh-Hans" : "CHINESE_SIMPLIFIED",
+    "zh-cmn" : "CHINESE_SIMPLIFIED",
+    "hr" : "CROATIAN",
+    "cs" : "CZECH",
+    "da" : "DANISH",
+    "nl" : "DUTCH",
+    "en" : "ENGLISH",
+    "eo" : "ESPERANTO",
+    "et" : "ESTONIAN",
+    "fil" : "FILIPINO",
+    "fi" : "FINNISH",
+    "fr" : "FRENCH",
+    "ka" : "GEORGIAN",
+    "de" : "GERMAN",
+    "el" : "GREEK",
+    "grc" : "GREEK_ANCIENT",
+    "ht" : "HAITIAN",
+    "he" : "HEBREW",
+    "hi" : "HINDI",
+    "hu" : "HUNGARIAN",
+    "is" : "ICELANDIC",
+    "id" : "INDONESIAN",
+    "it" : "ITALIAN",
+    "ja" : "JAPANESE",
+    "x-jat" : "JAPANESE_TRANSLITERATED",
+    "jv" : "JAVANESE",
+    "ko" : "KOREAN",
+    "x-kot" : "KOREAN_TRANSLITERATED",
+    "la" : "LATIN",
+    "lv" : "LATVIAN",
+    "lt" : "LITHUANIAN",
+    "ms" : "MALAY",
+    "mn" : "MONGOLIAN",
+    "ne" : "NEPALI",
+    "no" : "NORWEGIAN",
+    "fa" : "PERSIAN",
+    "pl" : "POLISH",
+    "pt" : "PORTUGUESE",
+    "pt-BR" : "PORTUGUESE_BRAZIL",
+    "ro" : "ROMANIAN",
+    "ru" : "RUSSIAN",
+    "sr" : "SERBIAN",
+    "si" : "SINHALA",
+    "sk" : "SLOVAK",
+    "sl" : "SLOVENIAN",
+    "es" : "SPANISH",
+    "es-PV" : "SPANISH_BASQUE",
+    "es-CT" : "SPANISH_CATALAN",
+    "es-CA" : "SPANISH_CATALAN",
+    "es-GA" : "SPANISH_GALICIA",
+    "es-419" : "SPANISH_LATIN",
+    "sv" : "SWEDISH",
+    "tl" : "TAGALOG",
+    "ta" : "TAMIL",
+    "tt" : "TATAR",
+    "te" : "TELUGU",
+    "th" : "THAI",
+    "x-tht" : "THAI_TRANSLITERATED",
+    "tr" : "TURKISH",
+    "uk" : "UKRAINIAN",
+    "ur" : "URDU",
+    "vi" : "VIETNAMESE",
+    "x-unk" : "UNKNOWN",
+    "x-other" : "OTHER"
+}
+
 
 class AniDBObj:
-    def __init__(self, anidb, anidb_id, data):
+    def __init__(self, anidb, anidb_id, data, from_json=False):
         self._anidb = anidb
         self.anidb_id = anidb_id
         self._data = data
+        self.main_title = None
+        self.titles = []
+        self.official_title = None
+        self.studio = None
+        self.rating = None
+        self.average = None
+        self.score = None
+        self.released = None
+        self.tags = {}
+        self.mal_id = None
+        self.imdb_id = None
+        self.tmdb_id = None
+        self.tmdb_type = None
+
+        def _parseJSON(self):
+            self.all_titles = data["titles"]
+            for title in self.all_titles:
+                if title["type"] == "MAIN":
+                    self.main_title = title["title"]
+                if title["type"] == "OFFICIAL":
+                    self.titles.append(title)
+                if title["type"] == "OFFICIAL" and (title["language"] == self._anidb.language.upper() or title["language"] == language_matcher[self._anidb.language]):
+                    self.official_title = title["title"]
+            if not self.official_title:
+                self.official_title = self.main_title
+
+            if "creators" in data:
+                for creator_id, creators in data["creators"].items():
+                    for creator in creators:
+                        if creator["type"] == "ANIMATION_WORK":
+                            self.studio = creator["name"]
+
+            if "ratings" in data and "PERMANENT" in data["ratings"]:
+                self.rating = float(data["ratings"]["PERMANENT"]["rating"])
+            if "ratings" in data and "TEMPORARY" in data["ratings"]:
+                self.average = float(data["ratings"]["TEMPORARY"]["rating"])
+            if "ratings" in data and "REVIEW" in data["ratings"]:
+                self.score = float(data["ratings"]["REVIEW"]["rating"])
+            if "start_date" in data:
+                self.released = datetime.strptime(data["start_date"], "%Y-%m-%d")
+
+            if "tags" in data:
+                for tag_id, tag in data["tags"].items():
+                    if "info_box" in tag and (tag["info_box"] or tag["info_box"] == "true"):
+                        self.tags[tag["name"]] = 1001
+                    elif "weight" in tag:
+                        self.tags[tag["name"]] = float(tag["weight"])
+
+            if "resources" in data and "MAL" in data["resources"]:
+                self.mal_id = int(data["resources"]["MAL"][0])
+            if "resources" in data and "IMDB" in data["resources"]:
+                self.imdb_id = data["resources"]["IMDB"][0]
+            if "resources" in data and "TMDB" in data["resources"]:
+                if data["resources"]["TMDB"][0].startswith("movie/"):
+                    self.tmdb_id = int(data["resources"]["TMDB"][0][6:])
+                    self.tmdb_type = "movie"
+                elif data["resources"]["TMDB"][0].startswith("tv/"):
+                    self.tmdb_id = int(data["resources"]["TMDB"][0][3:])
+                    self.tmdb_type = "show"
 
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
@@ -63,30 +203,35 @@ class AniDBObj:
             else:
                 return None
 
-        self.main_title = _parse("main_title", "//anime/titles/title[@type='main']/text()", fail=True)
-        self.titles = _parse("titles", "//anime/titles/title[@type='official']", is_dict=True)
-        self.official_title = self.titles[self._anidb.language] if self._anidb.language in self.titles else self.main_title
-        self.studio = _parse("studio", "//anime/creators/name[@type='Animation Work']/text()")
-        self.rating = _parse("rating", "//anime/ratings/permanent/text()", is_float=True)
-        self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
-        self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
-        self.released = _parse("released", "//anime/startdate/text()", is_date=True)
-        self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
-        self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
-        self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
-        if isinstance(data, dict):
-            self.tmdb_id = _parse("tmdb_id", "", is_int=True)
-            self.tmdb_type = _parse("tmdb_type", "")
-        else:
-            tmdb = _parse("tmdb", "//anime/resources/resource[@type='44']/externalentity/identifier/text()", is_list=True)
-            self.tmdb_id = None
-            self.tmdb_type = None
-            for i in tmdb:
-                try:
-                    self.tmdb_id = int(i)
-                except ValueError:
-                    self.tmdb_type = i
+        def _parseXML(self):
+            self.main_title = _parse("main_title", "//anime/titles/title[@type='main']/text()", fail=True)
+            self.titles = _parse("titles", "//anime/titles/title[@type='official']", is_dict=True)
+            self.official_title = self.titles[self._anidb.language] if self._anidb.language in self.titles else self.main_title
+            self.studio = _parse("studio", "//anime/creators/name[@type='Animation Work']/text()")
+            self.rating = _parse("rating", "//anime/ratings/permanent/text()", is_float=True)
+            self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
+            self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
+            self.released = _parse("released", "//anime/startdate/text()", is_date=True)
+            self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
+            self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
+            self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
+            if isinstance(data, dict):
+                self.tmdb_id = _parse("tmdb_id", "", is_int=True)
+                self.tmdb_type = _parse("tmdb_type", "")
+            else:
+                tmdb = _parse("tmdb", "//anime/resources/resource[@type='44']/externalentity/identifier/text()", is_list=True)
+                self.tmdb_id = None
+                self.tmdb_type = None
+                for i in tmdb:
+                    try:
+                        self.tmdb_id = int(i)
+                    except ValueError:
+                        self.tmdb_type = i
 
+        if from_json:
+            _parseJSON(self)
+        else:
+            _parseXML(self)
 
 class AniDB:
     def __init__(self, config, data):
@@ -184,22 +329,31 @@ class AniDB:
     def get_anime(self, anidb_id, ignore_cache=False):
         expired = None
         anidb_dict = None
+        from_json = False
         if self.config.Cache and not ignore_cache:
             anidb_dict, expired = self.config.Cache.query_anidb(anidb_id, self.expiration)
         if expired or not anidb_dict:
-            time_check = time.time()
-            if self._delay is not None:
-                while time_check - self._delay < 2:
-                    time_check = time.time()
-            anidb_dict = self._request(api_url, params={
-                "client": self.client,
-                "clientver": self.version,
-                "protover": 1,
-                "request": "anime",
-                "aid": anidb_id
-            })
-            self._delay = time.time()
-        obj = AniDBObj(self, anidb_id, anidb_dict)
+            if not ignore_cache:
+                try:
+                    anidb_dict = self.config.get_json(f"{cache_url}/{anidb_id}.json")
+                    if anidb_dict:
+                        from_json = True
+                except ValueError:
+                    pass
+            if not from_json:
+                time_check = time.time()
+                if self._delay is not None:
+                    while time_check - self._delay < 2:
+                        time_check = time.time()
+                anidb_dict = self._request(api_url, params={
+                    "client": self.client,
+                    "clientver": self.version,
+                    "protover": 1,
+                    "request": "anime",
+                    "aid": anidb_id
+                })
+                self._delay = time.time()
+        obj = AniDBObj(self, anidb_id, anidb_dict, from_json)
         if self.config.Cache and not ignore_cache:
             self.config.Cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
