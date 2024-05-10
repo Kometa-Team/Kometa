@@ -5,14 +5,12 @@ from plexapi.exceptions import BadRequest
 
 logger = util.logger
 
-anime_manual_lists_url = "https://raw.githubusercontent.com/Kometa-Team/Anime-IDs/master/anime_ids.json"
-anime_automated_lists_url = "https://raw.githubusercontent.com/notseteve/AnimeAggregations/main/aggregate/AnimeToExternal.json"
+anime_lists_url = "https://raw.githubusercontent.com/Kometa-Team/Anime-IDs/master/anime_ids.json"
 
 class Convert:
     def __init__(self, config):
         self.config = config
-        self._anidb_ids_manual = {}
-        self._anidb_ids_automated = {}
+        self._anidb_id = {}
         self._mal_to_anidb = {}
         self._anidb_to_mal = {}
         self._anilist_to_anidb = {}
@@ -22,9 +20,8 @@ class Convert:
         self._imdb_to_anidb = {}
         self._tvdb_to_anidb = {}
         self._tmdb_to_anidb = {}
-        self._anidb_ids_manual = self.config.get_json(anime_manual_lists_url)
-        self._anidb_ids_automated = self.config.get_json(anime_automated_lists_url)
-        for anidb_id, ids in self._anidb_ids_manual.items():
+        self._anidb_ids = self.config.get_json(anime_lists_url)
+        for anidb_id, ids in self._anidb_ids.items():
             anidb_id = int(anidb_id)
             if "mal_id" in ids:
                 for mal_id in util.get_list(ids["mal_id"], int_list=True):
@@ -63,49 +60,26 @@ class Convert:
                     self._anidb_to_tvdb[anidb_id] = [tvdb_id]
                 else:
                     self._anidb_to_tvdb[anidb_id].append(tvdb_id)
-        if "animes" in self._anidb_ids_automated:
-            for anidb_id, ids in self._anidb_ids_automated["animes"].items():
-                if "resources" in ids:
-                    anidb_id = int(anidb_id)
-                    if "MAL" in ids["resources"]:
-                        for mal_id in util.get_list(ids["resources"]["MAL"], int_list=True):
-                            if mal_id not in self._mal_to_anidb:
-                                self._mal_to_anidb[mal_id] = [anidb_id]
-                            else:
-                                self._mal_to_anidb[mal_id].append(anidb_id)
-                            if anidb_id not in self._anidb_to_mal:
-                                self._anidb_to_mal[anidb_id] = [mal_id]
-                            else:
-                                self._anidb_to_mal[anidb_id].append(mal_id)
-                    if "IMDB" in ids["resources"]:
-                        for imdb_id in util.get_list(ids["resources"]["IMDB"]):
-                            if str(imdb_id).startswith("tt"):
-                                if imdb_id not in self._imdb_to_anidb:
-                                    self._imdb_to_anidb[imdb_id] = [anidb_id]
-                                else:
-                                    self._imdb_to_anidb[imdb_id].append(anidb_id)
-                                if anidb_id not in self._anidb_to_imdb:
-                                    self._anidb_to_imdb[anidb_id] = [imdb_id]
-                                else:
-                                    self._anidb_to_imdb[anidb_id].append(imdb_id)
-                    if "TMDB" in ids["resources"]:
-                        for tmdb_id in util.get_list(ids["resources"]["TMDB"]):
-                            if tmdb_id not in self._tmdb_to_anidb:
-                                self._tmdb_to_anidb[tmdb_id] = [anidb_id]
-                            else:
-                                self._tmdb_to_anidb[tmdb_id].append(anidb_id)
-                            if str(tmdb_id).startswith("movie/"):
-                                tmdb_id = int(tmdb_id[6:])
-                                if anidb_id not in self._anidb_to_tmdb:
-                                    self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "movie"]]
-                                else:
-                                    self._anidb_to_tmdb[anidb_id].append([tmdb_id, "movie"])
-                            elif str(tmdb_id).startswith("tv/"):
-                                tmdb_id = int(tmdb_id[3:])
-                                if anidb_id not in self._anidb_to_tmdb:
-                                    self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "show"]]
-                                else:
-                                    self._anidb_to_tmdb[anidb_id].append([tmdb_id, "show"])
+            if "tmdb_movie_id" in ids:
+                for tmdb_id in util.get_list(ids["tmdb_movie_id"], int_list=True):
+                    if tmdb_id not in self._tmdb_to_anidb:
+                        self._tmdb_to_anidb[tmdb_id] = [[anidb_id, "movie"]]
+                    else:
+                        self._tmdb_to_anidb[tmdb_id].append([[anidb_id, "movie"]])
+                    if anidb_id not in self._anidb_to_mal:
+                        self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "movie"]]
+                    else:
+                        self._anidb_to_tmdb[anidb_id].append([tmdb_id, "movie"])
+            if "tmdb_tv_id" in ids:
+                for tmdb_id in util.get_list(ids["tmdb_tv_id"], int_list=True):
+                    if tmdb_id not in self._tmdb_to_anidb:
+                        self._tmdb_to_anidb[tmdb_id] = [[anidb_id, "show"]]
+                    else:
+                        self._tmdb_to_anidb[tmdb_id].append([[anidb_id, "show"]])
+                    if anidb_id not in self._anidb_to_mal:
+                        self._anidb_to_tmdb[anidb_id] = [[tmdb_id, "show"]]
+                    else:
+                        self._anidb_to_tmdb[anidb_id].append([tmdb_id, "show"])
 
     def anidb_to_imdb(self, anidb_id, fail=False):
         anidb_id = int(anidb_id)
@@ -137,7 +111,7 @@ class Convert:
     def anidb_to_tmdb(self, anidb_id, library_type=["movie","show"], fail=False):
         ids = []
         anidb_id = int(anidb_id)
-        library_type = library_type if isinstance(library_type, list) else [tmdb_type]
+        library_type = library_type if isinstance(library_type, list) else [library_type]
         if anidb_id in self._anidb_to_tmdb:
             for tmdb_id, tmdb_type in self._anidb_to_tmdb[anidb_id]:
                 if (tmdb_type in library_type):
@@ -185,21 +159,17 @@ class Convert:
             raise Failed(f"AniDB ID not found for TVDb ID: {tvdb_id}")
         return ids
 
-    def tmdb_to_anidb(self, tmdb_id, is_movie=True, fail=False):
-        if is_movie:
-            if f"movie/{tmdb_id}" in self._tmdb_to_anidb:
-                return self._tmdb_to_anidb[f"movie/{tmdb_id}"]
-            elif fail:
-                raise Failed(f"AniDB ID not found for TMDb ID: movie/{tmdb_id}")
-            else:
-                return []
-        else:
-            if f"tv/{tmdb_id}" in self._tmdb_to_anidb:
-                return self._tmdb_to_anidb[f"tv/{tmdb_id}"]
-            elif fail:
-                raise Failed(f"AniDB ID not found for TMDb ID: tv/{tmdb_id}")
-            else:
-                return []
+    def tmdb_to_anidb(self, tmdb_id, library_type=["movie","show"], fail=False):
+        ids = []
+        tmdb_id = int(tmdb_id)
+        library_type = library_type if isinstance(library_type, list) else [library_type]
+        if tmdb_id in self._tmdb_to_anidb:
+            for anidb_id, tmdb_type in self._tmdb_to_anidb[tmdb_id]:
+                if (tmdb_type in library_type):
+                    ids.append([anidb_id, tmdb_type])
+        if fail and not ids:
+            raise Failed(f"AniDB ID not found for TMDb ID: {tmdb_id}")
+        return ids
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []
@@ -221,7 +191,7 @@ class Convert:
                 if tmdb and tmdb_type:
                     added = True
                     ids.append((tmdb, "tmdb", tmdb_type))
-            if not added and (str(anidb_id) in self._anidb_ids_manual or str(anidb_id) in self._anidb_ids_automated):
+            if not added and str(anidb_id) in self._anidb_ids:
                 logger.warning(f"Convert Warning: No TVDb ID, IMDb ID, nor TMDb ID found for AniDB ID: {anidb_id}")
             elif not added:
                 logger.error(f"AniDB Error: No Anime found for AniDB ID: {anidb_id}")

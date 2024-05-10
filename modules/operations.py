@@ -272,9 +272,9 @@ class Operations:
                         return reverse_anidb[item.ratingKey]
                     else:
                         if tmdb_id:
-                            anidb_ids = self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie)
+                            anidb_ids = self.config.Convert.tmdb_to_anidb(tmdb_id, "movie" if self.library.is_movie else "show")
                             if anidb_ids:
-                                return anidb_ids[0]
+                                return anidb_ids[0][0]
                             else:
                                 logger.warning(f"No AniDB ID for TMDb ID: {tmdb_id}")
                         if tvdb_id:

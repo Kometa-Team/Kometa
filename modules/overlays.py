@@ -363,7 +363,7 @@ class Overlays:
                                                         anidb_id = reverse_anidb[item.ratingKey]
                                                     else:
                                                         if tmdb_id:
-                                                            anidb_id = (self.config.Convert.tmdb_to_anidb(tmdb_id, self.library.is_movie) or [None])[0]
+                                                            anidb_id = (self.config.Convert.tmdb_to_anidb(tmdb_id, "movie" if self.library.is_movie else "show") or [[None]])[0][0]
                                                         if tvdb_id and not anidb_id:
                                                             anidb_id = (self.config.Convert.tvdb_to_anidb(tvdb_id) or [[None]])[0][0]
                                                         if imdb_id and not anidb_id:
