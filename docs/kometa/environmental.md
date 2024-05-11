@@ -209,7 +209,7 @@ different ways to specify these things.
 
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
-    <div id="timeout" />Change the timeout for all non-Plex services (such as TMDb, Radarr, and Trakt). This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
+    <div id="timeout" />Change the timeout (expfessed in seconds) for all non-Plex services (such as TMDb, Radarr, and Trakt). This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
 
