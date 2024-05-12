@@ -150,6 +150,8 @@ linuxserver
 linuxserver's
 localhost
 Looper
+Lossy
+lossy
 LSIO
 lsio
 Luxembourgish
@@ -286,6 +288,7 @@ tutin
 tv
 TVDb
 UI
+uncompress
 unionfs
 unmanaged
 unplayed
