@@ -150,6 +150,7 @@ linuxserver
 linuxserver's
 localhost
 Looper
+Lossy
 LSIO
 lsio
 Luxembourgish
