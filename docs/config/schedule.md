@@ -11,6 +11,8 @@ These schedules do not trigger Kometa to run; they control what Kometa will do i
 time. `weekly(sunday)`, for example, does not mean "run Kometa on Sunday to do this thing"; it means "If Kometa is running, 
 and it's Sunday, do this thing".
 
+If you want to control when Kometa itself runs, like if you want Kometa to only run on Tuesdays and Thursdays, see [this page](../kometa/scheduling.md).
+
 The scheduling options are:
 
 | Name         | Description                                                                                                         | Format                                             | Example                                                              |

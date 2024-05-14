@@ -4,13 +4,20 @@ search:
 ---
 # Scheduling Kometa Runs Guide
 
-Kometa is designed to be a background running service that "wakes up" and "sleeps" when it is scheduled to do so. By default unless configured using the [Time to Run Command](../environmental.md#time-to-run), Kometa expects to run every day at 5AM local time.
+Kometa can run in two ways:
 
-Whilst it is possible to have `python kometa.py` running in an open window constantly, this is not the recommended approach as it relies on an always-open command window that can be obtrusive to the user.
+1. Run in the background, waking up at 5AM to process your config, then going back to sleep until tomorrow.
+2. Run immediately, process the config, then exit [the container, if you are running in docker]
+
+These two modes are mutually exclusive, and the first is the default behavior.
+
+While it is possible to have `python kometa.py` running in an open window constantly, this is not the recommended approach as it relies on an always-open command window that can be obtrusive to the user.
 
 Instead, it is recommended to set an automated scheduling service so that Kometa can run in the background when scheduled to without any visible impact to the user (other than the Plex libraries and playlists updating).
 
-**To control how individual parts of Kometa are scheduled see the [Schedule detail](../../config/schedule.md)**
+This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
+
+**You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like.  That level of scheduling is independent of when Kometa runs, and is discussed [here](../../config/schedule.md)**
 
 IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path to that directory on *your* system.
 
