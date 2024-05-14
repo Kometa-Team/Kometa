@@ -220,7 +220,7 @@ class MDBList:
                     raise Failed(f"MDBList Error: Invalid Response {response}")
                 results = []
                 for item in response:
-                    if item["mediatype"] in ["movie", "show"]:
+                    if item["mediatype"] in ["movie", "show"] and item["id"]:
                         results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
                 return results
             except JSONDecodeError:
