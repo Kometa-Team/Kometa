@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update:
+  update-copyright:
     runs-on: ubuntu-latest
     steps:
 
@@ -41,11 +41,11 @@ jobs:
         if: failure()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          message: <@&1079153184007790652>
-          title: "${{ vars.REPO_NAME }}: **Copyright Update Failed**"
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }}: ${{ vars.TEXT_COPYRIGHT }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
-          color: 14879811
-          username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
-          author: GitHub
-          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/git.png
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}
