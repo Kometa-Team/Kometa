@@ -6,8 +6,7 @@ search:
 
 ## Overview
 
-The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Plex 
-Meta Manager.
+The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Kometa.
 
 Examples of these settings include the ability to:
 
@@ -936,33 +935,6 @@ The available setting attributes which can be set at each level are outlined bel
           - metadata
         ```
 
-??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
-
-    <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, 
-    `metadata_files`, `playlist_file` and `overlay_files`.
-    
-    ???+ note
-    
-        Ensure you are using the raw GitHub link (i.e. 
-        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12)
-
-    <hr style="margin: 0px;">
-    
-    **Attribute:** `custom_repo`
-
-    **Levels with this Attribute:** Global
-    
-    **Accepted Values:** Link to repository base
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-        
-        ```yaml
-        settings:
-          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
-        ```
-
 ??? blank "`verify_ssl` - Turn SSL Verification on or off.<a class="headerlink" href="#verify-ssl" title="Permanent link">¶</a>"
 
     <div id="verify-ssl" />Turn SSL Verification on or off.
@@ -986,6 +958,83 @@ The available setting attributes which can be set at each level are outlined bel
         ```yaml
         settings:
           verify_ssl: false
+        ```
+
+??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
+
+    <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, `metadata_files`, `playlist_file` and `overlay_files`.
+    
+    ???+ note
+    
+        Ensure you are using the raw GitHub link (i.e. 
+        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12)
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `custom_repo`
+
+    **Levels with this Attribute:** Global
+    
+    **Accepted Values:** Link to repository base
+
+    **Default Value:** `None`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
+        ```
+
+??? blank "`overlay_artwork_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
+
+    <div id="overlay-filetype" />Used to control the filetype used with overlay images.  This setting will only be applied to images generated after the value is added to your config.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `overlay_artwork_filetype`
+
+    **Levels with this Attribute:** Global/Library
+    
+    **Accepted Values:**
+
+    <table class="clearTable">
+      <tr><td>`jpg`</td><td>Use JPG files for saving Overlays</td></tr>
+      <tr><td>`png`</td><td>Use PNG files for saving Overlays</td></tr>
+      <tr><td>`webp_lossy`</td><td>Use Lossy WEBP files for saving Overlays</td></tr>
+      <tr><td>`webp_lossless`</td><td>Use Lossless WEBP files for saving Overlays</td></tr>
+    </table>
+
+    **Default Value:** `jpg`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          overlay_artwork_filetype: png
+        ```
+
+??? blank "`overlay_artwork_quality` - Used to control the JPG or Lossy WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+
+    <div id="overlay-quality" />Used to control the JPG or Lossy WEBP quality used with overlay images. This setting 
+    will only be applied to images generated after the value is added to your config.
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `overlay_artwork_quality`
+
+    **Levels with this Attribute:** Global/Library
+    
+    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, 
+    perhaps too large to be uploaded to Plex.
+
+    **Default Value:** `None` [when no value is provided the standard 75 is used]
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          overlay_artwork_quality: 95
         ```
 
 ## Default Values

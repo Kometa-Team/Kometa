@@ -1,6 +1,6 @@
 # Award Separator Collections
 
-The `separator_award` Default Collection File is used to create a seperator collection for Awards.
+The `separator_award` Default Collection File is used to create a separator collection for Awards.
 
 ![](../images/awardseparator.png)
 

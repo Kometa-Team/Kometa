@@ -6,8 +6,37 @@ on:
 
 jobs:
 
-  docker:
+  verify-changes:
     runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.list-changes.outputs.build }}
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changes
+        id: get-changes
+        run: echo "files=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)" >> $GITHUB_OUTPUT
+
+      - name: List changed files
+        id: list-changes
+        run: |
+            for file in ${{ steps.get-changes.outputs.files }}; do
+                if [[ $file == defaults/* ]] || [[ $file == fonts/* ]] || [[ $file == modules/* ]] || [[ $file == kometa.py ]] || [[ $file == requirements.txt ]] || [[ $file == .dockerignore ]] || [[ $file == Dockerfile ]] || [[ $file == Dockerfile.lxml ]] ; then
+                    echo "$file will trigger docker build"
+                    echo "build=true" >> $GITHUB_OUTPUT
+                else
+                    echo "$file will not trigger docker build"
+                fi
+            done
+
+  docker:
+    needs: [verify-changes]
+    runs-on: ubuntu-latest
+    if: needs.verify-changes.outputs.build == 'true'
     strategy:
       matrix:
         node:
@@ -56,11 +85,11 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ secrets.REPO_NAME }} ${{ matrix.node.tag }}: **Build Successful**"
-          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ matrix.node.tag }}: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 844716
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
 
@@ -70,18 +99,18 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "${{ secrets.REPO_NAME }} ${{ matrix.node.tag }}: **Build Failed**"
-          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ matrix.node.tag }}: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 14879811
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
 
   commit-notification:
     runs-on: ubuntu-latest
-    if: ${{ success() }}
-    needs: [docker]
+    if: ${{ success() && needs.verify-changes.outputs.build == 'true' }}
+    needs: [docker, verify-changes]
     steps:
 
       - name: Send Discord Commit Notification
@@ -92,6 +121,6 @@ jobs:
           message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           commits: "true"
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/logo.png
-          author: ${{ secrets.REPO_NAME }} Nightly Release
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
+          author: ${{ vars.REPO_NAME }} Nightly Release
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/release.png

@@ -9,15 +9,34 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 8:
     sys.exit(0)
 
 try:
-    import plexapi, psutil, requests, schedule
-    from dotenv import load_dotenv
+    import arrapi, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
+    from dotenv import load_dotenv, version as dotenv_version
     from PIL import ImageFile
     from plexapi import server
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
-except (ModuleNotFoundError, ImportError):
-    print("Requirements Error: Requirements are not installed")
+except (ModuleNotFoundError, ImportError) as ie:
+    print(f"Requirements Error: Requirements are not installed ({ie})")
     sys.exit(0)
+
+system_versions = {
+    "arrapi": arrapi.__version__,
+    "GitPython": None,
+    "lxml": lxml.__version__,
+    "num2words": None,
+    "pathvalidate": pathvalidate.__version__,
+    "pillow": PIL.__version__,
+    "PlexAPI": plexapi.__version__,
+    "psutil": psutil.__version__,
+    "python-dotenv": dotenv_version.__version__,
+    "python-dateutil": dateutil.__version__, # noqa
+    "requests": requests.__version__,
+    "retrying": None,
+    "ruamel.yaml": ruamel.yaml.__version__,
+    "schedule": None,
+    "setuptools": setuptools.__version__,
+    "tmdbapis": tmdbapis.__version__
+}
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 load_dotenv(os.path.join(default_dir, ".env"))
@@ -141,16 +160,19 @@ plex_token = get_env("KOMETA_PLEX_TOKEN", plex_token)
 
 env_secrets = []
 for env_name, env_data in os.environ.items():
-    if str(env_name).upper().startswith("KOMETA_") and str(env_name).upper() not in static_envs:
-        secret_args[str(env_name).lower()[7:].replace("_", "-")] = env_data
-    elif str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
-        secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
+    if env_data is not None and str(env_data).strip():
+        if str(env_name).upper().startswith("KOMETA_") and str(env_name).upper() not in static_envs:
+            secret_args[str(env_name).lower()[7:].replace("_", "-")] = env_data
+        elif str(env_name).upper().startswith("PMM_") and str(env_name).upper() not in static_envs:
+            secret_args[str(env_name).lower()[4:].replace("_", "-")] = env_data
 run_arg = " ".join([f'"{s}"' if " " in s else s for s in sys.argv[:]])
 for _, sv in secret_args.items():
     if sv in run_arg:
         run_arg = run_arg.replace(sv, "(redacted)")
 
 try:
+    import git # noqa
+    system_versions["GitPython"] = git.__version__
     from git import Repo, InvalidGitRepositoryError # noqa
     try:
         git_branch = Repo(path=".").head.ref.name # noqa
@@ -236,12 +258,12 @@ def start(attrs):
     logger.add_main_handler()
     logger.separator()
     logger.info("")
-    logger.info_center(" __  ___   ______   .___  ___.  _______ .___________.    ___      ")
-    logger.info_center("|  |/  /  /  __  \\  |   \\/   | |   ____||           |   /   \\     ")
-    logger.info_center("|  '  /  |  |  |  | |  \\  /  | |  |__   `---|  |----`  /  ^  \\    ")
-    logger.info_center("|    <   |  |  |  | |  |\\/|  | |   __|      |  |      /  /_\\  \\   ")
-    logger.info_center("|  .  \\  |  `--'  | |  |  |  | |  |____     |  |     /  _____  \\  ")
-    logger.info_center("|__|\\__\\  \\______/  |__|  |__| |_______|    |__|    /__/     \\__\\ ")
+    logger.info_center(" __  ___  ______    ___  ___   _______  __________    ___      ")
+    logger.info_center("|  |/  / /  __  \\  |   \\/   | |   ____||          |  /   \\     ")
+    logger.info_center("|  '  / |  |  |  | |  \\  /  | |  |__   `---|  |---` /  ^  \\    ")
+    logger.info_center("|    <  |  |  |  | |  |\\/|  | |   __|      |  |    /  /_\\  \\   ")
+    logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
+    logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
     logger.info("")
     if is_lxml:
         system_ver = "lxml Docker"
@@ -256,18 +278,17 @@ def start(attrs):
     new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
     if new_version:
         logger.info(f"    Newest Version: {new_version}")
-    required_version = None
+    logger.info(f"    Platform: {platform.platform()}")
+    logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     if not is_docker and not is_linuxserver:
         try:
             with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
-                required_version = next(ln.strip()[9:] for ln in file.readlines() if ln.strip().startswith("PlexAPI=="))
+                required_versions = {ln.split("==")[0]: ln.split("==")[1].strip() for ln in file.readlines()}
+            for req_name, sys_ver in system_versions.items():
+                if sys_ver and sys_ver != required_versions[req_name]:
+                    logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
         except FileNotFoundError:
             logger.error("    File Error: requirements.txt not found")
-    logger.info(f"    PlexAPI Version: {plexapi.VERSION}")
-    if required_version is not None and required_version != plexapi.VERSION:
-        logger.info(f"    PlexAPI Requires an Update to Version: {required_version}")
-    logger.info(f"    Platform: {platform.platform()}")
-    logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
     if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
     elif run_args["tests"]:                                 start_type = "Test "
     elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "

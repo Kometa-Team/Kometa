@@ -1,16 +1,16 @@
-# MdbList Builders
+# MDBList Builders
 
-You can find items using the features of [MdbList.com](https://mdblist.com/) (MdbList).
+You can find items using the features of [MDBList.com](https://mdblist.com/) (MDBList).
 
 | Attribute                       | Description                                                               |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:--------------------------------|:--------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-| [`mdblist_list`](#mdblist-list) | Gets every movie/show in a [MdbList List](https://mdblist.com/toplists/). | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`mdblist_list`](#mdblist-list) | Gets every movie/show in a [MDBList List](https://mdblist.com/toplists/). | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
-## MdbList List
+## MDBList List
 
-Finds every item in a [MdbList List](https://mdblist.com/toplists/).
+Finds every item in a [MDBList List](https://mdblist.com/toplists/).
 
-The expected input is an MdbList List URL. Multiple values are supported as a list only a comma-separated string will not work.
+The expected input is an MDBList List URL. Multiple values are supported as a list only a comma-separated string will not work.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
@@ -40,9 +40,9 @@ The default `sort_by` when it's not specified is `rank.asc`.
 
 | Option                                        | Description                    |
 |:----------------------------------------------|:-------------------------------|
-| `rank.asc`<br>`rank.desc`                     | Sort by MdbList Rank           |
-| `score.asc`<br>`score.desc`                   | Sort by MdbList Score          |
-| `score_average.asc`<br>`score_average.desc`   | Sort by MdbList Average Score  |
+| `rank.asc`<br>`rank.desc`                     | Sort by MDBList Rank           |
+| `score.asc`<br>`score.desc`                   | Sort by MDBList Score          |
+| `score_average.asc`<br>`score_average.desc`   | Sort by MDBList Average Score  |
 | `released.asc`<br>`released.desc`             | Sort by Release Date           |
 | `imdbrating.asc`<br>`imdbrating.desc`         | Sort by IMDb Rating            |
 | `imdbvotes.asc`<br>`imdbvotes.desc`           | Sort by IMDb Votes             |

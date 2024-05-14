@@ -68,7 +68,7 @@ class GitHub:
     def config_tags(self):
         if not self._config_tags:
             try:
-                self._config_tags = [r["ref"][11:] for r in self._requests(f"{kometa_base}-Configs/git/refs/tags")]
+                self._config_tags = [r["ref"][11:] for r in self._requests(f"{base_url}/repos/Kometa-Team/Community-Configs/git/refs/tags")]
             except TypeError:
                 pass
         return self._config_tags

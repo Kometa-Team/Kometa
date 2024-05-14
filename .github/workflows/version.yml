@@ -8,15 +8,8 @@ on:
 jobs:
 
   docker:
+    if: ${{ startsWith(github.ref, 'refs/tags/v1') || startsWith(github.ref, 'refs/tags/v2') }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node:
-          - tag: ""
-            file: Dockerfile
-          - tag: lxml-
-            file: Dockerfile.lxml
-
     steps:
 
       - name: Check Out Repo
@@ -43,15 +36,27 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
+      - name: Build and Push LXML
+        id: docker_build_lxml
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./Dockerfile.lxml
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: kometateam/kometa:lxml-${{ steps.get_version.outputs.VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and Push
         id: docker_build
         uses: docker/build-push-action@v5
         with:
           context: ./
-          file: ./${{ matrix.node.file }}
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: kometateam/kometa:${{ matrix.node.tag }}${{ steps.get_version.outputs.VERSION }}
+          tags: kometateam/kometa:${{ steps.get_version.outputs.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -60,11 +65,11 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ secrets.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Successful**"
-          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Successful**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 844716
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
 
@@ -74,28 +79,13 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: <@&1079153184007790652>
-          title: "${{ secrets.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Failed**"
-          url: https://github.com/Kometa-Team/${{ secrets.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: **Build Failed**"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: 14879811
           username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/logo.png
+          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/bot.png
           author: Docker
           author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/master/.github/docker.png
-
-  commit-notification:
-    runs-on: ubuntu-latest
-    if: ${{ success() }}
-    needs: [docker]
-    steps:
-
-      - name: Check Out Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get the version
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Checkout Configs Repo
         uses: actions/checkout@v4

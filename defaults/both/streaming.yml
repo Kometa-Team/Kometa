@@ -14,7 +14,7 @@ templates:
   streaming:
     optional:
       - use_<<key>>
-      - use_<<originals_key>>
+      - use_<<tmdb_key>>
       - allowed_libraries
       - originals_only
     conditionals:
@@ -26,27 +26,33 @@ templates:
         conditions:
           - originals_only: false
             value: <<limit>>
-      discover_with:
-        conditions:
-          - originals_only: false
-            value: <<key>>
       discover_region:
         conditions:
           - originals_only: false
             value: <<region>>
+      final_tmdb_key:
+        default: <<tmdb_key>>
+        conditions:
+          - region: CA
+            tmdb_key: [9]
+            value: 119
+      discover_with:
+        conditions:
+          - originals_only: false
+            value: <<final_tmdb_key>>
       allowed_streaming:
         conditions:
           - originals_only: true
-            key: ["103", "1759", "151", "230", "283", "510", "39", "37", "188"]
+            tmdb_key: [103, 1759, 151, 230, 283, 510, 39, 37, 188]
             value: False
           - region.not: GB
-            key: ["103", "151", "39"]
+            tmdb_key: [103, 151, 39]
             value: False
           - region.not: CA
-            key: ["230"]
+            tmdb_key: [230]
             value: False
           - region: CA
-            key: ["1899", "37"]
+            tmdb_key: [1899, 37]
             value: False
 
     default:
@@ -58,13 +64,13 @@ templates:
       sort_by_<<key>>: <<sort_by>>
     run_definition:
       - <<use_<<key>>>>
-      - <<use_<<originals_key>>>>
+      - <<use_<<tmdb_key>>>>
       - <<allowed_libraries>>
       - <<allowed_streaming>>
     cache_builders: 1
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
-    mdblist_list: https://mdblist.com/lists/k0meta/<<originals_key>>-<<originals>>
+    mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
@@ -82,24 +88,24 @@ dynamic_collections:
   Streaming:
     type: custom
     data:
-      103: All 4
-      350: Apple TV+
-      1759: BET+
-      151: BritBox
-      230: Crave
-      283: Crunchyroll
-      510: discovery+
-      337: Disney+
-      1899: Max
-      223: hayu
-      15: Hulu
-      8: Netflix
-      39: NOW
-      531: Paramount+
-      387: Peacock
-      9: Prime Video
-      37: Showtime
-      188: YouTube
+      all4: All 4
+      appletv: Apple TV+
+      bet: BET+
+      britbox: BritBox
+      crave: Crave
+      crunchyroll: Crunchyroll
+      discovery: discovery+
+      disney: Disney+
+      max: Max
+      hayu: hayu
+      hulu: Hulu
+      netflix: Netflix
+      now: NOW
+      paramount: Paramount+
+      peacock: Peacock
+      amazon: Prime Video
+      showtime: Showtime
+      youtube: YouTube
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - streaming
@@ -108,31 +114,31 @@ dynamic_collections:
     template_variables:
       image:
         default: streaming/<<key_name_encoded>>
-      originals_key:
-        103: all4
-        350: appletv
-        1759: bet
-        151: britbox
-        230: crave
-        283: crunchyroll
-        510: discovery
-        337: disney
-        1899: max
-        223: hayu
-        15: hulu
-        8: netflix
-        39: now
-        531: paramount
-        387: peacock
-        9: amazon
-        37: showtime
-        188: youtube
+      tmdb_key:
+        all4: 103
+        appletv: 350
+        bet: 1759
+        britbox: 151
+        crave: 230
+        crunchyroll: 283
+        discovery: 510
+        disney: 337
+        max: 1899
+        hayu: 223
+        hulu: 15
+        netflix: 8
+        now: 39
+        paramount: 531
+        peacock: 387
+        amazon: 9
+        showtime: 37
+        youtube: 188
       originals_only:
         default: false
       allowed_libraries:
-        223: show
-        510: show
-        283: show
+        hayu: show
+        discovery: show
+        crunchyroll: show
       translation_key:
         default: streaming
       dynamic:

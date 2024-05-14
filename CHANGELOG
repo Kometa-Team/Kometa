@@ -1,26 +1,16 @@
-# Plex Meta Manager is now rebranded as Kometa!
-
 # Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.11
-Updated PlexAPI requirement to 4.15.12
-Updated setuptools requirement to 69.5.1
-Updated tmdbapis requirement to 1.2.14
 
 # Removed Features
 
 # New Features
-Add Page Topics Options to `imdb_search`
-Add `lxml` Docker Version using an old lxml version that supports more cpus
+Checks requirement versions to print a message if one needs to be updated
+Added the `mass_added_at_update` operation to mass set the Added At field of Movies and Shows.
 
 # Updates
-Let conditional `.not` and `.exists` work with default variables
+Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_lossless` while the old attribute `webp` will be treated as `webp_lossy`.
 
 # Defaults
 
 # Bug Fixes
-Fixes #1965 `download_url_assets` was causing `url_background` to upload as a poster
-Fixes #1969 Ignore validating TPDb links
 
 Various other Minor Fixes
-
-Closed legacy issues on GitHub

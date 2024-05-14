@@ -314,7 +314,7 @@ class Webhooks:
                 }
             ],
             "username": "Kobota",
-            "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/logo.png"
+            "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/bot.png"
         }
         if description:
             new_json["embeds"][0]["description"] = description

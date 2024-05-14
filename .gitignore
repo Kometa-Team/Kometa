@@ -18,6 +18,7 @@ config/overlays/*/
 config/overlays/temp.jpeg
 config/overlays/temp.jpg
 config/overlays/temp.png
+config/overlays/temp.webp
 !config/*.template
 build/
 develop-eggs/

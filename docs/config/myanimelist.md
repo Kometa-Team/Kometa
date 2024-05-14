@@ -66,7 +66,7 @@ To connect to MyAnimeList.net you must create a MyAnimeList application and supp
     
      You will need to stop that web server while you're doing this in order to grab that localhost URL.
 
-19. Run Kometa and the auth will be completed.
+19. Run Kometa and the authentication will be completed.
 
 ## Alternative Way of Letting Kometa make the URL
 
@@ -127,6 +127,6 @@ the container normally.
 ## Online Authorization
 
 {%    
-  include-markdown "./auth.md"
+  include-markdown "./authentication.md"
   start="# Trakt and MyAnimeList Authentication"
 %}

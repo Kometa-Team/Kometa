@@ -1,12 +1,11 @@
-name: Tag
+name: Tag New Version
 
 on:
   push:
     branches: [ master ]
 
 jobs:
-
-  tag-new-versions:
+  tag:
     runs-on: ubuntu-latest
     steps:
 
@@ -15,7 +14,7 @@ jobs:
           token: ${{ secrets.PAT }}
           fetch-depth: 2
 
-      - uses: salsify/action-detect-and-tag-new-version@v1.0.3
+      - uses: Kometa-Team/tag-new-version@master
         with:
           version-command: |
             cat VERSION

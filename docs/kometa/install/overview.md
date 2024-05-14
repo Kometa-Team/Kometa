@@ -13,7 +13,7 @@ If you have some specific reason to avoid Docker, or you prefer running it as a 
 
 ## Where to install Kometa
 
-Kometa communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Kometa does *not* have to be installed on the same machine as Plex. Kometa does not require [nor would it use] access to the filesystem behind your Plex libraries.
+Kometa communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Kometa does *not* have to be installed on the same machine as Plex. Kometa does not require [nor would it use] access to the file system behind your Plex libraries.
 
 Perhaps your Plex server is remote and you want to run Kometa on a machine in your home.  That's fine.  The relative locations of Kometa and Plex have no effect on the installation [except perhaps the URL you would use in the config].
 

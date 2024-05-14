@@ -61,7 +61,8 @@ class Overlays:
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
                 self.remove_overlay(item, item_title, "Overlay", [
                     os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"),
+                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
                 ])
             logger.exorcise()
         else:
@@ -176,11 +177,15 @@ class Overlays:
                             os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"))
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"))
+                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
+                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp"))
                     elif has_overlay:
                         if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
                         elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
+                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
+                            has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
                         if self.library.reset_overlays:
                             reset_list = self.library.reset_overlays
                         elif has_original is None and not self.library.reset_overlays:
@@ -296,10 +301,10 @@ class Overlays:
                                                         raise Failed("No Trakt User Rating Found")
                                                 elif str(format_var).startswith("mdb"):
                                                     mdb_item = None
-                                                    if self.config.Mdblist.limit is False:
+                                                    if self.config.MDBList.limit is False:
                                                         if self.library.is_show and tvdb_id:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_series(tvdb_id)
+                                                                mdb_item = self.config.MDBList.get_series(tvdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:
@@ -309,7 +314,7 @@ class Overlays:
                                                                 raise
                                                         if self.library.is_movie and tmdb_id:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_movie(tmdb_id)
+                                                                mdb_item = self.config.MDBList.get_movie(tmdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:
@@ -319,7 +324,7 @@ class Overlays:
                                                                 raise
                                                         if imdb_id and not mdb_item:
                                                             try:
-                                                                mdb_item = self.config.Mdblist.get_imdb(imdb_id)
+                                                                mdb_item = self.config.MDBList.get_imdb(imdb_id)
                                                             except LimitReached as err:
                                                                 logger.debug(err)
                                                             except Failed as err:
@@ -507,8 +512,14 @@ class Overlays:
                                             else:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
-                                temp = os.path.join(self.library.overlay_folder, "temp.jpg")
-                                new_poster.save(temp, exif=exif_tags)
+                                ext = "webp" if self.library.overlay_artwork_filetype.startswith("webp") else self.library.overlay_artwork_filetype
+                                temp = os.path.join(self.library.overlay_folder, f"temp.{ext}")
+                                if self.library.overlay_artwork_quality and self.library.overlay_artwork_filetype in ["jpg", "webp_lossy"]:
+                                    new_poster.save(temp, exif=exif_tags, quality=self.library.overlay_artwork_quality)
+                                elif self.library.overlay_artwork_filetype == "webp_lossless":
+                                    new_poster.save(temp, exif=exif_tags, lossless=True)
+                                else:
+                                    new_poster.save(temp, exif=exif_tags)
                                 self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                                 poster_compare = poster.compare if poster else item.thumb

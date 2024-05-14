@@ -298,7 +298,7 @@ class AniList:
             logger.info(f"Processing AniList Relations: ({data}) {name} ({len(anilist_ids)} Anime)")
         elif method == "anilist_userlist":
             anilist_ids = self._userlist(data["username"], data["list_name"], data["sort_by"], data["score"])
-            logger.info(f"Processing AniList Userlist: {data['list_name']} from {data['username']} sorted by {pretty_user[data['sort_by']]}")
+            logger.info(f"Processing AniList UserList: {data['list_name']} from {data['username']} sorted by {pretty_user[data['sort_by']]}")
         else:
             if method == "anilist_popular":
                 data = {"limit": data, "popularity.gt": 3, "sort_by": "popular"}

@@ -2,7 +2,7 @@
 search:
   boost: 4
 ---
-# FAQ & Knowledgebase
+# FAQ & Knowledge Base
 
 This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://kometa.wiki/en/latest/discord/).
 
@@ -380,7 +380,7 @@ Your Kometa installation may not be located at the paths referenced below. These
     
     There is nothing that Kometa or our support staff can really do to resolve a 500 error.
 
-## Knowledgebase
+## Knowledge Base
 
 This section aims to provide some insight as to articles/information that we feel is important to document as they may pop up infrequently but often enough to require entry here.
 

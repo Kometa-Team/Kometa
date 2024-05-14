@@ -6,8 +6,8 @@ No configuration is required for these builders.
 
 | Attribute                           | Description                                                                                                                                                                                         |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-| [`tvdb_list`](#tvdb-list)           | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom)                                                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| [`tvdb_list_details`](#tvdb-list)   | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom) and updates the collection summary and poster with the TVDb list metadata | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`tvdb_list`](#tvdb-list)           | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb UserList](https://www.thetvdb.com/lists/custom)                                                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`tvdb_list_details`](#tvdb-list)   | Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb UserList](https://www.thetvdb.com/lists/custom) and updates the collection summary and poster with the TVDb list metadata | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`tvdb_show`](#tvdb-show)           | Finds the series specified                                                                                                                                                                          |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | 
 | [`tvdb_show_details`](#tvdb-show)   | Finds the series specified and updates the collection with the summary, poster, and background from the TVDb series                                                                                 |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`tvdb_movie`](#tvdb-movie)         | Finds the movie specified                                                                                                                                                                           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -15,9 +15,9 @@ No configuration is required for these builders.
 
 ## TVDb List
 
-Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb Userlist](https://www.thetvdb.com/lists/custom)
+Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb UserList](https://www.thetvdb.com/lists/custom)
 
-The expected input is a TVDb List URL or TVDb Userlist URL. Multiple values are supported as either a list or a 
+The expected input is a TVDb List URL or TVDb UserList URL. Multiple values are supported as either a list or a 
 comma-separated string.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 

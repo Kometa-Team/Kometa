@@ -143,35 +143,58 @@ dynamic_collections:
         lgbtq: range(05/31-06/30)
         latinx: range(09/15-10/15)
         women: range(02/28-03/31)
-      # check3
-      imdb_list:
-        years: https://www.imdb.com/list/ls066838460/
-        valentine:
-          - https://www.imdb.com/list/ls000094398/
-          - https://www.imdb.com/list/ls057783436/
-          - https://www.imdb.com/list/ls064427905/
-        patrick: https://www.imdb.com/list/ls063934595/
-        easter:
-          - https://www.imdb.com/list/ls062665509/
-          - https://www.imdb.com/list/ls051733651/
-        mother: https://www.imdb.com/list/ls072551197/
-        memorial: https://www.imdb.com/list/ls561621160/
-        father: https://www.imdb.com/list/ls020471057/
-        independence:
-          - https://www.imdb.com/list/ls068664510/
-          - https://www.imdb.com/list/ls080925875/
-        labor: https://www.imdb.com/list/ls002014923/
-        halloween:
-          - https://www.imdb.com/list/ls023118929/
-          - https://www.imdb.com/list/ls000099714/
-        veteran:
-          - https://www.imdb.com/list/ls565595526/
-        thanksgiving:
-          - https://www.imdb.com/list/ls000835734/
-          - https://www.imdb.com/list/ls091597850/
-        christmas: https://www.imdb.com/list/ls000096828/
       # check4
       imdb_search:
+        years:
+          list.any: ls066838460
+          limit: 500
+        valentine:
+          list.any:
+            - ls000094398
+            - ls057783436
+            - ls064427905
+          limit: 500
+        patrick:
+          list.any: ls063934595
+          limit: 500
+        easter:
+          list.any:
+            - ls062665509
+            - ls051733651
+          limit: 500
+        mother:
+          list.any: ls072551197
+          limit: 500
+        memorial:
+          list.any: ls561621160
+          limit: 500
+        father:
+          list.any: ls020471057
+          limit: 500
+        independence:
+          list.any:
+            - ls068664510
+            - ls080925875
+          limit: 500
+        labor:
+          list.any: ls002014923
+          limit: 500
+        halloween:
+          list.any:
+            - ls023118929
+            - ls000099714
+          limit: 500
+        veteran:
+          list.any: ls565595526
+          limit: 500
+        thanksgiving:
+          list.any:
+            - ls000835734
+            - ls091597850
+          limit: 500
+        christmas:
+          list.any: ls000096828
+          limit: 500
         women:
           type: movie
           keyword.any: women in film, women's rights, women's suffrage, womens rights, womens suffrage
