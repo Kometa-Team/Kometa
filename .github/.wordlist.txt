@@ -288,6 +288,7 @@ tutin
 tv
 TVDb
 UI
+uncompress
 unionfs
 unmanaged
 unplayed
