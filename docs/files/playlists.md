@@ -24,24 +24,6 @@ location mapped as `config` in my setup.
     Click the :fontawesome-solid-circle-plus: icon to learn more
 
     ```yaml
-    collections: #(1)!
-       Top 50 Grossing Films of All Time (Worldwide):
-        tmdb_list: 10 #(2)!
-        collection_order: custom #(3)!
-        sync_mode: sync #(4)!
-    ```
-
-    1.  This must appear once and **only once** in any Metadata file
-    2.  This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
-    3.  This will sort the items in the Plex collection to be the same as the order in the list
-    4.  Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the 
-    collection. Set this to `append` if you only want it to add things and not remove them.
-
-???+ example "config.yml Example Collection File Addition"
-
-    Click the :fontawesome-solid-circle-plus: icon to learn more
-
-    ```yaml
     playlists: #(1)!
       Marvel Cinematic Universe Chronological Order:
         sync_mode: sync
