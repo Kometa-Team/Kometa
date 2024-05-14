@@ -811,8 +811,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`item_refresh_delay` - Time to wait between each `item_refresh`.<a class="headerlink" href="#item-refresh-delay" title="Permanent link">¶</a>"
 
-    <div id="item-refresh-delay" />Specify the amount of time to wait between each `item_refresh` of every movie/show in 
-    a collection/playlist.
+    <div id="item-refresh-delay" />Specify the number of seconds to wait between each `item_refresh` of every movie/show in a collection/playlist.
     
     ???+ note
     
@@ -824,7 +823,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library/Collection/Playlist
     
-    **Accepted Values:** Any Integer 0 or greater
+    **Accepted Values:** Any Integer 0 or greater (value is in seconds)
 
     **Default Value:** `0`
 

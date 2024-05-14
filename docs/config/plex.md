@@ -27,8 +27,8 @@ plex:
 |:----------------|:-------------------------------------------------------------------------------------------------------------------------------|:--------|:------------------------------------------:|
 | `url`           | Plex Server URL<br><strong>Example:</strong> http://192.168.1.12:32400                                                         | N/A     | :fontawesome-solid-circle-check:{ .green } |
 | `token`         | Plex Server Authentication Token                                                                                               | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `timeout`       | Plex Server Timeout                                                                                                            | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `db_cache`      | Plex Server Database Cache Size                                                                                                | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `timeout`       | Plex Server Timeout [in seconds]                                                                                               | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `db_cache`      | Plex Server Database Cache Size [in MB, Plex defaults to 40]                                                                   | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `clean_bundles` | Runs Clean Bundles on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md)) | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `empty_trash`   | Runs Empty Trash on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))   | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `optimize`      | Runs Optimize on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))      | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
