@@ -209,15 +209,15 @@ different ways to specify these things.
 
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
-    <div id="timeout" />Change the timeout for all non-Plex services (such as TMDb, Radarr, and Trakt). This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
+    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt). This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
 
-    **Accepted Values:** Integer Number of Seconds
+    **Accepted Values:** Integer (value is in seconds)
 
-    **Shell Flags:** `-ti` or `--timeout` (ex. `--timeout 06:00,18:00`)
+    **Shell Flags:** `-ti` or `--timeout` (ex. `--timeout 360`)
 
-    **Environment Variable:** `KOMETA_TIMEOUT` (ex. `KOMETA_TIMEOUT=06:00,18:00`)
+    **Environment Variable:** `KOMETA_TIMEOUT` (ex. `KOMETA_TIMEOUT=360`)
     
     !!! example
         === "Local Environment"
