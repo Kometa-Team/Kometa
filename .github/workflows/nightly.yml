@@ -79,27 +79,27 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} nightly: **Build Successful**"
+          title: "${{ vars.REPO_NAME }} nightly: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
-          color: 844716
-          username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
-          author: Docker
-          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}
 
       - name: Discord Failure Notification
         uses: Kometa-Team/discord-notifications@master
         if: failure()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          message: <@&1079153184007790652>
-          title: "${{ vars.REPO_NAME }} nightly: **Build Failed**"
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }} nightly: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
-          color: 14879811
-          username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
-          author: Docker
-          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/docker.png
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}
 
   commit-notification:
     runs-on: ubuntu-latest
@@ -111,10 +111,11 @@ jobs:
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.NIGHTLY_WEBHOOK }}
-          title: Commits
+          title: ${{ vars.TEXT_COMMITS }}
           message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           commits: "true"
-          username: Kobota
-          avatar_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/bot.png
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.REPO_NAME }} Nightly Release
-          author_icon_url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/.github/release.png
+          author_icon_url: ${{ vars.RELEASE_IMAGE }}
