@@ -1350,7 +1350,7 @@ class Plex(Library):
                 elif self.show_missing_assets:
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
             else:
-                logger.warning(f"Asset Warning: {name} has an Overlay and will be updated when overlays are run")
+                logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)

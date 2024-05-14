@@ -204,7 +204,7 @@ Later on you can move it elsewhere if you want, but for now put it there.  This 
   ```
   git pull
   ```
-  No need to download a new ZIP, uncompress it, etc.
+  No need to download a new ZIP, decompress it, etc.
   Also, if you are asked to [or want to] switch to the latest develop or nightly code, you can do so with:
   ```
   git checkout develop
@@ -366,7 +366,7 @@ python -m pip install -r requirements.txt
 ```
 
 You should see something like this [I’ve removed a few lines for space, and the specific versions may have changed since this was captured]:
-Studio: 441 and 1807 and 2495 and 1286 and 2503 and 2264
+
 ```
 Collecting PlexAPI==4.7.0
   Downloading PlexAPI-4.7.0-py3-none-any.whl (133 kB)
@@ -634,10 +634,10 @@ deactivate
 
 ### I want to use the nightly branch
 
-Follow the instructions for the `develop` branch above, subsituting `nightly` for `develop`
+Follow the instructions for the `develop` branch above, substituting `nightly` for `develop`
 
 ### I want to use the master branch
 
-Follow the instructions for the `develop` branch above, subsituting `master` for `develop`
+Follow the instructions for the `develop` branch above, substituting `master` for `develop`
 
 The installation of requirements every time is probably overkill, but it's harmless and ensures that you always get any new versions or new requirements.

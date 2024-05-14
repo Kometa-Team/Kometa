@@ -17,7 +17,7 @@ These guides will walk you through installing Kometa on your system.
 
 ## Explanations
 
-The below guides and recipes have been created to assist users with various aspects of Komets and its companion scripts.
+The below guides and recipes have been created to assist users with various aspects of Kometa's and its companion scripts.
 
 - [Plex Ratings Explained](ratings.md)
 - [Scheduling Kometa Runs Guide](scheduling.md)
@@ -80,10 +80,10 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - Stores the Rainier actor posters
 - [People Images Signature (signature)](https://github.com/Kometa-Team/People-Images-signature)
     - Stores the Signature actor posters
-- [People Images DIIVOY (diiivoy)](https://github.com/Kometa-Team/People-Images-diiivoy)
-    - Stores the DIIVOY actor posters
-- [People Images DIIVOY Color (diiivoycolor)](https://github.com/Kometa-Team/People-Images-diiivoycolor)
-    - Stores the DIIVOY Color actor posters
+- [People Images DIIIVOY (diiivoy)](https://github.com/Kometa-Team/People-Images-diiivoy)
+    - Stores the DIIIVOY actor posters
+- [People Images DIIIVOY Color (diiivoycolor)](https://github.com/Kometa-Team/People-Images-diiivoycolor)
+    - Stores the DIIIVOY Color actor posters
 - [People Images Transparent (transparent)](https://github.com/Kometa-Team/People-Images-transparent)
     - Stores the Transparent actor posters
 
@@ -93,3 +93,13 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
     - Stores the Kometa Unraid Templates
 - [Translations](https://github.com/Kometa-Team/Translations)
     - Stores the data for Kometa Translations
+
+
+## Demo Video
+
+This YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
+
+Caveat: it is very long, and the author has their own ideas as to what is "required".  For example, this video begins with setting up a third-party script that is not required to use Kometa.
+
+<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+

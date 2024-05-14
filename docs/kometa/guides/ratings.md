@@ -55,9 +55,9 @@ Now let's add rating overlays to the poster. We're going to use the minimal conf
     
     * `rating3` is set to be the user rating and it's image (`rating3_image`) is set to IMDb just because we have to pick something.
     
-    * `reapply_overlays` is set to true to ensure that Kometa always updates the overlays as we run things.
+    * `reapply_overlays` is set to true to ensure that Kometa always updates the overlays as we run things. This should NEVER be required in a typical scenario, it's being done here just as belt-and-suspender insurance.
     
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 
 After Kometa is run on this library, you'll get this result:
@@ -103,7 +103,7 @@ You and I both know that the IMDb rating isn't 6.0, but Kometa is just doing wha
     
     * `rating1_image` and `rating2_image` were both changed from `rt_score` and `rt_popcorn` respectively to `imdb`
 
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 When the above is run you see this result:
 
@@ -140,7 +140,7 @@ Now let's actually update the ratings and push some numbers into those boxes usi
 
     * `rating1_image` and `rating2_image` were both changed back to `rt_score` and `rt_popcorn` respectively from `imdb`
 
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 This will put the actual IMDb rating value, retrieved from IMDb, into the "user" rating field.
 
@@ -178,7 +178,7 @@ Now let's update the critic and audience ratings to some different ratings:
 
     * under `operations` the attribute `mass_critic_rating_update` set to `trakt_user` and `mass_audience_rating_update` set to `tmdb` are added.
 
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 Running the above will put the Trakt User's personal rating into the critic box and the TMDb rating into the audience box. Note that we haven't changed the rating images yet.
 
@@ -202,7 +202,7 @@ The log will show Kometa updating those values.
 
 #### Use Trakt Rating
 
-Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDbList:
+Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDBList:
 
 ??? example "Updated config (click to expand)"
 
@@ -227,7 +227,7 @@ Let's change the Trakt rating to that trakt public rating of `85%` instead, whic
 
     * under `operations` the attribute `mass_critic_rating_update` was changed to `mdb_trakt` from `trakt_user`. (This step requires MDBList to be configured)
 
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 When the above is run you should get:
 
@@ -264,7 +264,7 @@ Now, finally, let's make the poster rating images match the numbers we put in th
 
     * `rating2_image` was changed to `tmdb` from `rt_popcorn`
 
-    * We do not recommend using `reapply_overlays: true` consistently in a live/production environment, make sure to switch this back to `false` when finished.
+    * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
 When the above is run you should get:
 

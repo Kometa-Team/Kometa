@@ -370,7 +370,7 @@ class CollectionBuilder:
                 trans_summary = apply_vars(trans_summary, trans_vars, trans_key, self.limit)
 
             delete_cols = []
-            if (self.name and self.name != en_name) or (not self.name and en_name != trans_name):
+            if (self.name and self.name != en_name) or (not self.name and trans_name and en_name != trans_name):
                 delete_cols.append(en_name)
             if self.name and self.name != trans_name and en_name != trans_name:
                 delete_cols.append(trans_name)
@@ -390,7 +390,7 @@ class CollectionBuilder:
 
             if not self.name:
                 self.name = trans_name if trans_name else en_name
-            logger.info(self.name)
+            logger.info(f"Final Name: {self.name}")
             if en_summary or trans_summary:
                 self.summaries["translation"] = trans_summary if trans_summary else en_summary
 
@@ -1965,7 +1965,7 @@ class CollectionBuilder:
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.Mdblist.validate_mdblist_lists(self.Type, method_data):
+        for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
             self.builders.append((method_name, mdb_dict))
 
     def _tautulli(self, method_name, method_data):
@@ -2214,7 +2214,7 @@ class CollectionBuilder:
         elif "mojo" in method:
             ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "mdblist" in method:
-            ids = self.config.Mdblist.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+            ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:

@@ -55,11 +55,11 @@ templates:
       originals_only: false
     optional:
       - use_<<key>>
-      - use_<<originals_key>>
+      - use_<<tmdb_key>>
       - allowed_libraries
     run_definition:
       - <<use_<<key>>>>
-      - <<use_<<originals_key>>>>
+      - <<use_<<tmdb_key>>>>
       - <<allowed_libraries>>
       - <<allowed_streaming>>
     ignore_blank_results: true
@@ -75,26 +75,32 @@ templates:
       discover_with:
         conditions:
           - originals_only: false
-            value: <<key>>
+            value: <<final_tmdb_key>>
       discover_region:
         conditions:
           - originals_only: false
             value: <<region>>
+      final_tmdb_key:
+        default: <<tmdb_key>>
+        conditions:
+          - region: CA
+            tmdb_key: [9]
+            value: 119
       allowed_streaming:
         conditions:
           - originals_only: true
-            key: ["103", "1759", "151", "230", "283", "510", "39", "37", "188"]
+            tmdb_key: [103, 1759, 151, 230, 283, 510, 39, 37, 188]
             value: False
           - region.not: GB
-            key: ["103", "151", "39"]
+            tmdb_key: [103, 151, 39]
             value: False
           - region.not: CA
-            key: ["230"]
+            tmdb_key: [230]
             value: False
           - region: CA
-            key: ["1899", "37"]
+            tmdb_key: [1899, 37]
             value: False
-    mdblist_list: https://mdblist.com/lists/k0meta/<<originals_key>>-<<originals>>
+    mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
@@ -103,73 +109,73 @@ templates:
 overlays:
 
   Netflix:
-    variables: {key: "8", originals_key: netflix, weight: 160}
+    variables: {key: netflix, tmdb_key: 8, weight: 160}
     template: [name: standard, name: mdb_streaming]
 
   Prime:
-    variables: {key: "9", originals_key: amazon, weight: 150}
+    variables: {key: amazon, tmdb_key: 9, weight: 150}
     template: [name: standard, name: mdb_streaming]
 
   Disney:
-    variables: {key: "337", originals_key: disney, weight: 140}
+    variables: {key: disney, tmdb_key: 337, weight: 140}
     template: [name: standard, name: mdb_streaming]
 
   Max:
-    variables: {key: "1899", originals_key: max, weight: 130}
+    variables: {key: max, tmdb_key: 1899, weight: 130}
     template: [name: standard, name: mdb_streaming]
 
   Crunchyroll:
-    variables: {key: "283", originals_key: crunchyroll, weight: 120, allowed_libraries: show}
+    variables: {key: crunchyroll, tmdb_key: 283, weight: 120, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
 
   YouTube:
-    variables: {key: "188", originals_key: youtube, weight: 110}
+    variables: {key: youtube, tmdb_key: 188, weight: 110}
     template: [name: standard, name: mdb_streaming]
 
   Hulu:
-    variables: {key: "15", originals_key: hulu, weight: 100}
+    variables: {key: hulu, tmdb_key: 15, weight: 100}
     template: [name: standard, name: mdb_streaming]
 
   Paramount:
-    variables: {key: "531", originals_key: paramount, weight: 90}
+    variables: {key: paramount, tmdb_key: 531, weight: 90}
     template: [name: standard, name: mdb_streaming]
 
   AppleTV:
-    variables: {key: "350", originals_key: appletv, weight: 80}
+    variables: {key: appletv, tmdb_key: 350, weight: 80}
     template: [name: standard, name: mdb_streaming]
 
   Peacock:
-    variables: {key: "387", originals_key: peacock, weight: 70}
+    variables: {key: peacock, tmdb_key: 387, weight: 70}
     template: [name: standard, name: mdb_streaming]
 
   Showtime:
-    variables: {key: "37", originals_key: showtime, weight: 60}
+    variables: {key: showtime, tmdb_key: 37, weight: 60}
     template: [name: standard, name: mdb_streaming]
 
   discovery+:
-    variables: {key: "510", originals_key: discovery, weight: 58, allowed_libraries: show}
+    variables: {key: discovery, tmdb_key: 510, weight: 58, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
 
   Crave:
-    variables: {key: "230", originals_key: crave, weight: 55}
+    variables: {key: crave, tmdb_key: 230, weight: 55}
     template: [name: standard, name: mdb_streaming]
 
   NOW:
-    variables: {key: "39", originals_key: now, weight: 50}
+    variables: {key: now, tmdb_key: 39, weight: 50}
     template: [name: standard, name: mdb_streaming]
 
   All 4:
-    variables: {key: "103", originals_key: all4, weight: 40}
+    variables: {key: all4, tmdb_key: 103, weight: 40}
     template: [name: standard, name: mdb_streaming]
 
   britbox:
-    variables: {key: "151", originals_key: britbox, weight: 30}
+    variables: {key: britbox, tmdb_key: 151, weight: 30}
     template: [name: standard, name: mdb_streaming]
 
   BET+:
-    variables: {key: "1759", originals_key: bet, weight: 20}
+    variables: {key: bet, tmdb_key: 1759, weight: 20}
     template: [name: standard, name: mdb_streaming]
 
   hayu:
-    variables: {key: "223", originals_key: hayu, weight: 10, allowed_libraries: show}
+    variables: {key: hayu, tmdb_key: 223, weight: 10, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]

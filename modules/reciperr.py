@@ -29,7 +29,7 @@ class Reciperr:
         name = "StevenLu" if method == "stevenlu_popular" else "Reciperr"
         logger.info(f"Processing {name} Movies")
         if method == "reciperr_list":
-            ids = [(i["imdb_id"], "imdb") for i in self._request(data)]
+            ids = [(i["imdb_id"], "imdb") for i in self._request(data) if "imdb_id" in i]
         elif method == "stevenlu_popular":
             ids = [(i["imdb_id"], "imdb") for i in self._request(stevenlu_url, name="StevenLu")]
         else:

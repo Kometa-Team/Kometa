@@ -58,20 +58,6 @@ I then call "MyOverlays.yml" in my [Configuration File](../config/overview.md) w
     1.  This must match the name of a library in your Plex server
     2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
-???+ example "config.yml Example Collection File Addition"
-
-    Click the :fontawesome-solid-circle-plus: icon to learn more
-
-    ```yaml
-    libraries:
-      Movies: #(1)!
-        Overlay_files:
-          - file: config/MyOverlays.yml #(2)!
-    ```
-
-    1.  This must match the name of a library in your Plex server
-    2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
-
 Whenever I execute Kometa and the Movies library is run, MyOverlays.yml will run and my "Direct Play" overlay will appear on all items with a 4K resolution.
 
 ## File Attributes
@@ -333,17 +319,17 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `imdb_rating`                 | IMDb Rating                             | `Movies`, `Shows`, or `Episodes`            |
 | `trakt_user_rating`           | Trakt User Rating                       | `Movies` or `Shows`                         |
 | `omdb_rating`                 | OMDb Rating                             | `Movies` or `Shows`                         |
-| `mdb_rating`                  | MDbList Rating                          | `Movies` or `Shows`                         |
-| `mdb_average_rating`          | MDbList Average Rating                  | `Movies` or `Shows`                         |
-| `mdb_imdb_rating`             | MDbList IMDb Rating                     | `Movies` or `Shows`                         |
-| `mdb_metacritic_rating`       | MDbList Metacritic Rating               | `Movies` or `Shows`                         |
-| `mdb_metacriticuser_rating`   | MDbList Metacritic User Rating          | `Movies` or `Shows`                         |
-| `mdb_trakt_rating`            | MDbList Trakt Rating                    | `Movies` or `Shows`                         |
-| `mdb_tomatoes_rating`         | MDbList Rotten Tomatoes Rating          | `Movies` or `Shows`                         |
-| `mdb_tomatoesaudience_rating` | MDbList Rotten Tomatoes Audience Rating | `Movies` or `Shows`                         |
-| `mdb_tmdb_rating`             | MDbList TMDb Rating                     | `Movies` or `Shows`                         |
-| `mdb_letterboxd_rating`       | MDbList Letterboxd Rating               | `Movies` or `Shows`                         |
-| `mdb_myanimelist_rating`      | MDbList MyAnimeList Rating              | `Movies` or `Shows`                         |
+| `mdb_rating`                  | MDBList Rating                          | `Movies` or `Shows`                         |
+| `mdb_average_rating`          | MDBList Average Rating                  | `Movies` or `Shows`                         |
+| `mdb_imdb_rating`             | MDBList IMDb Rating                     | `Movies` or `Shows`                         |
+| `mdb_metacritic_rating`       | MDBList Metacritic Rating               | `Movies` or `Shows`                         |
+| `mdb_metacriticuser_rating`   | MDBList Metacritic User Rating          | `Movies` or `Shows`                         |
+| `mdb_trakt_rating`            | MDBList Trakt Rating                    | `Movies` or `Shows`                         |
+| `mdb_tomatoes_rating`         | MDBList Rotten Tomatoes Rating          | `Movies` or `Shows`                         |
+| `mdb_tomatoesaudience_rating` | MDBList Rotten Tomatoes Audience Rating | `Movies` or `Shows`                         |
+| `mdb_tmdb_rating`             | MDBList TMDb Rating                     | `Movies` or `Shows`                         |
+| `mdb_letterboxd_rating`       | MDBList Letterboxd Rating               | `Movies` or `Shows`                         |
+| `mdb_myanimelist_rating`      | MDBList MyAnimeList Rating              | `Movies` or `Shows`                         |
 | `anidb_rating`                | AniDB Rating                            | `Movies` or `Shows`                         |
 | `anidb_average_rating`        | AniDB Average Rating                    | `Movies` or `Shows`                         |
 | `anidb_score_rating`          | AniDB Score Rating                      | `Movies` or `Shows`                         |

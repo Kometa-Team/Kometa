@@ -77,6 +77,7 @@ spec:
               name: tv-config
           restartPolicy: OnFailure
 ```
+> :warning: If you are using [Longhorn](https://longhorn.io/) as your storage class, you should omit the `spec.jobTemplate.spec.template.spec.securityContext` node to fix file permission errors.
 
 This CronJob also requires
 
@@ -286,7 +287,7 @@ the cronjob starts each time.  This can be done by including an init container w
 
 ### Including the Init Container in the Cron Job
 
-NOTE the environment value nameed `JINJA_DEST_FILE` is the resulting name of the generated config file.
+NOTE the environment value named `JINJA_DEST_FILE` is the resulting name of the generated config file.
 
 ```
 apiVersion: batch/v1

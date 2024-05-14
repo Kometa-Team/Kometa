@@ -23,7 +23,7 @@ libraries:
     - url: https://foo.bar.com/something.yml
     - git: bing/bang/boing
     - repo: bing
-    - default: cannes
+    - pmm: cannes
     - default: choice
     - default: emmy
     - default: spirit
@@ -118,6 +118,14 @@ libraries:
       asset_directory: config/assets
 
     operations:
+      mass_audience_rating_update: 
+      - mdb_average
+      - imdb
+      - 2.0
+      mass_episode_audience_rating_update: 
+      - tmdb
+      - imdb
+      - 2.0
       split_duplicates: false
       assets_for_all: false
       genre_mapper:
@@ -432,6 +440,8 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
+  overlay_artwork_filetype: jpg
+  overlay_artwork_quality: 72
 webhooks:                        # Can be individually specified per library as well
   error:
   version:

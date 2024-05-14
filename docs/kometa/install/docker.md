@@ -102,13 +102,13 @@ This message shows that your installation appears to be working correctly.
 ...
 ```
 
-If that doesn't work, stop here until you fix that.  Diagnoing and repairing Docker install problems is out of the scope of this walkthrough.
+If that doesn't work, stop here until you fix that.  Diagnosing and repairing Docker install problems is out of the scope of this walkthrough.
 
 ---
 
 #### Important note on Docker images
 
-This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other; other images may have [idiosyncracies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
+This tutorial uses the official image, and you should, too.  Don't change `kometateam/kometa` to the `linuxserver.io` image or any other; other images may have [idiosyncrasies](images.md) that will prevent this walkthrough from working.  The official image *will* behave exactly as documented below.  Others very possibly won't.
 
 The great thing about Docker is that all the setup you'd have to do to run Kometa is already done inside the docker image.
 
@@ -300,19 +300,19 @@ First, make a copy of the template:
    
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-apple: macOS"
 
       Get a copy of the template to edit [type this into your terminal]:
       ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template
+      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
       ```
 
 === ":fontawesome-brands-windows: Windows"
 
-      Go to [this URL](https://raw.githubusercontent.com/kometateam/kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
+      Go to [this URL](https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
       ```
       C:\Users\YOURUSERNAME\kometa\config\config.yml
       ```
@@ -445,7 +445,7 @@ docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:deve
                                                                                                   ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+This may not work if you are not using the official image.
 
 ### I want to use the nightly branch
 
@@ -456,7 +456,7 @@ docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:nigh
                                                                                                   ^^^^^^^
 ```
 
-This may not work if you are not using the official image; for example, it does not work with the lsio image.
+This may not work if you are not using the official image.
 
 ### I want to ensure I am using the master branch
 
@@ -466,6 +466,3 @@ Add the `latest` tag to the image name in your run command [or wherever you spec
 docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:latest --run
                                                                                                   ^^^^^^
 ```
-
-This is the only version tag supplied by the lsio image.
-

@@ -44,12 +44,6 @@ The below YouTube video has been created by one of our community members to show
 
 [![Kometa](https://img.youtube.com/vi/nTfCUtKWTYI/0.jpg)](https://www.youtube.com/watch?v=nTfCUtKWTYI "Kometa")
 
-## Demo Video
-
-The below YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
-
-[![Kometa](https://img.youtube.com/vi/nTfCUtKWTYI/0.jpg)](https://www.youtube.com/watch?v=nTfCUtKWTYI "Kometa")
-
 ## Example Kometa Libraries 
 
 Here are some examples of the things you can achieve using Kometa!
