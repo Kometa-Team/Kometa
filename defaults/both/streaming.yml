@@ -54,7 +54,6 @@ templates:
           - region: CA
             tmdb_key: [1899, 37]
             value: False
-
     default:
       region: "US"
       limit: "500"

@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  docker:
+  docker-build:
     if: ${{ startsWith(github.ref, 'refs/tags/v1') || startsWith(github.ref, 'refs/tags/v2') }}
     runs-on: ubuntu-latest
     steps:
@@ -35,18 +35,6 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-
-      - name: Build and Push LXML
-        id: docker_build_lxml
-        uses: docker/build-push-action@v5
-        with:
-          context: ./
-          file: ./Dockerfile.lxml
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: true
-          tags: kometateam/kometa:lxml-${{ steps.get_version.outputs.VERSION }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Build and Push
         id: docker_build
