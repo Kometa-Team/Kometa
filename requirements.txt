@@ -1,6 +1,6 @@
 arrapi==1.4.13
 GitPython==3.1.43
-lxml==5.2.1
+lxml==5.2.2
 num2words==0.5.13
 pathvalidate==3.2.0
 pillow==10.3.0
