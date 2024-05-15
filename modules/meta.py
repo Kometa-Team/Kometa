@@ -514,7 +514,7 @@ class DataFile:
                                 return actual_value
                             elif f"<<{var}" in str(og_txt):
                                 final = str(og_txt).replace(f"<<{var}>>", str(actual_value)) if f"<<{var}>>" in str(og_txt) else str(og_txt)
-                                if f"<<{var}" in final:
+                                if f"<<{var}" in final and var not in variables:
                                     match = re.search(f"<<({var}([+-])(\\d+))>>", final)
                                     if match:
                                         try:
