@@ -193,7 +193,7 @@ nav:
           - Sonarr: config/sonarr.md
           - Trakt: config/trakt.md
           - MyAnimeList: config/myanimelist.md
-          - Trakt and MyAnimeList Authentication: config/auth.md
+          - Trakt and MyAnimeList Authentication: config/authentication.md
       - OTHER:
         - Scheduling Parts: config/schedule.md
   - KOMETA DEFAULTS:
