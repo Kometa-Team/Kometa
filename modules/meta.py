@@ -507,14 +507,14 @@ class DataFile:
                     logger.trace("")
 
                     def check_for_var(_method, _data, _debug):
-                        def scan_text(og_txt, var, actual_value):
+                        def scan_text(og_txt, var, actual_value, second=False):
                             if og_txt is None:
                                 return og_txt
                             elif str(og_txt) == f"<<{var}>>":
                                 return actual_value
                             elif f"<<{var}" in str(og_txt):
                                 final = str(og_txt).replace(f"<<{var}>>", str(actual_value)) if f"<<{var}>>" in str(og_txt) else str(og_txt)
-                                if f"<<{var}" in final and var not in variables:
+                                if f"<<{var}" in final and second:
                                     match = re.search(f"<<({var}([+-])(\\d+))>>", final)
                                     if match:
                                         try:
@@ -532,13 +532,14 @@ class DataFile:
                                 for option in optional:
                                     if option not in variables and f"<<{option}>>" in str(_data):
                                         raise Failed
-                                for variable, variable_data in variables.items():
-                                    if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                        _data = scan_text(_data, variable, variable_data.replace(",", ""))
-                                    elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
-                                        continue
-                                    elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
-                                        _data = scan_text(_data, variable, variable_data)
+                                for option in [False, True]:
+                                    for variable, variable_data in variables.items():
+                                        if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=option)
+                                        elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                            continue
+                                        elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
+                                            _data = scan_text(_data, variable, variable_data, second=option)
                                 for dm, dd in default.items():
                                     if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
                                         continue

@@ -12,10 +12,10 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 060
 
-| Collection                                               | Key                              | Description                                                                    |
-|:---------------------------------------------------------|:---------------------------------|:-------------------------------------------------------------------------------|
-| `Genre Collections`                                      | `separator`                      | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Number>>`<br>**Example:** `5` | Collection of Movies/Shows that have this Genre.                               |
+| Collection                                               | Key                                  | Description                                                                    |
+|:---------------------------------------------------------|:-------------------------------------|:-------------------------------------------------------------------------------|
+| `Genre Collections`                                      | `separator`                          | [Separator Collection](../separators.md) to denote the Section of Collections. |
+| `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Genre>>`<br>**Example:** `Action` | Collection of Movies/Shows that have this Genre.                               |
 
 ## Config
 
