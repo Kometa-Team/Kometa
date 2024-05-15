@@ -186,7 +186,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
 
     Change `/path/to/kometa` to reflect where you've installed Kometa.
 
-    Keep Kometa running constantly, let it wait to do its thing at 3AM:
+    Keep Kometa running constantly, let it wait to do its thing at 5 AM:
     
        ```
        <?xml version="1.0" encoding="UTF-8"?>
