@@ -4,6 +4,8 @@ Addon
 Adlib
 Amblin
 analytics
+Anidb
+Anidb's
 AniDB
 AniDB's
 AniList
