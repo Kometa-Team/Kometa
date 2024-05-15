@@ -74,8 +74,6 @@ dynamic_collections:
         - 557495    # LEGO DC Super Hero Girls
       86066:      # Despicable Me
         - 544669    # Minions
-      9485:       # The Fast and the Furious
-        - 688042    # Hobbs & Shaw
       86115:      # Garfield
         - 373918    # Garfield CGI
       91361:      # Halloween
@@ -88,8 +86,6 @@ dynamic_collections:
         - 401562    # Teenage Mutant Ninja Turtles (Remake)
       111751:     # Texas Chainsaw Massacre
         - 425175    # Texas Chainsaw (Reboot)
-      2467:       # Tomb Raider
-        - 621142    # Tomb Raider (Reboot)
       748:        # X-Men
         - 453993    # The Wolverine
     title_override:
