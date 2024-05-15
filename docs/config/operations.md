@@ -157,6 +157,10 @@ You can create individual blocks of operations by using a list under `operations
     
     **Accepted Values:** Source or List of sources to use in that order
     
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
     <table class="clearTable">
       <tr><td>`mdb`</td><td>Use MDBList for Content Ratings</td></tr>
       <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDBList for Content Ratings</td></tr>
@@ -274,7 +278,11 @@ You can create individual blocks of operations by using a list under `operations
     **Attribute:** `mass_originally_available_update`
     
     **Accepted Values:** Source or List of sources to use in that order
-    
+
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Release Date</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date</td></tr>
@@ -313,7 +321,11 @@ You can create individual blocks of operations by using a list under `operations
     **Attribute:** `mass_added_at_update`
     
     **Accepted Values:** Source or List of sources to use in that order
-    
+
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Release Date</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date</td></tr>
@@ -363,7 +375,11 @@ You can create individual blocks of operations by using a list under `operations
     **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
     
     **Accepted Values:** Source or List of sources to use in that order
-    
+
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
@@ -450,15 +466,10 @@ You can create individual blocks of operations by using a list under `operations
           TV Shows:
             operations:
               mass_episode_audience_rating_update: 
-                - mdb
-                - mdb_average
+                - tmdb
                 - 2.0
               mass_episode_critic_rating_update: 
                 - imdb
-                - omdb
-                - 2.0
-              mass_episode_user_rating_update: 
-                - trakt_user
                 - 2.0
         ```
 

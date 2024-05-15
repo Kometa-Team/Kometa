@@ -335,6 +335,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `anidb_score_rating`          | AniDB Score Rating                      | `Movies` or `Shows`                         |
 | `mal_rating`                  | MyAnimeList Rating                      | `Movies` or `Shows`                         |
 
+
 ??? tip "Special Rating Text Modifiers"
 
     | Modifier | Description                                        | Example                                    |
@@ -343,6 +344,10 @@ Each Special Text Variables has multiple modifiers that can be used to format th
     |   `%`    | Rating out of 100                                  | `87`, `90`                                 |
     |   `#`    | Rating on a 10 point scale removing `.0` as needed | `8.7`, `9`                                 |
     |   `/`    | Rating on a 5 point scale                          | `8.6` shows as `4.3`, `9.0` shows as `4.5` |
+
+???+ tip "Note on `mdb` sources"
+
+     MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
 
 ##### Special String Text
 
