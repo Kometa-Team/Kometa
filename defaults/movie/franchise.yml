@@ -74,8 +74,6 @@ dynamic_collections:
         - 557495    # LEGO DC Super Hero Girls
       86066:      # Despicable Me
         - 544669    # Minions
-      9485:       # The Fast and the Furious
-        - 688042    # Hobbs & Shaw
       86115:      # Garfield
         - 373918    # Garfield CGI
       91361:      # Halloween
@@ -88,8 +86,6 @@ dynamic_collections:
         - 401562    # Teenage Mutant Ninja Turtles (Remake)
       111751:     # Texas Chainsaw Massacre
         - 425175    # Texas Chainsaw (Reboot)
-      2467:       # Tomb Raider
-        - 621142    # Tomb Raider (Reboot)
       748:        # X-Men
         - 453993    # The Wolverine
     title_override:
@@ -99,32 +95,78 @@ dynamic_collections:
     template_variables:
       # check1
       movie:
-        105995: 336560    # Anaconda: Lake Placid vs. Anaconda
-        176097: 14177     # Barbershop: Beauty Shop
-        448150: 567604    # Deadpool: Once Upon a Deadpool
-        9735: 6466, 222724  # Friday the 13th: Freddy vs. Jason, Crystal Lake Memories: The Complete History of Friday the 13th
-        386382: 326359, 460793  # Frozen: Frozen Fever, Olaf's Frozen Adventure
-        2980: 43074 # Ghostbusters: Ghostbusters
-        374509: 18983 # Godzilla (Showa): Godzilla, King of the Monsters!
-        374511: 39256 # Godzilla (Heisei): Godzilla 1985
-        535313: 293167  # Godzilla: Kong: Skull Island
-        9743: 11454 # The Hannibal Lecter: Manhunter
-        8354: 79218, 717095, 387893 # Ice Age: Ice Age: A Mammoth Christmas, Ice Age Continental Drift: Scrat Got Your Tongue, Ice Age: The Great Egg-Scapade
-        70068: 658009, 643413, 450001, 751391, 44249, 182127, 44865 # Ip Man: Ip Man: Kung Fu Master, Ip Man and Four Kings, Master Z: Ip Man Legacy, Young Ip Man: Crisis Time, The Legend Is Born: Ip Man, Ip Man: The Final Fight, The Grandmaster
-        328: 630322 # Jurassic Park: Battle at Big Rock
-        8580: 38575 # The Karate Kid: The Karate Kid
-        14740: 161143, 25472, 270946  # Madagascar: Madly Madagascar, Merry Madagascar, Penguins of Madagascar
-        9818: 664767  # Mortal Kombat: Mortal Kombat Legends: Scorpion's Revenge
-        171732: 39410 # Rebirth of Mothra: Mothra
-        8581: 6466, 23437 # A Nightmare on Elm Street: Freddy vs. Jason, A Nightmare on Elm Street
-        627517: 13155, 68728  # Oz: Return to Oz, Oz the Great and Powerful
-        10789: 157433 # Pet Sematary: Pet Sematary
-        708816: 305470, 306264  # Power Rangers: Power Rangers, Power Rangers Super Megaforce: The Legendary Battle
-        190435: 687354, 11667 # Street Fighter (Animated): Street Fighter Assassin's Fist, Street Fighter
-        1582: 1273  # Teenage Mutant Ninja Turtles: TMNT
-        10194: 130925 # Toy Story: Partysaurus Rex
-        63043: 73362  # TRON: TRON: The Next Day
-        748: 567604 # X-Men: Once Upon a Deadpool
+        105995:     # Anaconda
+          - 336560    # Lake Placid vs. Anaconda
+        176097:     # Barbershop
+          - 14177     # Beauty Shop
+        448150:     # Deadpool
+          - 567604    # Once Upon a Deadpool
+        9485:       # The Fast and the Furious
+          - 384018    # Hobbs & Shaw
+        9735:       # Friday the 13th
+          - 6466      # Freddy vs. Jason
+          - 222724    # Crystal Lake Memories: The Complete History of Friday the 13th
+        386382:     # Frozen
+          - 326359    # Frozen Fever
+          - 460793    # Olaf's Frozen Adventure
+        2980:       # Ghostbusters
+          - 43074     # Ghostbusters (2016)
+        374509:     # Godzilla (Showa)
+          - 18983     # Godzilla, King of the Monsters!
+        374511:     # Godzilla (Heisei)
+          - 39256     # Godzilla 1985
+        535313:     # Godzilla
+          - 293167    # Kong: Skull Island
+        9743:       # The Hannibal Lecter
+          - 11454     # Manhunter
+        8354:       # Ice Age
+          - 79218     # Ice Age: A Mammoth Christmas
+          - 717095    # Ice Age Continental Drift: Scrat Got Your Tongue
+          - 387893    # Ice Age: The Great Egg-Scapade
+        70068:      # Ip Man
+          - 658009    # Ip Man: Kung Fu Master
+          - 643413    # Ip Man and Four Kings
+          - 450001    # Master Z: Ip Man Legacy
+          - 751391    # Young Ip Man: Crisis Time
+          - 44249     # The Legend Is Born: Ip Man
+          - 182127    # Ip Man: The Final Fight
+          - 44865     # The Grandmaster
+        328:        # Jurassic Park
+          - 630322    # Battle at Big Rock
+        8580:       # The Karate Kid
+          - 38575     # The Karate Kid (2010)
+        14740:      # Madagascar
+          - 161143    # Madagascar: Madly Madagascar
+          - 25472     # Merry Madagascar
+          - 270946    # Penguins of Madagascar
+        9818:       # Mortal Kombat
+          - 664767    # Mortal Kombat Legends: Scorpion's Revenge
+        171732:     # Rebirth of Mothra
+          - 39410     # Mothra
+        8581:       # A Nightmare on Elm Street
+          - 6466      # Freddy vs. Jason
+          - 23437     # A Nightmare on Elm Street (2010)
+        627517:     # Oz
+          - 13155     # Oz: Return to Oz
+          - 68728     # Oz the Great and Powerful
+        10789:      # Pet Sematary
+          - 157433    # Pet Sematary (2019)
+        708816:     # Power Rangers
+          - 305470    # Power Rangers (2017)
+          - 306264    # Power Rangers Super Megaforce: The Legendary Battle
+        190435:     # Street Fighter (Animated)
+          - 687354    # Street Fighter Assassin's Fist
+          - 11667     # Street Fighter
+        1582:       # Teenage Mutant Ninja Turtles
+          - 1273      # TMNT
+        2467:       # Tomb Raider
+          - 338970    # Tomb Raider (2018)
+        10194:      # Toy Story
+          - 130925    # Partysaurus Rex
+        63043:      # TRON
+          - 73362     # TRON: The Next Day
+        748:        # X-Men
+          - 567604    # Once Upon a Deadpool
       # check2
       name_mapping:
         1565: 28 Days-Weeks Later
