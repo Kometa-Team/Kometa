@@ -229,6 +229,10 @@ Let's change the Trakt rating to that trakt public rating of `85%` instead, whic
 
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
 
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
 When the above is run you should get:
 
    ![](images/ratings-09.png)
@@ -265,6 +269,11 @@ Now, finally, let's make the poster rating images match the numbers we put in th
     * `rating2_image` was changed to `tmdb` from `rt_popcorn`
 
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason, make sure to switch this back to `false` when finished.
+
+    ???+ tip "Note on `mdb` sources"
+
+        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+
 
 When the above is run you should get:
 
