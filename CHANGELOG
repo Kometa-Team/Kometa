@@ -13,5 +13,6 @@ Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_
 
 # Bug Fixes
 Fixes #2034 `anilist_userlist` `score` attribute wasn't being validated correctly
+Fixes #1367 Error when trying to symlink the logs folder
 
 Various other Minor Fixes
