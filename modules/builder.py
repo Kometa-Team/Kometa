@@ -1412,8 +1412,8 @@ class CollectionBuilder:
                 score_dict = {}
                 for search_method, search_data in dict_data.items():
                     search_attr, modifier = os.path.splitext(str(search_method).lower())
-                    if search_attr == "score" and modifier in ["gt", "gte", "lt", "lte"]:
-                        score = util.parse(self.Type, search_method, dict_data, datatype="int", default=-1, minimum=0, maximum=10, parent=method_name)
+                    if search_attr == "score" and modifier in [".gt", ".gte", ".lt", ".lte"]:
+                        score = util.parse(self.Type, search_method, dict_data, methods=dict_methods, datatype="int", default=-1, minimum=0, maximum=10, parent=method_name)
                         if score > -1:
                             score_dict[modifier] = score
                     elif search_attr not in ["username", "list_name", "sort_by"]:

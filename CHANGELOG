@@ -12,5 +12,6 @@ Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_
 # Defaults
 
 # Bug Fixes
+Fixes #2034 `anilist_userlist` `score` attribute wasn't being validated correctly
 
 Various other Minor Fixes
