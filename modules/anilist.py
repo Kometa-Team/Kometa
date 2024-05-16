@@ -241,7 +241,7 @@ class AniList:
         variables = {"user": username, "sort": userlist_sort_options[sort_by]}
         for alist in self._request(query, variables)["data"]["MediaListCollection"]["lists"]:
             if alist["name"] == list_name:
-                return [m["media"]["id"] for m in alist["entries"] if not score or not any([util.is_number_filter(value, mod, m["score"]) for mod, value in score.items()])]
+                return [m["media"]["id"] for m in alist["entries"] if not score or not any([util.is_number_filter(m["score"], mod, value) for mod, value in score.items()])]
         return []
 
     def validate_userlist(self, data):
