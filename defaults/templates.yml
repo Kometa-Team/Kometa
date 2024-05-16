@@ -232,7 +232,8 @@ templates:
       sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
-    cache_builders: 1
+      cache_builders: 1
+    cache_builders: <<cache_builders>>
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: <<mdblist_list>>
