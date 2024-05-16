@@ -51,7 +51,8 @@ class MyLogger:
         self.secrets = []
         self.spacing = 0
         self.playlists_log = os.path.join(self.playlists_dir, PLAYLISTS_LOG)
-        os.makedirs(self.log_dir, exist_ok=True)
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir, exist_ok=True)
         self._logger = logging.getLogger(None if self.log_requests else self.logger_name)
         self._logger.setLevel(logging.DEBUG)
 
