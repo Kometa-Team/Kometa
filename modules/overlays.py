@@ -81,13 +81,6 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            reverse_anidb = {}
-            for k, v in self.library.anidb_map.items():
-                reverse_anidb[v] = k
-            reverse_mal = {}
-            for k, v in self.library.mal_map.items():
-                reverse_mal[v] = k
-
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
                 item_title = self.library.get_item_sort_title(item, atr="title")
                 try:
@@ -358,13 +351,7 @@ class Overlays:
                                                         found_rating = mdb_item.score / 10 if mdb_item.score else None
 
                                                 elif str(format_var).startswith(("anidb", "mal")):
-                                                    anidb_id = None
-                                                    if item.ratingKey in reverse_anidb:
-                                                        anidb_id = reverse_anidb[item.ratingKey]
-                                                    elif tvdb_id in self.config.Convert._tvdb_to_anidb:
-                                                        anidb_id = self.config.Convert._tvdb_to_anidb[tvdb_id]
-                                                    elif imdb_id in self.config.Convert._imdb_to_anidb:
-                                                        anidb_id = self.config.Convert._imdb_to_anidb[imdb_id]
+                                                    anidb_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
 
                                                     if str(format_var).startswith("anidb"):
                                                         if anidb_id:
@@ -378,8 +365,8 @@ class Overlays:
                                                         else:
                                                             raise Failed(f"No AniDB ID for Guid: {item.guid}")
                                                     else:
-                                                        if item.ratingKey in reverse_mal:
-                                                            mal_id = reverse_mal[item.ratingKey]
+                                                        if item.ratingKey in self.library.reverse_mal:
+                                                            mal_id = self.library.reverse_mal[item.ratingKey]
                                                         elif not anidb_id:
                                                             raise Failed(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
                                                         elif anidb_id not in self.config.Convert._anidb_to_mal:

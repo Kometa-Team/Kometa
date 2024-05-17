@@ -16,6 +16,10 @@ class Convert:
         self._anilist_to_anidb = {}
         self._anidb_to_imdb = {}
         self._anidb_to_tvdb = {}
+        self._anidb_to_tmdb_movie = {}
+        self._anidb_to_tmdb_show = {}
+        self._tmdb_movie_to_anidb = {}
+        self._tmdb_show_to_anidb = {}
         self._imdb_to_anidb = {}
         self._tvdb_to_anidb = {}
         self._anidb_ids = self.config.get_json(anime_lists_url)
@@ -37,6 +41,14 @@ class Convert:
                 self._anidb_to_tvdb[anidb_id] = int(ids["tvdb_id"])
                 if "tvdb_season" in ids and ids["tvdb_season"] in [1, -1] and ids["tvdb_epoffset"] == 0:
                     self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
+            if "tmdb_movie_id" in ids:
+                self._anidb_to_tmdb_movie[anidb_id] = util.get_list(ids["tmdb_movie_id"])
+                for tm_id in util.get_list(ids["tmdb_movie_id"]):
+                    self._tmdb_movie_to_anidb[tm_id] = anidb_id
+            if "tmdb_show_id" in ids:
+                self._anidb_to_tmdb_show[anidb_id] = util.get_list(ids["tmdb_show_id"])
+                for tm_id in util.get_list(ids["tmdb_show_id"]):
+                    self._tmdb_show_to_anidb[tm_id] = anidb_id
 
     def imdb_to_anidb(self, imdb_id):
         if imdb_id in self._imdb_to_anidb:
@@ -49,6 +61,22 @@ class Convert:
             return self._tvdb_to_anidb[int(tvdb_id)]
         else:
             raise Failed(f"AniDB ID not found for TVDb ID: {tvdb_id}")
+
+    def ids_to_anidb(self, library, rating_key, tvdb_id, imdb_id, tmdb_id):
+        if rating_key in library.reverse_anidb:
+            return library.reverse_anidb[rating_key]
+        elif int(tvdb_id) in self._tvdb_to_anidb:
+            return self._tvdb_to_anidb[int(tvdb_id)]
+        else:
+            tmdb_show_id = self.tvdb_to_tmdb(tvdb_id)
+            if tmdb_show_id and tmdb_show_id in self._tmdb_show_to_anidb:
+                return self._tmdb_show_to_anidb[tmdb_show_id]
+            elif imdb_id in self._imdb_to_anidb:
+                return self._imdb_to_anidb[imdb_id]
+            elif tmdb_id in self._tmdb_movie_to_anidb:
+                return self._tmdb_movie_to_anidb[tmdb_id]
+            else:
+                return None
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []
@@ -65,8 +93,23 @@ class Convert:
                         added = True
                 if added is False and anidb_id in self._anidb_to_tvdb:
                     ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
+            elif anidb_id in self._anidb_to_tmdb_movie:
+                added = False
+                for tmdb_id in self._anidb_to_tmdb_movie[anidb_id]:
+                    ids.append((tmdb_id, "tmdb"))
+                    added = True
+                if added is False and anidb_id in self._anidb_to_tvdb:
+                    ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
+                ids.append((self._anidb_to_tmdb_movie[anidb_id], "tmdb"))
             elif anidb_id in self._anidb_to_tvdb:
                 ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
+            elif anidb_id in self._anidb_to_tmdb_show:
+                for tmdb_id in self._anidb_to_tmdb_show[anidb_id]:
+                    try:
+                        ids.append((int(self.tmdb_to_tvdb(tmdb_id, fail=True)), "tvdb"))
+                    except Failed:
+                        pass
+                ids.append((self._anidb_to_tmdb_movie[anidb_id], "tmdb"))
             elif str(anidb_id) in self._anidb_ids:
                 logger.warning(f"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
@@ -210,7 +253,7 @@ class Convert:
         else:
             return None
 
-    def ids_from_cache(self, ratingKey, guid, item_type, check_id, library):
+    def ids_from_cache(self, rating_key, guid, item_type, check_id, library):
         media_id_type = None
         cache_id = None
         imdb_check = None
@@ -221,9 +264,9 @@ class Convert:
                 media_id_type = "movie" if "movie" in media_type else "show"
                 if item_type == "hama" and check_id.startswith("anidb"):
                     anidb_id = int(re.search("-(.*)", check_id).group(1))
-                    library.anidb_map[anidb_id] = ratingKey
+                    library.anidb_map[anidb_id] = rating_key
                 elif item_type == "myanimelist":
-                    library.mal_map[int(check_id)] = ratingKey
+                    library.mal_map[int(check_id)] = rating_key
         return media_id_type, cache_id, imdb_check, expired
 
     def scan_guid(self, guid_str):
