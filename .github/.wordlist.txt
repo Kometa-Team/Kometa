@@ -256,6 +256,7 @@ StevenLu's
 subprocess
 Sundance
 SxxEyy
+symlink
 symlinks
 Synology
 Systemctl
