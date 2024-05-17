@@ -101,13 +101,6 @@ class Operations:
             ep_lock_edits = {}
             ep_unlock_edits = {}
 
-            reverse_anidb = {}
-            for k, v in self.library.anidb_map.items():
-                reverse_anidb[v] = k
-            reverse_mal = {}
-            for k, v in self.library.mal_map.items():
-                reverse_mal[v] = k
-
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
@@ -270,14 +263,8 @@ class Operations:
 
                 anidb_id = None
                 def get_anidb_id():
-                    if item.ratingKey in reverse_anidb:
-                        return reverse_anidb[item.ratingKey]
-                    elif tvdb_id in self.config.Convert._tvdb_to_anidb:
-                        return self.config.Convert._tvdb_to_anidb[tvdb_id]
-                    elif imdb_id in self.config.Convert._imdb_to_anidb:
-                        return self.config.Convert._imdb_to_anidb[imdb_id]
-                    else:
-                        return False
+                    temp_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
+                    return temp_id if temp_id else False
 
                 _anidb_obj = None
                 def anidb_obj():
@@ -305,8 +292,8 @@ class Operations:
                         if anidb_id is None:
                             anidb_id = get_anidb_id()
                         mal_id = None
-                        if item.ratingKey in reverse_mal:
-                            mal_id = reverse_mal[item.ratingKey]
+                        if item.ratingKey in self.library.reverse_mal:
+                            mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
                             logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
                         elif anidb_id not in self.config.Convert._anidb_to_mal:
