@@ -378,10 +378,28 @@ class Library(ABC):
                     id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
                     if id_type == "movie":
-                        self.movie_rating_key_map[key] = main_id[0]
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.TMDb.get_movie(_id)
+                                    self.movie_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.movie_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.movie_map)
                     elif id_type == "show":
-                        self.show_rating_key_map[key] = main_id[0]
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.Convert.tvdb_to_tmdb(_id, fail=True)
+                                    self.show_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.show_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.show_map)
                 if imdb_id:
                     self.imdb_rating_key_map[key] = imdb_id[0]
