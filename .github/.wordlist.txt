@@ -210,6 +210,7 @@ pkkid
 plex
 plex's
 plexapi
+PlexAPI
 PlexCollection
 PlexPosters
 PNG
