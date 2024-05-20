@@ -242,7 +242,7 @@ class Library(ABC):
         return poster_uploaded, background_uploaded
 
     def get_id_from_maps(self, key):
-        key = str(key)
+        key = int(key)
         if key in self.movie_rating_key_map:
             return self.movie_rating_key_map[key]
         elif key in self.show_rating_key_map:
