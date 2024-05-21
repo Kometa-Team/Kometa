@@ -7,7 +7,26 @@ from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotSch
 class BuilderMethodValidator:
     def validate_methods(self, collectionBuilder, methods, logger):        
         data = collectionBuilder.data
-
+        validators = [
+            self._validate_ignore_blank_results,
+            self._validate_smart_label,
+            self._validate_delete_not_scheduled,
+            self._validate_schedule,
+            self._validate_delete_collections_named,
+            self._validate_collectionless,
+            self._validate_builders,
+            self._validate_run_again,
+            self._validate_build_collection,
+            self._validate_blank_collection,
+            self._validateSyncMode,
+            self._validate_tmdb,
+            self._validate_smart_url,
+            self._validate_custom_order,
+        ]
+        for validator in validators:
+            validator(collectionBuilder, methods, data, logger)
+    
+    def _validate_ignore_blank_results(self, collectionBuilder, methods, data, logger):
         collectionBuilder.ignore_blank_results = False
         if "ignore_blank_results" in methods and not collectionBuilder.playlist:
             logger.debug("")
@@ -15,64 +34,6 @@ class BuilderMethodValidator:
             logger.debug(f"Value: {data[methods['ignore_blank_results']]}")
             collectionBuilder.ignore_blank_results = util.parse(collectionBuilder.Type, "ignore_blank_results", data, datatype="bool", methods=methods, default=False)
 
-        self._validate_smart_label(collectionBuilder, methods, data, logger)
-
-        if "delete_not_scheduled" in methods and not collectionBuilder.overlay:
-            logger.debug("")
-            logger.debug("Validating Method: delete_not_scheduled")
-            logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
-            collectionBuilder.details["delete_not_scheduled"] = util.parse(collectionBuilder.Type, "delete_not_scheduled", data, datatype="bool", methods=methods, default=False)
-
-        self._validate_schedule(collectionBuilder, methods, data, logger)
-
-        if "delete_collections_named" in methods and not collectionBuilder.overlay and not collectionBuilder.playlist:
-            logger.debug("")
-            logger.debug("Validating Method: delete_collections_named")
-            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
-            for del_col in util.parse(collectionBuilder.Type, "delete_collections_named", data, datatype="strlist", methods=methods):
-                try:
-                    del_obj = collectionBuilder.library.get_collection(del_col, force_search=True)
-                    collectionBuilder.library.delete(del_obj)
-                    logger.info(f"Collection: {del_obj.title} deleted")
-                except Failed as e:
-                    if str(e).startswith("Plex Error: Failed to delete"):
-                        logger.error(e)
-
-        collectionBuilder.collectionless = "plex_collectionless" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay
-
-        collectionBuilder.validate_builders = True
-        if "validate_builders" in methods and not collectionBuilder.overlay:
-            logger.debug("")
-            logger.debug("Validating Method: validate_builders")
-            logger.debug(f"Value: {data[methods['validate_builders']]}")
-            collectionBuilder.validate_builders = util.parse(collectionBuilder.Type, "validate_builders", data, datatype="bool", methods=methods, default=True)
-
-        collectionBuilder.run_again = False
-        if "run_again" in methods and not collectionBuilder.overlay:
-            logger.debug("")
-            logger.debug("Validating Method: run_again")
-            logger.debug(f"Value: {data[methods['run_again']]}")
-            collectionBuilder.run_again = util.parse(collectionBuilder.Type, "run_again", data, datatype="bool", methods=methods, default=False)
-
-        collectionBuilder.build_collection = False if collectionBuilder.overlay else True
-        if "build_collection" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay:
-            logger.debug("")
-            logger.debug("Validating Method: build_collection")
-            logger.debug(f"Value: {data[methods['build_collection']]}")
-            collectionBuilder.build_collection = util.parse(collectionBuilder.Type, "build_collection", data, datatype="bool", methods=methods, default=True)
-
-        collectionBuilder.blank_collection = False
-        if "blank_collection" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay:
-            logger.debug("")
-            logger.debug("Validating Method: blank_collection")
-            logger.debug(f"Value: {data[methods['blank_collection']]}")
-            collectionBuilder.blank_collection = util.parse(collectionBuilder.Type, "blank_collection", data, datatype="bool", methods=methods, default=False)
-
-        self._validateSyncMode(collectionBuilder, methods, data, logger)
-        self._validate_tmdb(collectionBuilder, methods, data, logger)
-        self._validate_smart_url(collectionBuilder, methods, data, logger)
-        self._validate_custom_order(collectionBuilder, methods, data, logger)
-    
     def _validate_smart_label(self, collectionBuilder, methods, data, logger):
         collectionBuilder.smart_filter_details = ""
         collectionBuilder.smart_label_url = None
@@ -105,6 +66,13 @@ class BuilderMethodValidator:
                 else:
                     raise Failed(str(e))
     
+    def _validate_delete_not_scheduled(self, collectionBuilder, methods, data, logger):
+        if "delete_not_scheduled" in methods and not collectionBuilder.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: delete_not_scheduled")
+            logger.debug(f"Value: {data[methods['delete_not_scheduled']]}")
+            collectionBuilder.details["delete_not_scheduled"] = util.parse(collectionBuilder.Type, "delete_not_scheduled", data, datatype="bool", methods=methods, default=False)
+
     def _validate_schedule(self, collectionBuilder, methods, data, logger):
         if "schedule" in methods and not collectionBuilder.config.requested_collections and not collectionBuilder.overlay:
             logger.debug("")
@@ -134,6 +102,55 @@ class BuilderMethodValidator:
                         except Failed:
                             suffix = f" and could not be found to delete"
                     raise NotScheduled(f"{err}\n\n{collectionBuilder.Type} {collectionBuilder.name} not scheduled to run{suffix}")
+
+    def _validate_delete_collections_named(self, collectionBuilder, methods, data, logger):
+        if "delete_collections_named" in methods and not collectionBuilder.overlay and not collectionBuilder.playlist:
+            logger.debug("")
+            logger.debug("Validating Method: delete_collections_named")
+            logger.debug(f"Value: {data[methods['delete_collections_named']]}")
+            for del_col in util.parse(collectionBuilder.Type, "delete_collections_named", data, datatype="strlist", methods=methods):
+                try:
+                    del_obj = collectionBuilder.library.get_collection(del_col, force_search=True)
+                    collectionBuilder.library.delete(del_obj)
+                    logger.info(f"Collection: {del_obj.title} deleted")
+                except Failed as e:
+                    if str(e).startswith("Plex Error: Failed to delete"):
+                        logger.error(e)
+
+    def _validate_collectionless(self, collectionBuilder, methods, data, logger):
+        collectionBuilder.collectionless = "plex_collectionless" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay
+
+    def _validate_builders(self, collectionBuilder, methods, data, logger):
+        collectionBuilder.validate_builders = True
+        if "validate_builders" in methods and not collectionBuilder.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: validate_builders")
+            logger.debug(f"Value: {data[methods['validate_builders']]}")
+            collectionBuilder.validate_builders = util.parse(collectionBuilder.Type, "validate_builders", data, datatype="bool", methods=methods, default=True)
+
+    def _validate_run_again(self, collectionBuilder, methods, data, logger):
+        collectionBuilder.run_again = False
+        if "run_again" in methods and not collectionBuilder.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: run_again")
+            logger.debug(f"Value: {data[methods['run_again']]}")
+            collectionBuilder.run_again = util.parse(collectionBuilder.Type, "run_again", data, datatype="bool", methods=methods, default=False)
+
+    def _validate_build_collection(self, collectionBuilder, methods, data, logger):
+        collectionBuilder.build_collection = False if collectionBuilder.overlay else True
+        if "build_collection" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: build_collection")
+            logger.debug(f"Value: {data[methods['build_collection']]}")
+            collectionBuilder.build_collection = util.parse(collectionBuilder.Type, "build_collection", data, datatype="bool", methods=methods, default=True)
+
+    def _validate_blank_collection(self, collectionBuilder, methods, data, logger):
+        collectionBuilder.blank_collection = False
+        if "blank_collection" in methods and not collectionBuilder.playlist and not collectionBuilder.overlay:
+            logger.debug("")
+            logger.debug("Validating Method: blank_collection")
+            logger.debug(f"Value: {data[methods['blank_collection']]}")
+            collectionBuilder.blank_collection = util.parse(collectionBuilder.Type, "blank_collection", data, datatype="bool", methods=methods, default=False)
 
     def _validateSyncMode(self, collectionBuilder, methods, data, logger):
         collectionBuilder.sync = collectionBuilder.library.sync_mode == "sync" and collectionBuilder.type != "overlay"
