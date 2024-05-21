@@ -8,7 +8,7 @@ PlexAPI==4.15.13
 psutil==5.9.8
 python-dotenv==1.0.1
 python-dateutil==2.9.0.post0
-requests==2.31.0
+requests==2.32.1
 retrying==1.3.4
 ruamel.yaml==0.18.6
 schedule==1.2.1
