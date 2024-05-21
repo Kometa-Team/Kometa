@@ -1,7 +1,7 @@
 import os, re, time
 from arrapi import ArrException
 from datetime import datetime
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mojo, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import plex, tmdb, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import KometaImage
@@ -9,6 +9,8 @@ from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show, Season, Episode
 from urllib.parse import quote
+from ._builder_attribute_setter import BuilderAttributeSetter
+from ._config import *
 
 logger = util.logger
 class CollectionBuilder:
@@ -30,6 +32,7 @@ class CollectionBuilder:
         else:
             self.type = "collection"
         self.Type = self.type.capitalize()
+        self.attributeSetter = BuilderAttributeSetter(self, logger)
 
         logger.separator(f"{self.mapping_name} {self.Type}{f' in {self.library.name}' if self.library else ''}")
         logger.info("")
@@ -848,51 +851,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
                 elif self.overlay and method_name not in overlay_attributes:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed in an overlay file")
-                elif method_name in summary_details:
-                    self._summary(method_name, method_data)
-                elif method_name in poster_details:
-                    self._poster(method_name, method_data)
-                elif method_name in background_details:
-                    self._background(method_name, method_data)
-                elif method_name in details:
-                    self._details(method_name, method_data, method_final, methods)
-                elif method_name in item_details:
-                    self._item_details(method_name, method_data, method_mod, method_final, methods)
-                elif method_name in radarr_details or method_name in radarr.builders:
-                    self._radarr(method_name, method_data)
-                elif method_name in sonarr_details or method_name in sonarr.builders:
-                    self._sonarr(method_name, method_data)
-                elif method_name in anidb.builders:
-                    self._anidb(method_name, method_data)
-                elif method_name in anilist.builders:
-                    self._anilist(method_name, method_data)
-                elif method_name in icheckmovies.builders:
-                    self._icheckmovies(method_name, method_data)
-                elif method_name in letterboxd.builders:
-                    self._letterboxd(method_name, method_data)
-                elif method_name in imdb.builders:
-                    self._imdb(method_name, method_data)
-                elif method_name in mal.builders:
-                    self._mal(method_name, method_data)
-                elif method_name in mojo.builders:
-                    self._mojo(method_name, method_data)
-                elif method_name in plex.builders or method_final in plex.searches:
-                    self._plex(method_name, method_data)
-                elif method_name in reciperr.builders:
-                    self._reciperr(method_name, method_data)
-                elif method_name in tautulli.builders:
-                    self._tautulli(method_name, method_data)
-                elif method_name in tmdb.builders:
-                    self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders or method_name in ["sync_to_trakt_list", "sync_missing_to_trakt_list"]:
-                    self._trakt(method_name, method_data)
-                elif method_name in tvdb.builders:
-                    self._tvdb(method_name, method_data)
-                elif method_name in mdblist.builders:
-                    self._mdblist(method_name, method_data)
-                elif method_name == "filters":
-                    self._filters(method_name, method_data)
-                else:
+                elif not self.attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod):
                     raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
             except Failed as e:
                 if self.validate_builders:
@@ -982,45 +941,6 @@ class CollectionBuilder:
 
         logger.info("")
         logger.info("Validation Successful")
-
-    def _filters(self, method_name, method_data):
-        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
-            dict_methods = {dm.lower(): dm for dm in dict_data}
-            current_filters = []
-            validate = True
-            if "validate" in dict_methods:
-                if dict_data[dict_methods["validate"]] is None:
-                    raise Failed(f"{self.Type} Error: validate filter attribute is blank")
-                if not isinstance(dict_data[dict_methods["validate"]], bool):
-                    raise Failed(f"{self.Type} Error: validate filter attribute must be either true or false")
-                validate = dict_data.pop(dict_methods["validate"])
-            for filter_method, filter_data in dict_data.items():
-                filter_attr, modifier, filter_final = self.library.split(filter_method)
-                message = None
-                if filter_final not in all_filters:
-                    message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
-                elif self.builder_level in filters and filter_attr not in filters[self.builder_level]:
-                    message = f"{self.Type} Error: {filter_final} is not a valid {self.builder_level} filter attribute"
-                elif filter_final is None:
-                    message = f"{self.Type} Error: {filter_final} filter attribute is blank"
-                else:
-                    try:
-                        final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
-                    except FilterFailed as e:
-                        raise Failed(e)
-                    if self.builder_level in ["show", "season", "artist", "album"] and filter_attr in sub_filters:
-                        current_filters.append(("episodes" if self.builder_level in ["show", "season"] else "tracks", {filter_final: final_data, "percentage": self.default_percent}))
-                    else:
-                        current_filters.append((filter_final, final_data))
-                if message:
-                    if validate:
-                        raise Failed(message)
-                    else:
-                        logger.error(message)
-            if current_filters:
-                self.filters.append(current_filters)
-        self.has_tmdb_filters = any([str(k).split(".")[0] in tmdb_filters for f in self.filters for k, v in f])
-        self.has_imdb_filters = any([str(k).split(".")[0] in imdb_filters for f in self.filters for k, v in f])
 
     def gather_ids(self, method, value):
         expired = None
