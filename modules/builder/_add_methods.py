@@ -1,9 +1,12 @@
+import os, re
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from modules import anilist, imdb, mal, mojo, plex, radarr, sonarr, tmdb, trakt,util
+from modules.util import Failed, FilterFailed, NotScheduled
 from requests.exceptions import ConnectionError
+from _config import *
 
-def summary(self, method_name, method_data):
+def summary(self, logger, method_name, method_data):
     if method_name == "summary":
         self.summaries[method_name] = str(method_data).replace("<<key_name>>", self.key_name) if self.key_name else method_data
     elif method_name == "tmdb_summary":
@@ -28,7 +31,7 @@ def summary(self, method_name, method_data):
     elif method_name == "icheckmovies_description":
         self.summaries[method_name] = self.config.ICheckMovies.get_list_description(method_data, self.language)
 
-def poster(self, method_name, method_data):
+def poster(self, logger, method_name, method_data):
     if method_name == "url_poster":
         try:
             if not method_data.startswith("https://theposterdb.com/api/assets/"):
@@ -56,7 +59,7 @@ def poster(self, method_name, method_data):
         else:
             logger.error(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
 
-def background(self, method_name, method_data):
+def background(self, logger, method_name, method_data):
     if method_name == "url_background":
         try:
             image_response = self.config.get(method_data, headers=util.header())
@@ -75,7 +78,7 @@ def background(self, method_name, method_data):
         else:
             logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
 
-def details(self, method_name, method_data, method_final, methods):
+def details(self, logger, method_name, method_data, method_final, methods):
     if method_name == "url_theme":
         self.url_theme = method_data
     elif method_name == "file_theme":
@@ -139,7 +142,7 @@ def details(self, method_name, method_data, method_final, methods):
     elif method_name in string_details:
         self.details[method_name] = str(method_data)
 
-def item_details(self, method_name, method_data, method_mod, method_final, methods):
+def item_details(self, logger, method_name, method_data, method_mod, method_final, methods):
     if method_name == "item_label":
         if "item_label" in methods and "item_label.sync" in methods:
             raise Failed(f"{self.Type} Error: Cannot use item_label and item_label.sync together")
@@ -185,7 +188,7 @@ def item_details(self, method_name, method_data, method_mod, method_final, metho
         else:
             self.item_details[method_name] = str(method_data).lower() # noqa
 
-def radarr(self, method_name, method_data):
+def radarr(self, logger, method_name, method_data):
     if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
         self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
     elif method_name == "radarr_folder":
@@ -204,7 +207,7 @@ def radarr(self, method_name, method_data):
     elif method_name == "radarr_all":
         self.builders.append((method_name, True))
 
-def sonarr(self, method_name, method_data):
+def sonarr(self, logger, method_name, method_data):
     if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
         self.sonarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
     elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
@@ -226,7 +229,7 @@ def sonarr(self, method_name, method_data):
     elif method_name == "sonarr_all":
         self.builders.append((method_name, True))
 
-def anidb(self, method_name, method_data):
+def anidb(self, logger, method_name, method_data):
     if method_name == "anidb_popular":
         self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=30, maximum=30)))
     elif method_name in ["anidb_id", "anidb_relation"]:
@@ -245,7 +248,7 @@ def anidb(self, method_name, method_data):
             new_dictionary["limit"] = util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
             self.builders.append((method_name, new_dictionary))
 
-def anilist(self, method_name, method_data):
+def anilist(self, logger, method_name, method_data):
     if method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
         for anilist_id in self.config.AniList.validate_anilist_ids(method_data, studio=method_name == "anilist_studio"):
             self.builders.append((method_name, anilist_id))
@@ -319,7 +322,7 @@ def anilist(self, method_name, method_data):
             new_dictionary["limit"] = util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name)
             self.builders.append((method_name, new_dictionary))
 
-def icheckmovies(self, method_name, method_data):
+def icheckmovies(self, logger, method_name, method_data):
     if method_name.startswith("icheckmovies_list"):
         icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
         for icheckmovies_list in icheckmovies_lists:
@@ -327,7 +330,7 @@ def icheckmovies(self, method_name, method_data):
         if method_name.endswith("_details"):
             self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
 
-def imdb(self, method_name, method_data):
+def imdb(self, logger, method_name, method_data):
     if method_name == "imdb_id":
         for value in util.get_list(method_data):
             if str(value).startswith("tt"):
@@ -537,7 +540,7 @@ def imdb(self, method_name, method_data):
             else:
                 raise Failed(f"{self.Type} Error: {method_name} had no valid fields")
 
-def letterboxd(self, method_name, method_data):
+def letterboxd(self, logger, method_name, method_data):
     if method_name.startswith("letterboxd_list"):
         letterboxd_lists = self.config.Letterboxd.validate_letterboxd_lists(self.Type, method_data, self.language)
         for letterboxd_list in letterboxd_lists:
@@ -545,7 +548,7 @@ def letterboxd(self, method_name, method_data):
         if method_name.endswith("_details"):
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
 
-def mal(self, method_name, method_data):
+def mal(self, logger, method_name, method_data):
     if method_name == "mal_id":
         for mal_id in util.get_int_list(method_data, "MyAnimeList ID"):
             self.builders.append((method_name, mal_id))
@@ -652,7 +655,7 @@ def mal(self, method_name, method_data):
         final_text = f"MyAnimeList Search\n{method_name[4:].capitalize()}: {' or '.join([str(all_items[i]) for i in final_items])}"
         self.builders.append(("mal_search", ({"genres" if method_name == "mal_genre" else "producers": ",".join(final_items)}, final_text, 0)))
 
-def mojo(self, method_name, method_data):
+def mojo(self, logger, method_name, method_data):
     for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
         dict_methods = {dm.lower(): dm for dm in dict_data}
         final = {}
@@ -773,7 +776,7 @@ def mojo(self, method_name, method_data):
         final["limit"] = util.parse(self.Type, "limit", dict_data, methods=dict_methods, parent=method_name, default=0, datatype="int", maximum=1000) if "limit" in dict_methods else 0
         self.builders.append((method_name, final))
 
-def plex(self, method_name, method_data):
+def plex(self, logger, method_name, method_data):
     if method_name in ["plex_all", "plex_pilots"]:
         self.builders.append((method_name, self.builder_level))
     elif method_name == "plex_watchlist":
@@ -807,18 +810,18 @@ def plex(self, method_name, method_data):
             else:
                 raise Failed(str(e))
 
-def reciperr(self, method_name, method_data):
+def reciperr(self, logger, method_name, method_data):
     if method_name == "reciperr_list":
         for reciperr_list in self.config.Reciperr.validate_list(method_data):
             self.builders.append((method_name, reciperr_list))
     elif method_name == "stevenlu_popular":
         self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
-def mdblist(self, method_name, method_data):
+def mdblist(self, logger, method_name, method_data):
     for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
         self.builders.append((method_name, mdb_dict))
 
-def tautulli(self, method_name, method_data):
+def tautulli(self, logger, method_name, method_data):
     for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
         dict_methods = {dm.lower(): dm for dm in dict_data}
         final_dict = {
@@ -835,7 +838,7 @@ def tautulli(self, method_name, method_data):
         final_dict["list_buffer"] = buff
         self.builders.append((method_name, final_dict))
 
-def tmdb(self, method_name, method_data):
+def tmdb(self, logger, method_name, method_data):
     if method_name == "tmdb_discover":
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -926,7 +929,7 @@ def tmdb(self, method_name, method_data):
         for value in values:
             self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
-def trakt(self, method_name, method_data):
+def trakt(self, logger, method_name, method_data):
     if method_name.startswith("trakt_list"):
         trakt_lists = self.config.Trakt.validate_list(method_data)
         for trakt_list in trakt_lists:
@@ -971,7 +974,7 @@ def trakt(self, method_name, method_data):
         for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
             self.builders.append((final_method, trakt_dict))
 
-def tvdb(self, method_name, method_data):
+def tvdb(self, logger, method_name, method_data):
     values = util.get_list(method_data)
     if method_name.endswith("_details"):
         if method_name.startswith(("tvdb_movie", "tvdb_show")):
