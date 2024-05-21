@@ -17,5 +17,6 @@ Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_
 Fixes #2034 `anilist_userlist` `score` attribute wasn't being validated correctly
 Fixes #1367 Error when trying to symlink the logs folder
 Fixes #2028 TMDb IDs were being ignored on the report
+Fixes a bug when parsing a comma-separated string of ints
 
 Various other Minor Fixes
