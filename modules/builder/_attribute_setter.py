@@ -7,7 +7,7 @@ from requests.exceptions import ConnectionError
 from modules.builder._config import * 
 
 class BuilderAttributeSetter:
-    def setAttributes(self, collectionBuilder, methods, logger):
+    def set_attributes(self, collectionBuilder, methods, logger):
         self.collectionBuilder = collectionBuilder
         self.Type = collectionBuilder.Type
         self.logger = logger
@@ -22,15 +22,15 @@ class BuilderAttributeSetter:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                self._setAttribute(method_name, method_data, method_final, methods, method_mod)
+                self._set_attribute(method_name, method_data, method_final, methods, method_mod)
             except Failed as e:
                 if collectionBuilder.validate_builders:
                     raise
                 else:
                     logger.error(e)
 
-    def _setAttribute(self, method_name, method_data, method_final, methods, method_mod):
-        self._validateAttributes(method_name, method_data, method_final)
+    def _set_attribute(self, method_name, method_data, method_final, methods, method_mod):
+        self._validate_attributes(method_name, method_data, method_final)
         
         if method_name in summary_details:
             self._summary(method_name, method_data)
@@ -77,7 +77,7 @@ class BuilderAttributeSetter:
         else:
             raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
         
-    def _validateAttributes(self, method_name, method_data, method_final):
+    def _validate_attributes(self, method_name, method_data, method_final):
         if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
             raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
         elif method_data is None and method_final not in none_details:

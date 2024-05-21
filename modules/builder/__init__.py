@@ -475,7 +475,7 @@ class CollectionBuilder:
         BuilderMethodValidator().validate_methods(self, methods, logger)
 
         attributeSetter = BuilderAttributeSetter()
-        attributeSetter.setAttributes(self, methods, logger)
+        attributeSetter.set_attributes(self, methods, logger)
 
         if "append_label" in methods and not self.playlist and not self.overlay:
             logger.debug("")
