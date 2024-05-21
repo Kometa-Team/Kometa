@@ -779,6 +779,11 @@ class Operations:
 
                                 for episode in self.library.query(season.episodes):
                                     try:
+                                        episode = self.library.reload(episode)
+                                    except Failed:
+                                        logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
+                                        continue
+                                    try:
                                         episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                     except Failed:
                                         episode_poster = None
