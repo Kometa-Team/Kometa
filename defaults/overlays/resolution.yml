@@ -159,18 +159,14 @@ external_templates:
 templates:
   edition:
     conditionals:
-      regex1:
+      regex:
         conditions:
           - key: enhanced
             value: '(?i)\bIMAX Enhanced\b|^(?=.*(DSNP|Disney\+|CORE(?=[ ._-]web[ ._-]?(dl|rip)\b)|\bBC(?=[ ._-]web[ ._-]?(dl|rip)\b)|IMAX[- .]Enhanced)\b)(?=.*\b(IMAX|IMAX[- .]Enhanced)\b).*'
           - key: imax
             value: '(?i)\bIMAX\b'
           - key: criterion
-            value: '(?i)Criterion'
-      regex2:
-        conditions:
-          - key: criterion
-            value: '(?i)\[CC\]'
+            value: '(?i)Criterion|\[CC\]'
     optional:
       - search
       - use_<<key>>
@@ -185,8 +181,7 @@ templates:
     filters:
       - edition: <<search>>
       - filepath.regex:
-        - <<regex1>>
-        - <<regex2>>
+        - <<regex>>
         - '(?i)edition-\b(4k )?<<search>>(s|ed)?\b'           # New TRaSH naming
         - '(?<=[0-9]{4}[)}>\]]\s)\b(4k )?<<search>>(s|ed)?\b' # Original TRaSH naming
 
