@@ -32,7 +32,6 @@ class CollectionBuilder:
         else:
             self.type = "collection"
         self.Type = self.type.capitalize()
-        self.attributeSetter = BuilderAttributeSetter(self, logger)
 
         logger.separator(f"{self.mapping_name} {self.Type}{f' in {self.library.name}' if self.library else ''}")
         logger.info("")
@@ -794,7 +793,8 @@ class CollectionBuilder:
 
         if self.smart:
             self.custom_sort = None
-
+        
+        attributeSetter = BuilderAttributeSetter(self, logger)
         for method_key, method_data in self.data.items():
             if method_key.lower() in ignored_details:
                 continue
@@ -805,54 +805,7 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
-                elif method_data is None and method_final not in none_details:
-                    logger.warning(f"Collection Warning: {method_final} attribute is blank")
-                elif self.playlist and method_name not in playlist_attributes:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed when using playlists")
-                elif not self.config.Trakt and "trakt" in method_name:
-                    raise Failed(f"{self.Type} Error: {method_final} requires Trakt to be configured")
-                elif not self.library.Radarr and "radarr" in method_name:
-                    logger.error(f"{self.Type} Error: {method_final} requires Radarr to be configured")
-                elif not self.library.Sonarr and "sonarr" in method_name:
-                    logger.error(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
-                elif not self.library.Tautulli and "tautulli" in method_name:
-                    raise Failed(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
-                elif not self.config.MyAnimeList and "mal" in method_name:
-                    raise Failed(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
-                elif self.library.is_movie and method_name in show_only_builders:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for show libraries")
-                elif self.library.is_show and method_name in movie_only_builders:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for movie libraries")
-                elif self.library.is_show and method_name in plex.movie_only_searches:
-                    raise Failed(f"{self.Type} Error: {method_final} plex search only allowed for movie libraries")
-                elif self.library.is_movie and method_name in plex.show_only_searches:
-                    raise Failed(f"{self.Type} Error: {method_final} plex search only allowed for show libraries")
-                elif self.library.is_music and method_name not in music_attributes:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for music libraries")
-                elif self.library.is_music and method_name in album_details and self.builder_level != "album":
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
-                elif not self.library.is_music and method_name in music_only_builders:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
-                elif not self.playlist and self.builder_level != "episode" and method_name in episode_parts_only:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with Collection Level: episode")
-                elif self.parts_collection and method_name not in parts_collection_valid:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.builder_level.capitalize()}")
-                elif self.smart and method_name in smart_invalid:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with normal collections")
-                elif not self.smart and method_name in smart_only:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with smart collections")
-                elif self.collectionless and method_name not in collectionless_details:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
-                elif self.smart_url and method_name in all_builders + smart_url_invalid:
-                    raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
-                elif not self.overlay and method_name in overlay_only:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
-                elif self.overlay and method_name not in overlay_attributes:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not allowed in an overlay file")
-                elif self.attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod) is False:
-                    raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
+                attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod)
             except Failed as e:
                 if self.validate_builders:
                     raise
