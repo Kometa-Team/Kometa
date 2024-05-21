@@ -14,6 +14,9 @@ from ._attribute_setter import BuilderAttributeSetter
 from ._validate_methods import validateMethods
 
 logger = util.logger
+
+__all__ = ["CollectionBuilder"]
+
 class CollectionBuilder:
     def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None):
         self.config = config
