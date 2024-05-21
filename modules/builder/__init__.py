@@ -851,7 +851,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
                 elif self.overlay and method_name not in overlay_attributes:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed in an overlay file")
-                elif not self.attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod):
+                elif self.attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod) is False:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
             except Failed as e:
                 if self.validate_builders:
