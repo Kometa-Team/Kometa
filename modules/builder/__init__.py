@@ -11,7 +11,7 @@ from plexapi.video import Movie, Show, Season, Episode
 from urllib.parse import quote
 from ._config import *
 from ._attribute_setter import BuilderAttributeSetter
-from ._validate_methods import validateMethods
+from ._validate_methods import BuilderMethodValidator
 
 logger = util.logger
 
@@ -472,7 +472,7 @@ class CollectionBuilder:
                 else:
                     server_check = pl_library.PlexServer.machineIdentifier
 
-        validateMethods(self, methods, data, logger)
+        BuilderMethodValidator().validate_methods(self, methods, logger)
 
         attributeSetter = BuilderAttributeSetter()
         attributeSetter.setAttributes(self, methods, logger)
