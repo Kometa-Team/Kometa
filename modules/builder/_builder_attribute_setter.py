@@ -7,12 +7,29 @@ from requests.exceptions import ConnectionError
 from modules.builder._config import * 
 
 class BuilderAttributeSetter:
-    def __init__(self, collectionBuilder, logger):
+    def setAttributes(self, collectionBuilder, methods, logger):
         self.collectionBuilder = collectionBuilder
-        self.logger = logger
         self.Type = collectionBuilder.Type
+        self.logger = logger
 
-    def setAttributes(self, method_name, method_data, method_final, methods, method_mod):
+        for method_key, method_data in collectionBuilder.data.items():
+            if method_key.lower() in ignored_details:
+                continue
+            logger.debug("")
+            method_name, method_mod, method_final = collectionBuilder.library.split(method_key)
+            if method_name in ignored_details:
+                continue
+            logger.debug(f"Validating Method: {method_key}")
+            logger.debug(f"Value: {method_data}")
+            try:
+                self._setAttribute(method_name, method_data, method_final, methods, method_mod)
+            except Failed as e:
+                if collectionBuilder.validate_builders:
+                    raise
+                else:
+                    logger.error(e)
+
+    def _setAttribute(self, method_name, method_data, method_final, methods, method_mod):
         self._validateAttributes(method_name, method_data, method_final)
         
         if method_name in summary_details:

@@ -794,23 +794,8 @@ class CollectionBuilder:
         if self.smart:
             self.custom_sort = None
         
-        attributeSetter = BuilderAttributeSetter(self, logger)
-        for method_key, method_data in self.data.items():
-            if method_key.lower() in ignored_details:
-                continue
-            logger.debug("")
-            method_name, method_mod, method_final = self.library.split(method_key)
-            if method_name in ignored_details:
-                continue
-            logger.debug(f"Validating Method: {method_key}")
-            logger.debug(f"Value: {method_data}")
-            try:
-                attributeSetter.setAttributes(method_name, method_data, method_final, methods, method_mod)
-            except Failed as e:
-                if self.validate_builders:
-                    raise
-                else:
-                    logger.error(e)
+        attributeSetter = BuilderAttributeSetter()
+        attributeSetter.setAttributes(self, methods, logger)
 
         if "append_label" in methods and not self.playlist and not self.overlay:
             logger.debug("")
