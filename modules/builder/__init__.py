@@ -12,6 +12,7 @@ from urllib.parse import quote
 from ._config import *
 from ._attribute_setter import BuilderAttributeSetter
 from ._validate_methods import BuilderMethodValidator
+from ._missing_filters import MissingFiltersUtil
 
 logger = util.logger
 
@@ -559,6 +560,7 @@ class CollectionBuilder:
 
         logger.info("")
         logger.info("Validation Successful")
+        self.missing_filters_util = MissingFiltersUtil(self, logger)
 
     def gather_ids(self, method, value):
         expired = None
@@ -1265,263 +1267,19 @@ class CollectionBuilder:
             logger.info(f"{amount_removed} {self.builder_level.capitalize()}{'s' if amount_removed == 1 else ''} Removed")
         return amount_removed
 
-    def check_tmdb_filters(self, tmdb_item, filters_in, is_movie):
-        for filter_method, filter_data in filters_in:
-            filter_attr, modifier, filter_final = self.library.split(filter_method)
-            if self.config.TMDb.item_filter(tmdb_item, filter_attr, modifier, filter_final, filter_data, is_movie, self.current_time) is False:
-                return False
-        return True
-
-    def check_tvdb_filters(self, tvdb_item, filters_in):
-        for filter_method, filter_data in filters_in:
-            filter_attr, modifier, filter_final = self.library.split(filter_method)
-            if self.config.TVDb.item_filter(tvdb_item, filter_attr, modifier, filter_final, filter_data) is False:
-                return False
-        return True
-
-    def check_imdb_filters(self, imdb_info, filters_in):
-        for filter_method, filter_data in filters_in:
-            filter_attr, modifier, filter_final = self.library.split(filter_method)
-            if self.config.IMDb.item_filter(imdb_info, filter_attr, modifier, filter_final, filter_data) is False:
-                return False
-        return True
-
-    def check_missing_filters(self, item_id, is_movie, tmdb_item=None, check_released=False):
-        imdb_info = None
-        if self.has_tmdb_filters or self.has_imdb_filters or check_released:
-            try:
-                if tmdb_item is None:
-                    if is_movie:
-                        tmdb_item = self.config.TMDb.get_movie(item_id, ignore_cache=True)
-                    else:
-                        tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
-            except Failed:
-                return False
-            if self.has_imdb_filters and tmdb_item and tmdb_item.imdb_id:
-                try:
-                    imdb_info = self.config.IMDb.keywords(tmdb_item.imdb_id, self.language)
-                except Failed as e:
-                    logger.error(e)
-                    return False
-        if check_released:
-            date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date
-            if not date_to_check or date_to_check > self.current_time:
-                return False
-        final_return = True
-        if self.has_tmdb_filters or self.has_imdb_filters:
-            final_return = False
-            for filter_list in self.filters:
-                tmdb_f = []
-                imdb_f = []
-                for k, v in filter_list:
-                    if k.split(".")[0] in tmdb_filters:
-                        tmdb_f.append((k, v))
-                    elif k.split(".")[0] in imdb_filters:
-                        imdb_f.append((k, v))
-                or_result = True
-                if tmdb_f:
-                    if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
-                        or_result = False
-                if imdb_f:
-                    if not imdb_info and self.check_imdb_filters(imdb_info, imdb_f) is False:
-                        or_result = False
-                if or_result:
-                    final_return = True
-        return final_return
-
     def check_filters(self, item, display):
-        final_return = True
-        if self.filters and not self.details["only_filter_missing"]:
-            logger.ghost(f"Filtering {display} {item.title}")
-            item = self.library.reload(item)
-            final_return = False
-            tmdb_item = None
-            tvdb_item = None
-            imdb_info = None
-            for filter_list in self.filters:
-                tmdb_f = []
-                tvdb_f = []
-                imdb_f = []
-                plex_f = []
-                for k, v in filter_list:
-                    if k.split(".")[0] in tmdb_filters:
-                        tmdb_f.append((k, v))
-                    elif k.split(".")[0] in tvdb_filters:
-                        tvdb_f.append((k, v))
-                    elif k.split(".")[0] in imdb_filters:
-                        imdb_f.append((k, v))
-                    else:
-                        plex_f.append((k, v))
-                or_result = True
-                if tmdb_f:
-                    if not tmdb_item and isinstance(item, (Movie, Show)):
-                        if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
-                            logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
-                            or_result = False
-                        else:
-                            try:
-                                if item.ratingKey in self.library.movie_rating_key_map:
-                                    tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey], ignore_cache=True)
-                                else:
-                                    tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True), ignore_cache=True)
-                            except Failed as e:
-                                logger.error(e)
-                                or_result = False
-                    if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.library.movie_rating_key_map) is False:
-                        or_result = False
-                if tvdb_f:
-                    if not tvdb_item and isinstance(item, Show):
-                        if item.ratingKey not in self.library.show_rating_key_map:
-                            logger.warning(f"Filter Error: No TVDb ID found for {item.title}")
-                            or_result = False
-                        else:
-                            try:
-                                tvdb_item = self.config.TVDb.get_tvdb_obj(self.library.show_rating_key_map[item.ratingKey])
-                            except Failed as e:
-                                logger.error(e)
-                                or_result = False
-                    if not tvdb_item or self.check_tvdb_filters(tvdb_item, tvdb_f) is False:
-                        or_result = False
-                if imdb_f:
-                    if not imdb_info and isinstance(item, (Movie, Show)):
-                        if item.ratingKey not in self.library.imdb_rating_key_map:
-                            logger.warning(f"Filter Error: No IMDb ID found for {item.title}")
-                            or_result = False
-                        else:
-                            try:
-                                imdb_info = self.config.IMDb.keywords(self.library.imdb_rating_key_map[item.ratingKey], self.language)
-                            except Failed as e:
-                                logger.error(e)
-                                or_result = False
-                    if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
-                        or_result = False
-                if plex_f and self.library.check_filters(item, plex_f, self.current_time) is False:
-                    or_result = False
-                if or_result:
-                    final_return = True
-        return final_return
+        return self.missing_filters_util.check_filters(item, display)
 
     def display_filters(self):
         if self.filters:
             for filter_list in self.filters:
                 logger.info("")
                 for filter_key, filter_value in filter_list:
-                    logger.info(f"Collection Filter {filter_key}: {filter_value}")
+                    logger.info(f"Collection Filter {filter_key}: {filter_value}") 
 
     def run_missing(self):
-        added_to_radarr = 0
-        added_to_sonarr = 0
-        if len(self.missing_movies) > 0:
-            if self.details["show_missing"] is True:
-                logger.info("")
-                logger.separator(f"Missing Movies from Library: {self.library.name}", space=False, border=False)
-                logger.info("")
-            missing_movies_with_names = []
-            filtered_movies_with_names = []
-            for missing_id in self.missing_movies:
-                try:
-                    movie = self.config.TMDb.get_movie(missing_id)
-                except Failed as e:
-                    logger.error(e)
-                    continue
-                current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
-                if self.check_missing_filters(missing_id, True, tmdb_item=movie, check_released=self.details["missing_only_released"]):
-                    missing_movies_with_names.append((current_title, missing_id))
-                    if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
-                else:
-                    filtered_movies_with_names.append((current_title, missing_id))
-                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {current_title} (TMDb: {missing_id})")
-            logger.info("")
-            logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
-            if len(missing_movies_with_names) > 0:
-                if self.do_report:
-                    self.library.add_missing(self.name, missing_movies_with_names, True)
-                if self.run_again or (self.library.Radarr and (self.radarr_details["add_missing"] or "item_radarr_tag" in self.item_details)):
-                    missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
-                    if self.library.Radarr:
-                        if self.radarr_details["add_missing"]:
-                            try:
-                                added = self.library.Radarr.add_tmdb(missing_tmdb_ids, **self.radarr_details)
-                                self.added_to_radarr.extend([{"title": movie.title, "id": movie.tmdbId} for movie in added])
-                                added_to_radarr += len(added)
-                            except Failed as e:
-                                logger.error(e)
-                            except ArrException as e:
-                                logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
-                        if "item_radarr_tag" in self.item_details:
-                            try:
-                                self.library.Radarr.edit_tags(missing_tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
-                            except Failed as e:
-                                logger.error(e)
-                            except ArrException as e:
-                                logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
-                    if self.run_again:
-                        self.run_again_movies.extend(missing_tmdb_ids)
-            if len(filtered_movies_with_names) > 0 and self.do_report:
-                self.library.add_filtered(self.name, filtered_movies_with_names, True)
-        if len(self.missing_shows) > 0 and self.library.is_show:
-            if self.details["show_missing"] is True:
-                logger.info("")
-                logger.separator(f"Missing Shows from Library: {self.name}", space=False, border=False)
-                logger.info("")
-            missing_shows_with_names = []
-            filtered_shows_with_names = []
-            for missing_id in self.missing_shows:
-                try:
-                    title = self.config.TVDb.get_tvdb_obj(missing_id).title
-                except Failed as e:
-                    logger.error(e)
-                    continue
-                if self.check_missing_filters(missing_id, False, check_released=self.details["missing_only_released"]):
-                    missing_shows_with_names.append((title, missing_id))
-                    if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
-                else:
-                    filtered_shows_with_names.append((title, missing_id))
-                    if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {title} (TVDb: {missing_id})")
-            logger.info("")
-            logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
-            if len(missing_shows_with_names) > 0:
-                if self.do_report:
-                    self.library.add_missing(self.name, missing_shows_with_names, False)
-                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add_missing"] or "item_sonarr_tag" in self.item_details)):
-                    missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
-                    if self.library.Sonarr:
-                        if self.sonarr_details["add_missing"]:
-                            try:
-                                added = self.library.Sonarr.add_tvdb(missing_tvdb_ids, **self.sonarr_details)
-                                self.added_to_sonarr.extend([{"title": show.title, "id": show.tvdbId} for show in added])
-                                added_to_sonarr += len(added)
-                            except Failed as e:
-                                logger.error(e)
-                            except ArrException as e:
-                                logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
-                        if "item_sonarr_tag" in self.item_details:
-                            try:
-                                self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
-                            except Failed as e:
-                                logger.error(e)
-                            except ArrException as e:
-                                logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
-                    if self.run_again:
-                        self.run_again_shows.extend(missing_tvdb_ids)
-            if len(filtered_shows_with_names) > 0 and self.do_report:
-                self.library.add_filtered(self.name, filtered_shows_with_names, False)
-        if len(self.missing_parts) > 0 and self.library.is_show:
-            if self.details["show_missing"] is True:
-                for missing in self.missing_parts:
-                    logger.info(f"{self.name} {self.Type} | ? | {missing}")
-            if self.do_report:
-                self.library.add_missing(self.name, self.missing_parts, False)
-        return added_to_radarr, added_to_sonarr
-
+        return self.missing_filters_util.run_missing()
+    
     def load_collection_items(self):
         if self.build_collection and self.obj:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
