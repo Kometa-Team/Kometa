@@ -3,7 +3,7 @@ from arrapi import ArrException
 from datetime import datetime
 from modules import plex, tmdb, util
 from modules.util import Failed, FilterFailed,  NotScheduled, Deleted
-from modules.overlay import Overlay
+from .overlay_config import OverlayConfig
 from modules.poster import KometaImage
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import NotFound
@@ -16,7 +16,7 @@ from ._missing_filters import MissingFiltersUtil
 
 logger = util.logger
 
-__all__ = ["CollectionBuilder"]
+__all__ = ["CollectionBuilder", "OverlayConfig"]
 
 class CollectionBuilder:
     def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None):
@@ -342,7 +342,7 @@ class CollectionBuilder:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
                     logger.error(f"Overlay Error: suppress_overlays attribute is blank")
-            self.overlay = Overlay(config, library, metadata, str(self.mapping_name), overlay_data, suppress, self.builder_level)
+            self.overlay = OverlayConfig(config, library, metadata, str(self.mapping_name), overlay_data, suppress, self.builder_level)
 
         self.sync_to_users = None
         self.exclude_users = None

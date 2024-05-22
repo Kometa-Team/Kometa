@@ -68,7 +68,7 @@ def get_canvas_size(item):
     else:
         return portrait_dim
 
-class Overlay:
+class OverlayConfig:
     def __init__(self, config, library, overlay_file, original_mapping_name, overlay_data, suppress, level):
         self.config = config
         self.library = library
@@ -191,7 +191,7 @@ class Overlay:
                     temp_path = temp_path[16:]
                 if not temp_path.endswith(".png"):
                     temp_path = f"{temp_path}.png"
-                images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
+                images_path = os.path.join(os.path.dirname(os.curdir), "defaults", "overlays", "images")
                 if not os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
                     raise Failed(f"Overlay Error: Overlay Image not found at: {os.path.abspath(os.path.join(images_path, temp_path))}")
                 self.path = os.path.abspath(os.path.join(images_path, temp_path))
@@ -239,7 +239,7 @@ class Overlay:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
             text = f"{match.group(1)}"
-            code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            code_base = os.path.dirname(os.curdir)
             font_base = os.path.join(code_base, "fonts")
             self.font_name = os.path.join(font_base, "Roboto-Medium.ttf")
             if "font_size" in self.data:

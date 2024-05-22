@@ -1,7 +1,7 @@
 import os, re
 from datetime import datetime
-from modules import plex, util, overlay
-from modules.builder import CollectionBuilder
+from modules import plex, util
+from modules.builder import CollectionBuilder, overlay_config
 from modules.util import Failed, FilterFailed, NotScheduled, LimitReached
 from num2words import num2words
 from plexapi.exceptions import BadRequest
@@ -136,11 +136,11 @@ class Overlays:
                                     real_value = getattr(item, actual)
                                     if cache_value is None or real_value is None:
                                         continue
-                                    if cache_key in overlay.float_vars:
+                                    if cache_key in overlay_config.float_vars:
                                         cache_value = float(cache_value)
-                                    if cache_key in overlay.int_vars:
+                                    if cache_key in overlay_config.int_vars:
                                         cache_value = int(cache_value)
-                                    if cache_key in overlay.date_vars:
+                                    if cache_key in overlay_config.date_vars:
                                         real_value = real_value.strftime("%Y-%m-%d")
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
@@ -207,7 +207,7 @@ class Overlays:
                                 logger.trace("  Overlay Reason: New image detected")
                             elif not self.library.reapply_overlays and overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
-                            canvas_width, canvas_height = overlay.get_canvas_size(item)
+                            canvas_width, canvas_height = overlay_config.get_canvas_size(item)
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04bc] = "overlay"
@@ -218,14 +218,14 @@ class Overlays:
 
                                 def get_text(text_overlay):
                                     full_text = text_overlay.name[5:-1]
-                                    for format_var in overlay.vars_by_type[text_overlay.level]:
+                                    for format_var in overlay_config.vars_by_type[text_overlay.level]:
                                         if f"<<{format_var}" in full_text and format_var == "originally_available[":
                                             mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
                                             format_var = "originally_available"
-                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.double_mods)):
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay_config.double_mods)):
                                             mod = format_var[-2:]
                                             format_var = format_var[:-2]
-                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.single_mods)):
+                                        elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay_config.single_mods)):
                                             mod = format_var[-1]
                                             format_var = format_var[:-1]
                                         elif f"<<{format_var}>>" in full_text:
@@ -250,7 +250,7 @@ class Overlays:
                                                     actual_value = current
                                                 elif mod == "L" and current < actual_value:
                                                     actual_value = current
-                                        elif format_var in overlay.rating_sources:
+                                        elif format_var in overlay_config.rating_sources:
                                             found_rating = None
                                             try:
                                                 item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
@@ -395,7 +395,7 @@ class Overlays:
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
                                         if self.config.Cache:
-                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
+                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay_config.date_vars else actual_value
                                             self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
@@ -434,7 +434,7 @@ class Overlays:
                                             final_value = str(actual_value).lower()
                                         elif mod == "P":
                                             final_value = str(actual_value).title()
-                                        elif format_var in overlay.rating_sources:
+                                        elif format_var in overlay_config.rating_sources:
                                             final_value = f"{float(actual_value):.1f}"
                                         else:
                                             final_value = actual_value
