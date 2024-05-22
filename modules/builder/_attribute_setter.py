@@ -74,6 +74,8 @@ class BuilderAttributeSetter:
             self._tvdb(method_name, method_data)
         elif method_name in mdblist.builders:
             self._mdblist(method_name, method_data)
+        elif method_name == "filters":
+            self._filters(method_name, method_data)
         else:
             raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
         
