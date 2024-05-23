@@ -162,7 +162,7 @@ class MissingFiltersUtil:
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
-                    if not tmdb_item or self.collectionBuilder.check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.collectionBuilder.library.movie_rating_key_map) is False:
+                    if not tmdb_item or self._check_tmdb_filters(tmdb_item, tmdb_f, item.ratingKey in self.collectionBuilder.library.movie_rating_key_map) is False:
                         or_result = False
                 if tvdb_f:
                     if not tvdb_item and isinstance(item, Show):
