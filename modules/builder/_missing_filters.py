@@ -175,7 +175,7 @@ class MissingFiltersUtil:
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
-                    if not tvdb_item or self.collectionBuilder.check_tvdb_filters(tvdb_item, tvdb_f) is False:
+                    if not tvdb_item or self._check_tvdb_filters(tvdb_item, tvdb_f) is False:
                         or_result = False
                 if imdb_f:
                     if not imdb_info and isinstance(item, (Movie, Show)):
@@ -232,10 +232,10 @@ class MissingFiltersUtil:
                         imdb_f.append((k, v))
                 or_result = True
                 if tmdb_f:
-                    if not tmdb_item or self.collectionBuilder.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
+                    if not tmdb_item or self._check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
                         or_result = False
                 if imdb_f:
-                    if not imdb_info and self.collectionBuilder.check_imdb_filters(imdb_info, imdb_f) is False:
+                    if not imdb_info and self._check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
                 if or_result:
                     final_return = True
