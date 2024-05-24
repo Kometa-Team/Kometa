@@ -67,22 +67,6 @@ Now let's use the `sort_title` attribute to reorder these collections slightly
 
 You will often see users using sort titles such as `+++++++_My Collection` or `!010_My Collection` in order to force a specific order of collections. Whilst it may not seem logical at a glance, the ASCII sort order allows a lot of flexibility for power users to be able to tailor the ordering of collections.
 
-### Secondary Sorting
-You can also leverage "Secondary Sorting" This goes over and above the single sort settings you can apply to a dynamic collection in Plex.
-
-    ```yaml
-- default: imdb
-  template_variables:
-    collection_order: 
-      - plays.asc
-      - audience_rating.desc 
-- default: actor
-  template_variables:
-    sort_by: 
-      - plays.asc
-      - audience_rating.desc
-    ```
-
 ### Kometa Default Collection Sorting
 
 When utilizing the [Kometa Defaults](../../defaults/files.md), they are all built on the same format for their sort titles:
@@ -155,6 +139,22 @@ When using Kometa builders, the majority of builders will require `collection_or
       IMDb Top 250:
         imdb_chart: top_movies
         collection_order: custom
+    ```
+### Secondary Sorting
+You can also leverage "Secondary Sorting" This goes beyond the single sort settings you can apply to a collection in Plex.
+
+Example
+    ```yaml
+- default: imdb
+  template_variables:
+    collection_order: 
+      - plays.asc
+      - audience_rating.desc 
+- default: actor
+  template_variables:
+    sort_by: 
+      - plays.asc
+      - audience_rating.desc
     ```
 
 ## Dumb and Smart Collection Sorting
