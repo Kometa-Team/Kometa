@@ -8,60 +8,18 @@ from plexapi.video import Episode
 
 logger = util.logger
 
-portrait_dim = (1000, 1500)
-landscape_dim = (1920, 1080)
-square_dim = (1000, 1000)
-old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
-rating_sources = [
-    "tmdb_rating", "imdb_rating", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating",
-    "mdb_imdb_rating", "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
-    "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
-    "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
-]
-float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
-int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
-date_vars = ["originally_available"]
-types_for_var = {
-    "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
-    "movie_show_episode_album": ["critic_rating", "originally_available"],
-    "movie_show_season_episode": ["tmdb_rating"],
-    "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
-    "movie_show": [
-        "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
-        "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
-        "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
-        "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
-    ],
-    "movie_episode": ["versions", "bitrate"],
-    "season_episode": ["show_title", "season_number"],
-    "show_season": ["episode_count"],
-    "movie": ["edition"],
-    "episode": ["season_title", "episode_number"]
-}
-var_mods = {
-    "bitrate": ["", "H", "L"],
-    "originally_available": ["", "["],
-    "runtime": ["", "H", "M"],
-}
-for mod in float_vars:
-    var_mods[mod] = ["", "%", "#", "/"]
-for mod in ["title", "content_rating", "original_title", "edition", "show_title", "season_title"]:
-    var_mods[mod] = ["", "U", "L", "P"]
-for mod in ["season_number", "episode_number", "episode_count", "versions"]:
-    var_mods[mod] = ["", "W", "WU", "WL", "0", "00"]
-single_mods = list(set([mod for mods in var_mods.values() for mod in mods if len(mod) == 1]))
-double_mods = list(set([mod for mods in var_mods.values() for mod in mods if len(mod) == 2]))
-vars_by_type = {}
-for key in ["movie", "show", "season", "episode", "artist", "album"]:
-    vars_by_type[key] = [f"{item}{mod}" for type, var in types_for_var.items() for item in var for mod in var_mods[item] if key in type]
+_PORTRAIT_DIM = (1000, 1500)
+_LANDSCAPE_DIM = (1920, 1080)
+_SQUARE_DIM = (1000, 1000)
+_OLD_SPECIAL_TEXT = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
 
 def get_canvas_size(item):
     if isinstance(item, Episode):
-        return landscape_dim
+        return _LANDSCAPE_DIM
     elif isinstance(item, Album):
-        return square_dim
+        return _SQUARE_DIM
     else:
-        return portrait_dim
+        return _PORTRAIT_DIM
 
 class OverlayConfig:
     def __init__(self, config, library, overlay_file, original_mapping_name, overlay_data, suppress, level):
@@ -269,7 +227,7 @@ class OverlayConfig:
                     self.stroke_color = ImageColor.getcolor(overlay_data["stroke_color"], "RGBA")
                 except ValueError:
                     raise Failed(f"Overlay Error: overlay stroke_color: {overlay_data['stroke_color']} invalid")
-            if text in old_special_text:
+            if text in _OLD_SPECIAL_TEXT:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
                 if text_mod is None:
@@ -436,9 +394,9 @@ class OverlayConfig:
 
     def get_canvas(self, item):
         if isinstance(item, Episode):
-            canvas_size = landscape_dim
+            canvas_size = _LANDSCAPE_DIM
         elif isinstance(item, Album):
-            canvas_size = square_dim
+            canvas_size = _SQUARE_DIM
         else:
-            canvas_size = portrait_dim
+            canvas_size = _PORTRAIT_DIM
         return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)
