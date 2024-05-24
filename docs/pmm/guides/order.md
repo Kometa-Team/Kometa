@@ -141,6 +141,27 @@ When using Kometa builders, the majority of builders will require `collection_or
         collection_order: custom
     ```
 
+### Secondary Sorting
+You can also leverage "Secondary Sorting" This goes beyond the single sort settings you can apply to a collection in Plex.
+
+Example
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - default: imdb
+            template_variables:
+              collection_order: 
+                - plays.asc
+                - audience_rating.desc 
+          - default: actor
+            template_variables:
+              sort_by: 
+                - plays.asc
+                - audience_rating.desc
+    ```
+
 ## Dumb and Smart Collection Sorting
 
 Plex has two types of collections, "Dumb" and "Smart".
