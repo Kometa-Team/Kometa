@@ -597,7 +597,7 @@ class Overlays:
                     prop_name = builder.overlay.mapping_name
                     properties[prop_name] = builder.overlay
 
-                    builder.display_filters()
+                    builder.log_filters()
 
                     for method, value in builder.builders:
                         logger.debug("")

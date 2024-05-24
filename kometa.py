@@ -819,7 +819,7 @@ def run_collection(config, library, metadata, requested_collections):
                         else:
                             raise Failed(e)
 
-                builder.display_filters()
+                builder.log_filters()
 
                 if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
@@ -1013,7 +1013,7 @@ def run_playlists(config):
                 else:
                     ids = builder.gather_ids(method, value)
 
-                builder.display_filters()
+                builder.log_filters()
                 builder.filter_and_save_items(ids)
 
                 if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:

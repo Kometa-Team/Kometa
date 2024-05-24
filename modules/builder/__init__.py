@@ -1270,7 +1270,7 @@ class CollectionBuilder:
     def check_filters(self, item, display):
         return self.missing_filters_util.check_filters(item, display)
 
-    def display_filters(self):
+    def log_filters(self):
         if self.filters:
             for filter_list in self.filters:
                 logger.info("")
