@@ -49,16 +49,11 @@ for mod in ["title", "content_rating", "original_title", "edition", "show_title"
     var_mods[mod] = ["", "U", "L", "P"]
 for mod in ["season_number", "episode_number", "episode_count", "versions"]:
     var_mods[mod] = ["", "W", "WU", "WL", "0", "00"]
-single_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 1]))
-double_mods = list(set([m for a, ms in var_mods.items() for m in ms if len(m) == 2]))
-vars_by_type = {
-    "movie": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "movie" in check],
-    "show": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "show" in check],
-    "season": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "season" in check],
-    "episode": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "episode" in check],
-    "artist": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "artist" in check],
-    "album": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "album" in check],
-}
+single_mods = list(set([mod for mods in var_mods.values() for mod in mods if len(mod) == 1]))
+double_mods = list(set([mod for mods in var_mods.values() for mod in mods if len(mod) == 2]))
+vars_by_type = {}
+for key in ["movie", "show", "season", "episode", "artist", "album"]:
+    vars_by_type[key] = [f"{item}{mod}" for type, var in types_for_var.items() for item in var for mod in var_mods[item] if key in type]
 
 def get_canvas_size(item):
     if isinstance(item, Episode):
