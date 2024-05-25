@@ -6,8 +6,26 @@ search:
 
 The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes.
 
-You can specify your asset folders under the `settings` attribute `asset_directory`:
+## Requirements and configuration
 
+If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own.  The name that Kometa will use to look up the asset poster for a movie is the folder that the movie file is located in *on disk*, and each movie/show needs to have a unique asset name.
+
+In other words, this works:
+```
+movies/Star Wars (1977)/Star Wars (1977) Bluray-1080p.mkv
+movies/Star Trek The Motion Picture (1979)/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
+movies/The Empire Strikes Back (1980)/The Empire Strikes Back (1980) Bluray-1080p.mkv
+```
+while this *WILL NOT*:
+```
+movies/Star Wars (1977) Bluray-1080p.mkv
+movies/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
+movies/The Empire Strikes Back (1980) Bluray-1080p.mkv
+```
+
+If your movies and shows are not in individual folders, setting art using the asset directory will not work and you can stop here.
+
+You can specify your asset folders under the `settings` attribute `asset_directory`:
 
 ???+ important 
 
