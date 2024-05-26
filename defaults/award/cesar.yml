@@ -16,7 +16,7 @@ collections:
       key: best
     template:
       - name: shared
-        sort: Cesar !
+        sort: César !
         allowed_libraries: movie
         image: award/cesar/winner
         translation_key: cesar_best
