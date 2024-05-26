@@ -48,7 +48,7 @@ templates:
 overlays:
 
   Oscars Best Picture:
-    variables: {key: oscars, weight: 180}
+    variables: {key: oscars, weight: 190}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000003
@@ -59,7 +59,7 @@ overlays:
       winning: true
 
   Oscars Best Director:
-    variables: {key: oscars_director, weight: 170}
+    variables: {key: oscars_director, weight: 180}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000003
@@ -72,7 +72,7 @@ overlays:
       winning: true
 
   Golden Globe Winner:
-    variables: {key: golden, weight: 160}
+    variables: {key: golden, weight: 170}
     template: [name: standard, name: ribbon]
     imdb_award:
       event_id: ev0000292
@@ -93,7 +93,7 @@ overlays:
       winning: true
 
   Golden Globe Best Director:
-    variables: {key: golden_director, weight: 150}
+    variables: {key: golden_director, weight: 160}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000292
@@ -105,7 +105,7 @@ overlays:
       winning: true
 
   BAFTA Winners:
-    variables: {key: bafta, weight: 140}
+    variables: {key: bafta, weight: 150}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000123
@@ -114,7 +114,7 @@ overlays:
       winning: true
 
   Cannes Winners:
-    variables: {key: cannes, weight: 130}
+    variables: {key: cannes, weight: 140}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000147
@@ -123,7 +123,7 @@ overlays:
       winning: true
 
   Berlinale Winners:
-    variables: {key: berlinale, weight: 120}
+    variables: {key: berlinale, weight: 130}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000091
@@ -132,7 +132,7 @@ overlays:
       winning: true
 
   Venice Winners:
-    variables: {key: venice, weight: 110}
+    variables: {key: venice, weight: 120}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000681
@@ -141,7 +141,7 @@ overlays:
       winning: true
 
   Sundance Winners:
-    variables: {key: sundance, weight: 100}
+    variables: {key: sundance, weight: 110}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000631
@@ -150,7 +150,7 @@ overlays:
       winning: true
 
   Emmys Winner:
-    variables: {key: emmys, weight: 90}
+    variables: {key: emmys, weight: 100}
     template: [name: standard, name: ribbon]
     imdb_award:
       event_id: ev0000223
@@ -183,7 +183,7 @@ overlays:
       winning: true
 
   Critics Choice Winners:
-    variables: {key: choice, weight: 80}
+    variables: {key: choice, weight: 90}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000133
@@ -192,7 +192,7 @@ overlays:
       winning: true
 
   Spirit Winners:
-    variables: {key: spirit, weight: 70}
+    variables: {key: spirit, weight: 80}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000349
@@ -201,7 +201,7 @@ overlays:
       winning: true
 
   Cesar Winners:
-    variables: {key: cesar, weight: 60}
+    variables: {key: cesar, weight: 70}
     template: {name: standard, allowed_libraries: movie}
     imdb_award:
       event_id: ev0000157
@@ -210,8 +210,13 @@ overlays:
       winning: true
 
   IMDb Top 250:
-    variables: {key: imdb, weight: 50, imdb_key: top}
+    variables: {key: imdb, weight: 60, imdb_key: top}
     template: [name: standard, name: ribbon]
+
+  Letterboxd Top 250:
+    variables: {key: letterboxd, weight: 50}
+    template: {name: standard, allowed_libraries: movie}
+    letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
 
   Rotten Tomatoes Certified Fresh:
     variables: {key: rotten, weight: 40, mdb_key: certifiedfresh}
