@@ -12,6 +12,7 @@ Add automated Anime Aggregations for AniDB matching
 Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_lossless` while the old attribute `webp` will be treated as `webp_lossy`.
 
 # Defaults
+Added Letterboxd Default [Collections](https://kometa.wiki/en/latest/defaults/chart/letterboxd/) and [Ribbon](https://kometa.wiki/en/latest/defaults/overlays/ribbon/)
 
 # Bug Fixes
 Fixes #2034 `anilist_userlist` `score` attribute wasn't being validated correctly
