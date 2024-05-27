@@ -240,3 +240,18 @@ The Sort Orders available for "Smart" collections are outlined on the **[Smart P
         trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
         collection_order: added.desc
     ```
+### Secondary Sorting
+You can also leverage "Secondary Sorting" This goes beyond the single sort settings you can apply to a collection in Plex.
+
+???+ example "Example 8 - Secondary Sorting"
+    ```yaml
+    collections:
+      Best 2010+ Movies (By Year):
+        smart_filter:
+          all:
+            year.gte: 2010
+          sort_by:
+            - year.desc
+            - audience_rating.desc
+          limit: 20
+      ```

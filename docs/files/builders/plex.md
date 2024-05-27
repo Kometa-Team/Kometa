@@ -440,7 +440,9 @@ collections:
     plex_search:
       all:
         year.gte: 2010
-      sort_by: audience_rating.desc
+      sort_by:
+        - year.desc
+        - audience_rating.desc
       limit: 20
 ```
 
