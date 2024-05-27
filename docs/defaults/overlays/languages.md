@@ -77,6 +77,7 @@ Supported library types: Movie & Show
 | Tamil                    | `ta`  | `30`   | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Urdu                     | `ur`  | `20`   | `pk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Vietnamese               | `vi`  | `15`   | `vn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Wolof                    | `wo`  | `10`   | `sn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mayan                    | `myn` | `8`    | `mx`         |  :fontawesome-solid-circle-xmark:{ .red }  |

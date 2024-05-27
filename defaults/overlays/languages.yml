@@ -604,3 +604,7 @@ overlays:
   lingala:
     variables: {key: ln, text: LN, weight: 11, country: cd}
     template: [name: flags, name: standard]
+
+  bambara:
+    variables: {key: bm, text: BM, weight: 12, country: ml}
+    template: [name: flags, name: standard]
