@@ -50,6 +50,7 @@ arguments = {
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
+    "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
     "metadata-only": {"args": ["mo", "metadatas-only"], "type": "bool", "help": "Run only metadata files"},
     "playlists-only": {"args": ["po", "playlist-only"], "type": "bool", "help": "Run only playlist files"},
@@ -204,6 +205,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
+from modules.request import Requests, parse_version
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
@@ -223,15 +225,13 @@ def new_send(*send_args, **kwargs):
 
 requests.Session.send = new_send
 
-version = ("Unknown", "Unknown", 0)
+file_version = ("Unknown", "Unknown", 0)
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
     for line in handle.readlines():
         line = line.strip()
         if len(line) > 0:
-            version = util.parse_version(line)
+            file_version = parse_version(line)
             break
-branch = util.guess_branch(version, env_version, git_branch)
-version = (version[0].replace("develop", branch), version[1].replace("develop", branch), version[2])
 
 uuid_file = os.path.join(default_dir, "UUID")
 uuid_num = None
@@ -255,179 +255,181 @@ def process(attrs):
         executor.submit(start, *[attrs])
 
 def start(attrs):
-    logger.add_main_handler()
-    logger.separator()
-    logger.info("")
-    logger.info_center(" __  ___  ______    ___  ___   _______  __________    ___      ")
-    logger.info_center("|  |/  / /  __  \\  |   \\/   | |   ____||          |  /   \\     ")
-    logger.info_center("|  '  / |  |  |  | |  \\  /  | |  |__   `---|  |---` /  ^  \\    ")
-    logger.info_center("|    <  |  |  |  | |  |\\/|  | |   __|      |  |    /  /_\\  \\   ")
-    logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
-    logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
-    logger.info("")
-    if is_lxml:
-        system_ver = "lxml Docker"
-    elif is_linuxserver:
-        system_ver = "Linuxserver"
-    elif is_docker:
-        system_ver = "Docker"
-    else:
-        system_ver = f"Python {platform.python_version()}"
-    logger.info(f"    Version: {version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
-    latest_version = util.current_version(version, branch=branch)
-    new_version = latest_version[0] if latest_version and (version[1] != latest_version[1] or (version[2] and version[2] < latest_version[2])) else None
-    if new_version:
-        logger.info(f"    Newest Version: {new_version}")
-    logger.info(f"    Platform: {platform.platform()}")
-    logger.info(f"    Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
-    if not is_docker and not is_linuxserver:
-        try:
-            with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
-                required_versions = {ln.split("==")[0]: ln.split("==")[1].strip() for ln in file.readlines()}
-            for req_name, sys_ver in system_versions.items():
-                if sys_ver and sys_ver != required_versions[req_name]:
-                    logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
-        except FileNotFoundError:
-            logger.error("    File Error: requirements.txt not found")
-    if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
-    elif run_args["tests"]:                                 start_type = "Test "
-    elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
-    elif "libraries" in attrs and attrs["libraries"]:       start_type = "Libraries "
-    else:                                                   start_type = ""
-    start_time = datetime.now()
-    if "time" not in attrs:
-        attrs["time"] = start_time.strftime("%H:%M")
-    attrs["time_obj"] = start_time
-    attrs["version"] = version
-    attrs["branch"] = branch
-    attrs["config_file"] = run_args["config"]
-    attrs["ignore_schedules"] = run_args["ignore-schedules"]
-    attrs["read_only"] = run_args["read-only-config"]
-    attrs["no_missing"] = run_args["no-missing"]
-    attrs["no_report"] = run_args["no-report"]
-    attrs["collection_only"] = run_args["collections-only"]
-    attrs["metadata_only"] = run_args["metadata-only"]
-    attrs["playlist_only"] = run_args["playlists-only"]
-    attrs["operations_only"] = run_args["operations-only"]
-    attrs["overlays_only"] = run_args["overlays-only"]
-    attrs["plex_url"] = plex_url
-    attrs["plex_token"] = plex_token
-    logger.separator(debug=True)
-    logger.debug(f"Run Command: {run_arg}")
-    for akey, adata in arguments.items():
-        if isinstance(adata["help"], str):
-            ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
-            logger.debug(f"--{akey} (KOMETA_{akey.replace('-', '_').upper()}): {ext}{run_args[akey]}{ext}")
-    logger.debug("")
-    if secret_args:
-        logger.debug("Kometa Secrets Read:")
-        for sec in secret_args:
-            logger.debug(f"--kometa-{sec} (KOMETA_{sec.upper().replace('-', '_')}): (redacted)")
-        logger.debug("")
-    logger.separator(f"Starting {start_type}Run")
-    config = None
-    stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     try:
-        config = ConfigFile(default_dir, attrs, secret_args)
+        logger.add_main_handler()
+        logger.separator()
+        logger.info("")
+        logger.info_center(" __  ___  ______    ___  ___   _______  __________    ___      ")
+        logger.info_center("|  |/  / /  __  \\  |   \\/   | |   ____||          |  /   \\     ")
+        logger.info_center("|  '  / |  |  |  | |  \\  /  | |  |__   `---|  |---` /  ^  \\    ")
+        logger.info_center("|    <  |  |  |  | |  |\\/|  | |   __|      |  |    /  /_\\  \\   ")
+        logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
+        logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
+        logger.info("")
+        if is_lxml:
+            system_ver = "lxml Docker"
+        elif is_linuxserver:
+            system_ver = "Linuxserver"
+        elif is_docker:
+            system_ver = "Docker"
+        else:
+            system_ver = f"Python {platform.python_version()}"
+        my_requests = Requests(file_version, env_version, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        logger.info(f"    Version: {my_requests.version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
+        if my_requests.new_version:
+            logger.info(f"    Newest Version: {my_requests.new_version}")
+        logger.info(f"    Platform: {platform.platform()}")
+        logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
+        logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
+        if not is_docker and not is_linuxserver:
+            try:
+                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
+                    required_versions = {ln.split("==")[0]: ln.split("==")[1].strip() for ln in file.readlines()}
+                for req_name, sys_ver in system_versions.items():
+                    if sys_ver and sys_ver != required_versions[req_name]:
+                        logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
+            except FileNotFoundError:
+                logger.error("    File Error: requirements.txt not found")
+        if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
+        elif run_args["tests"]:                                 start_type = "Test "
+        elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
+        elif "libraries" in attrs and attrs["libraries"]:       start_type = "Libraries "
+        else:                                                   start_type = ""
+        start_time = datetime.now()
+        if "time" not in attrs:
+            attrs["time"] = start_time.strftime("%H:%M")
+        attrs["time_obj"] = start_time
+        attrs["config_file"] = run_args["config"]
+        attrs["ignore_schedules"] = run_args["ignore-schedules"]
+        attrs["read_only"] = run_args["read-only-config"]
+        attrs["no_missing"] = run_args["no-missing"]
+        attrs["no_report"] = run_args["no-report"]
+        attrs["collection_only"] = run_args["collections-only"]
+        attrs["metadata_only"] = run_args["metadata-only"]
+        attrs["playlist_only"] = run_args["playlists-only"]
+        attrs["operations_only"] = run_args["operations-only"]
+        attrs["overlays_only"] = run_args["overlays-only"]
+        attrs["plex_url"] = plex_url
+        attrs["plex_token"] = plex_token
+        logger.separator(debug=True)
+        logger.debug(f"Run Command: {run_arg}")
+        for akey, adata in arguments.items():
+            if isinstance(adata["help"], str):
+                ext = '"' if adata["type"] == "str" and run_args[akey] not in [None, "None"] else ""
+                logger.debug(f"--{akey} (KOMETA_{akey.replace('-', '_').upper()}): {ext}{run_args[akey]}{ext}")
+        logger.debug("")
+        if secret_args:
+            logger.debug("Kometa Secrets Read:")
+            for sec in secret_args:
+                logger.debug(f"--kometa-{sec} (KOMETA_{sec.upper().replace('-', '_')}): (redacted)")
+            logger.debug("")
+        logger.separator(f"Starting {start_type}Run")
+        config = None
+        stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
+        try:
+            config = ConfigFile(my_requests, default_dir, attrs, secret_args)
+        except Exception as e:
+            logger.stacktrace()
+            logger.critical(e)
+        else:
+            try:
+                stats = run_config(config, stats)
+            except Exception as e:
+                config.notify(e)
+                logger.stacktrace()
+                logger.critical(e)
+        logger.info("")
+        end_time = datetime.now()
+        run_time = str(end_time - start_time).split(".")[0]
+        if config:
+            try:
+                config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
+            except Failed as e:
+                logger.stacktrace()
+                logger.error(f"Webhooks Error: {e}")
+        version_line = f"Version: {my_requests.version[0]}"
+        if my_requests.new_version:
+            version_line = f"{version_line}        Newest Version: {my_requests.new_version}"
+        try:
+            log_data = {}
+            no_overlays = []
+            no_overlays_count = 0
+            convert_errors = {}
+
+            other_log_groups = [
+                ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
+                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
+                ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
+                ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
+                ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
+                ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
+                ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
+                ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
+                ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
+                ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
+                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
+                ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+            ]
+            other_message = {}
+
+            with open(logger.main_log, encoding="utf-8") as f:
+                for log_line in f:
+                    for err_type in ["WARNING", "ERROR", "CRITICAL"]:
+                        if f"[{err_type}]" in log_line:
+                            log_line = log_line.split("|")[1].strip()
+                            other = False
+                            for key, reg in other_log_groups:
+                                if log_line.startswith(key):
+                                    other = True
+                                    _name = re.match(reg, log_line).group(1)
+                                    if key not in other_message:
+                                        other_message[key] = {"list": [], "count": 0}
+                                    other_message[key]["count"] += 1
+                                    if _name not in other_message[key]:
+                                        other_message[key]["list"].append(_name)
+                            if other is False:
+                                if err_type not in log_data:
+                                    log_data[err_type] = []
+                                log_data[err_type].append(log_line)
+
+            if "No Items found for" in other_message:
+                logger.separator(f"Overlay Errors Summary", space=False, border=False)
+                logger.info("")
+                logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
+                logger.info("")
+
+            convert_title = False
+            for key, _ in other_log_groups:
+                if key.startswith("Convert Warning") and key in other_message:
+                    if convert_title is False:
+                        logger.separator("Convert Summary", space=False, border=False)
+                        logger.info("")
+                        convert_title = True
+                    logger.info(f"{key[17:]}")
+                    logger.info(", ".join(other_message[key]["list"]))
+            if convert_title:
+                logger.info("")
+
+            for err_type in ["WARNING", "ERROR", "CRITICAL"]:
+                if err_type not in log_data:
+                    continue
+                logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
+
+                logger.info("")
+                logger.info("Count | Message")
+                logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
+                for k, v in Counter(log_data[err_type]).most_common():
+                    logger.info(f"{v:>5} | {k}")
+                logger.info("")
+        except Failed as e:
+            logger.stacktrace()
+            logger.error(f"Report Error: {e}")
+
+        logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+        logger.remove_main_handler()
     except Exception as e:
         logger.stacktrace()
         logger.critical(e)
-    else:
-        try:
-            stats = run_config(config, stats)
-        except Exception as e:
-            config.notify(e)
-            logger.stacktrace()
-            logger.critical(e)
-    logger.info("")
-    end_time = datetime.now()
-    run_time = str(end_time - start_time).split(".")[0]
-    if config:
-        try:
-            config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
-        except Failed as e:
-            logger.stacktrace()
-            logger.error(f"Webhooks Error: {e}")
-    version_line = f"Version: {version[0]}"
-    if new_version:
-        version_line = f"{version_line}        Newest Version: {new_version}"
-    try:
-        log_data = {}
-        no_overlays = []
-        no_overlays_count = 0
-        convert_errors = {}
-
-        other_log_groups = [
-            ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
-            ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
-            ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
-            ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
-            ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
-            ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
-            ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
-            ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
-            ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
-            ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
-            ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
-            ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
-        ]
-        other_message = {}
-
-        with open(logger.main_log, encoding="utf-8") as f:
-            for log_line in f:
-                for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-                    if f"[{err_type}]" in log_line:
-                        log_line = log_line.split("|")[1].strip()
-                        other = False
-                        for key, reg in other_log_groups:
-                            if log_line.startswith(key):
-                                other = True
-                                _name = re.match(reg, log_line).group(1)
-                                if key not in other_message:
-                                    other_message[key] = {"list": [], "count": 0}
-                                other_message[key]["count"] += 1
-                                if _name not in other_message[key]:
-                                    other_message[key]["list"].append(_name)
-                        if other is False:
-                            if err_type not in log_data:
-                                log_data[err_type] = []
-                            log_data[err_type].append(log_line)
-
-        if "No Items found for" in other_message:
-            logger.separator(f"Overlay Errors Summary", space=False, border=False)
-            logger.info("")
-            logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
-            logger.info("")
-
-        convert_title = False
-        for key, _ in other_log_groups:
-            if key.startswith("Convert Warning") and key in other_message:
-                if convert_title is False:
-                    logger.separator("Convert Summary", space=False, border=False)
-                    logger.info("")
-                    convert_title = True
-                logger.info(f"{key[17:]}")
-                logger.info(", ".join(other_message[key]["list"]))
-        if convert_title:
-            logger.info("")
-
-        for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-            if err_type not in log_data:
-                continue
-            logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
-
-            logger.info("")
-            logger.info("Count | Message")
-            logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
-            for k, v in Counter(log_data[err_type]).most_common():
-                logger.info(f"{v:>5} | {k}")
-            logger.info("")
-    except Failed as e:
-        logger.stacktrace()
-        logger.error(f"Report Error: {e}")
-
-    logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
-    logger.remove_main_handler()
 
 def run_config(config, stats):
     library_status = run_libraries(config)

@@ -13,6 +13,7 @@ logger = util.logger
 class Overlays:
     def __init__(self, config, library):
         self.config = config
+        self.cache = self.config.Cache
         self.library = library
         self.overlays = []
 
@@ -88,8 +89,8 @@ class Overlays:
                     image_compare = None
                     overlay_compare = None
                     poster = None
-                    if self.config.Cache:
-                        image, image_compare, overlay_compare = self.config.Cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
+                    if self.cache:
+                        image, image_compare, overlay_compare = self.cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
                     self.library.reload(item, force=True)
 
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
@@ -126,10 +127,10 @@ class Overlays:
                             if compare_name not in overlay_compare or properties[original_name].updated:
                                 overlay_change = f"{compare_name} not in {overlay_compare} or {properties[original_name].updated}"
 
-                    if self.config.Cache:
+                    if self.cache:
                         for over_name in over_names:
                             if properties[over_name].name.startswith("text"):
-                                for cache_key, cache_value in self.config.Cache.query_overlay_special_text(item.ratingKey).items():
+                                for cache_key, cache_value in self.cache.query_overlay_special_text(item.ratingKey).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
                                     if not hasattr(item, actual):
                                         continue
@@ -369,10 +370,11 @@ class Overlays:
                                                             mal_id = self.library.reverse_mal[item.ratingKey]
                                                         elif not anidb_id:
                                                             raise Failed(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                                                        elif anidb_id not in self.config.Convert._anidb_to_mal:
-                                                            raise Failed(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                                                         else:
-                                                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                                                            try:
+                                                                mal_id = self.config.Convert.anidb_to_mal(anidb_id)
+                                                            except Failed as errr:
+                                                                raise Failed(f"{errr} of Guid: {item.guid}")
                                                         if mal_id:
                                                             found_rating = self.config.MyAnimeList.get_anime(mal_id).score
                                             except Failed as err:
@@ -394,9 +396,9 @@ class Overlays:
                                             actual_value = getattr(item, actual_attr)
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
-                                        if self.config.Cache:
+                                        if self.cache:
                                             cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
-                                            self.config.Cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
+                                            self.cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
                                             if mod:
@@ -517,8 +519,8 @@ class Overlays:
                     else:
                         logger.info("  Overlay Update Not Needed")
 
-                    if self.config.Cache and poster_compare:
-                        self.config.Cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
+                    if self.cache and poster_compare:
+                        self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:

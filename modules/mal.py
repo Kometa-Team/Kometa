@@ -2,7 +2,7 @@ import re, secrets, time, webbrowser
 from datetime import datetime
 from json import JSONDecodeError
 from modules import util
-from modules.util import Failed, TimeoutExpired, YAML
+from modules.util import Failed, TimeoutExpired
 
 logger = util.logger
 
@@ -79,8 +79,10 @@ class MyAnimeListObj:
 
 
 class MyAnimeList:
-    def __init__(self, config, params):
-        self.config = config
+    def __init__(self, requests, cache, read_only, params):
+        self.requests = requests
+        self.cache = cache
+        self.read_only = read_only
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
         self.localhost_url = params["localhost_url"]
@@ -175,8 +177,8 @@ class MyAnimeList:
 
     def _save(self, authorization):
         if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
-            if self.authorization != authorization and not self.config.read_only:
-                yaml = YAML(self.config_path)
+            if self.authorization != authorization and not self.read_only:
+                yaml = self.requests.file_yaml(self.config_path)
                 yaml.data["mal"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],
@@ -191,13 +193,13 @@ class MyAnimeList:
         return False
 
     def _oauth(self, data):
-        return self.config.post_json(urls["oauth_token"], data=data)
+        return self.requests.post_json(urls["oauth_token"], data=data)
 
     def _request(self, url, authorization=None):
         token = authorization["access_token"] if authorization else self.authorization["access_token"]
         logger.trace(f"URL: {url}")
         try:
-            response = self.config.get_json(url, headers={"Authorization": f"Bearer {token}"})
+            response = self.requests.get_json(url, headers={"Authorization": f"Bearer {token}"})
             logger.trace(f"Response: {response}")
             if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
             else:                           return response
@@ -211,7 +213,7 @@ class MyAnimeList:
         if self._delay is not None:
             while time_check - self._delay < 1:
                 time_check = time.time()
-        data = self.config.get_json(f"{jikan_base_url}{url}", params=params)
+        data = self.requests.get_json(f"{jikan_base_url}{url}", params=params)
         self._delay = time.time()
         return data
 
@@ -286,8 +288,8 @@ class MyAnimeList:
 
     def get_anime(self, mal_id):
         expired = None
-        if self.config.Cache:
-            mal_dict, expired = self.config.Cache.query_mal(mal_id, self.expiration)
+        if self.cache:
+            mal_dict, expired = self.cache.query_mal(mal_id, self.expiration)
             if mal_dict and expired is False:
                 return MyAnimeListObj(self, mal_id, mal_dict, cache=True)
         try:
@@ -297,8 +299,8 @@ class MyAnimeList:
         if "data" not in response:
             raise Failed(f"MyAnimeList Error: No Anime found for MyAnimeList ID: {mal_id}")
         mal = MyAnimeListObj(self, mal_id, response["data"])
-        if self.config.Cache:
-            self.config.Cache.update_mal(expired, mal_id, mal, self.expiration)
+        if self.cache:
+            self.cache.update_mal(expired, mal_id, mal, self.expiration)
         return mal
 
     def get_mal_ids(self, method, data):

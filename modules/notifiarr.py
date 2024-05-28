@@ -9,8 +9,8 @@ base_url = "https://notifiarr.com/api/v1/"
 
 
 class Notifiarr:
-    def __init__(self, config, params):
-        self.config = config
+    def __init__(self, requests, params):
+        self.requests = requests
         self.apikey = params["apikey"]
         self.header = {"X-API-Key": self.apikey}
         logger.secret(self.apikey)
@@ -24,7 +24,7 @@ class Notifiarr:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def request(self, json=None, path="notification", params=None):
-        response = self.config.get(f"{base_url}{path}/pmm/", json=json, headers=self.header, params=params)
+        response = self.requests.get(f"{base_url}{path}/pmm/", json=json, headers=self.header, params=params)
         try:
             response_json = response.json()
         except JSONDecodeError as e:

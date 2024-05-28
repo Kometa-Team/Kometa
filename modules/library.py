@@ -1,9 +1,10 @@
 import os, time
 from abc import ABC, abstractmethod
-from modules import util, operations
+from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
-from modules.util import Failed, NotScheduled, YAML
+from modules.poster import ImageData
+from modules.util import Failed, NotScheduled
 from PIL import Image
 
 logger = util.logger
@@ -274,6 +275,36 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         pass
 
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, is_poster=True, image_name=None):
+        image_type = "poster" if is_poster else "background"
+        if image_name is None:
+            image_name = image_type
+        if images:
+            logger.debug(f"{len(images)} {image_type}{'s' if len(images) > 1 else ''} found:")
+            for i in images:
+                logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
+            if prioritize_assets and "asset_directory" in images:
+                return images["asset_directory"]
+            for attr in ["style_data", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
+                         "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory",
+                         f"pmm_{image_type}",
+                         "tmdb_person", "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details",
+                         "tmdb_director_details",
+                         "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
+                         "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
+                if attr in images:
+                    if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
+                        if "asset_directory" in images:
+                            return images["asset_directory"]
+                        else:
+                            try:
+                                return self.config.Requests.download_image(title, images[attr], item_dir, is_poster=is_poster, filename=image_name)
+                            except Failed as e:
+                                logger.error(e)
+                    if attr in ["asset_directory", f"pmm_{image_type}"]:
+                        return images[attr]
+                    return ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
+
     @abstractmethod
     def reload(self, item, force=False):
         pass
@@ -291,7 +322,7 @@ class Library(ABC):
         pass
 
     def check_image_for_overlay(self, image_url, image_path, remove=False):
-        image_path = util.download_image("", image_url, image_path).location
+        image_path = self.config.Requests.download_image("", image_url, image_path).location
         while util.is_locked(image_path):
             time.sleep(1)
         with Image.open(image_path) as image:
@@ -350,7 +381,7 @@ class Library(ABC):
                         self.report_data[collection][other] = []
                     self.report_data[collection][other].append(title)
 
-        yaml = YAML(self.report_path, start_empty=True)
+        yaml = self.config.Requests.file_yaml(self.report_path, start_empty=True)
         yaml.data = self.report_data
         yaml.save()
 

@@ -43,8 +43,9 @@ class OMDbObj:
 
 
 class OMDb:
-    def __init__(self, config, params):
-        self.config = config
+    def __init__(self, requests, cache, params):
+        self.requests = requests
+        self.cache = cache
         self.apikey = params["apikey"]
         self.expiration = params["expiration"]
         self.limit = False
@@ -53,16 +54,16 @@ class OMDb:
 
     def get_omdb(self, imdb_id, ignore_cache=False):
         expired = None
-        if self.config.Cache and not ignore_cache:
-            omdb_dict, expired = self.config.Cache.query_omdb(imdb_id, self.expiration)
+        if self.cache and not ignore_cache:
+            omdb_dict, expired = self.cache.query_omdb(imdb_id, self.expiration)
             if omdb_dict and expired is False:
                 return OMDbObj(imdb_id, omdb_dict)
         logger.trace(f"IMDb ID: {imdb_id}")
-        response = self.config.get(base_url, params={"i": imdb_id, "apikey": self.apikey})
+        response = self.requests.get(base_url, params={"i": imdb_id, "apikey": self.apikey})
         if response.status_code < 400:
             omdb = OMDbObj(imdb_id, response.json())
-            if self.config.Cache and not ignore_cache:
-                self.config.Cache.update_omdb(expired, omdb, self.expiration)
+            if self.cache and not ignore_cache:
+                self.cache.update_omdb(expired, omdb, self.expiration)
             return omdb
         else:
             try:
