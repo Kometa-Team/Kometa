@@ -29,15 +29,16 @@ monitor_descriptions = {
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 
 class Sonarr:
-    def __init__(self, config, library, params):
-        self.config = config
+    def __init__(self, requests, cache, library, params):
+        self.requests = requests
+        self.cache = cache
         self.library = library
         self.url = params["url"]
         self.token = params["token"]
         logger.secret(self.url)
         logger.secret(self.token)
         try:
-            self.api = SonarrAPI(self.url, self.token, session=self.config.session)
+            self.api = SonarrAPI(self.url, self.token, session=self.requests.session)
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"]) # noqa
             self.profiles = self.api.quality_profile()
@@ -126,8 +127,8 @@ class Sonarr:
             tvdb_id = item[0] if isinstance(item, tuple) else item
             logger.ghost(f"Loading TVDb ID {i}/{len(tvdb_ids)} ({tvdb_id})")
             try:
-                if self.config.Cache and not ignore_cache:
-                    _id = self.config.Cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
+                if self.cache and not ignore_cache:
+                    _id = self.cache.query_sonarr_adds(tvdb_id, self.library.original_mapping_name)
                     if _id:
                         skipped.append(item)
                         raise Continue
@@ -176,8 +177,8 @@ class Sonarr:
             logger.info("")
             for series in added:
                 logger.info(f"Added to Sonarr | {series.tvdbId:<7} | {series.title}")
-                if self.config.Cache:
-                    self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
+                if self.cache:
+                    self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Series added to Sonarr")
 
         if len(exists) > 0 or len(skipped) > 0:
@@ -193,8 +194,8 @@ class Sonarr:
                             upgrade_qp.append(series)
                     else:
                         logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
-                    if self.config.Cache:
-                        self.config.Cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
+                    if self.cache:
+                        self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
                 if upgrade_qp:
                     self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
                     for series in upgrade_qp:

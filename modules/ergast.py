@@ -156,20 +156,21 @@ class Race:
 
 
 class Ergast:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache):
+        self.requests = requests
+        self.cache = cache
 
     def get_races(self, year, language, ignore_cache=False):
         expired = None
-        if self.config.Cache and not ignore_cache:
-            race_list, expired = self.config.Cache.query_ergast(year, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            race_list, expired = self.cache.query_ergast(year, self.cache.expiration)
             if race_list and expired is False:
                 return [Race(r, language) for r in race_list]
-        response = self.config.get(f"{base_url}{year}.json")
+        response = self.requests.get(f"{base_url}{year}.json")
         if response.status_code < 400:
             races = [Race(r, language) for r in response.json()["MRData"]["RaceTable"]["Races"]]
-            if self.config.Cache and not ignore_cache:
-                self.config.Cache.update_ergast(expired, year, races, self.config.Cache.expiration)
+            if self.cache and not ignore_cache:
+                self.cache.update_ergast(expired, year, races, self.cache.expiration)
             return races
         else:
             raise Failed(f"Ergast Error: F1 Season: {year} Not found")

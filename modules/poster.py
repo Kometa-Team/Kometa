@@ -1,9 +1,23 @@
 import os, time
 from modules import util
-from modules.util import Failed, ImageData
+from modules.util import Failed
 from PIL import Image, ImageFont, ImageDraw, ImageColor
 
 logger = util.logger
+
+class ImageData:
+    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True, compare=None):
+        self.attribute = attribute
+        self.location = location
+        self.prefix = prefix
+        self.is_poster = is_poster
+        self.is_url = is_url
+        self.compare = compare if compare else location if is_url else os.stat(location).st_size
+        self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
+
+    def __str__(self):
+        return str(self.__dict__)
+
 
 class ImageBase:
     def __init__(self, config, data):
@@ -48,10 +62,10 @@ class ImageBase:
         else:
             return None, None
 
-        response = self.config.get(url)
+        response = self.config.Requests.get(url)
         if response.status_code >= 400:
             raise Failed(f"Poster Error: {attr} not found at: {url}")
-        if "Content-Type" not in response.headers or response.headers["Content-Type"] not in util.image_content_types:
+        if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.config.Requests.image_content_types:
             raise Failed(f"Poster Error: {attr} not a png, jpg, or webp: {url}")
         if response.headers["Content-Type"] == "image/jpeg":
             ext = "jpg"

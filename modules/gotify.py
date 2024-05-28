@@ -5,8 +5,8 @@ from modules.util import Failed
 logger = util.logger
 
 class Gotify:
-    def __init__(self, config, params):
-        self.config = config
+    def __init__(self, requests, params):
+        self.requests = requests
         self.token = params["token"]
         self.url = params["url"].rstrip("/")
         logger.secret(self.url)
@@ -19,9 +19,9 @@ class Gotify:
 
     def _request(self, path="message", json=None, post=True):
         if post:
-            response = self.config.post(f"{self.url}/{path}", headers={"X-Gotify-Key": self.token}, json=json)
+            response = self.requests.post(f"{self.url}/{path}", headers={"X-Gotify-Key": self.token}, json=json)
         else:
-            response = self.config.get(f"{self.url}/{path}")
+            response = self.requests.get(f"{self.url}/{path}")
         try:
             response_json = response.json()
         except JSONDecodeError as e:

@@ -13,15 +13,16 @@ availability_descriptions = {"announced": "For Announced", "cinemas": "For In Ci
 monitor_descriptions = {"movie": "Monitor Only the Movie", "collection": "Monitor the Movie and Collection", "none": "Do not Monitor"}
 
 class Radarr:
-    def __init__(self, config, library, params):
-        self.config = config
+    def __init__(self, requests, cache, library, params):
+        self.requests = requests
+        self.cache = cache
         self.library = library
         self.url = params["url"]
         self.token = params["token"]
         logger.secret(self.url)
         logger.secret(self.token)
         try:
-            self.api = RadarrAPI(self.url, self.token, session=self.config.session)
+            self.api = RadarrAPI(self.url, self.token, session=self.requests.session)
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"]) # noqa
             self.profiles = self.api.quality_profile()
@@ -102,8 +103,8 @@ class Radarr:
             tmdb_id = item[0] if isinstance(item, tuple) else item
             logger.ghost(f"Loading TMDb ID {i}/{len(tmdb_ids)} ({tmdb_id})")
             try:
-                if self.config.Cache and not ignore_cache:
-                    _id = self.config.Cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
+                if self.cache and not ignore_cache:
+                    _id = self.cache.query_radarr_adds(tmdb_id, self.library.original_mapping_name)
                     if _id:
                         skipped.append(item)
                         raise Continue
@@ -152,8 +153,8 @@ class Radarr:
             logger.info("")
             for movie in added:
                 logger.info(f"Added to Radarr | {movie.tmdbId:<7} | {movie.title}")
-                if self.config.Cache:
-                    self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
+                if self.cache:
+                    self.cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
             logger.info(f"{len(added)} Movie{'s' if len(added) > 1 else ''} added to Radarr")
 
         if len(exists) > 0 or len(skipped) > 0:
@@ -169,8 +170,8 @@ class Radarr:
                             upgrade_qp.append(movie)
                     else:
                         logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
-                    if self.config.Cache:
-                        self.config.Cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
+                    if self.cache:
+                        self.cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
                 if upgrade_qp:
                     self.api.edit_multiple_movies(upgrade_qp, quality_profile=qp)
                     for movie in upgrade_qp:

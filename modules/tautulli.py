@@ -8,8 +8,8 @@ logger = util.logger
 builders = ["tautulli_popular", "tautulli_watched"]
 
 class Tautulli:
-    def __init__(self, config, library, params):
-        self.config = config
+    def __init__(self, requests, library, params):
+        self.requests = requests
         self.library = library
         self.url = params["url"]
         self.apikey = params["apikey"]
@@ -69,4 +69,4 @@ class Tautulli:
         if params:
             for k, v in params.items():
                 final_params[k] = v
-        return self.config.get_json(self.api, params=final_params)
+        return self.requests.get_json(self.api, params=final_params)
