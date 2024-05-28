@@ -1,0 +1,27 @@
+name: Validate Pull Request
+
+on: pull_request
+
+jobs:
+  validate-pull:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Display Refs
+        run: |
+          echo "Base Repo: ${{ github.event.pull_request.base.repo.full_name }}"
+          echo "Base Ref: ${{ github.base_ref }}"
+          echo "Head Repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "Head Ref: ${{ github.head_ref }}"
+
+      - name: Check Base Branch
+        if: github.base_ref == 'master' || github.base_ref == 'develop'
+        run: |
+          echo "ERROR: Pull Requests cannot be submitted to master or develop. Please submit the Pull Request to the nightly branch"
+          exit 1
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Run Spellcheck
+        uses: rojopolis/spellcheck-github-actions@0.36.0
