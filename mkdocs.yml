@@ -225,6 +225,7 @@ nav:
           - Basic Charts: defaults/chart/basic.md
           - AniList Charts: defaults/chart/anilist.md
           - IMDb Charts: defaults/chart/imdb.md
+          - Letterboxd Charts: defaults/chart/letterboxd.md
           - MyAnimeList Charts: defaults/chart/myanimelist.md
           - Tautulli Charts: defaults/chart/tautulli.md
           - TMDb Charts: defaults/chart/tmdb.md
