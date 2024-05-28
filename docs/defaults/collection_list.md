@@ -39,6 +39,7 @@ These collections are applied by calling the below paths into the `collection_fi
 | [Trakt Charts](chart/trakt.md)<sup>2</sup>       | `trakt`           | Trakt Popular, Trakt Trending              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [AniList Charts](chart/anilist.md)               | `anilist`         | AniList Popular, AniList Season            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [MyAnimeList Charts](chart/myanimelist.md)       | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [Letterboxd Charts](chart/letterboxd.md)         | `letterboxd`      | Letterboxd Top 250, Top 250 Most Fans      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red }   |
 | [Other Charts](chart/other.md)                   | `other_chart`     | AniDB Popular, Common Sense Selection      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
 <sup>1</sup> Requires [Tautulli Authentication](../config/tautulli.md)
