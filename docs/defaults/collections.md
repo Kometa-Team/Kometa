@@ -68,6 +68,7 @@ This is the default Kometa collection ordering:
 | `basic`              | `010`              |
 | `anilist`            | `020`              |
 | `imdb`               | `020`              |
+| `letterboxd`         | `020`              |
 | `myanimelist`        | `020`              |
 | `other_chart`        | `020`              |
 | `tautulli`           | `020`              |
