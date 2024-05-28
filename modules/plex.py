@@ -1,8 +1,10 @@
-import os, plexapi, re, requests, time
+import os, plexapi, re, time
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
-from modules.util import Failed, ImageData
+from modules.poster import ImageData
+from modules.request import parse_qs, quote_plus, urlparse
+from modules.util import Failed
 from PIL import Image
 from plexapi import utils
 from plexapi.audio import Artist, Track, Album
@@ -12,8 +14,8 @@ from plexapi.library import Role, FilterChoice
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Movie, Show, Season, Episode
+from requests.exceptions import ConnectionError, ConnectTimeout
 from retrying import retry
-from urllib import parse
 from xml.etree.ElementTree import ParseError
 
 logger = util.logger
@@ -445,16 +447,13 @@ class Plex(Library):
         super().__init__(config, params)
         self.plex = params["plex"]
         self.url = self.plex["url"]
-        plex_session = self.config.session
-        if self.plex["verify_ssl"] is False and self.config.general["verify_ssl"] is True:
+        plex_session = self.config.Requests.session
+        if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
-            plex_session = requests.Session()
-            plex_session.verify = False
-            import urllib3
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        if self.plex["verify_ssl"] is True and self.config.general["verify_ssl"] is False:
+            plex_session = self.config.Requests.create_session(verify_ssl=False)
+        if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
-            plex_session = requests.Session()
+            plex_session = self.config.Requests.create_session()
         self.token = self.plex["token"]
         self.timeout = self.plex["timeout"]
         logger.secret(self.url)
@@ -493,13 +492,13 @@ class Plex(Library):
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
-        except requests.exceptions.ConnectTimeout:
+        except ConnectTimeout:
             raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
         except ValueError as e:
             logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
             logger.stacktrace()
             raise Failed(f"Plex Error: {e}")
-        except (requests.exceptions.ConnectionError, ParseError):
+        except (ConnectionError, ParseError):
             logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
             raise Failed("Plex Error: Plex URL is probably invalid")
@@ -630,7 +629,7 @@ class Plex(Library):
     def upload_theme(self, collection, url=None, filepath=None):
         key = f"/library/metadata/{collection.ratingKey}/themes"
         if url:
-            self.PlexServer.query(f"{key}?url={parse.quote_plus(url)}", method=self.PlexServer._session.post)
+            self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
         elif filepath:
             self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, 'rb').read())
 
@@ -745,7 +744,7 @@ class Plex(Library):
             raise Failed("Overlay Error: No Poster found to reset")
         return image_url
 
-    def _reload(self, item):
+    def item_reload(self, item):
         item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
                     includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
                     includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
@@ -774,7 +773,7 @@ class Plex(Library):
             item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                self._reload(item)
+                self.item_reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
@@ -911,7 +910,7 @@ class Plex(Library):
                         if playlist.title not in playlists:
                             playlists[playlist.title] = []
                         playlists[playlist.title].append(username)
-            except requests.exceptions.ConnectionError:
+            except ConnectionError:
                 pass
         scan_user(self.PlexServer, self.account.title)
         for user in self.users:
@@ -990,7 +989,7 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def get_smart_filter_from_uri(self, uri):
-        smart_filter = parse.parse_qs(parse.urlparse(uri.replace("/#!/", "/")).query)["key"][0] # noqa
+        smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0] # noqa
         args = smart_filter[smart_filter.index("?"):]
         return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
 
@@ -1037,7 +1036,7 @@ class Plex(Library):
                 for playlist in self.PlexServer.switchUser(user).playlists():
                     if isinstance(playlist, Playlist) and playlist.title == playlist_title:
                         return playlist
-            except requests.exceptions.ConnectionError:
+            except ConnectionError:
                 pass
         raise Failed(f"Plex Error: Playlist {playlist_title} not found")
 
@@ -1090,7 +1089,7 @@ class Plex(Library):
             try:
                 fin = False
                 for guid_tag in item.guids:
-                    url_parsed = requests.utils.urlparse(guid_tag.id)
+                    url_parsed = urlparse(guid_tag.id)
                     if url_parsed.scheme == "tvdb":
                         if isinstance(item, Show):
                             ids.append((int(url_parsed.netloc), "tvdb"))
@@ -1106,7 +1105,7 @@ class Plex(Library):
                         break
                 if fin:
                     continue
-            except requests.exceptions.ConnectionError:
+            except ConnectionError:
                 continue
             if imdb_id and not tmdb_id:
                 for imdb in imdb_id:
@@ -1329,8 +1328,8 @@ class Plex(Library):
                 asset_location = item_dir
         except Failed as e:
             logger.warning(e)
-        poster = util.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
-        background = util.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
+        poster = self.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
+        background = self.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
                                      is_poster=False, image_name=f"{image_name}_background" if image_name else image_name)
         updated = False
         if poster or background:

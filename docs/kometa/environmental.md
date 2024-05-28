@@ -229,6 +229,32 @@ different ways to specify these things.
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --timeout 360
             ```
 
+??? blank "No Verify SSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nv`/`--no-verify-ssl`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_VERIFY_SSL`<a class="headerlink" href="#no-verify-ssl" title="Permanent link">¶</a>"
+
+    <div id="no-verify-ssl" />Turn SSL Verification off.
+    
+    ???+ note
+    
+        set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** Integer (value is in seconds)
+
+    **Shell Flags:** `-nv` or `--no-verify-ssl` (ex. `--no-verify-ssl`)
+
+    **Environment Variable:** `KOMETA_NO_VERIFY_SSL` (ex. `KOMETA_NO_VERIFY_SSL=true`)
+    
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --no-verify-ssl
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --no-verify-ssl
+            ```
+
 ??? blank "Collections Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-co`/`--collections-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_COLLECTIONS_ONLY`<a class="headerlink" href="#collections-only" title="Permanent link">¶</a>"
 
     <div id="collections-only" />Only run collection YAML files, skip library operations, metadata, overlays, and playlists.

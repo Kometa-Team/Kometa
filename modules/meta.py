@@ -1,7 +1,8 @@
 import math, operator, os, re
 from datetime import datetime
 from modules import plex, ergast, util
-from modules.util import Failed, NotScheduled, YAML
+from modules.request import quote
+from modules.util import Failed, NotScheduled
 from plexapi.exceptions import NotFound, BadRequest
 
 logger = util.logger
@@ -128,10 +129,7 @@ class DataFile:
             dir_path = content_path
             if translation:
                 content_path = f"{content_path}/default.yml"
-            response = self.config.get(content_path)
-            if response.status_code >= 400:
-                raise Failed(f"URL Error: No file found at {content_path}")
-            yaml = YAML(input_data=response.content, check_empty=True)
+            yaml = self.config.Requests.get_yaml(content_path, check_empty=True)
         else:
             if file_type == "Default":
                 if not overlay and file_path.startswith(("movie/", "chart/", "award/")):
@@ -157,7 +155,7 @@ class DataFile:
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
                     raise Failed(f"File Error: File does not exist {content_path}")
-            yaml = YAML(path=content_path, check_empty=True)
+            yaml = self.config.Requests.file_yaml(content_path, check_empty=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
             return yaml.data
@@ -169,8 +167,11 @@ class DataFile:
         key_names = {}
         variables = {k: {"default": v[lib_type]} for k, v in yaml.data["variables"].items()}
 
-        def add_translation(yaml_path, yaml_key, data=None):
-            yaml_content = YAML(input_data=data, path=yaml_path if data is None else None, check_empty=True)
+        def add_translation(yaml_path, yaml_key, url=False):
+            if url:
+                yaml_content = self.config.Requests.get_yaml(yaml_path, check_empty=True)
+            else:
+                yaml_content = self.config.Requests.file_yaml(yaml_path, check_empty=True)
             if "variables" in yaml_content.data and yaml_content.data["variables"]:
                 for var_key, var_value in yaml_content.data["variables"].items():
                     if lib_type in var_value:
@@ -196,10 +197,9 @@ class DataFile:
         if file_type in ["URL", "Git", "Repo"]:
             if "languages" in yaml.data and isinstance(yaml.data["language"], list):
                 for language in yaml.data["language"]:
-                    response = self.config.get(f"{dir_path}/{language}.yml")
-                    if response.status_code < 400:
-                        add_translation(f"{dir_path}/{language}.yml", language, data=response.content)
-                    else:
+                    try:
+                        add_translation(f"{dir_path}/{language}.yml", language, url=True)
+                    except Failed:
                         logger.error(f"URL Error: Language file not found at {dir_path}/{language}.yml")
         else:
             for file in os.listdir(dir_path):
@@ -343,7 +343,7 @@ class DataFile:
                                 if "<<" in str(d_value):
                                     default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', d_value)
                                 else:
-                                    default[f"{final_key}_encoded"] = util.quote(d_value)
+                                    default[f"{final_key}_encoded"] = quote(d_value)
 
                     if "optional" in template:
                         if template["optional"]:
@@ -434,7 +434,7 @@ class DataFile:
                                 condition_found = True
                                 if condition["value"] is not None:
                                     variables[final_key] = condition["value"]
-                                    variables[f"{final_key}_encoded"] = util.quote(condition["value"])
+                                    variables[f"{final_key}_encoded"] = quote(condition["value"])
                                 else:
                                     optional.append(final_key)
                                 break
@@ -442,7 +442,7 @@ class DataFile:
                             if "default" in con_value:
                                 logger.trace(f'Conditional Variable: {final_key} defaults to "{con_value["default"]}"')
                                 variables[final_key] = con_value["default"]
-                                variables[f"{final_key}_encoded"] = util.quote(con_value["default"])
+                                variables[f"{final_key}_encoded"] = quote(con_value["default"])
                             else:
                                 logger.trace(f"Conditional Variable: {final_key} added as optional variable")
                                 optional.append(str(final_key))
@@ -465,7 +465,7 @@ class DataFile:
                                 if not sort_mapping and variables["mapping_name"].startswith(f"{op} "):
                                     sort_mapping = f"{variables['mapping_name'][len(op):].strip()}, {op}"
                                 if sort_name and sort_mapping:
-                                  break
+                                    break
                         else:
                             raise Failed(f"{self.data_type} Error: template sub-attribute move_prefix is blank")
                     variables[f"{self.data_type.lower()}_sort"] = sort_name if sort_name else variables[name_var]
@@ -482,7 +482,7 @@ class DataFile:
                             if key not in variables:
                                 variables[key] = value
                     for key, value in variables.copy().items():
-                        variables[f"{key}_encoded"] = util.quote(value)
+                        variables[f"{key}_encoded"] = quote(value)
 
                     default = {k: v for k, v in default.items() if k not in variables}
                     og_optional = optional
@@ -1374,7 +1374,7 @@ class MetadataFile(DataFile):
             if sub:
                 sub_str = ""
                 for folder in sub.split("/"):
-                    folder_encode = util.quote(folder)
+                    folder_encode = quote(folder)
                     sub_str += f"{folder_encode}/"
                     if folder not in top_tree:
                         raise Failed(f"Image Set Error: Subfolder {folder} Not Found at https://github.com{repo}tree/master/{sub_str}")
@@ -1385,21 +1385,21 @@ class MetadataFile(DataFile):
                 return f"https://raw.githubusercontent.com{repo}master/{sub}{u}"
 
             def from_repo(u):
-                return self.config.get(repo_url(u)).content.decode().strip()
+                return self.config.Requests.get(repo_url(u)).content.decode().strip()
 
             def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
                 attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
                 if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
-                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.tpdb'}")
+                    return f"tpdb_{attr_name}", from_repo(f"{check_key}/{quote(git_name) if git_name else f'{attr_name}.tpdb'}")
                 elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
-                    return f"url_{attr_name}", from_repo(f"{check_key}/{util.quote(git_name) if git_name else f'{attr_name}.url'}")
+                    return f"url_{attr_name}", from_repo(f"{check_key}/{quote(git_name) if git_name else f'{attr_name}.url'}")
                 elif git_name:
                     if git_name in check_tree:
-                        return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(git_name)}")
+                        return f"url_{attr_name}", repo_url(f"{check_key}/{quote(git_name)}")
                 else:
                     for ct in check_tree:
                         if ct.lower().startswith(attr_name):
-                            return f"url_{attr_name}", repo_url(f"{check_key}/{util.quote(ct)}")
+                            return f"url_{attr_name}", repo_url(f"{check_key}/{quote(ct)}")
                 return None, None
 
             def init_set(check_key, check_tree):
@@ -1417,14 +1417,14 @@ class MetadataFile(DataFile):
                 if k not in top_tree:
                     logger.info(f"Image Set Warning: {k} not found at https://github.com{repo}tree/master/{sub}")
                     continue
-                k_encoded = util.quote(k)
+                k_encoded = quote(k)
                 item_folder = self.config.GitHub.get_tree(top_tree[k]["url"])
                 item_data = init_set(k_encoded, item_folder)
                 seasons = {}
                 for ik in item_folder:
                     match = re.search(r"(\d+)", ik)
                     if match:
-                        season_path = f"{k_encoded}/{util.quote(ik)}"
+                        season_path = f"{k_encoded}/{quote(ik)}"
                         season_num = int(match.group(1))
                         season_folder = self.config.GitHub.get_tree(item_folder[ik]["url"])
                         season_data = init_set(season_path, season_folder)
@@ -1770,7 +1770,6 @@ class MetadataFile(DataFile):
             nonlocal updated
             if updated:
                 try:
-                    #current_item.saveEdits()
                     logger.info(f"{description} Metadata Update Successful")
                 except BadRequest:
                     logger.error(f"{description} Metadata Update Failed")
@@ -1816,7 +1815,6 @@ class MetadataFile(DataFile):
             summary = tmdb_item.overview
             genres = tmdb_item.genres
 
-        #item.batchEdits()
         add_edit("title", item, meta, methods)
         add_edit("sort_title", item, meta, methods, key="titleSort")
         if self.library.is_movie:
@@ -1926,7 +1924,6 @@ class MetadataFile(DataFile):
                     season_methods = {sm.lower(): sm for sm in season_dict}
                     season_style_data = None
                     if update_seasons:
-                        #season.batchEdits()
                         add_edit("title", season, season_dict, season_methods)
                         add_edit("summary", season, season_dict, season_methods)
                         add_edit("user_rating", season, season_dict, season_methods, key="userRating", var_type="float")
@@ -1993,7 +1990,6 @@ class MetadataFile(DataFile):
                                     logger.error(f"{self.type_str} Error: Episode {episode_id} in Season {season_id} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
-                                #episode.batchEdits()
                                 add_edit("title", episode, episode_dict, episode_methods)
                                 add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                                 add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -2040,7 +2036,6 @@ class MetadataFile(DataFile):
                         logger.error(f"{self.type_str} Error: episode {episode_id} of season {season_id} not found")
                         continue
                     episode_methods = {em.lower(): em for em in episode_dict}
-                    #episode.batchEdits()
                     add_edit("title", episode, episode_dict, episode_methods)
                     add_edit("sort_title", episode, episode_dict, episode_methods, key="titleSort")
                     add_edit("content_rating", episode, episode_dict, episode_methods, key="contentRating")
@@ -2081,7 +2076,6 @@ class MetadataFile(DataFile):
                     else:
                         logger.error(f"{self.type_str} Error: Album: {album_name} not found")
                         continue
-                    #album.batchEdits()
                     add_edit("title", album, album_dict, album_methods, value=title)
                     add_edit("sort_title", album, album_dict, album_methods, key="titleSort")
                     add_edit("critic_rating", album, album_dict, album_methods, key="rating", var_type="float")
@@ -2126,7 +2120,6 @@ class MetadataFile(DataFile):
                                     logger.error(f"{self.type_str} Error: Track: {track_num} not found")
                                     continue
 
-                                #track.batchEdits()
                                 add_edit("title", track, track_dict, track_methods, value=title)
                                 add_edit("user_rating", track, track_dict, track_methods, key="userRating", var_type="float")
                                 add_edit("track", track, track_dict, track_methods, key="index", var_type="int")
@@ -2187,7 +2180,6 @@ class MetadataFile(DataFile):
                     race = race_lookup[season.seasonNumber]
                     title = race.format_name(round_prefix, shorten_gp)
                     updated = False
-                    #season.batchEdits()
                     add_edit("title", season, value=title)
                     finish_edit(season, f"Season: {title}")
                     _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=title,
@@ -2198,7 +2190,6 @@ class MetadataFile(DataFile):
                     for episode in season.episodes():
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
-                            #episode.batchEdits()
                             add_edit("title", episode, value=ep_title)
                             add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                             finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")

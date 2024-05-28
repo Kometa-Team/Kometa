@@ -1,15 +1,19 @@
-import re, requests
+import re
 from modules import util
 from modules.util import Failed, NonExisting
+from modules.request import urlparse
 from plexapi.exceptions import BadRequest
+from requests.exceptions import ConnectionError
 
 logger = util.logger
 
 anime_lists_url = "https://raw.githubusercontent.com/Kometa-Team/Anime-IDs/master/anime_ids.json"
 
 class Convert:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache, tmdb):
+        self.requests = requests
+        self.cache = cache
+        self.tmdb = tmdb
         self._anidb_ids = {}
         self._mal_to_anidb = {}
         self._anidb_to_mal = {}
@@ -22,7 +26,7 @@ class Convert:
         self._tmdb_show_to_anidb = {}
         self._imdb_to_anidb = {}
         self._tvdb_to_anidb = {}
-        self._anidb_ids = self.config.get_json(anime_lists_url)
+        self._anidb_ids = self.requests.get_json(anime_lists_url)
         for anidb_id, ids in self._anidb_ids.items():
             anidb_id = int(anidb_id)
             if "mal_id" in ids:
@@ -77,6 +81,11 @@ class Convert:
                 return self._tmdb_movie_to_anidb[tmdb_id]
             else:
                 return None
+
+    def anidb_to_mal(self, anidb_id):
+        if anidb_id not in self._anidb_to_mal:
+            raise Failed(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id}")
+        return self._anidb_to_mal[anidb_id]
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []
@@ -139,15 +148,15 @@ class Convert:
     def tmdb_to_imdb(self, tmdb_id, is_movie=True, fail=False):
         media_type = "movie" if is_movie else "show"
         expired = False
-        if self.config.Cache and is_movie:
-            cache_id, expired = self.config.Cache.query_imdb_to_tmdb_map(tmdb_id, imdb=False, media_type=media_type)
+        if self.cache and is_movie:
+            cache_id, expired = self.cache.query_imdb_to_tmdb_map(tmdb_id, imdb=False, media_type=media_type)
             if cache_id and not expired:
                 return cache_id
         try:
-            imdb_id = self.config.TMDb.convert_from(tmdb_id, "imdb_id", is_movie)
+            imdb_id = self.tmdb.convert_from(tmdb_id, "imdb_id", is_movie)
             if imdb_id:
-                if self.config.Cache:
-                    self.config.Cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
+                if self.cache:
+                    self.cache.update_imdb_to_tmdb_map(media_type, expired, imdb_id, tmdb_id)
                 return imdb_id
         except Failed:
             pass
@@ -158,15 +167,15 @@ class Convert:
 
     def imdb_to_tmdb(self, imdb_id, fail=False):
         expired = False
-        if self.config.Cache:
-            cache_id, cache_type, expired = self.config.Cache.query_imdb_to_tmdb_map(imdb_id, imdb=True, return_type=True)
+        if self.cache:
+            cache_id, cache_type, expired = self.cache.query_imdb_to_tmdb_map(imdb_id, imdb=True, return_type=True)
             if cache_id and not expired:
                 return cache_id, cache_type
         try:
-            tmdb_id, tmdb_type = self.config.TMDb.convert_imdb_to(imdb_id)
+            tmdb_id, tmdb_type = self.tmdb.convert_imdb_to(imdb_id)
             if tmdb_id:
-                if self.config.Cache:
-                    self.config.Cache.update_imdb_to_tmdb_map(tmdb_type, expired, imdb_id, tmdb_id)
+                if self.cache:
+                    self.cache.update_imdb_to_tmdb_map(tmdb_type, expired, imdb_id, tmdb_id)
                 return tmdb_id, tmdb_type
         except Failed:
             pass
@@ -177,15 +186,15 @@ class Convert:
 
     def tmdb_to_tvdb(self, tmdb_id, fail=False):
         expired = False
-        if self.config.Cache:
-            cache_id, expired = self.config.Cache.query_tmdb_to_tvdb_map(tmdb_id, tmdb=True)
+        if self.cache:
+            cache_id, expired = self.cache.query_tmdb_to_tvdb_map(tmdb_id, tmdb=True)
             if cache_id and not expired:
                 return cache_id
         try:
-            tvdb_id = self.config.TMDb.convert_from(tmdb_id, "tvdb_id", False)
+            tvdb_id = self.tmdb.convert_from(tmdb_id, "tvdb_id", False)
             if tvdb_id:
-                if self.config.Cache:
-                    self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
+                if self.cache:
+                    self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
                 return tvdb_id
         except Failed:
             pass
@@ -196,15 +205,15 @@ class Convert:
 
     def tvdb_to_tmdb(self, tvdb_id, fail=False):
         expired = False
-        if self.config.Cache:
-            cache_id, expired = self.config.Cache.query_tmdb_to_tvdb_map(tvdb_id, tmdb=False)
+        if self.cache:
+            cache_id, expired = self.cache.query_tmdb_to_tvdb_map(tvdb_id, tmdb=False)
             if cache_id and not expired:
                 return cache_id
         try:
-            tmdb_id = self.config.TMDb.convert_tvdb_to(tvdb_id)
+            tmdb_id = self.tmdb.convert_tvdb_to(tvdb_id)
             if tmdb_id:
-                if self.config.Cache:
-                    self.config.Cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
+                if self.cache:
+                    self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
                 return tmdb_id
         except Failed:
             pass
@@ -215,15 +224,15 @@ class Convert:
 
     def tvdb_to_imdb(self, tvdb_id, fail=False):
         expired = False
-        if self.config.Cache:
-            cache_id, expired = self.config.Cache.query_imdb_to_tvdb_map(tvdb_id, imdb=False)
+        if self.cache:
+            cache_id, expired = self.cache.query_imdb_to_tvdb_map(tvdb_id, imdb=False)
             if cache_id and not expired:
                 return cache_id
         try:
             imdb_id = self.tmdb_to_imdb(self.tvdb_to_tmdb(tvdb_id, fail=True), is_movie=False, fail=True)
             if imdb_id:
-                if self.config.Cache:
-                    self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
+                if self.cache:
+                    self.cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
                 return imdb_id
         except Failed:
             pass
@@ -234,8 +243,8 @@ class Convert:
 
     def imdb_to_tvdb(self, imdb_id, fail=False):
         expired = False
-        if self.config.Cache:
-            cache_id, expired = self.config.Cache.query_imdb_to_tvdb_map(imdb_id, imdb=True)
+        if self.cache:
+            cache_id, expired = self.cache.query_imdb_to_tvdb_map(imdb_id, imdb=True)
             if cache_id and not expired:
                 return cache_id
         try:
@@ -243,8 +252,8 @@ class Convert:
             if tmdb_type == "show":
                 tvdb_id = self.tmdb_to_tvdb(tmdb_id, fail=True)
                 if tvdb_id:
-                    if self.config.Cache:
-                        self.config.Cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
+                    if self.cache:
+                        self.cache.update_imdb_to_tvdb_map(expired, imdb_id, tvdb_id)
                     return tvdb_id
         except Failed:
             pass
@@ -258,8 +267,8 @@ class Convert:
         cache_id = None
         imdb_check = None
         expired = None
-        if self.config.Cache:
-            cache_id, imdb_check, media_type, expired = self.config.Cache.query_guid_map(guid)
+        if self.cache:
+            cache_id, imdb_check, media_type, expired = self.cache.query_guid_map(guid)
             if (cache_id or imdb_check) and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
                 if item_type == "hama" and check_id.startswith("anidb"):
@@ -270,7 +279,7 @@ class Convert:
         return media_id_type, cache_id, imdb_check, expired
 
     def scan_guid(self, guid_str):
-        guid = requests.utils.urlparse(guid_str)
+        guid = urlparse(guid_str)
         return guid.scheme.split(".")[-1], guid.netloc
 
     def get_id(self, item, library):
@@ -288,13 +297,13 @@ class Convert:
                 try:
                     for guid_tag in item.guids:
                         try:
-                            url_parsed = requests.utils.urlparse(guid_tag.id)
+                            url_parsed = urlparse(guid_tag.id)
                             if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
                             elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
                             elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
                         except ValueError:
                             pass
-                except requests.exceptions.ConnectionError:
+                except ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
                     raise Failed("No External GUIDs found")
@@ -375,12 +384,12 @@ class Convert:
                         imdb_id.append(imdb)
 
             def update_cache(cache_ids, id_type, imdb_in, guid_type):
-                if self.config.Cache:
+                if self.cache:
                     cache_ids = ",".join([str(c) for c in cache_ids])
                     imdb_in = ",".join([str(i) for i in imdb_in]) if imdb_in else None
                     ids = f"{item.guid:<46} | {id_type} ID: {cache_ids:<7} | IMDb ID: {str(imdb_in):<10}"
                     logger.info(f" Cache  |  {'^' if expired else '+'}  | {ids} | {item.title}")
-                    self.config.Cache.update_guid_map(item.guid, cache_ids, imdb_in, expired, guid_type)
+                    self.cache.update_guid_map(item.guid, cache_ids, imdb_in, expired, guid_type)
 
             if (tmdb_id or imdb_id) and library.is_movie:
                 update_cache(tmdb_id, "TMDb", imdb_id, "movie")

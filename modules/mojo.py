@@ -1,8 +1,8 @@
 from datetime import datetime
 from modules import util
+from modules.request import parse_qs, urlparse
 from modules.util import Failed
 from num2words import num2words
-from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
@@ -125,8 +125,9 @@ base_url = "https://www.boxofficemojo.com"
 
 
 class BoxOfficeMojo:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache):
+        self.requests = requests
+        self.cache = cache
         self._never_options = None
         self._intl_options = None
         self._year_options = None
@@ -161,7 +162,7 @@ class BoxOfficeMojo:
         logger.trace(f"URL: {base_url}{url}")
         if params:
             logger.trace(f"Params: {params}")
-        response = self.config.get_html(f"{base_url}{url}", headers=util.header(), params=params)
+        response = self.requests.get_html(f"{base_url}{url}", header=True, params=params)
         return response.xpath(xpath) if xpath else response
 
     def _parse_list(self, url, params, limit):
@@ -258,16 +259,16 @@ class BoxOfficeMojo:
             else:
                 imdb_id = None
                 expired = None
-                if self.config.Cache:
-                    imdb_id, expired = self.config.Cache.query_letterboxd_map(item)
+                if self.cache:
+                    imdb_id, expired = self.cache.query_letterboxd_map(item)
                 if not imdb_id or expired is not False:
                     try:
                         imdb_id = self._imdb(item)
                     except Failed as e:
                         logger.error(e)
                         continue
-                    if self.config.Cache:
-                        self.config.Cache.update_letterboxd_map(expired, item, imdb_id)
+                    if self.cache:
+                        self.cache.update_letterboxd_map(expired, item, imdb_id)
             ids.append((imdb_id, "imdb"))
         logger.info(f"Processed {total_items} IMDb IDs")
         return ids

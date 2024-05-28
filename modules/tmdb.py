@@ -113,8 +113,8 @@ class TMDbMovie(TMDBObj):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
         if expired or not data:
             data = self.load_movie()
         super()._load(data)
@@ -125,8 +125,8 @@ class TMDbMovie(TMDBObj):
         self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
         self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def load_movie(self):
@@ -144,8 +144,8 @@ class TMDbShow(TMDBObj):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_show(tmdb_id, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_show(tmdb_id, self._tmdb.expiration)
         if expired or not data:
             data = self.load_show()
         super()._load(data)
@@ -162,8 +162,8 @@ class TMDbShow(TMDBObj):
         loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else [] # noqa
         self.seasons = [TMDbSeason(s) for s in loop]
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_show(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_show(expired, self, self._tmdb.expiration)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def load_show(self):
@@ -184,8 +184,8 @@ class TMDbEpisode:
         self.ignore_cache = ignore_cache
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_episode(self.tmdb_id, self.season_number, self.episode_number, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_episode(self.tmdb_id, self.season_number, self.episode_number, self._tmdb.expiration)
         if expired or not data:
             data = self.load_episode()
 
@@ -198,8 +198,8 @@ class TMDbEpisode:
         self.imdb_id = data["imdb_id"] if isinstance(data, dict) else data.imdb_id
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_episode(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_episode(expired, self, self._tmdb.expiration)
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def load_episode(self):
@@ -215,13 +215,15 @@ class TMDbEpisode:
 class TMDb:
     def __init__(self, config, params):
         self.config = config
+        self.requests = self.config.Requests
+        self.cache = self.config.Cache
         self.apikey = params["apikey"]
         self.language = params["language"]
         self.region = None
         self.expiration = params["expiration"]
         logger.secret(self.apikey)
         try:
-            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
+            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()} # noqa
