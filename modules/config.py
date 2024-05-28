@@ -1,6 +1,5 @@
-import base64, os, re, requests
+import os, re
 from datetime import datetime
-from lxml import html
 from modules import util, radarr, sonarr, operations
 from modules.anidb import AniDB
 from modules.anilist import AniList
@@ -27,9 +26,8 @@ from modules.tautulli import Tautulli
 from modules.tmdb import TMDb
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
-from modules.util import Failed, NotScheduled, NotScheduledRange, YAML
+from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
-from retrying import retry
 
 logger = util.logger
 
@@ -142,7 +140,7 @@ library_operations = {
 }
 
 class ConfigFile:
-    def __init__(self, default_dir, attrs, secrets):
+    def __init__(self, in_request, default_dir, attrs, secrets):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -153,10 +151,9 @@ class ConfigFile:
         logger.clear_errors()
 
         self._mediastingers = None
+        self.Requests = in_request
         self.default_dir = default_dir
         self.secrets = secrets
-        self.version = attrs["version"] if "version" in attrs else None
-        self.branch = attrs["branch"] if "branch" in attrs else None
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
@@ -196,7 +193,7 @@ class ConfigFile:
                 logger.debug(re.sub(r"(token|client.*|url|api_*key|secret|error|delete|run_start|run_end|version|changes|username|password): .+", r"\1: (redacted)", line.strip("\r\n")))
             logger.debug("")
 
-        self.data = YAML(self.config_path).data
+        self.data = self.Requests.file_yaml(self.config_path).data
 
         def replace_attr(all_data, in_attr, par):
             if "settings" not in all_data:
@@ -364,7 +361,7 @@ class ConfigFile:
             if data is None or attribute not in data:
                 message = f"{text} not found"
                 if parent and save is True:
-                    yaml = YAML(self.config_path)
+                    yaml = self.Requests.file_yaml(self.config_path)
                     endline = f"\n{parent} sub-attribute {attribute} added to config"
                     if parent not in yaml.data or not yaml.data[parent]:                yaml.data[parent] = {attribute: default}
                     elif attribute not in yaml.data[parent]:                            yaml.data[parent][attribute] = default
@@ -480,7 +477,7 @@ class ConfigFile:
             "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default="all", default_is_none=True),
             "playlist_exclude_users": check_for_attribute(self.data, "playlist_exclude_users", parent="settings", default_is_none=True),
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
-            "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True),
+            "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True, save=False),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="jpg"),
             "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
@@ -492,7 +489,9 @@ class ConfigFile:
             if "https://github.com/" in repo:
                 repo = repo.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/tree/", "/")
             self.custom_repo = repo
-        self.latest_version = util.current_version(self.version, branch=self.branch)
+
+        if not self.general["verify_ssl"]:
+            self.Requests.no_verify_ssl()
 
         add_operations = True if "operations" not in self.general["run_order"] else False
         add_metadata = True if "metadata" not in self.general["run_order"] else False
@@ -516,25 +515,20 @@ class ConfigFile:
                 new_run_order.append("overlays")
             self.general["run_order"] = new_run_order
 
-            yaml = YAML(self.config_path)
-            if "settings" not in yaml.data or not yaml.data["settings"]:
-                yaml.data["settings"] = {}
-            yaml.data["settings"]["run_order"] = new_run_order
-            yaml.save()
-
-        self.session = requests.Session()
-        if not self.general["verify_ssl"]:
-            self.session.verify = False
-            if self.session.verify is False:
-                import urllib3
-                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            config_yaml = self.Requests.file_yaml(self.config_path)
+            if "settings" not in config_yaml.data or not config_yaml.data["settings"]:
+                config_yaml.data["settings"] = {}
+            config_yaml.data["settings"]["run_order"] = new_run_order
+            config_yaml.save()
 
         if self.general["cache"]:
             logger.separator()
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
-        self.GitHub = GitHub(self, {"token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)})
+        self.GitHub = GitHub(self.Requests, {
+            "token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)
+        })
 
         logger.separator()
 
@@ -542,7 +536,9 @@ class ConfigFile:
         if "notifiarr" in self.data:
             logger.info("Connecting to Notifiarr...")
             try:
-                self.NotifiarrFactory = Notifiarr(self, {"apikey": check_for_attribute(self.data, "apikey", parent="notifiarr", throw=True)})
+                self.NotifiarrFactory = Notifiarr(self.Requests, {
+                    "apikey": check_for_attribute(self.data, "apikey", parent="notifiarr", throw=True)
+                })
             except Failed as e:
                 if str(e).endswith("is blank"):
                     logger.warning(e)
@@ -557,7 +553,7 @@ class ConfigFile:
         if "gotify" in self.data:
             logger.info("Connecting to Gotify...")
             try:
-                self.GotifyFactory = Gotify(self, {
+                self.GotifyFactory = Gotify(self.Requests, {
                     "url": check_for_attribute(self.data, "url", parent="gotify", throw=True),
                     "token": check_for_attribute(self.data, "token", parent="gotify", throw=True)
                 })
@@ -582,8 +578,8 @@ class ConfigFile:
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
-            if self.version[0] != "Unknown" and self.latest_version[0] != "Unknown" and self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2]):
-                self.Webhooks.version_hooks(self.version, self.latest_version)
+            if self.Requests.has_new_version():
+                self.Webhooks.version_hooks(self.Requests.version, self.Requests.latest_version)
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
@@ -613,7 +609,7 @@ class ConfigFile:
             if "omdb" in self.data:
                 logger.info("Connecting to OMDb...")
                 try:
-                    self.OMDb = OMDb(self, {
+                    self.OMDb = OMDb(self.Requests, self.Cache, {
                         "apikey": check_for_attribute(self.data, "apikey", parent="omdb", throw=True),
                         "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60, int_min=1)
                     })
@@ -628,7 +624,7 @@ class ConfigFile:
 
             logger.separator()
 
-            self.MDBList = MDBList(self)
+            self.MDBList = MDBList(self.Requests, self.Cache)
             if "mdblist" in self.data:
                 logger.info("Connecting to MDBList...")
                 try:
@@ -652,7 +648,7 @@ class ConfigFile:
             if "trakt" in self.data:
                 logger.info("Connecting to Trakt...")
                 try:
-                    self.Trakt = Trakt(self, {
+                    self.Trakt = Trakt(self.Requests, self.read_only, {
                         "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
                         "pin":  check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
@@ -674,7 +670,7 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
-                    self.MyAnimeList = MyAnimeList(self, {
+                    self.MyAnimeList = MyAnimeList(self.Requests, self.Cache, self.read_only, {
                         "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
                         "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
@@ -691,7 +687,9 @@ class ConfigFile:
             else:
                 logger.info("mal attribute not found")
 
-            self.AniDB = AniDB(self, {"language": check_for_attribute(self.data, "language", parent="anidb", default="en")})
+            self.AniDB = AniDB(self.Requests, self.Cache, {
+                "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
+            })
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
@@ -745,15 +743,15 @@ class ConfigFile:
                         logger.info("")
                         logger.separator(f"Skipping {e} Playlist File")
 
-            self.TVDb = TVDb(self, self.general["tvdb_language"], self.general["cache_expiration"])
-            self.IMDb = IMDb(self)
-            self.Convert = Convert(self)
-            self.AniList = AniList(self)
-            self.ICheckMovies = ICheckMovies(self)
-            self.Letterboxd = Letterboxd(self)
-            self.BoxOfficeMojo = BoxOfficeMojo(self)
-            self.Reciperr = Reciperr(self)
-            self.Ergast = Ergast(self)
+            self.TVDb = TVDb(self.Requests, self.Cache, self.general["tvdb_language"], self.general["cache_expiration"])
+            self.IMDb = IMDb(self.Requests, self.Cache, self.default_dir)
+            self.Convert = Convert(self.Requests, self.Cache, self.TMDb)
+            self.AniList = AniList(self.Requests)
+            self.ICheckMovies = ICheckMovies(self.Requests)
+            self.Letterboxd = Letterboxd(self.Requests, self.Cache)
+            self.BoxOfficeMojo = BoxOfficeMojo(self.Requests, self.Cache)
+            self.Reciperr = Reciperr(self.Requests)
+            self.Ergast = Ergast(self.Requests, self.Cache)
 
             logger.separator()
 
@@ -1165,15 +1163,15 @@ class ConfigFile:
                     for attr in ["clean_bundles", "empty_trash", "optimize"]:
                         try:
                             params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
-                        except Failed as er:
-                            test = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
+                        except Failed:
+                            test_attr = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
                             params["plex"][attr] = False
-                            if test is not True and test is not False:
+                            if test_attr is not True and test_attr is not False:
                                 try:
-                                    util.schedule_check(attr, test, current_time, self.run_hour)
+                                    util.schedule_check(attr, test_attr, current_time, self.run_hour)
                                     params["plex"][attr] = True
                                 except NotScheduled:
-                                    logger.info(f"Skipping Operation Not Scheduled for {test}")
+                                    logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
 
                     if params["plex"]["url"].lower() == "env":
                         params["plex"]["url"] = self.env_plex_url
@@ -1201,7 +1199,7 @@ class ConfigFile:
                     logger.info(f"Connecting to {display_name} library's Radarr...")
                     logger.info("")
                     try:
-                        library.Radarr = Radarr(self, library, {
+                        library.Radarr = Radarr(self.Requests, self.Cache, library, {
                             "url": check_for_attribute(lib, "url", parent="radarr", var_type="url", default=self.general["radarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="radarr", default=self.general["radarr"]["token"], req_default=True, save=False),
                             "add_missing": check_for_attribute(lib, "add_missing", parent="radarr", var_type="bool", default=self.general["radarr"]["add_missing"], save=False),
@@ -1231,7 +1229,7 @@ class ConfigFile:
                     logger.info(f"Connecting to {display_name} library's Sonarr...")
                     logger.info("")
                     try:
-                        library.Sonarr = Sonarr(self, library, {
+                        library.Sonarr = Sonarr(self.Requests, self.Cache, library, {
                             "url": check_for_attribute(lib, "url", parent="sonarr", var_type="url", default=self.general["sonarr"]["url"], req_default=True, save=False),
                             "token": check_for_attribute(lib, "token", parent="sonarr", default=self.general["sonarr"]["token"], req_default=True, save=False),
                             "add_missing": check_for_attribute(lib, "add_missing", parent="sonarr", var_type="bool", default=self.general["sonarr"]["add_missing"], save=False),
@@ -1264,7 +1262,7 @@ class ConfigFile:
                     logger.info(f"Connecting to {display_name} library's Tautulli...")
                     logger.info("")
                     try:
-                        library.Tautulli = Tautulli(self, library, {
+                        library.Tautulli = Tautulli(self.Requests, library, {
                             "url": check_for_attribute(lib, "url", parent="tautulli", var_type="url", default=self.general["tautulli"]["url"], req_default=True, save=False),
                             "apikey": check_for_attribute(lib, "apikey", parent="tautulli", default=self.general["tautulli"]["apikey"], req_default=True, save=False)
                         })
@@ -1315,44 +1313,8 @@ class ConfigFile:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")
 
-    def get_html(self, url, headers=None, params=None):
-        return html.fromstring(self.get(url, headers=headers, params=params).content)
-
-    def get_json(self, url, json=None, headers=None, params=None):
-        response = self.get(url, json=json, headers=headers, params=params)
-        try:
-            return response.json()
-        except ValueError:
-            logger.error(str(response.content))
-            raise
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def get(self, url, json=None, headers=None, params=None):
-        return self.session.get(url, json=json, headers=headers, params=params)
-
-    def get_image_encoded(self, url):
-        return base64.b64encode(self.get(url).content).decode('utf-8')
-
-    def post_html(self, url, data=None, json=None, headers=None):
-        return html.fromstring(self.post(url, data=data, json=json, headers=headers).content)
-
-    def post_json(self, url, data=None, json=None, headers=None):
-        response = self.post(url, data=data, json=json, headers=headers)
-        try:
-            return response.json()
-        except ValueError:
-            logger.error(str(response.content))
-            raise
-
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
-    def post(self, url, data=None, json=None, headers=None):
-        return self.session.post(url, data=data, json=json, headers=headers)
-
-    def load_yaml(self, url):
-        return YAML(input_data=self.get(url).content).data
-
     @property
     def mediastingers(self):
         if self._mediastingers is None:
-            self._mediastingers = self.load_yaml(mediastingers_url)
+            self._mediastingers = self.Requests.get_yaml(mediastingers_url)
         return self._mediastingers

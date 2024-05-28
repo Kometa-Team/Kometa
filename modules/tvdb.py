@@ -1,9 +1,10 @@
-import re, requests, time
+import re, time
 from datetime import datetime
 from lxml import html
 from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
+from requests.exceptions import MissingSchema
 from retrying import retry
 
 logger = util.logger
@@ -48,8 +49,8 @@ class TVDbObj:
         self.ignore_cache = ignore_cache
         expired = None
         data = None
-        if self._tvdb.config.Cache and not ignore_cache:
-            data, expired = self._tvdb.config.Cache.query_tvdb(tvdb_id, is_movie, self._tvdb.expiration)
+        if self._tvdb.cache and not ignore_cache:
+            data, expired = self._tvdb.cache.query_tvdb(tvdb_id, is_movie, self._tvdb.expiration)
         if expired or not data:
             item_url = f"{urls['movie_id' if is_movie else 'series_id']}{tvdb_id}"
             try:
@@ -100,12 +101,13 @@ class TVDbObj:
 
             self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
 
-        if self._tvdb.config.Cache and not ignore_cache:
-            self._tvdb.config.Cache.update_tvdb(expired, self, self._tvdb.expiration)
+        if self._tvdb.cache and not ignore_cache:
+            self._tvdb.cache.update_tvdb(expired, self, self._tvdb.expiration)
 
 class TVDb:
-    def __init__(self, config, tvdb_language, expiration):
-        self.config = config
+    def __init__(self, requests, cache, tvdb_language, expiration):
+        self.requests = requests
+        self.cache = cache
         self.language = tvdb_language
         self.expiration = expiration
 
@@ -115,7 +117,7 @@ class TVDb:
 
     @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
     def get_request(self, tvdb_url):
-        response = self.config.get(tvdb_url, headers=util.header(self.language))
+        response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:
             raise Failed(f"({response.status_code}) {response.reason}")
         return html.fromstring(response.content)
@@ -136,8 +138,8 @@ class TVDb:
         else:
             raise Failed(f"TVDb Error: {tvdb_url} must begin with {urls['movies']} or {urls['series']}")
         expired = None
-        if self.config.Cache and not ignore_cache and not is_movie:
-            tvdb_id, expired = self.config.Cache.query_tvdb_map(tvdb_url, self.expiration)
+        if self.cache and not ignore_cache and not is_movie:
+            tvdb_id, expired = self.cache.query_tvdb_map(tvdb_url, self.expiration)
             if tvdb_id and not expired:
                 return tvdb_id, None, None
         logger.trace(f"URL: {tvdb_url}")
@@ -165,8 +167,8 @@ class TVDb:
                         pass
                 if tmdb_id is None and imdb_id is None:
                     raise Failed(f"TVDb Error: No TMDb ID or IMDb ID found")
-            if self.config.Cache and not ignore_cache and not is_movie:
-                self.config.Cache.update_tvdb_map(expired, tvdb_url, tvdb_id, self.expiration)
+            if self.cache and not ignore_cache and not is_movie:
+                self.cache.update_tvdb_map(expired, tvdb_url, tvdb_id, self.expiration)
             return tvdb_id, tmdb_id, imdb_id
         elif tvdb_url.startswith(urls["movie_id"]):
             err_text = f"using TVDb Movie ID: {tvdb_url[len(urls['movie_id']):]}"
@@ -177,7 +179,7 @@ class TVDb:
         raise Failed(f"TVDb Error: Could not find a TVDb {media_type} {err_text}")
 
     def get_list_description(self, tvdb_url):
-        response = self.config.get_html(tvdb_url, headers=util.header(self.language))
+        response = self.requests.get_html(tvdb_url, language=self.language)
         description = response.xpath("//div[@class='block']/div[not(@style='display:none')]/p/text()")
         description = description[0] if len(description) > 0 and len(description[0]) > 0 else None
         poster = response.xpath("//div[@id='artwork']/div/div/a/@href")
@@ -190,7 +192,7 @@ class TVDb:
         logger.trace(f"URL: {tvdb_url}")
         if tvdb_url.startswith((urls["list"], urls["alt_list"])):
             try:
-                response = self.config.get_html(tvdb_url, headers=util.header(self.language))
+                response = self.requests.get_html(tvdb_url, language=self.language)
                 items = response.xpath("//div[@id='general']//div/div/h3/a")
                 for item in items:
                     title = item.xpath("text()")[0]
@@ -217,7 +219,7 @@ class TVDb:
                 if len(ids) > 0:
                     return ids
                 raise Failed(f"TVDb Error: No TVDb IDs found at {tvdb_url}")
-            except requests.exceptions.MissingSchema:
+            except MissingSchema:
                 logger.stacktrace()
                 raise Failed(f"TVDb Error: URL Lookup Failed for {tvdb_url}")
         else:

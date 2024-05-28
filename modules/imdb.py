@@ -1,7 +1,7 @@
-import csv, gzip, json, math, os, re, requests, shutil, time
+import csv, gzip, json, math, os, re, shutil, time
 from modules import util
+from modules.request import parse_qs, urlparse
 from modules.util import Failed
-from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
@@ -94,8 +94,10 @@ graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
 class IMDb:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache, default_dir):
+        self.requests = requests
+        self.cache = cache
+        self.default_dir = default_dir
         self._ratings = None
         self._genres = None
         self._episode_ratings = None
@@ -108,28 +110,27 @@ class IMDb:
         logger.trace(f"URL: {url}")
         if params:
             logger.trace(f"Params: {params}")
-        headers = util.header(language) if language else util.header()
-        response = self.config.get_html(url, headers=headers, params=params)
+        response = self.requests.get_html(url, params=params, header=True, language=language)
         return response.xpath(xpath) if xpath else response
 
     def _graph_request(self, json_data):
-        return self.config.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
+        return self.requests.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
 
     @property
     def hash(self):
         if self._hash is None:
-            self._hash = self.config.get(hash_url).text.strip()
+            self._hash = self.requests.get(hash_url).text.strip()
         return self._hash
 
     @property
     def events_validation(self):
         if self._events_validation is None:
-            self._events_validation = self.config.load_yaml(f"{git_base}/event_validation.yml")
+            self._events_validation = self.requests.get_yaml(f"{git_base}/event_validation.yml").data
         return self._events_validation
 
     def get_event(self, event_id):
         if event_id not in self._events:
-            self._events[event_id] = self.config.load_yaml(f"{git_base}/events/{event_id}.yml")
+            self._events[event_id] = self.requests.get_yaml(f"{git_base}/events/{event_id}.yml").data
         return self._events[event_id]
 
     def validate_imdb_lists(self, err_type, imdb_lists, language):
@@ -213,7 +214,7 @@ class IMDb:
 
     def _watchlist(self, user, language):
         imdb_url = f"{base_url}/user/{user}/watchlist"
-        for text in self._request(imdb_url, language=language , xpath="//div[@class='article']/script/text()")[0].split("\n"):
+        for text in self._request(imdb_url, language=language, xpath="//div[@class='article']/script/text()")[0].split("\n"):
             if text.strip().startswith("IMDbReactInitialState.push"):
                 jsonline = text.strip()
                 return [f for f in json.loads(jsonline[jsonline.find('{'):-2])["starbars"]]
@@ -450,8 +451,8 @@ class IMDb:
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
         expired = None
-        if self.config.Cache and not ignore_cache:
-            imdb_keywords, expired = self.config.Cache.query_imdb_keywords(imdb_id, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
             if imdb_keywords and expired is False:
                 return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
@@ -465,15 +466,15 @@ class IMDb:
                 imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
             else:
                 imdb_keywords[name] = (0, 0)
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
 
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
         expired = None
-        if self.config.Cache and not ignore_cache:
-            parental_dict, expired = self.config.Cache.query_imdb_parental(imdb_id, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
         response = self._request(f"{base_url}/title/{imdb_id}/parentalguide")
@@ -483,8 +484,8 @@ class IMDb:
                 parental_dict[ptype] = results[0].strip()
             else:
                 raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_imdb_parental(expired, imdb_id, parental_dict, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
     def _ids_from_chart(self, chart, language):
@@ -542,26 +543,15 @@ class IMDb:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
     def _interface(self, interface):
-        gz = os.path.join(self.config.default_dir, f"title.{interface}.tsv.gz")
-        tsv = os.path.join(self.config.default_dir, f"title.{interface}.tsv")
+        gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")
+        tsv = os.path.join(self.default_dir, f"title.{interface}.tsv")
 
         if os.path.exists(gz):
             os.remove(gz)
         if os.path.exists(tsv):
             os.remove(tsv)
 
-        with requests.get(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", stream=True) as r:
-            r.raise_for_status()
-            total_length = r.headers.get('content-length')
-            if total_length is not None:
-                total_length = int(total_length)
-            dl = 0
-            with open(gz, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    dl += len(chunk)
-                    f.write(chunk)
-                    logger.ghost(f"Downloading IMDb Interface: {dl / total_length * 100:6.2f}%")
-                logger.exorcise()
+        self.requests.get_stream(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", gz, "IMDb Interface")
 
         with open(tsv, "wb") as f_out:
             with gzip.open(gz, "rb") as f_in:

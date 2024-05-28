@@ -8,14 +8,15 @@ builders = ["letterboxd_list", "letterboxd_list_details"]
 base_url = "https://letterboxd.com"
 
 class Letterboxd:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache):
+        self.requests = requests
+        self.cache = cache
 
     def _parse_page(self, list_url, language):
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         logger.trace(f"URL: {list_url}")
-        response = self.config.get_html(list_url, headers=util.header(language))
+        response = self.requests.get_html(list_url, language=language)
         letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
@@ -44,7 +45,7 @@ class Letterboxd:
 
     def _tmdb(self, letterboxd_url, language):
         logger.trace(f"URL: {letterboxd_url}")
-        response = self.config.get_html(letterboxd_url, headers=util.header(language))
+        response = self.requests.get_html(letterboxd_url, language=language)
         ids = response.xpath("//a[@data-track-action='TMDb']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
@@ -54,7 +55,7 @@ class Letterboxd:
 
     def get_list_description(self, list_url, language):
         logger.trace(f"URL: {list_url}")
-        response = self.config.get_html(list_url, headers=util.header(language))
+        response = self.requests.get_html(list_url, language=language)
         descriptions = response.xpath("//meta[@property='og:description']/@content")
         return descriptions[0] if len(descriptions) > 0 and len(descriptions[0]) > 0 else None
 
@@ -106,16 +107,16 @@ class Letterboxd:
                     logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                     tmdb_id = None
                     expired = None
-                    if self.config.Cache:
-                        tmdb_id, expired = self.config.Cache.query_letterboxd_map(letterboxd_id)
+                    if self.cache:
+                        tmdb_id, expired = self.cache.query_letterboxd_map(letterboxd_id)
                     if not tmdb_id or expired is not False:
                         try:
                             tmdb_id = self._tmdb(f"{base_url}{slug}", language)
                         except Failed as e:
                             logger.error(e)
                             continue
-                        if self.config.Cache:
-                            self.config.Cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
+                        if self.cache:
+                            self.cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
                     ids.append((tmdb_id, "tmdb"))
                 logger.info(f"Processed {total_items} TMDb IDs")
                 if filtered_ids:

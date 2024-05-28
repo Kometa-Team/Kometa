@@ -1,7 +1,7 @@
 import os, re
 from datetime import datetime, timedelta, timezone
 from modules import plex, util, anidb
-from modules.util import Failed, LimitReached, YAML
+from modules.util import Failed, LimitReached
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
@@ -296,10 +296,11 @@ class Operations:
                             mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
                             logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                        elif anidb_id not in self.config.Convert._anidb_to_mal:
-                            logger.warning(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                         else:
-                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                            try:
+                                mal_id = self.config.Convert.anidb_to_mal(anidb_id)
+                            except Failed as err:
+                                logger.warning(f"{err} of Guid: {item.guid}")
                         if mal_id:
                             try:
                                 _mal_obj = self.config.MyAnimeList.get_anime(mal_id)
@@ -1134,7 +1135,7 @@ class Operations:
             yaml = None
             if os.path.exists(self.library.metadata_backup["path"]):
                 try:
-                    yaml = YAML(path=self.library.metadata_backup["path"])
+                    yaml = self.config.Requests.file_yaml(self.library.metadata_backup["path"])
                 except Failed as e:
                     logger.error(e)
                     filename, file_extension = os.path.splitext(self.library.metadata_backup["path"])
@@ -1144,7 +1145,7 @@ class Operations:
                     os.rename(self.library.metadata_backup["path"], f"{filename}{i}{file_extension}")
                     logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
             if not yaml:
-                yaml = YAML(path=self.library.metadata_backup["path"], create=True)
+                yaml = self.config.Requests.file_yaml(self.library.metadata_backup["path"], create=True)
             if "metadata" not in yaml.data or not isinstance(yaml.data["metadata"], dict):
                 yaml.data["metadata"] = {}
             special_names = {}
