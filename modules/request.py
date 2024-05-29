@@ -96,8 +96,8 @@ class Requests:
     def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False):
         return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty)
 
-    def get_yaml(self, url, check_empty=False):
-        response = self.get(url)
+    def get_yaml(self, url, headers=None, check_empty=False):
+        response = self.get(url, headers=headers)
         if response.status_code >= 400:
             raise Failed(f"URL Error: No file found at {url}")
         return YAML(input_data=response.content, check_empty=check_empty)
