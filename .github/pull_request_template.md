@@ -18,4 +18,7 @@ Please delete options that are not relevant.
 
 ## Checklist
 
-- [] My code was submitted to the nightly branch of the repository.
+Please delete options that are not relevant.
+
+- [] Updated Documentation to reflect changes
+- [] Updated the CHANGELOG with the changes
