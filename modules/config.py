@@ -579,7 +579,7 @@ class ConfigFile:
         try:
             self.Webhooks.start_time_hooks(self.start_time)
             if self.Requests.has_new_version():
-                self.Webhooks.version_hooks(self.Requests.version, self.Requests.latest_version)
+                self.Webhooks.version_hooks()
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Webhooks Error: {e}")

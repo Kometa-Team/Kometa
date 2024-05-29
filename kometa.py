@@ -133,7 +133,7 @@ for arg_key, arg_data in arguments.items():
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
 
-env_version = get_env("BRANCH_NAME", "master")
+env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
 is_lxml = get_env("KOMETA_LXML", False, arg_bool=True)
@@ -205,7 +205,7 @@ from modules import util
 util.logger = logger
 from modules.builder import CollectionBuilder
 from modules.config import ConfigFile
-from modules.request import Requests, parse_version
+from modules.request import Requests
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, Deleted
 
 def my_except_hook(exctype, value, tb):
@@ -225,12 +225,12 @@ def new_send(*send_args, **kwargs):
 
 requests.Session.send = new_send
 
-file_version = ("Unknown", "Unknown", 0)
+local_version = "Unknown"
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) as handle:
     for line in handle.readlines():
         line = line.strip()
         if len(line) > 0:
-            file_version = parse_version(line)
+            local_version = line
             break
 
 uuid_file = os.path.join(default_dir, "UUID")
@@ -271,13 +271,13 @@ def start(attrs):
         elif is_linuxserver:
             system_ver = "Linuxserver"
         elif is_docker:
-            system_ver = "Docker"
+            system_ver = f"Docker: {env_branch}"
         else:
             system_ver = f"Python {platform.python_version()}"
-        my_requests = Requests(file_version, env_version, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
-        logger.info(f"    Version: {my_requests.version[0]} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
-        if my_requests.new_version:
-            logger.info(f"    Newest Version: {my_requests.new_version}")
+        my_requests = Requests(local_version, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        logger.info(f"    Version: {my_requests.local} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
+        if my_requests.newest:
+            logger.info(f"    Newest Version: {my_requests.newest}")
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
@@ -347,9 +347,9 @@ def start(attrs):
             except Failed as e:
                 logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
-        version_line = f"Version: {my_requests.version[0]}"
-        if my_requests.new_version:
-            version_line = f"{version_line}        Newest Version: {my_requests.new_version}"
+        version_line = f"Version: {my_requests.local}"
+        if my_requests.newest:
+            version_line = f"{version_line}        Newest Version: {my_requests.newest}"
         try:
             log_data = {}
             no_overlays = []

@@ -24,12 +24,6 @@ def get_header(headers, header, language):
             }
 
 
-def parse_version(version, text="develop"):
-    version = version.replace("develop", text)
-    split_version = version.split(f"-{text}")
-    return version, split_version[0], int(split_version[1]) if len(split_version) > 1 else 0
-
-
 def quote(data):
     return parse.quote(str(data))
 
@@ -45,23 +39,38 @@ def parse_qs(data):
 def urlparse(data):
     return parse.urlparse(str(data))
 
+class Version:
+    def __init__(self, version_string="Unknown"):
+        self.full = version_string.replace("develop", "build")
+        version_parts = self.full.split("-build")
+        self.main = version_parts[0]
+        self.build = int(version_parts[1]) if len(version_parts) > 1 else 0
+
+    def __bool__(self):
+        return self.full != "Unknown"
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return self.full
+
 class Requests:
-    def __init__(self, file_version, env_version, git_branch, verify_ssl=True):
-        self.file_version = file_version
-        self.env_version = env_version
+    def __init__(self, local, env_branch, git_branch, verify_ssl=True):
+        self.local = Version(local)
+        self.env_branch = env_branch
         self.git_branch = git_branch
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]
-        self.nightly_version = None
-        self.develop_version = None
-        self.master_version = None
+        self._nightly = None
+        self._develop = None
+        self._master = None
+        self._branch = None
+        self._latest = None
+        self._newest = None
         self.session = self.create_session()
         self.global_ssl = verify_ssl
         if not self.global_ssl:
             self.no_verify_ssl()
-        self.branch = self.guess_branch()
-        self.version = (self.file_version[0].replace("develop", self.branch), self.file_version[1].replace("develop", self.branch), self.file_version[2])
-        self.latest_version = self.current_version(self.version, branch=self.branch)
-        self.new_version = self.latest_version[0] if self.latest_version and (self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2])) else None
 
     def create_session(self, verify_ssl=True):
         session = requests.Session()
@@ -76,9 +85,6 @@ class Requests:
         if session.verify is False:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-    def has_new_version(self):
-        return self.version[0] != "Unknown" and self.latest_version[0] != "Unknown" and self.version[1] != self.latest_version[1] or (self.version[2] and self.version[2] < self.latest_version[2])
 
     def download_image(self, title, image_url, download_directory, is_poster=True, filename=None):
         response = self.get_image(image_url)
@@ -158,54 +164,70 @@ class Requests:
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
         return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language))
 
-    def guess_branch(self):
-        if self.git_branch:
-            return self.git_branch
-        elif self.env_version:
-            return self.env_version
-        elif self.file_version[2] > 0:
-            dev_version = self.get_develop()
-            if self.file_version[1] != dev_version[1] or self.file_version[2] <= dev_version[2]:
-                return "develop"
+    def has_new_version(self):
+        return self.local and self.latest and self.local.main != self.latest.main or (self.local.build and self.local.build < self.latest.build)
+
+    @property
+    def branch(self):
+        if self._branch is None:
+            if self.git_branch in ["develop", "nightly"]:
+                self._branch = self.git_branch
+            elif self.env_branch in ["develop", "nightly"]:
+                self._branch = self.env_branch
+            elif self.local.build > 0:
+                if self.local.main != self.develop.main or self.local.build <= self.develop.build:
+                    self._branch = "develop"
+                else:
+                    self._branch = "nightly"
             else:
-                return "nightly"
-        else:
-            return "master"
+                self._branch = "master"
+        return self._branch
 
-    def current_version(self, version, branch=None):
-        if branch == "develop":
-            return self.get_develop()
-        elif branch:
-            return self.get_nightly()
-        elif version[2] > 0:
-            new_version = self.get_develop()
-            if version[1] != new_version[1] or new_version[2] >= version[2]:
-                return new_version
-            return self.get_nightly()
-        else:
-            return self.get_master()
+    @property
+    def latest(self):
+        if self._latest is None:
+            if self.branch == "develop":
+                self._latest = self.develop
+            elif self.branch == "nightly":
+                self._latest = self.nightly
+            elif self.local.build > 0:
+                if self.local.main != self.develop.main or self.develop.build >= self.local.build:
+                    self._latest = self.develop
+                self._latest = self.nightly
+            else:
+                self._latest = self.master
+        return self._latest
 
-    def get_nightly(self):
-        if self.nightly_version is None:
-            self.nightly_version = self.get_version("nightly")
-        return self.nightly_version
+    @property
+    def newest(self):
+        if self._newest is None:
+            self._newest = self.latest if self.latest and (self.local.main != self.latest.main or (self.local.build and self.local.build < self.latest.build)) else None
+        return self._newest
 
-    def get_develop(self):
-        if self.develop_version is None:
-            self.develop_version = self.get_version("develop")
-        return self.develop_version
+    @property
+    def master(self):
+        if self._master is None:
+            self._master = self._version("master")
+        return self._master
 
-    def get_master(self):
-        if self.master_version is None:
-            self.master_version = self.get_version("master")
-        return self.master_version
+    @property
+    def develop(self):
+        if self._develop is None:
+            self._develop = self._version("develop")
+        return self._develop
 
-    def get_version(self, level):
+    @property
+    def nightly(self):
+        if self._nightly is None:
+            self._nightly = self._version("nightly")
+        return self._nightly
+
+    def _version(self, level):
         try:
             url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{level}/VERSION"
-            return parse_version(self.get(url).content.decode().strip(), text=level)
+            return Version(self.get(url).content.decode().strip())
         except ConnectionError:
-            return "Unknown", "Unknown", 0
+            return Version()
 
 
 class YAML:
