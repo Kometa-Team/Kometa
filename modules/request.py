@@ -96,8 +96,8 @@ class Requests:
     def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False):
         return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty)
 
-    def get_yaml(self, url, headers=None, check_empty=False):
-        response = self.get(url, headers=headers)
+    def get_yaml(self, url, headers=None, params=None, check_empty=False):
+        response = self.get(url, headers=headers, params=params)
         if response.status_code >= 400:
             raise Failed(f"URL Error: No file found at {url}")
         return YAML(input_data=response.content, check_empty=check_empty)
@@ -161,7 +161,7 @@ class Requests:
     def guess_branch(self):
         if self.git_branch:
             return self.git_branch
-        elif self.env_version in ["nightly", "develop"]:
+        elif self.env_version:
             return self.env_version
         elif self.file_version[2] > 0:
             dev_version = self.get_develop()
@@ -173,10 +173,10 @@ class Requests:
             return "master"
 
     def current_version(self, version, branch=None):
-        if branch == "nightly":
-            return self.get_nightly()
-        elif branch == "develop":
+        if branch == "develop":
             return self.get_develop()
+        elif branch:
+            return self.get_nightly()
         elif version[2] > 0:
             new_version = self.get_develop()
             if version[1] != new_version[1] or new_version[2] >= version[2]:
