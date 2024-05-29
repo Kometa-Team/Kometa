@@ -1,97 +1,50 @@
-name: Docker Version Release
+name: Update Build Version
 
 on:
-  create:
-    tags:
-      - v*
+  pull_request:
+    branches: [nightly]
+    types: [closed]
 
 jobs:
-
-  docker-build:
-    if: ${{ startsWith(github.ref, 'refs/tags/v1') || startsWith(github.ref, 'refs/tags/v2') }}
+  increment-version:
     runs-on: ubuntu-latest
+    if: github.base_ref == 'nightly' && github.event.pull_request.merged
     steps:
+
+      - name: Create App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
 
       - name: Check Out Repo
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: nightly
           fetch-depth: 0
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
-        with:
-          platforms: all
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Get the version
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-
-      - name: Build and Push
-        id: docker_build
-        uses: docker/build-push-action@v5
-        with:
-          context: ./
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: true
-          tags: kometateam/kometa:${{ steps.get_version.outputs.VERSION }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Discord Success Notification
-        uses: Kometa-Team/discord-notifications@master
-        if: success()
-        with:
-          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: ${{ vars.TEXT_SUCCESS }}"
-          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
-          color: ${{ vars.COLOR_SUCCESS }}
-          username: ${{ vars.BOT_NAME }}
-          avatar_url: ${{ vars.BOT_IMAGE }}
-          author: ${{ vars.DOCKER_NAME }}
-          author_icon_url: ${{ vars.DOCKER_IMAGE }}
-
-      - name: Discord Failure Notification
-        uses: Kometa-Team/discord-notifications@master
-        if: failure()
-        with:
-          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} ${{ steps.get_version.outputs.VERSION }}: ${{ vars.TEXT_FAILURE }}"
-          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
-          color: ${{ vars.COLOR_FAILURE }}
-          username: ${{ vars.BOT_NAME }}
-          avatar_url: ${{ vars.BOT_IMAGE }}
-          author: ${{ vars.DOCKER_NAME }}
-          author_icon_url: ${{ vars.DOCKER_IMAGE }}
-
-      - name: Checkout Configs Repo
-        uses: actions/checkout@v4
-        with:
-          repository: Kometa-Team/Community-Configs
-          token: ${{ secrets.PAT }}
-          path: kometaconfigs
-
-      - name: Create & Push Tag
-        working-directory: ./kometaconfigs
+      - name: Update VERSION File
         run: |
-          git tag ${{ steps.get_version.outputs.VERSION }}
-          git push origin ${{ steps.get_version.outputs.VERSION }}
-
-      - name: Create release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: CHANGELOG
-          token: ${{ secrets.PAT }}
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
+            value=$(cat VERSION)
+            old_msg=$(git log -1 HEAD --pretty=format:%s)
+          
+            if [[ "$value" == *"-"* ]]; then
+                build_value="$((${value#*-build} + 1))"
+                new_value="${value%-build*}-build${build_value}"
+                new_msg="[${build_value}] ${old_msg}"
+            elif [[ "$value" == *"!"* ]]; then
+                new_value="${value%!*}"
+                new_msg="[${new_value}] ${old_msg}"
+            else
+                new_value="${value%-build*}-build1"
+                new_msg="[1] ${old_msg}"
+            fi
+          
+            echo "$new_value" > "VERSION"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add VERSION
+            git commit -m "${new_msg}" --amend
+            git push origin nightly --force-with-lease
