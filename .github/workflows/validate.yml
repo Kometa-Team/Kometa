@@ -32,7 +32,7 @@ jobs:
     needs: [ validate-pull ]
     if: github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.base_ref == 'nightly' && startswith(github.head_ref, 'docker-')
     steps:
-      
+
       - name: Create Tag
         id: create-tag
         run: |

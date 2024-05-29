@@ -161,7 +161,7 @@ class Requests:
     def guess_branch(self):
         if self.git_branch:
             return self.git_branch
-        elif self.env_version in ["nightly", "develop"]:
+        elif self.env_version:
             return self.env_version
         elif self.file_version[2] > 0:
             dev_version = self.get_develop()
@@ -173,10 +173,10 @@ class Requests:
             return "master"
 
     def current_version(self, version, branch=None):
-        if branch == "nightly":
-            return self.get_nightly()
-        elif branch == "develop":
+        if branch == "develop":
             return self.get_develop()
+        elif branch:
+            return self.get_nightly()
         elif version[2] > 0:
             new_version = self.get_develop()
             if version[1] != new_version[1] or new_version[2] >= version[2]:
