@@ -116,6 +116,7 @@ class Requests:
             raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
         if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.image_content_types:
             raise Failed("Image Not PNG, JPG, or WEBP")
+        return response
 
     def get_stream(self, url, location, info="Item"):
         with self.session.get(url, stream=True) as r:
