@@ -64,7 +64,7 @@ jobs:
 
       - name: Get changes
         id: get-changes
-        run: echo "files=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)" >> $GITHUB_OUTPUT
+        run: echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
 
       - name: List changed files
         id: list-changes
