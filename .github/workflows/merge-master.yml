@@ -1,4 +1,4 @@
-name: Merge Develop into Master
+name: Release New Version
 
 on:
   workflow_dispatch:
@@ -19,9 +19,28 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-          ref: develop
+          ref: nightly
           fetch-depth: 0
 
-      - name: Push Develop into Master
+      - name: Create Release Commit and Synchronize Branches
         run: |
-          git push origin refs/heads/develop:refs/heads/master
+            value=$(cat VERSION)
+            version="${value%-build*}"
+            next_version="${{ vars.NEXT_VERSION }}"
+            echo "CURRENT_VERSION: '${version}'"
+            echo "NEXT_VERSION: '${next_version}'"
+          
+            if [[ "$version" == "$next_version" ]]; then
+                echo "::error::NEXT_VERSION variable (${next_version}) must be incremented"
+                exit 1
+            fi
+          
+            echo "$next_version" > "VERSION"
+          
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add VERSION
+            git commit -m "Kometa Release ${next_version}"
+            git push origin nightly
+            git push origin refs/heads/nightly:refs/heads/develop
+            git push origin refs/heads/nightly:refs/heads/main
