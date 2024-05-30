@@ -390,6 +390,10 @@ class Overlays:
                                                 sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
                                                 sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                                 actual_value = sum(sub_items) / len(sub_items)
+                                        elif format_var == "total_runtime":
+                                            sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
+                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                            actual_value = sum(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
                                                 raise Failed(f"Overlay Warning: No {full_text} found")
@@ -406,7 +410,7 @@ class Overlays:
                                                 final_value = actual_value.strftime(mod)
                                             else:
                                                 final_value = actual_value.strftime("%Y-%m-%d")
-                                        elif format_var == "runtime":
+                                        elif format_var in ["runtime", "total_runtime"]:
                                             if mod == "H":
                                                 final_value = int((actual_value / 60000) // 60)
                                             elif mod == "M":
