@@ -1,8 +1,10 @@
-name: Docker Develop Release
+name: Docker Nightly Release
 
 on:
-  push:
-    branches: [ develop ]
+  workflow_run:
+    workflows: ["Release New Version"]
+    types:
+      - completed
 
 jobs:
 
@@ -13,7 +15,7 @@ jobs:
       - name: Check Out Repo
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: nightly
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -37,10 +39,10 @@ jobs:
           context: ./
           file: ./Dockerfile
           build-args: |
-            "BRANCH_NAME=develop"
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+            "BRANCH_NAME=nightly"
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: kometateam/kometa:develop
+          tags: kometateam/kometa:nightly
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -49,7 +51,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} develop: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.REPO_NAME }} nightly: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -63,29 +65,10 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} develop: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.REPO_NAME }} nightly: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.DOCKER_NAME }}
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
-
-  commit-notification:
-    runs-on: ubuntu-latest
-    needs: [ docker-build ]
-    if: ${{ success() }}
-    steps:
-
-      - name: Send Discord Commit Notification
-        uses: Kometa-Team/discord-notifications@master
-        with:
-          webhook_id_token: ${{ secrets.DEVELOP_WEBHOOK }}
-          title: ${{ vars.TEXT_COMMITS }}
-          message: "<@&954835263731949623> - An update to Kometa has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
-          commits: "true"
-          color: ${{ vars.COLOR_SUCCESS }}
-          username: ${{ vars.BOT_NAME }}
-          avatar_url: ${{ vars.BOT_IMAGE }}
-          author: ${{ vars.REPO_NAME }} Develop Release
-          author_icon_url: ${{ vars.RELEASE_IMAGE }}

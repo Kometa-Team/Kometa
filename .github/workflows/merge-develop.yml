@@ -19,9 +19,64 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-          ref: nightly
+          ref: develop
           fetch-depth: 0
 
-      - name: Push Nightly into Develop
+      - name: Fast Forward Develop
         run: |
-          git push origin refs/heads/nightly:refs/heads/develop
+            value=$(cat VERSION)
+            develop_hash=$(git rev-parse HEAD)
+            next_build="${{ vars.DEVELOP_BUILD }}"
+          
+            if [[ "$value" == *"-"* ]]; then
+                develop_build="$((${value#*-build}))"
+            else
+                develop_build="0"
+            fi
+          
+            git checkout origin/nightly
+            
+            value=$(cat VERSION)
+          
+            if [[ "$value" == *"-"* ]]; then
+                nightly_build="$((${value#*-build}))"
+            else
+                nightly_build="0"
+            fi
+          
+            echo "DEVELOP_BUILD: '${develop_build}'"
+            echo "NIGHTLY_BUILD: '${nightly_build}'"
+            echo "NEXT_BUILD: '${next_build}'"
+            
+            if (( next_build <= develop_build )); then
+                echo "::error::NEXT_BUILD variable (${next_build}) must be greater than DEVELOP_BUILD (${develop_build})"
+                exit 1
+            elif (( next_build > nightly_build )); then
+                echo "::error::NEXT_BUILD variable (${next_build}) must be less than or equal to NIGHTLY_BUILD (${nightly_build})"
+                exit 1
+            fi
+            
+            while : ; do
+                value=$(cat VERSION)
+          
+                if [[ "$value" == *"-"* ]]; then
+                    loop_build="$((${value#*-build}))"
+                else
+                    loop_build="1"
+                fi
+          
+                if [[ "$next_build" == "$loop_build" ]]; then
+                    hash=$(git rev-parse HEAD)
+                    echo "Fast Forwarding Develop to ${hash}"
+                    git push origin ${hash}:refs/heads/develop
+                    break
+                fi
+                
+                git checkout HEAD^
+          
+                hash=$(git rev-parse HEAD)
+                if [[ "$develop_hash" == "$hash" ]]; then
+                    echo "::error::No Commit found to Fast Forward"
+                    exit 1
+                fi
+            done
