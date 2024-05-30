@@ -136,7 +136,6 @@ for arg_key, arg_data in arguments.items():
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
-is_lxml = get_env("KOMETA_LXML", False, arg_bool=True)
 
 secret_args = {}
 plex_url = None
@@ -266,16 +265,12 @@ def start(attrs):
         logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
-        if is_lxml:
-            system_ver = "lxml Docker"
-        elif is_linuxserver:
-            system_ver = "Linuxserver"
-        elif is_docker:
-            system_ver = f"Docker: {env_branch}"
-        else:
-            system_ver = f"Python {platform.python_version()}"
         my_requests = Requests(local_version, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
-        logger.info(f"    Version: {my_requests.local} ({system_ver}){f' (Git: {git_branch})' if git_branch else ''}")
+        if is_linuxserver or is_docker:
+            system_ver = f"{'Linuxserver' if is_linuxserver else 'Docker'}: {env_branch}"
+        else:
+            system_ver = f"Python {platform.python_version()}) ({f'Git: {git_branch}' if git_branch else f'Branch: {my_requests.branch}'}"
+        logger.info(f"    Version: {my_requests.local} ({system_ver})")
         if my_requests.newest:
             logger.info(f"    Newest Version: {my_requests.newest}")
         logger.info(f"    Platform: {platform.platform()}")
