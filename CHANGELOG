@@ -7,6 +7,7 @@ Updated PlexAPI requirement to 4.15.13
 Checks requirement versions to print a message if one needs to be updated
 Added the `mass_added_at_update` operation to mass set the Added At field of Movies and Shows.
 Add automated Anime Aggregations for AniDB matching
+Added `total_runtime` as a special text overlay variable.
 
 # Updates
 Changed the `overlay_artwork_filetype` Setting to accept `webp_lossy` and `webp_lossless` while the old attribute `webp` will be treated as `webp_lossy`.
