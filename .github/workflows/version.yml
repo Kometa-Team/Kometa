@@ -36,20 +36,15 @@ jobs:
         run: |
             value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
+            version="${value%-build*}"
           
             if [[ "$value" == *"-"* ]]; then
-                version="${value%-build*}"
                 build_value="$((${value#*-build} + 1))"
-                new_value="${version}-build${build_value}"
-            elif [[ "$value" == *"!"* ]]; then
-                version="${value%!*}"
-                new_value="${version}"
-                build_value="${new_value}"
             else
-                version="${value%-build*}"
                 build_value="1"
-                new_value="${version}-build${build_value}"
             fi
+          
+            new_value="${version}-build${build_value}"
             new_msg="[${build_value}] ${old_msg}"
           
             echo "version=${version}" >> $GITHUB_OUTPUT
@@ -164,16 +159,16 @@ jobs:
   commit-notification:
     runs-on: ubuntu-latest
     needs: [ increment-version, verify-changes, docker-build ]
-    if: ${{ success() && needs.increment-version.outputs.build == 'true' }}
+    if: ${{ success() && needs.verify-changes.outputs.build == 'true' }}
     steps:
 
       - name: Send Discord Commit Notification
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.NIGHTLY_WEBHOOK }}
-          title: Kometa ${{ needs.verify-changes.outputs.version }} Build ${{ needs.verify-changes.outputs.build-value }}
-          url: https://github.com/Kometa-Team/Kometa/commit/${{ needs.verify-changes.outputs.commit-hash }}
-          description: ${{ needs.verify-changes.outputs.commit-msg }}
+          title: Kometa ${{ needs.increment-version.outputs.version }} Build ${{ needs.increment-version.outputs.build-value }}
+          url: https://github.com/Kometa-Team/Kometa/commit/${{ needs.increment-version.outputs.commit-hash }}
+          description: ${{ needs.increment-version.outputs.commit-msg }}
           message: "<@&967002147520675840> - An update to Kometa has now been published and is available to users of the **nightly** branch."
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
