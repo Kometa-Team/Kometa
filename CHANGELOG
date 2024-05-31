@@ -11,6 +11,7 @@ Update setuptools requirement to 70.0.0
 Checks requirement versions to print a message if one needs to be updated
 Added the `mass_added_at_update` operation to mass set the Added At field of Movies and Shows.
 Add automated Anime Aggregations for AniDB matching
+Added `total_runtime` as a special text overlay variable.
 Added `top_tamil`, `top_telugu`, `top_malayalam`, `trending_india`, `trending_tamil`, and `trending_telugu` as options for `imdb_chart`
 Adds the `sort_by` attribute to `imdb_list`
 
