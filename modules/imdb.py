@@ -6,8 +6,11 @@ from modules.util import Failed
 logger = util.logger
 
 builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search", "imdb_award"]
-movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
-show_charts = ["popular_shows", "top_shows"]
+movie_charts = [
+    "box_office", "popular_movies", "top_movies", "top_english", "lowest_rated",
+    "top_indian", "top_tamil", "top_telugu", "top_malayalam", "trending_india", "trending_tamil", "trending_telugu"
+]
+show_charts = ["popular_shows", "top_shows", "trending_india"]
 charts = {
     "box_office": "Box Office",
     "popular_movies": "Most Popular Movies",
@@ -15,8 +18,30 @@ charts = {
     "top_movies": "Top 250 Movies",
     "top_shows": "Top 250 TV Shows",
     "top_english": "Top Rated English Movies",
+    "lowest_rated": "Lowest Rated Movies",
+    "top_tamil": "Top Rated Tamil Movies",
+    "top_telugu": "Top Rated Telugu Movies",
+    "top_malayalam": "Top Rated Malayalam Movies",
+    "trending_india": "Trending Indian Movies & Shows",
+    "trending_tamil": "Trending Tamil Movies",
+    "trending_telugu": "Trending Telugu Movies",
     "top_indian": "Top Rated Indian Movies",
-    "lowest_rated": "Lowest Rated Movies"
+}
+chart_urls = {
+    "box_office": "chart/boxoffice",
+    "popular_movies": "chart/moviemeter",
+    "popular_shows": "chart/tvmeter",
+    "top_movies": "chart/top",
+    "top_shows": "chart/toptv",
+    "top_english": "chart/top-english-movies",
+    "lowest_rated": "chart/bottom",
+    "top_indian": "india/top-rated-indian-movies",
+    "top_tamil": "india/top-rated-tamil-movies",
+    "top_telugu": "india/top-rated-telugu-movies",
+    "top_malayalam": "india/top-rated-malayalam-movies",
+    "trending_india": "india/upcoming",
+    "trending_tamil": "india/tamil",
+    "trending_telugu": "india/telugu",
 }
 imdb_search_attributes = [
     "limit", "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
@@ -40,6 +65,17 @@ sort_by_options = {
     "release": "RELEASE_DATE",
 }
 sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
+list_sort_by_options = {
+    "custom": "LIST_ORDER",
+    "popularity": "POPULARITY",
+    "title": "TITLE_REGIONAL",
+    "rating": "USER_RATING",
+    "votes": "USER_RATING_COUNT",
+    "runtime": "RUNTIME",
+    "added": "DATE_ADDED",
+    "release": "RELEASE_DATE",
+}
+list_sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
 title_type_options = {
     "movie": "movie", "tv_series": "tvSeries", "short": "short", "tv_episode": "tvEpisode", "tv_mini_series": "tvMiniSeries",
     "tv_movie": "tvMovie", "tv_special": "tvSpecial", "tv_short": "tvShort", "video_game": "videoGame", "video": "video",
@@ -133,26 +169,29 @@ class IMDb:
             self._events[event_id] = self.requests.get_yaml(f"{git_base}/events/{event_id}.yml").data
         return self._events[event_id]
 
-    def validate_imdb_lists(self, err_type, imdb_lists, language):
+    def validate_imdb_lists(self, err_type, imdb_lists):
         valid_lists = []
         for imdb_dict in util.get_list(imdb_lists, split=False):
             if not isinstance(imdb_dict, dict):
-                imdb_dict = {"url": imdb_dict}
+                imdb_dict = {"list_id": imdb_dict}
+            if "url" in imdb_dict and "list_id" not in imdb_dict:
+                imdb_dict["list_id"] = imdb_dict["url"]
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
-            if "url" not in dict_methods:
-                raise Failed(f"{err_type} Error: imdb_list url attribute not found")
-            elif imdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"{err_type} Error: imdb_list url attribute is blank")
+            if "list_id" not in dict_methods:
+                raise Failed(f"{err_type} Error: imdb_list list_id attribute not found")
+            elif imdb_dict[dict_methods["list_id"]] is None:
+                raise Failed(f"{err_type} Error: imdb_list list_id attribute is blank")
             else:
-                imdb_url = imdb_dict[dict_methods["url"]].strip()
-            if imdb_url.startswith(f"{base_url}/search/"):
-                raise Failed("IMDb Error: URLs with https://www.imdb.com/search/ no longer works with imdb_list use imdb_search.")
-            if imdb_url.startswith(f"{base_url}/filmosearch/"):
-                raise Failed("IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with imdb_list use imdb_search.")
-            if not imdb_url.startswith(list_url):
-                raise Failed(f"IMDb Error: imdb_list URLs must begin with {list_url}")
-            self._total(imdb_url, language)
-            list_count = None
+                imdb_url = imdb_dict[dict_methods["list_id"]].strip()
+                if imdb_url.startswith(f"{base_url}/search/"):
+                    raise Failed("IMDb Error: URLs with https://www.imdb.com/search/ no longer works with imdb_list use imdb_search.")
+                if imdb_url.startswith(f"{base_url}/filmosearch/"):
+                    raise Failed("IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with imdb_list use imdb_search.")
+                search = re.search(r"(ls\d+)", imdb_url)
+                if not search:
+                    raise Failed("IMDb Error: imdb_list list_id must begin with ls (ex. ls005526372)")
+                new_dict = {"list_id": search.group(1)}
+
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
                     logger.warning(f"{err_type} Warning: imdb_list limit attribute is blank using 0 as default")
@@ -160,14 +199,18 @@ class IMDb:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
                         if 0 <= value:
-                            list_count = value
+                            new_dict["limit"] = value
                     except ValueError:
                         pass
-                if list_count is None:
-                    logger.warning(f"{err_type} Warning: imdb_list limit attribute must be an integer 0 or greater using 0 as default")
-            if list_count is None:
-                list_count = 0
-            valid_lists.append({"url": imdb_url, "limit": list_count})
+                if "limit" not in new_dict:
+                    logger.warning(f"{err_type} Warning: imdb_list limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
+            if "limit" not in new_dict:
+                new_dict["limit"] = 0
+
+            if "sort_by" in dict_methods:
+                new_dict["sort_by"] = util.parse(err_type, dict_methods, imdb_dict, parent="imdb_list", default="custom.asc", options=list_sort_options)
+
+            valid_lists.append(new_dict)
         return valid_lists
 
     def validate_imdb_watchlists(self, err_type, users, language):
@@ -372,6 +415,21 @@ class IMDb:
             "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
         }
 
+
+    def _list_json(self, data):
+        sort = data["sort_by"] if "sort_by" in data else "custom.asc"
+        sort_by, sort_order = sort.split(".")
+        return {
+            "operationName": "TitleListMainPage",
+            "variables": {
+                "locale": "en-US",
+                "first": data["limit"] if "limit" in data and 0 < data["limit"] < 100 else 100,
+                "lsConst": data["list_id"],
+                "sort": {"by": list_sort_by_options[sort_by], "order": sort_order.upper},
+            },
+            "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
+        }
+
     def _search(self, data):
         json_obj = self._search_json(data)
         item_count = 250
@@ -397,6 +455,44 @@ class IMDb:
                     response_json = self._graph_request(json_obj)
                     end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
                     ids_found = [n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]]
+                    if i == num_of_pages:
+                        ids_found = ids_found[:remainder]
+                    imdb_ids.extend(ids_found)
+            logger.exorcise()
+            if len(imdb_ids) > 0:
+                return imdb_ids
+            raise Failed("IMDb Error: No IMDb IDs Found")
+        except KeyError:
+            logger.error(f"Response: {response_json}")
+            raise
+
+    def _pagination(self, data, search=True):
+        json_obj = self._search_json(data) if search else self._list_json(data)
+        item_count = 250 if search else 100
+        imdb_ids = []
+        logger.ghost("Parsing Page 1")
+        response_json = self._graph_request(json_obj)
+        try:
+            search_data = response_json["data"]["advancedTitleSearch"] if search else response_json["data"]["list"]["titleListItemSearch"]
+            total = search_data["total"]
+            limit = data["limit"]
+            if limit < 1 or total < limit:
+                limit = total
+            remainder = limit % item_count
+            if remainder == 0:
+                remainder = item_count
+            num_of_pages = math.ceil(int(limit) / item_count)
+            end_cursor = search_data["pageInfo"]["endCursor"]
+            imdb_ids.extend([n["node"]["title"]["id"] if search else n["listItem"]["id"] for n in search_data["edges"]])
+            if num_of_pages > 1:
+                for i in range(2, num_of_pages + 1):
+                    start_num = (i - 1) * item_count + 1
+                    logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+                    json_obj["variables"]["after"] = end_cursor
+                    response_json = self._graph_request(json_obj)
+                    search_data = response_json["data"]["advancedTitleSearch"] if search else response_json["data"]["list"]["titleListItemSearch"]
+                    end_cursor = search_data["pageInfo"]["endCursor"]
+                    ids_found = [n["node"]["title"]["id"] if search else n["listItem"]["id"] for n in search_data["edges"]]
                     if i == num_of_pages:
                         ids_found = ids_found[:remainder]
                     imdb_ids.extend(ids_found)
@@ -489,26 +585,10 @@ class IMDb:
         return parental_dict
 
     def _ids_from_chart(self, chart, language):
-        if chart == "box_office":
-            url = "chart/boxoffice"
-        elif chart == "popular_movies":
-            url = "chart/moviemeter"
-        elif chart == "popular_shows":
-            url = "chart/tvmeter"
-        elif chart == "top_movies":
-            url = "chart/top"
-        elif chart == "top_shows":
-            url = "chart/toptv"
-        elif chart == "top_english":
-            url = "chart/top-english-movies"
-        elif chart == "top_indian":
-            url = "india/top-rated-indian-movies"
-        elif chart == "lowest_rated":
-            url = "chart/bottom"
-        else:
+        if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        links = self._request(f"{base_url}/{url}", language=language, xpath="//li//a[@class='ipc-title-link-wrapper']/@href")
-        return [re.search("(tt\\d+)", link).group(1) for link in links]
+        script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
+        return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
