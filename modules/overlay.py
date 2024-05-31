@@ -25,6 +25,7 @@ types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
     "movie_show_season_episode": ["tmdb_rating"],
+    "show_season_artist_album": ["total_runtime"],
     "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
     "movie_show": [
         "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
@@ -42,6 +43,7 @@ var_mods = {
     "bitrate": ["", "H", "L"],
     "originally_available": ["", "["],
     "runtime": ["", "H", "M"],
+    "total_runtime": ["", "H", "M"],
 }
 for mod in float_vars:
     var_mods[mod] = ["", "%", "#", "/"]

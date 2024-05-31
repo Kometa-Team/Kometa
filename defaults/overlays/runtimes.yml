@@ -10,6 +10,7 @@ external_templates:
   template_variables:
     default:
       text: "Runtime: "
+      format: "<<runtimeH>>h <<runtimeM>>m"
       horizontal_align: right
       vertical_align: bottom
     conditionals:
@@ -32,7 +33,7 @@ external_templates:
     back_color: "#00000099"
     back_width: 600
     back_height: 105
-    final_name: "text(<<text>><<runtimeH>>h <<runtimeM>>m)"
+    final_name: "text(<<text>><<format>>)"
 
 overlays:
   runtime_info:

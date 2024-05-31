@@ -57,9 +57,10 @@ work. Any value not specified will use its default value if it has one if not it
         
     === "File-Specific Template Variables"
 
-        | Variable  | Description & Values                                                                                                                     |
-        |:----------|:-----------------------------------------------------------------------------------------------------------------------------------------|
-        | `text`    | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
+        | Variable | Description & Values                                                                                                                     |
+        |:---------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+        | `text`   | **Description:** Choose the text that appears prior to the runtime on the Overlay.<br>**Default:** `Runtime: `<br>**Values:** Any String |
+        | `format` | **Description:** Choose the format of the the displayed runtime.<br>**Default:** `<<runtimeH>>h <<runtimeM>>m`<br>**Values:** Any String |
 
     === "Overlay Template Variables"
 
