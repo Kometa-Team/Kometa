@@ -31,16 +31,22 @@ The expected input are the options below. Multiple values are supported as eithe
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
-| Name                                                                           | Attribute        |             Works with Movies              |              Works with Shows              |
-|:-------------------------------------------------------------------------------|:-----------------|:------------------------------------------:|:------------------------------------------:|
-| [Box Office](https://www.imdb.com/chart/boxoffice)                             | `box_office`     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [Most Popular Movies](https://www.imdb.com/chart/moviemeter)                   | `popular_movies` | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [Top 250 Movies](https://www.imdb.com/chart/top)                               | `top_movies`     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [Top Rated English Movies](https://www.imdb.com/chart/top-english-movies)      | `top_english`    | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [Most Popular TV Shows](https://www.imdb.com/chart/tvmeter)                    | `popular_shows`  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| [Top 250 TV Shows](https://www.imdb.com/chart/toptv)                           | `top_shows`      |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| [Top Rated Indian Movies](https://www.imdb.com/india/top-rated-indian-movies/) | `top_indian`     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [Lowest Rated Movies](https://www.imdb.com/chart/bottom)                       | `lowest_rated`   | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Name                                                                                 | Attribute         |             Works with Movies              |              Works with Shows              |
+|:-------------------------------------------------------------------------------------|:------------------|:------------------------------------------:|:------------------------------------------:|
+| [Box Office](https://www.imdb.com/chart/boxoffice)                                   | `box_office`      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Most Popular Movies](https://www.imdb.com/chart/moviemeter)                         | `popular_movies`  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top 250 Movies](https://www.imdb.com/chart/top)                                     | `top_movies`      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top Rated English Movies](https://www.imdb.com/chart/top-english-movies)            | `top_english`     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Most Popular TV Shows](https://www.imdb.com/chart/tvmeter)                          | `popular_shows`   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+| [Top 250 TV Shows](https://www.imdb.com/chart/toptv)                                 | `top_shows`       |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+| [Lowest Rated Movies](https://www.imdb.com/chart/bottom)                             | `lowest_rated`    | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top Rated Indian Movies](https://www.imdb.com/india/top-rated-indian-movies/)       | `top_indian`      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top Rated Tamil Movies](https://www.imdb.com/india/top-rated-tamil-movies/)         | `top_tamil`       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top Rated Telugu Movies](https://www.imdb.com/india/top-rated-telugu-movies/)       | `top_telugu`      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Top Rated Malayalam Movies](https://www.imdb.com/india/top-rated-malayalam-movies/) | `top_malayalam`   | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Trending Indian Movies & Shows](https://www.imdb.com/india/upcoming/)               | `trending_india`  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [Trending Tamil Movies](https://www.imdb.com/india/tamil/)                           | `trending_tamil`  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [Trending Telugu Movies](https://www.imdb.com/india/telugu/)                         | `trending_telugu` | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ```yaml
 collections:
@@ -62,34 +68,48 @@ collections:
 
 Finds every item in an IMDb List.
 
-The expected input is an IMDb List URL. Multiple values are supported as a list only a comma-separated string will not work.
+| List Parameter | Description                                                                                                                                                                                                                                                                                                                                   |
+|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `list_id`      | Specify the IMDb List ID. **This attribute is required.**<br>**Options:** The ID that starts with `ls` found in the URL of the list. (ex. `ls005526372`)                                                                                                                                                                                      |
+| `limit`        | Specify how items you want returned by the query.<br>**Options:** Any Integer `0` or greater where `0` get all items.<br>**Default:** `0`                                                                                                                                                                                                     |
+| `sort_by`      | Choose from one of the many available sort options.<br>**Options:** `custom.asc`, `custom.desc`, `title.asc`, `title.desc`, `rating.asc`, `rating.desc`, `popularity.asc`, `popularity.desc`, `votes.asc`, `votes.desc`, `release.asc`, `release.desc`, `runtime.asc`, `runtime.desc`, `added.asc`, `added.desc`<br>**Default:** `custom.asc` |
+
+Multiple values are supported as a list only a comma-separated string will not work.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
 ```yaml
 collections:
   James Bonds:
-    imdb_list: https://www.imdb.com/list/ls006405458
+    imdb_list: 
+      list_id: ls006405458
+      limit: 100
+      sort_by: rating.asc
     collection_order: custom
     sync_mode: sync
 ```
 
-You can also limit the number of items to search for by using the `limit` and `url` parameters under `imdb_list`.
+You can search multiple lists in one collection by using a list.
 
 ```yaml
 collections:
   Christmas:
     imdb_list:
-      - url: https://www.imdb.com/list/ls025976544/
+      - list_id: ls025976544
         limit: 10
-      - url: https://www.imdb.com/list/ls003863000/
+        sort_by: rating.asc
+      - list_id: ls003863000
         limit: 10
-      - url: https://www.imdb.com/list/ls027454200/
+        sort_by: rating.asc
+      - list_id: ls027454200
         limit: 10
-      - url: https://www.imdb.com/list/ls027886673/
+        sort_by: rating.asc
+      - list_id: ls027886673
         limit: 10
-      - url: https://www.imdb.com/list/ls097998599/
+        sort_by: rating.asc
+      - list_id: ls097998599
         limit: 10
+        sort_by: rating.asc
     sync_mode: sync
     collection_order: alpha
 ```
@@ -184,7 +204,7 @@ The `sync_mode: sync` and `collection_order: custom` Setting are recommended sin
 
 | Search Parameter        | Description                                                                                                                                                                                                                                                                                                                                                                                       |
 |:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                 | Specify how items you want returned by the query.<br>**Options:** Any Integer greater than `0`<br>**Default:** `100`                                                                                                                                                                                                                                                                              |
+| `limit`                 | Specify how items you want returned by the query.<br>**Options:** Any Integer `0` or greater where `0` get all items.<br>**Default:** `100`                                                                                                                                                                                                                                                       |
 | `sort_by`               | Choose from one of the many available sort options.<br>**Options:** `popularity.asc`, `popularity.desc`, `title.asc`, `title.desc`, `rating.asc`, `rating.desc`, `votes.asc`, `votes.desc`, `box_office.asc`, `box_office.desc`, `runtime.asc`, `runtime.desc`, `year.asc`, `year.desc`, `release.asc`, `release.desc`<br>**Default:** `popularity.asc`                                           |
 | `title`                 | Search by title name.<br>**Options:** Any String                                                                                                                                                                                                                                                                                                                                                  |
 | `type`                  | Item must match at least one given type. Can be a comma-separated list.<br>**Options:** `movie`, `tv_series`, `short`, `tv_episode`, `tv_mini_series`, `tv_movie`, `tv_special`, `tv_short`, `video_game`, `video`, `music_video`, `podcast_series`, `podcast_episode`                                                                                                                            |
