@@ -366,7 +366,7 @@ class IMDb:
                 out["explicitContentConstraint"] = {"explicitContentFilter": "INCLUDE_ADULT"}
         else:
             out["lsConst"] = data["list_id"]
-            out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper}
+            out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)
         return {
