@@ -1479,7 +1479,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
         elif method_name == "imdb_list":
             try:
-                for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data, self.language):
+                for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data):
                     self.builders.append((method_name, imdb_dict))
             except Failed as e:
                 logger.error(e)
