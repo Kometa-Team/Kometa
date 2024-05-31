@@ -56,7 +56,7 @@ class Letterboxd:
     def get_list_description(self, list_url, language):
         logger.trace(f"URL: {list_url}")
         response = self.requests.get_html(list_url, language=language)
-        descriptions = response.xpath("//meta[@property='og:description']/@content")
+        descriptions = response.xpath("//meta[@name='description']/@content")
         if len(descriptions) > 0 and len(descriptions[0]) > 0 and "About this list: " in descriptions[0]:
             return str(descriptions[0]).split("About this list: ")[1]
         return None

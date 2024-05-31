@@ -252,6 +252,7 @@ SciFi
 ScudLee
 SDTV
 SemVer
+setuptools
 ShawShank
 Skywalker
 Sohjiro

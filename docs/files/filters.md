@@ -241,7 +241,8 @@ collections:
 ```yaml
 collections:
   Daniel Craig only James Bonds:
-    imdb_list: https://www.imdb.com/list/ls006405458/
+    imdb_list:
+      list_id: ls006405458
     filters:
       actor: Daniel Craig
 ```
