@@ -1,10 +1,10 @@
-name: Release New Version
+name: Master Release
 
 on:
   workflow_dispatch:
 
 jobs:
-  merge-master:
+  release-master:
     runs-on: ubuntu-latest
     steps:
 
@@ -44,3 +44,30 @@ jobs:
             git push origin nightly
             git push origin refs/heads/nightly:refs/heads/develop
             git push origin refs/heads/nightly:refs/heads/main
+
+      - name: Discord Success Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: success()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ vars.REPO_NAME }} master release ${{ vars.NEXT_VERSION }}: ${{ vars.TEXT_SUCCESS }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}
+
+      - name: Discord Failure Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: failure()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }} master release ${{ vars.NEXT_VERSION }}: ${{ vars.TEXT_FAILURE }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}

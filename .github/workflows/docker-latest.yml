@@ -1,4 +1,4 @@
-name: Docker Latest Release
+name: Docker Latest Build
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  docker-build:
+  docker-build-latest:
     runs-on: ubuntu-latest
     steps:
 
