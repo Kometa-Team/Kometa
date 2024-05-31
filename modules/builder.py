@@ -1739,9 +1739,8 @@ class CollectionBuilder:
                         final_attributes["letter"] = util.parse(self.Type, "prefix", dict_data, methods=dict_methods, parent=method_name)
                         final_text += f"\nPrefix: {final_attributes['letter']}"
                     if "type" in dict_methods:
-                        type_list = util.parse(self.Type, "type", dict_data, datatype="commalist", methods=dict_methods, parent=method_name, options=mal.search_types)
-                        final_attributes["type"] = ",".join(type_list)
-                        final_text += f"\nType: {' or '.join(type_list)}"
+                        final_attributes["type"] = util.parse(self.Type, "type", dict_data, methods=dict_methods, parent=method_name, options=mal.search_types)
+                        final_text += f"\nType: {final_attributes['type']}"
                     if "status" in dict_methods:
                         final_attributes["status"] = util.parse(self.Type, "status", dict_data, methods=dict_methods, parent=method_name, options=mal.search_status)
                         final_text += f"\nStatus: {final_attributes['status']}"
