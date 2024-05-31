@@ -1,4 +1,4 @@
-name: Docker Version Release
+name: Docker Version Build
 
 on:
   create:
@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  docker-build:
+  docker-build-version:
     if: ${{ startsWith(github.ref, 'refs/tags/v1') || startsWith(github.ref, 'refs/tags/v2') }}
     runs-on: ubuntu-latest
     steps:
