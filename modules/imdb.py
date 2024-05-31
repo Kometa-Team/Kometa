@@ -294,7 +294,7 @@ class IMDb:
                     if range_data:
                         out[constraint][range_name[i]] = range_data
 
-        sort = data["sort_by"] if "sort_by" in data else "popularity.asc"
+        sort = data["sort_by"] if "sort_by" in data else "popularity.asc" if search else "custom.asc"
         sort_by, sort_order = sort.split(".")
 
         if search:
@@ -370,7 +370,7 @@ class IMDb:
 
         logger.trace(out)
         return {
-            "operationName": "AdvancedTitleSearch",
+            "operationName": "AdvancedTitleSearch" if search else "TitleListMainPage",
             "variables": out,
             "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
         }
