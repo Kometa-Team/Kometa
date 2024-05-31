@@ -1,14 +1,14 @@
-name: Docker Nightly Release
+name: Docker Nightly Build
 
 on:
   workflow_run:
-    workflows: ["Release New Version"]
+    workflows: ["Master Release"]
     types:
       - completed
 
 jobs:
 
-  docker-build:
+  docker-build-nightly:
     runs-on: ubuntu-latest
     steps:
 
