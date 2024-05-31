@@ -125,7 +125,8 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
-hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
+search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
+list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
@@ -139,7 +140,8 @@ class IMDb:
         self._episode_ratings = None
         self._events_validation = None
         self._events = {}
-        self._hash = None
+        self._search_hash = None
+        self._list_hash = None
         self.event_url_validation = {}
 
     def _request(self, url, language=None, xpath=None, params=None):
@@ -153,10 +155,16 @@ class IMDb:
         return self.requests.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
 
     @property
-    def hash(self):
-        if self._hash is None:
-            self._hash = self.requests.get(hash_url).text.strip()
-        return self._hash
+    def search_hash(self):
+        if self._search_hash is None:
+            self._search_hash = self.requests.get(search_hash_url).text.strip()
+        return self._search_hash
+
+    @property
+    def list_hash(self):
+        if self._list_hash is None:
+            self._list_hash = self.requests.get(list_hash_url).text.strip()
+        return self._list_hash
 
     @property
     def events_validation(self):
@@ -372,7 +380,7 @@ class IMDb:
         return {
             "operationName": "AdvancedTitleSearch" if search else "TitleListMainPage",
             "variables": out,
-            "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
+            "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.search_hash if search else self.list_hash}}
         }
 
     def _pagination(self, data, search=True):
