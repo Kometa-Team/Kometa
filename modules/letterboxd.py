@@ -4,11 +4,18 @@ from modules.util import Failed
 
 logger = util.logger
 
+sort_options = {
+    "name": "by/name/",
+    "popularity": "by/popular/",
+    "newest": "by/newest/",
+    "oldest": "by/oldest/",
+    "updated": ""
+}
 builders = ["letterboxd_list", "letterboxd_list_details"]
 base_url = "https://letterboxd.com"
 
 class Letterboxd:
-    def __init__(self, requests, cache):
+    def __init__(self, requests, cache=None):
         self.requests = requests
         self.cache = cache
 
@@ -52,6 +59,18 @@ class Letterboxd:
                 return util.regex_first_int(ids[0], "TMDb Movie ID")
             raise Failed(f"Letterboxd Error: TMDb Movie ID not found in {ids[0]}")
         raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
+
+    def get_user_lists(self, username, sort, language):
+        userlists_url = f"{base_url}/{username}/lists/{sort_options[sort]}"
+        print(f"URL: {userlists_url}")
+        response = self.requests.get_html(userlists_url, language=language)
+        lists = [(s.xpath("@href")[0], s.xpath("text()")[0]) for s in response.xpath("//div[@class='film-list-summary']/h2/a")]
+        next_page = response.xpath("//div[@class='pagination']/div/a[@class='next']/@href")
+        while next_page:
+            response = self.requests.get_html(f"{base_url}{next_page[0]}", language=language)
+            lists.extend([(s.xpath("@href")[0], s.xpath("text()")[0]) for s in response.xpath("//div[@class='film-list-summary']/h2/a")])
+            next_page = response.xpath("//div[@class='pagination']/div/a[@class='next']/@href")
+        return lists
 
     def get_list_description(self, list_url, language):
         logger.trace(f"URL: {list_url}")
