@@ -109,7 +109,6 @@ class Convert:
                     added = True
                 if added is False and anidb_id in self._anidb_to_tvdb:
                     ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
-                ids.append((self._anidb_to_tmdb_movie[anidb_id], "tmdb"))
             elif anidb_id in self._anidb_to_tvdb:
                 ids.append((self._anidb_to_tvdb[anidb_id], "tvdb"))
             elif anidb_id in self._anidb_to_tmdb_show:
@@ -118,7 +117,6 @@ class Convert:
                         ids.append((int(self.tmdb_to_tvdb(tmdb_id, fail=True)), "tvdb"))
                     except Failed:
                         pass
-                ids.append((self._anidb_to_tmdb_show[anidb_id], "tmdb"))
             elif str(anidb_id) in self._anidb_ids:
                 logger.warning(f"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
