@@ -19,11 +19,15 @@ class Letterboxd:
         self.requests = requests
         self.cache = cache
 
+    def _request(self, url, language, xpath=None):
+        logger.trace(f"URL: {url}")
+        response = self.requests.get_html(url, language=language)
+        return response.xpath(xpath) if xpath else response
+
     def _parse_page(self, list_url, language):
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
-        logger.trace(f"URL: {list_url}")
-        response = self.requests.get_html(list_url, language=language)
+        response = self._request(list_url, language)
         letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
@@ -51,9 +55,7 @@ class Letterboxd:
         return items
 
     def _tmdb(self, letterboxd_url, language):
-        logger.trace(f"URL: {letterboxd_url}")
-        response = self.requests.get_html(letterboxd_url, language=language)
-        ids = response.xpath("//a[@data-track-action='TMDb']/@href")
+        ids = self._request(letterboxd_url, language, "//a[@data-track-action='TMDb']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
                 return util.regex_first_int(ids[0], "TMDb Movie ID")
@@ -61,21 +63,17 @@ class Letterboxd:
         raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
 
     def get_user_lists(self, username, sort, language):
-        userlists_url = f"{base_url}/{username}/lists/{sort_options[sort]}"
-        print(f"URL: {userlists_url}")
-        response = self.requests.get_html(userlists_url, language=language)
-        lists = [(s.xpath("@href")[0], s.xpath("text()")[0]) for s in response.xpath("//div[@class='film-list-summary']/h2/a")]
-        next_page = response.xpath("//div[@class='pagination']/div/a[@class='next']/@href")
+        next_page = [f"/{username}/lists/{sort_options[sort]}"]
+        lists = []
         while next_page:
-            response = self.requests.get_html(f"{base_url}{next_page[0]}", language=language)
-            lists.extend([(s.xpath("@href")[0], s.xpath("text()")[0]) for s in response.xpath("//div[@class='film-list-summary']/h2/a")])
+            response = self._request(f"{base_url}{next_page[0]}", language)
+            sections = response.xpath("//div[@class='film-list-summary']/h2/a")
+            lists.extend([(f"{base_url}{s.xpath('@href')[0]}", s.xpath("text()")[0]) for s in sections])
             next_page = response.xpath("//div[@class='pagination']/div/a[@class='next']/@href")
         return lists
 
     def get_list_description(self, list_url, language):
-        logger.trace(f"URL: {list_url}")
-        response = self.requests.get_html(list_url, language=language)
-        descriptions = response.xpath("//meta[@name='description']/@content")
+        descriptions = self._request(f"{list_url}", language, xpath="//meta[@name='description']/@content")
         if len(descriptions) > 0 and len(descriptions[0]) > 0 and "About this list: " in descriptions[0]:
             return str(descriptions[0]).split("About this list: ")[1]
         return None

@@ -273,7 +273,7 @@ requirements of creating the collection.
         
         ```yaml
         dynamic_collections:
-          Trakt Liked Lists:          # This name is the mapping name
+          Letterboxd User Lists:          # This name is the mapping name
             type: letterboxd_user_lists
             data:
               username: thebigpictures
