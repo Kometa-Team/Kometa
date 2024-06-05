@@ -756,7 +756,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          tvdb_language: en
+          tvdb_language: eng
         ```
 
 ??? blank "`ignore_ids` - List of TMDb/TVDb IDs to ignore.<a class="headerlink" href="#ignore-ids" title="Permanent link">¶</a>"
