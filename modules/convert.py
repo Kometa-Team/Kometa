@@ -69,7 +69,7 @@ class Convert:
     def ids_to_anidb(self, library, rating_key, tvdb_id, imdb_id, tmdb_id):
         if rating_key in library.reverse_anidb:
             return library.reverse_anidb[rating_key]
-        elif int(tvdb_id) in self._tvdb_to_anidb:
+        elif tvdb_id and int(tvdb_id) in self._tvdb_to_anidb:
             return self._tvdb_to_anidb[int(tvdb_id)]
         else:
             tmdb_show_id = self.tvdb_to_tmdb(tvdb_id)
