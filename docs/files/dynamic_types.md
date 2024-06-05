@@ -222,6 +222,64 @@ requirements of creating the collection.
               ending: latest
         ```
 
+??? blank "`letterboxd_user_lists` - Collections based on the Lists of Letterboxd Users.<a class="headerlink" href="#letterboxd-user-lists" title="Permanent link">¶</a>"
+
+    <div id="letterboxd-user-lists" />Creates collections for each of the Letterboxd lists that the user has created.
+
+    <hr style="margin: 0px;">
+    
+    **`type` Value:** `letterboxd_user_lists`
+
+    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+
+    ??? blank "`username` - Determines the Usernames to scan for lists.<a class="headerlink" href="#letterboxd-user-lists-username" title="Permanent link">¶</a>"
+        
+        <div id="letterboxd-user-lists-username" />This determines which Usernames are scanned. 
+
+        **Allowed Values:** Username or list of Usernames
+
+    ??? blank "`sort_by` - Determines the sort that the lists are returned.<a class="headerlink" href="#letterboxd-user-lists-sort-by" title="Permanent link">¶</a>"
+        
+        <div id="letterboxd-user-lists-sort-by" />Determines the sort that the lists are returned.
+
+        **Allowed Values:** `updated`, `name`, `popularity`, `newest`, `oldest`
+
+        **Default:** `updated`
+
+    ??? blank "`limit` - Determines the number of lists to create collections for.<a class="headerlink" href="#letterboxd-user-lists-limit" title="Permanent link">¶</a>"
+        
+        <div id="letterboxd-user-lists-limit" />Determines the number of lists to create collections for. (`0` is all lists)
+
+        **Allowed Values:** Number 0 or greater
+
+        **Default:** `0`
+
+    **Valid Library Types:** Movies
+    
+    **Key Values:** Letterboxd List URL
+
+    **Key Name Value:** Letterboxd List Title
+
+    **Default `title_format`:** `<<key_name>>`
+
+    ??? tip "Default Template (click to expand)"
+
+        ```yaml
+        default_template:
+          letterboxd_list_details: <<value>>
+        ```
+
+    ???+ example "Example"
+        
+        ```yaml
+        dynamic_collections:
+          Letterboxd User Lists:          # This name is the mapping name
+            type: letterboxd_user_lists
+            data:
+              username: thebigpictures
+              limit: 5
+        ```
+
 ??? blank "`trakt_user_lists` - Collections based on Trakt Lists by users.<a class="headerlink" href="#trakt-user-lists" title="Permanent link">¶</a>"
 
     <div id="trakt-user-lists" />Creates collections for each of the Trakt lists for the specified users. Use `me` to 
