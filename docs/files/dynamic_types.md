@@ -224,7 +224,7 @@ requirements of creating the collection.
 
 ??? blank "`letterboxd_user_lists` - Collections based on the Lists of Letterboxd Users.<a class="headerlink" href="#letterboxd-user-lists" title="Permanent link">¶</a>"
 
-    <div id="letterboxd_user_lists" />Creates collections for each of the Letterboxd lists that the user has created.
+    <div id="letterboxd-user-lists" />Creates collections for each of the Letterboxd lists that the user has created.
 
     <hr style="margin: 0px;">
     
