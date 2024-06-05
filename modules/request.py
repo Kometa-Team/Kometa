@@ -86,8 +86,8 @@ class Requests:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def download_image(self, title, image_url, download_directory, is_poster=True, filename=None):
-        response = self.get_image(image_url)
+    def download_image(self, title, image_url, download_directory, session=None, is_poster=True, filename=None):
+        response = self.get_image(image_url, session=session)
         new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
         if response.headers["Content-Type"] == "image/jpeg":
             new_image += ".jpg"
@@ -108,8 +108,8 @@ class Requests:
             raise Failed(f"URL Error: No file found at {url}")
         return YAML(input_data=response.content, check_empty=check_empty)
 
-    def get_image(self, url):
-        response = self.get(url, header=True)
+    def get_image(self, url, session=None):
+        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None))
         if response.status_code == 404:
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:

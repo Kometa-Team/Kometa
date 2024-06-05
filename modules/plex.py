@@ -447,19 +447,19 @@ class Plex(Library):
         super().__init__(config, params)
         self.plex = params["plex"]
         self.url = self.plex["url"]
-        plex_session = self.config.Requests.session
+        self.session = self.config.Requests.session
         if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
-            plex_session = self.config.Requests.create_session(verify_ssl=False)
+            self.session = self.config.Requests.create_session(verify_ssl=False)
         if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
-            plex_session = self.config.Requests.create_session()
+            self.session = self.config.Requests.create_session()
         self.token = self.plex["token"]
         self.timeout = self.plex["timeout"]
         logger.secret(self.url)
         logger.secret(self.token)
         try:
-            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=plex_session, timeout=self.timeout)
+            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
             plexapi.server.TIMEOUT = self.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
