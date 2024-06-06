@@ -2,6 +2,10 @@ name: Develop Release
 
 on:
   workflow_dispatch:
+    inputs:
+      build_number:
+        description: Choose the build number to push develop to.
+        default: 0
 
 jobs:
   release-develop:
@@ -23,10 +27,10 @@ jobs:
           fetch-depth: 0
 
       - name: Fast Forward Develop
+        id: forward
         run: |
             value=$(cat VERSION)
             develop_hash=$(git rev-parse HEAD)
-            next_build="${{ vars.DEVELOP_BUILD }}"
           
             if [[ "$value" == *"-"* ]]; then
                 develop_build="$((${value#*-build}))"
@@ -35,7 +39,6 @@ jobs:
             fi
           
             git checkout origin/nightly
-            
             value=$(cat VERSION)
           
             if [[ "$value" == *"-"* ]]; then
@@ -46,16 +49,25 @@ jobs:
           
             echo "DEVELOP_BUILD: '${develop_build}'"
             echo "NIGHTLY_BUILD: '${nightly_build}'"
-            echo "NEXT_BUILD: '${next_build}'"
-            
-            if (( next_build <= develop_build )); then
-                echo "::error::NEXT_BUILD variable (${next_build}) must be greater than DEVELOP_BUILD (${develop_build})"
+          
+            if ! [[ ${{ github.event.inputs.build_number }} =~ ^[0-9]+$ ]]; then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be a number"
                 exit 1
-            elif (( next_build > nightly_build )); then
-                echo "::error::NEXT_BUILD variable (${next_build}) must be less than or equal to NIGHTLY_BUILD (${nightly_build})"
+            elif [[ "${{ github.event.inputs.build_number }}" == "0" ]]; then
+                next_build="${nightly_build}"
+            elif (( ${{ github.event.inputs.build_number }} <= develop_build )); then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be greater than DEVELOP_BUILD (${develop_build})"
                 exit 1
+            elif (( ${{ github.event.inputs.build_number }} > nightly_build )); then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be less than or equal to NIGHTLY_BUILD (${nightly_build})"
+                exit 1
+            else
+                next_build="${{ github.event.inputs.build_number }}"
             fi
-            
+          
+            echo "NEXT_BUILD: '${next_build}'"
+            echo "build=next_build" >> $GITHUB_OUTPUT
+          
             while : ; do
                 value=$(cat VERSION)
           
@@ -86,7 +98,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ vars.DEVELOP_BUILD }}: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ steps.forward.outputs.build }}: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -100,7 +112,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ vars.DEVELOP_BUILD }}: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ steps.forward.outputs.build }}: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}

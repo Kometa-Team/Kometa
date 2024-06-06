@@ -175,3 +175,16 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.REPO_NAME }} Nightly Release
           author_icon_url: ${{ vars.RELEASE_IMAGE }}
+
+  cleanup-tags:
+    runs-on: ubuntu-latest
+    needs: [ increment-build, verify-changes, docker-build-nightly, commit-notification ]
+    if: ${{ success() }}
+    steps:
+      - name: remove tag
+        run: |
+            HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKER_HUB_USERNAME }}\", \"password\": \"${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}\"}" https://hub.docker.com/v2/users/login/ | jq -r .token)
+            curl -i -X DELETE \
+            -H "Accept: application/json" \
+            -H "Authorization: JWT $HUB_TOKEN" \
+            https://hub.docker.com/v2/repositories/kometateam/kometa/tags/${{ github.head_ref }}/
