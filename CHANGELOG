@@ -10,5 +10,6 @@ Added [`letterboxd_user_lists`](https://kometa.wiki/en/latest/files/dynamic_type
 # Defaults
 
 # Bug Fixes
+Fixed multiple anime `int()` Errors
 
 Various other Minor Fixes
