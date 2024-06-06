@@ -44,7 +44,13 @@ class Version:
         self.full = version_string.replace("develop", "build")
         version_parts = self.full.split("-build")
         self.main = version_parts[0]
-        self.build = int(version_parts[1]) if len(version_parts) > 1 else 0
+        self.build = 0
+        self.part = 0
+        if len(version_parts) > 1:
+            sub_parts = str(version_parts[1]).split(".")
+            self.build = int(sub_parts[0])
+            if len(sub_parts) > 1:
+                self.parts = int(sub_parts[1])
 
     def __bool__(self):
         return self.full != "Unknown"
