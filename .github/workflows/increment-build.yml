@@ -1,7 +1,7 @@
 name: Increment Build
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [nightly]
     types: [closed]
 
@@ -39,7 +39,12 @@ jobs:
             version="${value%-build*}"
           
             if [[ "$value" == *"-"* ]]; then
-                build_value="$((${value#*-build} + 1))"
+                value2="${value#*-build}"
+                if [[ "$value2" == *"."* ]]; then
+                    build_value="$((${value2%.*} + 1))"
+                else
+                    build_value="$((${value2} + 1))"
+                fi
             else
                 build_value="1"
             fi
