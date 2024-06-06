@@ -2,6 +2,15 @@ name: Master Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        description: Choose which type of release to perform.
+        options:
+          - major
+          - minor
+          - patch
+        default: patch
 
 jobs:
   release-master:
@@ -26,21 +35,25 @@ jobs:
         run: |
             value=$(cat VERSION)
             version="${value%-build*}"
-            next_version="${{ vars.NEXT_VERSION }}"
             echo "CURRENT_VERSION: '${version}'"
-            echo "NEXT_VERSION: '${next_version}'"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$version"
           
-            if [[ "$version" == "$next_version" ]]; then
-                echo "::error::NEXT_VERSION variable (${next_version}) must be incremented"
-                exit 1
+            if [[ "${{ github.event.inputs.release_type }}" == "major" ]]; then
+                NEW_VERSION="$((MAJOR+1)).0.0"
+            elif [[ "${{ github.event.inputs.release_type }}" == "minor" ]]; then
+                NEW_VERSION="${MAJOR}.$((MINOR+1)).0"
+            else
+                NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
             fi
           
-            echo "$next_version" > "VERSION"
+            echo "NEW_VERSION='${NEW_VERSION}'"
+            echo "new_ver=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "$NEW_VERSION" > "VERSION"
           
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add VERSION
-            git commit -m "Kometa Release ${next_version}"
+            git commit -m "Kometa Release ${NEW_VERSION}"
             git push origin nightly
             git push origin refs/heads/nightly:refs/heads/develop
             git push origin refs/heads/nightly:refs/heads/main
@@ -50,7 +63,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} master release ${{ vars.NEXT_VERSION }}: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.REPO_NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -64,7 +77,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} master release ${{ vars.NEXT_VERSION }}: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.REPO_NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}
