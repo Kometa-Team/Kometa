@@ -2001,12 +2001,13 @@ class MetadataFile(DataFile):
                                     episodes[f"{available.month}-{available.day}"] = episode
                             for episode_id, episode_dict in season_dict[season_methods["episodes"]].items():
                                 updated = False
+                                title_name = f"Episode: {episode_id} in Season: {season_id} of {mapping_name}"
                                 logger.info("")
-                                logger.info(f"Updating episode {episode_id} in {season_id} of {mapping_name}...")
+                                logger.info(f"Updating {title_name}...")
                                 if episode_id in episodes:
                                     episode = episodes[episode_id]
                                 else:
-                                    logger.error(f"{self.type_str} Error: Episode {episode_id} in Season {season_id} not found")
+                                    logger.error(f"{self.type_str} Error: {title_name} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
                                 add_edit("title", episode, episode_dict, episode_methods)
@@ -2020,7 +2021,7 @@ class MetadataFile(DataFile):
                                 for tag_edit in ["director", "writer", "label"]:
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
-                                finish_edit(episode, f"Episode: {episode_id} in Season: {season_id}")
+                                finish_edit(episode, title_name)
                                 episode_style_data = None
                                 if season_style_data and "episodes" in season_style_data and season_style_data["episodes"] and episode_id in season_style_data["episodes"]:
                                     episode_style_data = season_style_data["episodes"][episode_id]
@@ -2030,7 +2031,7 @@ class MetadataFile(DataFile):
                                                                      style_data=episode_style_data)
                                 if ups:
                                     updated = True
-                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"{title_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:
