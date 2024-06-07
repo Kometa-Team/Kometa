@@ -15,6 +15,7 @@ jobs:
       commit-msg: ${{ steps.update-version.outputs.commit-msg }}
       commit-hash: ${{ steps.update-version.outputs.commit-hash }}
       commit-short: ${{ steps.update-version.outputs.commit-short }}
+      pr-tag: ${{ steps.update-version.outputs.pr-tag }}
     steps:
 
       - name: Create App Token
@@ -34,6 +35,16 @@ jobs:
       - name: Update VERSION File
         id: update-version
         run: |
+            branch_name=${{ github.event.pull_request.head.ref }}
+            repo_name=${{ github.event.pull_request.head.repo.full_name }}
+            base_name="${repo_name%/*}"
+            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+                pr_tag="${base_name}"
+            else
+                pr_tag="${branch_name}"
+            fi
+            echo "pr-tag=${pr_tag}" >> $GITHUB_OUTPUT
+            
             value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             version="${value%-build*}"
@@ -192,4 +203,4 @@ jobs:
             curl -i -X DELETE \
             -H "Accept: application/json" \
             -H "Authorization: JWT $HUB_TOKEN" \
-            https://hub.docker.com/v2/repositories/kometateam/kometa/tags/${{ github.head_ref }}/
+            https://hub.docker.com/v2/repositories/kometateam/kometa/tags/${{ needs.increment-build.outputs.pr-tag }}/

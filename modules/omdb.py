@@ -13,6 +13,7 @@ class OMDbObj:
         self._data = data
         if data["Response"] == "False":
             raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
+
         def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
             try:
                 value = str(data[key]).replace(replace, '') if replace else data[key]
@@ -26,6 +27,7 @@ class OMDbObj:
                     return value
             except (ValueError, TypeError, KeyError):
                 return None
+
         self.title = _parse("Title")
         self.year = _parse("Year", is_int=True)
         self.released = _parse("Released", is_date=True)
