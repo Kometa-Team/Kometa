@@ -374,10 +374,10 @@ Collecting PlexAPI==4.7.0
 Collecting tmdbv3api==1.7.6
   Downloading tmdbv3api-1.7.6-py2.py3-none-any.whl (17 kB)
 ...
-Installing collected packages: urllib3, idna, charset-normalizer, certifi, six, ruamel.yaml.clib, requests, tmdbv3api, schedule, ruamel.yaml, retrying, PlexAPI, pillow, pathvalidate, lxml, arrapi
-    Running setup.py install for retrying ... done
+Installing collected packages: urllib3, idna, charset-normalizer, certifi, six, ruamel.yaml.clib, requests, tmdbv3api, tenacity, ruamel.yaml, tenacity, PlexAPI, pillow, pathvalidate, lxml, arrapi
+    Running setup.py install for tenacity ... done
     Running setup.py install for arrapi ... done
-Successfully installed PlexAPI-4.7.0 arrapi-1.1.3 certifi-2021.10.8 charset-normalizer-2.0.7 idna-3.3 lxml-4.6.3 pathvalidate-2.4.1 pillow-8.3.2 requests-2.26.0 retrying-1.3.3 ruamel.yaml-0.17.10 ruamel.yaml.clib-0.2.6 schedule-1.1.0 six-1.16.0 tmdbv3api-1.7.6 urllib3-1.26.7
+Successfully installed PlexAPI-4.7.0 arrapi-1.1.3 certifi-2021.10.8 charset-normalizer-2.0.7 idna-3.3 lxml-4.6.3 pathvalidate-2.4.1 pillow-8.3.2 requests-2.26.0 tenacity-8.3.0 ruamel.yaml-0.17.10 ruamel.yaml.clib-0.2.6 tenacity-8.3.0 six-1.16.0 tmdbv3api-1.7.6 urllib3-1.26.7
 WARNING: You are using pip version 21.1.3; however, version 21.3 is available.
 You should consider upgrading via the '/Users/mroche/Kometa/kometa-venv/bin/python -m pip install --upgrade pip' command.
 ```

@@ -31,7 +31,7 @@ system_versions = {
     "python-dotenv": dotenv_version.__version__,
     "python-dateutil": dateutil.__version__, # noqa
     "requests": requests.__version__,
-    "retrying": None,
+    "tenacity": None,
     "ruamel.yaml": ruamel.yaml.__version__,
     "schedule": None,
     "setuptools": setuptools.__version__,

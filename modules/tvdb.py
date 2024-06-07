@@ -5,7 +5,7 @@ from lxml.etree import ParserError
 from modules import util
 from modules.util import Failed
 from requests.exceptions import MissingSchema
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 
 logger = util.logger
 
@@ -115,7 +115,7 @@ class TVDb:
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_request(self, tvdb_url):
         response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:

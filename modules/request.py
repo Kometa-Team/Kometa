@@ -4,7 +4,7 @@ from modules import util
 from modules.poster import ImageData
 from modules.util import Failed
 from requests.exceptions import ConnectionError
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_fixed
 from urllib import parse
 
 logger = util.logger
@@ -149,7 +149,7 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
         return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params)
 
@@ -167,7 +167,7 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
         return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language))
 
