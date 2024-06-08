@@ -78,6 +78,10 @@ The available setting attributes which can be set at each level are outlined bel
         Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the 
         directory must be mounted/visible to the docker container).
     
+    ??? warning
+    
+        Kometa will not create asset directories.  Asset directories you specify here need to exist already.
+
     <hr style="margin: 0px;">
     
     **Attribute:** `asset_directory`
