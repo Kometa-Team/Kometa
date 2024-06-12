@@ -127,6 +127,7 @@ integrations
 ints
 io
 iteratively
+jd
 Jinja
 jkirkcaldy
 JohnFawkes
