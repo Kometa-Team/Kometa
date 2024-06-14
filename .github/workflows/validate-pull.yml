@@ -25,9 +25,12 @@ jobs:
 
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Run Spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.37.0
+        uses: rojopolis/spellcheck-github-actions@0.38.0
 
   docker-build-pull:
     runs-on: ubuntu-latest
