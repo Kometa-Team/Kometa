@@ -12,5 +12,6 @@ Added [`letterboxd_user_lists`](https://kometa.wiki/en/latest/files/dynamic_type
 
 # Bug Fixes
 Fixed multiple anime `int()` Errors
+Fixed #2100 verify_ssl wasn't working when downloading images
 
 Various other Minor Fixes
