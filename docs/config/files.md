@@ -236,6 +236,10 @@ You can have some control of the files from inside your Configuration file by us
         Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the 
         directory must be mounted/visible to the docker container).
 
+    ??? warning
+    
+        Kometa will not create asset directories.  The directories that you specify have to exist already.
+
     <hr style="margin: 0px;">
     
     **Attribute:** `asset_directory`

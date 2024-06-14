@@ -48,6 +48,8 @@ settings:
     - config/assets_ahoy
 ```
 
+* Kometa will not create the asset directories themselves; it will create folder *within* asset directories [if configured to do this], but not the asset directories themselves.
+
 * You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [File Blocks](../../config/files.md) for how to define them.
 
 * By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
