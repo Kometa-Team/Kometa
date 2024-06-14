@@ -259,6 +259,7 @@ Skywalker
 Sohjiro
 Sohjiro's
 sonarr
+ssl
 SSL
 StevenLu
 StevenLu's
