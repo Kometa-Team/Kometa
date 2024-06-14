@@ -88,6 +88,10 @@ Supported library types: Movie & Show
 | Zulu                     | `zu`  | `3`    | `za`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Luxembourgish            | `lb`  | `2`    | `lu`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mossi                    | `mos` | `1`    | `bf`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Afrikaans                | `af`  | `13`   | `af`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+
 
 ??? tip "Square Style (click to expand)"
 
