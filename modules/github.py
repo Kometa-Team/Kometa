@@ -29,6 +29,8 @@ class GitHub:
             return self.requests.get_yaml(url, headers=self.headers, params=params)
         response = self.requests.get(url, headers=self.headers, params=params)
         if response.status_code >= 400:
+            logger.stacktrace()
+            logger.error(response.reason)
             raise Failed(f"Git Error: {err_msg}")
         try:
             return response.json()
