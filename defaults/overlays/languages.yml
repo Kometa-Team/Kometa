@@ -608,3 +608,7 @@ overlays:
   bambara:
     variables: {key: bm, text: BM, weight: 12, country: ml}
     template: [name: flags, name: standard]
+
+  afrikaans:
+    variables: {key: af, text: AF, weight: 13, country: za}
+    template: [name: flags, name: standard]
