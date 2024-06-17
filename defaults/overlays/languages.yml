@@ -612,3 +612,8 @@ overlays:
   afrikaans:
     variables: {key: af, text: AF, weight: 13, country: za}
     template: [name: flags, name: standard]
+
+  mongolian:
+    variables: {key: mn, text: MN, weight: 13, country: mn}
+    template: [name: flags, name: standard]
+
