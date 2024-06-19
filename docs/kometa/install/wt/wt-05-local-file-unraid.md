@@ -2,29 +2,14 @@ If the default collection files do not allow you to create the collections you w
 
 First, open the collection file [this will create the file if it doesn't already exist]:
 
-=== ":fontawesome-brands-linux: Linux"
+=== ":fontawesome-brands-linux: unRAID"
 
-    [type this into your terminal]
+    [type this into your Kometa `>_Console`]
     
     ```
     nano "config/Movies.yml"
     ```
 
-=== ":fontawesome-brands-apple: macOS"
-
-    [type this into your terminal]
-    
-    ```
-    nano "config/Movies.yml"
-    ```
-
-=== ":fontawesome-brands-windows: Windows"
-
-    [type this into your terminal]
-   
-    ```
-    notepad "config\Movies.yml"
-    ```
 
 In this file, add the following, exactly as it is shown here; remember that spacing is significant in YAML files:
 

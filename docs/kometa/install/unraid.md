@@ -137,7 +137,7 @@ First, make a copy of the template:
 Now open the copy in an editor on the machine of your choice:
 
 {%
-   include-markdown "./wt/wt-editor.md"
+   include-markdown "./wt/wt-editor-unraid.md"
 %}
 
 {%
@@ -149,7 +149,7 @@ Now open the copy in an editor on the machine of your choice:
 Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
@@ -183,13 +183,13 @@ So let's run the script and see this happen:
 ### Setting up a collection file and creating a sample collection.
 
 {%
-   include-markdown "./wt/wt-05-local-file.md"
+   include-markdown "./wt/wt-05-local-file-unraid.md"
 %}
 
 Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
@@ -211,7 +211,7 @@ Then run the script again:
 Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
