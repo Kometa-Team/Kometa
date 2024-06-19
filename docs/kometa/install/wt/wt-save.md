@@ -12,9 +12,3 @@
 
     If you're using `notepad`, type control-`s` or choose `Save` from the `File` menu.
 
-
-=== ":fontawesome-brands-linux: unRAID"
-
-    If you're using `nano`, type control-`x`, then `y`, then the enter key.
-
-
