@@ -47,7 +47,7 @@
     
 === ":fontawesome-brands-linux: unRAID"
 
-    [type this into your Kometa >_Console]
+    [type this into your Kometa `>_Console`]
     
     ```
     nano config/config.yml

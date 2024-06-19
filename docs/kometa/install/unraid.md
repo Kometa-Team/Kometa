@@ -35,7 +35,7 @@ Anywhere you see
 something like this
 ```
 
-That’s a command you’re going to type or paste into your unRAID Kometa `>_Console` terminal (Linux).
+That’s a command you’re going to type or paste into your unRAID Kometa `>_Console`.
 
 **IMPORTANT NOTES:**
 
@@ -92,7 +92,7 @@ We need to have a file called `config.yml` in the correct directory for Kometa t
 
 === ":fontawesome-brands-linux: unRAID"
 
-    [type this into your terminal]
+    [type this into your unRAID terminal]
     ```
     mkdir /mnt/user/appdata/Kometa/config
     touch /mnt/user/appdata/Kometa/config/config.yml
@@ -112,7 +112,7 @@ We'll create it here so the error doesn't show up later.
 
 === ":fontawesome-brands-linux: unRAID"
 
-    [type this into your Kometa >_Console]
+    [type this into your Kometa `>_Console`]
     ```
     mkdir config/assets
     ```
@@ -129,7 +129,7 @@ First, make a copy of the template:
 
 === ":fontawesome-brands-linux: unRAID"
 
-    Get a copy of the template to edit [type this into your Kometa >_Console]:
+    Get a copy of the template to edit [type this into your Kometa `>_Console`]:
     ```
     curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
     ```
@@ -155,7 +155,7 @@ Save the file:
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -173,7 +173,7 @@ So let's run the script and see this happen:
 
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -195,7 +195,7 @@ Save the file:
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -217,7 +217,7 @@ Save the file:
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%

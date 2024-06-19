@@ -28,7 +28,7 @@ First, open the collection file [this will create the file if it doesn't already
 
 === ":fontawesome-brands-linux: unRAID"
 
-    [type this into your Kometa >_Console]
+    [type this into your Kometa `>_Console`]
     
     ```
     nano "config/Movies.yml"
