@@ -11,6 +11,7 @@ external_templates:
   template_variables:
     collection_section: "020"
     image: chart/<<mapping_name_encoded>>
+    allowed_libraries: movie
     sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>>LB_<<sort>>
 
 templates:
