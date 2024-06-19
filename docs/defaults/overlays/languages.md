@@ -91,6 +91,7 @@ Supported library types: Movie & Show
 | Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Afrikaans                | `af`  | `13`   | `af`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Mongolian                | `mn`  | `14`   | `mn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 ??? tip "Square Style (click to expand)"
