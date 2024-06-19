@@ -761,6 +761,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Quibi:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Rai 1:
     variables: { weight: 10}
     template: [name: standard, name: networks]
