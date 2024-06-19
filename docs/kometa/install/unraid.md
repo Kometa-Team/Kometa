@@ -134,7 +134,7 @@ First, make a copy of the template:
     curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
     ```
 
-Now open the copy in an editor on the machine of your choice (Use Linux tab below for the Unraid Kometa `_>Console`):
+Now open the copy in an editor on the machine of your choice (Use Linux tab below for the Unraid Kometa `>_Console`):
 
 {%
    include-markdown "./wt/wt-editor.md"
@@ -146,7 +146,7 @@ Now open the copy in an editor on the machine of your choice (Use Linux tab belo
 
 #### Testing the config file
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file (Use Linux tab below for the Unraid Kometa `>_Console`):
 
 {%
    include-markdown "./wt/wt-save.md"
@@ -182,13 +182,13 @@ So let's run the script and see this happen:
 
 ### Setting up a collection file and creating a sample collection.
 
-(Use Linux tab below for the Unraid Kometa `_>Console`):
+(Use Linux tab below for the Unraid Kometa `>_Console`):
 
 {%
    include-markdown "./wt/wt-05-local-file.md"
 %}
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file (Use Linux tab below for the Unraid Kometa `>_Console`):
 
 {%
    include-markdown "./wt/wt-save.md"
@@ -210,7 +210,7 @@ Then run the script again:
    include-markdown "./wt/wt-07-overlay-add.md"
 %}
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file (Use Linux tab below for the Unraid Kometa `>_Console`):
 
 {%
    include-markdown "./wt/wt-save.md"
