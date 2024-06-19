@@ -26,7 +26,7 @@ collections:
 Save the file:
 
 {%
-   include-markdown "./wt-save.md"
+   include-markdown "./wt-save-unraid.md"
 %}
 
 Next, add a reference to this file to your config file.
