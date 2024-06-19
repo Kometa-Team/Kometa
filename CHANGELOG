@@ -1,5 +1,6 @@
 # Requirements Update (requirements will need to be reinstalled)
-Added tenacity requirement at 8.3.0
+Added tenacity requirement at 8.4.1
+Update psutil requirement to 6.0.0
 
 # Removed Features
 
