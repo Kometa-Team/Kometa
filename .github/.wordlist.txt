@@ -227,6 +227,7 @@ portainer
 Powershell
 pre
 prepend
+psutil
 PUID
 puid
 QNAP
