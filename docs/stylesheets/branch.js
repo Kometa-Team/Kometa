@@ -1,32 +1,31 @@
-// custom.js
-
-// Function to check if the current URL contains "nightly" or "develop" and adjust styles accordingly
 function checkURLForBranch() {
   const currentURL = window.location.href;
 
-  // Helper function to update style and text
-  function updateTheme(headerColor, tabsColor, textContent) {
-    const header = document.querySelector(".md-header");
-    const tabs = document.querySelector(".md-tabs");
-    const ellipsisSpan = document.querySelector(".md-ellipsis");
+  // Select elements for background and text changes
+  const headerAndTabs = document.querySelectorAll(".md-header, .md-tabs");
+  const ellipsisSpan = document.querySelector(".md-ellipsis"); // Select ellipsisSpan
 
-    if (header && tabs) { // Check if elements exist
-      header.style.backgroundColor = headerColor;
-      tabs.style.backgroundColor = tabsColor;
+  if (headerAndTabs.length > 0) {
+    let backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/background.jpg";
+    let ellipsisText = ""; // Initialize ellipsisText
+
+    if (currentURL.includes("en/nightly")) {
+      backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/backgroundnightly.jpg";
+      ellipsisText = "Kometa Nightly Wiki"; // Set text for Nightly
+    } else if (currentURL.includes("en/develop")) {
+      backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/backgrounddevelop.jpg";
+      ellipsisText = "Kometa Develop Wiki"; // Set text for Develop
     }
 
-    if (ellipsisSpan) { // Check if element exists
-      ellipsisSpan.textContent = textContent;
-    }
-  }
+    headerAndTabs.forEach(element => {
+      element.style.backgroundImage = `url(${backgroundImage})`;
+    });
 
-  // Change theme based on URL segment
-  if (currentURL.includes("en/nightly")) {
-    updateTheme("#262dbd", "#262dbd", "Kometa Nightly Wiki");
-  } else if (currentURL.includes("en/develop")) {
-    updateTheme("#ffa724", "#ffa724", "Kometa Develop Wiki");
+    // Update ellipsisSpan text only if it exists
+    if (ellipsisSpan) {
+      ellipsisSpan.textContent = ellipsisText;
+    }
   }
 }
 
-// Call the function on page load
 window.addEventListener("load", checkURLForBranch);
