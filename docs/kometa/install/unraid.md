@@ -35,7 +35,7 @@ Anywhere you see
 something like this
 ```
 
-That’s a command you’re going to type or paste into your unRAID Kometa `>_Console` terminal (Linux).
+That’s a command you’re going to type or paste into your unRAID Kometa `>_Console`.
 
 **IMPORTANT NOTES:**
 
@@ -90,9 +90,9 @@ Config Error: config not found at //config
 ```
 We need to have a file called `config.yml` in the correct directory for Kometa to start. Open up an unRAID terminal session by clicking on the terminal icon `>_` in the top right of unRAID.
 
-=== ":fontawesome-brands-linux: Linux"
+=== ":fontawesome-brands-linux: unRAID"
 
-    [type this into your terminal]
+    [type this into your unRAID terminal]
     ```
     mkdir /mnt/user/appdata/Kometa/config
     touch /mnt/user/appdata/Kometa/config/config.yml
@@ -110,9 +110,9 @@ The default config file contains a reference to a directory that will show an er
 
 We'll create it here so the error doesn't show up later.
 
-=== ":fontawesome-brands-linux: Linux"
+=== ":fontawesome-brands-linux: unRAID"
 
-    [type this into your terminal]
+    [type this into your Kometa `>_Console`]
     ```
     mkdir config/assets
     ```
@@ -127,17 +127,17 @@ We'll create it here so the error doesn't show up later.
 
 First, make a copy of the template:
 
-=== ":fontawesome-brands-linux: Linux"
+=== ":fontawesome-brands-linux: unRAID"
 
-    Get a copy of the template to edit [type this into your terminal]:
+    Get a copy of the template to edit [type this into your Kometa `>_Console`]:
     ```
     curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
     ```
 
-Now open the copy in an editor on the machine of your choice (Use Linux tab below for the Unraid Kometa `_>Console`):
+Now open the copy in an editor on the machine of your choice:
 
 {%
-   include-markdown "./wt/wt-editor.md"
+   include-markdown "./wt/wt-editor-unraid.md"
 %}
 
 {%
@@ -146,16 +146,16 @@ Now open the copy in an editor on the machine of your choice (Use Linux tab belo
 
 #### Testing the config file
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -173,7 +173,7 @@ So let's run the script and see this happen:
 
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -182,22 +182,20 @@ So let's run the script and see this happen:
 
 ### Setting up a collection file and creating a sample collection.
 
-(Use Linux tab below for the Unraid Kometa `_>Console`):
-
 {%
-   include-markdown "./wt/wt-05-local-file.md"
+   include-markdown "./wt/wt-05-local-file-unraid.md"
 %}
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%
@@ -210,16 +208,16 @@ Then run the script again:
    include-markdown "./wt/wt-07-overlay-add.md"
 %}
 
-Save the file (Use Linux tab below for the Unraid Kometa `_>Console`):
+Save the file:
 
 {%
-   include-markdown "./wt/wt-save.md"
+   include-markdown "./wt/wt-save-unraid.md"
 %}
 
 Then run the script again:
 
 {%
-   include-markdown "./wt/wt-run-shell.md"
+   include-markdown "./wt/wt-run-console.md"
 %}
 
 {%

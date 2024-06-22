@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<script src='https://cdn.jsdelivr.net/npm/@widgetbot/crate@3' async defer>
+  const button = new Crate({
+      server: '822460010649878528', // Funky Penguin
+      channel: '822460010649878531', // #elf-friends channel
+      username: 'Kometa Website Visitor',
+      indicator: true,
+      color: '#00bc8c',
+      location: ['bottom', 'left']
+  })
+</script>
+
+{% endblock %}

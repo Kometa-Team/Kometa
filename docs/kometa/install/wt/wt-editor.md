@@ -45,6 +45,4 @@
     ```
     I’m using `notepad` here simply because it’s built into Windows.  You can use any other text editor you wish, provided it saves files as PLAIN TEXT.
     
-
-
 From here on in, when this walkthrough says "open the config file", I mean this `nano` or `notepad` command.  **Don't copy the template again**.
