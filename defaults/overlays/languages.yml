@@ -617,3 +617,10 @@ overlays:
     variables: {key: mn, text: MN, weight: 14, country: mn}
     template: [name: flags, name: standard]
 
+  khmer:
+    variables: {key: km, text: KM, weight: 15, country: kh}
+    template: [name: flags, name: standard]
+
+  limburgish:
+    variables: {key: li, text: LI, weight: 16, country: be}
+    template: [name: flags, name: standard]
