@@ -171,7 +171,7 @@ jobs:
         id: get-description
         run: |
           body="${{ github.event.pull_request.body }}"
-          body=$(echo "$body" | sed -n '/## Description/,/## Issues Fixed or Closed/{/## Description/b;/## Issues Fixed or Closed/b;p}')
+          body=$(echo "$body" | sed -n '/## Description/,/##/{/## Description/b;/##/b;p}')
           body=$(echo $body|tr -d '\n')
           echo "description=$body" >> $GITHUB_OUTPUT
 
