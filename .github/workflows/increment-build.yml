@@ -6,9 +6,39 @@ on:
     types: [closed]
 
 jobs:
-  increment-build:
+
+  verify-changes:
     runs-on: ubuntu-latest
     if: github.base_ref == 'nightly' && github.event.pull_request.merged
+    outputs:
+      build: ${{ steps.list-changes.outputs.build }}
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: nightly
+
+      - name: Get changes
+        id: get-changes
+        run: echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
+
+      - name: List changed files
+        id: list-changes
+        run: |
+            for file in ${{ steps.get-changes.outputs.files }}; do
+                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
+                    echo "$file will trigger docker build"
+                    echo "build=true" >> $GITHUB_OUTPUT
+                else
+                    echo "$file will not trigger docker build"
+                fi
+            done
+
+  increment-build:
+    runs-on: ubuntu-latest
+    needs: [ verify-changes ]
     outputs:
       version: ${{ steps.update-version.outputs.version }}
       build-value: ${{ steps.update-version.outputs.build-value }}
@@ -75,35 +105,6 @@ jobs:
             git add VERSION
             git commit -m "${new_msg}" --amend
             git push origin nightly --force-with-lease
-
-  verify-changes:
-    runs-on: ubuntu-latest
-    needs: [ increment-build ]
-    outputs:
-      build: ${{ steps.list-changes.outputs.build }}
-    steps:
-
-      - name: Check Out Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: nightly
-
-      - name: Get changes
-        id: get-changes
-        run: echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
-
-      - name: List changed files
-        id: list-changes
-        run: |
-            for file in ${{ steps.get-changes.outputs.files }}; do
-                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
-                    echo "$file will trigger docker build"
-                    echo "build=true" >> $GITHUB_OUTPUT
-                else
-                    echo "$file will not trigger docker build"
-                fi
-            done
 
   docker-build-nightly:
     runs-on: ubuntu-latest
