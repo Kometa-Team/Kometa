@@ -17,6 +17,10 @@ external_templates:
 templates:
   letterboxd_list:
     letterboxd_list: https://letterboxd.com/<<user>>/list/<<list>>
+    default:
+      cache_builders: 1
+      cache_builders_<<key>>: <<cache_builders>>
+    cache_builders: <<cache_builders_<<key>>>>
 
 collections:
   "Letterboxd Top 250":
