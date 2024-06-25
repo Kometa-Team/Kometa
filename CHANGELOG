@@ -1,6 +1,8 @@
 # Requirements Update (requirements will need to be reinstalled)
-Added tenacity requirement at 8.4.1
+Added tenacity requirement at 8.4.2
+Update PlexAPI requirement to 4.15.14
 Update psutil requirement to 6.0.0
+Update setuptools requirement to 70.1.0
 
 # Removed Features
 
