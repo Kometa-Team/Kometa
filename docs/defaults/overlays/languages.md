@@ -92,6 +92,8 @@ Supported library types: Movie & Show
 | Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Afrikaans                | `af`  | `13`   | `af`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mongolian                | `mn`  | `14`   | `mn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Khmer                    | `kh`  | `15`   | `kh`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Limburgish               | `li`  | `16`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 ??? tip "Square Style (click to expand)"
