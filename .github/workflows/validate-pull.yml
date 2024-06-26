@@ -170,22 +170,22 @@ jobs:
       - name: Get Description
         id: get-description
         run: |
-          body="${{ github.event.pull_request.body }}"
+          body='${{ github.event.pull_request.body }}'
           body=$(echo "$body" | sed -n '/## Description/,/##/{/## Description/b;/##/b;p}')
           body=$(echo $body|tr -d '\n')
-          echo "description=$body" >> $GITHUB_OUTPUT
+          echo 'description=$body' >> $GITHUB_OUTPUT
 
       - name: Discord Testers Notification
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
-          message: "The Kometa team are requesting <@&917323027438510110> to assist with testing an upcoming feature/bug fix.
+          message: 'The Kometa team are requesting <@&917323027438510110> to assist with testing an upcoming feature/bug fix.
 
                     * For Local Git pull and checkout the `${{ github.event.pull_request.head.ref }}` branch${{ needs.docker-build-pull.outputs.extra-text }}
 
                     * For Docker use the `kometateam/kometa:${{ needs.docker-build-pull.outputs.tag-name }}` image to do your testing
 
-                    Please report back either here or on the original GitHub Pull Request"
+                    Please report back either here or on the original GitHub Pull Request'
           title: ${{ github.event.pull_request.title }}
           description: ${{ steps.get-description.outputs.description }}
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
@@ -198,14 +198,14 @@ jobs:
   update-testers:
     runs-on: ubuntu-latest
     needs: [ docker-build-pull ]
-    if: github.event.action == 'synchronize' && github.event.label.name == 'tester'
+    if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'tester')
     steps:
 
       - name: Discord Testers Notification
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
-          message: "New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: ${{ needs.docker-build-pull.outputs.version }}"
+          message: 'New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: ${{ needs.docker-build-pull.outputs.version }}'
           description: ${{ needs.docker-build-pull.outputs.commit-msg }}
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
           color: ${{ vars.COLOR_SUCCESS }}
