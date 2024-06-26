@@ -1,30 +1,29 @@
 function checkURLForBranch() {
   const currentURL = window.location.href;
+  const ellipsisSpan = document.querySelector(".md-ellipsis");
+  const mdBanner = document.querySelector(".md-banner"); // Select the banner element
 
-  // Select elements for background and text changes
-  const headerAndTabs = document.querySelectorAll(".md-header, .md-tabs");
-  const ellipsisSpan = document.querySelector(".md-ellipsis"); // Select ellipsisSpan
+  // Default text
+  let ellipsisText = "Kometa Wiki";
+  let bannerColor = "#252525"; // Default banner color
 
-  if (headerAndTabs.length > 0) {
-    let backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/background.jpg";
-    let ellipsisText = ""; // Initialize ellipsisText
+  if (currentURL.includes("en/nightly") || currentURL.includes("en/develop") {
+    ellipsisText = currentURL.includes("en/nightly") ? "Kometa Nightly Wiki" : "Kometa Develop Wiki";
+    bannerColor = "#611423"; // Updated banner color
+  }
 
-    if (currentURL.includes("en/nightly")) {
-      backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/backgroundnightly.jpg";
-      ellipsisText = "Kometa Nightly Wiki"; // Set text for Nightly
-    } else if (currentURL.includes("en/develop")) {
-      backgroundImage = "https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/docs/assets/backgrounddevelop.jpg";
-      ellipsisText = "Kometa Develop Wiki"; // Set text for Develop
-    }
+  // Create ellipsisSpan if it doesn't exist
+  if (!ellipsisSpan) {
+    ellipsisSpan = document.createElement("span");
+    ellipsisSpan.classList.add("md-ellipsis");
+    document.body.appendChild(ellipsisSpan);
+  }
 
-    headerAndTabs.forEach(element => {
-      element.style.backgroundImage = `url(${backgroundImage})`;
-    });
+  ellipsisSpan.textContent = ellipsisText;
 
-    // Update ellipsisSpan text only if it exists
-    if (ellipsisSpan) {
-      ellipsisSpan.textContent = ellipsisText;
-    }
+  // Update banner color
+  if (mdBanner) {
+    mdBanner.style.backgroundColor = bannerColor;
   }
 }
 
