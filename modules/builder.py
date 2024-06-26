@@ -1477,12 +1477,9 @@ class CollectionBuilder:
                     self.builders.append((method_name, value))
                 else:
                     raise Failed(f"{self.Type} Error: imdb_id {value} must begin with tt")
-        elif method_name == "imdb_list":
-            try:
-                for imdb_dict in self.config.IMDb.validate_imdb_lists(self.Type, method_data):
-                    self.builders.append((method_name, imdb_dict))
-            except Failed as e:
-                logger.error(e)
+        elif method_name in ["imdb_list", "imdb_watchlist"]:
+            for imdb_dict in self.config.IMDb.validate_imdb(self.Type, method_name, method_data):
+                self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
                 if value in imdb.movie_charts and not self.library.is_movie:
@@ -1493,9 +1490,6 @@ class CollectionBuilder:
                     self.builders.append((method_name, value))
                 else:
                     raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
-        elif method_name == "imdb_watchlist":
-            for imdb_user in self.config.IMDb.validate_imdb_watchlists(self.Type, method_data, self.language):
-                self.builders.append((method_name, imdb_user))
         elif method_name == "imdb_award":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
