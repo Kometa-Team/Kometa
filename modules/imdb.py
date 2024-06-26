@@ -518,7 +518,7 @@ class IMDb:
             logger.info(f"Processing IMDb ID: {data}")
             return [(data, "imdb")]
         elif method in ["imdb_list", "imdb_watchlist"]:
-            logger.info(f"Processing IMDb {'List' if method == "imdb_list" else 'Watchlist'}: {data['list_id' if method == "imdb_list" else 'user_id']}")
+            logger.info(f"Processing IMDb {'List' if method == 'imdb_list' else 'Watchlist'}: {data['list_id' if method == 'imdb_list' else 'user_id']}")
             if data["limit"] > 0:
                 logger.info(f"    Limit: {data['limit']}")
             if "sort_by" in data:

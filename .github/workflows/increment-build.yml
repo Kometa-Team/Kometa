@@ -39,6 +39,7 @@ jobs:
   increment-build:
     runs-on: ubuntu-latest
     needs: [ verify-changes ]
+    if: needs.verify-changes.outputs.build == 'true'
     outputs:
       version: ${{ steps.update-version.outputs.version }}
       build-value: ${{ steps.update-version.outputs.build-value }}
