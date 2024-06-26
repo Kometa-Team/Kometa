@@ -71,6 +71,7 @@ jobs:
       - name: Check Out Repo
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.PAT }}
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
