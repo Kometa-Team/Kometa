@@ -35,8 +35,6 @@ table tr td code {
 }
 
 .md-banner {
-    background-color: #252525;
-    color: var(--md-footer-fg-color);
     overflow: auto;
     text-align: center;
 }
