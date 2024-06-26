@@ -17,7 +17,7 @@
     let latestURL = currentURL.replace(/en\/(nightly|develop)\//, 'en/latest/');
 
     // Update the announceText to include the custom link and branch name
-    announceText = `️⚠️ You are viewing the ${branchName} branch's wiki. <bold><a href="${latestURL}">Click here to go to the main wiki.</a></b> ⚠️️`;
+    announceText = `️⚠️ You are viewing the ${branchName} branch's wiki. <a href="${latestURL}">Click here to go to the main wiki.</a> ⚠️️`;
   }
 
   document.write(announceText);
