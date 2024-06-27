@@ -26,7 +26,7 @@ class Operations:
     def __init__(self, config, library):
         self.config = config
         self.library = library
-
+    
     def run_operations(self):
         operation_start = datetime.now()
         logger.info("")
@@ -63,6 +63,36 @@ class Operations:
         logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug("")
+
+        def check_size(col, less):
+            delete_it = False
+            if (less is not None):
+                col_too_small = col.childCount < less
+                delete_it = col_too_small
+            
+            logger.trace(f"{col.title} - less: {less} vs collection size: {col.childCount}, DELETE: {delete_it}")
+            return delete_it
+
+        def check_managed(col, managed, labels):
+            delete_it = False
+            if (managed is not None):
+                col_managed = ("PMM" in labels) or ("Kometa" in labels)
+                delete_it = (managed == col_managed)
+            
+            logger.trace(f"{col.title} - managed: {managed} vs collection managed: {col_managed}, DELETE: {delete_it}")
+            return delete_it
+
+        def check_configured(col, configured):
+            delete_it = False
+            if (configured is not None):
+                col_configured = col.title in self.library.collections
+                delete_it = (configured == col_configured)
+            
+            logger.trace(f"{col.title} - configured: {configured} vs collection configured: {col_configured}, DELETE: {delete_it}")
+            return delete_it
+
+        def should_be_deleted(col, labels, configured, managed, less):
+            return check_size(col, less), check_managed(col, managed, labels), check_configured(col, configured)
 
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
@@ -1055,21 +1085,16 @@ class Operations:
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
-                if (less is not None or managed is not None or configured is not None) \
-                        and (less is None or col.childCount < less) \
-                        and (managed is None
-                             or (managed is True and "PMM" in labels)
-                             or (managed is True and "Kometa" in labels)
-                             or (managed is False and "PMM" not in labels)
-                             or (managed is False and "Kometa" not in labels)) \
-                        and (configured is None
-                             or (configured is True and col.title in self.library.collections)
-                             or (configured is False and col.title not in self.library.collections)):
-                    try:
-                        self.library.delete(col)
-                        logger.info(f"{col.title} Deleted")
-                    except Failed as e:
-                        logger.error(e)
+
+                if (less is not None or managed is not None or configured is not None):
+                    delete_because_less, delete_because_managed, delete_because_configured = should_be_deleted(col, labels, configured, managed, less)
+
+                    if (delete_because_less and delete_because_managed and delete_because_configured):
+                        try:
+                            self.library.delete(col)
+                            logger.info(f"{col.title} Deleted")
+                        except Failed as e:
+                            logger.error(e)
                 else:
                     if "PMM" not in labels and "Kometa" not in labels:
                         unmanaged_collections.append(col)
