@@ -2,6 +2,11 @@
 
 The `network` Default Collection File is used to dynamically create collections based on the networks available in your library.
 
+???+ danger "Important"
+
+    This default requires that the library be set to use the "Plex TV Series" scanner and the "Plex Series" agent.
+
+    The error in this case will be `Plex Error: plex_search attribute: network not supported`.
 
 ## Requirements & Recommendations
 
