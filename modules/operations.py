@@ -68,18 +68,24 @@ class Operations:
             if all((x is None for x in [configured_in, managed_in, less_in])):
                 return False
 
-            delete_less = False if less_in is None else col_in.childCount < less_in
-            logger.trace(f"{col_in.title} - less: {less_in} vs collection size: {col_in.childCount}, DELETE: {delete_less}")
+            less_check = True
+            if less_in is not None:
+                less_check = col_in.childCount < less_in
+                logger.trace(f"{col_in.title} - collection size: {col_in.childCount} < less: {less_in}, DELETE: {less_check}")
 
-            is_managed = "PMM" in labels_in or "Kometa" in labels_in
-            delete_managed = False if managed_in is None else managed_in == is_managed
-            logger.trace(f"{col_in.title} - managed: {managed_in} vs collection managed: {is_managed}, DELETE: {delete_managed}")
+            managed_check = True
+            if managed_in is not None:
+                is_managed = "PMM" in labels_in or "Kometa" in labels_in
+                managed_check = managed_in == is_managed
+                logger.trace(f"{col_in.title} - collection managed: {is_managed} vs managed: {managed_in}, DELETE: {managed_check}")
 
-            is_configured = col_in.title in self.library.collections
-            delete_configured = False if configured_in is None else configured_in == is_configured
-            logger.trace(f"{col_in.title} - configured: {configured_in} vs collection configured: {is_configured}, DELETE: {delete_configured}")
+            configured_check = True
+            if configured_in is not None:
+                is_configured = col_in.title in self.library.collections
+                configured_check = configured_in == is_configured
+                logger.trace(f"{col_in.title} - collection configured: {is_configured} vs configured: {configured_in}, DELETE: {configured_check}")
 
-            return any((delete_less, delete_managed, delete_configured))
+            return all((less_check, managed_check, configured_check))
 
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
