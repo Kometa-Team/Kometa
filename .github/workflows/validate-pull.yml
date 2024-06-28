@@ -188,10 +188,11 @@ jobs:
     steps:
 
       - name: Get Description
+        env:
+          DESC: ${{ github.event.pull_request.body }}
         id: get-description
         run: |
-          body='${{ github.event.pull_request.body }}'
-          body=$(echo "$body" | sed -n '/## Description/,/##/{/## Description/b;/##/b;p}')
+          body=$(echo "$DESC" | sed -n '/## Description/,/##/{/## Description/b;/##/b;p}')
           body=$(echo $body|tr -d '\n')
           echo "description=$body" >> $GITHUB_OUTPUT
 
