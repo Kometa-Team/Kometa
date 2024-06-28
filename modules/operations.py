@@ -26,7 +26,7 @@ class Operations:
     def __init__(self, config, library):
         self.config = config
         self.library = library
-    
+
     def run_operations(self):
         operation_start = datetime.now()
         logger.info("")
@@ -65,7 +65,7 @@ class Operations:
         logger.debug("")
 
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
-            if all((x is None for x in [less, managed, configured])):
+            if all((x is None for x in [configured_in, managed_in, less_in])):
                 return False
 
             delete_less = False if less_in is None else col_in.childCount < less_in
