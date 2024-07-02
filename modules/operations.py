@@ -64,6 +64,29 @@ class Operations:
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug("")
 
+        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
+            if all((x is None for x in [configured_in, managed_in, less_in])):
+                return False
+
+            less_check = True
+            if less_in is not None:
+                less_check = col_in.childCount < less_in
+                logger.trace(f"{col_in.title} - collection size: {col_in.childCount} < less: {less_in}, DELETE: {less_check}")
+
+            managed_check = True
+            if managed_in is not None:
+                is_managed = "PMM" in labels_in or "Kometa" in labels_in
+                managed_check = managed_in == is_managed
+                logger.trace(f"{col_in.title} - collection managed: {is_managed} vs managed: {managed_in}, DELETE: {managed_check}")
+
+            configured_check = True
+            if configured_in is not None:
+                is_configured = col_in.title in self.library.collections
+                configured_check = configured_in == is_configured
+                logger.trace(f"{col_in.title} - collection configured: {is_configured} vs configured: {configured_in}, DELETE: {configured_check}")
+
+            return all((less_check, managed_check, configured_check))
+
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
             for item in items:
@@ -1055,16 +1078,8 @@ class Operations:
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
-                if (less is not None or managed is not None or configured is not None) \
-                        and (less is None or col.childCount < less) \
-                        and (managed is None
-                             or (managed is True and "PMM" in labels)
-                             or (managed is True and "Kometa" in labels)
-                             or (managed is False and "PMM" not in labels)
-                             or (managed is False and "Kometa" not in labels)) \
-                        and (configured is None
-                             or (configured is True and col.title in self.library.collections)
-                             or (configured is False and col.title not in self.library.collections)):
+
+                if should_be_deleted(col, labels, configured, managed, less):
                     try:
                         self.library.delete(col)
                         logger.info(f"{col.title} Deleted")

@@ -1,8 +1,9 @@
 # Requirements Update (requirements will need to be reinstalled)
 Added tenacity requirement at 8.4.2
+Update pillow requirement to 10.4.0
 Update PlexAPI requirement to 4.15.14
 Update psutil requirement to 6.0.0
-Update setuptools requirement to 70.1.1
+Update setuptools requirement to 70.2.0
 
 # Removed Features
 
@@ -16,6 +17,7 @@ Added [`letterboxd_user_lists`](https://kometa.wiki/en/latest/files/dynamic_type
 # Bug Fixes
 Fixed multiple anime `int()` Errors
 Fixed #2100 `verify_ssl` wasn't working when downloading images
+Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
 Fixed `imdb_watchlist`
 
 Various other Minor Fixes
