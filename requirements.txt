@@ -3,7 +3,7 @@ GitPython==3.1.43
 lxml==5.2.2
 num2words==0.5.13
 pathvalidate==3.2.0
-pillow==10.3.0
+pillow==10.4.0
 PlexAPI==4.15.14
 psutil==6.0.0
 python-dotenv==1.0.1
