@@ -847,6 +847,12 @@ overlays:
   Dino De Laurentiis Company:
     template: [name: standard, name: studios]
 
+  Disney Television Animation:
+    template: [name: standard, name: studios]
+
+  DisneyToon Studios:
+    template: [name: standard, name: studios]
+
   Don Simpson Jerry Bruckheimer Films:
     template: [name: standard, name: studios]
 
@@ -860,6 +866,9 @@ overlays:
     template: [name: standard, {name: studios, search: [DreamWorks Studios, DreamWorks, DreamWorks Animation, DreamWorks Animation Television, DreamWorks Classics]}]
 
   DreamWorks Pictures:
+    template: [name: standard, name: studios]
+
+  Dynamic Planning:
     template: [name: standard, name: studios]
 
   Eleventh Hour Films:
@@ -893,6 +902,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Fields Entertainment:
+    template: [name: standard, name: studios]
+
+  Film4 Productions:
     template: [name: standard, name: studios]
 
   FilmDistrict:
@@ -940,6 +952,9 @@ overlays:
   Generator Entertainment:
     template: [name: standard, name: studios]
 
+  Golden Harvest:
+    template: [name: standard, name: studios]
+
   Gracie Films:
     template: [name: standard, name: studios]
 
@@ -974,6 +989,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Hughes Entertainment:
+    template: [name: standard, name: studios]
+
+  Hungry Man:
     template: [name: standard, name: studios]
 
   Hurwitz & Schlossberg Productions:
@@ -1249,6 +1267,9 @@ overlays:
   Sculptor Media:
     template: [name: standard, name: studios]
 
+  Screen Gems:
+    template: [name: standard, name: studios]
+
   Sean Daniel Company:
     template: [name: standard, name: studios]
 
@@ -1262,6 +1283,9 @@ overlays:
     template: [name: standard, name: studios]
 
   Serendipity Pictures:
+    template: [name: standard, name: studios]
+
+  Shaw Brothers:
     template: [name: standard, name: studios]
 
   Show East:
@@ -1327,6 +1351,9 @@ overlays:
   Studio Dragon:
     template: [name: standard, name: studios]
 
+  Studio Live:
+    template: [name: standard, name: studios]
+
   STX Entertainment:
     template: [name: standard, {name: studios, search: [STX Entertainment, STX Films]}]
 
@@ -1373,6 +1400,9 @@ overlays:
     template: [name: standard, {name: studios, search: [Gordon Company, The Mark Gordon Company, Tiger Aspect Productions]}]
 
   The Sea Change Project:
+    template: [name: standard, name: studios]
+
+  The Stone Quarry:
     template: [name: standard, name: studios]
 
   The Weinstein Company:
