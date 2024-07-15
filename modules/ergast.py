@@ -23,9 +23,11 @@ translations = {
 }
 
 terms = {
-    "free practice 1": ["free practice 1", "vrije training 1", "fp1", "vt1"],
-    "free practice 2": ["free practice 2", "vrije training 2", "fp2", "vt2"],
-    "free practice 3": ["free practice 3", "vrije training 3", "fp3", "vt3"],
+    "drivers press conference": ["drivers press conference"],
+    "f1 show": ["f1 show"],
+    "free practice 1": ["free practice 1", "free practice one", "vrije training 1", "fp1", "vt1"],
+    "free practice 2": ["free practice 2", "free practice two", "vrije training 2", "fp2", "vt2"],
+    "free practice 3": ["free practice 3", "free practice three", "vrije training 3", "fp3", "vt3"],
     "pre": ["pre", "voorbeschouwing"],
     "post": ["post", "nabeschouwing"],
     "quali": ["quali", "kwalificatie"],
@@ -38,7 +40,9 @@ terms = {
 
 names = {
     "nl": {
+        "Drivers' Press Conference": "Drivers' Press Conference",
         "Formula 1 Cafe": "Formule 1 Cafe",
+        "F1 Show": "F1 Show",
         "Free Practice 1": "Vrije Training 1",
         "Free Practice 2": "Vrije Training 2",
         "Free Practice 3": "Vrije Training 3",
@@ -48,13 +52,13 @@ names = {
         "Ted's Sprint Notebook": "Ted's Sprint Notitieboekje",
         "Pre-Qualifying Build-up": "Kwalificatie Voorbeschouwing",
         "Post-Qualifying Analysis": "Kwalificatie Nabeschouwing",
-        "Qualifying Session": "Kwalificatie",
+        "Qualifying": "Kwalificatie",
         "Season Preview": "Seizoensvoorbeschouwing",
         "Pre-Race Buildup": "Voorbeschouwing",
         "Post-Race Analysis": "Nabeschouwing",
         "Live from the Grid": "Vanaf de grid",
         "Highlights": "Samenvatting",
-        "Race Session": "Race",
+        "Race": "Race",
         "Ted's Race Notebook": "Ted's Race Notitieboekje",
         "Ted's Qualifying Notebook": "Ted's Kwalificatie Notitieboekje",
         "Pre-Sprint Shootout Build-up": "Sprint Shootout Voorbeschouwing",
@@ -123,9 +127,13 @@ class Race:
             elif any ([x in title for x in terms["notebook"]]):
                 output = "Ted's Qualifying Notebook"
             else:
-                output = "Qualifying Session"
+                output = "Qualifying"
         elif any([x in title for x in terms["preview"]]):
             output = "Season Preview"
+        elif any([x in title for x in terms["f1 show"]]):
+            output = "F1 Show"
+        elif any([x in title for x in terms["drivers press conference"]]):
+            output = "Drivers' Press Conference"
         elif any([x in title for x in terms["pre"]]):
             output = "Pre-Race Buildup"
         elif any([x in title for x in terms["post"]]):
@@ -137,7 +145,7 @@ class Race:
         elif any([x in title for x in terms["notebook"]]):
             output = "Ted's Race Notebook"
         else:
-            output = "Race Session"
+            output = "Race"
         if "2160" in title or "4K" in title:
             output = f"{output} (4K)"
 
