@@ -28,5 +28,6 @@ Fixes #2028 TMDb IDs were being ignored on the report
 Fixes a bug when parsing a comma-separated string of ints
 Fixes `imdb_chart` only getting 25 results
 Fixes `imdb_list` not returning items
+Fixes #2135 AniDB Builder type conversion error
 
 Various other Minor Fixes
