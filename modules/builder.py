@@ -2290,16 +2290,29 @@ class CollectionBuilder:
                                     logger.warning(e)
                                     continue
                     elif id_type == "tmdb" and not self.parts_collection:
-                        input_id = int(input_id)
-                        if input_id not in self.ignore_ids:
-                            found = False
-                            for pl_library in self.libraries:
-                                if input_id in pl_library.movie_map:
-                                    found = True
-                                    rating_keys = pl_library.movie_map[input_id]
-                                    break
-                            if not found and input_id not in self.missing_movies:
-                                self.missing_movies.append(input_id)
+                        if isinstance(input_id, list):
+                            for a_id in input_id:
+                                input_id = int(a_id)
+                                if input_id not in self.ignore_ids:
+                                    found = False
+                                    for pl_library in self.libraries:
+                                        if input_id in pl_library.movie_map:
+                                            found = True
+                                            rating_keys = pl_library.movie_map[input_id]
+                                            break
+                                    if not found and input_id not in self.missing_movies:
+                                        self.missing_movies.append(input_id)
+                        else:
+                            input_id = int(input_id)
+                            if input_id not in self.ignore_ids:
+                                found = False
+                                for pl_library in self.libraries:
+                                    if input_id in pl_library.movie_map:
+                                        found = True
+                                        rating_keys = pl_library.movie_map[input_id]
+                                        break
+                                if not found and input_id not in self.missing_movies:
+                                    self.missing_movies.append(input_id)
                     elif id_type == "tvdb_season" and (self.builder_level == "season" or self.playlist):
                         tvdb_id, season_num = input_id.split("_")
                         tvdb_id = int(tvdb_id)
