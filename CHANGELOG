@@ -20,5 +20,6 @@ Fixed multiple anime `int()` Errors
 Fixed #2100 `verify_ssl` wasn't working when downloading images
 Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
 Fixed `imdb_watchlist`
+Fix #2150; change xmen list to a new one
 
 Various other Minor Fixes
