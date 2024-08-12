@@ -11,7 +11,8 @@ Update setuptools requirement to 70.2.0
 Added [`letterboxd_user_lists`](https://kometa.wiki/en/latest/files/dynamic_types/#letterboxd-user-lists) Dynamic Collection Type
 
 # Updates
-Added new studios : Disney Television Animation, DisneyToon Studios, Dynamic Planning, Film4 Productions, Golden Harvest, Hungry Man, Screen Gems, Shaw Brothers, Studio Live, The Stone Quarry
+Added new studios: Disney Television Animation, DisneyToon Studios, Dynamic Planning, Film4 Productions, Golden Harvest, Hungry Man, Screen Gems, Shaw Brothers, Studio Live, The Stone Quarry
+F1 session naming improvements
 
 # Defaults
 
