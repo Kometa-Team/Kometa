@@ -1,9 +1,10 @@
 # Requirements Update (requirements will need to be reinstalled)
-Added tenacity requirement at 8.4.2
+Added tenacity requirement at 9.0.0
+Update lxml requirement to 5.3.0
 Update pillow requirement to 10.4.0
-Update PlexAPI requirement to 4.15.14
+Update PlexAPI requirement to 4.15.15
 Update psutil requirement to 6.0.0
-Update setuptools requirement to 70.2.0
+Update setuptools requirement to 72.1.0
 
 # Removed Features
 
@@ -21,6 +22,7 @@ Fixed multiple anime `int()` Errors
 Fixed #2100 `verify_ssl` wasn't working when downloading images
 Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
 Fixed `imdb_watchlist`
-Fix #2150; change xmen list to a new one
+Fixed #2150; change xmen list to a new one
+Fixed #2169 Add handling for blank secrets
 
 Various other Minor Fixes

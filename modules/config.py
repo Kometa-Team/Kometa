@@ -328,20 +328,20 @@ class ConfigFile:
         def check_next(next_data):
             if isinstance(next_data, dict):
                 for d in next_data:
-                    out = check_next(next_data[d])
-                    if out:
-                        next_data[d] = out
+                    next_data[d] = check_next(next_data[d])
             elif isinstance(next_data, list):
                 for d in next_data:
                     check_next(d)
+                return [check_next(d) for d in next_data]
             else:
                 for secret, secret_value in self.secrets.items():
                     for test in [secret, secret.upper().replace("-", "_")]:
                         if f"<<{test}>>" in str(next_data):
                             return str(next_data).replace(f"<<{test}>>", secret_value)
+                if str(next_data).startswith("<<") and str(next_data).endswith(">>"):
+                    return None
                 return next_data
-        if self.secrets:
-            check_next(self.data)
+        check_next(self.data)
 
         def check_for_attribute(data, attribute, parent=None, test_list=None, translations=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0, int_max=None):
             endline = ""
