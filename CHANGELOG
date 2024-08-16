@@ -26,5 +26,6 @@ Fixes #2135 AniDB Builder type conversion error
 Fixed #2150; change xmen list to a new one
 Fixed #2169 Add handling for blank secrets
 Fixed #2176 `clean_bundles`, `optimize`, and `empty_trash` not working as global attributes
+Fixed #2186 `total_runtime` will now trigger an overlay update
 
 Various other Minor Fixes
