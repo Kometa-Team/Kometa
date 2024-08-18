@@ -16,6 +16,8 @@ F1 session naming improvements
 Added new studios : Disney Television Animation, DisneyToon Studios, Dynamic Planning, Film4 Productions, Golden Harvest, Hungry Man, Screen Gems, Shaw Brothers, Studio Live, The Stone Quarry
 
 # Defaults
+Fixed #2150; change xmen list to a new one
+Added `A Quiet Place: Day One` to the `A Quiet Place` collection in the `franchise` Defaults file
 
 # Bug Fixes
 Fixed multiple anime `int()` Errors
@@ -23,9 +25,8 @@ Fixed #2100 `verify_ssl` wasn't working when downloading images
 Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
 Fixed `imdb_watchlist`
 Fixes #2135 AniDB Builder type conversion error
-Fixed #2150; change xmen list to a new one
 Fixed #2169 Add handling for blank secrets
 Fixed #2176 `clean_bundles`, `optimize`, and `empty_trash` not working as global attributes
 Fixed #2186 `total_runtime` will now trigger an overlay update
-
+Fixed #2195 an image on the docs was a dead link
 Various other Minor Fixes
