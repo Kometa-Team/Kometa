@@ -218,6 +218,10 @@ overlays:
     template: {name: standard, allowed_libraries: movie}
     letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
 
+  Rotten Tomatoes Verified Hot:
+    variables: {key: rottenverified, weight: 45, mdb_key: verifiedhot}
+    template: [{name: standard, allowed_libraries: movie}, {name: ribbon}]
+
   Rotten Tomatoes Certified Fresh:
     variables: {key: rotten, weight: 40, mdb_key: certifiedfresh}
     template: [name: standard, name: ribbon]
