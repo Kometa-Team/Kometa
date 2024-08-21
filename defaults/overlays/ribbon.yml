@@ -44,7 +44,10 @@ templates:
       - imdb_key
     mdblist_list: https://mdblist.com/lists/k0meta/<<mdb_key>><<library_type>>s
     imdb_chart: <<imdb_key>>_<<library_type>>s
-
+  verified:
+    mdblist_list: https://mdblist.com/lists/k0meta/<<mdb_key>><<library_type>>s
+    filters:
+      release.after: 04/30/2019
 overlays:
 
   Oscars Best Picture:
@@ -220,7 +223,7 @@ overlays:
 
   Rotten Tomatoes Verified Hot:
     variables: {key: rottenverified, weight: 45, mdb_key: verifiedhot}
-    template: [{name: standard, allowed_libraries: movie}, {name: ribbon}]
+    template: [{name: standard, allowed_libraries: movie}, {name: verified}]
 
   Rotten Tomatoes Certified Fresh:
     variables: {key: rotten, weight: 40, mdb_key: certifiedfresh}
