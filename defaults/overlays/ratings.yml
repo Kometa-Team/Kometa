@@ -75,6 +75,9 @@ templates:
       mdblist_top:
         conditions:
           - image_level: Top
+            rating<<rating_num>>_image: rt_popcorn
+            value: https://mdblist.com/lists/k0meta/verifiedhot<<library_type>>s
+          - image_level: Top
             rating<<rating_num>>_image: rt_tomato
             value: https://mdblist.com/lists/k0meta/certifiedfresh<<library_type>>s
           - image_level: Top

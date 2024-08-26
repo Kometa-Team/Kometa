@@ -28,6 +28,7 @@ Supported Overlay Level: Movie, Show
 | César Winner                    | `cesar`           | `70`   |
 | IMDb Top 250                    | `imdb`            | `60`   |
 | Letterboxd Top 250              | `letterboxd`      | `50`   |
+| Rotten Tomatoes Verified Hot    | `rottenverified`  | `45`   |
 | Rotten Tomatoes Certified Fresh | `rotten`          | `40`   |
 | Metacritic Must See             | `metacritic`      | `30`   |
 | Common Sense Selection          | `common`          | `20`   |
