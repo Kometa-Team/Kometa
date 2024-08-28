@@ -13,7 +13,7 @@ Attributes are used to instruct Kometa what actions to take, such as "load the f
 be inherited from the global value if it has been set. If an attribute is specified at both the library and global 
 level, then the library level attribute will take priority.
 
-### Attributes
+## Attributes
 
 The available attributes for each library are as follows:
 

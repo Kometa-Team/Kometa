@@ -67,7 +67,7 @@ Overlay Files can utilize the following top-level attributes
 | Attribute                                               | Description                                                                                                            |
 |:--------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple Overlays                                           |
-| [`external_templates`](templates.md#external-templates) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple overlays |
+| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple overlays |
 | [`overlays`](#overlay-attributes)                       | contains definitions of Overlays you wish to add to one or more libraries                                              |
 
 * Example Files can be found in the [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
@@ -116,7 +116,7 @@ Overlay Files can utilize the following top-level attributes
 | Attribute                                               | Description                                                                                                            |
 |:--------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple overlays                                           |
-| [`external_templates`](templates.md#external-templates) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple overlays |
+| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple overlays |
 | [`queues`](#overlay-queues)                             | contains the positional attributes of queues                                                                           |
 | [`overlays`](#overlay-attributes)                       | contains definitions of overlays you wish to add                                                                       |
 
