@@ -36,7 +36,7 @@ The scheduling options are:
 
 ??? blank "Scheduling a Library<a class="headerlink" href="#schedule-library" title="Permanent link">¶</a>"
     
-    <div id="schedule-library" />Uses the `schedule` [Library Attribute](libraries.md#Attributes) to set when a library will be run.
+    <div id="schedule-library" />Uses the `schedule` [Library Attribute](libraries.md#attributes) to set when a library will be run.
 
     Other schedule rules for files, overlays, collections, and any other attribute that can be scheduled must also be 
     met.
@@ -61,7 +61,7 @@ The scheduling options are:
 
 ??? blank "Scheduling Collection, Playlist, and Metadata Files<a class="headerlink" href="#schedule-files" title="Permanent link">¶</a>"
     
-    <div id="schedule-files" />Uses the `schedule` [Block Attribute](files.md#Other-Block-Attributes) to set when a file
+    <div id="schedule-files" />Uses the `schedule` [Block Attribute](files.md#other-block-attributes) to set when a file
     will be run.
 
     Other schedule rules for collections and any other attribute that can be scheduled must also be met.

@@ -430,3 +430,5 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
 .md-typeset .card-link {
     color: var(--md-default-fg-color--light);
 }
+
+.highlight.no-copy .md-clipboard { display: none; }

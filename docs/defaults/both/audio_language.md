@@ -60,7 +60,7 @@ work. Any value not specified will use its default value if it has one if not it
         | `append_include`              | **Description:** Appends to the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                   |
         | `remove_include`              | **Description:** Removes from the [default include list](#include)<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                 |
         | `exclude`                     | **Description:** Exclude these Audio Languages from creating a Dynamic Collection.<br>**Values:** List of [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)<br>**Values:** List of [ISO 639-2 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) |
-        | `key_name_override`           | **Description:** Overrides the [default key_name_override dictionary](#default-key_name_override).<br>**Values:** Dictionary with `key: new_key_name` entries                                                                                                                      |
+        | `key_name_override`           | **Description:** Overrides the [default key_name_override dictionary](#key-name-override).<br>**Values:** Dictionary with `key: new_key_name` entries                                                                                                                      |
         | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> Audio`<br>**Values:** Any string with `<<key_name>>` in it.                                                                                                                    |
         | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in the <<key_name>> Language.`<br>**Values:** Any string.                                                                                                |
 
@@ -113,7 +113,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="include" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     include: {%    
       include-markdown "../../../defaults/both/audio_language.yml" 
       comments=false
@@ -127,7 +133,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="key-name-override" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     key_name_override: {%    
       include-markdown "../../../defaults/both/audio_language.yml" 
       comments=false

@@ -26,7 +26,7 @@ Wondering how to troubleshoot Kometa and how to read through the meta.log?
 
 In all cases, the first step is to open the [`meta.log`](#locating-log-files) with your text editor and perform these steps:
 
-1. Check that you are running the latest [`version`](#checking-Kometa-version) of your branch. Your current version can be found in the `meta.log` file either below the Kometa ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. Ensure you [`upgrade`](install/local.md#i-want-to-update-to-the-latest-version-of-kometa) to the latest version of Kometa.
+1. Check that you are running the latest [`version`](#checking-kometa-version) of your branch. Your current version can be found in the `meta.log` file either below the Kometa ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. Ensure you [`upgrade`](install/local.md#i-want-to-update-to-the-latest-version-of-kometa) to the latest version of Kometa.
 2. When scanning your meta.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
 3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 

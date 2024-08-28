@@ -28,7 +28,7 @@ Let's start with an unmodified set of collections which do **not** specify a cus
         plex_all: true
     ```
 
-    ![](images\sorts_example1.png)
+    ![](images/sorts_example1.png)
 
 
 Now let's use the `sort_title` attribute to reorder these collections slightly
@@ -48,7 +48,7 @@ Now let's use the `sort_title` attribute to reorder these collections slightly
         sort_title: Collection 2
     ```
 
-    ![](images\sorts_example2.png)
+    ![](images/sorts_example2.png)
 
     The above could also be achieved using any form of ASCII sort order. This example will produce the same outcome, but uses a (perhaps) illogical set of ASCII characters to define the sort title.
 
@@ -89,7 +89,7 @@ Users aren't expected to understand what this does, but users can use the `colle
 
     1.  Because the `!` character is a higher priority ASCII character, that will place ahead of the `000` for the seasonal collections.
 
-    ![](images\sorts_example3.jpg)
+    ![](images/sorts_example3.jpg)
 
 You can also re-order collections within each Defaults file using the `order_<<key>>` template variable. <<key>> refers to the identifier that Kometa uses for each collection, which you can find on the relative default's wiki page.
 
@@ -114,7 +114,7 @@ You can also re-order collections within each Defaults file using the `order_<<k
     1.  Because the `!` character is a higher priority ASCII character, that will place ahead of the `000` for the seasonal collections.
     2.  file has 5 collections, each with a defined key. I have reordered each of the collections to appear in the order that I specified.
 
-    ![](images\sorts_example4.jpg)
+    ![](images/sorts_example4.jpg)
 
 ## Builder Sorting
 

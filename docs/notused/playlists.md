@@ -2,9 +2,9 @@
 
 As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](../files/playlists.md) to work.
 
-Within the [Config File](overview.md), the `playlist_files` attribute specifies the [path type](../files/files.md#paths) and path of the [Playlist Files](../files/playlists.md) that the user wants Kometa to act on.
+Within the [Config File](../config/overview.md), the `playlist_files` attribute specifies the [path type](../config/files.md#file-blocks) and path of the [Playlist Files](../files/playlists.md) that the user wants Kometa to act on.
 
-**The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the [Config File](overview.md).**
+**The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the [Config File](../config/overview.md).**
 
 ```yaml
 playlist_files:

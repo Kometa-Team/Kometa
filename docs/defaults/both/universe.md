@@ -131,7 +131,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="data" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     data: {%    
       include-markdown "../../../defaults/both/universe.yml" 
       comments=false
@@ -145,7 +151,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="trakt-url" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/both/universe.yml" 
       comments=false
@@ -160,7 +172,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="mdblist-url" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/both/universe.yml" 
       comments=false

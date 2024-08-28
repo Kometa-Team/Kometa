@@ -117,7 +117,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="include" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     include: {%    
       include-markdown "../../../defaults/both/studio.yml" 
       comments=false
@@ -131,7 +137,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     addons: {%    
       include-markdown "../../../defaults/both/studio.yml" 
       comments=false
