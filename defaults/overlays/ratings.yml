@@ -72,6 +72,96 @@ templates:
       - back_line_color
       - back_line_width
     conditionals:
+      rating1_image:
+        conditions:
+          - rating1: [tmdb, mdb_tmdb]
+            value: tmdb
+          - rating1: [imdb, mdb_imdb]
+            value: imdb
+          - rating1: [omdb]
+            value: omdb
+          - rating1: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating1: [mdb_letterboxd]
+            value: letterboxd
+          - rating1: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating1: [mdb_tomatoesaudience]
+            value: rt_popcorn
+          - rating1: [mdb_tomatoes]
+            value: rt_tomato
+          - rating1: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating1: [mal, mdb_myanimelist]
+            value: mal
+          - rating1: [mdb, mdb_average]
+            value: mdb
+          - rating1: [user]
+            value: star
+          - rating1: [critic]
+            value: critic
+          - rating1: [audience]
+            value: audience
+      rating2_image:
+        conditions:
+          - rating2: [tmdb, mdb_tmdb]
+            value: tmdb
+          - rating2: [imdb, mdb_imdb]
+            value: imdb
+          - rating2: [omdb]
+            value: omdb
+          - rating2: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating2: [mdb_letterboxd]
+            value: letterboxd
+          - rating2: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating2: [mdb_tomatoesaudience]
+            value: rt_popcorn
+          - rating2: [mdb_tomatoes]
+            value: rt_tomato
+          - rating2: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating2: [mal, mdb_myanimelist]
+            value: mal
+          - rating2: [mdb, mdb_average]
+            value: mdb
+          - rating2: [user]
+            value: star
+          - rating2: [critic]
+            value: critic
+          - rating2: [audience]
+            value: audience
+      rating3_image:
+        conditions:
+          - rating3: [tmdb, mdb_tmdb]
+            value: tmdb
+          - rating3: [imdb, mdb_imdb]
+            value: imdb
+          - rating3: [omdb]
+            value: omdb
+          - rating3: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating3: [mdb_letterboxd]
+            value: letterboxd
+          - rating3: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating3: [mdb_tomatoesaudience]
+            value: rt_popcorn
+          - rating3: [mdb_tomatoes]
+            value: rt_tomato
+          - rating3: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating3: [mal, mdb_myanimelist]
+            value: mal
+          - rating3: [mdb, mdb_average]
+            value: mdb
+          - rating3: [user]
+            value: star
+          - rating3: [critic]
+            value: critic
+          - rating3: [audience]
+            value: audience
       mdblist_top:
         conditions:
           - image_level: Top
@@ -128,6 +218,8 @@ templates:
             value: AniDB
           - rating<<rating_num>>_image: imdb
             value: IMDb
+          - rating<<rating_num>>_image: omdb
+            value: OMDb
           - rating<<rating_num>>_image: letterboxd
             value: Letterboxd
           - rating<<rating_num>>_image: mdb
@@ -146,6 +238,10 @@ templates:
             value: MAL
           - rating<<rating_num>>_image: star
             value: Star
+          - rating<<rating_num>>_image: critic
+            value: Critic-
+          - rating<<rating_num>>_image: audience
+            value: Audience
       rating<<rating_num>>_horizontal_align:
         default: left
         conditions:
@@ -425,15 +521,15 @@ templates:
             value: <<maximum_rating>>
       gsuffix:
         conditions:
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             image_level: [Fresh, Rotten]
             value: gte
       lsuffix:
         conditions:
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             image_level: Fresh
             value: lte
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             image_level: Rotten
             value: lt
       rating<<rating_num>>_default:
