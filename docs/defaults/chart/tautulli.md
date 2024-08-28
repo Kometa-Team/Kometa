@@ -8,6 +8,7 @@ The `tautulli` Default Collection File is used to create collections based on Ta
 
 Supported Library Types: Movie, Show
 
+
 Requirements: [Tautulli Authentication](../../config/tautulli.md)
 
 ## Collections Section 020

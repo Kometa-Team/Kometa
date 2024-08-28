@@ -51,7 +51,7 @@ Each showcased photo has been confirmed to be fully functional with Kometa v1.19
 
     Custom fonts have been used for the ratings which can be sourced in [bullmoose20's repository](https://github.com/Kometa-Team/Community-Configs/tree/master/bullmoose20) within `fonts.zip`
 
-    A [Library Operation](../config/operations.md#mass--rating-update) is used to place the IMDb rating into the user rating slot, as can be seen in the code example.
+    A [Library Operation](../config/operations.md#mass-star-rating-update) is used to place the IMDb rating into the user rating slot, as can be seen in the code example.
 
     **Click the image to enlarge it**
 
@@ -103,7 +103,7 @@ Each showcased photo has been confirmed to be fully functional with Kometa v1.19
 
     This example uses two Kometa Default Overlay files: [Ratings](../defaults/overlays/ratings.md) and [Runtimes](../defaults/overlays/runtimes.md).
 
-    Ratings are set to show the TMDb, Trakt and IMDb ratings, which have been set using [Library Operations](../config/operations.md#mass--rating-update)
+    Ratings are set to show the TMDb, Trakt and IMDb ratings, which have been set using [Library Operations](../config/operations.md#mass-star-rating-update)
 
     The runtimes overlay is modified to show no text, but to instead produce the black bar which the ratigns sit on top of.
 

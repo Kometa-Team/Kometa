@@ -145,7 +145,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="data" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     data: {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -163,7 +169,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `emoji_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -182,14 +194,20 @@ If you want to customize these values, use the methods described above.
     
         Pass `schedule_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
       preserve-includer-indent=true
       dedent=true
       start="# check2"
-      end="# check3"
+      end="# check4"
     %}
     ```
 
@@ -201,7 +219,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `imdb_search_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -220,7 +244,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_collection_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -239,7 +269,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_movie_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -258,7 +294,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `mdblist_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -277,7 +319,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `trakt_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false

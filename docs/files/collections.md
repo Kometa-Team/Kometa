@@ -58,8 +58,8 @@ Collection Files can utilize the following top-level attributes
 | Attribute                                               | Description                                                                                                               |
 |:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple collections                                           |
-| [`external_templates`](templates.md#external-templates) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
-| [`collections`](#collection-operations--attributes)     | contains definitions of collections you wish to add to one or more libraries                                              |
+| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
+| [`collections`](#collection-operations-attributes)     | contains definitions of collections you wish to add to one or more libraries                                              |
 | [`dynamic_collections`](#dynamic-collections)           | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the File to run, else you will receive 
