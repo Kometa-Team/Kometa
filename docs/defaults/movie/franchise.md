@@ -118,7 +118,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -138,7 +138,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="title-override" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -162,7 +162,7 @@ If you want to customize these values, use the methods described above.
 
         Pass `movie_<<key>>` to the file as template variables to change this value per collection. 
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -187,7 +187,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `name_mapping_<<key>>` to the file as template variables to change this value per collection. 
     
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################

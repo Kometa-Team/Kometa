@@ -137,7 +137,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################

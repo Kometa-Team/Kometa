@@ -145,7 +145,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="data" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -169,7 +169,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `emoji_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -194,7 +194,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `schedule_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -219,7 +219,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `imdb_search_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -244,7 +244,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_collection_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -269,7 +269,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_movie_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -294,7 +294,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `mdblist_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -319,7 +319,7 @@ If you want to customize these values, use the methods described above.
     
         Pass `trakt_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################

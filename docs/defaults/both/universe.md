@@ -131,7 +131,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="data" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -151,7 +151,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="trakt-url" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
@@ -172,7 +172,7 @@ If you want to customize these values, use the methods described above.
 
     <div id="mdblist-url" />
 
-    ```{ .no-copy }
+    ```{ .dtd .no-copy }
     ###############################################################################
     ################################## IMPORTANT ##################################
     #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
