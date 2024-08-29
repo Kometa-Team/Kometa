@@ -9,6 +9,14 @@ third-party website, see recommendations below for more info.
 **Please read [Kometa Ratings Explained](../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with 
 ratings.**
 
+!!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.0.3"
+
+    As part of an overhaul of the Ratings default file introduced in 2.0.3, some changes have been made that makes life easier for the user:
+
+    Kometa will automatically fetch the live rating from the selecte source (TMDb, IMDb, Trakt via MDBList, etc.) during the Overlays run. This means that **users no longer have to run Mass Rating Update operations to update the Plex ratings**. In effect, this detaches Plex's ratings system from the Ratings overlays.
+
+    In addition, Kometa will automatically select the best image to use based on the selected rating source that you have chosen. For example, if you define `rating1: imdb` then Kometa will automatically make the image for that rating `imdb`. **You no longer have to specify `ratingX_image` unless you want to override Kometa's image selection.**
+
 ![](images/ratings_overlay.png)
 
 ## Requirements & Recommendations
@@ -16,10 +24,6 @@ ratings.**
 Supported Overlay Level: Movie, Show, Episode
 
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
-
-Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass-rating-update) and the
-[Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode-rating-update) to update Plex 
-to the Ratings you want on the Overlay.
 
 ## Config
 
@@ -30,16 +34,9 @@ The below YAML in your config.yml will create the overlays:
     overlay_files:
       - default: ratings
         template_variables:
-          rating1: critic
-          rating2: audience
-          rating3: user
-          rating1_image: imdb
-          rating2_image: rt_popcorn
-          rating3_image: tmdb
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
+          rating1: imdb
+          rating2: tmdb
+          rating3: mdb_trakt
   TV Shows:
     overlay_files:
       - default: ratings
@@ -47,22 +44,12 @@ The below YAML in your config.yml will create the overlays:
           rating1: critic
           rating2: audience
           rating3: user
-          rating1_image: imdb
-          rating2_image: rt_popcorn
-          rating3_image: tmdb
       - default: ratings
         template_variables:
           builder_level: episode
           rating1: critic
           rating2: audience
-          rating1_image: imdb
-          rating2_image: tmdb
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
-      mass_episode_critic_rating_update: imdb
-      mass_episode_audience_rating_update: tmdb
+          rating3: tmdb
 ```
 
 ## Template Variables
@@ -98,7 +85,7 @@ work. Any value not specified will use its default value if it has one if not it
         
     === "File-Specific Template Variables"
 
-        These can be prependd with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating 
+        These can be prepend with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating 
         individually.
 
         ???+ warning
@@ -108,16 +95,16 @@ work. Any value not specified will use its default value if it has one if not it
 
         | Variable                 | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
         |:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `rating1`                | **Description:** Choose the rating to display in rating1.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-        | `rating1_image`          | **Description:** Choose the rating image to display in rating1.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating1`                | **Description:** Choose the rating to display in rating1.<br>**Values:** `critic`, `audience`, `user`, `tmdb`, `imdb`, `trakt_user`, `omdb`, `mdb`, `mdb_average`, `mdb_imdb`, `mdb_metacritic`, `mdb_metacriticuser`, `mdb_trakt`, `mdb_tomatoes`, `mdb_tomatoesaudience`, `mdb_tmdb`, `mdb_letterboxd`, `mdb_myanimelist`, `anidb`, `anidb_average`, `anidb_score`, `mal`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating1_image`          | **Description:** Choose the rating image to display in rating1.<br>**Values:** `critic`, `audience, `star`, `anidb`, `imdb`, `omdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
         | `rating1_style`          | **Description:** Choose the rating number style for rating1.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
         | `rating1_extra`          | **Description:** Extra text after rating1.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-        | `rating2`                | **Description:** Choose the rating to display in rating2.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-        | `rating2_image`          | **Description:** Choose the rating image to display in rating2.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating2`                | **Description:** Choose the rating to display in rating2.<br>**Values:** `critic`, `audience`, `user`, `tmdb`, `imdb`, `trakt_user`, `omdb`, `mdb`, `mdb_average`, `mdb_imdb`, `mdb_metacritic`, `mdb_metacriticuser`, `mdb_trakt`, `mdb_tomatoes`, `mdb_tomatoesaudience`, `mdb_tmdb`, `mdb_letterboxd`, `mdb_myanimelist`, `anidb`, `anidb_average`, `anidb_score`, `mal`                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+        | `rating2_image`          | **Description:** Choose the rating image to display in rating2.<br>**Values:** `critic`, `audience, `star`, `anidb`, `imdb`, `omdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
         | `rating2_style`          | **Description:** Choose the rating number style for rating2.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
         | `rating2_extra`          | **Description:** Extra text after rating2.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-        | `rating3`                | **Description:** Choose the rating to display in rating3.<br>**Values:** `critic`, `audience`, or `user`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-        | `rating3_image`          | **Description:** Choose the rating image to display in rating3.<br>**Values:** `anidb`, `imdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `rating3`                | **Description:** Choose the rating to display in rating3.<br>**Values:** `critic`, `audience`, `user`, `tmdb`, `imdb`, `trakt_user`, `omdb`, `mdb`, `mdb_average`, `mdb_imdb`, `mdb_metacritic`, `mdb_metacriticuser`, `mdb_trakt`, `mdb_tomatoes`, `mdb_tomatoesaudience`, `mdb_tmdb`, `mdb_letterboxd`, `mdb_myanimelist`, `anidb`, `anidb_average`, `anidb_score`, `mal`                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+        | `rating3_image`          | **Description:** Choose the rating image to display in rating3.<br>**Values:** `critic`, `audience, `star`, `anidb`, `imdb`, `omdb`, `letterboxd`, `tmdb`, `metacritic`, `rt_popcorn`, `rt_tomato`, `trakt`, `mal`, `mdb`, or `star`                                                                                                                                                                                                                                                                                                                                                                                 |
         | `rating3_style`          | **Description:** Choose the rating number style for rating3.<br>**Values:** <table class="clearTable"><tr><td>Ten Scale</td><td><code>""</code></td><td><code>8.7</code>, <code>9.0</code></td></tr><tr><td>Ten Scale removing <code>.0</code>  </td><td><code>"#"</code></td><td><code>8.7</code>, <code>9</code></td></tr><tr><td>Hundred Scale</td><td><code>"%"</code></td><td><code>87</code>, <code>90</code></td></tr><tr><td>Five Scale</td><td><code>"/"</code></td><td><code>8.6</code> rating in plex will show as <code>4.3</code> on the overlay</td></tr></table> |
         | `rating3_extra`          | **Description:** Extra text after rating3.<br>**Default:** `%` for `rt_popcorn`, `rt_tomato`, `tmdb`. <br>**Values:** Any Value                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
         | `horizontal_position`    | **Description:** Choose the horizontal position for the rating group.<br>**Default:** `left`<br>**Values:** `left`, `right`, or `center`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -168,42 +155,32 @@ work. Any value not specified will use its default value if it has one if not it
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: critic
-              rating1_image: imdb
+              rating1: imdb
               rating1_font: config/metadata/fonts/Impact.ttf
               rating1_font_size: 70
 
-              rating2: audience
-              rating2_image: rt_popcorn
+              rating2: rt_popcorn
               rating2_font: config/metadata/fonts/Adlib.ttf
               rating2_font_size: 63
 
-              rating3: user
-              rating3_image: tmdb
+              rating3: tmdb
               rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
               rating3_font_size: 70
 
               horizontal_position: right
-        operations:
-          mass_critic_rating_update: imdb
-          mass_audience_rating_update: mdb_tomatoesaudience
-          mass_user_rating_update: tmdb
       TV Shows:
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: critic
-              rating1_image: imdb
+              rating1: imdb
               rating1_font: config/metadata/fonts/Impact.ttf
               rating1_font_size: 70
 
-              rating2: audience
-              rating2_image: rt_popcorn
+              rating2: rt_popcorn
               rating2_font: config/metadata/fonts/Adlib.ttf
               rating2_font_size: 63
 
-              rating3: user
-              rating3_image: tmdb
+              rating3: tmdb
               rating3_font: config/metadata/fonts/Avenir_95_Black.ttf
               rating3_font_size: 70
 
@@ -213,20 +190,12 @@ work. Any value not specified will use its default value if it has one if not it
               builder_level: episode
               
               rating1: critic
-              rating1_image: imdb
               rating1_font: config/metadata/fonts/Impact.ttf
               rating1_font_size: 70
 
               rating2: audience
-              rating2_image: tmdb
               rating2_font: config/metadata/fonts/Avenir_95_Black.ttf
               rating2_font_size: 70
 
               horizontal_position: right
-        operations:
-          mass_critic_rating_update: imdb
-          mass_audience_rating_update: mdb_tomatoesaudience
-          mass_user_rating_update: tmdb
-          mass_episode_critic_rating_update: imdb
-          mass_episode_audience_rating_update: tmdb
     ```
