@@ -13,7 +13,7 @@ ratings.**
 
     As part of an overhaul of the Ratings default file introduced in 2.0.3, some changes have been made that makes life easier for the user:
 
-    Kometa will automatically fetch the live rating from the selecte source (TMDb, IMDb, Trakt via MDBList, etc.) during the Overlays run. This means that **users no longer have to run Mass Rating Update operations to update the Plex ratings**. In effect, this detaches Plex's ratings system from the Ratings overlays.
+    Kometa will automatically fetch the live rating from the selected source (TMDb, IMDb, Trakt via MDBList, etc.) during the Overlays run. This means that **users no longer have to run Mass Rating Update operations to update the Plex ratings**. In effect, this detaches Plex's ratings system from the Ratings overlays.
 
     In addition, Kometa will automatically select the best image to use based on the selected rating source that you have chosen. For example, if you define `rating1: imdb` then Kometa will automatically make the image for that rating `imdb`. **You no longer have to specify `ratingX_image` unless you want to override Kometa's default image selection.**
 
