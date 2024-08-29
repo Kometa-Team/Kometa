@@ -82,7 +82,7 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0], ep_first_order=True)), 1):
                 item_title = self.library.get_item_sort_title(item, atr="title")
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
