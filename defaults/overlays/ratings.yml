@@ -162,6 +162,10 @@ templates:
             value: critic
           - rating3: [audience]
             value: audience
+      plex_all:
+        conditions:
+          - rating<<rating_num>>: [audience, critic, user]
+            value: <<plex_all>>
       mdblist_top:
         conditions:
           - image_level: Top
@@ -239,7 +243,7 @@ templates:
           - rating<<rating_num>>_image: star
             value: Star
           - rating<<rating_num>>_image: critic
-            value: Critic-
+            value: Critic
           - rating<<rating_num>>_image: audience
             value: Audience
       rating<<rating_num>>_horizontal_align:
@@ -514,22 +518,26 @@ templates:
         conditions:
           - image_level: Fresh
             value: <<fresh_rating>>
+          - rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+            value: <<gte>>
       lte:
         default: <<fresh_rating>>
         conditions:
           - image_level: Fresh
             value: <<maximum_rating>>
+          - rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+            value: <<lte>>
       gsuffix:
         conditions:
-          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: [Fresh, Rotten]
             value: gte
       lsuffix:
         conditions:
-          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: Fresh
             value: lte
-          - rating<<rating_num>>: [audience, critic, user, tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: Rotten
             value: lt
       rating<<rating_num>>_default:
@@ -543,6 +551,7 @@ templates:
             rating<<rating_num>>_git.exists: false
             rating<<rating_num>>_repo.exists: false
             value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
+    plex_all: <<plex_all>
     plex_search:
       all:
         <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
