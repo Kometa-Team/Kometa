@@ -211,6 +211,7 @@ OSX
 ozzy
 Palme
 pathing
+pathvalidate
 PCM
 PersistentVolumeClaim
 PGID
