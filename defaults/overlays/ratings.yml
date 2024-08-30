@@ -42,6 +42,7 @@ templates:
       minimum_rating: 0.0
       fresh_rating: 6.0
       maximum_rating: 10.0
+      plex_all: false
       side: left
       horizontal_position: left
       vertical_position: center
@@ -162,10 +163,6 @@ templates:
             value: critic
           - rating3: [audience]
             value: audience
-      plex_all:
-        conditions:
-          - rating<<rating_num>>: [audience, critic, user]
-            value: <<plex_all>>
       mdblist_top:
         conditions:
           - image_level: Top
@@ -182,6 +179,10 @@ templates:
           - image_level: Top
             rating<<rating_num>>_image: imdb
             value: top_<<library_type>>s
+      plex_all:
+        conditions:
+          - image_level: [Rotten, Fresh]
+            value: true
       run_this:
         default: true
         conditions:
@@ -551,13 +552,13 @@ templates:
             rating<<rating_num>>_git.exists: false
             rating<<rating_num>>_repo.exists: false
             value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
-    plex_all: <<plex_all>
     plex_search:
       all:
         <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
         <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
+    plex_all: <<plex_all>>
     builder_level: <<builder_level>>
     run_definition: <<run_this>>
     ignore_blank_results: true
