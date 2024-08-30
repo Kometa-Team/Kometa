@@ -187,7 +187,7 @@ templates:
         default: true
         conditions:
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star]
+            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star, critic, audience]
             value: false
           - image_level: Top
             builder_level: episode
