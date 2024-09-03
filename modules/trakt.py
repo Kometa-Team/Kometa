@@ -2,7 +2,7 @@ import time, webbrowser
 from modules import util
 from modules.request import urlparse
 from modules.util import Failed, TimeoutExpired
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 
 logger = util.logger
 
@@ -198,7 +198,7 @@ class Trakt:
             return True
         return False
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _request(self, url, params=None, json_data=None):
         headers = {
             "Content-Type": "application/json",

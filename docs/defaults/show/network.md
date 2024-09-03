@@ -2,6 +2,11 @@
 
 The `network` Default Collection File is used to dynamically create collections based on the networks available in your library.
 
+???+ danger "Important"
+
+    This default requires that the library be set to use the "Plex TV Series" scanner and the "Plex Series" agent.
+
+    The error in this case will be `Plex Error: plex_search attribute: network not supported`.
 
 ## Requirements & Recommendations
 
@@ -123,7 +128,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="include" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     include: {%    
       include-markdown "../../../defaults/show/network.yml" 
       comments=false
@@ -137,7 +148,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     addons: {%    
       include-markdown "../../../defaults/show/network.yml" 
       comments=false

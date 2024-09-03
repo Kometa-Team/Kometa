@@ -4,8 +4,10 @@ from modules.logs import MyLogger
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
-from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.video import Season, Episode, Movie
+from requests.exceptions import HTTPError
+from tenacity import retry_if_exception
+from tenacity.wait import wait_base
 
 try:
     import msvcrt
@@ -43,11 +45,32 @@ class NotScheduled(Exception):
 class NotScheduledRange(NotScheduled):
     pass
 
-def retry_if_not_failed(exception):
-    return not isinstance(exception, Failed)
 
-def retry_if_not_plex(exception):
-    return not isinstance(exception, (BadRequest, NotFound, Unauthorized, Failed))
+class retry_if_http_429_error(retry_if_exception):
+
+    def __init__(self):
+        def is_http_429_error(exception: BaseException) -> bool:
+            return isinstance(exception, HTTPError) and exception.response.status_code == 429
+
+        super().__init__(predicate=is_http_429_error)
+
+
+class wait_for_retry_after_header(wait_base):
+    def __init__(self, fallback):
+        self.fallback = fallback
+
+    def __call__(self, retry_state):
+        exc = retry_state.outcome.exception()
+        if isinstance(exc, HTTPError):
+            retry_after = exc.response.headers.get("Retry-After", None)
+            try:
+                if retry_after is not None:
+                    return int(retry_after)
+            except (TypeError, ValueError):
+                pass
+
+        return self.fallback(retry_state)
+
 
 days_alias = {
     "monday": 0, "mon": 0, "m": 0,

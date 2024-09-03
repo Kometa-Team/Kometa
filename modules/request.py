@@ -4,7 +4,7 @@ from modules import util
 from modules.poster import ImageData
 from modules.util import Failed
 from requests.exceptions import ConnectionError
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_fixed
 from urllib import parse
 
 logger = util.logger
@@ -44,7 +44,13 @@ class Version:
         self.full = version_string.replace("develop", "build")
         version_parts = self.full.split("-build")
         self.main = version_parts[0]
-        self.build = int(version_parts[1]) if len(version_parts) > 1 else 0
+        self.build = 0
+        self.part = 0
+        if len(version_parts) > 1:
+            sub_parts = str(version_parts[1]).split(".")
+            self.build = int(sub_parts[0])
+            if len(sub_parts) > 1:
+                self.parts = int(sub_parts[1])
 
     def __bool__(self):
         return self.full != "Unknown"
@@ -86,8 +92,8 @@ class Requests:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def download_image(self, title, image_url, download_directory, is_poster=True, filename=None):
-        response = self.get_image(image_url)
+    def download_image(self, title, image_url, download_directory, session=None, is_poster=True, filename=None):
+        response = self.get_image(image_url, session=session)
         new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
         if response.headers["Content-Type"] == "image/jpeg":
             new_image += ".jpg"
@@ -108,8 +114,8 @@ class Requests:
             raise Failed(f"URL Error: No file found at {url}")
         return YAML(input_data=response.content, check_empty=check_empty)
 
-    def get_image(self, url):
-        response = self.get(url, header=True)
+    def get_image(self, url, session=None):
+        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None))
         if response.status_code == 404:
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
@@ -143,7 +149,7 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
         return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params)
 
@@ -161,7 +167,7 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
         return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language))
 

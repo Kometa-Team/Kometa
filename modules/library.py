@@ -11,6 +11,7 @@ logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
+        self.session = None
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
@@ -298,7 +299,7 @@ class Library(ABC):
                             return images["asset_directory"]
                         else:
                             try:
-                                return self.config.Requests.download_image(title, images[attr], item_dir, is_poster=is_poster, filename=image_name)
+                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, is_poster=is_poster, filename=image_name)
                             except Failed as e:
                                 logger.error(e)
                     if attr in ["asset_directory", f"pmm_{image_type}"]:
@@ -322,7 +323,7 @@ class Library(ABC):
         pass
 
     def check_image_for_overlay(self, image_url, image_path, remove=False):
-        image_path = self.config.Requests.download_image("", image_url, image_path).location
+        image_path = self.config.Requests.download_image("", image_url, image_path, session=self.session).location
         while util.is_locked(image_path):
             time.sleep(1)
         with Image.open(image_path) as image:

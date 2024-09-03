@@ -31,12 +31,9 @@ collections.
 **Chart Separator and Award Separator each have their own file, while the other Separators are part of their respective 
 files.**
 
-<details>
-  <summary>Click to expand to see an example of Separators.</summary>
+??? tip "Click to expand to see an example of Separators."
 
-   ![](images/separators.jpg)
-
-</details>
+    ![](images/separators.jpg)
 
 ### Library On/Off
 

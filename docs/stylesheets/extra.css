@@ -35,8 +35,6 @@ table tr td code {
 }
 
 .md-banner {
-    background-color: #252525;
-    color: var(--md-footer-fg-color);
     overflow: auto;
     text-align: center;
 }
@@ -432,3 +430,5 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
 .md-typeset .card-link {
     color: var(--md-default-fg-color--light);
 }
+
+.highlight.no-copy .md-clipboard { display: none; }

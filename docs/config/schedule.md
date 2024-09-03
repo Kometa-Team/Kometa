@@ -11,7 +11,7 @@ These schedules do not trigger Kometa to run; they control what Kometa will do i
 time. `weekly(sunday)`, for example, does not mean "run Kometa on Sunday to do this thing"; it means "If Kometa is running, 
 and it's Sunday, do this thing".
 
-If you want to control when Kometa itself runs, like if you want Kometa to only run on Tuesdays and Thursdays, see [this page](../kometa/scheduling.md).
+If you want to control when Kometa itself runs, like if you want Kometa to only run on Tuesdays and Thursdays, see [this page](../kometa/guides/scheduling.md).
 
 The scheduling options are:
 
@@ -20,8 +20,8 @@ The scheduling options are:
 | Hourly       | Update only when the script is run in that hour or hour range                                                       | hourly(Hour of Day)<br>hourly(Start Hour-End Hour) | `hourly(17)`<br>`hourly(17-04)`                                      |
 | Daily        | Update once a day                                                                                                   | daily                                              | `daily`                                                              |
 | Weekly       | Update once a week on the specified days (For multiple days, use a bar-separated (<code>&#124;</code>) list)        | weekly(Days of Week)                               | `weekly(sunday)`<br><code>weekly(sunday&#124;tuesday)</code>         |
-| Monthly      | Update once a month on the specified day                                                                            | monthly(Day of Month)                              | `monthly(1)`                                                         |
-| Yearly       | Update once a year on the specified day                                                                             | yearly(MM/DD)                                      | `yearly(01/30)`                                                      |
+| Monthly      | Update once a month on the specified day (multiple days not supported as a parameter)                               | monthly(Day of Month)                              | `monthly(1)`                                                         |
+| Yearly       | Update once a year on the specified day (multiple days not supported as a parameter)                                | yearly(MM/DD)                                      | `yearly(01/30)`                                                      |
 | Range        | Updates whenever the date is within the range (For multiple ranges, use a bar-separated (<code>&#124;</code>) list) | range(MM/DD-MM/DD)                                 | `range(12/01-12/31)`<br><code>range(8/01-8/15&#124;9/01-9/15)</code> |
 | Never        | Never updates                                                                                                       | never                                              | `never`                                                              |
 | Non Existing | Updates if it doesn't exist                                                                                         | non_existing                                       | `non_existing`                                                       |
@@ -36,7 +36,7 @@ The scheduling options are:
 
 ??? blank "Scheduling a Library<a class="headerlink" href="#schedule-library" title="Permanent link">¶</a>"
     
-    <div id="schedule-library" />Uses the `schedule` [Library Attribute](libraries.md#Attributes) to set when a library will be run.
+    <div id="schedule-library" />Uses the `schedule` [Library Attribute](libraries.md#attributes) to set when a library will be run.
 
     Other schedule rules for files, overlays, collections, and any other attribute that can be scheduled must also be 
     met.
@@ -61,7 +61,7 @@ The scheduling options are:
 
 ??? blank "Scheduling Collection, Playlist, and Metadata Files<a class="headerlink" href="#schedule-files" title="Permanent link">¶</a>"
     
-    <div id="schedule-files" />Uses the `schedule` [Block Attribute](files.md#Other-Block-Attributes) to set when a file
+    <div id="schedule-files" />Uses the `schedule` [Block Attribute](files.md#other-block-attributes) to set when a file
     will be run.
 
     Other schedule rules for collections and any other attribute that can be scheduled must also be met.

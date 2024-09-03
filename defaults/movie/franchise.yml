@@ -95,6 +95,8 @@ dynamic_collections:
     template_variables:
       # check1
       movie:
+        521226:     # A Quiet Place
+          - 762441    # A Quiet Place: Day One
         105995:     # Anaconda
           - 336560    # Lake Placid vs. Anaconda
         176097:     # Barbershop

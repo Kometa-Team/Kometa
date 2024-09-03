@@ -58,7 +58,7 @@ work. Any value not specified will use its default value if it has one if not it
         | `collection_mode`                        | **Description:** Controls the collection mode of all collections in this file.<br>**Values:**<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>                                                                                                                                                           |
         | `minimum_items`                          | **Description:** Controls the minimum items that the collection must have to be created.<br>**Default:** `2`<br>**Values:** Any number                                                                                                                                                                                                                                                                                                                                                                                                    |
         | `movie_<<key>>`<sup>1</sup>              | **Description:** Adds the TMDb Movie IDs given to the specified key's collection. Overrides the [default movie](#movie) for that collection if used.<br>**Values:** List of TMDb Movie IDs                                                                                                                                                                                                                                                                                                                                                |
-        | `name_mapping_<<key>>`<sup>1</sup>       | **Description:** Sets the name mapping value for using assets of the specified key's collection.Overrides the [default name_mapping](#name_mapping) for that collection if used.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                |
+        | `name_mapping_<<key>>`<sup>1</sup>       | **Description:** Sets the name mapping value for using assets of the specified key's collection.Overrides the [default name_mapping](#name-mapping) for that collection if used.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                |
         | `sort_title`                             | **Description:** Sets the sort title for all collections. Use `<<collection_name>>` to use the collection name. **Example:** `"!02_<<collection_name>>"`<br>**Values:** Any String with `<<collection_name>>`                                                                                                                                                                                                                                                                                                                             |
         | `sort_title_<<key>>`<sup>1</sup>         | **Description:** Sets the sort title of the specified key's collection.<br>**Default:** `sort_title`<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                            |
         | `build_collection`                       | **Description:** Controls if you want the collection to actually be built. i.e. you may just want these movies sent to Radarr.<br>**Values:** `false` to not build the collection                                                                                                                                                                                                                                                                                                                                                         |
@@ -118,7 +118,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     addons: {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false
@@ -132,7 +138,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="title-override" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     title_override: {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false
@@ -150,7 +162,13 @@ If you want to customize these values, use the methods described above.
 
         Pass `movie_<<key>>` to the file as template variables to change this value per collection. 
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false
@@ -169,7 +187,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `name_mapping_<<key>>` to the file as template variables to change this value per collection. 
     
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/franchise.yml" 
       comments=false

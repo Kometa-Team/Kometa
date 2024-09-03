@@ -67,6 +67,7 @@ diiivoycolor
 DIR
 dir
 DiskStation
+DisneyToon
 dockerfile
 dockerfiles
 DockerHub
@@ -127,6 +128,7 @@ integrations
 ints
 io
 iteratively
+jd
 Jinja
 jkirkcaldy
 JohnFawkes
@@ -146,6 +148,7 @@ kuesel
 Launchd
 Letterboxd
 LGBTQ
+Limburgish
 linas
 Lingala
 linux
@@ -226,6 +229,7 @@ portainer
 Powershell
 pre
 prepend
+psutil
 PUID
 puid
 QNAP
@@ -258,6 +262,7 @@ Skywalker
 Sohjiro
 Sohjiro's
 sonarr
+ssl
 SSL
 StevenLu
 StevenLu's
@@ -329,6 +334,7 @@ Wizarding
 Wolof
 www
 xmark
+xmen
 XYZ
 yaml
 yml

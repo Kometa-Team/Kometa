@@ -19,7 +19,7 @@ rating_sources = [
     "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
 ]
 float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
-int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
+int_vars = ["runtime", "total_runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],

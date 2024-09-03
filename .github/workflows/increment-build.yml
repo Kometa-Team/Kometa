@@ -1,68 +1,15 @@
 name: Increment Build
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [nightly]
     types: [closed]
 
 jobs:
-  increment-build:
-    runs-on: ubuntu-latest
-    if: github.base_ref == 'nightly' && github.event.pull_request.merged
-    outputs:
-      version: ${{ steps.update-version.outputs.version }}
-      build-value: ${{ steps.update-version.outputs.build-value }}
-      commit-msg: ${{ steps.update-version.outputs.commit-msg }}
-      commit-hash: ${{ steps.update-version.outputs.commit-hash }}
-      commit-short: ${{ steps.update-version.outputs.commit-short }}
-    steps:
-
-      - name: Create App Token
-        uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_TOKEN }}
-
-      - name: Check Out Repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          ref: nightly
-          fetch-depth: 0
-
-      - name: Update VERSION File
-        id: update-version
-        run: |
-            value=$(cat VERSION)
-            old_msg=$(git log -1 HEAD --pretty=format:%s)
-            version="${value%-build*}"
-          
-            if [[ "$value" == *"-"* ]]; then
-                build_value="$((${value#*-build} + 1))"
-            else
-                build_value="1"
-            fi
-          
-            new_value="${version}-build${build_value}"
-            new_msg="[${build_value}] ${old_msg}"
-          
-            echo "version=${version}" >> $GITHUB_OUTPUT
-            echo "build-value=${build_value}" >> $GITHUB_OUTPUT
-            echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
-            echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-            echo "commit-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          
-            echo "$new_value" > "VERSION"
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git add VERSION
-            git commit -m "${new_msg}" --amend
-            git push origin nightly --force-with-lease
 
   verify-changes:
     runs-on: ubuntu-latest
-    needs: [ increment-build ]
+    if: github.base_ref == 'nightly' && github.event.pull_request.merged
     outputs:
       build: ${{ steps.list-changes.outputs.build }}
     steps:
@@ -88,6 +35,77 @@ jobs:
                     echo "$file will not trigger docker build"
                 fi
             done
+
+  increment-build:
+    runs-on: ubuntu-latest
+    needs: [ verify-changes ]
+    if: needs.verify-changes.outputs.build == 'true'
+    outputs:
+      version: ${{ steps.update-version.outputs.version }}
+      build-value: ${{ steps.update-version.outputs.build-value }}
+      commit-msg: ${{ steps.update-version.outputs.commit-msg }}
+      commit-hash: ${{ steps.update-version.outputs.commit-hash }}
+      commit-short: ${{ steps.update-version.outputs.commit-short }}
+      pr-tag: ${{ steps.update-version.outputs.pr-tag }}
+    steps:
+
+      - name: Create App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: nightly
+          fetch-depth: 0
+
+      - name: Update VERSION File
+        id: update-version
+        run: |
+            branch_name=${{ github.event.pull_request.head.ref }}
+            repo_name=${{ github.event.pull_request.head.repo.full_name }}
+            base_name="${repo_name%/*}"
+            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+                pr_tag="${base_name}"
+            else
+                pr_tag="${branch_name}"
+            fi
+            echo "pr-tag=${pr_tag}" >> $GITHUB_OUTPUT
+            
+            value=$(cat VERSION)
+            old_msg=$(git log -1 HEAD --pretty=format:%s)
+            version="${value%-build*}"
+          
+            if [[ "$value" == *"-"* ]]; then
+                value2="${value#*-build}"
+                if [[ "$value2" == *"."* ]]; then
+                    build_value="$((${value2%.*} + 1))"
+                else
+                    build_value="$((${value2} + 1))"
+                fi
+            else
+                build_value="1"
+            fi
+          
+            new_value="${version}-build${build_value}"
+            new_msg="[${build_value}] ${old_msg}"
+          
+            echo "version=${version}" >> $GITHUB_OUTPUT
+            echo "build-value=${build_value}" >> $GITHUB_OUTPUT
+            echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
+            echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+            echo "commit-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          
+            echo "$new_value" > "VERSION"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add VERSION
+            git commit -m "${new_msg}" --amend
+            git push origin nightly --force-with-lease
 
   docker-build-nightly:
     runs-on: ubuntu-latest
@@ -117,7 +135,7 @@ jobs:
 
       - name: Build and Push
         id: docker_build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./Dockerfile
@@ -175,3 +193,16 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.REPO_NAME }} Nightly Release
           author_icon_url: ${{ vars.RELEASE_IMAGE }}
+
+  cleanup-tags:
+    runs-on: ubuntu-latest
+    needs: [ increment-build, verify-changes, docker-build-nightly, commit-notification ]
+    if: ${{ success() }}
+    steps:
+      - name: remove tag
+        run: |
+            HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKER_HUB_USERNAME }}\", \"password\": \"${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}\"}" https://hub.docker.com/v2/users/login/ | jq -r .token)
+            curl -i -X DELETE \
+            -H "Accept: application/json" \
+            -H "Authorization: JWT $HUB_TOKEN" \
+            https://hub.docker.com/v2/repositories/kometateam/kometa/tags/${{ needs.increment-build.outputs.pr-tag }}/

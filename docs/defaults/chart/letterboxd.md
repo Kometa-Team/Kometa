@@ -66,6 +66,8 @@ work. Any value not specified will use its default value if it has one if not it
         | `sync_mode_<<key>>`<sup>1</sup>        | **Description:** Changes the Sync Mode of the specified key's collection.<br>**Default:** `sync_mode`<br>**Values:**<table class="clearTable"><tr><td>`sync`</td><td>Add and Remove Items based on Builders</td></tr><tr><td>`append`</td><td>Only Add Items based on Builders</td></tr></table>                                                                                                                                                                                                                                          |
         | `collection_order`                     | **Description:** Changes the Collection Order for all collections in a Defaults file.<br>**Default:** `custom`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../files/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table>      |
         | `collection_order_<<key>>`<sup>1</sup> | **Description:** Changes the Collection Order of the specified key's collection.<br>**Default:** `collection_order`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../files/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
+        | `cache_builders`                       | **Description:** Changes the Builder Cache for all collections in a Defaults file.<br>**Default:** `1`<br>**Values:** number 0 or greater                                                                                                                                                                                                                                                                                                                                                                                                 |
+        | `cache_builders_<<key>>`               | **Description:** Changes the Builder Cache of the specified key's collection.<br>**Default:** `1`<br>**Values:** number 0 or greater                                                                                                                                                                                                                                                                                                                                                                                                      |
 
         1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
         `<<key>>` with when calling.
@@ -94,6 +96,9 @@ work. Any value not specified will use its default value if it has one if not it
               visible_library_top_250: true #(4)!
               visible_home_top_250: true #(5)!
               visible_shared_top_250: true #(6)!
+              cache_builders: 7 #(7)!
+              cache_builders_1001_movies: 30 #(8)!
+              cache_builders_edgarwright: 30 #(9)!
     ```
 
     1.  Create the "IMDb Top 250 (Letterboxd)" collection
@@ -102,4 +107,6 @@ work. Any value not specified will use its default value if it has one if not it
     4.  Pin the "Letterboxd Top 250" collection to the Recommended tab of the library
     5.  Pin the "Letterboxd Top 250" collection to the home screen of the server owner
     6.  Pin the "Letterboxd Top 250" collection to the home screen of other users of the server
-
+    7.  Set the value for `cache_builders` for all collections (except those explicity defined with `cache_builders_<<key>>`) to 7 days
+    8.  Set the value for `cache_builders` for the "1,001 To See Before You Die" collection to 30 days
+    9.  Set the value for `cache_builders` for the "Edgar Wright's 1,000 Favorites" collection to 30 days

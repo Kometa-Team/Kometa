@@ -1,6 +1,6 @@
 import math, operator, os, re
 from datetime import datetime
-from modules import plex, ergast, util
+from modules import plex, ergast, util, letterboxd
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 from plexapi.exceptions import NotFound, BadRequest
@@ -13,7 +13,7 @@ ms_auto = [
     "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
     "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -33,6 +33,7 @@ default_templates = {
     "tmdb_collection": {"tmdb_collection_details": "<<value>>", "minimum_items": 2},
     "trakt_user_lists": {"trakt_list_details": "<<value>>"},
     "trakt_liked_lists": {"trakt_list_details": "<<value>>"},
+    "letterboxd_user_lists": {"letterboxd_list_details": "<<value>>"},
     "tmdb_popular_people": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
     "trakt_people_list": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
 }
@@ -1096,6 +1097,24 @@ class MetadataFile(DataFile):
                                     auto_list[k] = v
                         elif auto_type == "trakt_liked_lists":
                             _check_dict(self.config.Trakt.all_liked_lists())
+                        elif auto_type == "letterboxd_user_lists":
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
+                            if "data" in self.temp_vars:
+                                temp_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                                for k, v in temp_data.items():
+                                    dynamic_data[k] = v
+                            letter_methods = {am.lower(): am for am in dynamic_data}
+                            users = util.parse("Config", "username", dynamic_data, parent=f"{map_name} data", methods=letter_methods, datatype="strlist")
+                            sort = util.parse("Config", "sort_by", dynamic_data, parent=f"{map_name} data", methods=letter_methods, options=letterboxd.sort_options, default="updated")
+                            limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=letter_methods, datatype="int", minimum=0, default=0)
+                            final = {}
+                            for user in users:
+                                out = self.config.Letterboxd.get_user_lists(user, sort, self.language)
+                                if limit != 0:
+                                    out = out[:limit]
+                                for url, name in out:
+                                    final[url] = name
+                            _check_dict(final)
                         elif auto_type == "tmdb_popular_people":
                             if "data" in self.temp_vars:
                                 dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="int", minimum=1)
@@ -1982,12 +2001,13 @@ class MetadataFile(DataFile):
                                     episodes[f"{available.month}-{available.day}"] = episode
                             for episode_id, episode_dict in season_dict[season_methods["episodes"]].items():
                                 updated = False
+                                title_name = f"Episode: {episode_id} in Season: {season_id} of {mapping_name}"
                                 logger.info("")
-                                logger.info(f"Updating episode {episode_id} in {season_id} of {mapping_name}...")
+                                logger.info(f"Updating {title_name}...")
                                 if episode_id in episodes:
                                     episode = episodes[episode_id]
                                 else:
-                                    logger.error(f"{self.type_str} Error: Episode {episode_id} in Season {season_id} not found")
+                                    logger.error(f"{self.type_str} Error: {title_name} not found")
                                     continue
                                 episode_methods = {em.lower(): em for em in episode_dict}
                                 add_edit("title", episode, episode_dict, episode_methods)
@@ -2001,7 +2021,7 @@ class MetadataFile(DataFile):
                                 for tag_edit in ["director", "writer", "label"]:
                                     if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                                         updated = True
-                                finish_edit(episode, f"Episode: {episode_id} in Season: {season_id}")
+                                finish_edit(episode, title_name)
                                 episode_style_data = None
                                 if season_style_data and "episodes" in season_style_data and season_style_data["episodes"] and episode_id in season_style_data["episodes"]:
                                     episode_style_data = season_style_data["episodes"][episode_id]
@@ -2011,7 +2031,7 @@ class MetadataFile(DataFile):
                                                                      style_data=episode_style_data)
                                 if ups:
                                     updated = True
-                                logger.info(f"Episode {episode_id} in Season {season_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
+                                logger.info(f"{title_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
         if "episodes" in methods and update_episodes and self.library.is_show:
             if not meta[methods["episodes"]]:

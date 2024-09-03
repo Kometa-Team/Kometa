@@ -608,3 +608,19 @@ overlays:
   bambara:
     variables: {key: bm, text: BM, weight: 12, country: ml}
     template: [name: flags, name: standard]
+
+  afrikaans:
+    variables: {key: af, text: AF, weight: 13, country: za}
+    template: [name: flags, name: standard]
+
+  mongolian:
+    variables: {key: mn, text: MN, weight: 14, country: mn}
+    template: [name: flags, name: standard]
+
+  khmer:
+    variables: {key: km, text: KM, weight: 15, country: kh}
+    template: [name: flags, name: standard]
+
+  limburgish:
+    variables: {key: li, text: LI, weight: 16, country: be}
+    template: [name: flags, name: standard]

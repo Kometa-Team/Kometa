@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block announce %}
+<script>
+  const currentURL = window.location.href;
+
+  // Base announcement for Discord support
+  let announceText = 'For any questions and support, please reach out to us on <a href="https://kometa.wiki/en/latest/discord/">Discord</a>';
+
+  // Check if URL includes nightly or develop
+  if (currentURL.includes("en/nightly") || currentURL.includes("en/develop")) {
+
+    // Find the branch name ("nightly" or "develop")
+    let branchName = currentURL.includes("en/nightly") ? "NIGHTLY" : "DEVELOP";
+
+    // Create a new URL pointing to the "latest" version of the current page
+    let latestURL = currentURL.replace(/en\/(nightly|develop)\//, 'en/latest/');
+
+    // Update the announceText to include the custom link and branch name
+    announceText = `️⚠️ You are viewing the ${branchName} branch's wiki. <a href="${latestURL}">Click here to go to the main wiki.</a> ⚠️️`;
+  }
+
+  document.write(announceText);
+</script>
+{% endblock %}

@@ -17,7 +17,7 @@ Instead, it is recommended to set an automated scheduling service so that Kometa
 
 This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
 
-**You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like.  That level of scheduling is independent of when Kometa runs, and is discussed [here](../../config/schedule.md)**
+**You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like.  That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../config/schedule.md)**
 
 IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path to that directory on *your* system.
 
@@ -46,7 +46,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
     
     This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running, Kometa will not begin the run until the scheduled time.
     
-    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental.md#time-to-run)
+    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental.md#times)
 
 === "Windows Task Scheduler"
     
@@ -68,7 +68,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
     
     This is the recommended approach as it allows the user additional control over how and when Kometa processes.
     
-    If you don't specify a time, the script will run at 5AM each day.  You can change this with the [time-to-run](../environmental.md#time-to-run) runtime flag.
+    If you don't specify a time, the script will run at 5AM each day.  You can change this with the [time-to-run](../environmental.md#times) runtime flag.
 
     ??? abstract "Background Run Scheduled Task"
     

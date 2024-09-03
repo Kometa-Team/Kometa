@@ -6,33 +6,33 @@ search:
 
 ### Locating Log Files
 
-The kometa.log file can be found within the `logs` folder of your Kometa config folder [right next to `config.yml`].
+The meta.log file can be found within the `logs` folder of your Kometa config folder [right next to `config.yml`].
 
-`kometa.log` is the most recent run of Kometa, `kometa.log.1` is the previous run, `kometa.log.2` is the run before that, so on and so forth.
+`meta.log` is the most recent run of Kometa, `meta.log.1` is the previous run, `meta.log.2` is the run before that, so on and so forth.
 
-As new log files are created, the old ones get a numeric suffix added: `kometa.log.1`. **The most recent is always the one without a number at the end.**
+As new log files are created, the old ones get a numeric suffix added: `meta.log.1`. **The most recent is always the one without a number at the end.**
 
 ### Providing Log Files on Discord
 
-You can drag-and-drop your kometa.log file directly into [Discord](https://kometa.wiki/en/latest/discord/), you do not need to upload it to a third-party site unless it exceeds the 50mb size limit.
+You can drag-and-drop your meta.log file directly into [Discord](https://kometa.wiki/en/latest/discord/), you do not need to upload it to a third-party site unless it exceeds the 50mb size limit.
 
 Please DO NOT manually extract, copy and paste text from your log files directly into Discord as the formatting can be difficult to read and can often redact parts of the log file that are important for full context.
 
 ### Basic Log File Troubleshooting
 
-Wondering how to troubleshoot Kometa and how to read through the kometa.log?
+Wondering how to troubleshoot Kometa and how to read through the meta.log?
 
 **Using a text editor like [Visual Studio Code](https://code.visualstudio.com/) or [Sublime Text](https://www.sublimetext.com/) is recommended**
 
-In all cases, the first step is to open the [`kometa.log`](#locating-log-files) with your text editor and perform these steps:
+In all cases, the first step is to open the [`meta.log`](#locating-log-files) with your text editor and perform these steps:
 
-1. Check that you are running the latest [`version`](#checking-Kometa-version) of your branch. Your current version can be found in the `kometa.log` file either below the Kometa ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. Ensure you [`upgrade`](install/local.md#i-want-to-update-to-the-latest-version-of-kometa) to the latest version of Kometa.
-2. When scanning your kometa.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
-3. Scan your kometa.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
+1. Check that you are running the latest [`version`](#checking-kometa-version) of your branch. Your current version can be found in the `meta.log` file either below the Kometa ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. Ensure you [`upgrade`](install/local.md#i-want-to-update-to-the-latest-version-of-kometa) to the latest version of Kometa.
+2. When scanning your meta.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
+3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 
 ### Checking Kometa Version
 
-Checking the version: You will find that in your [`kometa.log`](#locating-log-files) around the 8th-10th line and will look something like this:
+Checking the version: You will find that in your [`meta.log`](#locating-log-files) around the 8th-10th line and will look something like this:
 
 ```
 |                                 |
@@ -86,8 +86,8 @@ This table details examples of the most commonly-seen `[ERROR]` events and what 
 | `ERROR` | `Trakt Error: No TVDb ID found for Nightfall (2022)`              | Online sources are missing information                                              | These sorts of errors indicate that the thing can't be cross-referenced between sites.</br>For example, at the time of that error, the Trakt record for "Nightfall (2022)" didn't contain a TVDb ID.</br>This could be because the record just hasn't been updated, or because "Nightfall (2022)" is not listed on TVDb.</br>The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.   |
 | `ERROR` | `MDBList Error: Not Found`                                        | Online sources are missing information                                              | These sorts of errors indicate that the thing can't be cross-referenced between sites. For example, at the time of that error, the MDBList record was trying to get a rating for a media item and could not find it.                                                                                                                                                                                                               |
 | `ERROR` | `Plex Error: actor: Mel B not found`                              | Actor not found and hence unable to create the collection                           | Report error in #kometa-help channel and see if there is a fix.                                                                                                                                                                                                                                                                                                                                                                    |
-| `ERROR` | `Input Failed`                                                    | A token or password is no longer valid for an online source of information          | Review the kometa.log for more information                                                                                                                                                                                                                                                                                                                                                                                         |
-| `ERROR` | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                           | Review the kometa.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                            |
+| `ERROR` | `Input Failed`                                                    | A token or password is no longer valid for an online source of information          | Review the meta.log for more information                                                                                                                                                                                                                                                                                                                                                                                         |
+| `ERROR` | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                           | Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                            |
 
 #### WARNING
 
