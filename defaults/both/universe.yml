@@ -26,6 +26,7 @@ templates:
             mdblist_list_<<key>>.exists: false
             value: <<trakt_url>>
     default:
+      minimum_items_<<key>>: <<minimum_items>>
       mdblist_list_<<key>>: <<mdblist_list>>
       trakt_list_<<key>>: <<trakt_list>>
       name_mapping_<<key>>: <<name_mapping>>
@@ -36,7 +37,8 @@ templates:
       - imdb_list_<<key>>
       - mdblist_url
       - trakt_url
-    minimum_items: <<minimum_items>>
+      - minimum_items
+    minimum_items: <<minimum_items_<<key>>>>
     name_mapping: <<name_mapping_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>

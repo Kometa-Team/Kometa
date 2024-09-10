@@ -18,6 +18,7 @@ Added new studios : Disney Television Animation, DisneyToon Studios, Dynamic Pla
 # Defaults
 Fixed #2150; change xmen list to a new one
 Added `A Quiet Place: Day One` to the `A Quiet Place` collection in the `franchise` Defaults file
+Add `minimum_items_<<key>>` to universe Default file
 
 # Bug Fixes
 Fixed multiple anime `int()` Errors
