@@ -57,10 +57,10 @@ dynamic_collections:
         default: resolution
         other: resolution_other
       order:
-        4k: 1_
-        1080: 2_
-        720: 3_
-        480: 4_
+        4k: "1_"
+        1080: "2_"
+        720: "3_"
+        480: "4_"
       dynamic:
         default: true
     include:
