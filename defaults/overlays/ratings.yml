@@ -182,10 +182,23 @@ templates:
       plex_all:
         conditions:
           - image_level: [Rotten, Fresh]
+            rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             value: true
       run_this:
         default: true
         conditions:
+          - image_level: Top
+            rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
+            value: true
+          - rating<<rating_num>>.not: [audience, critic, user]
+            image_level: Rotten
+            value: false
+          - builder_level: episode
+            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb]
+            value: false
+          - builder_level: season
+            rating<<rating_num>>.not: [user, tmdb]
+            value: false
           - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star, critic, audience]
             value: false
@@ -519,7 +532,7 @@ templates:
         conditions:
           - image_level: Fresh
             value: <<fresh_rating>>
-          - rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
+          - rating<<rating_num>>: [imdb, mdb_imdb, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             value: <<gte>>
       lte:
         default: <<fresh_rating>>
@@ -597,20 +610,20 @@ overlays:
   Rating1Rotten:
     template: {name: Rating, rating_num: "1", image_level: Rotten}
   Rating1Fresh:
-    template: {name: Rating, rating_num: "1", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "1", image_level: Fresh}
   Rating1Top:
     template: {name: Rating, weight: 110, rating_num: "1", image_level: Top}
 
   Rating2Rotten:
     template: {name: Rating, rating_num: "2", image_level: Rotten}
   Rating2Fresh:
-    template: {name: Rating, rating_num: "2", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "2", image_level: Fresh}
   Rating2Top:
     template: {name: Rating, weight: 110, rating_num: "2", image_level: Top}
 
   Rating3Rotten:
     template: {name: Rating, rating_num: "3", image_level: Rotten}
   Rating3Fresh:
-    template: {name: Rating, rating_num: "3", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "3", image_level: Fresh}
   Rating3Top:
     template: {name: Rating, weight: 110, rating_num: "3", image_level: Top}
