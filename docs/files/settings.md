@@ -1,7 +1,46 @@
 ---
 search:
   boost: 3
+hide:
+  - tags
+tags:
+  - addons
+  - name
+  - limit
+  - template
+  - schedule
+  - run_again
+  - sync_mode
+  - builder_level
+  - minimum_items
+  - delete_below_minimum
+  - delete_not_scheduled
+  - tmdb_region
+  - validate_builders
+  - cache_builders
+  - blank_collection
+  - build_collection
+  - server_preroll
+  - missing_only_released
+  - only_filter_missing
+  - show_filtered
+  - show_missing
+  - save_report
+  - ignore_ids
+  - ignore_imdb_ids
+  - name_mapping
+  - test
+  - tmdb_birthday
+  - changes_webhooks
+  - sync_to_trakt_list
+  - sync_missing_to_trakt_list
+  - run_definition
+  - default_percent
+  - ignore_blank_results
+  - only_run_on_create
+  - delete_collections_named
 ---
+
 # Definition Settings
 
 All the following attributes serve various functions as how the definition functions inside of Kometa.

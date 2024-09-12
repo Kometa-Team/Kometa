@@ -1,7 +1,38 @@
 ---
 search:
   boost: 3
+hide:
+  - tags
+tags:
+  - addon_offset
+  - item_label
+  - item_label.remove
+  - item_label.sync
+  - item_genre
+  - item_genre.remove
+  - item_genre.sync
+  - item_edition
+  - non_item_remove_label
+  - item_lock_poster
+  - item_lock_background
+  - item_lock_title
+  - item_assets
+  - item_refresh
+  - item_refresh_delay
+  - item_tmdb_season_titles
+  - item_episode_sorting
+  - item_keep_episodes
+  - item_delete_episodes
+  - item_season_display
+  - item_episode_ordering
+  - item_metadata_language
+  - item_use_original_title
+  - item_credits_detection
+  - item_audio_language
+  - item_subtitle_language
+  - item_subtitle_mode
 ---
+
 # Item Metadata Updates
 
 All the following attributes update various details of the metadata for every item in the collection. 
