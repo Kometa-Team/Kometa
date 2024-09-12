@@ -181,7 +181,7 @@ templates:
             value: top_<<library_type>>s
       plex_all:
         conditions:
-          - image_level: [Rotten, Fresh]
+          - image_level: [Rotten, Fresh, Direct]
             rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal]
             value: true
       run_this:
@@ -228,6 +228,9 @@ templates:
           - rating<<rating_num>>_image: [imdb, rt_tomato, metacritic]
             image_level: Top
             value: Top
+          - rating<<rating_num>>: [mdb_tomatoes, mdb_tomatoesaudience]
+            image_level: Fresh
+            value: Direct
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]
             value: <<image_level>>
       rating<<rating_num>>_image_url:
