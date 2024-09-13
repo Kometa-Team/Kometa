@@ -166,18 +166,22 @@ templates:
       mdblist_top:
         conditions:
           - image_level: Top
+            builder_level.not: [season, episode]
             rating<<rating_num>>_image: rt_popcorn
             value: https://mdblist.com/lists/k0meta/verifiedhot<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: rt_tomato
+            builder_level.not: [season, episode]
             value: https://mdblist.com/lists/k0meta/certifiedfresh<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: metacritic
+            builder_level.not: [season, episode]
             value: https://mdblist.com/lists/k0meta/metacriticmustsee<<library_type>>s
       imdb_top:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: imdb
+            builder_level.not: [season, episode]
             value: top_<<library_type>>s
       plex_all:
         conditions:
@@ -187,6 +191,9 @@ templates:
       run_this:
         default: true
         conditions:
+          - builder_level: [episode, season]
+            weight: 110
+            value: false
           - image_level: Top
             rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
             value: true
@@ -201,12 +208,6 @@ templates:
             value: false
           - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star, critic, audience]
-            value: false
-          - image_level: Top
-            builder_level: episode
-            value: false
-          - image_level: Top
-            overlay_level: episode
             value: false
           - rating<<rating_num>>: none
             value: false
