@@ -19,7 +19,6 @@ theme:
     - content.code.copy
     - header.autohide
     - announce.dismiss
-    - navigation.indexes
     - navigation.footer
     - navigation.tabs
     - navigation.tabs.sticky
@@ -63,20 +62,6 @@ plugins:
         'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
         'traktauth.md': 'https://replit.com/@chazlarson/TraktAuth'
   - material-plausible
-  - blog:
-      enabled: true
-      post_date_format: long
-      post_dir: "{blog}/posts"
-      blog_toc: true
-      categories_allowed:
-        - Announcements
-        - Hotfix
-        - Showcase
-        - Overlays
-        - Collections
-        - Playlists
-        - Builders
-        - Defaults
 extra:
   alternate:
     - name: Latest Docs
