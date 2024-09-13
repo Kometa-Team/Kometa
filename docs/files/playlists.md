@@ -1,3 +1,13 @@
+---
+hide:
+  - tags
+tags:
+  - libraries
+  - sync_to_users
+  - exclude_users
+  - delete_playlist
+---
+
 # Playlist Files
 
 Playlist files are used to create and maintain playlists on the Plex Server.

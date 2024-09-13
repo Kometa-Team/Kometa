@@ -1,3 +1,67 @@
+---
+hide:
+  - tags
+tags:
+  - addon_offset
+  - album_sorting
+  - albums
+  - audience_rating
+  - audio_language
+  - blank_edition
+  - collection
+  - content_rating
+  - country
+  - credits_detection
+  - critic_rating
+  - delete_episodes
+  - director
+  - disc
+  - edition
+  - edition_contains
+  - episode_ordering
+  - episode_sorting
+  - episodes
+  - f1_season
+  - file_background
+  - file_poster
+  - genre
+  - keep_episodes
+  - label
+  - mapping_id
+  - metadata_language
+  - mood
+  - original_artist
+  - original_title
+  - originally_available
+  - producer
+  - record_label
+  - round_prefix
+  - run_definition
+  - season_display
+  - seasons
+  - shorten_gp
+  - similar_artist
+  - sort_title
+  - studio
+  - style
+  - subtitle_language
+  - subtitle_mode
+  - summary
+  - tagline
+  - title
+  - tmdb_show
+  - track
+  - tracks
+  - update_episodes
+  - update_seasons
+  - url_background
+  - url_poster
+  - use_original_title
+  - user_rating
+  - writer
+  - year
+---
+
 # Metadata Files
 
 You can have the script edit the metadata of Items by adding them to the `metadata` mapping of a Metadata File.
