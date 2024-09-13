@@ -1,3 +1,35 @@
+---
+hide:
+  - tags
+tags:
+  - tmdb_person
+  - tmdb_person_offset
+  - sort_title
+  - content_rating
+  - label
+  - label.remove
+  - label.sync
+  - collection_mode
+  - collection_order
+  - collection_filtering
+  - visible_library
+  - visible_home
+  - visible_shared
+  - url_theme
+  - file_theme
+  - url_poster
+  - tmdb_poster
+  - tmdb_list_poster
+  - tmdb_profile
+  - tvdb_poster
+  - tvdb_list_poster
+  - file_poster
+  - url_background
+  - tmdb_background
+  - tvdb_background
+  - file_background
+---
+
 # Collection/Playlist Metadata Updates
 
 All the following attributes update various details of the definition's Metadata. 

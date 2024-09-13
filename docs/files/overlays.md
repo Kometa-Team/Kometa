@@ -1,3 +1,84 @@
+---
+hide:
+  - tags
+tags:
+  - addon_offset
+  - addon_position
+  - anidb_average_rating
+  - anidb_rating
+  - anidb_score_rating
+  - audience_rating
+  - back_align
+  - back_color
+  - back_height
+  - back_line_color
+  - back_line_width
+  - back_padding
+  - back_radius
+  - back_width
+  - bitrate
+  - bitrateH
+  - bitrateL
+  - content_rating
+  - critic_rating
+  - edition
+  - episode_count
+  - episode_number
+  - external_templates
+  - file
+  - font
+  - font_color
+  - font_size
+  - font_style
+  - git
+  - group
+  - horizontal_align
+  - horizontal_offset
+  - imdb_rating
+  - libraries
+  - mal_rating
+  - mdb_average_rating
+  - mdb_imdb_rating
+  - mdb_letterboxd_rating
+  - mdb_metacritic_rating
+  - mdb_metacriticuser_rating
+  - mdb_myanimelist_rating
+  - mdb_rating
+  - mdb_tmdb_rating
+  - mdb_tomatoes_rating
+  - mdb_tomatoesaudience_rating
+  - mdb_trakt_rating
+  - name
+  - omdb_rating
+  - original_title
+  - originally_available
+  - overlays
+  - queue
+  - queues
+  - repo
+  - runtime
+  - runtimeH
+  - runtimeM
+  - season_number
+  - season_title
+  - show_title
+  - stroke_color
+  - stroke_width
+  - templates
+  - title
+  - tmdb_rating
+  - total_runtime
+  - total_runtimeH
+  - total_runtimeM
+  - trakt_user_rating
+  - url
+  - user_rating
+  - versions
+  - vertical_align
+  - vertical_offset
+  - weight
+---
+
 # Overlay Files
 
 Overlay Files holds information on how Kometa should create Overlays. There are a large number of builders available to build Overlays, 

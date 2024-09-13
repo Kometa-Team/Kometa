@@ -1,3 +1,40 @@
+---
+hide:
+  - tags
+tags:
+  - radarr_add_missing
+  - radarr_add_existing
+  - radarr_upgrade_existing
+  - radarr_monitor_existing
+  - radarr_ignore_cache
+  - radarr_folder
+  - radarr_monitor
+  - radarr_availability
+  - radarr_quality
+  - radarr_tag
+  - radarr_search
+  - item_radarr_tag
+  - item_radarr_tag.remove
+  - item_radarr_tag.sync
+  - sonarr_add_missing
+  - sonarr_add_existing
+  - sonarr_upgrade_existing
+  - sonarr_monitor_existing
+  - sonarr_ignore_cache
+  - sonarr_folder
+  - sonarr_monitor
+  - sonarr_quality
+  - sonarr_language
+  - sonarr_series
+  - sonarr_season
+  - sonarr_tag
+  - sonarr_search
+  - sonarr_cutoff_search
+  - item_sonarr_tag
+  - item_sonarr_tag.remove
+  - item_sonarr_tag.sync
+---
+
 # Radarr/Sonarr Definition Settings
 
 ## Radarr Definition Settings
