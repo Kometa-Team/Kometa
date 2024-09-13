@@ -11,11 +11,14 @@ ratings.**
 
 !!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.0.3"
 
-    As part of an overhaul of the Ratings default file introduced in 2.0.3, some changes have been made that makes life easier for the user:
+    A new way to apply Ratings overlays has been released as part of Kometa 2.0.3,
 
-    Kometa will automatically fetch the live rating from the selected source (TMDb, IMDb, Trakt via MDBList, etc.) during the Overlays run. This means that **users no longer have to run Mass Rating Update operations to update the Plex ratings**. In effect, this detaches Plex's ratings system from the Ratings overlays.
+    This new system allows the rating to be applied to posters without having to first run Operations to override Plex's in-built ratings slots.
 
-    In addition, Kometa will automatically select the best image to use based on the selected rating source that you have chosen. For example, if you define `rating1: imdb` then Kometa will automatically make the image for that rating `imdb`. **You no longer have to specify `ratingX_image` unless you want to override Kometa's default image selection.**
+    This is an opt-in feature, any existing configs will continue to work.
+
+    We **strongly** advise that you read [this blog post](https://blog.kometa.wiki/en/latest/) which goes into more detail on the changes and what they mean for you.
+
 
 ![](images/ratings_overlay.png)
 
@@ -35,7 +38,7 @@ The below YAML in your config.yml will create the overlays:
       - default: ratings
         template_variables:
           rating1: imdb
-          rating2: tmdb
+          rating2: mdb_tomatoesaudience
           rating3: mdb_trakt
   TV Shows:
     overlay_files:
