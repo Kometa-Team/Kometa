@@ -31,4 +31,5 @@ Fixed #2176 `clean_bundles`, `optimize`, and `empty_trash` not working as global
 Fixed #2186 `total_runtime` will now trigger an overlay update
 Fixed #2195 an image on the docs was a dead link
 Fixes sort order of resolution collections
+Fixes #2228 ".any" not accepted for a variety of imdb_search parameters
 Various other Minor Fixes
