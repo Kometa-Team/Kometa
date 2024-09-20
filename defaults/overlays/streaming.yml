@@ -105,6 +105,7 @@ templates:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
       watch_region: <<discover_region>>
+      sort_by: primary_release_date.asc
 
 overlays:
 
