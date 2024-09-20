@@ -40,17 +40,14 @@ def urlparse(data):
     return parse.urlparse(str(data))
 
 class Version:
-    def __init__(self, version_string="Unknown"):
+    def __init__(self, version_string="Unknown", part_string=""):
         self.full = version_string.replace("develop", "build")
         version_parts = self.full.split("-build")
         self.main = version_parts[0]
         self.build = 0
-        self.part = 0
+        self.part = int(part_string) if part_string else 0
         if len(version_parts) > 1:
-            sub_parts = str(version_parts[1]).split(".")
-            self.build = int(sub_parts[0])
-            if len(sub_parts) > 1:
-                self.parts = int(sub_parts[1])
+            self.build = int(version_parts[1])
 
     def __bool__(self):
         return self.full != "Unknown"
@@ -59,11 +56,11 @@ class Version:
         return str(self)
 
     def __str__(self):
-        return self.full
+        return f"{self.full}.{self.part}" if self.part else self.full
 
 class Requests:
-    def __init__(self, local, env_branch, git_branch, verify_ssl=True):
-        self.local = Version(local)
+    def __init__(self, local, part, env_branch, git_branch, verify_ssl=True):
+        self.local = Version(local, part)
         self.env_branch = env_branch
         self.git_branch = git_branch
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]

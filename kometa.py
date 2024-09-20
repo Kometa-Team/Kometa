@@ -232,6 +232,14 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")) a
             local_version = line
             break
 
+local_part = ""
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "PART")) as handle:
+    for line in handle.readlines():
+        line = line.strip()
+        if len(line) > 0:
+            local_part = line
+            break
+
 uuid_file = os.path.join(default_dir, "UUID")
 uuid_num = None
 if os.path.exists(uuid_file):
@@ -265,7 +273,7 @@ def start(attrs):
         logger.info_center("|  .  \\ |  `--`  | |  |  |  | |  |____     |  |   /  _____  \\  ")
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
-        my_requests = Requests(local_version, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
         if is_linuxserver or is_docker:
             system_ver = f"{'Linuxserver' if is_linuxserver else 'Docker'}: {env_branch}"
         else:

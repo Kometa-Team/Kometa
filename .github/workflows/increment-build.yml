@@ -80,13 +80,10 @@ jobs:
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             version="${value%-build*}"
           
+            part_value=$(cat PART)
+          
             if [[ "$value" == *"-"* ]]; then
-                value2="${value#*-build}"
-                if [[ "$value2" == *"."* ]]; then
-                    build_value="$((${value2%.*} + 1))"
-                else
-                    build_value="$((${value2} + 1))"
-                fi
+                build_value="$((${value#*-build} + 1))"
             else
                 build_value="1"
             fi
@@ -101,9 +98,11 @@ jobs:
             echo "commit-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           
             echo "$new_value" > "VERSION"
+            echo "" > "PART"
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add VERSION
+            git add PART
             git commit -m "${new_msg}" --amend
             git push origin nightly --force-with-lease
 
