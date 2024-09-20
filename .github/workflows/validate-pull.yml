@@ -64,7 +64,7 @@ jobs:
     if: needs.validate-pull.outputs.build == 'true' && (contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'tester'))
     outputs:
       commit-msg: ${{ steps.update-version.outputs.commit-msg }}
-      version: ${{ steps.update-version.outputs.version }}
+      part_value: ${{ steps.update-version.outputs.part_value }}
       tag-name: ${{ steps.update-version.outputs.tag-name }}
       extra-text: ${{ steps.update-version.outputs.extra-text }}
     steps:
@@ -106,29 +106,20 @@ jobs:
             value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
-            version="${value%-build*}"
-      
-            if [[ "$value" == *"-"* ]]; then
-                value2="${value#*-build}"
-                if [[ "$value2" == *"."* ]]; then
-                    build_value="${value2%.*}"
-                    part_value="$((${value2#*.} + 1))"
-                else
-                    build_value="${value#*-build}"
-                    part_value="1"
-                fi
+          
+            part=$(cat PART)
+            if [ -n "$part" ]; then
+                new_value="$((${part} + 1))"
             else
-                build_value="0"
-                part_value="1"
+                new_value="1"
             fi
       
-            new_value="${version}-build${build_value}.${part_value}"
-            echo "version=${new_value}" >> $GITHUB_OUTPUT
+            echo "part_value=${new_value}" >> $GITHUB_OUTPUT
       
-            echo "$new_value" > "VERSION"
+            echo "$new_value" > "PART"
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            git add VERSION
+            git add PART
             git commit -m "${tag_name} Part: ${part_value}"
             git push
 
@@ -233,7 +224,7 @@ jobs:
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
-          message: 'New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: ${{ needs.docker-build-pull.outputs.version }}'
+          message: 'New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: Part ${{ needs.docker-build-pull.outputs.part_value }}'
           title: ${{ github.event.pull_request.title }}
           description: ${{ needs.docker-build-pull.outputs.commit-msg }}
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
