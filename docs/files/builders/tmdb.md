@@ -561,9 +561,12 @@ and in a specific order.
 
 !!!bug
 
-    We have noticed inconsistent responses from TMDb when using `popularity.asc` and `popularity.desc` as the sort order. This can result in movies/shows disappearing from and reapparing in collections/overlays sporadically. **We suggest users do not use the popularity sort options with `tmdb_discover`**.
+    We have noticed inconsistent responses from TMDb when using `popularity.asc` and `popularity.desc` as the sort order. This can result in movies/shows disappearing from and reapparing in collections/overlays sporadically. 
 
-    This bug is on TMDb's side and we are awaiting a fix from them.
+    **Due to the nature of this bug, we suggest you do not use the popularity sort options with `tmdb_discover` unless you also set a `limit` of 20 or less**. If you do not set a limit, the data that TMDb returns may be inconsistent.**
+
+    This bug is on TMDb's side that we have made them aware of and are currently awaiting a fix.
+
 
 | Sort Option                 |                 Movie Sort                 |                 Show Sort                  |
 |:----------------------------|:------------------------------------------:|:------------------------------------------:|
