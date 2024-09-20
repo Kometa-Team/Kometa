@@ -327,7 +327,7 @@ class ConfigFile:
 
         def check_next(next_data):
             if isinstance(next_data, dict):
-                return {k: check_next(v) for k, v in next_data.items()}
+                return {k: check_next(v) if k != "template_variables" else v for k, v in next_data.items()}
             elif isinstance(next_data, list):
                 return [check_next(d) for d in next_data]
             else:
