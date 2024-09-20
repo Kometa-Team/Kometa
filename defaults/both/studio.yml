@@ -308,6 +308,7 @@ dynamic_collections:
       - Dreams Salon Entertainment Culture
       - DreamWorks Studios
       - DreamWorks Pictures
+      - Dropout
       - Dynamic Planning
       - Eleventh Hour Films
       - EMJAG Productions
@@ -585,6 +586,9 @@ dynamic_collections:
         - DreamWorks Animation
         - DreamWorks Animation Television
         - DreamWorks Classics
+      Dropout:
+        - CollegeHumor
+        - CollegeHumor Media
       EMT Squared:
         - EMT²0
       feel.:
