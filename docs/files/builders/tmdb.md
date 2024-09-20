@@ -466,6 +466,12 @@ and in a specific order.
     Note that a number of filters support being comma (,) or pipe (|) separated. Comma's are treated like an AND query 
     while pipe's are treated like an OR. This allows for quite complex filtering depending on your desired results.
 
+!!!bug
+
+    We have noticed inconsistent responses from TMDb when using `popularity.asc` and `popularity.desc` as the sort order. This can result in movies/shows disappearing from and reapparing in collections/overlays sporadically. **We suggest users do not use the popularity sort options with `tmdb_discover`**.
+
+    This bug is on TMDb's side and we are awaiting a fix from them.
+
 | Movie Parameters                | Description                                                                                                                                                                                                                                                                                                                               |
 |:--------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `limit`                         | Specify how many movies you want returned by the query.<br>**Type:** Integer<br>**Default:** 100                                                                                                                                                                                                                                          |
@@ -512,6 +518,12 @@ and in a specific order.
     Note that a number of filters support being comma (,) or pipe (|) separated. Comma's are treated like an AND query 
     while pipe's are treated like an OR. This allows for quite complex filtering depending on your desired results.
 
+!!!bug
+
+    We have noticed inconsistent responses from TMDb when using `popularity.asc` and `popularity.desc` as the sort order. This can result in movies/shows disappearing from and reapparing in collections/overlays sporadically. **We suggest users do not use the popularity sort options with `tmdb_discover`**.
+
+    This bug is on TMDb's side and we are awaiting a fix from them.
+
 | Show Parameters                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `limit`                         | Specify how many movies you want to be returned by the query.<br>**Type:** Integer<br>**Default:** 100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -546,6 +558,12 @@ and in a specific order.
 | `with_type`                     | Filter TV shows by their type.<br>Can be a comma (`,`) for an AND, or a pipe (`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |`) for an OR separated query<br>**Type:** String<br>**Values:** `0`: Documentary, `1`: News, `2`: Miniseries, `3`: Reality, `4`: Scripted, `5`: Show, `6`: Video                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ### Sort Options
+
+!!!bug
+
+    We have noticed inconsistent responses from TMDb when using `popularity.asc` and `popularity.desc` as the sort order. This can result in movies/shows disappearing from and reapparing in collections/overlays sporadically. **We suggest users do not use the popularity sort options with `tmdb_discover`**.
+
+    This bug is on TMDb's side and we are awaiting a fix from them.
 
 | Sort Option                 |                 Movie Sort                 |                 Show Sort                  |
 |:----------------------------|:------------------------------------------:|:------------------------------------------:|
