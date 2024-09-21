@@ -64,6 +64,12 @@ templates:
       - <<allowed_streaming>>
     ignore_blank_results: true
     conditionals:
+      discover_sort:
+        conditions:
+          - library_type: movie
+            value: primary_release_date.desc
+          - library_type: show
+            value: first_air_date.desc
       originals:
         conditions:
           - originals_only: true
@@ -105,7 +111,7 @@ templates:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
       watch_region: <<discover_region>>
-      sort_by: primary_release_date.desc
+      sort_by: <<discover_sort>>
 
 overlays:
 
