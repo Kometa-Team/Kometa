@@ -107,8 +107,14 @@ class Requests:
 
     def get_yaml(self, url, headers=None, params=None, check_empty=False):
         response = self.get(url, headers=headers, params=params)
-        if response.status_code >= 400:
+        if response.status_code == 401:
+            raise Failed(f"URL Error: Unauthorized - {url}")
+        if response.status_code == 404:
             raise Failed(f"URL Error: No file found at {url}")
+        if response.status_code == 429:
+            raise Failed(f"URL Error: Too many requests -  {url}")
+        if response.status_code >= 400:
+            raise Failed(f"URL Error: {response.status_code} on {url}")
         return YAML(input_data=response.content, check_empty=check_empty)
 
     def get_image(self, url, session=None):
