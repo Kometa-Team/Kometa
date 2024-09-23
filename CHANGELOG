@@ -34,4 +34,5 @@ Fixed #2195 an image on the docs was a dead link
 Fixes sort order of resolution collections
 Fixes #2228 ".any" not accepted for a variety of imdb_search parameters
 Fixes `streaming` defaults adding and removing items randomly
+Adds error information to help with #2201
 Various other Minor Fixes
