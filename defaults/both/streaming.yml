@@ -74,7 +74,6 @@ templates:
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     limit: <<limit>>
     tmdb_discover:
-      limit: 10000
       with_watch_providers: <<discover_with>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
