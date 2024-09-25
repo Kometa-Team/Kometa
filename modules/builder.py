@@ -10,6 +10,7 @@ from modules.request import quote
 from plexapi.audio import Artist, Album, Track
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show, Season, Episode
+from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
 logger = util.logger
 
@@ -1975,7 +1976,7 @@ class CollectionBuilder:
         if method_name == "tmdb_discover":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
-                new_dictionary = {"limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=100, parent=method_name)}
+                new_dictionary = {"limit": util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, minimum=0, default=100, parent=method_name)}
                 for discover_method, discover_data in dict_data.items():
                     lower_method = str(discover_method).lower()
                     discover_attr, modifier = os.path.splitext(lower_method)
@@ -1990,7 +1991,7 @@ class CollectionBuilder:
                     elif discover_attr == "region":
                         new_dictionary[discover_attr] = util.parse(self.Type, discover_method, discover_data.upper(), parent=method_name, regex=("^[A-Z]{2}$", "US"))
                     elif discover_attr == "sort_by":
-                        options = tmdb.discover_movie_sort if self.library.is_movie else tmdb.discover_tv_sort
+                        options = discover_movie_sort_options if self.library.is_movie else discover_tv_sort_options
                         new_dictionary[lower_method] = util.parse(self.Type, discover_method, discover_data, parent=method_name, options=options)
                     elif discover_attr == "certification_country":
                         if "certification" in dict_data or "certification.lte" in dict_data or "certification.gte" in dict_data:
