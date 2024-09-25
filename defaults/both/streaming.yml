@@ -28,10 +28,6 @@ templates:
         conditions:
           - originals_only: true
             value: originals
-      discover_limit:
-        conditions:
-          - originals_only: false
-            value: <<limit>>
       discover_region:
         conditions:
           - originals_only: false
@@ -76,8 +72,8 @@ templates:
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
+    limit: <<limit>>
     tmdb_discover:
-      limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
