@@ -27,7 +27,7 @@ type_map = {
 }
 discover_movie_only = [
     "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video", "year",
-    "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type", "with_title_translation"
+    "primary_release_year", "primary_release_date", "release_date", "with_release_type", "with_title_translation", "with_origin_country"
 ]
 discover_tv_only = [
     "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date", "first_air_date",
@@ -35,7 +35,7 @@ discover_tv_only = [
 ]
 discover_strings = [
     "with_cast", "with_crew", "with_people", "with_companies", "without_companies", "with_networks", "with_genres",
-    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_original_language", "timezone",
+    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_origin_country", "with_original_language", "timezone",
     "with_watch_providers", "without_watch_providers", "with_overview_translation", "with_title_translation", "with_name_translation"
 ]
 discover_ints = ["vote_count", "with_runtime"]
@@ -52,12 +52,6 @@ discover_special = [
 discover_all = discover_special + discover_strings + discover_years + discover_booleans + date_methods + \
       [f"{f}{m}" for f in discover_ints for m in modifiers] + \
       [f"{f}{m}" for f in discover_numbers for m in modifiers]
-discover_movie_sort = [
-    "popularity.asc", "popularity.desc", "release_date.asc", "release_date.desc", "revenue.asc", "revenue.desc",
-    "primary_release_date.asc", "primary_release_date.desc", "original_title.asc", "original_title.desc",
-    "vote_average.asc", "vote_average.desc", "vote_count.asc", "vote_count.desc"
-]
-discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
 discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 discover_types = {
     "Documentary": "documentary", "News": "news", "Miniseries": "miniseries",
