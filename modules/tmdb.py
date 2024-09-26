@@ -35,8 +35,9 @@ discover_tv_only = [
 ]
 discover_strings = [
     "with_cast", "with_crew", "with_people", "with_companies", "without_companies", "with_networks", "with_genres",
-    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_origin_country", "with_original_language", "timezone",
-    "with_watch_providers", "without_watch_providers", "with_overview_translation", "with_title_translation", "with_name_translation"
+    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_origin_country", "timezone",
+    "with_watch_providers", "without_watch_providers", "with_overview_translation",
+    "with_original_language", "with_watch_monetization_types", "with_title_translation", "with_name_translation"
 ]
 discover_ints = ["vote_count", "with_runtime"]
 modifiers = [".gte", ".lte"]
