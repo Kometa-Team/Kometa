@@ -36,5 +36,6 @@ Fixes sort order of resolution collections
 Fixes #2228 ".any" not accepted for a variety of imdb_search parameters
 Fixes `streaming` defaults adding and removing items randomly
 Fixes missing TMDb Discover parameters
+Fixes `imdb_chart` error when using `trending_india`
 Adds error information to help with #2201
 Various other Minor Fixes

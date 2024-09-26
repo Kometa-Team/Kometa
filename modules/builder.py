@@ -1483,14 +1483,10 @@ class CollectionBuilder:
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
-                if value in imdb.movie_charts and not self.library.is_movie:
-                    raise Failed(f"{self.Type} Error: chart: {value} does not work with show libraries")
-                elif value in imdb.show_charts and self.library.is_movie:
-                    raise Failed(f"{self.Type} Error: chart: {value} does not work with movie libraries")
-                elif value in imdb.movie_charts or value in imdb.show_charts:
-                    self.builders.append((method_name, value))
-                else:
-                    raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
+                _chart = imdb.movie_charts if self.library.is_movie else imdb.show_charts
+                if value not in _chart:
+                    raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {', '.join(_chart)}")
+                self.builders.append((method_name, value))
         elif method_name == "imdb_award":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
