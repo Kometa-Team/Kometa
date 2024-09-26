@@ -76,7 +76,7 @@ templates:
     tmdb_discover:
       limit: 0
       with_watch_providers: <<discover_with>>
-      with_watch_monetization_types: free
+      with_watch_monetization_types: "free|ads"
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
