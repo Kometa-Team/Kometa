@@ -1483,14 +1483,10 @@ class CollectionBuilder:
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
             for value in util.get_list(method_data):
-                if value in imdb.movie_charts and not self.library.is_movie:
-                    raise Failed(f"{self.Type} Error: chart: {value} does not work with show libraries")
-                elif value in imdb.show_charts and self.library.is_movie:
-                    raise Failed(f"{self.Type} Error: chart: {value} does not work with movie libraries")
-                elif value in imdb.movie_charts or value in imdb.show_charts:
-                    self.builders.append((method_name, value))
-                else:
-                    raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {[i for i in imdb.charts]}")
+                _chart = imdb.movie_charts if self.library.is_movie else imdb.show_charts
+                if value not in _chart:
+                    raise Failed(f"{self.Type} Error: chart: {value} is invalid options are {', '.join(_chart)}")
+                self.builders.append((method_name, value))
         elif method_name == "imdb_award":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -2010,7 +2006,7 @@ class CollectionBuilder:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with either with_watch_providers, without_watch_providers, or with_watch_monetization_types")
                     elif discover_attr == "with_watch_monetization_types":
                         if "watch_region" in dict_data:
-                            new_dictionary[lower_method] = util.parse(self.Type, discover_method, discover_data, parent=method_name, options=tmdb.discover_monetization_types)
+                            new_dictionary[lower_method] = discover_data
                         else:
                             raise Failed(f"{self.Type} Error: {method_name} {discover_method} attribute: must be used with watch_region")
                     elif discover_attr in tmdb.discover_booleans:
