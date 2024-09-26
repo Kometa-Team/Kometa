@@ -110,6 +110,7 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
+      vote_count.gte: 100
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
