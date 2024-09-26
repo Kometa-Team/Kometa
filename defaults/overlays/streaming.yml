@@ -66,9 +66,11 @@ templates:
     conditionals:
       discover_sort:
         conditions:
-          - library_type: movie
+          - originals_only: false
+            library_type: movie
             value: primary_release_date.desc
-          - library_type: show
+          - originals_only: false
+            library_type: show
             value: first_air_date.desc
       originals:
         conditions:
@@ -77,7 +79,11 @@ templates:
       discover_limit:
         conditions:
           - originals_only: false
-            value: <<limit>>
+            value: 0
+      discover_count:
+        conditions:
+          - originals_only: false
+            value: 100
       discover_with:
         conditions:
           - originals_only: false
@@ -110,7 +116,7 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
-      vote_count.gte: 100
+      vote_count.gte: <<discover_count>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
