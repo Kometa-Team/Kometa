@@ -110,6 +110,7 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
+      with_watch_monetization_types: free
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
