@@ -1162,3 +1162,4 @@ if __name__ == "__main__":
                 time.sleep(60)
     except KeyboardInterrupt:
         logger.separator("Exiting Kometa")
+
