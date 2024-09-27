@@ -6,6 +6,7 @@ Update pillow requirement to 10.4.0
 Update PlexAPI requirement to 4.15.16
 Update psutil requirement to 6.0.0
 Update setuptools requirement to 74.0.0
+Update tmdbapis requirement to 1.2.21
 
 # Removed Features
 
@@ -21,6 +22,7 @@ Added new studios : Disney Television Animation, DisneyToon Studios, Dynamic Pla
 Fixed #2150; change xmen list to a new one
 Added `A Quiet Place: Day One` to the `A Quiet Place` collection in the `franchise` Defaults file
 Add `minimum_items_<<key>>` to universe Default file
+Added workaround to `Streaming` for TMDb issue with TMDb Discover
 
 # Bug Fixes
 Fixed multiple anime `int()` Errors
@@ -38,4 +40,5 @@ Fixes `streaming` defaults adding and removing items randomly
 Fixes missing TMDb Discover parameters
 Fixes `imdb_chart` error when using `trending_india`
 Adds error information to help with #2201
+Added warning to TMDb Discover builder regarding ongoing bug with using `popularity.desc` as sort order
 Various other Minor Fixes
