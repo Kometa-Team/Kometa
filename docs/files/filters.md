@@ -327,7 +327,7 @@ collections:
   9.0 Movies:
     plex_all: true
     filters:
-      rating.gte: 9
+      user_rating.gte: 9
 ```
 ```yaml
 collections:
@@ -353,7 +353,7 @@ collections:
         actor: Adam Sandler
     filters:
       genre: Comedy
-      rating.gte: 7
+      user_rating.gte: 7
 ```
 ```yaml
 collections:
@@ -773,7 +773,7 @@ collections:
   9.0 Movies:
     plex_all: true
     filters:
-      rating.gte: 9
+      user_rating.gte: 9
 ```
 ```yaml
 collections:
@@ -799,7 +799,7 @@ collections:
         actor: Adam Sandler
     filters:
       genre: Comedy
-      rating.gte: 7
+      user_rating.gte: 7
 ```
 ```yaml
 collections:
