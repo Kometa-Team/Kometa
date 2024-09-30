@@ -25,7 +25,7 @@ collections:
   9.0 Movies:
     plex_all: true
     filters:
-      rating.gte: 9
+      user_rating.gte: 9
 ```
 
 ## Plex Watchlist
