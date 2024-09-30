@@ -13,6 +13,7 @@ Update tmdbapis requirement to 1.2.21
 # New Features
 Introducing the [Kometa Blog](https://blog.kometa.wiki) - a new home for all kometa-related news stories, ranging from showcasing our community creations to providing you with important updates.
 Added [`letterboxd_user_lists`](https://kometa.wiki/en/latest/files/dynamic_types/#letterboxd-user-lists) Dynamic Collection Type
+Added `item_analyze` item detail to analyze each item in a collection
 
 # Updates
 F1 session naming improvements
