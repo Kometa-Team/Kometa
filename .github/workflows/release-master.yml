@@ -56,7 +56,7 @@ jobs:
             git commit -m "Kometa Release ${NEW_VERSION}"
             git push origin nightly
             git push origin refs/heads/nightly:refs/heads/develop
-            git push origin refs/heads/nightly:refs/heads/main
+            git push origin refs/heads/nightly:refs/heads/master
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
