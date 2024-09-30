@@ -3231,6 +3231,7 @@ class CollectionBuilder:
                 self.library.query(item.refresh)
 
             if "item_analyze" in self.item_details:
+                logger.info(f"Executing Analyze on {item.title}")
                 item.analyze()
 
         if self.library.Radarr and tmdb_paths:
