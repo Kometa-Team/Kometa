@@ -122,7 +122,7 @@ work. Any value not specified will use its default value if it has one if not it
                 apes: Planet of the Apes Day #(4)!
               schedule_apes: range(11/24-11/26) #(5)!
               imdb_list_apes: https://www.imdb.com/list/ls005126084/ #(6)!
-              emoji_veteran: "🐵 " #(7)!
+              emoji_apes: "🐵 " #(7)!
     ```
 
     1.  Do not create the "Independence Day" collection
