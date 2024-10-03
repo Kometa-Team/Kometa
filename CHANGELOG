@@ -20,6 +20,8 @@ F1 session naming improvements
 Added new studios : Disney Television Animation, DisneyToon Studios, Dynamic Planning, Film4 Productions, Golden Harvest, Hungry Man, Screen Gems, Shaw Brothers, Studio Live, The Stone Quarry
 
 # Defaults
+Ratings Default file now fetches the rating during the Run, meaning users no longer have to rely on Plex's rating system or use the Mass Rating Update operations in order to get rating overlays.
+Ratings Default file will now auto-pick the best image if one is not selected. For example, if `rating1: imdb` then the pre-configured `rating1_image` will be `imdb` out of the box without the user having to specify.
 Fixed #2150; change xmen list to a new one
 Added `A Quiet Place: Day One` to the `A Quiet Place` collection in the `franchise` Defaults file
 Add `minimum_items_<<key>>` to universe Default file
