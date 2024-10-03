@@ -26,6 +26,7 @@ Add `minimum_items_<<key>>` to universe Default file
 Added workaround to `Streaming` for TMDb issue with TMDb Discover
 
 # Bug Fixes
+Fixed an issue where season-level overlays would not work if the season had no image and the show-level image already had an overlay. As a result, episode overlays will now apply before season overlays, and season overlays will now apply before show overlays.
 Fixed multiple anime `int()` Errors
 Fixed #2100 `verify_ssl` wasn't working when downloading images
 Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
