@@ -48,6 +48,7 @@ You can add different filters directly to this builder.
 | `note`<sup>2</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:**  Any String                                                               |
 
 <sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list (i.e. it should have `/detail/` in the url) or to an account's Reviews (i.e. it should have `/USERNAME/films/reviews/` in the url)
+
 <sup>2</sup> This filters only work if the URL is to the List View of the Letterboxd list. (i.e. it should have `/detail/` in the url)
 
 ```yaml
