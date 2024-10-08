@@ -1629,7 +1629,7 @@ class CollectionBuilder:
                                 countries.append(str(country))
                         if countries:
                             new_dictionary[lower_method] = countries
-                    elif search_attr in ["keyword", "language", "alternate_version", "crazy_credit", "location", "goof", "plot", "quote", "soundtrack", "trivia"]:
+                    elif search_attr in ["keyword", "language", "alternate_version", "crazy_credit", "location", "goof", "plot", "quote", "soundtrack", "trivia", "character"]:
                         new_dictionary[lower_method] = util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name)
                     elif search_attr == "cast":
                         casts = []

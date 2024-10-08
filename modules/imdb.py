@@ -69,7 +69,8 @@ imdb_search_attributes = [
     "series", "series.not", 
     "list", "list.any", "list.not", 
     "language", "language.any", "language.not", "language.primary", 
-    "popularity.gte", "popularity.lte", 
+    "popularity.gte", "popularity.lte",
+    "character",
     "cast", "cast.any", "cast.not", 
     "runtime.gte", "runtime.lte", 
     "adult",
@@ -303,7 +304,7 @@ class IMDb:
             "first": data["limit"] if "limit" in data and 0 < data["limit"] < page_limit else page_limit,
         }
 
-        def check_constraint(bases, mods, constraint, lower="", translation=None, range_name=None):
+        def check_constraint(bases, mods, constraint, lower="", translation=None, range_name=None, obj_name=None):
             if not isinstance(bases, list):
                 bases = [bases]
             if range_name and not isinstance(range_name, list):
@@ -318,6 +319,8 @@ class IMDb:
                         if full_attr in data:
                             if range_name is not None:
                                 range_data[imdb_mod] = data[full_attr]
+                            elif obj_name is not None:
+                                out[constraint][f"{imdb_mod}{lower}"] = [{obj_name: d} for d in data[full_attr]]
                             elif translation is None:
                                 out[constraint][f"{imdb_mod}{lower}"] = data[full_attr]
                             elif isinstance(translation, tuple):
@@ -392,7 +395,8 @@ class IMDb:
             check_constraint("country", [("", "all"), ("any", "any"), ("not", "exclude"), ("origin", "anyPrimary")], "originCountryConstraint", lower="Countries")
             check_constraint("keyword", [("", "all"), ("any", "any"), ("not", "exclude")], "keywordConstraint", lower="Keywords", translation=(" ", "-"))
             check_constraint("language", [("", "all"), ("any", "any"), ("not", "exclude"), ("primary", "anyPrimary")], "languageConstraint", lower="Languages")
-            check_constraint("cast", [("", "all"), ("any", "any"), ("not", "exclude")], "creditedNameConstraint", lower="NameIds")
+            check_constraint("cast", [("", "all"), ("any", "any"), ("not", "exclude")], "titleCreditsConstraint", lower="Credits", obj_name="nameId")
+            check_constraint("character", [("", "any")], "characterConstraint", lower="CharacterNames")
             check_constraint("runtime", [("gte", "min"), ("lte", "max")], "runtimeConstraint", range_name="runtimeRangeMinutes")
 
             if "adult" in data and data["adult"]:
