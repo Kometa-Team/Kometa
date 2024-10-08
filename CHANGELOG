@@ -3,3 +3,4 @@ Added the `character` search option to the `imdb_search` builder
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
+Fixes #2258 `imdb_list` sort was not being parsed correctly
