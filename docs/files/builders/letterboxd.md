@@ -40,14 +40,16 @@ collections:
 
 You can add different filters directly to this builder.
 
-| Filter Attribute     | Description                                                                                                                                                    |
-|:---------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`              | **Description:** Max number of items per returned.<br>**Values:**  number greater than `1`                                                                     |
-| `rating`<sup>1</sup> | **Description:** Search for the specified rating range. The rating is the list owner's rating not site wide rating.<br>**Values:**  range of int i.e. `80-100` |
-| `year`<sup>1</sup>   | **Description:** Search for the specified year range.<br>**Values:**  range of int i.e. `1990-1999`                                                            |
-| `note`<sup>1</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:**  Any String                  |
+| Filter Attribute     | Description                                                                                                                                                                                                 |
+|:---------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `limit`              | **Description:** Max number of items per returned.<br>**Values:**  number greater than `1`                                                                                                                  |
+| `rating`<sup>1</sup> | **Description:** Search for the specified rating range. The rating is the list owner's rating not site wide rating.<br>**Values:**  range of int i.e. `8-10` (convert Letterboxd stars to a 10 point scale) |
+| `year`<sup>1</sup>   | **Description:** Search for the specified year range.<br>**Values:**  range of int i.e. `1990-1999`                                                                                                         |
+| `note`<sup>2</sup>   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:**  Any String                                                               |
 
-<sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list. (i.e. it should have `/detail/` in the url)
+<sup>1</sup> These filters only work if the URL is to the List View of the Letterboxd list (i.e. it should have `/detail/` in the url) or to an account's Reviews (i.e. it should have `/USERNAME/films/reviews/` in the url)
+
+<sup>2</sup> This filters only work if the URL is to the List View of the Letterboxd list. (i.e. it should have `/detail/` in the url)
 
 ```yaml
 collections:
