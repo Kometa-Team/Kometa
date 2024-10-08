@@ -85,7 +85,7 @@ sort_by_options = {
     "year": "YEAR",
     "release": "RELEASE_DATE",
 }
-sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
+sort_options = [f"{a}.{d}" for a in sort_by_options for d in ["asc", "desc"]]
 list_sort_by_options = {
     "custom": "LIST_ORDER",
     "popularity": "POPULARITY",
@@ -96,7 +96,7 @@ list_sort_by_options = {
     "added": "DATE_ADDED",
     "release": "RELEASE_DATE",
 }
-list_sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
+list_sort_options = [f"{a}.{d}" for a in list_sort_by_options for d in ["asc", "desc"]]
 title_type_options = {
     "movie": "movie", "tv_series": "tvSeries", "short": "short", "tv_episode": "tvEpisode", "tv_mini_series": "tvMiniSeries",
     "tv_movie": "tvMovie", "tv_special": "tvSpecial", "tv_short": "tvShort", "video_game": "videoGame", "video": "video",
@@ -257,7 +257,7 @@ class IMDb:
                 new_dict["limit"] = 0
 
             if "sort_by" in dict_methods:
-                new_dict["sort_by"] = util.parse(err_type, dict_methods, imdb_dict, parent=method, default="custom.asc", options=list_sort_options)
+                new_dict["sort_by"] = util.parse(err_type, "sort_by", imdb_dict, methods=dict_methods, parent=method, default="custom.asc", options=list_sort_options)
 
             valid_lists.append(new_dict)
         return valid_lists
