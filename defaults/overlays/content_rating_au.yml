@@ -69,12 +69,12 @@ overlays:
   r:
     template:
       - name: standard
-      - {name: cr_au, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
+      - {name: cr_au, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
 
   x:
     template:
       - name: standard
-      - {name: cr_au, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+      - {name: cr_au, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted, gb/R18"}
   nr:
     template:
       - {name: standard, key: nr}
