@@ -56,7 +56,7 @@ jobs:
             done
 
       - name: Run Spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.42.0
+        uses: rojopolis/spellcheck-github-actions@0.43.0
 
   docker-build-pull:
     runs-on: ubuntu-latest
