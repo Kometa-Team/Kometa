@@ -101,6 +101,7 @@ libraries:
     - default: separator_chart                      # An "index card"
     - default: anilist                              # AniDB Charts (Popular, Trending, etc.)
     - default: imdb                                 # IMDb Charts (Popular, Trending, etc.)
+    - default: letterboxd                           # Letterboxd charts/collections
     - default: myanimelist                          # MAL Charts (Popular, Trending, etc.)
     - default: other_chart                          # Other Charts (Popular, Trending, etc.)
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
@@ -406,6 +407,7 @@ libraries:
     - default: separator_chart                      # An "index card"
     - default: anilist                              # AniDB Charts (Popular, Trending, etc.)
     - default: imdb                                 # IMDb Charts (Popular, Trending, etc.)
+    - default: letterboxd                           # Letterboxd charts/collections
     - default: myanimelist                          # MAL Charts (Popular, Trending, etc.)
     - default: other_chart                          # Other Charts (Popular, Trending, etc.)
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
