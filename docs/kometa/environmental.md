@@ -55,18 +55,18 @@ different ways to specify these things.
 
     **Accepted Values:** Path to YAML config file
 
-    **Shell Flags:** `-c` or `--config` (ex. `--config /data/config.yml`)
+    **Shell Flags:** `-c` or `--config` (ex. `--config /some/path/to/your-config-file.yml`)
 
-    **Environment Variable:** `KOMETA_CONFIG` (ex. `KOMETA_CONFIG=/data/config.yml`)
+    **Environment Variable:** `KOMETA_CONFIG` (ex. `KOMETA_CONFIG=/some/path/to/your-config-file.yml`)
     
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --config /data/config.yml
+            python kometa.py --config /some/path/to/your-config-file.yml
             ```
         === "Docker Environment"
             ```
-            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --config /data/config.yml
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" -v "Z:\some\path:/data:rw" kometateam/kometa --config /data/your-config-file.yml
             ```
 
 ??? blank "Time to Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-t`/`--times`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMES`<a class="headerlink" href="#times" title="Permanent link">¶</a>"
