@@ -31,7 +31,6 @@ libraries:
     collection_files:                               # These files contain collections: and/or dynamic_collections attributes
     - default: based                                # collections based on a book, comic, story, video game
     # - file: config/metadata/overlay_label.yml       # Creates collection of all items with an Overlay label (Testing only)
-    - default: letterboxd                           # 16 possible collections based on Letterboxd
     - default: aspect                               # Creates collections based on aspect ratio of media item
     - git: bullmoose20/movies_refresh               # tells plex to refresh media items added within the last 7 days
     - default: separator_award                      # An "index card"
@@ -385,7 +384,6 @@ libraries:
     - git: bullmoose20/money_heist                  # Custom metadata file for Money Heist
     collection_files:                               # These files contain collections: and/or dynamic_collections attributes
     - default: based                                # collections based on a book, comic, story, video game
-    - default: letterboxd                           # 16 possible collections based on Letterboxd
     # - file: config/metadata/overlay_label.yml       # Creates collection of all items with an Overlay label (Testing only)
     - default: aspect                               # Creates collections based on aspect ratio of media item
     - git: bullmoose20/tv_refresh                   # Tells plex to refresh media items added within the last 7 days
