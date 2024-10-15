@@ -28,7 +28,7 @@ templates:
           - key: clonewars
             value: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
           - key: xmen
-            value: https://trakt.tv/users/heyitsbea/lists/x-men
+            value: https://trakt.tv/users/alan-pittflix/lists/x-men
           - key: dragonball
             value: https://trakt.tv/users/grawler/lists/dragon-ball-in-order
     default:

@@ -1,0 +1,235 @@
+name: Validate Pull Request
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+
+jobs:
+
+  validate-pull:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.list-changes.outputs.build }}
+    steps:
+
+      - name: Display Refs
+        run: |
+          echo "Base Repo: ${{ github.event.pull_request.base.repo.full_name }}"
+          echo "Base Ref: ${{ github.base_ref }}"
+          echo "Head Repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "Head Ref: ${{ github.event.pull_request.head.ref }}"
+
+      - name: Check Base Branch
+        if: github.base_ref == 'master' || github.base_ref == 'develop'
+        run: |
+          echo "ERROR: Pull Requests cannot be submitted to master or develop. Please submit the Pull Request to the nightly branch"
+          exit 1
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Get changes
+        id: get-changes
+        run: | 
+            git remote add -f upstream https://github.com/Kometa-Team/Kometa.git
+            git remote update
+            if [[ ${{ github.event.action }} == "labeled" ]]; then
+                echo "files=$(git diff --name-only upstream/nightly HEAD | xargs)" >> $GITHUB_OUTPUT
+            else
+                echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
+            fi
+
+      - name: List changed files
+        id: list-changes
+        run: |
+            for file in ${{ steps.get-changes.outputs.files }}; do
+                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
+                    echo "$file will trigger docker build"
+                    echo "build=true" >> $GITHUB_OUTPUT
+                else
+                    echo "$file will not trigger docker build"
+                fi
+            done
+
+      - name: Run Spellcheck
+        uses: rojopolis/spellcheck-github-actions@0.42.0
+
+  docker-build-pull:
+    runs-on: ubuntu-latest
+    needs: [ validate-pull ]
+    if: needs.validate-pull.outputs.build == 'true' && (contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'tester'))
+    outputs:
+      commit-msg: ${{ steps.update-version.outputs.commit-msg }}
+      part_value: ${{ steps.update-version.outputs.part_value }}
+      tag-name: ${{ steps.update-version.outputs.tag-name }}
+      extra-text: ${{ steps.update-version.outputs.extra-text }}
+    steps:
+
+      - name: Create App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Update VERSION File
+        id: update-version
+        run: |
+            branch_name=${{ github.event.pull_request.head.ref }}
+            repo_name=${{ github.event.pull_request.head.repo.full_name }}
+            base_name="${repo_name%/*}"
+            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+                tag_name="${base_name}"
+            else
+                tag_name="${branch_name}"
+            fi
+            echo "tag-name=${tag_name}" >> $GITHUB_OUTPUT
+          
+            if [[ "${base_name}" == "Kometa-Team" ]]; then
+                extra=""
+            else
+                extra=" from the ${{ github.event.pull_request.head.repo.full_name }} repo"
+            fi
+            echo "extra-text=${extra}" >> $GITHUB_OUTPUT
+            
+            value=$(cat VERSION)
+            old_msg=$(git log -1 HEAD --pretty=format:%s)
+            echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
+          
+            part=$(cat PART)
+            if [ -n "$part" ]; then
+                new_value="$((${part} + 1))"
+            else
+                new_value="1"
+            fi
+      
+            echo "part_value=${new_value}" >> $GITHUB_OUTPUT
+      
+            echo "$new_value" > "PART"
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add PART
+            git commit -m "${tag_name} Part: ${new_value}"
+            git push
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          build-args: |
+            "BRANCH_NAME=${{ steps.update-version.outputs.tag-name }}"
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Discord Success Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: success()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.update-version.outputs.tag-name }}: ${{ vars.TEXT_SUCCESS }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}
+
+      - name: Discord Failure Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: failure()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }} ${{ steps.update-version.outputs.tag-name }}: ${{ vars.TEXT_FAILURE }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}
+
+  notify-testers:
+    runs-on: ubuntu-latest
+    needs: [ docker-build-pull ]
+    if: github.event.action == 'labeled' && github.event.label.name == 'tester'
+    steps:
+
+      - name: Get Description
+        env:
+          DESC: ${{ github.event.pull_request.body }}
+        id: get-description
+        run: |
+          body=$(echo "$DESC" | sed -n '/## Description/,/##/{/## Description/b;/##/b;p}')
+          body=$(echo $body|tr -d '\n')
+          echo "description=$body" >> $GITHUB_OUTPUT
+
+      - name: Discord Testers Notification
+        uses: Kometa-Team/discord-notifications@master
+        with:
+          webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
+          message: 'The Kometa team are requesting <@&917323027438510110> to assist with testing an upcoming feature/bug fix.
+
+                    * For Local Git pull and checkout the `${{ github.event.pull_request.head.ref }}` branch${{ needs.docker-build-pull.outputs.extra-text }}
+
+                    * For Docker use the `kometateam/kometa:${{ needs.docker-build-pull.outputs.tag-name }}` image to do your testing
+
+                    Please report back either here or on the original GitHub Pull Request'
+          title: ${{ github.event.pull_request.title }}
+          description: ${{ steps.get-description.outputs.description }}
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}
+
+  update-testers:
+    runs-on: ubuntu-latest
+    needs: [ docker-build-pull ]
+    if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'tester')
+    steps:
+
+      - name: Discord Testers Notification
+        uses: Kometa-Team/discord-notifications@master
+        with:
+          webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
+          message: 'New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: Part ${{ needs.docker-build-pull.outputs.part_value }}'
+          title: ${{ github.event.pull_request.title }}
+          description: ${{ needs.docker-build-pull.outputs.commit-msg }}
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}

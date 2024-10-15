@@ -66,11 +66,11 @@ work. Any value not specified will use its default value if it has one if not it
         | Variable                              | Description & Values                                                                                                                                                                                                                                                                             |
         |:--------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `tmdb_collection_<<key>>`<sup>1</sup> | **Description:** Adds the TMDb Collection IDs given to the specified key's collection. Overrides the [default tmdb_collection](#tmdb-collection) for that collection if used.<br>**Values:** List of TMDb Collection IDs                                                                         |
-        | `tmdb_movie_<<key>>`<sup>1</sup>      | **Description:** Adds the TMDb Movie IDs given to the specified key's collection. Overrides the [default tmdb_movie](#tmdb-movie) for that collection if used.<br>**Values:** List of TMDb Movie IDs                                                                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-        | `imdb_list_<<key>>`<sup>1</sup>       | **Description:** Adds the Movies in the IMDb List to the specified key's collection. Overrides the [default imdb_list](#imdb-list) for that collection if used.<br>**Values:** List of IMDb List URLs                                                                                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-        | `imdb_search_<<key>>`<sup>1</sup>     | **Description:** Adds the Movies in the IMDb Search to the specified key's collection. Overrides the [default imdb_search](#imdb-search) for that collection if used.<br>**Values:** List of IMDb List URLs                                                                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-        | `trakt_list_<<key>>`<sup>1</sup>      | **Description:** Adds the Movies in the Trakt List to the specified key's collection. Overrides the [default trakt_list](#trakt-list) for that collection if used.<br>**Values:** List of Trakt List URLs                                                                                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-        | `mdblist_list_<<key>>`<sup>1</sup>    | **Description:** Adds the Movies in the MDb List to the specified key's collection. Overrides the [default mdblist_list](#mdblist-list) for that collection if used.<br>**Values:** List of MDBList URLs                                                                                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+        | `tmdb_movie_<<key>>`<sup>1</sup>      | **Description:** Adds the TMDb Movie IDs given to the specified key's collection. Overrides the [default tmdb_movie](#tmdb-movie) for that collection if used.<br>**Values:** List of TMDb Movie IDs                                                                                             |
+        | `imdb_list_<<key>>`<sup>1</sup>       | **Description:** Adds the Movies in the IMDb List to the specified key's collection.<br>**Values:** List of IMDb List URLs                                                                                                                                                                       |
+        | `imdb_search_<<key>>`<sup>1</sup>     | **Description:** Adds the Movies in the IMDb Search to the specified key's collection. Overrides the [default imdb_search](#imdb-search) for that collection if used.<br>**Values:** List of IMDb List URLs                                                                                      |
+        | `trakt_list_<<key>>`<sup>1</sup>      | **Description:** Adds the Movies in the Trakt List to the specified key's collection. Overrides the [default trakt_list](#trakt-list) for that collection if used.<br>**Values:** List of Trakt List URLs                                                                                        |
+        | `mdblist_list_<<key>>`<sup>1</sup>    | **Description:** Adds the Movies in the MDb List to the specified key's collection. Overrides the [default mdblist_list](#mdblist-list) for that collection if used.<br>**Values:** List of MDBList URLs                                                                                         |
         | `emoji`                               | **Description:** Controls the Emoji Prefix for all Collections. Set to `""` to remove all emojis.<br>**Values:** Any String                                                                                                                                                                      |
         | `emoji_<<key>>`<sup>1</sup>           | **Description:** Controls the Emoji Prefix for the specified key's collection. Overrides the [default emoji](#emoji) for that collection if used.<br>**Values:** Any String                                                                                                                      |
         | `limit`                               | **Description:** Changes the Builder Limit for all collections in this file.<br>**Values:** Number Greater than 0                                                                                                                                                                                |
@@ -145,7 +145,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="data" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     data: {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -163,7 +169,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `emoji_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -182,32 +194,19 @@ If you want to customize these values, use the methods described above.
     
         Pass `schedule_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
       preserve-includer-indent=true
       dedent=true
       start="# check2"
-      end="# check3"
-    %}
-    ```
-
-??? example "Default Template Variable `imdb_list` (click to expand) <a class="headerlink" href="#imdb-list" title="Permanent link">¶</a>"
-
-    <div id="imdb-list" />
-    
-    ???+ tip 
-    
-        Pass `imdb_list_<<key>>` to the file as template variables to change this value per collection.
-
-    ```yaml
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      preserve-includer-indent=true
-      dedent=true
-      start="# check3"
       end="# check4"
     %}
     ```
@@ -220,7 +219,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `imdb_search_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -239,7 +244,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_collection_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -258,7 +269,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `tmdb_movie_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -277,7 +294,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `mdblist_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false
@@ -296,7 +319,13 @@ If you want to customize these values, use the methods described above.
     
         Pass `trakt_list_<<key>>` to the file as template variables to change this value per collection.
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     {%    
       include-markdown "../../../defaults/movie/seasonal.yml" 
       comments=false

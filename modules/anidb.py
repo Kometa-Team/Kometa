@@ -233,8 +233,9 @@ class AniDBObj:
             _parseXML(self)
 
 class AniDB:
-    def __init__(self, config, data):
-        self.config = config
+    def __init__(self, requests, cache, data):
+        self.requests = requests
+        self.cache = cache
         self.language = data["language"]
         self.expiration = 60
         self.client = None
@@ -248,19 +249,19 @@ class AniDB:
         self.version = version
         self.expiration = expiration
         logger.secret(self.client)
-        if self.config.Cache:
-            value1, value2, success = self.config.Cache.query_testing("anidb_login")
+        if self.cache:
+            value1, value2, success = self.cache.query_testing("anidb_login")
             if str(value1) == str(client) and str(value2) == str(version) and success:
                 return
         try:
             self.get_anime(69, ignore_cache=True)
-            if self.config.Cache:
-                self.config.Cache.update_testing("anidb_login", self.client, self.version, "True")
+            if self.cache:
+                self.cache.update_testing("anidb_login", self.client, self.version, "True")
         except Failed:
             self.client = None
             self.version = None
-            if self.config.Cache:
-                self.config.Cache.update_testing("anidb_login", self.client, self.version, "False")
+            if self.cache:
+                self.cache.update_testing("anidb_login", self.client, self.version, "False")
             raise
 
     @property
@@ -281,9 +282,9 @@ class AniDB:
         if params:
             logger.trace(f"Params: {params}")
         if data:
-            return self.config.post_html(url, data=data, headers=util.header(self.language))
+            return self.requests.post_html(url, data=data, language=self.language)
         else:
-            return self.config.get_html(url, params=params, headers=util.header(self.language))
+            return self.requests.get_html(url, params=params, language=self.language)
 
     def _popular(self):
         response = self._request(urls["popular"])
@@ -329,12 +330,12 @@ class AniDB:
         expired = None
         anidb_dict = None
         from_json = False
-        if self.config.Cache and not ignore_cache:
-            anidb_dict, expired = self.config.Cache.query_anidb(anidb_id, self.expiration)
+        if self.cache and not ignore_cache:
+            anidb_dict, expired = self.cache.query_anidb(anidb_id, self.expiration)
         if expired or not anidb_dict:
             if not ignore_cache:
                 try:
-                    anidb_dict = self.config.get_json(f"{cache_url}/{anidb_id}.json")
+                    anidb_dict = self.get_json(f"{cache_url}/{anidb_id}.json")
                     if anidb_dict:
                         from_json = True
                 except ValueError:
@@ -353,8 +354,8 @@ class AniDB:
                 })
                 self._delay = time.time()
         obj = AniDBObj(self, anidb_id, anidb_dict, from_json)
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_anidb(expired, anidb_id, obj, self.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 
     def get_anidb_ids(self, method, data):

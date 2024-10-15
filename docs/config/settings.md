@@ -78,6 +78,10 @@ The available setting attributes which can be set at each level are outlined bel
         Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the 
         directory must be mounted/visible to the docker container).
     
+    ??? warning
+    
+        Kometa will not create asset directories.  Asset directories you specify here need to exist already.
+
     <hr style="margin: 0px;">
     
     **Attribute:** `asset_directory`
@@ -756,7 +760,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          tvdb_language: en
+          tvdb_language: eng
         ```
 
 ??? blank "`ignore_ids` - List of TMDb/TVDb IDs to ignore.<a class="headerlink" href="#ignore-ids" title="Permanent link">¶</a>"
@@ -811,8 +815,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`item_refresh_delay` - Time to wait between each `item_refresh`.<a class="headerlink" href="#item-refresh-delay" title="Permanent link">¶</a>"
 
-    <div id="item-refresh-delay" />Specify the amount of time to wait between each `item_refresh` of every movie/show in 
-    a collection/playlist.
+    <div id="item-refresh-delay" />Specify the number of seconds to wait between each `item_refresh` of every movie/show in a collection/playlist.
     
     ???+ note
     
@@ -824,7 +827,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library/Collection/Playlist
     
-    **Accepted Values:** Any Integer 0 or greater
+    **Accepted Values:** Any Integer 0 or greater (value is in seconds)
 
     **Default Value:** `0`
 
@@ -935,31 +938,6 @@ The available setting attributes which can be set at each level are outlined bel
           - metadata
         ```
 
-??? blank "`verify_ssl` - Turn SSL Verification on or off.<a class="headerlink" href="#verify-ssl" title="Permanent link">¶</a>"
-
-    <div id="verify-ssl" />Turn SSL Verification on or off.
-    
-    ???+ note
-    
-        set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
-
-    <hr style="margin: 0px;">
-    
-    **Attribute:** `verify_ssl`
-
-    **Levels with this Attribute:** Global
-    
-    **Accepted Values:** `true` or `false`
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-        
-        ```yaml
-        settings:
-          verify_ssl: false
-        ```
-
 ??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
 
     <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, `metadata_files`, `playlist_file` and `overlay_files`.
@@ -1001,7 +979,8 @@ The available setting attributes which can be set at each level are outlined bel
     <table class="clearTable">
       <tr><td>`jpg`</td><td>Use JPG files for saving Overlays</td></tr>
       <tr><td>`png`</td><td>Use PNG files for saving Overlays</td></tr>
-      <tr><td>`webp`</td><td>Use WEBP files for saving Overlays</td></tr>
+      <tr><td>`webp_lossy`</td><td>Use Lossy WEBP files for saving Overlays</td></tr>
+      <tr><td>`webp_lossless`</td><td>Use Lossless WEBP files for saving Overlays</td></tr>
     </table>
 
     **Default Value:** `jpg`
@@ -1013,9 +992,10 @@ The available setting attributes which can be set at each level are outlined bel
           overlay_artwork_filetype: png
         ```
 
-??? blank "`overlay_artwork_quality` - Used to control the JPG or WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
+??? blank "`overlay_artwork_quality` - Used to control the JPG or Lossy WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
 
-    <div id="overlay-quality" />Used to control the JPG or WEBP quality used with overlay images.  This setting will only be applied to images generated after the value is added to your config.
+    <div id="overlay-quality" />Used to control the JPG or Lossy WEBP quality used with overlay images. This setting 
+    will only be applied to images generated after the value is added to your config.
 
     <hr style="margin: 0px;">
     
@@ -1023,9 +1003,10 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, perhaps too large to be uploaded to Plex.
+    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, 
+    perhaps too large to be uploaded to Plex.
 
-    **Default Value:** `75` [this default value will be used if no value is provided on this setting]
+    **Default Value:** `None` [when no value is provided the standard 75 is used]
 
     ???+ example "Example"
         

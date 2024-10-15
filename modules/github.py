@@ -10,8 +10,8 @@ kometa_base = f"{base_url}/repos/Kometa-Team/Kometa"
 configs_raw_url = f"{raw_url}/Kometa-Team/Community-Configs"
 
 class GitHub:
-    def __init__(self, config, params):
-        self.config = config
+    def __init__(self, requests, params):
+        self.requests = requests
         self.token = params["token"]
         logger.secret(self.token)
         self.headers = {"Authorization": f"token {self.token}"} if self.token else None
@@ -22,19 +22,21 @@ class GitHub:
         self._translation_keys = []
         self._translations = {}
 
-    def _requests(self, url, err_msg=None, json=True, params=None):
-        response = self.config.get(url, headers=self.headers, params=params)
+    def _requests(self, url, err_msg=None, params=None, yaml=False):
         if not err_msg:
             err_msg = f"URL Not Found: {url}"
+        if yaml:
+            return self.requests.get_yaml(url, headers=self.headers, params=params)
+        response = self.requests.get(url, headers=self.headers, params=params)
         if response.status_code >= 400:
+            logger.stacktrace()
+            logger.error(response.reason)
             raise Failed(f"Git Error: {err_msg}")
-        if json:
-            try:
-                return response.json()
-            except ValueError:
-                logger.error(str(response.content))
-                raise
-        return response
+        try:
+            return response.json()
+        except ValueError:
+            logger.error(str(response.content))
+            raise
 
     def get_top_tree(self, repo):
         if not str(repo).startswith("/"):
@@ -77,8 +79,8 @@ class GitHub:
     def configs_url(self):
         if self._configs_url is None:
             self._configs_url = f"{configs_raw_url}/master/"
-            if self.config.version[1] in self.config_tags and (self.config.latest_version[1] != self.config.version[1] or self.config.branch == "master"):
-                self._configs_url = f"{configs_raw_url}/v{self.config.version[1]}/"
+            if self.requests.local.main in self.config_tags and (self.requests.latest.main != self.requests.local.main or self.requests.branch == "master"):
+                self._configs_url = f"{configs_raw_url}/v{self.requests.local.main}/"
         return self._configs_url
 
     @property
@@ -90,8 +92,7 @@ class GitHub:
 
     def translation_yaml(self, translation_key):
         if translation_key not in self._translations:
-            url = f"{self.translation_url}{translation_key}.yml"
-            yaml = util.YAML(input_data=self._requests(url, json=False).content).data
+            yaml = self._requests(f"{self.translation_url}{translation_key}.yml", yaml=True).data
             output = {"collections": {}, "key_names": {}, "variables": {}}
             for k in output:
                 if k in yaml:

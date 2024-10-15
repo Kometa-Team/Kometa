@@ -64,6 +64,7 @@ dynamic_collections:
       "253": Star Trek
       "549": Law & Order
       "951": Archie Comics
+      "1399": Game of Thrones
       "1402": The Walking Dead
       "1412": Arrowverse
       "1431": CSI
@@ -74,6 +75,7 @@ dynamic_collections:
       "10222": The Real Housewives
       "31917": Pretty Little Liars
       "44006": One Chicago
+      "54650": Power
       "73586": Yellowstone
       "75219": 9-1-1
       "79744": The Rookie
@@ -86,16 +88,18 @@ dynamic_collections:
       253: [655, 580, 1855, 1992, 314, 103516, 67198, 82491, 85948, 85949, 106393] # TOS, TAS, TNG, DS9, VOY, ENT, DIS, SHO, PIC, LOW, PRO, SNW
       549: [2734, 4601, 3357, 32632, 72496, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
       951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
-      1402: [62286, 94305] # The Walking Dead: Fear the Walking Dead, World Beyond
+      1399: [94997] # Game of Thrones, House of the Dragon
+      1402: [62286, 94305, 194583, 211684, 206586] # The Walking Dead: Fear the Walking Dead, World Beyond, Dead City, Daryl Dixon, The Ones Who Live
       1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
       1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
-      4614: [17610, 124271, 61387, 4376]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG
+      4614: [17610, 124271, 61387, 4376, 157950]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG, Sydney
       4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
       8514: [200870, 212798, 38409, 200865, 67482, 124045, 216276, 77233, 92611, 98888, 94038, 127841, 67564, 122692, 139203, 203734, 108934, 204701, 210689, 155431, 106475, 152261, 66769] #Drag Race: Sweden, Sweden Untucked, Untucked, Belgium, All-Stars, Spain, Brazil, Thailand, UK, Secret Celebrity, Canada, Italy, All Stars Untucked, Australia, Philippines, Canada VS the World, Holland, Philippines Untucked, Spain Untucked, UK VS the World, Vegas Revue, France, Ruvealed
       6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
       10222: [34268, 32390, 17380, 18204, 65300, 31493, 217065, 14808, 136105, 61868, 39283, 62087, 76474, 70612, 110381, 70463, 67480, 196592, 139703, 126149, 59556, 113333, 214463, 131449, 216849] # Real Housewives of Orange County: Miami, BH, ATL, NJ, Potomac, DC, Capetown, NYC, Ult. Girls Trip, Cheshire, Dallas, Melbourne, Hungary, Toronto, SLC, Sydney, Auckland, Dubai, ATL Porsha’s Family Matters, Johannesburg, Vancouver, Jersey, Amsterdam, Durban, Cheshire Christmas Cruising
       31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
       44006: [58841, 62650, 67993] # Chicago Fire: Med, PD, Justice
+      54650: [97890, 124394, 119845] # Power, Ghost, Raising Kanan, Force
       73586: [157744, 118357, 157732] #Yellowstone: 1883, 1923, 1883: The Bass Reeves Story
       75219: 89393 # 9-1-1: 9-1-1 Lone Star
       79744: 201992 # The Rookie: Feds

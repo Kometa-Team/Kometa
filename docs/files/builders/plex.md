@@ -25,7 +25,7 @@ collections:
   9.0 Movies:
     plex_all: true
     filters:
-      rating.gte: 9
+      user_rating.gte: 9
 ```
 
 ## Plex Watchlist
@@ -240,7 +240,7 @@ Tag search can take multiple values as a **list or a comma-separated string**.
 | `season_collection`        | Uses the collection tags to match for season collections                    |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `episode_collection`       | Uses the collection tags to match for episode collections                   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `content_rating`           | Uses the content rating tags to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `country`                  | Uses the country tags to match                                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `country`                  | Uses the country tags to match                                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red }   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `decade`<sup>1</sup>       | Uses the year tag to match the decade                                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `director`                 | Uses the director tags to match                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `genre`                    | Uses the genre tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -440,7 +440,9 @@ collections:
     plex_search:
       all:
         year.gte: 2010
-      sort_by: audience_rating.desc
+      sort_by:
+        - year.desc
+        - audience_rating.desc
       limit: 20
 ```
 

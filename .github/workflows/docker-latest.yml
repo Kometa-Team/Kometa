@@ -1,0 +1,68 @@
+name: Docker Latest Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  docker-build-latest:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: kometateam/kometa:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Discord Success Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: success()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ vars.REPO_NAME }} latest: ${{ vars.TEXT_SUCCESS }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}
+
+      - name: Discord Failure Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: failure()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }} latest: ${{ vars.TEXT_FAILURE }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.DOCKER_NAME }}
+          author_icon_url: ${{ vars.DOCKER_IMAGE }}

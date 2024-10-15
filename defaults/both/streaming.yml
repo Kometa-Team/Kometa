@@ -18,14 +18,18 @@ templates:
       - allowed_libraries
       - originals_only
     conditionals:
+      discover_sort:
+        conditions:
+          - originals_only: false
+            library_type: movie
+            value: primary_release_date.desc
+          - originals_only: false
+            library_type: show
+            value: first_air_date.desc
       originals:
         conditions:
           - originals_only: true
             value: originals
-      discover_limit:
-        conditions:
-          - originals_only: false
-            value: <<limit>>
       discover_region:
         conditions:
           - originals_only: false
@@ -40,6 +44,14 @@ templates:
         conditions:
           - originals_only: false
             value: <<final_tmdb_key>>
+      discover_limit:
+        conditions:
+          - originals_only: false
+            value: 0
+      discover_count:
+        conditions:
+          - originals_only: false
+            value: 100
       allowed_streaming:
         conditions:
           - originals_only: true
@@ -54,7 +66,6 @@ templates:
           - region: CA
             tmdb_key: [1899, 37]
             value: False
-
     default:
       region: "US"
       limit: "500"
@@ -71,10 +82,13 @@ templates:
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
+    limit: <<limit>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
+      vote_count.gte: <<discover_count>>
       watch_region: <<discover_region>>
+      sort_by: <<discover_sort>>
 
 collections:
   Streaming Collections:

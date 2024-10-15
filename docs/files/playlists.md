@@ -1,3 +1,13 @@
+---
+hide:
+  - tags
+tags:
+  - libraries
+  - sync_to_users
+  - exclude_users
+  - delete_playlist
+---
+
 # Playlist Files
 
 Playlist files are used to create and maintain playlists on the Plex Server.
@@ -20,24 +30,6 @@ location mapped as `config` in my setup.
 
 
 ???+ example "Example "MyPlaylists.yml""
-
-    Click the :fontawesome-solid-circle-plus: icon to learn more
-
-    ```yaml
-    collections: #(1)!
-       Top 50 Grossing Films of All Time (Worldwide):
-        tmdb_list: 10 #(2)!
-        collection_order: custom #(3)!
-        sync_mode: sync #(4)!
-    ```
-
-    1.  This must appear once and **only once** in any Metadata file
-    2.  This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
-    3.  This will sort the items in the Plex collection to be the same as the order in the list
-    4.  Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the 
-    collection. Set this to `append` if you only want it to add things and not remove them.
-
-???+ example "config.yml Example Collection File Addition"
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
 
@@ -89,7 +81,7 @@ These are the attributes which can be utilized within the Playlist File:
 | Attribute                                               | Description                                                                                                             |
 |:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
 | [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple playlists                                           |
-| [`external_templates`](templates.md#external-templates) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple playlists |
+| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple playlists |
 | [`playlists`](#playlist-attributes)                     | contains definitions of playlists you wish to add to the server                                                         |
 
 * `playlists` is required in order to run the Playlist File.

@@ -7,12 +7,12 @@ builders = ["icheckmovies_list", "icheckmovies_list_details"]
 base_url = "https://www.icheckmovies.com/lists/"
 
 class ICheckMovies:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests):
+        self.requests = requests
 
     def _request(self, url, language, xpath):
         logger.trace(f"URL: {url}")
-        return self.config.get_html(url, headers=util.header(language)).xpath(xpath)
+        return self.requests.get_html(url, language=language).xpath(xpath)
 
     def _parse_list(self, list_url, language):
         imdb_urls = self._request(list_url, language, "//a[@class='optionIcon optionIMDB external']/@href")

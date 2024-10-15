@@ -1,7 +1,39 @@
 ---
 search:
   boost: 3
+hide:
+  - tags
+tags:
+  - addon_offset
+  - item_label
+  - item_label.remove
+  - item_label.sync
+  - item_genre
+  - item_genre.remove
+  - item_genre.sync
+  - item_edition
+  - non_item_remove_label
+  - item_lock_poster
+  - item_lock_background
+  - item_lock_title
+  - item_assets
+  - item_refresh
+  - item_refresh_delay
+  - item_tmdb_season_titles
+  - item_episode_sorting
+  - item_keep_episodes
+  - item_delete_episodes
+  - item_season_display
+  - item_episode_ordering
+  - item_metadata_language
+  - item_use_original_title
+  - item_credits_detection
+  - item_audio_language
+  - item_subtitle_language
+  - item_subtitle_mode
+  - item_analyze
 ---
+
 # Item Metadata Updates
 
 All the following attributes update various details of the metadata for every item in the collection. 
@@ -24,6 +56,7 @@ All the following attributes update various details of the metadata for every it
 | `item_assets`                         | **Description:** Checks your assets folders for assets of every movie/show in the collection<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                               |
 | `item_refresh`                        | **Description:** Refreshes the metadata of every movie/show in the collection<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `item_refresh_delay`                  | **Description:** Amount of time to wait between each `item_refresh` of every movie/show in the collection<br>**Default:** `0`<br>**Values:** Number greater than `0`                                                                                                                                                                                                                                                                                                                                                                                |
+| `item_analyze`                        | **Description:** Runs Plex's Analyze Operation on every movie/show in the collection<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `item_tmdb_season_titles`             | **Description:** Changes the season titles of every show in the collection to match TMDb<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `item_episode_sorting`<sup>1</sup>    | **Description:** Changes the episode sorting of every show in the collection<br>**Values:**<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`oldest`</td><td>Oldest first</td></tr><tr><td>`newest`</td><td>Newest first</td></tr></table>                                                                                                                                                                                                                                                                      |
 | `item_keep_episodes`<sup>1</sup>      | **Description:** Changes the keep episodes of every show in the collection<br>**Values:**<table class="clearTable"><tr><td>`all`</td><td>All episodes</td></tr><tr><td>`5_latest`</td><td>5 latest episodes</td></tr><tr><td>`3_latest`</td><td>3 latest episodes</td></tr><tr><td>`latest`</td><td>Latest episodes</td></tr><tr><td>`past_3`</td><td>Episodes added in the past 3 days</td></tr><tr><td>`past_7`</td><td>Episodes added in the past 7 days</td></tr><tr><td>`past_30`</td><td>Episodes added in the past 30 days</td></tr></table> |

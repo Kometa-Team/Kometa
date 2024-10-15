@@ -53,12 +53,12 @@
     ],
     "definitions": {
         "plex-server": {
-            "description": "Describes the primary Plex server to which PMM can connect.\nThis attribute is REQUIRED.  It can be overridden at the library level.",
+            "description": "Describes the primary Plex server to which Kometa can connect.\nThis attribute is REQUIRED.  It can be overridden at the library level.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
-                    "description": "URL at which PMM can connect to your plex server. NOT app.plex.tv",
+                    "description": "URL at which Kometa can connect to your plex server. NOT app.plex.tv",
                     "type": "string",
                     "format": "uri",
                     "pattern": "^(https?)://"
@@ -108,7 +108,7 @@
             "additionalProperties": false,
             "properties": {
                 "url": {
-                    "description": "URL at which PMM can connect to this plex server.  NOT app.plex.tv",
+                    "description": "URL at which Kometa can connect to this plex server.  NOT app.plex.tv",
                     "type": "string",
                     "format": "uri",
                     "pattern": "^(https?)://"
@@ -634,7 +634,7 @@
             "properties": {
                 "cache": {
                     "type": "boolean",
-                    "description": "Used to control PMM's cache database.\nAllow Plex Meta Manager to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
+                    "description": "Used to control Kometa's cache database.\nAllow Plex Meta Manager to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
                 },
                 "cache_expiration": {
                     "type": "integer",
@@ -653,11 +653,11 @@
                     ]
                 },
                 "asset_folders": {
-                    "description": "Used to control the asset directory folder structure.\nWhile true, PMM will search the asset_directory for a dedicated folder per item vs while false will look for an image.",
+                    "description": "Used to control the asset directory folder structure.\nWhile true, Kometa will search the asset_directory for a dedicated folder per item vs while false will look for an image.",
                     "type": "boolean"
                 },
                 "asset_depth": {
-                    "description": "Used to control the depth of search in the asset directory.\nAt each asset level, PMM will look for either medianame.ext [such as Star Wars.png] or a dedicated folder containing poster.ext. i.e. <path_to_assets>/Star Wars/poster.png and <path_to_assets>/Star Wars.png are both asset depth 0, whilst <path_to_assets>/Movies/Star Wars/poster.png and <path_to_assets>/Movies/Star Wars.png are both asset level 1.",
+                    "description": "Used to control the depth of search in the asset directory.\nAt each asset level, Kometa will look for either medianame.ext [such as Star Wars.png] or a dedicated folder containing poster.ext. i.e. <path_to_assets>/Star Wars/poster.png and <path_to_assets>/Star Wars.png are both asset depth 0, whilst <path_to_assets>/Movies/Star Wars/poster.png and <path_to_assets>/Movies/Star Wars.png are both asset level 1.",
                     "type": "integer",
                     "minimum": 0
                 },
@@ -699,7 +699,7 @@
                     "minimum": 1
                 },
                 "default_collection_order": {
-                    "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by PMM unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
+                    "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by Kometa unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
                     "type": ["string", "null"],
                     "enum": [
                         "added.asc", "added.desc", "alpha", "audience_rating.asc",
@@ -728,7 +728,7 @@
                     "minimum": 0
                 },
                 "missing_only_released": {
-                    "description": "Used to filter unreleased items from missing lists.\nWhilst running a collection or playlist, when PMM handles missing items to either report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.",
+                    "description": "Used to filter unreleased items from missing lists.\nWhilst running a collection or playlist, when Kometa handles missing items to either report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.",
                     "type": "boolean"
                 },
                 "only_filter_missing": {
@@ -736,7 +736,7 @@
                     "type": "boolean"
                 },
                 "show_unmanaged": {
-                    "description": "Used to show collections not managed by PMM.\nList all collections not managed by Plex Meta Manager at the end of each run.",
+                    "description": "Used to show collections not managed by Kometa.\nList all collections not managed by Plex Meta Manager at the end of each run.",
                     "type": "boolean"
                 },
                 "show_unconfigured": {
@@ -898,10 +898,10 @@
                 },
                 "overlay_artwork_filetype": {
                     "description": "Used to control the filetype used with overlay images.",
-                    "enum": ["jpg", "png", "webp"]
+                    "enum": ["jpg", "png", "webp_lossy", "webp_lossless"]
                 },
                 "overlay_artwork_quality": {
-                    "description": "Used to control the JPG or WEBP quality used with overlay images.",
+                    "description": "Used to control the JPG or Lossy WEBP quality used with overlay images.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 100
@@ -948,7 +948,7 @@
             ],
             "title": "trakt"
         },
-        "pmm-lib-collection-path": {
+        "legacy-default-collection-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -973,7 +973,7 @@
                 "pmm"
             ]
         },
-        "lib-collection-path": {
+        "kometa-default-collection-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -998,7 +998,45 @@
                 "default"
             ]
         },
-        "lib-overlay-path": {
+        "legacy-default-overlay-path": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pmm": {
+                    "type": "string",
+                    "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
+                },
+                "remove_overlays": {
+                    "type": "boolean"
+                },
+                "reapply_overlays": {
+                    "type": "boolean"
+                },
+                "reapply_overlay": {
+                    "type": "boolean"
+                },
+                "reset_overlays": {
+                    "type": "string",
+                    "enum": ["tmdb","plex"]
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-overlays"
+                }
+            },
+            "required": [
+                "pmm"
+            ]
+        },
+        "kometa-default-overlay-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1035,7 +1073,32 @@
             "required": [
             ]
         },
-        "lib-playlist-path": {
+        "legacy-default-playlist-path": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "pmm": {
+                    "type": "string",
+                    "enum": ["playlist"]
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-playlists"
+                }
+            },
+            "required": [
+                "pmm"
+            ]
+        },
+        "kometa-default-playlist-path": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1075,6 +1138,78 @@
                         { "type": "string"},
                         { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
                     ]
+                }
+            },
+            "required": [
+                "file"
+            ]
+        },
+        "file-path-collection-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "file": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-collections"
+                }
+            },
+            "required": [
+                "file"
+            ]
+        },
+        "file-path-overlay-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "file": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-overlays"
+                }
+            },
+            "required": [
+                "file"
+            ]
+        },
+        "file-path-playlist-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "file": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-playlists"
                 }
             },
             "required": [
@@ -1125,6 +1260,84 @@
                 "url"
             ]
         },
+        "url-path-collection-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?)://"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-collections"
+                }
+            },
+            "required": [
+                "url"
+            ]
+        },
+        "url-path-overlay-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?)://"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-overlays"
+                }
+            },
+            "required": [
+                "url"
+            ]
+        },
+        "url-path-playlist-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?)://"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-playlists"
+                }
+            },
+            "required": [
+                "url"
+            ]
+        },
         "git-path": {
             "type": "object",
             "additionalProperties": false,
@@ -1146,6 +1359,78 @@
                 "git"
             ]
         },
+        "git-path-collection-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "git": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-collections"
+                }
+            },
+            "required": [
+                "git"
+            ]
+        },
+        "git-path-overlay-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "git": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-overlays"
+                }
+            },
+            "required": [
+                "git"
+            ]
+        },
+        "git-path-playlist-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "git": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-playlists"
+                }
+            },
+            "required": [
+                "git"
+            ]
+        },
         "repo-path": {
             "type": "object",
             "additionalProperties": false,
@@ -1161,6 +1446,78 @@
                         { "type": "string"},
                         { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
                     ]
+                }
+            },
+            "required": [
+                "repo"
+            ]
+        },
+        "repo-path-collection-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "repo": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-collections"
+                }
+            },
+            "required": [
+                "repo"
+            ]
+        },
+        "repo-path-overlay-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "repo": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-overlays"
+                }
+            },
+            "required": [
+                "repo"
+            ]
+        },
+        "repo-path-playlist-with-template-variables": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "repo": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "asset_directory": {
+                    "oneOf": [
+                        { "type": "string"},
+                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                    ]
+                },
+                "template_variables": {
+                    "$ref": "#/definitions/template-variables-playlists"
                 }
             },
             "required": [
@@ -1278,20 +1635,38 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-lib-collection-path",
+                        "$ref": "#/definitions/legacy-default-collection-path",
                         "deprecated": true
-                    }, {
-                        "$ref": "#/definitions/lib-collection-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/kometa-default-collection-path"
+                    }, 
+                    {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/file-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    }, 
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/url-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/git-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/repo-path"
+                    }, 
+                    {
+                        "$ref": "#/definitions/repo-path-collection-with-template-variables"
                     }
                 ]
             }
@@ -1303,41 +1678,80 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/lib-overlay-path"
+                        "$ref": "#/definitions/legacy-default-overlay-path",
+                        "deprecated": true
                     }, {
+                        "$ref": "#/definitions/kometa-default-overlay-path"
+                    }, 
+                    {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/file-path-overlay-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    }, 
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/url-path-overlay-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/git-path-overlay-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/repo-path"
+                    },
+                    {
+                        "$ref": "#/definitions/repo-path-overlay-with-template-variables"
                     }
                 ]
             }
         },
         "metadata-path": {
+            "deprecated": true,
             "title": "metadata_path",
             "additionalProperties": false,
             "type": "array",
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/pmm-lib-collection-path"
+                        "$ref": "#/definitions/legacy-default-collection-path",
+                        "deprecated": true
                     }, {
-                        "$ref": "#/definitions/lib-collection-path"
-                    }, {
+                        "$ref": "#/definitions/kometa-default-collection-path"
+                    }, 
+                    {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/file-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    }, 
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/url-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    }, 
+                    {
+                        "$ref": "#/definitions/git-path-collection-with-template-variables"
+                    }, 
+                    {
                         "$ref": "#/definitions/repo-path"
+                    }, 
+                    {
+                        "$ref": "#/definitions/repo-path-collection-with-template-variables"
                     }
                 ]
             }
@@ -1350,17 +1764,28 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/lib-overlay-path"
+                        "$ref": "#/definitions/legacy-default-overlay-path",
+                        "deprecated": true
+                    }, {
+                        "$ref": "#/definitions/kometa-default-overlay-path"
                     }, {
                         "$ref": "#/definitions/file-path"
+                    }, {
+                        "$ref": "#/definitions/file-path-overlay-with-template-variables"
                     }, {
                         "$ref": "#/definitions/folder-path"
                     }, {
                         "$ref": "#/definitions/url-path"
                     }, {
+                        "$ref": "#/definitions/url-path-overlay-with-template-variables"
+                    }, {
                         "$ref": "#/definitions/git-path"
                     }, {
+                        "$ref": "#/definitions/git-path-overlay-with-template-variables"
+                    }, {
                         "$ref": "#/definitions/repo-path"
+                    }, {
+                        "$ref": "#/definitions/repo-path-overlay-with-template-variables"
                     }
                 ]
             }
@@ -1372,17 +1797,28 @@
             "items": {
                 "anyOf": [
                     {
-                        "$ref": "#/definitions/lib-playlist-path"
+                        "$ref": "#/definitions/legacy-default-playlist-path",
+                        "deprecated": true
+                    }, {
+                        "$ref": "#/definitions/kometa-default-playlist-path"
                     }, {
                         "$ref": "#/definitions/file-path"
+                    }, {
+                        "$ref": "#/definitions/file-path-playlist-with-template-variables"
                     }, {
                         "$ref": "#/definitions/folder-path"
                     }, {
                         "$ref": "#/definitions/url-path"
                     }, {
+                        "$ref": "#/definitions/url-path-playlist-with-template-variables"
+                    }, {
                         "$ref": "#/definitions/git-path"
                     }, {
+                        "$ref": "#/definitions/git-path-playlist-with-template-variables"
+                    }, {
                         "$ref": "#/definitions/repo-path"
+                    }, {
+                        "$ref": "#/definitions/repo-path-playlist-with-template-variables"
                     }
                 ]
             }
@@ -1410,22 +1846,82 @@
                     "type": "boolean"
                 },
                 "mass_genre_update": {
-                    "type": "string",
-                    "enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_content_rating_update": {
-                    "type": "string",
-                    "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "string",
+                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_original_title_update": {
                     "type": "string",
                     "enum": ["anidb","anidb_official","mal","mal_english","mal_japanese","lock","unlock","remove","reset"]
                 },
                 "mass_studio_update": {
-                    "type": "string",
-                    "enum": ["anidb","mal","tmdb","lock","unlock","remove","reset"]
+                    "anyOf": [
+                        { 
+                            "type": "string",
+                            "enum": ["anidb","mal","tmdb","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["anidb","mal","tmdb","lock","unlock","remove","reset"]}
+                                ]
+                            }
+                        }
+                    ]
                 },
                 "mass_originally_available_update": {
+                    "anyOf": [
+                        { 
+                            "type": "string",
+                            "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
+                        },
+                        { 
+                            "type": "array", 
+                            "uniqueItems": true, 
+                            "items": 
+                            {
+                                "anyOf": [
+                                    {"enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]}
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "mass_added_at_update": {
                     "type": "string",
                     "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
                 },
@@ -1638,7 +2134,7 @@
                 "enum": ["default", "hide", "hide_items", "show_items"]
             },
             "language": {
-                "description": "Set the language of Collection Names and Summaries that PMM has been translated to with weblate",
+                "description": "Set the language of Collection Names and Summaries that Kometa has been translated to with weblate",
                 "type": "string",
                 "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv"]
             },

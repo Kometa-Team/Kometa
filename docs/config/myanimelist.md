@@ -30,10 +30,14 @@ All other attributes will be filled in by Kometa.
 To connect to MyAnimeList.net you must create a MyAnimeList application and supply Kometa the `client id` and
 `client secret` provided, please do the following:
 
+???+ tip
+    
+    MyAnimeList may have specific requirements for any value shown below, which may change over time, so refer to the form at MyAnimeList in the event that any of these example values do not work.
+
 1. [Click here to create a MyAnimeList API application.](https://myanimelist.net/apiconfig/create)
-2. Enter an `App Name` for the application. Ex. `Kometa`
+2. Enter an `App Name` for the application; for example, `Kometa`.  This name is arbitrary and can be whatever you wish as long as it meets MyAnimeList requirements.
 3. Select `web` for `App Type`.
-4. Enter an `App Description` for the application Ex. `Kometa manages metadata and collections`
+4. Enter an `App Description` for the application; for example, `Kometa manages metadata and collections on Plex servers`.  This description is arbitrary and can be whatever you wish as long as it meets MyAnimeList requirements.
 5. Enter `http://localhost/` for `App Redirect URL`.
 6. Enter `https://github.com/Kometa-Team/Kometa` for `Homepage URL`.
 7. Select `non-commercial` for `Commercial / Non-Commercial`.

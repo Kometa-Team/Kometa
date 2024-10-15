@@ -2,8 +2,8 @@ import time
 from datetime import datetime
 from json import JSONDecodeError
 from modules import util
+from modules.request import urlparse
 from modules.util import Failed, LimitReached
-from urllib.parse import urlparse
 
 logger = util.logger
 
@@ -72,8 +72,9 @@ class MDbObj:
 
 
 class MDBList:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache):
+        self.requests = requests
+        self.cache = cache
         self.apikey = None
         self.expiration = 60
         self.limit = False
@@ -108,7 +109,7 @@ class MDBList:
                 final_params[k] = v
         try:
             time.sleep(0.2 if self.supporter else 1)
-            response = self.config.get_json(url, params=final_params)
+            response = self.requests.get_json(url, params=final_params)
         except JSONDecodeError:
             raise Failed("MDBList Error: JSON Decoding Failed")
         if "response" in response and (response["response"] is False or response["response"] == "False"):
@@ -134,14 +135,14 @@ class MDBList:
         else:
             raise Failed("MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type Required")
         expired = None
-        if self.config.Cache and not ignore_cache:
-            mdb_dict, expired = self.config.Cache.query_mdb(key, self.expiration)
+        if self.cache and not ignore_cache:
+            mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
         logger.trace(f"ID: {key}")
         mdb = MDbObj(self._request(api_url, params=params))
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_mdb(expired, key, mdb, self.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_mdb(expired, key, mdb, self.expiration)
         return mdb
 
     def get_imdb(self, imdb_id):
@@ -212,7 +213,7 @@ class MDBList:
             url_base = url_base if url_base.endswith("/") else f"{url_base}/"
             url_base = url_base if url_base.endswith("json/") else f"{url_base}json/"
             try:
-                response = self.config.get_json(url_base, headers=headers, params=params)
+                response = self.requests.get_json(url_base, headers=headers, params=params)
                 if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
                     err = response["error"] if isinstance(response, dict) else response[0]["error"]
                     if err in ["empty", "empty or private list"]:
@@ -220,7 +221,7 @@ class MDBList:
                     raise Failed(f"MDBList Error: Invalid Response {response}")
                 results = []
                 for item in response:
-                    if item["mediatype"] in ["movie", "show"]:
+                    if item["mediatype"] in ["movie", "show"] and item["id"]:
                         results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
                 return results
             except JSONDecodeError:

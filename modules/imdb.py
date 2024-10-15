@@ -1,13 +1,15 @@
-import csv, gzip, json, math, os, re, requests, shutil, time
+import csv, gzip, json, math, os, re, shutil
 from modules import util
 from modules.util import Failed
-from urllib.parse import urlparse, parse_qs
 
 logger = util.logger
 
 builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search", "imdb_award"]
-movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "top_indian", "lowest_rated"]
-show_charts = ["popular_shows", "top_shows"]
+movie_charts = [
+    "box_office", "popular_movies", "top_movies", "top_english", "lowest_rated",
+    "top_indian", "top_tamil", "top_telugu", "top_malayalam", "trending_india", "trending_tamil", "trending_telugu"
+]
+show_charts = ["popular_shows", "top_shows", "trending_india"]
 charts = {
     "box_office": "Box Office",
     "popular_movies": "Most Popular Movies",
@@ -15,19 +17,62 @@ charts = {
     "top_movies": "Top 250 Movies",
     "top_shows": "Top 250 TV Shows",
     "top_english": "Top Rated English Movies",
+    "lowest_rated": "Lowest Rated Movies",
+    "top_tamil": "Top Rated Tamil Movies",
+    "top_telugu": "Top Rated Telugu Movies",
+    "top_malayalam": "Top Rated Malayalam Movies",
+    "trending_india": "Trending Indian Movies & Shows",
+    "trending_tamil": "Trending Tamil Movies",
+    "trending_telugu": "Trending Telugu Movies",
     "top_indian": "Top Rated Indian Movies",
-    "lowest_rated": "Lowest Rated Movies"
 }
+chart_urls = {
+    "box_office": "chart/boxoffice",
+    "popular_movies": "chart/moviemeter",
+    "popular_shows": "chart/tvmeter",
+    "top_movies": "chart/top",
+    "top_shows": "chart/toptv",
+    "top_english": "chart/top-english-movies",
+    "lowest_rated": "chart/bottom",
+    "top_indian": "india/top-rated-indian-movies",
+    "top_tamil": "india/top-rated-tamil-movies",
+    "top_telugu": "india/top-rated-telugu-movies",
+    "top_malayalam": "india/top-rated-malayalam-movies",
+    "trending_india": "india/upcoming",
+    "trending_tamil": "india/tamil",
+    "trending_telugu": "india/telugu",
+}
+
 imdb_search_attributes = [
-    "limit", "sort_by", "title", "type", "type.not", "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte", "genre", "genre.any", "genre.not", "topic", "topic.any", "topic.not",
-    "alternate_version", "alternate_version.not", "crazy_credit", "crazy_credit.not", "location", "location.not",
-    "goof", "goof.not", "plot", "plot.not", "quote", "quote.not", "soundtrack", "soundtrack.not",
-    "trivia", "trivia.not", "event", "event.winning", "imdb_top", "imdb_bottom", "company", "content_rating",
-    "country", "country.any", "country.not", "country.origin", "keyword", "keyword.any",
-    "keyword.not", "series", "series.not", "list", "list.any", "list.not", "language", "language.any", "language.not",
-    "language.primary", "popularity.gte", "popularity.lte", "cast", "cast.any", "cast.not", "runtime.gte",
-    "runtime.lte", "adult",
+    "limit", 
+    "sort_by", 
+    "title", 
+    "type", "type.not", 
+    "release.after", "release.before", "rating.gte", "rating.lte",
+    "votes.gte", "votes.lte", 
+    "genre", "genre.any", "genre.not", 
+    "topic", "topic.any", "topic.not",
+    "alternate_version", "alternate_version.any", "alternate_version.not", 
+    "crazy_credit", "crazy_credit.any", "crazy_credit.not", 
+    "location", "location.any", "location.not",
+    "goof", "goof.any", "goof.not", 
+    "plot", "plot.any", "plot.not", 
+    "quote", "quote.any", "quote.not", 
+    "soundtrack", "soundtrack.any", "soundtrack.not",
+    "trivia", "trivia.any", "trivia.not", 
+    "event", "event.winning", 
+    "imdb_top", "imdb_bottom", 
+    "company", 
+    "content_rating",
+    "country", "country.any", "country.not", "country.origin", 
+    "keyword", "keyword.any", "keyword.not", 
+    "series", "series.not", 
+    "list", "list.any", "list.not", 
+    "language", "language.any", "language.not", "language.primary", 
+    "popularity.gte", "popularity.lte", 
+    "cast", "cast.any", "cast.not", 
+    "runtime.gte", "runtime.lte", 
+    "adult",
 ]
 sort_by_options = {
     "popularity": "POPULARITY",
@@ -40,6 +85,17 @@ sort_by_options = {
     "release": "RELEASE_DATE",
 }
 sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
+list_sort_by_options = {
+    "custom": "LIST_ORDER",
+    "popularity": "POPULARITY",
+    "title": "TITLE_REGIONAL",
+    "rating": "USER_RATING",
+    "votes": "USER_RATING_COUNT",
+    "runtime": "RUNTIME",
+    "added": "DATE_ADDED",
+    "release": "RELEASE_DATE",
+}
+list_sort_options = [f"{a}.{d}"for a in sort_by_options for d in ["asc", "desc"]]
 title_type_options = {
     "movie": "movie", "tv_series": "tvSeries", "short": "short", "tv_episode": "tvEpisode", "tv_mini_series": "tvMiniSeries",
     "tv_movie": "tvMovie", "tv_special": "tvSpecial", "tv_short": "tvShort", "video_game": "videoGame", "video": "video",
@@ -89,100 +145,121 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
-hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
+search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
+list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
+watchlist_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/WATCHLIST_HASH"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
 class IMDb:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests, cache, default_dir):
+        self.requests = requests
+        self.cache = cache
+        self.default_dir = default_dir
         self._ratings = None
         self._genres = None
         self._episode_ratings = None
         self._events_validation = None
         self._events = {}
-        self._hash = None
+        self._search_hash = None
+        self._list_hash = None
+        self._watchlist_hash = None
         self.event_url_validation = {}
 
     def _request(self, url, language=None, xpath=None, params=None):
         logger.trace(f"URL: {url}")
         if params:
             logger.trace(f"Params: {params}")
-        headers = util.header(language) if language else util.header()
-        response = self.config.get_html(url, headers=headers, params=params)
+        response = self.requests.get_html(url, params=params, header=True, language=language)
         return response.xpath(xpath) if xpath else response
 
     def _graph_request(self, json_data):
-        return self.config.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
+        return self.requests.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
 
     @property
-    def hash(self):
-        if self._hash is None:
-            self._hash = self.config.get(hash_url).text.strip()
-        return self._hash
+    def search_hash(self):
+        if self._search_hash is None:
+            self._search_hash = self.requests.get(search_hash_url).text.strip()
+        return self._search_hash
+
+    @property
+    def list_hash(self):
+        if self._list_hash is None:
+            self._list_hash = self.requests.get(list_hash_url).text.strip()
+        return self._list_hash
+
+    @property
+    def watchlist_hash(self):
+        if self._watchlist_hash is None:
+            self._watchlist_hash = self.requests.get(watchlist_hash_url).text.strip()
+        return self._watchlist_hash
 
     @property
     def events_validation(self):
         if self._events_validation is None:
-            self._events_validation = self.config.load_yaml(f"{git_base}/event_validation.yml")
+            self._events_validation = self.requests.get_yaml(f"{git_base}/event_validation.yml").data
         return self._events_validation
 
     def get_event(self, event_id):
         if event_id not in self._events:
-            self._events[event_id] = self.config.load_yaml(f"{git_base}/events/{event_id}.yml")
+            self._events[event_id] = self.requests.get_yaml(f"{git_base}/events/{event_id}.yml").data
         return self._events[event_id]
 
-    def validate_imdb_lists(self, err_type, imdb_lists, language):
+    def validate_imdb(self, err_type, method, imdb_dicts):
         valid_lists = []
-        for imdb_dict in util.get_list(imdb_lists, split=False):
+        main = "list_id" if method == "imdb_list" else "user_id"
+        for imdb_dict in util.get_list(imdb_dicts, split=True if isinstance(imdb_dicts, str) else False):
             if not isinstance(imdb_dict, dict):
-                imdb_dict = {"url": imdb_dict}
+                imdb_dict = {main: imdb_dict}
+            if "url" in imdb_dict and main not in imdb_dict:
+                imdb_dict[main] = imdb_dict["url"]
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
-            if "url" not in dict_methods:
-                raise Failed(f"{err_type} Error: imdb_list url attribute not found")
-            elif imdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"{err_type} Error: imdb_list url attribute is blank")
+            if main not in dict_methods:
+                raise Failed(f"{err_type} Error: {method} {main} attribute not found")
+            elif imdb_dict[dict_methods[main]] is None:
+                raise Failed(f"{err_type} Error: {method} {main} attribute is blank")
             else:
-                imdb_url = imdb_dict[dict_methods["url"]].strip()
-            if imdb_url.startswith(f"{base_url}/search/"):
-                raise Failed("IMDb Error: URLs with https://www.imdb.com/search/ no longer works with imdb_list use imdb_search.")
-            if imdb_url.startswith(f"{base_url}/filmosearch/"):
-                raise Failed("IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with imdb_list use imdb_search.")
-            if not imdb_url.startswith(list_url):
-                raise Failed(f"IMDb Error: imdb_list URLs must begin with {list_url}")
-            self._total(imdb_url, language)
-            list_count = None
+                main_data = imdb_dict[dict_methods[main]].strip()
+                if method == "imdb_list":
+                    if main_data.startswith(f"{base_url}/search/"):
+                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search.")
+                    if main_data.startswith(f"{base_url}/filmosearch/"):
+                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search.")
+                    search = re.search(r"(ls\d+)", main_data)
+                    if not search:
+                        raise Failed(f"IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
+                    new_dict = {main: search.group(1)}
+                else:
+                    user_id = None
+                    if main_data.startswith("ur"):
+                        try:
+                            user_id = int(main_data[2:])
+                        except ValueError:
+                            pass
+                    if not user_id:
+                        raise Failed(f"{err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
+                    new_dict = {main: main_data}
+
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"{err_type} Warning: imdb_list limit attribute is blank using 0 as default")
+                    logger.warning(f"{err_type} Warning: {method} limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
                         if 0 <= value:
-                            list_count = value
+                            new_dict["limit"] = value
                     except ValueError:
                         pass
-                if list_count is None:
-                    logger.warning(f"{err_type} Warning: imdb_list limit attribute must be an integer 0 or greater using 0 as default")
-            if list_count is None:
-                list_count = 0
-            valid_lists.append({"url": imdb_url, "limit": list_count})
-        return valid_lists
+                if "limit" not in new_dict:
+                    logger.warning(f"{err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
+            if "limit" not in new_dict:
+                new_dict["limit"] = 0
 
-    def validate_imdb_watchlists(self, err_type, users, language):
-        valid_users = []
-        for user in util.get_list(users):
-            user_id = None
-            if user.startswith("ur"):
-                try:
-                    user_id = int(user[2:])
-                except ValueError:
-                    pass
-            if not user_id:
-                raise Failed(f"{err_type} Error: User {user} not in the format of 'ur########'")
-            if self._watchlist(user, language):
-                valid_users.append(user)
-        return valid_users
+            if "sort_by" in dict_methods:
+                new_dict["sort_by"] = util.parse(err_type, dict_methods, imdb_dict, parent=method, default="custom.asc", options=list_sort_options)
+
+            valid_lists.append(new_dict)
+        return valid_lists
 
     def get_event_years(self, event_id):
         if event_id in self.events_validation:
@@ -211,71 +288,20 @@ class IMDb:
                 break
         return award_names, category_names
 
-    def _watchlist(self, user, language):
-        imdb_url = f"{base_url}/user/{user}/watchlist"
-        for text in self._request(imdb_url, language=language , xpath="//div[@class='article']/script/text()")[0].split("\n"):
-            if text.strip().startswith("IMDbReactInitialState.push"):
-                jsonline = text.strip()
-                return [f for f in json.loads(jsonline[jsonline.find('{'):-2])["starbars"]]
-        raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
+    def _json_operation(self, list_type):
+        if list_type == "search":
+            return "AdvancedTitleSearch", self.search_hash
+        elif list_type == "list":
+            return "TitleListMainPage", self.list_hash
+        else:
+            return "WatchListPageRefiner", self.watchlist_hash
 
-    def _total(self, imdb_url, language):
-        xpath_total = "//div[@class='desc lister-total-num-results']/text()"
-        per_page = 100
-        results = self._request(imdb_url, language=language, xpath=xpath_total)
-        total = 0
-        for result in results:
-            if "title" in result:
-                try:
-                    total = int(re.findall("(\\d+) title", result.replace(",", ""))[0])
-                    break
-                except IndexError:
-                    pass
-        if total > 0:
-            return total, per_page
-        raise Failed(f"IMDb Error: Failed to parse URL: {imdb_url}")
-
-    def _ids_from_url(self, imdb_url, language, limit):
-        total, item_count = self._total(imdb_url, language)
-        imdb_ids = []
-        parsed_url = urlparse(imdb_url)
-        params = parse_qs(parsed_url.query)
-        imdb_base = parsed_url._replace(query=None).geturl() # noqa
-        params.pop("start", None) # noqa
-        params.pop("count", None) # noqa
-        params.pop("page", None) # noqa
-        logger.trace(f"URL: {imdb_base}")
-        logger.trace(f"Params: {params}")
-        if limit < 1 or total < limit:
-            limit = total
-        remainder = limit % item_count
-        if remainder == 0:
-            remainder = item_count
-        num_of_pages = math.ceil(int(limit) / item_count)
-        for i in range(1, num_of_pages + 1):
-            start_num = (i - 1) * item_count + 1
-            logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
-            params["page"] = i # noqa
-            ids_found = self._request(imdb_base, language=language, xpath="//div[contains(@class, 'lister-item-image')]//a/img//@data-tconst", params=params)
-            if i == num_of_pages:
-                ids_found = ids_found[:remainder]
-            imdb_ids.extend(ids_found)
-            time.sleep(2)
-        logger.exorcise()
-        if len(imdb_ids) > 0:
-            return imdb_ids
-        raise Failed(f"IMDb Error: No IMDb IDs Found at {imdb_url}")
-
-    def _search_json(self, data):
+    def _graphql_json(self, data, list_type):
+        page_limit = 250 if list_type == "search" else 100
         out = {
             "locale": "en-US",
-            "first": data["limit"] if "limit" in data and 0 < data["limit"] < 250 else 250,
-            "titleTypeConstraint": {"anyTitleTypeIds": [title_type_options[t] for t in data["type"]] if "type" in data else []},
+            "first": data["limit"] if "limit" in data and 0 < data["limit"] < page_limit else page_limit,
         }
-        sort = data["sort_by"] if "sort_by" in data else "popularity.asc"
-        sort_by, sort_order = sort.split(".")
-        out["sortBy"] = sort_by_options[sort_by]
-        out["sortOrder"] = sort_order.upper()
 
         def check_constraint(bases, mods, constraint, lower="", translation=None, range_name=None):
             if not isinstance(bases, list):
@@ -301,84 +327,98 @@ class IMDb:
                     if range_data:
                         out[constraint][range_name[i]] = range_data
 
-        check_constraint("type", [("not", "excludeTitleTypeIds")], "titleTypeConstraint", translation=title_type_options)
-        check_constraint("release", [("after", "start"), ("before", "end")], "releaseDateConstraint", range_name="releaseDateRange")
-        check_constraint("title", [("", "searchTerm")], "titleTextConstraint")
-        check_constraint(["rating", "votes"], [("gte", "min"), ("lte", "max")], "userRatingsConstraint", range_name=["aggregateRatingRange", "ratingsCountRange"])
-        check_constraint("genre", [("", "all"), ("any", "any"), ("not", "exclude")], "genreConstraint", lower="GenreIds", translation=genre_options)
-        check_constraint("topic", [("", "all"), ("any", "any"), ("not", "no")], "withTitleDataConstraint", lower="DataAvailable", translation=topic_options)
-        check_constraint("alternate_version", [("", "all"), ("any", "any")], "alternateVersionMatchingConstraint", lower="AlternateVersionTextTerms")
-        check_constraint("crazy_credit", [("", "all"), ("any", "any")], "crazyCreditMatchingConstraint", lower="CrazyCreditTextTerms")
-        check_constraint("location", [("", "all"), ("any", "any")], "filmingLocationConstraint", lower="Locations")
-        check_constraint("goof", [("", "all"), ("any", "any")], "goofMatchingConstraint", lower="GoofTextTerms")
-        check_constraint("plot", [("", "all"), ("any", "any")], "plotMatchingConstraint", lower="PlotTextTerms")
-        check_constraint("quote", [("", "all"), ("any", "any")], "quoteMatchingConstraint", lower="QuoteTextTerms")
-        check_constraint("soundtrack", [("", "all"), ("any", "any")], "soundtrackMatchingConstraint", lower="SoundtrackTextTerms")
-        check_constraint("trivia", [("", "all"), ("any", "any")], "triviaMatchingConstraint", lower="TriviaTextTerms")
+        sort = data["sort_by"] if "sort_by" in data else "popularity.asc" if list_type == "search" else "custom.asc"
+        sort_by, sort_order = sort.split(".")
 
-        if "event" in data or "event.winning" in data:
-            input_list = []
-            if "event" in data:
-                input_list.extend([event_options[a] if a in event_options else {"eventId": a} for a in data["event"]])
-            if "event.winning" in data:
-                for a in data["event.winning"]:
-                    award_dict = event_options[a] if a in event_options else {"eventId": a}
-                    award_dict["winnerFilter"] = "WINNER_ONLY"
-                    input_list.append(award_dict)
-            out["awardConstraint"] = {"allEventNominations": input_list}
+        if list_type == "search":
+            out["titleTypeConstraint"] = {"anyTitleTypeIds": [title_type_options[t] for t in data["type"]] if "type" in data else []}
+            out["sortBy"] = sort_by_options[sort_by]
+            out["sortOrder"] = sort_order.upper()
 
-        if any([a in data for a in ["imdb_top", "imdb_bottom", "popularity.gte", "popularity.lte"]]):
-            ranges = []
-            if "imdb_top" in data:
-                ranges.append({"rankRange": {"max": data["imdb_top"]}, "rankedTitleListType": "TOP_RATED_MOVIES"})
-            if "imdb_bottom" in data:
-                ranges.append({"rankRange": {"max": data["imdb_bottom"]}, "rankedTitleListType": "LOWEST_RATED_MOVIES"})
-            if "popularity.gte" in data or "popularity.lte" in data:
-                num_range = {}
-                if "popularity.lte" in data:
-                    num_range["max"] = data["popularity.lte"]
-                if "popularity.gte" in data:
-                    num_range["min"] = data["popularity.gte"]
-                ranges.append({"rankRange": num_range, "rankedTitleListType": "TITLE_METER"})
-            out["rankedTitleListConstraint"] = {"allRankedTitleLists": ranges}
+            check_constraint("type", [("not", "excludeTitleTypeIds")], "titleTypeConstraint", translation=title_type_options)
+            check_constraint("release", [("after", "start"), ("before", "end")], "releaseDateConstraint", range_name="releaseDateRange")
+            check_constraint("title", [("", "searchTerm")], "titleTextConstraint")
+            check_constraint(["rating", "votes"], [("gte", "min"), ("lte", "max")], "userRatingsConstraint", range_name=["aggregateRatingRange", "ratingsCountRange"])
+            check_constraint("genre", [("", "all"), ("any", "any"), ("not", "exclude")], "genreConstraint", lower="GenreIds", translation=genre_options)
+            check_constraint("topic", [("", "all"), ("any", "any"), ("not", "no")], "withTitleDataConstraint", lower="DataAvailable", translation=topic_options)
+            check_constraint("alternate_version", [("", "all"), ("any", "any")], "alternateVersionMatchingConstraint", lower="AlternateVersionTextTerms")
+            check_constraint("crazy_credit", [("", "all"), ("any", "any")], "crazyCreditMatchingConstraint", lower="CrazyCreditTextTerms")
+            check_constraint("location", [("", "all"), ("any", "any")], "filmingLocationConstraint", lower="Locations")
+            check_constraint("goof", [("", "all"), ("any", "any")], "goofMatchingConstraint", lower="GoofTextTerms")
+            check_constraint("plot", [("", "all"), ("any", "any")], "plotMatchingConstraint", lower="PlotTextTerms")
+            check_constraint("quote", [("", "all"), ("any", "any")], "quoteMatchingConstraint", lower="QuoteTextTerms")
+            check_constraint("soundtrack", [("", "all"), ("any", "any")], "soundtrackMatchingConstraint", lower="SoundtrackTextTerms")
+            check_constraint("trivia", [("", "all"), ("any", "any")], "triviaMatchingConstraint", lower="TriviaTextTerms")
 
-        check_constraint("series", [("", "any"), ("not", "exclude")], "episodicConstraint", lower="SeriesIds")
-        check_constraint("list", [("", "inAllLists"), ("any", "inAnyList"), ("not", "notInAnyList")], "listConstraint")
+            if "event" in data or "event.winning" in data:
+                input_list = []
+                if "event" in data:
+                    input_list.extend([event_options[a] if a in event_options else {"eventId": a} for a in data["event"]])
+                if "event.winning" in data:
+                    for a in data["event.winning"]:
+                        award_dict = event_options[a] if a in event_options else {"eventId": a}
+                        award_dict["winnerFilter"] = "WINNER_ONLY"
+                        input_list.append(award_dict)
+                out["awardConstraint"] = {"allEventNominations": input_list}
 
-        if "company" in data:
-            company_ids = []
-            for c in data["company"]:
-                if c in company_options:
-                    company_ids.extend(company_options[c])
-                else:
-                    company_ids.append(c)
-            out["creditedCompanyConstraint"] = {"anyCompanyIds": company_ids}
+            if any([a in data for a in ["imdb_top", "imdb_bottom", "popularity.gte", "popularity.lte"]]):
+                ranges = []
+                if "imdb_top" in data:
+                    ranges.append({"rankRange": {"max": data["imdb_top"]}, "rankedTitleListType": "TOP_RATED_MOVIES"})
+                if "imdb_bottom" in data:
+                    ranges.append({"rankRange": {"max": data["imdb_bottom"]}, "rankedTitleListType": "LOWEST_RATED_MOVIES"})
+                if "popularity.gte" in data or "popularity.lte" in data:
+                    num_range = {}
+                    if "popularity.lte" in data:
+                        num_range["max"] = data["popularity.lte"]
+                    if "popularity.gte" in data:
+                        num_range["min"] = data["popularity.gte"]
+                    ranges.append({"rankRange": num_range, "rankedTitleListType": "TITLE_METER"})
+                out["rankedTitleListConstraint"] = {"allRankedTitleLists": ranges}
 
-        check_constraint("content_rating", [("", "anyRegionCertificateRatings")], "certificateConstraint")
-        check_constraint("country", [("", "all"), ("any", "any"), ("not", "exclude"), ("origin", "anyPrimary")], "originCountryConstraint", lower="Countries")
-        check_constraint("keyword", [("", "all"), ("any", "any"), ("not", "exclude")], "keywordConstraint", lower="Keywords", translation=(" ", "-"))
-        check_constraint("language", [("", "all"), ("any", "any"), ("not", "exclude"), ("primary", "anyPrimary")], "languageConstraint", lower="Languages")
-        check_constraint("cast", [("", "all"), ("any", "any"), ("not", "exclude")], "creditedNameConstraint", lower="NameIds")
-        check_constraint("runtime", [("gte", "min"), ("lte", "max")], "runtimeConstraint", range_name="runtimeRangeMinutes")
+            check_constraint("series", [("", "any"), ("not", "exclude")], "episodicConstraint", lower="SeriesIds")
+            check_constraint("list", [("", "inAllLists"), ("any", "inAnyList"), ("not", "notInAnyList")], "listConstraint")
 
-        if "adult" in data and data["adult"]:
-            out["explicitContentConstraint"] = {"explicitContentFilter": "INCLUDE_ADULT"}
+            if "company" in data:
+                company_ids = []
+                for c in data["company"]:
+                    if c in company_options:
+                        company_ids.extend(company_options[c])
+                    else:
+                        company_ids.append(c)
+                out["creditedCompanyConstraint"] = {"anyCompanyIds": company_ids}
+
+            check_constraint("content_rating", [("", "anyRegionCertificateRatings")], "certificateConstraint")
+            check_constraint("country", [("", "all"), ("any", "any"), ("not", "exclude"), ("origin", "anyPrimary")], "originCountryConstraint", lower="Countries")
+            check_constraint("keyword", [("", "all"), ("any", "any"), ("not", "exclude")], "keywordConstraint", lower="Keywords", translation=(" ", "-"))
+            check_constraint("language", [("", "all"), ("any", "any"), ("not", "exclude"), ("primary", "anyPrimary")], "languageConstraint", lower="Languages")
+            check_constraint("cast", [("", "all"), ("any", "any"), ("not", "exclude")], "creditedNameConstraint", lower="NameIds")
+            check_constraint("runtime", [("gte", "min"), ("lte", "max")], "runtimeConstraint", range_name="runtimeRangeMinutes")
+
+            if "adult" in data and data["adult"]:
+                out["explicitContentConstraint"] = {"explicitContentFilter": "INCLUDE_ADULT"}
+        else:
+            if list_type == "list":
+                out["lsConst"] = data["list_id"]
+            else:
+                out["urConst"] = data["user_id"]
+            out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)
-        return {
-            "operationName": "AdvancedTitleSearch",
-            "variables": out,
-            "extensions": {"persistedQuery": {"version": 1, "sha256Hash": self.hash}}
-        }
+        op, sha = self._json_operation(list_type)
+        return {"operationName": op, "variables": out, "extensions": {"persistedQuery": {"version": 1, "sha256Hash": sha}}}
 
-    def _search(self, data):
-        json_obj = self._search_json(data)
-        item_count = 250
+    def _pagination(self, data, list_type):
+        is_list = list_type != "search"
+        json_obj = self._graphql_json(data, list_type)
+        item_count = 100 if is_list else 250
         imdb_ids = []
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
         try:
-            total = response_json["data"]["advancedTitleSearch"]["total"]
+            step = "list" if list_type == "list" else "predefinedList"
+            search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+            total = search_data["total"]
             limit = data["limit"]
             if limit < 1 or total < limit:
                 limit = total
@@ -386,16 +426,17 @@ class IMDb:
             if remainder == 0:
                 remainder = item_count
             num_of_pages = math.ceil(int(limit) / item_count)
-            end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
-            imdb_ids.extend([n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]])
+            end_cursor = search_data["pageInfo"]["endCursor"]
+            imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
             if num_of_pages > 1:
                 for i in range(2, num_of_pages + 1):
                     start_num = (i - 1) * item_count + 1
                     logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
                     json_obj["variables"]["after"] = end_cursor
                     response_json = self._graph_request(json_obj)
-                    end_cursor = response_json["data"]["advancedTitleSearch"]["pageInfo"]["endCursor"]
-                    ids_found = [n["node"]["title"]["id"] for n in response_json["data"]["advancedTitleSearch"]["edges"]]
+                    search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+                    end_cursor = search_data["pageInfo"]["endCursor"]
+                    ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
                     if i == num_of_pages:
                         ids_found = ids_found[:remainder]
                     imdb_ids.extend(ids_found)
@@ -450,8 +491,8 @@ class IMDb:
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
         expired = None
-        if self.config.Cache and not ignore_cache:
-            imdb_keywords, expired = self.config.Cache.query_imdb_keywords(imdb_id, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
             if imdb_keywords and expired is False:
                 return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
@@ -465,15 +506,15 @@ class IMDb:
                 imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
             else:
                 imdb_keywords[name] = (0, 0)
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
 
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
         expired = None
-        if self.config.Cache and not ignore_cache:
-            parental_dict, expired = self.config.Cache.query_imdb_parental(imdb_id, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
         response = self._request(f"{base_url}/title/{imdb_id}/parentalguide")
@@ -483,46 +524,30 @@ class IMDb:
                 parental_dict[ptype] = results[0].strip()
             else:
                 raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
-        if self.config.Cache and not ignore_cache:
-            self.config.Cache.update_imdb_parental(expired, imdb_id, parental_dict, self.config.Cache.expiration)
+        if self.cache and not ignore_cache:
+            self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
     def _ids_from_chart(self, chart, language):
-        if chart == "box_office":
-            url = "chart/boxoffice"
-        elif chart == "popular_movies":
-            url = "chart/moviemeter"
-        elif chart == "popular_shows":
-            url = "chart/tvmeter"
-        elif chart == "top_movies":
-            url = "chart/top"
-        elif chart == "top_shows":
-            url = "chart/toptv"
-        elif chart == "top_english":
-            url = "chart/top-english-movies"
-        elif chart == "top_indian":
-            url = "india/top-rated-indian-movies"
-        elif chart == "lowest_rated":
-            url = "chart/bottom"
-        else:
+        if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        links = self._request(f"{base_url}/{url}", language=language, xpath="//li//a[@class='ipc-title-link-wrapper']/@href")
-        return [re.search("(tt\\d+)", link).group(1) for link in links]
+        script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
+        return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":
             logger.info(f"Processing IMDb ID: {data}")
             return [(data, "imdb")]
-        elif method == "imdb_list":
-            status = f"{data['limit']} Items at " if data['limit'] > 0 else ''
-            logger.info(f"Processing IMDb List: {status}{data['url']}")
-            return [(i, "imdb") for i in self._ids_from_url(data["url"], language, data["limit"])]
+        elif method in ["imdb_list", "imdb_watchlist"]:
+            logger.info(f"Processing IMDb {'List' if method == 'imdb_list' else 'Watchlist'}: {data['list_id' if method == 'imdb_list' else 'user_id']}")
+            if data["limit"] > 0:
+                logger.info(f"    Limit: {data['limit']}")
+            if "sort_by" in data:
+                logger.info(f"    Sort By: {data['sort_by']}")
+            return [(i, "imdb") for i in self._pagination(data, "list" if method == "imdb_list" else "watchlist")]
         elif method == "imdb_chart":
             logger.info(f"Processing IMDb Chart: {charts[data]}")
             return [(_i, "imdb") for _i in self._ids_from_chart(data, language)]
-        elif method == "imdb_watchlist":
-            logger.info(f"Processing IMDb Watchlist: {data}")
-            return [(_i, "imdb") for _i in self._watchlist(data, language)]
         elif method == "imdb_award":
             if data["event_year"] not in ["all", "latest"] and len(data["event_year"]) == 1:
                 event_slug = f"{data['event_year'][0]}/1" if "-" not in data["event_year"][0] else data["event_year"][0].replace("-", "/")
@@ -537,31 +562,20 @@ class IMDb:
             logger.info(f"Processing IMDb Search:")
             for k, v in data.items():
                 logger.info(f"    {k}: {v}")
-            return [(_i, "imdb") for _i in self._search(data)]
+            return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
     def _interface(self, interface):
-        gz = os.path.join(self.config.default_dir, f"title.{interface}.tsv.gz")
-        tsv = os.path.join(self.config.default_dir, f"title.{interface}.tsv")
+        gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")
+        tsv = os.path.join(self.default_dir, f"title.{interface}.tsv")
 
         if os.path.exists(gz):
             os.remove(gz)
         if os.path.exists(tsv):
             os.remove(tsv)
 
-        with requests.get(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", stream=True) as r:
-            r.raise_for_status()
-            total_length = r.headers.get('content-length')
-            if total_length is not None:
-                total_length = int(total_length)
-            dl = 0
-            with open(gz, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    dl += len(chunk)
-                    f.write(chunk)
-                    logger.ghost(f"Downloading IMDb Interface: {dl / total_length * 100:6.2f}%")
-                logger.exorcise()
+        self.requests.get_stream(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", gz, "IMDb Interface")
 
         with open(tsv, "wb") as f_out:
             with gzip.open(gz, "rb") as f_in:

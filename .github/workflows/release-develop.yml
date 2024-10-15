@@ -1,0 +1,121 @@
+name: Develop Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Choose the build number to push develop to.
+        default: 0
+
+jobs:
+  release-develop:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Create App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
+
+      - name: Check Out Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: develop
+          fetch-depth: 0
+
+      - name: Fast Forward Develop
+        id: forward
+        run: |
+            value=$(cat VERSION)
+            develop_hash=$(git rev-parse HEAD)
+          
+            if [[ "$value" == *"-"* ]]; then
+                develop_build="$((${value#*-build}))"
+            else
+                develop_build="0"
+            fi
+          
+            git checkout origin/nightly
+            value=$(cat VERSION)
+          
+            if [[ "$value" == *"-"* ]]; then
+                nightly_build="$((${value#*-build}))"
+            else
+                nightly_build="0"
+            fi
+          
+            echo "DEVELOP_BUILD: '${develop_build}'"
+            echo "NIGHTLY_BUILD: '${nightly_build}'"
+          
+            if ! [[ ${{ github.event.inputs.build_number }} =~ ^[0-9]+$ ]]; then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be a number"
+                exit 1
+            elif [[ "${{ github.event.inputs.build_number }}" == "0" ]]; then
+                next_build="${nightly_build}"
+            elif (( ${{ github.event.inputs.build_number }} <= develop_build )); then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be greater than DEVELOP_BUILD (${develop_build})"
+                exit 1
+            elif (( ${{ github.event.inputs.build_number }} > nightly_build )); then
+                echo "::error::BUILD_NUMBER (${{ github.event.inputs.build_number }}) must be less than or equal to NIGHTLY_BUILD (${nightly_build})"
+                exit 1
+            else
+                next_build="${{ github.event.inputs.build_number }}"
+            fi
+          
+            echo "NEXT_BUILD: '${next_build}'"
+            echo "build=next_build" >> $GITHUB_OUTPUT
+          
+            while : ; do
+                value=$(cat VERSION)
+          
+                if [[ "$value" == *"-"* ]]; then
+                    loop_build="$((${value#*-build}))"
+                else
+                    loop_build="1"
+                fi
+          
+                if [[ "$next_build" == "$loop_build" ]]; then
+                    hash=$(git rev-parse HEAD)
+                    echo "Fast Forwarding Develop to ${hash}"
+                    git push origin ${hash}:refs/heads/develop
+                    break
+                fi
+                
+                git checkout HEAD^
+          
+                hash=$(git rev-parse HEAD)
+                if [[ "$develop_hash" == "$hash" ]]; then
+                    echo "::error::No Commit found to Fast Forward"
+                    exit 1
+                fi
+            done
+
+      - name: Discord Success Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: success()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ steps.forward.outputs.build }}: ${{ vars.TEXT_SUCCESS }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}
+
+      - name: Discord Failure Notification
+        uses: Kometa-Team/discord-notifications@master
+        if: failure()
+        with:
+          webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
+          message: ${{ vars.BUILD_FAILURE_ROLE }}
+          title: "${{ vars.REPO_NAME }} develop pushed to Build ${{ steps.forward.outputs.build }}: ${{ vars.TEXT_FAILURE }}"
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          color: ${{ vars.COLOR_FAILURE }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.GIT_NAME }}
+          author_icon_url: ${{ vars.GIT_IMAGE }}

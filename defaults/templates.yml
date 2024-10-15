@@ -232,7 +232,8 @@ templates:
       sync_mode_<<key>>: <<sync_mode>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
-    cache_builders: 1
+      cache_builders: 1
+    cache_builders: <<cache_builders>>
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: <<mdblist_list>>
@@ -291,9 +292,10 @@ templates:
       collection_order: custom
       collection_order_<<key>>: <<collection_order>>
       cache_builders: 1
+      cache_builders_<<key>>: <<cache_builders>>
     collection_order: <<collection_order_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
-    cache_builders: <<cache_builders>>
+    cache_builders: <<cache_builders_<<key>>>>
 
   other_collection:
     default:

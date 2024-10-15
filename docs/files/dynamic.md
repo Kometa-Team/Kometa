@@ -1,3 +1,35 @@
+---
+hide:
+  - tags
+tags:
+  - addons
+  - append_addons
+  - append_data
+  - append_exclude
+  - append_include
+  - custom_keys
+  - data
+  - exclude
+  - include
+  - key_name_override
+  - other_name
+  - other_template
+  - remove_addons
+  - remove_data
+  - remove_exclude
+  - remove_include
+  - remove_prefix
+  - remove_suffix
+  - sync
+  - template
+  - template_variables
+  - test
+  - title_format
+  - title_override
+  - tmdb_person
+  - type
+---
+
 # Dynamic Collections
 
 Kometa can dynamically create collections based on different criteria, such as

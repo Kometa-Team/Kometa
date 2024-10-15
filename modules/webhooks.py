@@ -1,12 +1,13 @@
 from json import JSONDecodeError
 from modules import util
-from modules.util import Failed, YAML
+from modules.util import Failed
 
 logger = util.logger
 
 class Webhooks:
     def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None):
         self.config = config
+        self.requests = self.config.Requests
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
         self.version_webhooks = system_webhooks["version"] if "version" in system_webhooks else []
         self.run_start_webhooks = system_webhooks["run_start"] if "run_start" in system_webhooks else []
@@ -39,7 +40,7 @@ class Webhooks:
                     json = self.discord(json)
                 elif webhook.startswith("https://hooks.slack.com/services"):
                     json = self.slack(json)
-                response = self.config.post(webhook, json=json)
+                response = self.requests.post(webhook, json=json)
             if response is not None:
                 try:
                     response_json = response.json()
@@ -47,7 +48,7 @@ class Webhooks:
                     if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
                         def remove_from_config(text, hook_cat):
                             if response_json["details"]["response"] == text:
-                                yaml = YAML(self.config.config_path)
+                                yaml = self.requests.file_yaml(self.config.config_path)
                                 changed = False
                                 if hook_cat in yaml.data and yaml.data["webhooks"][hook_cat]:
                                     if isinstance(yaml.data["webhooks"][hook_cat], list) and "notifiarr" in yaml.data["webhooks"][hook_cat]:
@@ -77,14 +78,14 @@ class Webhooks:
         if self.run_start_webhooks:
             self._request(self.run_start_webhooks, {"event": "run_start", "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S")})
 
-    def version_hooks(self, version, latest_version):
+    def version_hooks(self):
         if self.version_webhooks:
             notes = None
-            if version[1] != latest_version[1]:
+            if self.requests.local.main != self.requests.latest.main:
                 notes = self.config.GitHub.latest_release_notes()
-            elif version[2] and version[2] < latest_version[2]:
-                notes = self.config.GitHub.get_commits(version[2], nightly=self.config.branch == "nightly")
-            self._request(self.version_webhooks, {"event": "version", "current": version[0], "latest": latest_version[0], "notes": notes})
+            elif self.requests.local.build and self.requests.local.build < self.requests.latest.build:
+                notes = self.config.GitHub.get_commits(self.requests.local.build, nightly=self.requests.branch == "nightly")
+            self._request(self.version_webhooks, {"event": "version", "current": str(self.requests.local), "latest": str(self.requests.latest), "notes": notes})
 
     def end_time_hooks(self, start_time, end_time, run_time, stats):
         if self.run_end_webhooks:
@@ -124,10 +125,10 @@ class Webhooks:
         if self.library:
             thumb = None
             if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
-                thumb = self.config.get_image_encoded(f"{self.library.url}{collection.thumb}?X-Plex-Token={self.library.token}")
+                thumb = self.requests.get_image_encoded(f"{self.library.url}{collection.thumb}?X-Plex-Token={self.library.token}")
             art = None
             if not playlist and not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
-                art = self.config.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
+                art = self.requests.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
             self._request(webhooks, {
                 "event": "changes",
                 "server_name": self.library.PlexServer.friendlyName,
@@ -330,4 +331,3 @@ class Webhooks:
                     fields.append(field)
             new_json["embeds"][0]["fields"] = fields
         return new_json
-

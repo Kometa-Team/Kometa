@@ -19,12 +19,13 @@ rating_sources = [
     "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
 ]
 float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
-int_vars = ["runtime", "season_number", "episode_number", "episode_count", "versions"]
+int_vars = ["runtime", "total_runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
     "movie_show_season_episode": ["tmdb_rating"],
+    "show_season_artist_album": ["total_runtime"],
     "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
     "movie_show": [
         "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
@@ -42,6 +43,7 @@ var_mods = {
     "bitrate": ["", "H", "L"],
     "originally_available": ["", "["],
     "runtime": ["", "H", "M"],
+    "total_runtime": ["", "H", "M"],
 }
 for mod in float_vars:
     var_mods[mod] = ["", "%", "#", "/"]
@@ -71,6 +73,8 @@ def get_canvas_size(item):
 class Overlay:
     def __init__(self, config, library, overlay_file, original_mapping_name, overlay_data, suppress, level):
         self.config = config
+        self.requests = self.config.Requests
+        self.cache = self.config.Cache
         self.library = library
         self.overlay_file = overlay_file
         self.original_mapping_name = original_mapping_name
@@ -159,7 +163,7 @@ class Overlay:
             raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
 
         def get_and_save_image(image_url):
-            response = self.config.get(image_url)
+            response = self.requests.get(image_url)
             if response.status_code == 404:
                 raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
             if response.status_code >= 400:
@@ -224,14 +228,14 @@ class Overlay:
                 self.addon_offset = util.parse("Overlay", "addon_offset", self.data["addon_offset"], datatype="int", parent="overlay") if "addon_offset" in self.data else 0
                 self.addon_position = util.parse("Overlay", "addon_position", self.data["addon_position"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_position" in self.data else "left"
                 image_compare = None
-                if self.config.Cache:
-                    _, image_compare, _ = self.config.Cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
+                if self.cache:
+                    _, image_compare, _ = self.cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
                 overlay_size = os.stat(self.path).st_size
                 self.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
                     self.image = Image.open(self.path).convert("RGBA")
-                    if self.config.Cache:
-                        self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+                    if self.cache:
+                        self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
                     raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
             match = re.search("\\(([^)]+)\\)", self.name)
@@ -308,16 +312,16 @@ class Overlay:
             if not os.path.exists(self.path):
                 raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
             image_compare = None
-            if self.config.Cache:
-                _, image_compare, _ = self.config.Cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
+            if self.cache:
+                _, image_compare, _ = self.cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
             overlay_size = os.stat(self.path).st_size
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
                 self.image = Image.open(self.path).convert("RGBA")
                 if self.has_coordinates():
                     self.backdrop_box = self.image.size
-                if self.config.Cache:
-                    self.config.Cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
+                if self.cache:
+                    self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
                 raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
 

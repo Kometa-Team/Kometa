@@ -4,13 +4,20 @@ search:
 ---
 # Scheduling Kometa Runs Guide
 
-Kometa is designed to be a background running service that "wakes up" and "sleeps" when it is scheduled to do so. By default unless configured using the [Time to Run Command](../environmental.md#time-to-run), Kometa expects to run every day at 5AM local time.
+Kometa can run in two ways:
 
-Whilst it is possible to have `python kometa.py` running in an open window constantly, this is not the recommended approach as it relies on an always-open command window that can be obtrusive to the user.
+1. Run in the background, waking up at 5AM to process your config, then going back to sleep until tomorrow.
+2. Run immediately, process the config, then exit [the container, if you are running in docker]
+
+These two modes are mutually exclusive, and the first is the default behavior.
+
+While it is possible to have `python kometa.py` running in an open window constantly, this is not the recommended approach as it relies on an always-open command window that can be obtrusive to the user.
 
 Instead, it is recommended to set an automated scheduling service so that Kometa can run in the background when scheduled to without any visible impact to the user (other than the Plex libraries and playlists updating).
 
-**To control how individual parts of Kometa are scheduled see the [Schedule detail](../../config/schedule.md)**
+This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
+
+**You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like.  That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../config/schedule.md)**
 
 IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path to that directory on *your* system.
 
@@ -39,7 +46,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
     
     This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running, Kometa will not begin the run until the scheduled time.
     
-    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental.md#time-to-run)
+    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental.md#times)
 
 === "Windows Task Scheduler"
     
@@ -61,7 +68,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
     
     This is the recommended approach as it allows the user additional control over how and when Kometa processes.
     
-    If you don't specify a time, the script will run at 5AM each day.  You can change this with the [time-to-run](../environmental.md#time-to-run) runtime flag.
+    If you don't specify a time, the script will run at 5AM each day.  You can change this with the [time-to-run](../environmental.md#times) runtime flag.
 
     ??? abstract "Background Run Scheduled Task"
     
@@ -179,7 +186,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
 
     Change `/path/to/kometa` to reflect where you've installed Kometa.
 
-    Keep Kometa running constantly, let it wait to do its thing at 3AM:
+    Keep Kometa running constantly, let it wait to do its thing at 5 AM:
     
        ```
        <?xml version="1.0" encoding="UTF-8"?>

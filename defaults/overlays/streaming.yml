@@ -51,7 +51,7 @@ templates:
   mdb_streaming:
     default:
       region: "US"
-      limit: "10000"
+      limit: "0"
       originals_only: false
     optional:
       - use_<<key>>
@@ -64,6 +64,14 @@ templates:
       - <<allowed_streaming>>
     ignore_blank_results: true
     conditionals:
+      discover_sort:
+        conditions:
+          - originals_only: false
+            library_type: movie
+            value: primary_release_date.desc
+          - originals_only: false
+            library_type: show
+            value: first_air_date.desc
       originals:
         conditions:
           - originals_only: true
@@ -71,7 +79,11 @@ templates:
       discover_limit:
         conditions:
           - originals_only: false
-            value: <<limit>>
+            value: 0
+      discover_count:
+        conditions:
+          - originals_only: false
+            value: 100
       discover_with:
         conditions:
           - originals_only: false
@@ -104,7 +116,9 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
+      vote_count.gte: <<discover_count>>
       watch_region: <<discover_region>>
+      sort_by: <<discover_sort>>
 
 overlays:
 

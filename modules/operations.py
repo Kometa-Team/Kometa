@@ -1,7 +1,7 @@
 import os, re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from modules import plex, util, anidb
-from modules.util import Failed, LimitReached, YAML
+from modules.util import Failed, LimitReached
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
@@ -10,14 +10,15 @@ logger = util.logger
 meta_operations = [
     "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
     "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
-    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_original_title_update",
-    "mass_poster_update", "mass_background_update", "mass_studio_update"
+    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_added_at_update",
+    "mass_original_title_update", "mass_poster_update", "mass_background_update", "mass_studio_update"
 ]
 name_display = {
     "audienceRating": "Audience Rating",
     "rating": "Critic Rating",
     "userRating": "User Rating",
     "originallyAvailableAt": "Originally Available Date",
+    "addedAt": "Added At Date",
     "contentRating": "Content Rating"
 }
 
@@ -45,6 +46,7 @@ class Operations:
         logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
         logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
+        logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
@@ -61,6 +63,29 @@ class Operations:
         logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug("")
+
+        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
+            if all((x is None for x in [configured_in, managed_in, less_in])):
+                return False
+
+            less_check = True
+            if less_in is not None:
+                less_check = col_in.childCount < less_in
+                logger.trace(f"{col_in.title} - collection size: {col_in.childCount} < less: {less_in}, DELETE: {less_check}")
+
+            managed_check = True
+            if managed_in is not None:
+                is_managed = "PMM" in labels_in or "Kometa" in labels_in
+                managed_check = managed_in == is_managed
+                logger.trace(f"{col_in.title} - collection managed: {is_managed} vs managed: {managed_in}, DELETE: {managed_check}")
+
+            configured_check = True
+            if configured_in is not None:
+                is_configured = col_in.title in self.library.collections
+                configured_check = configured_in == is_configured
+                logger.trace(f"{col_in.title} - collection configured: {is_configured} vs configured: {configured_in}, DELETE: {configured_check}")
+
+            return all((less_check, managed_check, configured_check))
 
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
@@ -88,7 +113,7 @@ class Operations:
             genre_edits = {"add": {}, "remove": {}}
             content_edits = {}
             studio_edits = {}
-            available_edits = {}
+            date_edits = {"originallyAvailableAt": {}, "addedAt": {}}
             remove_edits = {}
             reset_edits = {}
             lock_edits = {}
@@ -98,13 +123,6 @@ class Operations:
             ep_reset_edits = {}
             ep_lock_edits = {}
             ep_unlock_edits = {}
-
-            reverse_anidb = {}
-            for k, v in self.library.anidb_map.items():
-                reverse_anidb[v] = k
-            reverse_mal = {}
-            for k, v in self.library.mal_map.items():
-                reverse_mal[v] = k
 
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
@@ -268,14 +286,8 @@ class Operations:
 
                 anidb_id = None
                 def get_anidb_id():
-                    if item.ratingKey in reverse_anidb:
-                        return reverse_anidb[item.ratingKey]
-                    elif tvdb_id in self.config.Convert._tvdb_to_anidb:
-                        return self.config.Convert._tvdb_to_anidb[tvdb_id]
-                    elif imdb_id in self.config.Convert._imdb_to_anidb:
-                        return self.config.Convert._imdb_to_anidb[imdb_id]
-                    else:
-                        return False
+                    temp_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
+                    return temp_id if temp_id else False
 
                 _anidb_obj = None
                 def anidb_obj():
@@ -303,14 +315,15 @@ class Operations:
                         if anidb_id is None:
                             anidb_id = get_anidb_id()
                         mal_id = None
-                        if item.ratingKey in reverse_mal:
-                            mal_id = reverse_mal[item.ratingKey]
+                        if item.ratingKey in self.library.reverse_mal:
+                            mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
                             logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
-                        elif anidb_id not in self.config.Convert._anidb_to_mal:
-                            logger.warning(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id} of Guid: {item.guid}")
                         else:
-                            mal_id = self.config.Convert._anidb_to_mal[anidb_id]
+                            try:
+                                mal_id = self.config.Convert.anidb_to_mal(anidb_id)
+                            except Failed as err:
+                                logger.warning(f"{err} of Guid: {item.guid}")
                         if mal_id:
                             try:
                                 _mal_obj = self.config.MyAnimeList.get_anime(mal_id)
@@ -664,65 +677,69 @@ class Operations:
                             except Failed:
                                 continue
 
-                if self.library.mass_originally_available_update:
-                    current_available = item.originallyAvailableAt
-                    if current_available:
-                        current_available = current_available.strftime("%Y-%m-%d")
-                    for option in self.library.mass_originally_available_update:
-                        if option in ["lock", "remove"]:
-                            if option == "remove" and current_available:
-                                if "originallyAvailableAt" not in remove_edits:
-                                    remove_edits["originallyAvailableAt"] = []
-                                remove_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nRemove Originally Available Date (Batched)"
-                            elif "originallyAvailableAt" not in locked_fields:
-                                if "originallyAvailableAt" not in lock_edits:
-                                    lock_edits["originallyAvailableAt"] = []
-                                lock_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nLock Originally Available Date (Batched)"
-                            break
-                        elif option in ["unlock", "reset"]:
-                            if option == "reset" and current_available:
-                                if "originallyAvailableAt" not in reset_edits:
-                                    reset_edits["originallyAvailableAt"] = []
-                                reset_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nReset Originally Available Date (Batched)"
-                            elif "originallyAvailableAt" in locked_fields:
-                                if "originallyAvailableAt" not in unlock_edits:
-                                    unlock_edits["originallyAvailableAt"] = []
-                                unlock_edits["originallyAvailableAt"].append(item.ratingKey)
-                                item_edits += "\nUnlock Originally Available Date (Batched)"
-                            break
-                        else:
-                            try:
-                                if option == "tmdb":
-                                    new_available = tmdb_obj().release_date if self.library.is_movie else tmdb_obj().first_air_date # noqa
-                                elif option == "omdb":
-                                    new_available = omdb_obj().released # noqa
-                                elif option == "tvdb":
-                                    new_available = tvdb_obj().release_date # noqa
-                                elif option == "mdb":
-                                    new_available = mdb_obj().released # noqa
-                                elif option == "mdb_digital":
-                                    new_available = mdb_obj().released_digital # noqa
-                                elif option == "anidb":
-                                    new_available = anidb_obj().released # noqa
-                                elif option == "mal":
-                                    new_available = mal_obj().aired # noqa
-                                else:
-                                    new_available = option
-                                if not new_available:
-                                    logger.info(f"No {option} Originally Available Date Found")
-                                    raise Failed
-                                new_available = new_available.strftime("%Y-%m-%d")
-                                if current_available != new_available:
-                                    if new_available not in available_edits:
-                                        available_edits[new_available] = []
-                                    available_edits[new_available].append(item.ratingKey)
-                                    item_edits += f"\nUpdate Originally Available Date (Batched) | {new_available}"
+                for attribute, item_attr in [
+                    (self.library.mass_originally_available_update, "originallyAvailableAt"),
+                    (self.library.mass_added_at_update, "addedAt")
+                ]:
+                    if attribute:
+                        current = getattr(item, item_attr)
+                        if current:
+                            current = current.strftime("%Y-%m-%d")
+                        for option in attribute:
+                            if option in ["lock", "remove"]:
+                                if option == "remove" and current:
+                                    if item_attr not in remove_edits:
+                                        remove_edits[item_attr] = []
+                                    remove_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                elif item_attr not in locked_fields:
+                                    if item_attr not in lock_edits:
+                                        lock_edits[item_attr] = []
+                                    lock_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nLock {name_display[item_attr]} (Batched)"
                                 break
-                            except Failed:
-                                continue
+                            elif option in ["unlock", "reset"]:
+                                if option == "reset" and current:
+                                    if item_attr not in reset_edits:
+                                        reset_edits[item_attr] = []
+                                    reset_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                elif item_attr in locked_fields:
+                                    if item_attr not in unlock_edits:
+                                        unlock_edits[item_attr] = []
+                                    unlock_edits[item_attr].append(item.ratingKey)
+                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                break
+                            else:
+                                try:
+                                    if option == "tmdb":
+                                        new_date = tmdb_obj().release_date if self.library.is_movie else tmdb_obj().first_air_date  # noqa
+                                    elif option == "omdb":
+                                        new_date = omdb_obj().released  # noqa
+                                    elif option == "tvdb":
+                                        new_date = tvdb_obj().release_date  # noqa
+                                    elif option == "mdb":
+                                        new_date = mdb_obj().released  # noqa
+                                    elif option == "mdb_digital":
+                                        new_date = mdb_obj().released_digital  # noqa
+                                    elif option == "anidb":
+                                        new_date = anidb_obj().released  # noqa
+                                    elif option == "mal":
+                                        new_date = mal_obj().aired  # noqa
+                                    else:
+                                        new_date = option
+                                    if not new_date:
+                                        logger.info(f"No {option} {name_display[item_attr]} Found")
+                                        raise Failed
+                                    new_date = new_date.strftime("%Y-%m-%d")
+                                    if current != new_date:
+                                        if new_date not in date_edits[item_attr]:
+                                            date_edits[item_attr][new_date] = []
+                                        date_edits[item_attr][new_date].append(item.ratingKey)
+                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {new_date}"
+                                    break
+                                except Failed:
+                                    continue
 
                 if len(item_edits) > 0:
                     logger.info(f"Item Edits{item_edits}")
@@ -785,6 +802,11 @@ class Operations:
                                             logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
 
                                 for episode in self.library.query(season.episodes):
+                                    try:
+                                        episode = self.library.reload(episode)
+                                    except Failed:
+                                        logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
+                                        continue
                                     try:
                                         episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                     except Failed:
@@ -920,11 +942,27 @@ class Operations:
                 self.library.Plex.editStudio(new_studio)
                 self.library.Plex.saveMultiEdits()
 
-            _size = len(available_edits.items())
-            for i, (new_available, rating_keys) in enumerate(sorted(available_edits.items()), 1):
-                logger.info(get_batch_info(i, _size, "originallyAvailableAt", len(rating_keys), display_value=new_available))
+            _size = len(date_edits["originallyAvailableAt"].items())
+            for i, (new_date, rating_keys) in enumerate(sorted(date_edits["originallyAvailableAt"].items()), 1):
+                logger.info(get_batch_info(i, _size, "originallyAvailableAt", len(rating_keys), display_value=new_date))
                 self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editOriginallyAvailable(new_available)
+                self.library.Plex.editOriginallyAvailable(new_date)
+                self.library.Plex.saveMultiEdits()
+
+            epoch = datetime(1970, 1, 1)
+            _size = len(date_edits["addedAt"].items())
+            for i, (new_date, rating_keys) in enumerate(sorted(date_edits["addedAt"].items()), 1):
+                logger.info(get_batch_info(i, _size, "addedAt", len(rating_keys), display_value=new_date))
+                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                new_date = datetime.strptime(new_date, "%Y-%m-%d")
+                logger.trace(new_date)
+                try:
+                    ts = int(round(new_date.timestamp()))
+                except (TypeError, OSError):
+                    offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
+                    ts = int((new_date - epoch).total_seconds()) - offset
+                logger.trace(epoch + timedelta(seconds=ts))
+                self.library.Plex.editAddedAt(ts)
                 self.library.Plex.saveMultiEdits()
 
             _size = len(remove_edits.items())
@@ -1040,16 +1078,8 @@ class Operations:
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
-                if (less is not None or managed is not None or configured is not None) \
-                        and (less is None or col.childCount < less) \
-                        and (managed is None
-                             or (managed is True and "PMM" in labels)
-                             or (managed is True and "Kometa" in labels)
-                             or (managed is False and "PMM" not in labels)
-                             or (managed is False and "Kometa" not in labels)) \
-                        and (configured is None
-                             or (configured is True and col.title in self.library.collections)
-                             or (configured is False and col.title not in self.library.collections)):
+
+                if should_be_deleted(col, labels, configured, managed, less):
                     try:
                         self.library.delete(col)
                         logger.info(f"{col.title} Deleted")
@@ -1120,7 +1150,7 @@ class Operations:
             yaml = None
             if os.path.exists(self.library.metadata_backup["path"]):
                 try:
-                    yaml = YAML(path=self.library.metadata_backup["path"])
+                    yaml = self.config.Requests.file_yaml(self.library.metadata_backup["path"])
                 except Failed as e:
                     logger.error(e)
                     filename, file_extension = os.path.splitext(self.library.metadata_backup["path"])
@@ -1130,7 +1160,7 @@ class Operations:
                     os.rename(self.library.metadata_backup["path"], f"{filename}{i}{file_extension}")
                     logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
             if not yaml:
-                yaml = YAML(path=self.library.metadata_backup["path"], create=True)
+                yaml = self.config.Requests.file_yaml(self.library.metadata_backup["path"], create=True)
             if "metadata" not in yaml.data or not isinstance(yaml.data["metadata"], dict):
                 yaml.data["metadata"] = {}
             special_names = {}

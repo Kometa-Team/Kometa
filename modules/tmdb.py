@@ -1,7 +1,7 @@
 import re
 from modules import util
 from modules.util import Failed
-from retrying import retry
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 from tmdbapis import TMDbAPIs, TMDbException, NotFound, Movie
 
 logger = util.logger
@@ -27,7 +27,7 @@ type_map = {
 }
 discover_movie_only = [
     "region", "with_cast", "with_crew", "with_people", "certification_country", "certification", "include_video", "year",
-    "primary_release_year", "primary_release_date", "release_date", "include_adult", "with_release_type", "with_title_translation"
+    "primary_release_year", "primary_release_date", "release_date", "with_release_type", "with_title_translation", "with_origin_country"
 ]
 discover_tv_only = [
     "timezone", "screened_theatrically", "include_null_first_air_dates", "air_date", "first_air_date",
@@ -35,8 +35,9 @@ discover_tv_only = [
 ]
 discover_strings = [
     "with_cast", "with_crew", "with_people", "with_companies", "without_companies", "with_networks", "with_genres",
-    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_original_language", "timezone",
-    "with_watch_providers", "without_watch_providers", "with_overview_translation", "with_title_translation", "with_name_translation"
+    "without_genres", "with_release_type", "with_keywords", "without_keywords", "with_origin_country", "timezone",
+    "with_watch_providers", "without_watch_providers", "with_overview_translation",
+    "with_original_language", "with_watch_monetization_types", "with_title_translation", "with_name_translation"
 ]
 discover_ints = ["vote_count", "with_runtime"]
 modifiers = [".gte", ".lte"]
@@ -52,12 +53,6 @@ discover_special = [
 discover_all = discover_special + discover_strings + discover_years + discover_booleans + date_methods + \
       [f"{f}{m}" for f in discover_ints for m in modifiers] + \
       [f"{f}{m}" for f in discover_numbers for m in modifiers]
-discover_movie_sort = [
-    "popularity.asc", "popularity.desc", "release_date.asc", "release_date.desc", "revenue.asc", "revenue.desc",
-    "primary_release_date.asc", "primary_release_date.desc", "original_title.asc", "original_title.desc",
-    "vote_average.asc", "vote_average.desc", "vote_count.asc", "vote_count.desc"
-]
-discover_tv_sort = ["vote_average.desc", "vote_average.asc", "first_air_date.desc", "first_air_date.asc", "popularity.desc", "popularity.asc"]
 discover_monetization_types = ["flatrate", "free", "ads", "rent", "buy"]
 discover_types = {
     "Documentary": "documentary", "News": "news", "Miniseries": "miniseries",
@@ -113,8 +108,8 @@ class TMDbMovie(TMDBObj):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
         if expired or not data:
             data = self.load_movie()
         super()._load(data)
@@ -125,10 +120,10 @@ class TMDbMovie(TMDBObj):
         self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
         self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_movie(self):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
@@ -144,8 +139,8 @@ class TMDbShow(TMDBObj):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_show(tmdb_id, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_show(tmdb_id, self._tmdb.expiration)
         if expired or not data:
             data = self.load_show()
         super()._load(data)
@@ -162,10 +157,10 @@ class TMDbShow(TMDBObj):
         loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else [] # noqa
         self.seasons = [TMDbSeason(s) for s in loop]
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_show(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_show(expired, self, self._tmdb.expiration)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_show(self):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
@@ -184,8 +179,8 @@ class TMDbEpisode:
         self.ignore_cache = ignore_cache
         expired = None
         data = None
-        if self._tmdb.config.Cache and not ignore_cache:
-            data, expired = self._tmdb.config.Cache.query_tmdb_episode(self.tmdb_id, self.season_number, self.episode_number, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            data, expired = self._tmdb.cache.query_tmdb_episode(self.tmdb_id, self.season_number, self.episode_number, self._tmdb.expiration)
         if expired or not data:
             data = self.load_episode()
 
@@ -198,10 +193,10 @@ class TMDbEpisode:
         self.imdb_id = data["imdb_id"] if isinstance(data, dict) else data.imdb_id
         self.tvdb_id = data["tvdb_id"] if isinstance(data, dict) else data.tvdb_id
 
-        if self._tmdb.config.Cache and not ignore_cache:
-            self._tmdb.config.Cache.update_tmdb_episode(expired, self, self._tmdb.expiration)
+        if self._tmdb.cache and not ignore_cache:
+            self._tmdb.cache.update_tmdb_episode(expired, self, self._tmdb.expiration)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_episode(self):
         try:
             return self._tmdb.TMDb.tv_episode(self.tmdb_id, self.season_number, self.episode_number)
@@ -215,13 +210,15 @@ class TMDbEpisode:
 class TMDb:
     def __init__(self, config, params):
         self.config = config
+        self.requests = self.config.Requests
+        self.cache = self.config.Cache
         self.apikey = params["apikey"]
         self.language = params["language"]
         self.region = None
         self.expiration = params["expiration"]
         logger.secret(self.apikey)
         try:
-            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.config.session)
+            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()} # noqa
@@ -233,7 +230,7 @@ class TMDb:
             raise Failed(f"TMDb Error: No {convert_to.upper().replace('B_', 'b ')} found for TMDb ID {tmdb_id}")
         return check_id
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def convert_tvdb_to(self, tvdb_id):
         try:
             results = self.TMDb.find_by_id(tvdb_id=tvdb_id)
@@ -243,7 +240,7 @@ class TMDb:
             pass
         raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def convert_imdb_to(self, imdb_id):
         try:
             results = self.TMDb.find_by_id(imdb_id=imdb_id)
@@ -272,7 +269,7 @@ class TMDb:
     def get_show(self, tmdb_id, ignore_cache=False):
         return TMDbShow(self, tmdb_id, ignore_cache=ignore_cache)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_season(self, tmdb_id, season_number, partial=None):
         try:                            return self.TMDb.tv_season(tmdb_id, season_number, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Season found for TMDb ID {tmdb_id} Season {season_number}: {e}")
@@ -280,41 +277,41 @@ class TMDb:
     def get_episode(self, tmdb_id, season_number, episode_number, ignore_cache=False):
         return TMDbEpisode(self, tmdb_id, season_number, episode_number, ignore_cache=ignore_cache)
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_collection(self, tmdb_id, partial=None):
         try:                            return self.TMDb.collection(tmdb_id, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_person(self, tmdb_id, partial=None):
         try:                            return self.TMDb.person(tmdb_id, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _company(self, tmdb_id, partial=None):
         try:                            return self.TMDb.company(tmdb_id, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _network(self, tmdb_id, partial=None):
         try:                            return self.TMDb.network(tmdb_id, partial=partial)
         except NotFound as e:           raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _keyword(self, tmdb_id):
         try:                            return self.TMDb.keyword(tmdb_id)
         except NotFound as e:           raise Failed(f"TMDb Error: No Keyword found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_list(self, tmdb_id):
         try:                            return self.TMDb.list(tmdb_id)
         except NotFound as e:           raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_popular_people(self, limit):
         return {str(p.id): p.name for p in self.TMDb.popular_people().get_results(limit)}
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def search_people(self, name):
         try:                            return self.TMDb.people_search(name)
         except NotFound:                raise Failed(f"TMDb Error: Actor {name} Not Found")
@@ -340,7 +337,7 @@ class TMDb:
         elif tmdb_type == "List":                   self.get_list(tmdb_id)
         return tmdb_id
 
-    @retry(stop_max_attempt_number=6, wait_fixed=10000, retry_on_exception=util.retry_if_not_failed)
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_items(self, method, data, region, is_movie, result_type):
         if method == "tmdb_popular":
             results = self.TMDb.popular_movies(region=region) if is_movie else self.TMDb.popular_tv()

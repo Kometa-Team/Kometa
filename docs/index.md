@@ -1,6 +1,3 @@
----
-title: Home
----
 #
 
 <style>
@@ -27,6 +24,12 @@ title: Home
 [![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-00bc8c?style=plastic)](https://github.com/sponsors/meisnate12)
 [![Feature Requests](https://img.shields.io/badge/Feature%20Requests-00bc8c?style=plastic)](https://features.kometa.wiki/)
 </center>
+
+!!! info "What Happened to Plex Meta Manager?"
+
+    On April 25th 2024, the Plex Meta Manager name was officially retired and replaced with Kometa. This change was essential to avoid a trademark issue with Plex.
+
+    **If you are still using Plex Meta Manager and are unsure how to upgrade to Kometa, [click here to follow our guide](kometa/guides/rebrand.md)**
 
 Kometa (formerly known as Plex Meta Manager) is a powerful tool designed to give you complete control over your media libraries. With Kometa, you can take your customization to the next level, with granular control over metadata, collections, overlays, and much more.
 
@@ -75,14 +78,6 @@ Transform your media library with Kometa and discover its full potential! Connec
     Consider sponsoring the project to allow us to continue building great features for you!
 
 </div>
-
-
-
-## Demo Video
-
-The below YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
-
-<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Example Kometa Libraries 
 

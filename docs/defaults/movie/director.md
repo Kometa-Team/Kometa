@@ -101,7 +101,7 @@ work. Any value not specified will use its default value if it has one if not it
 
     1.  Check the first 10 casting credits in each movie
     2.  Create 20 collections maximum
-    3.  use the [rainier Style](#rainier-style)
+    3.  use the [rainier Style](#poster-styles)
     4.  Do not create a "Directors Collections" separator
     5.  There are two Richard Brooks, so use the 2nd 
     [Richard Brooks](https://www.themoviedb.org/search?query=Richard%20Brooks) found on TMDb

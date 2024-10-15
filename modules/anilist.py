@@ -57,8 +57,8 @@ country_codes = [
 ]
 
 class AniList:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, requests):
+        self.requests = requests
         self._options = None
 
     @property
@@ -79,7 +79,7 @@ class AniList:
     def _request(self, query, variables, level=1):
         logger.trace(f"Query: {query}")
         logger.trace(f"Variables: {variables}")
-        response = self.config.post(base_url, json={"query": query, "variables": variables})
+        response = self.requests.post(base_url, json={"query": query, "variables": variables})
         json_obj = response.json()
         logger.trace(f"Response: {json_obj}")
         if "errors" in json_obj:
@@ -241,7 +241,7 @@ class AniList:
         variables = {"user": username, "sort": userlist_sort_options[sort_by]}
         for alist in self._request(query, variables)["data"]["MediaListCollection"]["lists"]:
             if alist["name"] == list_name:
-                return [m["media"]["id"] for m in alist["entries"] if not score or not any([util.is_number_filter(value, mod, m["score"]) for mod, value in score.items()])]
+                return [m["media"]["id"] for m in alist["entries"] if not score or not any([util.is_number_filter(m["score"], mod, value) for mod, value in score.items()])]
         return []
 
     def validate_userlist(self, data):

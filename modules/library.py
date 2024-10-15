@@ -1,15 +1,17 @@
 import os, time
 from abc import ABC, abstractmethod
-from modules import util, operations
+from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
-from modules.util import Failed, NotScheduled, YAML
+from modules.poster import ImageData
+from modules.util import Failed, NotScheduled
 from PIL import Image
 
 logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
+        self.session = None
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
@@ -31,7 +33,9 @@ class Library(ABC):
         self.show_map = {}
         self.imdb_map = {}
         self.anidb_map = {}
+        self.reverse_anidb = {}
         self.mal_map = {}
+        self.reverse_mal = {}
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.imdb_rating_key_map = {}
@@ -97,6 +101,7 @@ class Library(ABC):
         self.mass_content_rating_update = params["mass_content_rating_update"]
         self.mass_original_title_update = params["mass_original_title_update"]
         self.mass_originally_available_update = params["mass_originally_available_update"]
+        self.mass_added_at_update = params["mass_added_at_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
         self.mass_poster_update = params["mass_poster_update"]
         self.mass_background_update = params["mass_background_update"]
@@ -124,7 +129,7 @@ class Library(ABC):
         self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.remove_title_parentheses \
                                                or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                                or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
-                                               or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_original_title_update\
+                                               or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_added_at_update or self.mass_original_title_update\
                                                or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
                                                or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
         self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
@@ -239,7 +244,7 @@ class Library(ABC):
         return poster_uploaded, background_uploaded
 
     def get_id_from_maps(self, key):
-        key = str(key)
+        key = int(key)
         if key in self.movie_rating_key_map:
             return self.movie_rating_key_map[key]
         elif key in self.show_rating_key_map:
@@ -271,6 +276,36 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         pass
 
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, is_poster=True, image_name=None):
+        image_type = "poster" if is_poster else "background"
+        if image_name is None:
+            image_name = image_type
+        if images:
+            logger.debug(f"{len(images)} {image_type}{'s' if len(images) > 1 else ''} found:")
+            for i in images:
+                logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
+            if prioritize_assets and "asset_directory" in images:
+                return images["asset_directory"]
+            for attr in ["style_data", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
+                         "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory",
+                         f"pmm_{image_type}",
+                         "tmdb_person", "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details",
+                         "tmdb_director_details",
+                         "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
+                         "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
+                if attr in images:
+                    if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
+                        if "asset_directory" in images:
+                            return images["asset_directory"]
+                        else:
+                            try:
+                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, is_poster=is_poster, filename=image_name)
+                            except Failed as e:
+                                logger.error(e)
+                    if attr in ["asset_directory", f"pmm_{image_type}"]:
+                        return images[attr]
+                    return ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
+
     @abstractmethod
     def reload(self, item, force=False):
         pass
@@ -288,7 +323,7 @@ class Library(ABC):
         pass
 
     def check_image_for_overlay(self, image_url, image_path, remove=False):
-        image_path = util.download_image("", image_url, image_path).location
+        image_path = self.config.Requests.download_image("", image_url, image_path, session=self.session).location
         while util.is_locked(image_path):
             time.sleep(1)
         with Image.open(image_path) as image:
@@ -347,7 +382,7 @@ class Library(ABC):
                         self.report_data[collection][other] = []
                     self.report_data[collection][other].append(title)
 
-        yaml = YAML(self.report_path, start_empty=True)
+        yaml = self.config.Requests.file_yaml(self.report_path, start_empty=True)
         yaml.data = self.report_data
         yaml.save()
 
@@ -377,13 +412,37 @@ class Library(ABC):
                     id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
                     if id_type == "movie":
-                        self.movie_rating_key_map[key] = main_id[0]
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.TMDb.get_movie(_id)
+                                    self.movie_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.movie_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.movie_map)
                     elif id_type == "show":
-                        self.show_rating_key_map[key] = main_id[0]
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.Convert.tvdb_to_tmdb(_id, fail=True)
+                                    self.show_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.show_rating_key_map[key] = main_id[0]
                         util.add_dict_list(main_id, key, self.show_map)
                 if imdb_id:
                     self.imdb_rating_key_map[key] = imdb_id[0]
                     util.add_dict_list(imdb_id, key, self.imdb_map)
+        self.reverse_anidb = {}
+        for k, v in self.anidb_map.items():
+            self.reverse_anidb[v] = k
+        self.reverse_mal = {}
+        for k, v in self.mal_map.items():
+            self.reverse_mal[v] = k
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")

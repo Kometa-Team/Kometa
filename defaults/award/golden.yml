@@ -16,7 +16,7 @@ collections:
       key: best_picture
     template:
       - name: shared
-        sort: Golden Globes !1
+        sort: Golden Globe !1
         allowed_libraries: movie
         image: award/golden/best_picture_winner
         translation_key: golden_picture

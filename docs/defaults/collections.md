@@ -31,12 +31,9 @@ collections.
 **Chart Separator and Award Separator each have their own file, while the other Separators are part of their respective 
 files.**
 
-<details>
-  <summary>Click to expand to see an example of Separators.</summary>
+??? tip "Click to expand to see an example of Separators."
 
-   ![](images/separators.jpg)
-
-</details>
+    ![](images/separators.jpg)
 
 ### Library On/Off
 
@@ -68,6 +65,7 @@ This is the default Kometa collection ordering:
 | `basic`              | `010`              |
 | `anilist`            | `020`              |
 | `imdb`               | `020`              |
+| `letterboxd`         | `020`              |
 | `myanimelist`        | `020`              |
 | `other_chart`        | `020`              |
 | `tautulli`           | `020`              |

@@ -1,0 +1,20 @@
+name: Tag New Version
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 2
+
+      - uses: Kometa-Team/tag-new-version@master
+        with:
+          version-command: |
+            cat VERSION

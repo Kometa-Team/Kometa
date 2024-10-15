@@ -77,6 +77,7 @@ Supported library types: Movie & Show
 | Tamil                    | `ta`  | `30`   | `in`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Urdu                     | `ur`  | `20`   | `pk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Vietnamese               | `vi`  | `15`   | `vn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Wolof                    | `wo`  | `10`   | `sn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mayan                    | `myn` | `8`    | `mx`         |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -87,6 +88,13 @@ Supported library types: Movie & Show
 | Zulu                     | `zu`  | `3`    | `za`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Luxembourgish            | `lb`  | `2`    | `lu`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mossi                    | `mos` | `1`    | `bf`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Lingala                  | `ln`  | `11`   | `cd`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Afrikaans                | `af`  | `13`   | `af`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Mongolian                | `mn`  | `14`   | `mn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Khmer                    | `kh`  | `15`   | `kh`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Limburgish               | `li`  | `16`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+
 
 ??? tip "Square Style (click to expand)"
 

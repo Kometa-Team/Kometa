@@ -121,6 +121,7 @@ dynamic_collections:
         - no/15
       MA15+:
         - au/MA15+
+        - au/MA 15+
         - de/16
         - no/16
         - A-17
@@ -132,6 +133,7 @@ dynamic_collections:
         - M/PG
       R18+:
         - au/R 18+
+        - au/R18+
         - de/18
         - gb/18
         - M

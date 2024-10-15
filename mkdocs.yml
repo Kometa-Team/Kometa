@@ -147,7 +147,9 @@ nav:
         - Frequently Asked Questions: kometa/faqs.md
         - Explanation Guides: &guides
           - Overview: kometa/guides/overview.md
+          - Switching from PMM to Kometa: kometa/guides/rebrand.md
           - Plex Ratings Explained: kometa/guides/ratings.md
+          - Kometa Sorting Guide: kometa/guides/order.md
           - Scheduling Kometa Runs Guide: kometa/guides/scheduling.md
           - Image Asset Directory Guide: kometa/guides/assets.md
           - Formula 1 Metadata Guide: kometa/guides/formula.md
@@ -191,7 +193,7 @@ nav:
           - Sonarr: config/sonarr.md
           - Trakt: config/trakt.md
           - MyAnimeList: config/myanimelist.md
-          - Trakt and MyAnimeList Authentication: config/auth.md
+          - Trakt and MyAnimeList Authentication: config/authentication.md
       - OTHER:
         - Scheduling Parts: config/schedule.md
   - KOMETA DEFAULTS:
@@ -215,6 +217,7 @@ nav:
           - National Film Registry: defaults/award/nfr.md
           - People's Choice Awards: defaults/award/pca.md
           - Razzie Awards: defaults/award/razzie.md
+          - Screen Actors Guild Awards: defaults/award/sag.md
           - Sundance Film Festival Awards: defaults/award/sundance.md
           - Toronto International Film Festival: defaults/award/tiff.md
           - Venice Film Festival Awards: defaults/award/venice.md
@@ -223,6 +226,7 @@ nav:
           - Basic Charts: defaults/chart/basic.md
           - AniList Charts: defaults/chart/anilist.md
           - IMDb Charts: defaults/chart/imdb.md
+          - Letterboxd Charts: defaults/chart/letterboxd.md
           - MyAnimeList Charts: defaults/chart/myanimelist.md
           - Tautulli Charts: defaults/chart/tautulli.md
           - TMDb Charts: defaults/chart/tmdb.md
@@ -345,6 +349,7 @@ nav:
     - EXPLANATION GUIDES: *guides
     - COMPANION SCRIPTS: *scripts
     - USEFUL LINKS: *links
+  - BLOG: https://blog.kometa.wiki
   - SPONSOR: https://github.com/sponsors/meisnate12
 #  - SHOWCASE:
 #    - Overlays Showcase: showcase/overlays.md

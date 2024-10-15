@@ -301,11 +301,15 @@ dynamic_collections:
       - DC Comics
       - Dimension Films
       - Dino De Laurentiis Company
+      - Disney Television Animation
+      - DisneyToon Studios
       - Don Simpson Jerry Bruckheimer Films
       - Doozer
       - Dreams Salon Entertainment Culture
       - DreamWorks Studios
       - DreamWorks Pictures
+      - Dropout
+      - Dynamic Planning
       - Eleventh Hour Films
       - EMJAG Productions
       - Endeavor Content
@@ -317,6 +321,7 @@ dynamic_collections:
       - Exposure Labs
       - Fandango
       - Fields Entertainment
+      - Film4 Productions
       - FilmDistrict
       - FilmNation Entertainment
       - Flynn Picture Company
@@ -332,6 +337,7 @@ dynamic_collections:
       - Gary Sanchez Productions
       - Gaumont
       - Generator Entertainment
+      - Golden Harvest
       - Gracie Films
       - Green Hat Films
       - Grindstone Entertainment Group
@@ -344,6 +350,7 @@ dynamic_collections:
       - HBO
       - Heyday Films
       - Hughes Entertainment
+      - Hungry Man
       - Hurwitz & Schlossberg Productions
       - Hyperobject Industries
       - Icon Entertainment International
@@ -435,11 +442,13 @@ dynamic_collections:
       - Scion Films
       - Scott Free Productions
       - Sculptor Media
+      - Screen Gems
       - Sean Daniel Company
       - Searchlight Pictures
       - Secret Hideout
       - See-Saw Films
       - Serendipity Pictures
+      - Shaw Brothers
       - Show East
       - Showtime Networks
       - Sil-Metropole Organisation
@@ -461,6 +470,7 @@ dynamic_collections:
       - Studio 8
       - Studio Babelsberg
       - Studio Dragon
+      - Studio Live
       - STX Entertainment
       - Summit Entertainment
       - Syfy
@@ -477,6 +487,7 @@ dynamic_collections:
       - The Littlefield Company
       - The Mark Gordon Company
       - The Sea Change Project
+      - The Stone Quarry
       - The Weinstein Company
       - Tim Burton Productions
       - TOHO
@@ -575,6 +586,9 @@ dynamic_collections:
         - DreamWorks Animation
         - DreamWorks Animation Television
         - DreamWorks Classics
+      Dropout:
+        - CollegeHumor
+        - CollegeHumor Media
       EMT Squared:
         - EMT²0
       feel.:

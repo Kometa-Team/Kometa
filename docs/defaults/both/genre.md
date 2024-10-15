@@ -12,10 +12,10 @@ Supported Library Types: Movie, Show
 
 ## Collections Section 060
 
-| Collection                                               | Key                              | Description                                                                    |
-|:---------------------------------------------------------|:---------------------------------|:-------------------------------------------------------------------------------|
-| `Genre Collections`                                      | `separator`                      | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Number>>`<br>**Example:** `5` | Collection of Movies/Shows that have this Genre.                               |
+| Collection                                               | Key                                  | Description                                                                    |
+|:---------------------------------------------------------|:-------------------------------------|:-------------------------------------------------------------------------------|
+| `Genre Collections`                                      | `separator`                          | [Separator Collection](../separators.md) to denote the Section of Collections. |
+| `<<Genre>> Movies/Shows`<br>**Example:** `Action Movies` | `<<Genre>>`<br>**Example:** `Action` | Collection of Movies/Shows that have this Genre.                               |
 
 ## Config
 
@@ -119,7 +119,13 @@ If you want to customize these values, use the methods described above.
 
     <div id="addons" />
 
-    ```yaml
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
     addons: {%    
       include-markdown "../../../defaults/both/genre.yml" 
       comments=false

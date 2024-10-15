@@ -6,8 +6,26 @@ search:
 
 The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes.
 
-You can specify your asset folders under the `settings` attribute `asset_directory`:
+## Requirements and configuration
 
+If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own.  The name that Kometa will use to look up the asset poster for a movie is the folder that the movie file is located in *on disk*, and each movie/show needs to have a unique asset name.
+
+In other words, this works:
+```
+movies/Star Wars (1977)/Star Wars (1977) Bluray-1080p.mkv
+movies/Star Trek The Motion Picture (1979)/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
+movies/The Empire Strikes Back (1980)/The Empire Strikes Back (1980) Bluray-1080p.mkv
+```
+while this *WILL NOT*:
+```
+movies/Star Wars (1977) Bluray-1080p.mkv
+movies/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
+movies/The Empire Strikes Back (1980) Bluray-1080p.mkv
+```
+
+If your movies and shows are not in individual folders, setting art using the asset directory will not work and you can stop here.
+
+You can specify your asset folders under the `settings` attribute `asset_directory`:
 
 ???+ important 
 
@@ -30,6 +48,8 @@ settings:
     - config/assets_ahoy
 ```
 
+* Kometa will not create the asset directories themselves; it will create folder *within* asset directories [if configured to do this], but not the asset directories themselves.
+
 * You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [File Blocks](../../config/files.md) for how to define them.
 
 * By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
@@ -48,11 +68,11 @@ Movies:
     assets_for_all: true
 ```
 
-* If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
-  ```yaml
-  settings:
-    show_missing_assets: false
-  ```
+If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
+```yaml
+settings:
+  show_missing_assets: false
+```
 
 ## Asset interaction with overlays
 
@@ -68,127 +88,143 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
     The below table assumes that your assets are stored within the directory mapped to `config` in your Kometa environment.
 
-| Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`       | Flat Assets Image Paths<br>`asset_folders: false`             |
-|:---------------------------------|:---------------------------------------------------------|:--------------------------------------------------------------|
-| Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                 | `<path_to_assets>/ASSET_NAME.ext`                             |
-| Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`             | `<path_to_assets>/ASSET_NAME_background.ext`                  |
-| Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`               | `<path_to_assets>/ASSET_NAME_Season##.ext`                    |
-| Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`    | `<path_to_assets>/ASSET_NAME_Season##_background.ext`         |
-| Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                 | `<path_to_assets>/ASSET_NAME_S##E##.ext`                      |
-| Episode background               | `<path_to_assets>/ASSET_NAME/S##E##_background.ext`      | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`           |
+=== "ASSET_FOLDERS=True"
+    | Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`       |
+    |:---------------------------------|:---------------------------------------------------------|
+    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                 |
+    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`             |
+    | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`               |
+    | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`    |
+    | Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                 |
+    | Episode background               | `<path_to_assets>/ASSET_NAME/S##E##_background.ext`      |
+=== "ASSET_FOLDERS=False"
+    | Image Type                       | Flat Assets Image Paths<br>`asset_folders: false`        |
+    |:---------------------------------|:---------------------------------------------------------|
+    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                        |
+    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`             |
+    | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`               |
+    | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext`    |
+    | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                 |
+    | Episode background               | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`      |
 
-* For **Collections** replace `ASSET_NAME` with the mapping name used with the collection unless `name_mapping` is specified, which you would then use what's specified in `name_mapping`.
+## Determining the "Asset Name"
 
-  For example:
-  ```yaml
-  collections:
-    A24 Movies:
-      trakt_list: https://trakt.tv/users/moonilism/lists/a24
-  ```
-  `ASSET_NAME` is "A24 Movies"
+=== "Collections"
+    `ASSET_NAME` is the mapping name used with the collection unless `name_mapping` is specified, in which case you would use what's specified in `name_mapping`.
 
-  ```yaml
-  /// < : ** : > \\\:
-     name_mapping: crazy-punctuation-collection
-     trakt_list: https://trakt.tv/users/moonilism/lists/a24
-  ```
-  `ASSET_NAME` is "crazy-punctuation-collection"
+    For example:
+    ```yaml
+    collections:
+      A24 Movies:
+        trakt_list: https://trakt.tv/users/moonilism/lists/a24
+    ```
+    `ASSET_NAME` is "A24 Movies"
 
-* For **Movies** replace `ASSET_NAME` with the exact name of the folder the video file is stored in.
+    ```yaml
+    collections:
+      /// < : ** : > \\\:
+        name_mapping: crazy-punctuation-collection
+        trakt_list: https://trakt.tv/users/moonilism/lists/a24
+    ```
+    `ASSET_NAME` is "crazy-punctuation-collection"
 
-  That means the folder name exactly as it appears in the file system.
-  ```
-  /path/to/media/movies/THE NAME OF THE FOLDER HOWEVER LONG IT IS AND WHATEVER IT CONTAINS/MOVIE_NAME.mp4
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
-  ```
+=== "Movies"
+    `ASSET_NAME` is the exact name of the folder the video file is stored in.
 
-  For example, given this movie:
-  ```
-  /path/to/media/movies/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/Star Wars (1977) [1080p].mp4
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
-  ```
-  The asset names that Kometa will look for are:
+    That means the folder name exactly as it appears in the file system.
+    ```
+    /path/to/media/movies/NAME OF THE FOLDER HOWEVER LONG AND WHATEVER IT CONTAINS/MOVIE_NAME.mp4
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+    ```
 
-  ASSET_FOLDERS=True:
-  ```
-  config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/poster.ext
-  config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/background.ext
-  ```
-  
-  ASSET_FOLDERS=False:
-  ```
-  config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}.ext
-  config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}_background.ext
-  ```
+    For example, given this movie:
+    ```
+    /path/to/media/movies/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/Star Wars (1977) [1080p].mp4
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+    ```
+    The asset names that Kometa will look for are:
 
-* For **Shows**, **Seasons**, and **Episodes** replace `ASSET_NAME` with the exact name of the folder for the show as a whole.
+    === "ASSET_FOLDERS=True"
+        ```
+        config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/poster.ext
+        config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}/background.ext
+        ```
+    === "ASSET_FOLDERS=False"
+        ```
+        config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}.ext
+        config/assets/Star Wars (1977) {imdb-tt0076759} {tmdb-11}_background.ext
+        ```
 
-  That means the folder name exactly as it appears in the file system.
-  ```
-  /path/to/media/tv/THE NAME OF THE FOLDER HOWEVER LONG IT IS AND WHATEVER IT CONTAINS/Season 01/EPISODE_FILE.mkv
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
-  ```
+=== "Shows, Seasons, and Episodes"
+    `ASSET_NAME` is the exact name of the folder for the show as a whole.
 
-  For example, given this show:
-  ```
-  /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
-  ```
-  The asset names that Kometa will look for are:
+    That means the folder name exactly as it appears in the file system.
+    ```
+    /path/to/media/tv/NAME OF THE FOLDER HOWEVER LONG AND WHATEVER IT CONTAINS/Season 01/EPISODE_FILE.mkv
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+    ```
 
-  ASSET_FOLDERS=True:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}/poster.ext
-  config/assets/The Expanse (2015) {tvdb-280619}/background.ext
-  ```
-  
-  ASSET_FOLDERS=False:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}.ext
-  config/assets/The Expanse (2015) {tvdb-280619}_background.ext
-  ```
-  
-* For **Seasons** replace `##` with the zero padded season number (00 for specials)
+    For example, given this show:
+    ```
+    /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -- THIS IS ASSET_NAME
+    ```
+    The asset names that Kometa will look for are:
 
-  For example, given this show:
-  ```
-  /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
-  ```
+    === "ASSET_FOLDERS=True"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}/poster.ext
+        config/assets/The Expanse (2015) {tvdb-280619}/background.ext
+        ```
+    === "ASSET_FOLDERS=False"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}.ext
+        config/assets/The Expanse (2015) {tvdb-280619}_background.ext
+        ```
+ 
+## Season and Episode numbers
 
-  The asset names that Kometa will look for are:
+=== "Seasons"
+    Replace `##` with the zero padded season number (00 for specials)
 
-  ASSET_FOLDERS=True:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}/Season01.ext
-  config/assets/The Expanse (2015) {tvdb-280619}/Season01_background.ext
-  ```
-  
-  ASSET_FOLDERS=False:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}_Season01.ext
-  config/assets/The Expanse (2015) {tvdb-280619}_Season01_background.ext
-  ```
+    For example, given this show:
+    ```
+    /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+    ```
 
-* For **Episodes** replacing the first `##` with the zero padded season number (00 for specials), the second `##` with the zero padded episode number
+    The asset names that Kometa will look for are:
 
-  For example, given this show:
-  ```
-  /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
-  ```
+    === "ASSET_FOLDERS=True"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}/Season01.ext
+        config/assets/The Expanse (2015) {tvdb-280619}/Season01_background.ext
+        ```
+    === "ASSET_FOLDERS=False"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}_Season01.ext
+        config/assets/The Expanse (2015) {tvdb-280619}_Season01_background.ext
+        ```
 
-  The asset names that Kometa will look for are:
+=== "Episodes"
+    Replace the first `##` with the zero padded season number (00 for specials), the second `##` with the zero padded episode number
 
-  ASSET_FOLDERS=True:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}/S01E01.ext
-  config/assets/The Expanse (2015) {tvdb-280619}/S01E01_background.ext
-  ```
-  
-  ASSET_FOLDERS=False:
-  ```
-  config/assets/The Expanse (2015) {tvdb-280619}_S01E01.ext
-  config/assets/The Expanse (2015) {tvdb-280619}_S01E01_background.ext
-  ```
+    For example, given this show:
+    ```
+    /path/to/media/tv/The Expanse (2015) {tvdb-280619}/Season 01/The Expanse (2015) - S01E01 - Dulcinea.mkv
+    ```
+
+    The asset names that Kometa will look for are:
+
+    === "ASSET_FOLDERS=True"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}/S01E01.ext
+        config/assets/The Expanse (2015) {tvdb-280619}/S01E01_background.ext
+        ```
+    === "ASSET_FOLDERS=False"
+        ```
+        config/assets/The Expanse (2015) {tvdb-280619}_S01E01.ext
+        config/assets/The Expanse (2015) {tvdb-280619}_S01E01_background.ext
+        ```
 
 * Replace `.ext` with the image extension
 
@@ -198,99 +234,98 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
 
-### Asset Folders `asset_folders: true`
+### Asset Folders vs Flat Assets
 
-```
-config
-├── config.yml
-├── Movies.yml
-├── TV Shows.yml
-└── assets
-    ├── The Lord of the Rings
-    │   ├── poster.png
-    │   └── background.png
-    ├── The Lord of the Rings The Fellowship of the Ring (2001)
-    │   ├── poster.png
-    │   └── background.png
-    ├── The Lord of the Rings The Two Towers (2002)
-    │   ├── poster.png
-    │   └── background.png
-    ├── The Lord of the Rings The Return of the King (2003)
-    │   ├── poster.png
-    │   └── background.png
-    ├── Star Wars (Animated)
-    │   ├── poster.png
-    │   └── background.png
-    ├── Star Wars The Clone Wars
-    │   ├── poster.png
-    │   ├── background.png
-    │   ├── Season00.png
-    │   ├── Season01.png
-    │   ├── Season02.png
-    │   ├── Season03.png
-    │   ├── Season04.png
-    │   ├── Season05.png
-    │   ├── Season06.png
-    │   ├── Season07.png
-    │   ├── S07E01.png
-    │   ├── S07E02.png
-    │   ├── S07E03.png
-    │   ├── S07E04.png
-    │   └── S07E05.png
-    └── Star Wars Rebels
-        ├── poster.png
-        ├── background.png
-        ├── Season01.png
-        ├── Season01_background.png
-        ├── Season02.png
-        ├── Season02_background.png
-        ├── Season03.png
-        ├── Season03_background.png
-        ├── Season04.png
-        └── Season04_background.png
-```
-
-### Flat Assets `asset_folders: false`
-
-```
-config
-├── config.yml
-├── Movies.yml
-├── TV Shows.yml
-└── assets
-    ├── The Lord of the Rings.png
-    ├── The Lord of the Rings_background.png
-    ├── The Lord of the Rings The Fellowship of the Ring (2001).png
-    ├── The Lord of the Rings The Fellowship of the Ring (2001)_background.png
-    ├── The Lord of the Rings The Two Towers (2002).png
-    ├── The Lord of the Rings The Two Towers (2002)_background.png
-    ├── The Lord of the Rings The Return of the King (2003).png
-    ├── The Lord of the Rings The Return of the King (2003)_background.png
-    ├── Star Wars (Animated).png
-    ├── Star Wars (Animated)_background.png
-    ├── Star Wars The Clone Wars.png
-    ├── Star Wars The Clone Wars_background.png
-    ├── Star Wars The Clone Wars_Season00.png
-    ├── Star Wars The Clone Wars_Season01.png
-    ├── Star Wars The Clone Wars_Season02.png
-    ├── Star Wars The Clone Wars_Season03.png
-    ├── Star Wars The Clone Wars_Season04.png
-    ├── Star Wars The Clone Wars_Season05.png
-    ├── Star Wars The Clone Wars_Season06.png
-    ├── Star Wars The Clone Wars_Season07.png
-    ├── Star Wars The Clone Wars_S07E01.png
-    ├── Star Wars The Clone Wars_S07E02.png
-    ├── Star Wars The Clone Wars_S07E03.png
-    ├── Star Wars The Clone Wars_S07E04.png
-    ├── Star Wars The Clone Wars_S07E05.png
-    ├── Star Wars Rebels.png
-    ├── Star Wars Rebels_background.png
-    ├── Star Wars Rebels_Season01.png
-    ├── Star Wars Rebels_Season01_background.png
-    ├── Star Wars Rebels_Season02.png
-    ├── Star Wars Rebels_Season02_background.png
-    ├── Star Wars Rebels_Season03.png
-    ├── Star Wars Rebels_Season03_background.png
-    ├── Star Wars Rebels_Season04.png
-    └── Star Wars Rebels_Season04_background.png
-```
+=== "ASSET_FOLDERS=True"
+    ```
+    config
+    ├── config.yml
+    ├── Movies.yml
+    ├── TV Shows.yml
+    └── assets
+        ├── The Lord of the Rings
+        │   ├── poster.png
+        │   └── background.png
+        ├── The Lord of the Rings The Fellowship of the Ring (2001)
+        │   ├── poster.png
+        │   └── background.png
+        ├── The Lord of the Rings The Two Towers (2002)
+        │   ├── poster.png
+        │   └── background.png
+        ├── The Lord of the Rings The Return of the King (2003)
+        │   ├── poster.png
+        │   └── background.png
+        ├── Star Wars (Animated)
+        │   ├── poster.png
+        │   └── background.png
+        ├── Star Wars The Clone Wars
+        │   ├── poster.png
+        │   ├── background.png
+        │   ├── Season00.png
+        │   ├── Season01.png
+        │   ├── Season02.png
+        │   ├── Season03.png
+        │   ├── Season04.png
+        │   ├── Season05.png
+        │   ├── Season06.png
+        │   ├── Season07.png
+        │   ├── S07E01.png
+        │   ├── S07E02.png
+        │   ├── S07E03.png
+        │   ├── S07E04.png
+        │   └── S07E05.png
+        └── Star Wars Rebels
+            ├── poster.png
+            ├── background.png
+            ├── Season01.png
+            ├── Season01_background.png
+            ├── Season02.png
+            ├── Season02_background.png
+            ├── Season03.png
+            ├── Season03_background.png
+            ├── Season04.png
+            └── Season04_background.png
+    ```
+=== "ASSET_FOLDERS=False"
+    ```
+    config
+    ├── config.yml
+    ├── Movies.yml
+    ├── TV Shows.yml
+    └── assets
+        ├── The Lord of the Rings.png
+        ├── The Lord of the Rings_background.png
+        ├── The Lord of the Rings The Fellowship of the Ring (2001).png
+        ├── The Lord of the Rings The Fellowship of the Ring (2001)_background.png
+        ├── The Lord of the Rings The Two Towers (2002).png
+        ├── The Lord of the Rings The Two Towers (2002)_background.png
+        ├── The Lord of the Rings The Return of the King (2003).png
+        ├── The Lord of the Rings The Return of the King (2003)_background.png
+        ├── Star Wars (Animated).png
+        ├── Star Wars (Animated)_background.png
+        ├── Star Wars The Clone Wars.png
+        ├── Star Wars The Clone Wars_background.png
+        ├── Star Wars The Clone Wars_Season00.png
+        ├── Star Wars The Clone Wars_Season01.png
+        ├── Star Wars The Clone Wars_Season02.png
+        ├── Star Wars The Clone Wars_Season03.png
+        ├── Star Wars The Clone Wars_Season04.png
+        ├── Star Wars The Clone Wars_Season05.png
+        ├── Star Wars The Clone Wars_Season06.png
+        ├── Star Wars The Clone Wars_Season07.png
+        ├── Star Wars The Clone Wars_S07E01.png
+        ├── Star Wars The Clone Wars_S07E02.png
+        ├── Star Wars The Clone Wars_S07E03.png
+        ├── Star Wars The Clone Wars_S07E04.png
+        ├── Star Wars The Clone Wars_S07E05.png
+        ├── Star Wars Rebels.png
+        ├── Star Wars Rebels_background.png
+        ├── Star Wars Rebels_Season01.png
+        ├── Star Wars Rebels_Season01_background.png
+        ├── Star Wars Rebels_Season02.png
+        ├── Star Wars Rebels_Season02_background.png
+        ├── Star Wars Rebels_Season03.png
+        ├── Star Wars Rebels_Season03_background.png
+        ├── Star Wars Rebels_Season04.png
+        └── Star Wars Rebels_Season04_background.png
+    ```

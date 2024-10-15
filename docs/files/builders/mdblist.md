@@ -6,6 +6,10 @@ You can find items using the features of [MDBList.com](https://mdblist.com/) (MD
 |:--------------------------------|:--------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`mdblist_list`](#mdblist-list) | Gets every movie/show in a [MDBList List](https://mdblist.com/toplists/). | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
+???+ tip "Note on `mdb` sources"
+
+     MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa fetches and applies from MDBList may not be the same as you see if you visit those third-party sources directly.
+
 ## MDBList List
 
 Finds every item in a [MDBList List](https://mdblist.com/toplists/).

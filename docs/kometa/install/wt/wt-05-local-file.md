@@ -26,7 +26,6 @@ First, open the collection file [this will create the file if it doesn't already
     notepad "config\Movies.yml"
     ```
 
-
 In this file, add the following, exactly as it is shown here; remember that spacing is significant in YAML files:
 
 ```yaml
