@@ -68,10 +68,10 @@ templates:
         conditions:
           - originals_only: false
             library_type: movie
-            value: primary_release_date.desc
+            value: popularity.desc
           - originals_only: false
             library_type: show
-            value: first_air_date.desc
+            value: popularity.desc
       originals:
         conditions:
           - originals_only: true
@@ -80,10 +80,6 @@ templates:
         conditions:
           - originals_only: false
             value: 0
-      discover_count:
-        conditions:
-          - originals_only: false
-            value: 100
       discover_with:
         conditions:
           - originals_only: false
@@ -116,7 +112,6 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
-      vote_count.gte: <<discover_count>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
