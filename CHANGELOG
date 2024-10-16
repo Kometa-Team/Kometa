@@ -43,3 +43,4 @@ Fixes `imdb_chart` error when using `trending_india`
 Adds error information to help with #2201
 Added warning to TMDb Discover builder regarding ongoing bug with using `popularity.desc` as sort order
 Various other Minor Fixes
+Fixes #2274 Enhance handling of smart collections in deletion
