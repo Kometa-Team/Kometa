@@ -48,10 +48,6 @@ templates:
         conditions:
           - originals_only: false
             value: 0
-      discover_count:
-        conditions:
-          - originals_only: false
-            value: 100
       allowed_streaming:
         conditions:
           - originals_only: true
@@ -71,7 +67,7 @@ templates:
       limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
-      sort_by: release.desc
+      sort_by: popularity.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
       - <<use_<<key>>>>
@@ -86,7 +82,6 @@ templates:
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with>>
-      vote_count.gte: <<discover_count>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
