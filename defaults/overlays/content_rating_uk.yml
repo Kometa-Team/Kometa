@@ -73,12 +73,12 @@ overlays:
   18:
     template:
       - name: standard
-      - {name: cr_uk, rating: "gb/18, gb/18+, MA-17, TVMA, TV-MA, R, 16, 17, 18, R - 17+ (violence & profanity), no/18"}
+      - {name: cr_uk, rating: "gb/18, gb/18+, MA-17, TVMA, TV-MA, R, 16, 17, NC-17, 18, R - 17+ (violence & profanity), no/18, gb/X"}
 
   r18:
     template:
       - name: standard
-      - {name: cr_uk, rating: "R18, gb/R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
+      - {name: cr_uk, rating: "R18, gb/R18, X, R+ - Mild Nudity, Rx - Hentai"}
 
   nr:
     template:
