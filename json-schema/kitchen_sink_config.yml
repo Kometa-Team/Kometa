@@ -824,6 +824,7 @@ settings:                                           # Can be individually specif
   show_unconfigured: true
   show_unmanaged: true
   show_filtered: true
+  show_unfiltered: true
   show_options: true
   show_missing: false
   only_filter_missing: false
