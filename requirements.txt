@@ -5,7 +5,7 @@ num2words==0.5.13
 pathvalidate==3.2.1
 pillow==10.4.0
 PlexAPI==4.15.16
-psutil==6.0.0
+psutil==6.1.0
 python-dotenv==1.0.1
 python-dateutil==2.9.0.post0
 requests==2.32.3
