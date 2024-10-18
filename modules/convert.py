@@ -48,11 +48,11 @@ class Convert:
             if "tmdb_movie_id" in ids:
                 self._anidb_to_tmdb_movie[anidb_id] = util.get_list(ids["tmdb_movie_id"])
                 for tm_id in util.get_list(ids["tmdb_movie_id"]):
-                    self._tmdb_movie_to_anidb[tm_id] = anidb_id
+                    self._tmdb_movie_to_anidb[int(tm_id)] = anidb_id
             if "tmdb_show_id" in ids:
                 self._anidb_to_tmdb_show[anidb_id] = util.get_list(ids["tmdb_show_id"])
                 for tm_id in util.get_list(ids["tmdb_show_id"]):
-                    self._tmdb_show_to_anidb[tm_id] = anidb_id
+                    self._tmdb_show_to_anidb[int(tm_id)] = anidb_id
 
     def imdb_to_anidb(self, imdb_id):
         if imdb_id in self._imdb_to_anidb:
@@ -73,12 +73,12 @@ class Convert:
             return self._tvdb_to_anidb[int(tvdb_id)]
         else:
             tmdb_show_id = self.tvdb_to_tmdb(tvdb_id) if tvdb_id else None
-            if tmdb_show_id and tmdb_show_id in self._tmdb_show_to_anidb:
-                return self._tmdb_show_to_anidb[tmdb_show_id]
+            if tmdb_show_id and int(tmdb_show_id) in self._tmdb_show_to_anidb:
+                return self._tmdb_show_to_anidb[int(tmdb_show_id)]
             elif imdb_id in self._imdb_to_anidb:
                 return self._imdb_to_anidb[imdb_id]
-            elif tmdb_id in self._tmdb_movie_to_anidb:
-                return self._tmdb_movie_to_anidb[tmdb_id]
+            elif tmdb_id and int(tmdb_id) in self._tmdb_movie_to_anidb:
+                return self._tmdb_movie_to_anidb[int(tmdb_id)]
             else:
                 return None
 
