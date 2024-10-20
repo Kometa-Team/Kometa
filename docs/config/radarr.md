@@ -56,6 +56,42 @@ radarr:
 | `plex_path`        | When using `add_existing` or `radarr_add_all` Convert this part of the path to `radarr_path`.                                                                                                                                                                                                             | ` `         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `radarr_path`      | When using `add_existing` or `radarr_add_all` Convert the `plex_path` part of the path to this.                                                                                                                                                                                                           | ` `         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
+## What are `plex_path` and `radarr_path` and when do I use them?
+
+First:
+
+1. if you are not using `add_existing` or `radarr_add_all` to add movies that are **already in Plex** to Radarr, you can ignore these settings and leave them blank.
+2. If you *are* using those, and both Radarr and Plex see your movies at the same paths, then you can leave them blank.
+
+For example, if both Radarr and Plex see Star Wars at:
+```
+/mnt/unionfs/media/movies/Star Wars (1977)/Star Wars.mkv
+```
+Then you can leave these blank.
+
+The only time you need to set them to anything is if:
+1. you are using `add_existing` or `radarr_add_all` to add movies that are **already in Plex** to Radarr
+2. Radarr and Plex see the same movie file at different paths. 
+
+For example, if Radarr sees Star Wars at:
+```
+/my-movie-library/Star Wars (1977)/Star Wars.mkv
+```
+and Plex sees that very same movie file at:
+```
+/data/movies/Star Wars (1977)/Star Wars.mkv
+```
+[this will almost certainly be due to docker volume mappings, but might also be caused by Radarr and Plex being on different machines]
+
+Then you would set these:
+```
+plex_path: /data/movies/
+radarr_path: /my-movie-library/
+```
+You are filling in the unique part of the paths for each app to enable Kometa to translate the location from Plex when it adds the movie to Radarr.  
+
+Note that if you replace `/my-movie-library/` in the Radarr path with `/data/movies/` you get the Plex path and vice versa.
+
 ???+ tip
     
     The `token` can be found by going to `Radarr > Settings > General > Security > API Key`
