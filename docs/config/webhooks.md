@@ -26,7 +26,20 @@ webhooks:
 | [`delete`](#delete-notifications)       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |   :fontawesome-solid-circle-xmark:{ .red }   |
 | [`changes`](#changes-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-check:{ .green }  |
 
-* Each Attribute can be either a webhook url as a string or a comma-separated list of webhooks urls.
+* Each Attribute can be either a webhook url as a string or a list of webhooks urls.
+  ```yaml
+  webhooks:
+    error: https://www.myspecialdomain.com/kometa
+    version: notifiarr
+    run_start:
+      - notifiarr
+      - gotify
+    run_end:
+      - https://www.myspecialdomain.com/kometa
+      - https://www.myotherdomain.com/kometa
+  ...
+  ```
+  
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
 * To send notifications to [Gotify](gotify.md) just add `gotify` to a webhook instead of the webhook url.
 
