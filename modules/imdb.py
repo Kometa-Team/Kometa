@@ -449,6 +449,8 @@ class IMDb:
                 return imdb_ids
             raise Failed("IMDb Error: No IMDb IDs Found")
         except KeyError:
+            if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
+                raise Failed("Internal IMDB PersistedQuery Error")
             logger.error(f"Response: {response_json}")
             raise
 

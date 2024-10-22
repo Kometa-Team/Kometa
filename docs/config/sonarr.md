@@ -63,6 +63,42 @@ sonarr:
 | `plex_path`        | When using `add_existing` or `sonarr_add_all` Convert this part of the path to `sonarr_path`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | ` `           |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `sonarr_path`      | When using `add_existing` or `sonarr_add_all` Convert the `plex_path` part of the path to this.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | ` `           |  :fontawesome-solid-circle-xmark:{ .red }  |
 
+## What are `plex_path` and `sonarr_path` and when do I use them?
+
+First:
+
+1. if you are not using `add_existing` or `sonarr_add_all` to add shows that are **already in Plex** to Sonarr, you can ignore these settings and leave them blank.
+2. If you *are* using those, and both Sonarr and Plex see your shows at the same paths, then you can leave them blank.
+
+For example, if both Sonarr and Plex see Bad Monkey at:
+```
+/mnt/unionfs/media/shows/Bad Monkey (2024)
+```
+Then you can leave these blank.
+
+The only time you need to set them to anything is if:
+1. you are using `add_existing` or `sonarr_add_all` to add shows that are **already in Plex** to Sonarr
+2. Sonarr and Plex see the same show at different paths. 
+
+For example, if Sonarr sees Bad Monkey at:
+```
+/my-show-library/Bad Monkey (2024)
+```
+and Plex sees that very same show at:
+```
+/data/shows/Bad Monkey (2024)
+```
+[this will almost certainly be due to docker volume mappings, but might also be caused by Sonarr and Plex being on different machines]
+
+Then you would set these:
+```
+plex_path: /data/shows/
+sonarr_path: /my-show-library/
+```
+You are filling in the unique part of the paths for each app to enable Kometa to translate the location from Plex when it adds the show to Sonarr.  
+
+Note that if you replace `/my-show-library/` in the Sonarr path with `/data/shows/` you get the Plex path and vice versa.
+
 ???+ tip
     
     The `token` can be found by going to `Sonarr > Settings > General > Security > API Key`
