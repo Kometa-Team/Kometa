@@ -1640,15 +1640,17 @@ class Plex(Library):
 
         return map_key, attrs
 
-    def get_item_sort_title(self, item_to_sort, atr="titleSort"):
+
+    def get_item_sort_title(self, item_to_sort, atr="titleSort", ep_first_order=False):
         if isinstance(item_to_sort, Album):
-            return f"{getattr(item_to_sort.artist(), atr)} Album {getattr(item_to_sort, atr)}"
+            return f"{getattr(item_to_sort.artist(), atr)}{'1' if ep_first_order else ''} Album {getattr(item_to_sort, atr)}"
         elif isinstance(item_to_sort, Season):
-            return f"{getattr(item_to_sort.show(), atr)} Season {item_to_sort.seasonNumber}"
+            return f"{getattr(item_to_sort.show(), atr)}{'1' if ep_first_order else ''} Season {item_to_sort.seasonNumber}"
         elif isinstance(item_to_sort, Episode):
-            return f"{getattr(item_to_sort.show(), atr)} {item_to_sort.seasonEpisode.upper()}"
+            return f"{getattr(item_to_sort.show(), atr)}{'0' if ep_first_order else ''} {item_to_sort.seasonEpisode.upper()}"
         else:
-            return getattr(item_to_sort, atr)
+            return f"{getattr(item_to_sort, atr)}{'2' if ep_first_order else ''}"
+
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
