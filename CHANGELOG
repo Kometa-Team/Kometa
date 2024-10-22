@@ -9,6 +9,8 @@ Added the `character` search option to the `imdb_search` builder
 # Defaults
 Fixed incorrect content rating mappings in various Default files
 Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
+Ratings Default file now fetches the rating during the Run, meaning users no longer have to rely on Plex's rating system or use the Mass Rating Update operations in order to get rating overlays.
+Ratings Default file will now auto-pick the best image if one is not selected. For example, if `rating1: imdb` then the pre-configured `rating1_image` will be `imdb` out of the box without the user having to specify.
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
