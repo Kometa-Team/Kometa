@@ -57,6 +57,7 @@ templates:
       - use_<<key>>
       - use_<<tmdb_key>>
       - allowed_libraries
+      - providers_<<key>>
     run_definition:
       - <<use_<<key>>>>
       - <<use_<<tmdb_key>>>>
@@ -95,7 +96,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: CA
+          - region: [CA, AU]
             tmdb_key: [9]
             value: 119
       allowed_streaming:
