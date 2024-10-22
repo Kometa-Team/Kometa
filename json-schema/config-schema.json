@@ -747,6 +747,10 @@
                     "description": "Used to show filtered items.\nList all items which have been filtered out of a collection or playlist (i.e. if it doesn't meet the filter criteria)",
                     "type": "boolean"
                 },
+                "show_unfiltered": {
+                    "description": "Used to show unfiltered items.\nList all items which make it through a filter into a collection or playlist (i.e. if it MEETS the filter criteria)",
+                    "type": "boolean"
+                },
                 "show_options": {
                     "description": "Used to show attribute options from plex.\nWhile show_options is true the available options for an attribute when using plex_search, smart_filter or filters will be shown. i.e. a smart_filter on the genre attribute will return all of the attributes within the specified library.",
                     "type": "boolean"
