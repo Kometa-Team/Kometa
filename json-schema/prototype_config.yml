@@ -388,6 +388,7 @@ libraries:
         managed: false
         configured: true
         less: 123
+        ignore_empty_smart_collections: true
 
   Anime:
     collection_files:
