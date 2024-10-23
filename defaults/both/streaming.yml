@@ -68,7 +68,7 @@ templates:
       limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
-      sort_by: popularity.desc
+      sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
       - <<use_<<key>>>>
