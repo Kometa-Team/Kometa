@@ -22,10 +22,10 @@ templates:
         conditions:
           - originals_only: false
             library_type: movie
-            value: primary_release_date.desc
+            value: popularity.desc
           - originals_only: false
             library_type: show
-            value: first_air_date.desc
+            value: popularity.desc
       originals:
         conditions:
           - originals_only: true
@@ -68,7 +68,8 @@ templates:
       limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
-      sort_by: popularity.desc
+      discover_with_<<key>>: <<discover_with>>
+      sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
       - <<use_<<key>>>>
@@ -82,7 +83,7 @@ templates:
     limit: <<limit>>
     tmdb_discover:
       limit: <<discover_limit>>
-      with_watch_providers: <<discover_with>>
+      with_watch_providers: <<discover_with_<<key>>>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
