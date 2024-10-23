@@ -911,7 +911,7 @@ class Operations:
 
             def get_batch_info(placement, total, display_attr, total_count, display_value=None, is_episode=False, out_type=None, tag_type=None):
                 return f"Batch {name_display[display_attr] if display_attr in name_display else display_attr.capitalize()} Update ({placement}/{total}): " \
-                       f"{f'{out_type.capitalize()}ing ' if out_type else ''}" \
+                       f"{f'{out_type.capitalize()} ' if out_type else ''}" \
                        f"{f'Adding {display_value} to ' if tag_type == 'add' else f'Removing {display_value} from ' if tag_type == 'remove' else ''}" \
                        f"{total_count} {'Episode' if is_episode else 'Movie' if self.library.is_movie else 'Show'}" \
                        f"{'s' if total_count > 1 else ''}{'' if out_type or tag_type else f' updated to {display_value}'}"
