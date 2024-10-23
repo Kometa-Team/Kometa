@@ -68,6 +68,7 @@ templates:
       limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
+      discover_with_<<key>>: <<discover_with>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
@@ -82,7 +83,7 @@ templates:
     limit: <<limit>>
     tmdb_discover:
       limit: <<discover_limit>>
-      with_watch_providers: <<discover_with>>
+      with_watch_providers: <<discover_with_<<key>>>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
