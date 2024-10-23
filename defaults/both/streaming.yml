@@ -22,10 +22,10 @@ templates:
         conditions:
           - originals_only: false
             library_type: movie
-            value: primary_release_date.desc
+            value: popularity.desc
           - originals_only: false
             library_type: show
-            value: first_air_date.desc
+            value: popularity.desc
       originals:
         conditions:
           - originals_only: true
