@@ -53,6 +53,7 @@ templates:
       region: "US"
       limit: "0"
       originals_only: false
+      discover_with_<<key>>: <<discover_with>>
     optional:
       - use_<<key>>
       - use_<<tmdb_key>>
@@ -112,7 +113,7 @@ templates:
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     tmdb_discover:
       limit: <<discover_limit>>
-      with_watch_providers: <<discover_with>>
+      with_watch_providers: <<discover_with_<<key>>>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
