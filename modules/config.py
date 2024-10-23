@@ -964,6 +964,7 @@ class ConfigFile:
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
                                         "configured": check_for_attribute(input_dict, "configured", var_type="bool", default_is_none=True, save=False),
                                         "less": check_for_attribute(input_dict, "less", var_type="int", default_is_none=True, save=False, int_min=1),
+                                        "ignore_empty_smart_collections": check_for_attribute(input_dict, "ignore_empty_smart_collections", var_type="bool", default=True, save=False),
                                     }
                                 elif op == "mass_collection_content_rating_update":
                                     section_final[op] = {

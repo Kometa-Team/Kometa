@@ -14,4 +14,5 @@ Fixes an issue where Prime Video overlays/collections would not be built when th
 Fixed the `cast` search option for the `imdb_search` builder
 Fixes #2258 `imdb_list` sort was not being parsed correctly
 Fixes `letterboxd_list` rating filter to use a 1-10 rating vs 1-100 to reflect how letterboxd ratings work on their website
+Fixes #2274 Enhance handling of smart collections in deletion
 Fixed the `ids_to_anidb` lookup for anime movies and shows
