@@ -102,6 +102,13 @@ templates:
             value: false
           - rating<<rating_num>>: none
             value: false
+      rating_level_prefix:
+        default: ""
+        conditions:
+          - builder_level: episode
+            value: episode_
+          - overlay_level: episode
+            value: episode_
       rating<<rating_num>>_style:
         default: ""
         conditions:
@@ -449,8 +456,8 @@ templates:
             value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
     plex_search:
       all:
-        <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
-        <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
+        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
+        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
     builder_level: <<builder_level>>
