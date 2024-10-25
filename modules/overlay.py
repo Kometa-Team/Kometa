@@ -24,15 +24,14 @@ date_vars = ["originally_available"]
 types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "user_rating", "title"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
-    "movie_show_season_episode": ["tmdb_rating"],
-    "show_season_artist_album": ["total_runtime"],
-    "movie_show_episode": ["audience_rating", "content_rating", "tmdb_rating", "imdb_rating"],
-    "movie_show": [
-        "original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
+    "movie_show_season_episode": ["tmdb_rating", "imdb_rating"],
+    "movie_show_season": ["original_title", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating", "mdb_imdb_rating",
         "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
         "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
-        "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
-    ],
+        "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"],
+    "show_season_artist_album": ["total_runtime"],
+    "movie_show_episode": ["audience_rating", "content_rating"],
+    "movie_show": [],
     "movie_episode": ["versions", "bitrate"],
     "season_episode": ["show_title", "season_number"],
     "show_season": ["episode_count"],
