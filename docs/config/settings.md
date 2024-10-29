@@ -203,7 +203,19 @@ The available setting attributes which can be set at each level are outlined bel
 ??? blank "`prioritize_assets` - Used to prioritize `asset_directory` images over all other images types.<a class="headerlink" href="#prioritize-assets" title="Permanent link">¶</a>"
 
     <div id="prioritize-assets" />When determining which image to use on an item prioritize the `asset_directory` over 
-    all other images types.
+    all other image sources.
+
+    Standard priority is as follows:
+    1. url_poster
+    2. file_poster
+    3. tmdb_poster
+    4. tvdb_poster
+    5. asset_directory
+    6. tmdb_person
+    7. tmdb_collection_details
+    8+. all other _details methods
+
+    This setting pushes `asset_directory` to the top of the list.
 
     <hr style="margin: 0px;">
     
