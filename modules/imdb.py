@@ -523,13 +523,10 @@ class IMDb:
             parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        response = self._request(f"{base_url}/title/{imdb_id}/parentalguide")
-        for ptype in util.parental_types:
-            results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
-            if results:
-                parental_dict[ptype] = results[0].strip()
-            else:
-                raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+        for e in self._request(f"{base_url}/title/{imdb_id}/parentalguide", xpath="//li[contains(@class, 'ipc-metadata-list-item--link')]"):
+            parental_dict[util.parental_types[e.xpath("a/text()")[0][:-1]]] = e.xpath("div/div/div/text()")[0]
+        if not parental_dict:
+            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
