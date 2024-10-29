@@ -525,7 +525,11 @@ class IMDb:
                 return parental_dict
         for e in self._request(f"{base_url}/title/{imdb_id}/parentalguide", xpath="//li[contains(@class, 'ipc-metadata-list-item--link')]"):
             parental_dict[util.parental_types[e.xpath("a/text()")[0][:-1]]] = e.xpath("div/div/div/text()")[0]
-        if not parental_dict:
+        if parental_dict:
+            for _, v in util.parental_types.items():
+                if v not in parental_dict:
+                    parental_dict[v] = None
+        else:
             raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
