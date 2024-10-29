@@ -93,6 +93,18 @@ that folder (replacing .ext with the image extension).
 | `tvdb_list_poster` | **Description:** Changes poster to the TVDb List poster<br>**Values:** TVDb List URL                                                                                            |
 | `file_poster`      | **Description:** Changes poster to the image in the file system<br>**Values:** Path to image in the file system                                                                 |
 
+Standard priority is as follows [lower numbers take precedence]:
+1. url_poster
+2. file_poster
+3. tmdb_poster
+4. tvdb_poster
+5. asset_directory
+6. tmdb_person
+7. tmdb_collection_details
+8+. all other _details methods
+
+You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+
 ## Background Collection/Playlist Metadata Updates
 
 All the following attributes update the background of the collection/playlist from various sources.
