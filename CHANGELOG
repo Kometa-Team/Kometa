@@ -17,3 +17,4 @@ Fixes `letterboxd_list` rating filter to use a 1-10 rating vs 1-100 to reflect h
 Fixes #2274 Enhance handling of smart collections in deletion
 Fixed the `ids_to_anidb` lookup for anime movies and shows
 Fixes an issue where episode overlays sometimes wouldn't be added
+Fixes an issue with IMDb Parental Labels not working
