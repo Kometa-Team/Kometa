@@ -499,7 +499,13 @@ class Operations:
                                 break
                             try:
                                 if option == "omdb":
-                                    new_rating = omdb_obj().content_rating # noqa
+                                    _rating = omdb_obj().content_rating # noqa
+                                    if not _rating:
+                                        new_rating = None
+                                    elif _rating == "N/A":
+                                        new_rating = None
+                                    else:
+                                        new_rating = _rating
                                 elif option == "mdb":
                                     _rating = mdb_obj().content_rating # noqa
                                     new_rating = _rating if _rating else None
