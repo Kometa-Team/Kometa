@@ -70,6 +70,7 @@ arguments = {
     "read-only-config": {"args": "ro", "type": "bool", "help": "Run without writing to the config"},
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
+    "nice": {"args": "ni", "type": "bool", "help": "Run with lower priority"},
 }
 
 parser = argparse.ArgumentParser()
@@ -257,6 +258,31 @@ if not uuid_num:
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+def low_priority():
+    """ Set the priority of the process to below-normal."""
+    try:
+        sys.getwindowsversion()
+    except AttributeError:
+        isWindows = False
+    else:
+        isWindows = True
+
+    if isWindows:
+        import win32api, win32process, win32con
+        # priorityclasses:
+        #  win32process.IDLE_PRIORITY_CLASS,
+        #  win32process.BELOW_NORMAL_PRIORITY_CLASS,
+        #  win32process.NORMAL_PRIORITY_CLASS,
+        #  win32process.ABOVE_NORMAL_PRIORITY_CLASS,
+        #  win32process.HIGH_PRIORITY_CLASS,
+        #  win32process.REALTIME_PRIORITY_CLASS
+        win32process.SetPriorityClass(win32api.GetCurrentProcess(), win32process.BELOW_NORMAL_PRIORITY_CLASS)
+    else:
+        os.nice(10)
+
+if run_args["nice"]:
+    low_priority()
+
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
         executor.submit(start, *[attrs])
@@ -284,6 +310,7 @@ def start(attrs):
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
+        logger.info(f"    Process Priority: {'low' if run_args["nice"] else 'normal'}")
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
