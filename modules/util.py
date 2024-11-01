@@ -111,10 +111,10 @@ collection_mode_options = {
     "show_items": "showItems", "showitems": "showItems"
 }
 image_content_types = ["image/png", "image/jpeg", "image/webp"]
-parental_types = ["nudity", "violence", "profanity", "alcohol", "frightening"]
+parental_types = {"Sex & Nudity": "Nudity", "Violence & Gore": "Violence", "Profanity": "Profanity", "Alcohol, Drugs & Smoking": "Alcohol", "Frightening & Intense Scenes": "Frightening"}
 parental_values = ["None", "Mild", "Moderate", "Severe"]
 parental_levels = {"none": [], "mild": ["None"], "moderate": ["None", "Mild"], "severe": ["None", "Mild", "Moderate"]}
-parental_labels = [f"{t.capitalize()}:{v}" for t in parental_types for v in parental_values]
+parental_labels = [f"{t}:{v}" for t in parental_types.values() for v in parental_values]
 previous_time = None
 start_time = None
 
