@@ -124,7 +124,7 @@ templates:
       image_extra:
         default: ""
         conditions:
-          - rating<<rating_num>>_image: [imdb, rt_tomato, metacritic]
+          - rating<<rating_num>>_image: [imdb, rt_popcorn, rt_tomato, metacritic]
             image_level: Top
             value: Top
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]

@@ -1,7 +1,7 @@
 # Requirements Update (requirements will need to be reinstalled)
 Update pillow requirement to 11.0.0
 Update psutil requirement to 6.1.0
-Update setuptools requirement to 75.2.0
+Update setuptools requirement to 75.3.0
 
 # New Features
 Added the `character` search option to the `imdb_search` builder
@@ -9,6 +9,7 @@ Added the `character` search option to the `imdb_search` builder
 # Defaults
 Fixed incorrect content rating mappings in various Default files
 Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
+fixes an issue where Rotten Tomatoes Verified Hot wasn't working
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
@@ -18,3 +19,4 @@ Fixes #2274 Enhance handling of smart collections in deletion
 Fixed the `ids_to_anidb` lookup for anime movies and shows
 Fixes an issue where episode overlays sometimes wouldn't be added
 Fixes an issue with IMDb Parental Labels not working
+Fixes an issue where OMDb returned `N/A` as the content rating
