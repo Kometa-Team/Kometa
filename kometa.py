@@ -268,7 +268,7 @@ def low_priority():
         isWindows = True
 
     if isWindows:
-        import win32api, win32process, win32con
+        import win32api, win32process
         # priorityclasses:
         #  win32process.IDLE_PRIORITY_CLASS,
         #  win32process.BELOW_NORMAL_PRIORITY_CLASS,
