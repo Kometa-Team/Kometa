@@ -23,6 +23,8 @@ class OMDbObj:
                     return float(value)
                 elif is_date:
                     return datetime.strptime(value, "%d %b %Y")
+                elif value == "N/A":
+                    return None
                 else:
                     return value
             except (ValueError, TypeError, KeyError):

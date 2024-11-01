@@ -1035,11 +1035,11 @@ class Cache:
                 cursor.execute("SELECT * FROM imdb_parental WHERE imdb_id = ?", (imdb_id,))
                 row = cursor.fetchone()
                 if row:
-                    imdb_dict["nudity"] = row["nudity"] if row["nudity"] else "None"
-                    imdb_dict["violence"] = row["violence"] if row["violence"] else "None"
-                    imdb_dict["profanity"] = row["profanity"] if row["profanity"] else "None"
-                    imdb_dict["alcohol"] = row["alcohol"] if row["alcohol"] else "None"
-                    imdb_dict["frightening"] = row["frightening"] if row["frightening"] else "None"
+                    imdb_dict["Nudity"] = row["nudity"] if row["nudity"] else "None"
+                    imdb_dict["Violence"] = row["violence"] if row["violence"] else "None"
+                    imdb_dict["Profanity"] = row["profanity"] if row["profanity"] else "None"
+                    imdb_dict["Alcohol"] = row["alcohol"] if row["alcohol"] else "None"
+                    imdb_dict["Frightening"] = row["frightening"] if row["frightening"] else "None"
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
                     expired = time_between_insertion.days > expiration
@@ -1053,8 +1053,8 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO imdb_parental(imdb_id) VALUES(?)", (imdb_id,))
                 update_sql = "UPDATE imdb_parental SET nudity = ?, violence = ?, profanity = ?, alcohol = ?, " \
                              "frightening = ?, expiration_date = ? WHERE imdb_id = ?"
-                cursor.execute(update_sql, (parental["nudity"], parental["violence"], parental["profanity"], parental["alcohol"],
-                                            parental["frightening"], expiration_date.strftime("%Y-%m-%d"), imdb_id))
+                cursor.execute(update_sql, (parental["Nudity"], parental["Violence"], parental["Profanity"], parental["Alcohol"],
+                                            parental["Frightening"], expiration_date.strftime("%Y-%m-%d"), imdb_id))
 
     def query_ergast(self, year, expiration):
         ergast_list = []

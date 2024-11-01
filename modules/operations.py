@@ -163,7 +163,7 @@ class Operations:
                             parental_labels = []
                         else:
                             parental_guide = self.config.IMDb.parental_guide(imdb_id)
-                            parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
+                            parental_labels = [f"{k}:{v}" for k, v in parental_guide.items() if v and v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
                         add_labels = [la for la in parental_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
                         for label_list, edit_type in [(add_labels, "add"), (remove_labels, "remove")]:
