@@ -671,6 +671,26 @@ different ways to specify these things.
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --width 150
             ```
 
+??? blank "Nice&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ni`/`--nice`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NICE`<a class="headerlink" href="#nice" title="Permanent link">¶</a>"
+
+    <div id="nice" />Run the Kometa process at a lower priority.  Will default to normal priority if not specified.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:**  `-ni` or `--nice` (ex. `--nice`)
+
+    **Environment Variable:** `KOMETA_NICE` (ex. `KOMETA_NICE=true`)
+    
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --nice
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --nice
+            ```
+
 ??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`<a class="headerlink" href="#kometa-vars" title="Permanent link">¶</a>"
 
     <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the 
