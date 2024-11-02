@@ -2,7 +2,7 @@
 Update pillow requirement to 11.0.0
 Update psutil requirement to 6.1.0
 Update setuptools requirement to 75.3.0
-Add pywin32==308 (only for Windows, sys_platform=='win32')
+Add `pywin32==308` (only for Windows, i.e. `sys_platform=='win32'`)
 
 # New Features
 Added the `character` search option to the `imdb_search` builder
