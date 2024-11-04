@@ -9,7 +9,8 @@ Added the `character` search option to the `imdb_search` builder
 # Defaults
 Fixed incorrect content rating mappings in various Default files
 Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
-fixes an issue where Rotten Tomatoes Verified Hot wasn't working
+Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
+Fixes a second issue where Rotten Tomatoes Verified Hot wasn't working
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
