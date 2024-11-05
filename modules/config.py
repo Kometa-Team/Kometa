@@ -476,7 +476,7 @@ class ConfigFile:
             "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
             "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True, save=False),
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
-            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="jpg"),
+            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="webp_lossless"),
             "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default_is_none=True, int_min=1, int_max=100),
             "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
