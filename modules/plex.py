@@ -1172,7 +1172,7 @@ class Plex(Library):
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 add_item = True
-                item = self.reload(item)
+                item = self.reload(item, force=True)
                 for collection in item.collections:
                     if str(collection.tag).lower() in collection_indexes:
                         add_item = False
