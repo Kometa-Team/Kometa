@@ -23,6 +23,7 @@ templates:
       imdb_search_<<key>>: <<imdb_search>>
       trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
+      letterboxd_list_<<key>>: <<letterboxd_list>>
       summary_<<key>>: <<summary_format>>
       name_<<key>>: <<name_format>>
       emoji: ""
@@ -36,6 +37,7 @@ templates:
       - imdb_search
       - trakt_list
       - mdblist_list
+      - letterboxd_list
       - summary_format
       - name_format
       - key_name
@@ -55,6 +57,7 @@ templates:
     imdb_search: <<imdb_search_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
+    letterboxd_list: <<letterboxd_list_<<key>>>>
     cache_builders: 1
     translation_key: <<translation_key>>
     key_name: <<key_name>>
