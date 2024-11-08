@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   tautulli:
@@ -25,6 +25,7 @@ templates:
 collections:
   Plex Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: tautulli
@@ -36,6 +37,7 @@ collections:
 
   Plex Watched:
     variables:
+      style: color
       key: watched
     template:
       - name: tautulli

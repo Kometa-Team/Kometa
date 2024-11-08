@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   anidb:
@@ -23,6 +23,7 @@ templates:
 collections:
   AniDB Popular:
     variables:
+      style: color
       key: anidb
     template:
       - name: anidb
@@ -33,6 +34,7 @@ collections:
 
   Common Sense Selection:
     variables:
+      style: color
       key: commonsense
     template:
       - name: commonsense
@@ -43,6 +45,7 @@ collections:
 
   StevenLu's Popular Movies:
     variables:
+      style: color
       key: stevenlu
     stevenlu_popular: true
     template:
@@ -54,6 +57,7 @@ collections:
 
   Top 10 Pirated Movies of the Week:
     variables:
+      style: color
       key: pirated
     mdblist_list: https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/
     template:

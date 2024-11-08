@@ -9,11 +9,12 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   anilist:
     default:
+      style: color
       limit: 100
       limit_<<key>>: <<limit>>
       chart: <<key>>
@@ -32,6 +33,7 @@ templates:
 collections:
   AniList Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: anilist
@@ -42,6 +44,7 @@ collections:
 
   AniList Top Rated:
     variables:
+      style: color
       key: top
     template:
       - name: anilist
@@ -53,6 +56,7 @@ collections:
 
   AniList Trending:
     variables:
+      style: color
       key: trending
     template:
       - name: anilist
@@ -63,6 +67,7 @@ collections:
 
   AniList Season:
     variables:
+      style: color
       key: season
     template:
       - name: season

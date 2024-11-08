@@ -10,7 +10,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
     allowed_libraries: movie
     sort_title: <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>>LB_<<sort>>
 
@@ -21,6 +21,7 @@ templates:
 collections:
   "Letterboxd Top 250":
     variables:
+      style: color
       key: top_250
     template:
       - name: letterboxd_list
@@ -34,6 +35,7 @@ collections:
 
   "Box Office Mojo All Time 100":
     variables:
+      style: color
       key: boxofficemojo_100
     template:
       - name: letterboxd_list
@@ -47,6 +49,7 @@ collections:
 
   "AFI 100 Years 100 Movies":
     variables:
+      style: color
       key: afi_100
     template:
       - name: letterboxd_list
@@ -60,6 +63,7 @@ collections:
 
   "Sight & Sound Greatest Films":
     variables:
+      style: color
       key: sight_sound
     template:
       - name: letterboxd_list
@@ -73,6 +77,7 @@ collections:
 
   "1,001 To See Before You Die":
     variables:
+      style: color
       key: 1001_movies
     template:
       - name: letterboxd_list
@@ -86,6 +91,7 @@ collections:
 
   "Edgar Wright's 1,000 Favorites":
     variables:
+      style: color
       key: edgarwright
     template:
       - name: letterboxd_list
@@ -99,6 +105,7 @@ collections:
 
   "Roger Ebert's Great Movies":
     variables:
+      style: color
       key: rogerebert
     template:
       - name: letterboxd_list
@@ -112,6 +119,7 @@ collections:
 
   "Top 250 Women-Directed":
     variables:
+      style: color
       key: women_directors
     template:
       - name: letterboxd_list
@@ -125,6 +133,7 @@ collections:
 
   "Top 100 Black-Directed":
     variables:
+      style: color
       key: black_directors
     template:
       - name: letterboxd_list
@@ -138,6 +147,7 @@ collections:
 
   "Top 250 Most Fans":
     variables:
+      style: color
       key: most_fans
     template:
       - name: letterboxd_list
@@ -151,6 +161,7 @@ collections:
 
   "Top 250 Documentaries":
     variables:
+      style: color
       key: documentaries
     template:
       - name: letterboxd_list
@@ -164,6 +175,7 @@ collections:
 
   "Top 100 Animation":
     variables:
+      style: color
       key: animation
     template:
       - name: letterboxd_list
@@ -177,6 +189,7 @@ collections:
 
   "Top 250 Horror":
     variables:
+      style: color
       key: horror
     template:
       - name: letterboxd_list
@@ -190,6 +203,7 @@ collections:
 
   "IMDb Top 250 (Letterboxd)":
     variables:
+      style: color
       key: imdb_top_250
     template:
       - name: letterboxd_list
@@ -204,6 +218,7 @@ collections:
 
   "Oscar Best Picture Winners":
     variables:
+      style: color
       key: oscars
     template:
       - name: letterboxd_list
@@ -218,6 +233,7 @@ collections:
 
   "Cannes Palme d'Or Winners":
     variables:
+      style: color
       key: cannes
     template:
       - name: letterboxd_list

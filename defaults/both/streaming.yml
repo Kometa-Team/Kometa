@@ -124,7 +124,7 @@ dynamic_collections:
       - arr
     template_variables:
       image:
-        default: streaming/<<key_name_encoded>>
+        default: streaming/<<style>>/<<key_name_encoded>>
       tmdb_key:
         all4: 103
         appletv: 350
@@ -154,3 +154,5 @@ dynamic_collections:
         default: streaming
       dynamic:
         default: true
+      style:
+        default: color
