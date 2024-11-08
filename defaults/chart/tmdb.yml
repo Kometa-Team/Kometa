@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   tmdb:
@@ -22,6 +22,7 @@ templates:
 collections:
   TMDb Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: tmdb
@@ -32,6 +33,7 @@ collections:
 
   TMDb Top Rated:
     variables:
+      style: color
       key: top
     template:
       - name: tmdb
@@ -43,6 +45,7 @@ collections:
 
   TMDb Trending:
     variables:
+      style: color
       key: trending
     template:
       - name: tmdb
@@ -54,6 +57,7 @@ collections:
 
   TMDb Airing Today:
     variables:
+      style: color
       key: airing
     template:
       - name: tmdb
@@ -66,6 +70,7 @@ collections:
 
   TMDb On The Air:
     variables:
+      style: color
       key: air
     template:
       - name: tmdb
