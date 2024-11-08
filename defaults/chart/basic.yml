@@ -9,11 +9,12 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "010"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 collections:
   Newly Released:
     variables:
+      style: color
       key: released
     template:
       - name: smart_filter
@@ -25,6 +26,7 @@ collections:
 
   New Episodes:
     variables:
+      style: color
       key: episodes
     template:
       - name: smart_filter
