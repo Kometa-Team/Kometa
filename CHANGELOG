@@ -10,6 +10,8 @@ Added the `character` search option to the `imdb_search` builder
 Fixed incorrect content rating mappings in various Default files
 Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
 Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
+Updates `Alien vs Predator` and `X-Men` lists to new lists which include most recent releases
+Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder

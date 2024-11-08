@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   mal:
@@ -35,6 +35,7 @@ templates:
 collections:
   MyAnimeList Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: mal
@@ -45,6 +46,7 @@ collections:
 
   MyAnimeList Favorited:
     variables:
+      style: color
       key: favorited
     template:
       - name: mal
@@ -56,6 +58,7 @@ collections:
 
   MyAnimeList Top Rated:
     variables:
+      style: color
       key: top
     template:
       - name: mal
@@ -67,6 +70,7 @@ collections:
 
   MyAnimeList Top Airing:
     variables:
+      style: color
       key: airing
     template:
       - name: mal
@@ -77,6 +81,7 @@ collections:
 
   MyAnimeList Season:
     variables:
+      style: color
       key: season
     template:
       - name: season
