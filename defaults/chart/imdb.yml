@@ -20,7 +20,6 @@ collections:
     variables:
       style: color
       key: popular
-      style: color
     template:
       - name: imdb_chart
         chart: popular
@@ -33,7 +32,6 @@ collections:
     variables:
       style: color
       key: top
-      style: color
     template:
       - name: imdb_chart
         chart: top
@@ -46,7 +44,6 @@ collections:
     variables:
       style: color
       key: lowest
-      style: color
     imdb_chart: lowest_rated
     template:
       - name: shared
