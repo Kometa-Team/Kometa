@@ -24,3 +24,4 @@ Fixes an issue with IMDb Parental Labels not working
 Fixes an issue where OMDb returned `N/A` as the content rating
 Fixes an issue where `plex_collectionless` doesn't work if the item was added to a collection in the same run
 Fixes an issue causing IMDB collection to fail due to duplicate keys
+Removed Blog from the Navigation due to lack of time for updating/maintaining it
