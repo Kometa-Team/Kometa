@@ -37,7 +37,7 @@ summary_details = [
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 boolean_details = [
-    "show_filtered", "show_missing", "save_report", "missing_only_released", "only_filter_missing",
+    "show_filtered", "show_unfiltered", "show_missing", "save_report", "missing_only_released", "only_filter_missing",
     "delete_below_minimum", "asset_folders", "create_asset_folders"
 ]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
@@ -143,7 +143,7 @@ float_attributes = plex.float_attributes + ["aspect", "tmdb_vote_average"]
 boolean_attributes = plex.boolean_attributes + boolean_filters
 smart_invalid = ["collection_order", "builder_level"]
 smart_only = ["collection_filtering"]
-smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_missing", "save_report", "smart_label"] + radarr_details + sonarr_details
+smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show_unfiltered", "show_missing", "save_report", "smart_label"] + radarr_details + sonarr_details
 custom_sort_builders = [
     "plex_search", "plex_watchlist", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
@@ -172,7 +172,7 @@ parts_collection_valid = [
      "cache_builders", "url_theme", "file_theme", "item_label", "default_percent", "non_item_remove_label", "item_analyze"
 ] + episode_parts_only + summary_details + poster_details + background_details + string_details
 playlist_attributes = [
-    "filters", "name_mapping", "show_filtered", "show_missing", "save_report", "allowed_library_types", "run_definition",
+    "filters", "name_mapping", "show_filtered", "show_unfiltered", "show_missing", "save_report", "allowed_library_types", "run_definition",
     "missing_only_released", "only_filter_missing", "delete_below_minimum", "ignore_ids", "ignore_imdb_ids",
     "server_preroll", "changes_webhooks", "minimum_items", "cache_builders", "default_percent"
 ] + custom_sort_builders + summary_details + poster_details + radarr_details + sonarr_details
@@ -569,6 +569,7 @@ class CollectionBuilder:
         self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
+            "show_unfiltered": self.library.show_unfiltered,
             "show_options": self.library.show_options,
             "show_missing": self.library.show_missing,
             "save_report": self.library.save_report,
@@ -2411,7 +2412,7 @@ class CollectionBuilder:
         name = self.obj.title if self.obj else self.name
         total = len(items)
         max_length = len(str(total))
-        if self.filters and self.details["show_filtered"] is True:
+        if self.filters and (self.details["show_filtered"] is True or self.details["show_unfiltered"] is True):
             logger.info("")
             logger.info("Filtering Builders:")
         filtered_items = []
@@ -2427,6 +2428,8 @@ class CollectionBuilder:
                     current_title = util.item_title(item)
                     if self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
                         self.found_items.append(item)
+                        if self.details["show_unfiltered"] is True:
+                            logger.info(f"{name} {self.Type} | = | {current_title}")
                     else:
                         filtered_items.append(item)
                         self.filtered_keys[item.ratingKey] = current_title
