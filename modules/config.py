@@ -215,6 +215,7 @@ class ConfigFile:
         replace_attr(self.data, "sync_mode", "plex")
         replace_attr(self.data, "show_unmanaged", "plex")
         replace_attr(self.data, "show_filtered", "plex")
+        replace_attr(self.data, "show_unfiltered", "plex")
         replace_attr(self.data, "show_missing", "plex")
         replace_attr(self.data, "save_missing", "plex")
         if self.data["libraries"]:
@@ -240,6 +241,7 @@ class ConfigFile:
                     replace_attr(self.data["libraries"][library], "sync_mode", "plex")
                     replace_attr(self.data["libraries"][library], "show_unmanaged", "plex")
                     replace_attr(self.data["libraries"][library], "show_filtered", "plex")
+                    replace_attr(self.data["libraries"][library], "show_unfiltered", "plex")
                     replace_attr(self.data["libraries"][library], "show_missing", "plex")
                     replace_attr(self.data["libraries"][library], "save_missing", "plex")
                 if "settings" in self.data["libraries"][library] and self.data["libraries"][library]["settings"]:
@@ -465,6 +467,7 @@ class ConfigFile:
             "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
             "show_unconfigured": check_for_attribute(self.data, "show_unconfigured", parent="settings", var_type="bool", default=True),
             "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
+            "show_unfiltered": check_for_attribute(self.data, "show_unfiltered", parent="settings", var_type="bool", default=False),
             "show_options": check_for_attribute(self.data, "show_options", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
             "save_report": check_for_attribute(self.data, "save_report", parent="settings", var_type="bool", default=False),
@@ -836,6 +839,7 @@ class ConfigFile:
                 params["show_unmanaged"] = check_for_attribute(lib, "show_unmanaged", parent="settings", var_type="bool", default=self.general["show_unmanaged"], do_print=False, save=False)
                 params["show_unconfigured"] = check_for_attribute(lib, "show_unconfigured", parent="settings", var_type="bool", default=self.general["show_unconfigured"], do_print=False, save=False)
                 params["show_filtered"] = check_for_attribute(lib, "show_filtered", parent="settings", var_type="bool", default=self.general["show_filtered"], do_print=False, save=False)
+                params["show_unfiltered"] = check_for_attribute(lib, "show_unfiltered", parent="settings", var_type="bool", default=self.general["show_unfiltered"], do_print=False, save=False)
                 params["show_options"] = check_for_attribute(lib, "show_options", parent="settings", var_type="bool", default=self.general["show_options"], do_print=False, save=False)
                 params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
                 params["show_missing_assets"] = check_for_attribute(lib, "show_missing_assets", parent="settings", var_type="bool", default=self.general["show_missing_assets"], do_print=False, save=False)

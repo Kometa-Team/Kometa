@@ -78,6 +78,7 @@ class Library(ABC):
         self.show_unmanaged = params["show_unmanaged"]
         self.show_unconfigured = params["show_unconfigured"]
         self.show_filtered = params["show_filtered"]
+        self.show_unfiltered = params["show_unfiltered"]
         self.show_options = params["show_options"]
         self.show_missing = params["show_missing"]
         self.show_missing_assets = params["show_missing_assets"]
