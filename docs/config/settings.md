@@ -1061,12 +1061,13 @@ If no library-level attribute is set, then the global attribute is used.
 ```yaml
 libraries:
   Movies:
-    run_order: #(1)!
-    - collections
-    - metadata
-    - operations
-    - overlays
-    minimum_items: 3 #(2)!
+    settings:
+      run_order: #(1)!
+      - collections
+      - metadata
+      - operations
+      - overlays
+      minimum_items: 3 #(2)!
     collection_files:
       # stuff here
     overlay_files:
