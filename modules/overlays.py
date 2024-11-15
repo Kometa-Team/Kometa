@@ -526,7 +526,7 @@ class Overlays:
                             logger.stacktrace()
                             raise Failed(f"  Overlay Error: {e}")
                     else:
-                        logger.info("  Overlay Update Not Needed")
+                        logger.info(f"  Overlay Update Not Needed (Current Overlays: {', '.join(over_names)})")
 
                     if self.cache and poster_compare:
                         self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))

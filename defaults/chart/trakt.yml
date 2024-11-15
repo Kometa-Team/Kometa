@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   trakt:
@@ -23,6 +23,7 @@ templates:
 collections:
   Trakt Collected:
     variables:
+      style: color
       key: collected
     template:
       - name: trakt
@@ -33,6 +34,7 @@ collections:
 
   Trakt Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: trakt
@@ -43,6 +45,7 @@ collections:
 
   Trakt Recommended:
     variables:
+      style: color
       key: recommended
     template:
       - name: trakt
@@ -53,6 +56,7 @@ collections:
 
   Trakt Trending:
     variables:
+      style: color
       key: trending
     template:
       - name: trakt
@@ -63,6 +67,7 @@ collections:
 
   Trakt Watched:
     variables:
+      style: color
       key: watched
     template:
       - name: trakt

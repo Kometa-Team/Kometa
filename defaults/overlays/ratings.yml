@@ -92,7 +92,7 @@ templates:
         default: true
         conditions:
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star]
+            rating<<rating_num>>_image: [anidb, letterboxd, mdb, tmdb, trakt, mal, star]
             value: false
           - image_level: Top
             builder_level: episode
@@ -102,6 +102,13 @@ templates:
             value: false
           - rating<<rating_num>>: none
             value: false
+      rating_level_prefix:
+        default: ""
+        conditions:
+          - builder_level: episode
+            value: episode_
+          - overlay_level: episode
+            value: episode_
       rating<<rating_num>>_style:
         default: ""
         conditions:
@@ -117,7 +124,7 @@ templates:
       image_extra:
         default: ""
         conditions:
-          - rating<<rating_num>>_image: [imdb, rt_tomato, metacritic]
+          - rating<<rating_num>>_image: [imdb, rt_popcorn, rt_tomato, metacritic]
             image_level: Top
             value: Top
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]
@@ -449,8 +456,8 @@ templates:
             value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
     plex_search:
       all:
-        <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
-        <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
+        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
+        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
     builder_level: <<builder_level>>

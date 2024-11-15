@@ -2084,7 +2084,8 @@
                     "properties": {
                         "configured": { "type": "boolean" },
                         "managed": { "type": "boolean" },
-                        "less": { "type": "integer" }
+                        "less": { "type": "integer" },
+                        "ignore_empty_smart_collections": { "type": "boolean" }
                     },
                     "required": []
                 },

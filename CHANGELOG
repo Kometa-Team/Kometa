@@ -1,11 +1,27 @@
+# Requirements Update (requirements will need to be reinstalled)
+Update pillow requirement to 11.0.0
+Update psutil requirement to 6.1.0
+Update setuptools requirement to 75.3.0
+
 # New Features
 Added the `character` search option to the `imdb_search` builder
 Add `show_unfiltered` setting to display items which make it through a filter
 
 # Defaults
 Fixed incorrect content rating mappings in various Default files
+Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
+Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
+Updates `Alien vs Predator` and `X-Men` lists to new lists which include most recent releases
+Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
 Fixes #2258 `imdb_list` sort was not being parsed correctly
 Fixes `letterboxd_list` rating filter to use a 1-10 rating vs 1-100 to reflect how letterboxd ratings work on their website
+Fixes #2274 Enhance handling of smart collections in deletion
+Fixed the `ids_to_anidb` lookup for anime movies and shows
+Fixes an issue where episode overlays sometimes wouldn't be added
+Fixes an issue with IMDb Parental Labels not working
+Fixes an issue where OMDb returned `N/A` as the content rating
+Fixes an issue where `plex_collectionless` doesn't work if the item was added to a collection in the same run
+Fixes an issue causing IMDB collection to fail due to duplicate keys

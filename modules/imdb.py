@@ -449,6 +449,8 @@ class IMDb:
                 return imdb_ids
             raise Failed("IMDb Error: No IMDb IDs Found")
         except KeyError:
+            if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
+                raise Failed("Internal IMDB PersistedQuery Error")
             logger.error(f"Response: {response_json}")
             raise
 
@@ -521,13 +523,14 @@ class IMDb:
             parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        response = self._request(f"{base_url}/title/{imdb_id}/parentalguide")
-        for ptype in util.parental_types:
-            results = response.xpath(f"//section[@id='advisory-{ptype}']//span[contains(@class,'ipl-status-pill')]/text()")
-            if results:
-                parental_dict[ptype] = results[0].strip()
-            else:
-                raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+        for e in self._request(f"{base_url}/title/{imdb_id}/parentalguide", xpath="//li[contains(@class, 'ipc-metadata-list-item--link')]"):
+            parental_dict[util.parental_types[e.xpath("a/text()")[0][:-1]]] = e.xpath("div/div/div/text()")[0]
+        if parental_dict:
+            for _, v in util.parental_types.items():
+                if v not in parental_dict:
+                    parental_dict[v] = None
+        else:
+            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict

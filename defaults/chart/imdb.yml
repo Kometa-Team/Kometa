@@ -9,7 +9,7 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "020"
-    image: chart/<<mapping_name_encoded>>
+    image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
   imdb_chart:
@@ -18,6 +18,7 @@ templates:
 collections:
   IMDb Popular:
     variables:
+      style: color
       key: popular
     template:
       - name: imdb_chart
@@ -29,6 +30,7 @@ collections:
 
   IMDb Top 250:
     variables:
+      style: color
       key: top
     template:
       - name: imdb_chart
@@ -40,6 +42,7 @@ collections:
 
   IMDb Lowest Rated:
     variables:
+      style: color
       key: lowest
     imdb_chart: lowest_rated
     template:

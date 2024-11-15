@@ -201,6 +201,8 @@ MyAnimeList's
 MyCollections
 MyOverlays
 MyPlaylists
+myotherdomain
+myspecialdomain
 mza
 namespace
 NAS

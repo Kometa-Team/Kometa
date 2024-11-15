@@ -88,9 +88,10 @@ dynamic_collections:
         mcu: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         trek: https://trakt.tv/users/jmfslayer/lists/star-trek-chronology-updated?sort=rank,asc
         middle: https://trakt.tv/users/oya-kesh/lists/middle-earth
+        xmen: https://trakt.tv/users/alan-pittflix/lists/x-men
       # check2
       mdblist_url:
-        avp: https://mdblist.com/lists/k0meta/external/16872
+        avp: https://mdblist.com/lists/johnfawkes/alien-vs-predator
         arrow: https://mdblist.com/lists/k0meta/external/15113
         dca: https://mdblist.com/lists/k0meta/external/15405
         dcu: https://mdblist.com/lists/k0meta/external/15107
@@ -101,7 +102,6 @@ dynamic_collections:
         star: https://mdblist.com/lists/k0meta/external/15105
         askew: https://mdblist.com/lists/k0meta/external/15362
         wizard: https://mdblist.com/lists/k0meta/external/23683
-        xmen: https://mdblist.com/lists/k0meta/external/9244
       # check3
       image:
         default: universe/<<key>>

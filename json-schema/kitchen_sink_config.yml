@@ -31,7 +31,6 @@ libraries:
     collection_files:                               # These files contain collections: and/or dynamic_collections attributes
     - default: based                                # collections based on a book, comic, story, video game
     # - file: config/metadata/overlay_label.yml       # Creates collection of all items with an Overlay label (Testing only)
-    - default: letterboxd                           # 16 possible collections based on Letterboxd
     - default: aspect                               # Creates collections based on aspect ratio of media item
     - git: bullmoose20/movies_refresh               # tells plex to refresh media items added within the last 7 days
     - default: separator_award                      # An "index card"
@@ -345,7 +344,8 @@ libraries:
       delete_collections:
         configured: false                           # False - Collection must be an Unconfigured Collection to be deleted (collection is not in the config file of the specific Kometa run).
         managed: false                              # False - Collection must be an Unmanaged Collection to be deleted (the collection does not have the Kometa label)
-        less: 99999                                 # Effectively all collections regardless of teh number of items in the collection
+        less: 99999                                 # Effectively all collections regardless of the number of items in the collection
+        ignore_empty_smart_collections: true        # Don't do the less check on empty smart collections
       mass_user_rating_update: mdb_tomatoes         # Update user ratings with mdb_tomatoes
       mass_critic_rating_update: imdb               # Update critic ratings with imdb
       mass_audience_rating_update: tmdb             # Update audience ratings with tmdb
@@ -385,7 +385,6 @@ libraries:
     - git: bullmoose20/money_heist                  # Custom metadata file for Money Heist
     collection_files:                               # These files contain collections: and/or dynamic_collections attributes
     - default: based                                # collections based on a book, comic, story, video game
-    - default: letterboxd                           # 16 possible collections based on Letterboxd
     # - file: config/metadata/overlay_label.yml       # Creates collection of all items with an Overlay label (Testing only)
     - default: aspect                               # Creates collections based on aspect ratio of media item
     - git: bullmoose20/tv_refresh                   # Tells plex to refresh media items added within the last 7 days
@@ -760,7 +759,8 @@ libraries:
       delete_collections:
         configured: false                           # False - Collection must be an Unconfigured Collection to be deleted (collection is not in the config file of the specific Kometa run).
         managed: false                              # False - Collection must be an Unmanaged Collection to be deleted (the collection does not have the Kometa label)
-        less: 99999                                 # Effectively all collections regardless of teh number of items in the collection
+        less: 99999                                 # Effectively all collections regardless of the number of items in the collection
+        ignore_empty_smart_collections: true        # Don't do the less check on empty smart collections
       mass_user_rating_update: mdb_tomatoes         # Update user ratings with mdb_tomatoes
       mass_critic_rating_update: imdb               # Update critic ratings with imdb
       mass_audience_rating_update: tmdb             # Update audience ratings with tmdb
@@ -862,8 +862,8 @@ webhooks:                                           # Can be individually specif
   version: (redacted)
   delete: (redacted)
 plex:                                               # Can be individually specified per library as well; REQUIRED for the script to run
-  url: (redacted)
-  token: (redacted)
+  url: http://10.10.10.10:1234
+  token: THIS_IS_A_FAKE_TOKEN
   timeout: 60
   clean_bundles: true
   empty_trash: true
@@ -876,19 +876,19 @@ tmdb:                                               # REQUIRED for the script to
   region: CA                                        # Upper case ISO 3166-1 Code
   cache_expiration: 60
 tautulli:                                           # Can be individually specified per library as well
-  url: (redacted)
-  apikey: (redacted)
+  url: http://10.10.10.10:1234
+  apikey: THIS_IS_A_FAKE_TOKEN
 omdb:
-  apikey: (redacted)
+  apikey: THIS_IS_A_FAKE_TOKEN
   cache_expiration: 60
 mdblist:
-  apikey: (redacted)
+  apikey: THIS_IS_A_FAKE_TOKEN
   cache_expiration: 60
 notifiarr:
-  apikey: (redacted)
+  apikey: THIS_IS_A_FAKE_TOKEN
 radarr:                                         # Can be individually specified per library as well
-  url: (redacted)
-  token: (redacted)
+  url: http://10.10.10.10:1234
+  token: THIS_IS_A_FAKE_TOKEN
   root_folder_path: /data/media/movies
   monitor: true
   availability: announced
@@ -903,8 +903,8 @@ radarr:                                         # Can be individually specified 
   ignore_cache: false
   monitor_existing: false
 sonarr:                                         # Can be individually specified per library as well
-  url: (redacted)
-  token: (redacted)
+  url: http://10.10.10.10:1234
+  token: THIS_IS_A_FAKE_TOKEN
   root_folder_path: /data/media/tv
   monitor: all
   quality_profile: Any
@@ -923,7 +923,7 @@ sonarr:                                         # Can be individually specified 
   monitor_existing: false
 anidb:
   client: (redacted)
-  version: (redacted)
+  version: 1234
   language: en
   cache_expiration: 60
   username: (redacted)

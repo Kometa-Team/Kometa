@@ -64,14 +64,19 @@ class Operations:
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug("")
 
-        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
+        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, ignore_smart_in):
             if all((x is None for x in [configured_in, managed_in, less_in])):
                 return False
 
-            less_check = True
+            less_check = not ignore_smart_in if col_in.smart else True
             if less_in is not None:
-                less_check = col_in.childCount < less_in
-                logger.trace(f"{col_in.title} - collection size: {col_in.childCount} < less: {less_in}, DELETE: {less_check}")
+                if less_check:
+                    col_count = col_in.childCount if col_in.childCount is not None else 0
+                    less_check = col_count < less_in
+                    logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
+                else:
+                    logger.trace(f"{col_in.title} - skipping size check:  smart - {col_in.smart}, ignore_smart - {ignore_smart_in}")
+                    
 
             managed_check = True
             if managed_in is not None:
@@ -158,7 +163,7 @@ class Operations:
                             parental_labels = []
                         else:
                             parental_guide = self.config.IMDb.parental_guide(imdb_id)
-                            parental_labels = [f"{k.capitalize()}:{v}" for k, v in parental_guide.items() if v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
+                            parental_labels = [f"{k}:{v}" for k, v in parental_guide.items() if v and v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
                         add_labels = [la for la in parental_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
                         for label_list, edit_type in [(add_labels, "add"), (remove_labels, "remove")]:
@@ -906,7 +911,7 @@ class Operations:
 
             def get_batch_info(placement, total, display_attr, total_count, display_value=None, is_episode=False, out_type=None, tag_type=None):
                 return f"Batch {name_display[display_attr] if display_attr in name_display else display_attr.capitalize()} Update ({placement}/{total}): " \
-                       f"{f'{out_type.capitalize()}ing ' if out_type else ''}" \
+                       f"{f'{out_type.capitalize()} ' if out_type else ''}" \
                        f"{f'Adding {display_value} to ' if tag_type == 'add' else f'Removing {display_value} from ' if tag_type == 'remove' else ''}" \
                        f"{total_count} {'Episode' if is_episode else 'Movie' if self.library.is_movie else 'Show'}" \
                        f"{'s' if total_count > 1 else ''}{'' if out_type or tag_type else f' updated to {display_value}'}"
@@ -1071,6 +1076,7 @@ class Operations:
             less = self.library.delete_collections["less"] if self.library.delete_collections and self.library.delete_collections["less"] is not None else None
             managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
             configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
+            ignore_smart = self.library.delete_collections["ignore_empty_smart_collections"] if self.library.delete_collections else True
             unmanaged_collections = []
             unconfigured_collections = []
             all_collections = self.library.get_all_collections()
@@ -1079,7 +1085,7 @@ class Operations:
                 col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
 
-                if should_be_deleted(col, labels, configured, managed, less):
+                if should_be_deleted(col, labels, configured, managed, less, ignore_smart):
                     try:
                         self.library.delete(col)
                         logger.info(f"{col.title} Deleted")

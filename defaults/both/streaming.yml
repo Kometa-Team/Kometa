@@ -22,10 +22,10 @@ templates:
         conditions:
           - originals_only: false
             library_type: movie
-            value: primary_release_date.desc
+            value: popularity.desc
           - originals_only: false
             library_type: show
-            value: first_air_date.desc
+            value: popularity.desc
       originals:
         conditions:
           - originals_only: true
@@ -37,9 +37,10 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: CA
+          - region: [CA, AU]
             tmdb_key: [9]
             value: 119
+
       discover_with:
         conditions:
           - originals_only: false
@@ -48,10 +49,6 @@ templates:
         conditions:
           - originals_only: false
             value: 0
-      discover_count:
-        conditions:
-          - originals_only: false
-            value: 100
       allowed_streaming:
         conditions:
           - originals_only: true
@@ -71,6 +68,7 @@ templates:
       limit: "500"
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
+      discover_with_<<key>>: <<discover_with>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     run_definition:
@@ -85,8 +83,7 @@ templates:
     limit: <<limit>>
     tmdb_discover:
       limit: <<discover_limit>>
-      with_watch_providers: <<discover_with>>
-      vote_count.gte: <<discover_count>>
+      with_watch_providers: <<discover_with_<<key>>>>
       watch_region: <<discover_region>>
       sort_by: <<discover_sort>>
 
@@ -127,7 +124,7 @@ dynamic_collections:
       - arr
     template_variables:
       image:
-        default: streaming/<<key_name_encoded>>
+        default: streaming/<<style>>/<<key_name_encoded>>
       tmdb_key:
         all4: 103
         appletv: 350
@@ -157,3 +154,5 @@ dynamic_collections:
         default: streaming
       dynamic:
         default: true
+      style:
+        default: color
