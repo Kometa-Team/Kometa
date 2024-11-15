@@ -391,31 +391,32 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 
 ##### Special Rating Text
 
-| Variable                      | Description                             | Item Types                                  |
-|:------------------------------|:----------------------------------------|:--------------------------------------------|
-| `audience_rating`             | Plex Audience Rating                    | `Movies`, `Shows`, or `Episodes`            |
-| `critic_rating`               | Plex Critic Rating                      | `Movies`, `Shows`, or `Episodes`            |
-| `user_rating`                 | Plex User Rating                        | `Movies`, `Shows`, `Seasons`, or `Episodes` |
-| `tmdb_rating`                 | TMDb Rating                             | `Movies`, `Shows`, `Seasons`, or `Episodes` |
-| `imdb_rating`                 | IMDb Rating                             | `Movies`, `Shows`, or `Episodes`            |
-| `trakt_user_rating`           | Trakt User Rating                       | `Movies` or `Shows`                         |
-| `omdb_rating`                 | OMDb Rating                             | `Movies` or `Shows`                         |
-| `mdb_rating`                  | MDBList Rating                          | `Movies` or `Shows`                         |
-| `mdb_average_rating`          | MDBList Average Rating                  | `Movies` or `Shows`                         |
-| `mdb_imdb_rating`             | MDBList IMDb Rating                     | `Movies` or `Shows`                         |
-| `mdb_metacritic_rating`       | MDBList Metacritic Rating               | `Movies` or `Shows`                         |
-| `mdb_metacriticuser_rating`   | MDBList Metacritic User Rating          | `Movies` or `Shows`                         |
-| `mdb_trakt_rating`            | MDBList Trakt Rating                    | `Movies` or `Shows`                         |
-| `mdb_tomatoes_rating`         | MDBList Rotten Tomatoes Rating          | `Movies` or `Shows`                         |
-| `mdb_tomatoesaudience_rating` | MDBList Rotten Tomatoes Audience Rating | `Movies` or `Shows`                         |
-| `mdb_tmdb_rating`             | MDBList TMDb Rating                     | `Movies` or `Shows`                         |
-| `mdb_letterboxd_rating`       | MDBList Letterboxd Rating               | `Movies` or `Shows`                         |
-| `mdb_myanimelist_rating`      | MDBList MyAnimeList Rating              | `Movies` or `Shows`                         |
-| `anidb_rating`                | AniDB Rating                            | `Movies` or `Shows`                         |
-| `anidb_average_rating`        | AniDB Average Rating                    | `Movies` or `Shows`                         |
-| `anidb_score_rating`          | AniDB Score Rating                      | `Movies` or `Shows`                         |
-| `mal_rating`                  | MyAnimeList Rating                      | `Movies` or `Shows`                         |
+| Variable                      | Description                             | Item Types                                                                |
+|:------------------------------|:----------------------------------------|:--------------------------------------------------------------------------|
+| `audience_rating`             | Plex Audience Rating                    | `Movies`, `Shows`, or `Episodes`                                          |
+| `critic_rating`               | Plex Critic Rating                      | `Movies`, `Shows`, or `Episodes`                                          |
+| `user_rating`                 | Plex User Rating                        | `Movies`, `Shows`, `Seasons`, or `Episodes`                               |
+| `tmdb_rating`                 | TMDb Rating                             | `Movies`, `Shows`, `Seasons`, or `Episodes`                               |
+| `imdb_rating`                 | IMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup>, or `Episodes`                   |
+| `trakt_user_rating`           | Trakt User Rating                       | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `omdb_rating`                 | OMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_rating`                  | MDBList Rating                          | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_average_rating`          | MDBList Average Rating                  | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_imdb_rating`             | MDBList IMDb Rating                     | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_metacritic_rating`       | MDBList Metacritic Rating               | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_metacriticuser_rating`   | MDBList Metacritic User Rating          | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_trakt_rating`            | MDBList Trakt Rating                    | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_tomatoes_rating`         | MDBList Rotten Tomatoes Rating          | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_tomatoesaudience_rating` | MDBList Rotten Tomatoes Audience Rating | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_tmdb_rating`             | MDBList TMDb Rating                     | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_letterboxd_rating`       | MDBList Letterboxd Rating               | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `mdb_myanimelist_rating`      | MDBList MyAnimeList Rating              | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `anidb_rating`                | AniDB Rating                            | `Movies` or `Shows`                                                       |
+| `anidb_average_rating`        | AniDB Average Rating                    | `Movies` or `Shows`                                                       |
+| `anidb_score_rating`          | AniDB Score Rating                      | `Movies` or `Shows`                                                       |
+| `mal_rating`                  | MyAnimeList Rating                      | `Movies` or `Shows`                                                       |
 
+<sup>1</sup> These services do not store season or episode-level ratings, using these options will allow show ratings to be applied at the season or episode level.
 
 ??? tip "Special Rating Text Modifiers"
 
