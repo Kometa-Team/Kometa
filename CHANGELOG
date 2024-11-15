@@ -5,6 +5,7 @@ Update setuptools requirement to 75.3.0
 
 # New Features
 Added the `character` search option to the `imdb_search` builder
+Add `show_unfiltered` setting to display items which make it through a filter
 
 # Defaults
 Fixed incorrect content rating mappings in various Default files
