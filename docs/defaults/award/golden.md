@@ -86,7 +86,7 @@ work. Any value not specified will use its default value if it has one if not it
               collection_mode: show_items #(1)!
               collection_order: alpha #(2)!
               radarr_add_missing: true #(3)!
-              name_format: Emmys <<key_name>> Winners #(4)!
+              name_format: Golden Globes <<key_name>> Winners #(4)!
               data: #(5)!
                 starting: latest-10
                 ending: latest
