@@ -23,3 +23,4 @@ Fixes an issue where episode overlays sometimes wouldn't be added
 Fixes an issue with IMDb Parental Labels not working
 Fixes an issue where OMDb returned `N/A` as the content rating
 Fixes an issue where `plex_collectionless` doesn't work if the item was added to a collection in the same run
+MOdifies default value presentation for default metadata files.
