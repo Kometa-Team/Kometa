@@ -10,7 +10,7 @@ This file also merges similarly named genres (such as "Sci-Fi", "SciFi" and "Sci
 
 Supported Library Types: Movie, Show
 
-## Collections Section 060
+## <a id="collection_section"></a>Collections Section 060
 
 | Collection                                               | Key                                  | Description                                                                    |
 |:---------------------------------------------------------|:-------------------------------------|:-------------------------------------------------------------------------------|
@@ -53,9 +53,9 @@ work. Any value not specified will use its default value if it has one if not it
         | Variable                      | Description & Values                                                                                                                                                                                                                                   |
         |:------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                |
-        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                             |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the [key's](#collection_section) collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                             |
         | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                      |
-        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                |
         | `exclude`                     | **Description:** Exclude these Genres from creating a Dynamic Collection.<br>**Values:** List of Genres found in your library                                                                                                                          |
         | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-values). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Genres found in your library |
         | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-values).<br>**Values:** Dictionary List of Genres found in your library                                                                                                                   |
@@ -64,7 +64,7 @@ work. Any value not specified will use its default value if it has one if not it
         | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that have the genre <<key_name>>.`<br>**Values:** Any string.                                                                       |
 
         1. Each default collection has a `key` [see here]() that you must replace 
-        `<<key>>` with when using this template variable.
+        `<<key>>` with when using this template variable.  These keys are found in the table at the top of this page.
 
     === "Shared Template Variables"
 

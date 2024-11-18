@@ -8,7 +8,7 @@ The `separator_award` Default Collection File is used to create a separator coll
 
 Supported Library Types: Movie, Show
 
-## Collections Section 130
+## <a id="collection_section"></a>Collections Section 130
 
 | Collection          | Key         | Description                                                                    |
 |:--------------------|:------------|:-------------------------------------------------------------------------------|

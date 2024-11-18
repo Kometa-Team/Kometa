@@ -15,7 +15,7 @@ might be seen as controversial. You are welcome to edit this to fit your own aud
 
 Supported Library Types: Movie
 
-## Collections Section 081
+## <a id="collection_section"></a>Collections Section 081
 
 | Collection                            | Key                                   | Description                                                                    |
 |:--------------------------------------|:--------------------------------------|:-------------------------------------------------------------------------------|
@@ -63,9 +63,9 @@ work. Any value not specified will use its default value if it has one if not it
         |:------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `style`                       | **Description:** Controls the visual theme of the collections created<table class="clearTable"><tr><th>Values:</th></tr><tr><td><code>white</code></td><td>White Theme</td></tr><tr><td><code>color</code></td><td>Color Theme</td></tr></table>          |
         | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                   |
-        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the [key's](#collection_section) collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                |
         | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                         |
-        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                   |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                   |
         | `include`                     | **Description:** Overrides the [default include list](#default-values).<br>**Values:** List of Countries found in your library                                                                                                                                   |
         | `exclude`                     | **Description:** Exclude these Countries from creating a Dynamic Collection.<br>**Values:** List of Countries found in your library                                                                                                                       |
         | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-values). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Countries found in your library |
@@ -78,7 +78,7 @@ work. Any value not specified will use its default value if it has one if not it
         | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s filmed in <<key_name>>.`<br>**Values:** Any string.                                                                                    |
 
         1. Each default collection has a `key` [see here]() that you must replace 
-        `<<key>>` with when using this template variable.
+        `<<key>>` with when using this template variable.  These keys are found in the table at the top of this page.
 
     === "Shared Template Variables"
 

@@ -14,7 +14,7 @@ the respective rating system.
 
 Supported Library Types: Show
 
-## Collections Section 110
+## <a id="collection_section"></a>Collections Section 110
 
 | Collection                                               | Key                                          | Description                                                                    |
 |:---------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|
@@ -55,9 +55,9 @@ work. Any value not specified will use its default value if it has one if not it
         | Variable                      | Description & Values                                                                                                                                                                                                                                            |
         |:------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                         |
-        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the key's collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                      |
+        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the [key's](#collection_section) collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                      |
         | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                               |
-        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                         |
+        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                         |
         | `include`                     | **Description:** Overrides the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
         | `append_include`              | **Description:** Appends to the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                  |
         | `remove_include`              | **Description:** Removes from the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                |

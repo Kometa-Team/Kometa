@@ -6,9 +6,9 @@ For example, if you are wondering what list is used by the Christmas Collection,
 
 Nothing on this page is required for using the defaults files, but it can be useful for understanding where the data comes from.
 
-Nothing on this page is useful for customizing the defaults.
+Nothing on this page is directly useful for customizing the defaults.
 
-Nothing here is a code example for end user use.  It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use.
+Nothing here is a code example for end user use.  It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use, and is expressed in a different format to the way you would customize the defaults via template variables.
 
 ## I want to customize the defaults
 
@@ -25,7 +25,7 @@ Nothing here is a code example for end user use.  It all *looks* like code, sinc
 
 If you want to customize these values, refer to [this](#i-want-to-customize-the-defaults).
 
-## Collections
+## <a id="collection_section"></a>Collections
 
 ### Seasonal Collections
 
