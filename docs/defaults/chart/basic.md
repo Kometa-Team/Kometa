@@ -48,14 +48,14 @@ work. Any value not specified will use its default value if it has one if not it
         | Variable                          | Description & Values                                                                                                                                                                                                                            |
         |:----------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `limit`                           | **Description:** Changes the Smart Filter Limit for all collections in a Defaults file.<br>**Values:** Number greater than 0                                                                                                                    |
-        | `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Smart Filter Limit of the specified key's collection.<br>**Default:** `limit`<br>**Values:** Number greater than 0                                                                                                 |
+        | `limit_<<key>>`<sup>1</sup>       | **Description:** Changes the Smart Filter Limit of the key's collection.<br>**Default:** `limit`<br>**Values:** Number greater than 0                                                                                                 |
         | `sort_by`                         | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                               |
-        | `sort_by_<<key>>`<sup>1</sup>     | **Description:** Changes the Smart Filter Sort of the specified key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                         |
+        | `sort_by_<<key>>`<sup>1</sup>     | **Description:** Changes the Smart Filter Sort of the key's collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                         |
         | `in_the_last_<<key>>`<sup>1</sup> | **Description:** Changes how far back the Smart Filter looks.<table class="clearTable"><tr><td>**Default:**</td></tr><tr><td>`released`</td><td>`90`</td></tr><tr><td>`episodes`</td><td>`7`</td></tr></table>**Values:** Number greater than 0 |
         | `style`                                 | **Description:** Changes the color scheme of the collection posters.<br>**Default:** `color`<br>**Values:** `color` or `white`                                                                                                                                                                                                                                                                                                                                                                            |
 
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace 
-        `<<key>>` with when calling.
+        1. Each default collection has a `key` [see here]() that you must replace 
+        `<<key>>` with when using this template variable.
 
     === "Shared Template Variables"
 

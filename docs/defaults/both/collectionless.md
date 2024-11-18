@@ -69,7 +69,7 @@ work. Any value not specified will use its default value if it has one if not it
         | `collection_order`       | **Description:** Changes the Collection Order for all collections in this file.<br>**Default:** `alpha`<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom`</td><td>Order Collection Via the Builder Order</td></tr><tr><td>[Any `plex_search` Sort Option](../../files/builders/plex.md#sort-options)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
         | `url_poster`             | **Description:** Changes the poster url of the collection.<br>**Values:** URL directly to the Image                                                                                                                                                                                                                                                                                                                                                                                                                           |
         | `exclude`                | **Description:** Exclude these Collections from being considered for collectionless.<br>**Values:** List of Collections                                                                                                                                                                                                                                                                                                                                                                                                       |
-        | `exclude_prefix`         | **Description:** Overrides the [default exclude_prefix list](#exclude-prefix). Exclude Collections with one of these prefixes from being considered for collectionless.<br>**Default:** [default exclude_prefix list](#exclude-prefix)<br>**Values:** List of Prefixes                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                                                                                 |
+        | `exclude_prefix`         | **Description:** Overrides the [default exclude_prefix list](#default-values). Exclude Collections with one of these prefixes from being considered for collectionless.<br>**Default:** [default exclude_prefix list](#exclude-prefix)<br>**Values:** List of Prefixes                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                                                                                 |
 
 ???+ example "Example Template Variable Amendments"
 
@@ -92,28 +92,8 @@ work. Any value not specified will use its default value if it has one if not it
 
 ## Default Values
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
-show how to change a name or a list.**
+Unless you customize them as described above, these collections use default lists and searches to create the collections.
 
-If you want to customize these values, use the methods described above.
+If you are interested in customizing the default values, you can find that information [here](#template-variables).
 
-??? example "Default `exclude_prefix` (click to expand) <a class="headerlink" href="#exclude-prefix" title="Permanent link">¶</a>"
-
-    <div id="exclude-prefix" />
-
-    ```{ .dtd .no-copy }
-    ###############################################################################
-    ################################## IMPORTANT ##################################
-    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
-    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
-    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
-    ###############################################################################
-    {%    
-      include-markdown "../../../defaults/both/collectionless.yml" 
-      comments=false
-      preserve-includer-indent=true
-      dedent=true
-      start="# check1"
-      end="# check2"
-    %}
-    ```
+If you are interested in seeing what those default builders are, you can find that information [here](../sources.md).
