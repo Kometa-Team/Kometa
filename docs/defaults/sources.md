@@ -136,7 +136,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Network Collections
 
-The Network collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default add-ons to consolidate some of the networks.
+The Network collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default addons to consolidate some of the networks.
 
 If you are interested in seeing the lists that are used for the network collections, you can find them here.
 
@@ -154,7 +154,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Genre Collections
 
-The Genre collections use the [dynamic collections](../files/dynamic.md) system based on the genres found in your library and some default add-ons to consolidate some of the genres.
+The Genre collections use the [dynamic collections](../files/dynamic.md) system based on the genres found in your library and some default addons to consolidate some of the genres.
 
 If you are interested in seeing the lists that are used for the genre collections, you can find them here.
 
@@ -172,7 +172,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Studios Collections
 
-The Studio collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default add-ons to consolidate some of the studios.
+The Studio collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default addons to consolidate some of the studios.
 
 If you are interested in seeing the lists that are used for the studio collections, you can find them here.
 
@@ -190,7 +190,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Countries Collections
 
-The Country collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default add-ons to consolidate some of the countries.
+The Country collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default addons to consolidate some of the countries.
 
 If you are interested in seeing the lists that are used for the country collections, you can find them here.
 
@@ -222,7 +222,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Regions Collections
 
-The Region collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default add-ons to consolidate some of the regions.
+The Region collections use the [dynamic collections](../files/dynamic.md) system with a default include list and some default addons to consolidate some of the regions.
 
 If you are interested in seeing the lists that are used for the region collections, you can find them here.
 
@@ -254,7 +254,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Continents Collections
 
-The Continents collections use the [dynamic collections](../files/dynamic.md) system with some default add-ons to consolidate the countries into continents.
+The Continents collections use the [dynamic collections](../files/dynamic.md) system with some default addons to consolidate the countries into continents.
 
 If you are interested in seeing the lists that are used for the continent collections, you can find them here.
 
@@ -438,7 +438,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Franchises Collections
 
-The Continents collections use the [dynamic collections](../files/dynamic.md) system with a default list of target franchises and some default add-ons to group shows and movies into those franchises.
+The Continents collections use the [dynamic collections](../files/dynamic.md) system with a default list of target franchises and some default addons to group shows and movies into those franchises.
 
 If you are interested in seeing the lists that are used for the franchise collections, you can find them here.
 
