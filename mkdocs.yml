@@ -309,6 +309,7 @@ nav:
           - Studios: defaults/overlays/studio.md
         - Utility:
           - Direct Play Only: defaults/overlays/direct_play.md
+      - Defaults Sources: defaults/sources.md
   - FILES & BUILDERS:
       - Overview: files/overview.md
       - FILES:

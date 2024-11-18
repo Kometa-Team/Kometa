@@ -8,7 +8,7 @@ The `separator_chart` Default Collection File is used to create a separator coll
 
 Supported Library Types: Movie, Show
 
-## Collections Section 020
+## <a id="collection_section"></a>Collections Section 020
 
 | Collection          | Key         | Description                                                                    |
 |:--------------------|:------------|:-------------------------------------------------------------------------------|
