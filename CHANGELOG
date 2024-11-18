@@ -5,6 +5,8 @@ Update setuptools requirement to 75.3.0
 
 # New Features
 Added the `character` search option to the `imdb_search` builder
+Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
+Add `show_unfiltered` setting to display items which make it through a filter
 
 # Defaults
 Fixed incorrect content rating mappings in various Default files
@@ -23,4 +25,6 @@ Fixes an issue where episode overlays sometimes wouldn't be added
 Fixes an issue with IMDb Parental Labels not working
 Fixes an issue where OMDb returned `N/A` as the content rating
 Fixes an issue where `plex_collectionless` doesn't work if the item was added to a collection in the same run
-MOdifies default value presentation for default metadata files.
+Modifies default value presentation for default metadata files.
+Fixes an issue causing IMDB collection to fail due to duplicate keys
+Removed Blog from the Navigation due to lack of time for updating/maintaining it

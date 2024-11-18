@@ -593,7 +593,7 @@ The available setting attributes which can be set at each level are outlined bel
           show_unconfigured: false
         ```
 
-??? blank "`show_filtered` - Used to show filtered items.<a class="headerlink" href="#show-filtered" title="Permanent link">¶</a>"
+??? blank "`show_filtered` - Used to show items filtered out.<a class="headerlink" href="#show-filtered" title="Permanent link">¶</a>"
 
     <div id="show-filtered" />List all items which have been filtered out of a collection or playlist (i.e. if it 
     doesn't meet the filter criteria)
@@ -613,6 +613,28 @@ The available setting attributes which can be set at each level are outlined bel
         ```yaml
         settings:
           show_filtered: true
+        ```
+
+??? blank "`show_unfiltered` - Used to show items which make it through filters.<a class="headerlink" href="#show-unfiltered" title="Permanent link">¶</a>"
+
+    <div id="show-unfiltered" />List all items which have made it through the filters INTO a collection or playlist (i.e. if it 
+    meets the filter criteria)
+
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `show_unfiltered`
+
+    **Levels with this Attribute:** Global/Library/Collection/Playlist
+    
+    **Accepted Values:** `true` or `false`
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          show_unfiltered: true
         ```
 
 ??? blank "`show_options` - Used to show attribute options from plex.<a class="headerlink" href="#show-options" title="Permanent link">¶</a>"
@@ -1061,12 +1083,13 @@ If no library-level attribute is set, then the global attribute is used.
 ```yaml
 libraries:
   Movies:
-    run_order: #(1)!
-    - collections
-    - metadata
-    - operations
-    - overlays
-    minimum_items: 3 #(2)!
+    settings:
+      run_order: #(1)!
+      - collections
+      - metadata
+      - operations
+      - overlays
+      minimum_items: 3 #(2)!
     collection_files:
       # stuff here
     overlay_files:
