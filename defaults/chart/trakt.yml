@@ -21,6 +21,17 @@ templates:
       limit: <<limit_<<key>>>>
 
 collections:
+  Trakt Anticipated:
+    variables:
+      style: color
+      key: collected
+    template:
+      - name: trakt
+      - name: shared
+        translation_key: trakt_anticipated
+      - name: arr
+      - name: custom
+
   Trakt Collected:
     variables:
       style: color
