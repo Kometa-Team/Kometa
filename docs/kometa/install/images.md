@@ -1,6 +1,8 @@
 # Docker Images
 
-You should use the official docker image:
+## Official Image
+
+Generally, you should use the official docker image:
 
 ```
 kometateam/kometa
@@ -8,19 +10,21 @@ kometateam/kometa
 
 All the examples in the wiki are assuming the use of this image, and many do not work with non-official Docker images due to differences in how the authors have chosen to construct their images.
 
+## Alternate Images
+
+Generally speaking, we suggest you use the official image instead of these alterantes, unles syou ave a specific reason to use one of these over the official. We do not provide support for issues which specifically relate to using third-party images [LSIO or other].
+
 One alternate image we see a lot is the Linuxserver image, due to its prominent placement in unRAID and linuxserver's general reputation.
 
-## LXML Images
+### LXML Images
 
-In March 2024, lxml, a prerequisite for operating Kometa, ceased support for older CPUs. This impedes users from running Kometa on unsupported hardware.
+In March 2024, `lxml`, a prerequisite for operating Kometa, ceased support for older CPUs. This impedes users from running Kometa on affected hardware.
 
-To address this issue, we have implemented 'lxml' variants for each Kometa branch (master, develop, and nightly). These variants resume compatibility with older hardware by freezing lxml on a previous version which has wider hardware support.
+To address this issue, we have implemented 'lxml' variants for each Kometa branch (master, develop, and nightly). These variants resume compatibility with older hardware by freezing `lxml` on a previous version which has wider hardware support.
 
 To transition to the lxml branch, simply prepend 'lxml-' to the branch name you are currently utilizing. For instance, `kometateam/kometa:lxml-master`, `kometateam/kometa:lxml-develop` and `kometateam/kometa:lxml-nightly`.
 
-This should cover it:
-
-## LinuxServer
+### LinuxServer
 
 The first image offered in unRAID for Kometa is the Linuxserver.io image [`linuxserver/kometa`]
 
@@ -36,7 +40,7 @@ The LSIO image:
 
 Generally speaking, we suggest you use the official image instead of LSIO. We do not provide support for issues which relate to using third-party images [LSIO or other].
 
-## Others
+### Others
 
 There are 8 other images listed at dockerhub aside from the official image and linuxserver.  None of them discuss how they are different beyond one noting it includes `curl`.
 
