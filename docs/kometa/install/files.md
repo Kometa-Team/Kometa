@@ -12,7 +12,7 @@ Collections, overlays, and metadata changes are **not** defined in `config.yml`.
 
 Generally speaking, things that are documented as being part of the `config.yml` file can only be in the `config.yml` file.  Things that are documented as being in other files can only be in those files.
 
-There are a few exceptions to this general rule, but those execptions are for the most part *settings* that override values that have been specified in the `config.yml`.  For example, `config.yml` contains a default `collection_order`, and a collection file can override that order.  "Larger" things like collection definitions can only be in collection files.
+There are a few exceptions to this general rule, but those exceptions are for the most part *settings* that override values that have been specified in the `config.yml`.  For example, `config.yml` contains a default `collection_order`, and a collection file can override that order.  "Larger" things like collection definitions can only be in collection files.
 
 ### The Kometa Defaults
 
