@@ -12,7 +12,7 @@ All the examples in the wiki are assuming the use of this image, and many do not
 
 ## Alternate Images
 
-Generally speaking, we suggest you use the official image instead of these alterantes, unles syou ave a specific reason to use one of these over the official. We do not provide support for issues which specifically relate to using third-party images [LSIO or other].
+Generally speaking, we suggest you use the official image instead of these alternates, unless you have a specific reason to use one of these over the official. We do not provide support for issues which specifically relate to using third-party images [LSIO or other].
 
 One alternate image we see a lot is the Linuxserver image, due to its prominent placement in unRAID and linuxserver's general reputation.
 
