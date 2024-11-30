@@ -105,7 +105,7 @@ metadata:
 
 One metadata change [`content_rating`] with a name and a match criteria.
 
-Metadata files use the criteria in the `match` key to find individual items (like this one which finds a movie titled "Godzilla" released in 1954), and then the specified changes are applied to that [probably] one thing that matches the criteria.
+Metadata files use the criteria in the `match` key to find individual items (like this one which finds a movie titled "Godzilla" released in 1954), and then the specified changes [in this case setting the content rating to `R`] are applied to the [probably one] thing that matches the criteria.
 
 This would go in a file like `config/my-neat-metadata.yml` and be referenced in the `config.yml` file like this:
 
@@ -132,12 +132,14 @@ playlists:
     trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
 ```
 
-Kometa defaults to pulling items for the playlist from two libraries: Movies and TV Shows.  If you want to pull from a different library, you can specify that in the playlist file.
+One playlist with a name and a [builder](../../files/builders/overview.md) that produces the list of items to put in the playlist.
+
+Kometa defaults to pulling items for the playlist from two libraries with specific names: `Movies` and `TV Shows`.  If you want to pull from different libraries [if, for example your anre *not* named `Movies` and `TV Shows`], you can specify that in the playlist file.
 
 ```yaml
 playlists: 
   Marvel Cinematic Universe Chronological Order:
-    libraries: All My Movies, All My TV Shows  
+    libraries: My Movie Library, My TV Library, My 4K Library  
     trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
 ```
 
@@ -154,4 +156,3 @@ playlist_files:
 ```
 
 Note that the `playlist_files` key is at the top level of the `config.yml` file, not under a specific library.  This is because playlists can span libraries.
-
