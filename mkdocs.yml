@@ -310,6 +310,7 @@ nav:
           - Studios: defaults/overlays/studio.md
         - Utility:
           - Direct Play Only: defaults/overlays/direct_play.md
+      - Defaults Sources: defaults/sources.md
   - FILES & BUILDERS:
       - Overview: files/overview.md
       - FILES:
@@ -350,7 +351,6 @@ nav:
     - EXPLANATION GUIDES: *guides
     - COMPANION SCRIPTS: *scripts
     - USEFUL LINKS: *links
-  - BLOG: https://blog.kometa.wiki
   - SPONSOR: https://github.com/sponsors/meisnate12
 #  - SHOWCASE:
 #    - Overlays Showcase: showcase/overlays.md

@@ -620,6 +620,7 @@ def run_libraries(config):
             logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
             logger.debug(f"Show Unconfigured: {library.show_unconfigured}")
             logger.debug(f"Show Filtered: {library.show_filtered}")
+            logger.debug(f"Show Unfiltered: {library.show_unfiltered}")
             logger.debug(f"Show Options: {library.show_options}")
             logger.debug(f"Show Missing: {library.show_missing}")
             logger.debug(f"Save Report: {library.save_report}")

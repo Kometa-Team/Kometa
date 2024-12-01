@@ -50,6 +50,7 @@ chazlarson
 codec
 codecs
 collectionless
+CommonSense
 config
 configs
 cpp
@@ -179,6 +180,7 @@ md
 mdb
 mdblist
 MDBList
+MDBLists
 mediastinger
 MediaStinger
 mediastingers
