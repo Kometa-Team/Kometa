@@ -6,18 +6,56 @@ search:
 
 The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes.
 
+## What is an Asset Directory?
+
+It is a folder containing artwork (posters and/or backgrounds) that is *typically* entirely separate to your media directories.
+
+The only connection an asset directory has with your media directories is that the name of the folder your movie or series is in is the "asset name".  Kometa uses that "asset name" as the **key** to find the artwork in the asset directory.
+
+Media directory:
+
+```txt
+/this/part/does/not/matter/Star Wars (1977)/neither_does_this_part.mkv
+                           ^^^^^^^^^^^^^^^^ "asset name"
+```
+
+Asset Directory:
+
+with asset folders:
+
+```txt
+/this/part/does/not/matter/Star Wars (1977)/background.jpg
+/this/part/does/not/matter/Star Wars (1977)/poster.jpg
+                           ^^^^^^^^^^^^^^^^ "asset name" used as lookup key
+```
+
+OR without asset folders
+
+```txt
+/this/part/does/not/matter/Star Wars (1977)_background.jpg
+/this/part/does/not/matter/Star Wars (1977).jpg
+                           ^^^^^^^^^^^^^^^^ "asset name" used as lookup key
+```
+
+You **can** use your media directories as the asset directories (if for example you like to keep your artwork next to your media files), but this is not typical, nor is it required. 
+
+Kometa does not require direct access to your media directories in normal use, and it is typically run remote from the Plex server, which is why the asset directory is *typically* entirely separate.
+
 ## Requirements and configuration
 
 If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own.  The name that Kometa will use to look up the asset poster for a movie is the folder that the movie file is located in *on disk*, and each movie/show needs to have a unique asset name.
 
 In other words, this works:
-```
+
+```txt
 movies/Star Wars (1977)/Star Wars (1977) Bluray-1080p.mkv
 movies/Star Trek The Motion Picture (1979)/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
 movies/The Empire Strikes Back (1980)/The Empire Strikes Back (1980) Bluray-1080p.mkv
 ```
+
 while this *WILL NOT*:
-```
+
+```txt
 movies/Star Wars (1977) Bluray-1080p.mkv
 movies/Star Trek The Motion Picture (1979) Bluray-1080p.mkv
 movies/The Empire Strikes Back (1980) Bluray-1080p.mkv
@@ -69,6 +107,7 @@ Movies:
 ```
 
 If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
+
 ```yaml
 settings:
   show_missing_assets: false
