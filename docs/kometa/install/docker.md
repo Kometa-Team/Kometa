@@ -5,8 +5,9 @@ This article will walk you through getting Kometa set up and running via Docker.
 1. Installing Docker
 2. Retrieving the image
 3. Setting up the initial config file
-4. Setting up a collection file and creating a couple sample collections
-5. Creating a docker container that will keep running in the background
+4. Creating some sample collections using the defaults
+5. Setting up a collection file and creating a sample collection.
+6. Adding some default overlays.
 
 The specific steps you will be taking:
 

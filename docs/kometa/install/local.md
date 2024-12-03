@@ -2,24 +2,26 @@
 
 This article will walk you through getting Kometa set up and running.  It will cover:
 
-1.  Retrieving the Kometa code
-2.  Installing requirements
-3.  Setting up the initial config file
-4.  Setting up a collection file and creating a couple sample collections.
+1. Retrieving the Kometa code
+2. Installing requirements
+3. Setting up the initial config file
+4. Creating some sample collections using the defaults
+5. Setting up a collection file and creating a sample collection.
+6. Adding some default overlays.
 
 The specific steps you will be taking:
 
-1.  Verify that Python 3.8 or better is installed and install it if not
-2.  Verify that the Git tools are installed and install them if not
-3.  Use `git` to retrieve the code
-4.  Install requirements [extra bits of code required for Kometa]
-5.  Gather two things that the script requires:
-    1. TMDb API Key
-    2. Plex URL and Token
+1. Verify that Python 3.8 or better is installed and install it if not
+2. Verify that the Git tools are installed and install them if not
+3. Use `git` to retrieve the code
+4. Install requirements [extra bits of code required for Kometa]
+5. Gather two things that the script requires:
+   - TMDb API Key
+   - Plex URL and Token
 
-6.  Then, iteratively:
-    1. use `python` to run the script
-    2. use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
+6. Then, iteratively:
+   - use `python` to run the script
+   - use a text editor to modify a couple of text files until you have a working config file and a single working collection file.
 
 Note that running a Python script is inherently a pretty technical process.  If you are unable or unwilling to learn the rudiments of using tools like python and git, you should probably strongly consider running Kometa in [Docker](docker.md).  That will eliminate the Python and git installs from this process and make it as simple as it can be.
 
@@ -31,7 +33,7 @@ Finally, this walkthrough is intended to give you a basic grounding in how to ge
 
 Nearly anywhere you see
 
-```
+```txt
 something like this
 ```
 

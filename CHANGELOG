@@ -8,6 +8,10 @@ Added the `character` search option to the `imdb_search` builder
 Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
 Add `show_unfiltered` setting to display items which make it through a filter
 
+# Docs
+Added "getting started" page
+Added page to describe all the YAML files
+
 # Defaults
 Fixed incorrect content rating mappings in various Default files
 Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU
