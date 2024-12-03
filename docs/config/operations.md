@@ -896,13 +896,16 @@ You can create individual blocks of operations by using a list under `operations
                 add_blank_entries: false
         ```
 
-    The resulting metadata file can be used like any other metadata file in Kometa, for example, you can use it to apply metadata to a new library or to restore metadata to a library.
+    The resulting metadata file can be used like any other [metadata file](../files/metadata.md) in Kometa, for example, you can use it to apply metadata to a new library or to restore metadata to a library.
 
     ???+ example "Example"
     
         ```yaml
         libraries:
           Movies:
+            metadata_files:
+              file: config/Movie_Backup.yml  # restore this metadata file to the library
+          Movies - Alternate:
             metadata_files:
               file: config/Movie_Backup.yml  # apply this metadata file to the library
         ```
