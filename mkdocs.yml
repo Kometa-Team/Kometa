@@ -134,6 +134,7 @@ nav:
         - Installing Kometa: kometa/install/overview.md
         - Docker Images: kometa/install/images.md
         - Getting Start: kometa/install/getting_started.md
+        - Configuring Kometa: kometa/install/files.md
         - Walkthroughs:
           - Local (Win/Mac/Linux): kometa/install/local.md
           - Docker: kometa/install/docker.md
