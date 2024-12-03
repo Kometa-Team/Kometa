@@ -869,8 +869,7 @@ You can create individual blocks of operations by using a list under `operations
     <div id="metadata-backup" />Creates/Maintains a Kometa Metadata File with a full `metadata` mapping based
     on the library's items locked attributes.
 
-    If you point to an existing Metadata File then Kometa will Sync the changes to the file, so you won't lose non plex 
-    changes in the file.
+    If you point to an existing Metadata File then Kometa will sync the changes to the file, so you won't lose non plex changes in the file.
 
     <hr style="margin: 0px;">
     
@@ -895,4 +894,15 @@ You can create individual blocks of operations by using a list under `operations
                 path: config/Movie_Backup.yml
                 sync_tags: true
                 add_blank_entries: false
+        ```
+
+    The resulting metadata file can be used like any other metadata file in Kometa, for example, you can use it to apply metadata to a new library or to restore metadata to a library.
+
+    ???+ example "Example"
+    
+        ```yaml
+        libraries:
+          Movies:
+            metadata_files:
+              file: config/Movie_Backup.yml  # apply this metadata file to the library
         ```
