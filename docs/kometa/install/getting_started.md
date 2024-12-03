@@ -39,7 +39,7 @@ Similarly, the docker image is self-contained and does not require any installat
 
 ### Step 2: Create a config file
 
-There are two platform-independent walkthroughs for gettings started with Kometa:
+There are two platform-independent walkthroughs for getting started with Kometa:
 
 1. [Local Python script](./local.md)
 2. [Docker container](./docker.md)
@@ -51,9 +51,9 @@ Both of those walkthroughs will get you up and running with Kometa in a few minu
     - Setting up a collection file and creating a sample collection
     - Adding some default overlays
 
-After you complete the steps in one of those walkthroughs, you will have a working Kometa setup, ready for you to tuen and expand.
+After you complete the steps in one of those walkthroughs, you will have a working Kometa setup, ready for you to tune and expand.
 
-### Those walkthroughs don't cover my TerraMaster NAS
+### Those walkthroughs don't cover my NAS
 
 That same config file can be used on any platform or NAS; you don't need to create a new one for each platform.
 
@@ -105,7 +105,7 @@ The single most common mistake most new users make is trying to add everything a
 
 Start slow.  Start simple.  Add a feature or two at a time.  Learn how they work.  Understand how they interact with each other.  Then add more features.
 
-There's a config floating around from bullmoose20 that a lot of people decide to start with.  You don't need to start with that.  You *SHOULDN'T* start with that.  That config wil take hours if not days to run on nearly any system against nearly any library.  It's a complex config that is meant to show off the power of Kometa, not to be a starting point.
+There's a config floating around from bullmoose20 that a lot of people decide to start with.  You don't need to start with that.  You *SHOULDN'T* start with that.  That config will take hours if not days to run on nearly any system against nearly any library.  It's a complex config that is meant to show off the power of Kometa, not to be a starting point.
 
 You can start with the minimal config above and build up from there.
 
