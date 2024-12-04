@@ -68,24 +68,53 @@ python kometa.py
 
 ### Docker Run:
 
+These are high-level steps which assume the user has knowledge of Docker, and the general ability to troubleshoot issues. They do not cover creating a `config.yml` file or other configuration details which may be required to get Kometa to do anything substantive. The steps only cover the basics of creating a container.  For a detailed step-by-step walkthrough, refer to the [Docker Walkthrough](docker.md) guide.
+
 ```shell
 docker run -it -v <PATH_TO_CONFIG>:/config:rw kometateam/kometa
 ```
 
 - The `-it` flag allows you to interact with the script when needed (such as for Trakt or MyAnimeList authentication).
 - The `-v <PATH_TO_CONFIG>:/config:rw` flag mounts the location you choose as a persistent volume to store your files.
+- this command will run the container in the foreground, waiting until 5AM to run; if you want it to run right now or run at a different time, or run in the background, you will need to add some flags to the command. 
 
-    * Change `<PATH_TO_CONFIG>` to a folder where your config.yml and other files are.
+    * Change `<PATH_TO_CONFIG>` to a folder where your `config.yml` and other files are [the assumption here is that they already exist].
     * The docker image defaults to running the configuration file named `config.yml` which resides in your persistent volume.
     * If your directory has spaces (such as "My Documents"), place quotation marks around your directory pathing as shown here: `-v "<PATH_TO_CONFIG>:/config:rw"`
 
 
-Example Docker Run command:
+#### Example Docker Run commands:
 
 These docs are assuming you have a basic understanding of Docker concepts.  One place to get familiar with Docker would be the [official tutorial](https://www.docker.com/101-tutorial/).
 
+Run in the foreground and wait until 5AM to wake up: 
+
 ```shell
 docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa
+```
+
+Run in the background and wait until 5AM to wake up: 
+
+```shell
+docker run -it -d -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa
+```
+
+Run in the background and wait until 3PM to wake up: 
+
+```shell
+docker run -it -d -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --times 17:00
+```
+
+Run immediately in the foreground, then exit when done: 
+
+```shell
+docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run
+```
+
+Run immediately in the foreground, exit when done, delete the container when done: 
+
+```shell
+docker run -it --rm -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run
 ```
 
 ### Docker Compose:
