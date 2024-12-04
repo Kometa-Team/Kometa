@@ -149,13 +149,14 @@ nav:
         - Frequently Asked Questions: kometa/faqs.md
         - Explanation Guides: &guides
           - Overview: kometa/guides/overview.md
-          - Switching from PMM to Kometa: kometa/guides/rebrand.md
           - Plex Ratings Explained: kometa/guides/ratings.md
           - Kometa Sorting Guide: kometa/guides/order.md
           - Scheduling Kometa Runs Guide: kometa/guides/scheduling.md
           - Image Asset Directory Guide: kometa/guides/assets.md
           - Formula 1 Metadata Guide: kometa/guides/formula.md
           - MediUX Assets Guide: kometa/guides/mediux.md
+          - Reverting Kometa Changes: kometa/guides/revert.md
+          - Switching from PMM to Kometa: kometa/guides/rebrand.md
         - Companion Scripts: &scripts
           - Overview: kometa/scripts/overview.md
           - ImageMaid: kometa/scripts/imagemaid.md
