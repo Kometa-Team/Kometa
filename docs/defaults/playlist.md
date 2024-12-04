@@ -102,6 +102,23 @@ work. Any value not specified will use its default value if it has one if not it
 
     1.  Adds items from the source list which are not in Plex to Radarr
 
+???+ example "Example Template Adding Default Playlists"
+
+    The below is an example config.yml extract showing how to add some default playlists.
+
+    Click the :fontawesome-solid-circle-plus: icon to learn more
+    
+    ```yaml
+    playlist_files:
+      - default: playlist
+        template_variables:
+          use_mcu: true #(1)!
+          use_xmen: false #(2)!
+    ```
+
+    1.  Enable the default MCU playlist
+    2. Disable the default X-Men playlist
+
 ## Default Values
 
 Unless you customize them as described above, these collections use default lists and searches to create the collections.
