@@ -116,7 +116,7 @@ work. Any value not specified will use its default value if it has one if not it
           use_xmen: false #(2)!
     ```
 
-    1.  Enable the default MCU playlist
+    1. Enable the default MCU playlist
     2. Disable the default X-Men playlist
 
 ## Default Values
