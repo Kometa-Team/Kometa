@@ -17,6 +17,7 @@ API
 apikey
 APIs
 apiVersion
+appdata
 AppleTV
 ArrAPI
 Arrowverse

@@ -12,6 +12,7 @@ Add `show_unfiltered` setting to display items which make it through a filter
 Added "getting started" page
 Added page to describe all the YAML files
 Updated Synology page for DSM 7.2 and added a disclaimer about what it covers
+Added "undoing changes" page
 
 # Defaults
 Fixed incorrect content rating mappings in various Default files
