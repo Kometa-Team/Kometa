@@ -38,12 +38,6 @@ Transform your media library with Kometa and discover its full potential! Connec
 -  We're constantly working on new features to take your library management experience to the next level.
 -  Consider sponsoring the project to allow us to continue building great features for you!
 
-## Demo Video
-
-The below YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
-
-[![Kometa](https://img.youtube.com/vi/nTfCUtKWTYI/0.jpg)](https://www.youtube.com/watch?v=nTfCUtKWTYI "Kometa")
-
 ## Example Kometa Libraries 
 
 Here are some examples of the things you can achieve using Kometa!
