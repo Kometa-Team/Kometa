@@ -1088,6 +1088,38 @@ class Cache:
                                    [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
                                      expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
 
+    def query_jolpica(self, year, expiration):
+        jolpica_list = []
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM jolpica_race WHERE season = ?", (year,))
+                for row in cursor.fetchall():
+                    if row:
+                        jolpica_list.append({
+                            "season": row["season"] if row["season"] else None,
+                            "round": row["round"] if row["round"] else None,
+                            "raceName": row["name"] if row["name"] else None,
+                            "date": row["date"] if row["date"] else None
+                        })
+                        if not expired:
+                            datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                            time_between_insertion = datetime.now() - datetime_object
+                            expired = time_between_insertion.days > expiration
+        return jolpica_list, expired
+
+    def update_jolpica(self, expired, season, races, expiration):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("DELETE FROM jolpica_race WHERE season = ?", (season,))
+                cursor.executemany("INSERT OR IGNORE INTO jolpica_race(season, round) VALUES(?, ?)", [(r.season, r.round) for r in races])
+                cursor.executemany("UPDATE jolpica_race SET name = ?, date = ?, expiration_date = ? WHERE season = ? AND round = ?",
+                                   [(r.name, r.date.strftime("%Y-%m-%d") if r.date else None,
+                                     expiration_date.strftime("%Y-%m-%d"), r.season, r.round) for r in races])
+
     def query_overlay_special_text(self, rating_key):
         attrs = {}
         with sqlite3.connect(self.cache_path) as connection:
