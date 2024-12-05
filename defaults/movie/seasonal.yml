@@ -235,6 +235,8 @@ dynamic_collections:
         black_history:
           - https://trakt.tv/users/hoochzilla/lists/black-cinema?display=movie&sort=title,asc
           - https://trakt.tv/users/bluephi8/lists/black-history?display=movie&sort=title,asc
+        christmas:
+          - https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie
       # check9
       visible_home:
         default: true
