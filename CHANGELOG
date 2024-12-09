@@ -35,3 +35,5 @@ Adds a page that discusses the different YAML files and what they do.
 Modifies default value presentation for default metadata files.
 Fixes an issue causing IMDB collection to fail due to duplicate keys
 Removed Blog from the Navigation due to lack of time for updating/maintaining it
+Fixes #2354 by updating version of tmdbapi dependency
+
