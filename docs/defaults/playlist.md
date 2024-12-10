@@ -104,7 +104,7 @@ work. Any value not specified will use its default value if it has one if not it
 
 ???+ example "Example Template Adding Default Playlists"
 
-    The below is an example config.yml extract showing how to add some default playlists.
+    The below is an example config.yml extract showing how to enable/disable specific playlists using their keys. By default, all keys/playlists are enabled.
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
     
