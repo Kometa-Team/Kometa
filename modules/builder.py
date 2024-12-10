@@ -160,7 +160,7 @@ custom_sort_builders = [
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio",
     "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
 ]
-episode_parts_only = ["plex_pilots"]
+episode_parts_only = ["sync_to_trakt_list", "plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
 overlay_attributes = [
      "filters", "limit", "show_missing", "save_report", "missing_only_released", "minimum_items", "cache_builders", "tmdb_region", "default_percent"
