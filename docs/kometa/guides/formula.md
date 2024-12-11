@@ -71,7 +71,7 @@ What matters for plex and for Kometa.
 * The season folder can be called whatever you want as long as plex scans it in with the Season Number matching the race number.
 * The episodes must follow plex's naming convention to have them scanned in properly but in order for Kometa to update the metadata the files need to be specifically name like above.
 
-## Collection File
+## Metadata File
 
 ```yaml
 metadata:
