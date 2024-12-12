@@ -428,7 +428,14 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
-        logger.separator(f"Finished {start_type}Run\n{version_line}\nFinished: {end_time.strftime('%H:%M:%S %Y-%m-%d')} Run Time: {run_time}")
+        if start_time.date() == end_time.date():
+            start_str = start_time.strftime('%H:%M:%S')
+            end_str = end_time.strftime('%H:%M:%S')
+        else:
+            start_str = start_time.strftime('%H:%M:%S %Y-%m-%d')
+            end_str = end_time.strftime('%H:%M:%S %Y-%m-%d')
+
+        logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}        End Time: {end_str}        Run Time: {run_time}")
         logger.remove_main_handler()
     except Exception as e:
         logger.stacktrace()
