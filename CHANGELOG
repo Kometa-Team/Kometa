@@ -37,4 +37,5 @@ Modifies default value presentation for default metadata files.
 Fixes an issue causing IMDB collection to fail due to duplicate keys
 Removed Blog from the Navigation due to lack of time for updating/maintaining it
 Fixes #2354 by updating version of tmdbapi dependency
+Added Start Time, End Time and Run Time to Summary of run. Date of Start/End Time now only displays if the Start and End are on different dates.
 
