@@ -1,7 +1,7 @@
 name: Wiki Issue
 description: A request to update or improve Kometa's wiki
 labels: ['status:not-yet-viewed', 'documentation']
-assignees: 'meisnate12'
+assignees: ['meisnate12', 'chazlarson', 'YozoraXCII']
 
 body:
   - type: markdown
