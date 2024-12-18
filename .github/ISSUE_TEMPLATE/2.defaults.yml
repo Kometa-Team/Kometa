@@ -2,7 +2,7 @@ name: Kometa Default Issue
 description: Post here if there is an issue with the Kometa defaults or for missing images for Kometa default overlays or posters.
 title: '[Defaults]: '
 labels: ['defaults']
-assignees: ['meisnate12', 'bullmoose20', 'YozoraXCII']
+assignees: ['meisnate12', 'bullmoose20', 'YozoraXCII', 'chazlarson']
 
 body:
   - type: markdown
