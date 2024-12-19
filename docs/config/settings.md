@@ -995,7 +995,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
+          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12/
         ```
 
 ??? blank "`overlay_artwork_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
