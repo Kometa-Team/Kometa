@@ -143,7 +143,7 @@ The location types are outlined as follows:
     ???+ example "Example"
 
         This is assuming the `custom_repo` setting is 
-        `https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12`.
+        `https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12/`.
         
         ```yaml
         libraries:
