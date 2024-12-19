@@ -212,6 +212,7 @@ namespace
 NAS
 natively
 nitsua
+NL
 Nokmål
 NOSUCHLIBRARY
 notifiarr
