@@ -93,7 +93,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: [CA, AU]
+          - region: [CA, AU, NL]
             tmdb_key: [9]
             value: 119
       allowed_streaming:
