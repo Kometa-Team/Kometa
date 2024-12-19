@@ -94,6 +94,7 @@ Supported library types: Movie & Show
 | Mongolian                | `mn`  | `14`   | `mn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Khmer                    | `kh`  | `15`   | `kh`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Limburgish               | `li`  | `16`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Irish                    | `ga`  | `17`   | `ie`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 ??? tip "Square Style (click to expand)"
