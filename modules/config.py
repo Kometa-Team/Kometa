@@ -488,6 +488,8 @@ class ConfigFile:
             repo = self.general["custom_repo"]
             if "https://github.com/" in repo:
                 repo = repo.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/tree/", "/")
+                if not repo.endswith("/"):
+                    repo += "/"
             self.custom_repo = repo
 
         if not self.general["verify_ssl"]:
