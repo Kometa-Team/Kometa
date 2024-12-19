@@ -979,7 +979,7 @@ The available setting attributes which can be set at each level are outlined bel
     ???+ note
     
         Ensure you are using the raw GitHub link (i.e. 
-        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12)
+        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12/)
 
     <hr style="margin: 0px;">
     
