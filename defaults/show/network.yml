@@ -455,8 +455,12 @@ dynamic_collections:
         - Network 10
       Nickelodeon:
         - Nick at Nite
+      Paramount+:
+        - Paramount+ with Showtime
       ReelzChannel:
         - Reelz
+      Showtime:
+        - Paramount+ with Showtime
       Sky:
         - Sky One
         - Sky Atlantic
@@ -481,7 +485,6 @@ dynamic_collections:
         - sky Travel
         - Sky Vision
         - Sky News Weather Channel
-        - SkyShowtime
       Smithsonian:
         - Smithsonian Channel
         - Smithsonian Earth
