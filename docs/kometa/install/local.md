@@ -11,7 +11,7 @@ This article will walk you through getting Kometa set up and running.  It will c
 
 The specific steps you will be taking:
 
-1. Verify that the version of Python installed is between 3.9 and 3.12.
+1. Verify that the version of Python installed is between 3.9 and 3.13.
 2. Verify that the Git tools are installed and install them if not
 3. Use `git` to retrieve the code
 4. Install requirements [extra bits of code required for Kometa]
@@ -89,7 +89,7 @@ First let's check if it's installed already [type this into your terminal]:
 python3 --version
 ```
 
-If this doesn't return a version between `3.9` and `3.12`, you'll need to installed a supported version of Python.
+If this doesn't return a version between `3.9` and `3.13`, you'll need to installed a supported version of Python.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -109,7 +109,7 @@ If this doesn't return a version between `3.9` and `3.12`, you'll need to instal
     ```
     Depending on the version of Python, you may need to use one or the other.  If this works, you're ready to go, just substitute `python` for `python3` in the couple places it appears below.
     
-    Go to http://www.python.org/download and download Python 3.12.  **Kometa has not been tested and may be non-functional on any version of Python beyond 3.12**
+    Go to http://www.python.org/download and download Python 3.13.  **Kometa has not been tested and may be non-functional on any version of Python beyond 3.13**
     
     Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
     
