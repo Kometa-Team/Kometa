@@ -89,7 +89,7 @@ First let's check if it's installed already [type this into your terminal]:
 python3 --version
 ```
 
-If this doesn't return a version between `3.9` and `3.12`, you'll need to installed a supprted version of Python.
+If this doesn't return a version between `3.9` and `3.12`, you'll need to installed a supported version of Python.
 
 === ":fontawesome-brands-linux: Linux"
 
