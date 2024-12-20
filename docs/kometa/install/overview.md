@@ -37,7 +37,7 @@ If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following ba
 
 ## Local Install Overview
 
-Kometa is compatible with Python 3.8 through 3.11. Later versions may function but are untested.
+Kometa is compatible with Python 3.9 through 3.12. Later versions may function but are untested.
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. For a detailed step-by-step walkthrough, refer to the [Local Walkthrough](local.md) guide.
 
