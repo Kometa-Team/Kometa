@@ -4,8 +4,8 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 8:
-    print("Version Error: Version: %s.%s.%s incompatible please use Python 3.8+" % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+if sys.version_info[0] != 3 or sys.version_info[1] < 9:
+    print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
@@ -16,7 +16,7 @@ try:
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
-    print(f"Requirements Error: Requirements are not installed ({ie})")
+    print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
 
 system_versions = {
@@ -185,7 +185,7 @@ if run_args["run-collections"]:
     run_args["collections-only"] = True
 
 if run_args["width"] < 90 or run_args["width"] > 300:
-    print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300 using the default 100")
+    print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
     run_args["width"] = 100
 
 if run_args["config"] and os.path.exists(run_args["config"]):
