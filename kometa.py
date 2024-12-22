@@ -203,14 +203,14 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
                 content = template_file.read()
             with open(config_path, 'w') as config_file:
                 config_file.write(content)
-            print(f"Configuration file (config.yml) created at {config_path}. Please open this file and update it with your API keys etc.")
+            print(f"Configuration file (config.yml) created at {config_path}. Please open this file and update it with your API keys and other required settings.")
             sys.exit(1)
         except Exception as e:
             print(f"Config Error: Unable to copy the Template file (config.yml.template) from {template_path} to {config_path}. Details: {e}")
             sys.exit(1)
     else:
         if git_branch:
-            github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/bob/config/config.yml.template"
+            github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
             try:
                 response = requests.get(github_url, timeout=10)
                 if response.status_code == 200:
