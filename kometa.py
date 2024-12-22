@@ -191,7 +191,7 @@ if run_args["width"] < 90 or run_args["width"] > 300:
 if run_args["config"] and os.path.exists(run_args["config"]):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(run_args["config"])))
 elif run_args["config"] and not os.path.exists(run_args["config"]):
-    print(f"Config Error: config not found at {os.path.abspath(run_args['config'])}")
+    print(f"Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}")
     sys.exit(0)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     template_path = os.path.join(default_dir, "config.yml.template")
@@ -206,11 +206,11 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
             print(f"Configuration file (config.yml) created at {config_path}. Please open this file and update it with your API keys etc.")
             sys.exit(1)
         except Exception as e:
-            print(f"Error: Unable to copy the configuration template file from {template_path} to {config_path}. Details: {e}")
+            print(f"Config Error: Unable to copy the Template file (config.yml.template) from {template_path} to {config_path}. Details: {e}")
             sys.exit(1)
     else:
         if git_branch:
-            github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
+            github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/bob/config/config.yml.template"
             try:
                 response = requests.get(github_url, timeout=10)
                 if response.status_code == 200:
@@ -221,10 +221,10 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
                     print(f"A Configuration file (config.yml) has been downloaded from GitHub and saved as {config_path}. Please update this file with your API keys and other required settings.")
                     sys.exit(1)
                 else:
-                    print(f"Error: No Configuration file (config.yml)  found locally, and the template file(config.yml.template) could not be downloaded from GitHub. Please visit the GitHub repository to manually download the config.yml.template file.")
+                    print(f"Config Error: No Configuration file (config.yml) or Template file (config.yml.template) found in the config path, and the template file(config.yml.template) could not be downloaded from GitHub. Please visit the GitHub repository to manually download the config.yml.template file and place it in {template_path} prior to running Kometa again. ")
                     sys.exit(1)
             except requests.RequestException as e:
-                print(f"Error: Failed to download the configuration template file (config.yml.template) from GitHub. Details: {e}")
+                print(f"Config Error: Failed to download the configuration template file (config.yml.template) from GitHub. Details: {e}")
                 sys.exit(1)
         else:
             print(
