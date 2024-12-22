@@ -1,4 +1,4 @@
-import argparse, os, platform, re, sys, time, uuid
+import argparse, os, platform, re, sys, time, uuid, requests
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
@@ -194,8 +194,45 @@ elif run_args["config"] and not os.path.exists(run_args["config"]):
     print(f"Config Error: config not found at {os.path.abspath(run_args['config'])}")
     sys.exit(0)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
-    print(f"Config Error: config not found at {os.path.abspath(default_dir)}")
-    sys.exit(0)
+    template_path = os.path.join(default_dir, "config.yml.template")
+    config_path = os.path.join(default_dir, "config.yml")
+
+    if os.path.exists(template_path):
+        try:
+            with open(template_path, 'r') as template_file:
+                content = template_file.read()
+            with open(config_path, 'w') as config_file:
+                config_file.write(content)
+            print(f"Configuration file (config.yml) created at {config_path}. Please open this file and update it with your API keys etc.")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error: Unable to copy the configuration template file from {template_path} to {config_path}. Details: {e}")
+            sys.exit(1)
+    else:
+        if git_branch:
+            github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
+            try:
+                response = requests.get(github_url, timeout=10)
+                if response.status_code == 200:
+                    with open(template_path, 'w') as template_file:
+                        template_file.write(response.text)
+                    with open(config_path, 'w') as config_file:
+                        config_file.write(response.text)
+                    print(f"A Configuration file (config.yml) has been downloaded from GitHub and saved as {config_path}. Please update this file with your API keys and other required settings.")
+                    sys.exit(1)
+                else:
+                    print(f"Error: No Configuration file (config.yml)  found locally, and the template file(config.yml.template) could not be downloaded from GitHub. Please visit the GitHub repository to manually download the config.yml.template file.")
+                    sys.exit(1)
+            except requests.RequestException as e:
+                print(f"Error: Failed to download the configuration template file (config.yml.template) from GitHub. Details: {e}")
+                sys.exit(1)
+        else:
+            print(
+                f"Configuration Error: The configuration file (config.yml) and its template (config.yml.template) are missing from {os.path.abspath(default_dir)}. "
+                "Additionally, the GitHub branch could not be determined. Please download the template file manually from the GitHub repository."
+            )
+            sys.exit(0)
+
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
                   run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
