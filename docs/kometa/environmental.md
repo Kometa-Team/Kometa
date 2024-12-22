@@ -1,7 +1,21 @@
 
 # Run Commands & Environment Variables
 
-The basic command to run Kometa is as follows:
+## What does it mean to "run" Kometa?
+
+The word "run" in the Kometa context can be used in two ways; you "run" the Kometa Python script itself, using a Python or docker command, and then that script behaves in one of two ways:
+
+1. It sits and waits until a particular time, wakes up and processes the config file, then goes back to sleep until that same time the next day. Kometa does this unless you [specifically tell it to do otherwise](#run).
+
+2. It processes the config file right away and then exits.
+
+"Processes the config file" means that it will go through all the collections, metadata, overlays, playlists, and libraries that you have defined in your config file and do what you have told it to do with them.
+
+That's kind of a mouthful, though, so we typically use "run" to describe that bit of the process.
+
+In these docs, and in the discord when providing support, we'll use "run" to describe the "process the config file" bit.
+
+The basic command to execute Kometa is as follows:
 
 === "Windows / Mac / Linux"
 
@@ -15,20 +29,74 @@ The basic command to run Kometa is as follows:
     docker run --rm -it -v "/<ROOT_KOMETA_DIRECTORY_HERE>/config:/config:rw" kometateam/kometa
     ```
 
-To customize the running of Kometa according to your needs, you can use either run commands or environmental 
-variables. Environmental variables take precedence over run command attributes. However, if you encounter a race 
-condition where an attribute has been set both via an environmental variable and a shell command, the environmental 
-variable will be given priority.
+As discussed above, that will start Kometa, which will then wait until 5AM to wake up and process the config file.
 
-Please note that these instructions assume that you have a basic understanding of Docker concepts. If you need to 
-familiarize yourself with Docker, you can check out the official tutorial.
+The basic command to execute Kometa, telling it to run right this second, is as follows:
 
-Another way to specify environmental variables is by adding them to a .env file located in your config folder.
+=== "Windows / Mac / Linux"
 
-Environment variables are expressed as `KEY=VALUE` depending on the context where you are specifying them, you may enter 
-those two things in two different fields, or some other way.  The examples below show how you would specify the 
-environment variable in a script or a `docker run` command.  Things like Portainer or a NAS Docker UI will have 
-different ways to specify these things.
+    ``` py
+    python kometa.py --run
+    ```
+
+=== "Docker"
+
+    ``` py
+    docker run --rm -it -v "/<ROOT_KOMETA_DIRECTORY_HERE>/config:/config:rw" kometateam/kometa --run
+    ```
+
+## Modifying Kometa's default (or configured) runtime behavior.
+
+If you want to modify the way Kometa behaves when it runs, you can use the commands on this page.  None of these are *required* to run Kometa.  They are all optional and can be used to customize the way Kometa runs to suit your needs.
+
+Many of these override settings in the config file, so you can use them to change the way Kometa behaves without having to edit the config file.
+
+You can set any of these flags as either environment variables or as command line arguments.
+
+On all platforms, "environment variables" are a way to set variables that are available to all programs running on the system.  You can set these variables in your shell, in a script, or in a Docker container.
+
+You might think of this as a note on your desk that tells you Sue likes a skim latte when you go to the coffee shop.  You can use that note to remember what Sue likes when she asks "please get me a coffee".
+
+Runtime flags are command line arguments that you can pass to Kometa when you run it to change the way it behaves.  
+
+You might think of this as a directive Bob adds when he asks "please get me a coffee, a **flat white**".  At "runtime", Bob is adding a "flag" to his request to indicate the type of coffee.
+
+All these settings have defaults, which you can think of as the "standard coffee" that you get if someone doesn't specify anything.  If Chris doesn't specify a type of coffee, and you have no note about Chris, Chris gets the **default**, a **plain black coffee**.  
+
+If you don't specify a runtime flag or environment variable, you get the standard/default behavior.
+
+## Runtime Flags vs Environment Variables; who wins?
+
+The ridiculous example above notwithstanding, in Kometa, environment variables take precedence over runtime flags.
+
+For example, and it's not important what this does, but if you were to use the following script:
+
+```shell
+export KOMETA_CONFIG=/path/to/environment/config.yml      # this sets an environment variable
+python kometa.py --config /path/to/runtime-var/config.yml # runtime flag for the same setting
+```
+
+Kometa would use the config file at `/path/to/environment/config.yml` because the environment variable takes precedence over the runtime flag.
+
+Please note that these instructions assume that you have a basic understanding of command line and Docker concepts. If you need to familiarize yourself with Docker, you can check out the official tutorial.
+
+## I want to set a lot of these things, what's the best way?
+
+One way to specify environmental variables is by adding them to a .env file located in your config folder.
+
+That file would contain something like:
+
+```env
+KOMETA_CONFIG=/path/to/your-config-file.yml
+KOMETA_TIMES=06:00,18:00
+KOMETA_TRACE=true
+KOMETA_LOG_REQUESTS=true
+KOMETA_TIMEOUT=360
+KOMETA_NO_VERIFY_SSL=true
+KOMETA_COLLECTIONS_ONLY=true
+```
+
+Kometa will load those environment variables when it starts up, and you don't have to remember to set them every time you run Kometa.
 
 ???+ warning "Combining Commands or Variables"
 
@@ -46,10 +114,11 @@ different ways to specify these things.
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --collections-only --run
             ```
 
+## All Available Runtime Flags/Environment Variables
+
 ??? blank "Config Location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-c`/`--config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_CONFIG`<a class="headerlink" href="#config" title="Permanent link">¶</a>"
 
-    <div id="config" />Specify the location of the configuration YAML file. Will default to `config/config.yml` when not 
-    specified.
+    <div id="config" />Kometa looks for its config file at `config/config.yml`.  If you want to change that, perhaps to use a special-purpose `config.yml` or the like, you can use this flag to specify the location of the configuration YAML file.
 
     <hr style="margin: 0px;">
 
@@ -71,8 +140,7 @@ different ways to specify these things.
 
 ??? blank "Time to Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-t`/`--times`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMES`<a class="headerlink" href="#times" title="Permanent link">¶</a>"
 
-    <div id="times" />Specify the time of day that Kometa will run. Will default to `05:00` when not 
-    specified.
+    <div id="times" />Kometa wakes up at 5:00 AM to process the config file.  If you want to change that time, or tell Kometa to wake up at multiple times, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -94,7 +162,7 @@ different ways to specify these things.
 
 ??? blank "Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN`<a class="headerlink" href="#run" title="Permanent link">¶</a>"
 
-    <div id="run" />Perform a run immediately, bypassing the time to run flag.
+    <div id="run" />If you want Kometa to run immediately rather than waiting until 5AM, set this flag to TRUE.
 
     <hr style="margin: 0px;">
 
@@ -114,8 +182,9 @@ different ways to specify these things.
 
 ??? blank "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`<a class="headerlink" href="#tests" title="Permanent link">¶</a>"
 
-    <div id="tests" />Perform a debug test run immediately, bypassing the time to run flag. **This will only run 
-    collections with `test: true` in the definition.**
+    <div id="tests" />If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).
+    
+    **NOTE: This will only run collections with `test: true` in the definition.**
 
     <hr style="margin: 0px;">
 
@@ -146,9 +215,7 @@ different ways to specify these things.
 
 ??? blank "Debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-db`/`--debug`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DEBUG`<a class="headerlink" href="#debug" title="Permanent link">¶</a>"
 
-
-    <div id="debug" />Perform a debug test run immediately, bypassing the time to run flag. **This will only run 
-    collections with `test: true` in the definition.**
+    <div id="debug" />To increase the verbosity of the logs, set this flag to `true`.
 
     <hr style="margin: 0px;">
 
@@ -168,7 +235,7 @@ different ways to specify these things.
 
 ??? blank "Trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-tr`/`--trace`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TRACE`<a class="headerlink" href="#trace" title="Permanent link">¶</a>"
 
-    <div id="trace" />Run with extra Trace Debug Logs.
+    <div id="trace" />To increase the verbosity of the logs even more than [debug](#debug), set this flag to `true`.
 
     <hr style="margin: 0px;">
 
@@ -188,8 +255,9 @@ different ways to specify these things.
 
 ??? blank "Log Requests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lr`/`--log-requests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_REQUESTS`<a class="headerlink" href="#log-requests" title="Permanent link">¶</a>"
 
-    <div id="log-requests" />Run with every network request printed to the Logs. **This can potentially have personal 
-    information in it.**
+    <div id="log-requests" />If you enable this, every external network request made by Kometa will be logged, along with the data that is returned. This will add a lot of data to the logs, and will probably contain things like tokens, since the auto-redaction of such things is not generalized enough to catch any token that may be in any URL.
+    
+    **This can potentially have personal information in it.**
 
     <hr style="margin: 0px;">
 
@@ -357,8 +425,7 @@ different ways to specify these things.
 
 ??? blank "Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS`<a class="headerlink" href="#run-collections" title="Permanent link">¶</a>"
 
-    <div id="run-collections" />Perform a collections run immediately to run only the pre-defined collections, bypassing 
-    the time to run flag.
+    <div id="run-collections" />Perform an [immediate run](#run) to run only the named collections, bypassing the time to run flag.
 
     <hr style="margin: 0px;">
 
@@ -380,7 +447,7 @@ different ways to specify these things.
 
 ??? blank "Run Libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rl`/`--run-libraries`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_LIBRARIES`<a class="headerlink" href="#run-libraries" title="Permanent link">¶</a>"
 
-    <div id="run-libraries" />Perform a libraries run immediately to run only the pre-defined libraries, bypassing the 
+    <div id="run-libraries" />Perform an [immediate run](#run) to run only the named libraries, bypassing the 
     time to run flag.
 
     <hr style="margin: 0px;">
@@ -403,7 +470,7 @@ different ways to specify these things.
 
 ??? blank "Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES`<a class="headerlink" href="#run-files" title="Permanent link">¶</a>"
 
-    <div id="run-files" />Perform a run immediately to run only the pre-defined Collection, Metadata or Playlist files, 
+    <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files, 
     bypassing the time to run flag. This works for all different paths i.e. `default`, `git`, `url`, `file`, or `repo`.
 
     ???+ warning
@@ -451,8 +518,7 @@ different ways to specify these things.
 
 ??? blank "Ignore Ghost&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ig`/`--ignore-ghost`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_GHOST`<a class="headerlink" href="#ignore-ghost" title="Permanent link">¶</a>"
 
-    <div id="ignore-ghost" />Ignore all ghost logging for the run. A ghost log is what's printed to the console to show 
-    progress during steps.
+    <div id="ignore-ghost" />Kometa prints some things to the log that don't actually go into the log file on disk.  Typically these are things like status messages while loading and/or filtering.  If you want to hide all ghost logging for the run, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -472,7 +538,7 @@ different ways to specify these things.
 
 ??? blank "Delete Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dc`/`--delete-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS`<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
 
-    <div id="delete-collections" />Delete all collections in a Library prior to running collections/operations.
+    <div id="delete-collections" />Delete all collections in each library as the first step in the run.
 
     ???+ warning
          
@@ -497,7 +563,7 @@ different ways to specify these things.
 
 ??? blank "Delete Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dl`/`--delete-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_LABELS`<a class="headerlink" href="#delete-labels" title="Permanent link">¶</a>"
 
-    <div id="delete-labels" />Delete all labels on every item in a Library prior to running collections/operations.
+    <div id="delete-labels" />Delete all labels [save one, see below] on every item in a Library prior to running collections/operations.
 
     ???+ warning
     
@@ -528,7 +594,7 @@ different ways to specify these things.
 
 ??? blank "Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME`<a class="headerlink" href="#resume" title="Permanent link">¶</a>"
 
-    <div id="resume" />Perform a resume run immediately resuming from the first instance of the specified collection, 
+    <div id="resume" />Perform an [immediate run](#run) starting from the first instance of the specified collection, 
     bypassing the time to run flag.
 
     <hr style="margin: 0px;">
@@ -549,7 +615,7 @@ different ways to specify these things.
 
 ??? blank "No Countdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nc`/`--no-countdown`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_COUNTDOWN`<a class="headerlink" href="#no-countdown" title="Permanent link">¶</a>"
 
-    <div id="no-countdown" />Run without displaying a countdown to the next scheduled run.
+    <div id="no-countdown" />Typically, when **not** doing an [immediate run](#run), Kometa displays a countdown in the terminal where it's running.  If you want to hide this countdown, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -569,7 +635,7 @@ different ways to specify these things.
 
 ??? blank "No Missing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nm`/`--no-missing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_MISSING`<a class="headerlink" href="#no-missing" title="Permanent link">¶</a>"
 
-    <div id="no-missing" />Run without utilizing the missing movie/show functions.
+    <div id="no-missing" />Kometa can take various actions on missing items, such as sending them to Radarr, listing them in the log, or saving a report.  If you want to disable all of these actions, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -589,7 +655,7 @@ different ways to specify these things.
 
 ??? blank "No Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nr`/`--no-report`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_REPORT`<a class="headerlink" href="#no-report" title="Permanent link">¶</a>"
 
-    <div id="no-report" />Run without saving the report.
+    <div id="no-report" />Kometa can produce a report of missing items, collections, and other information.  If you have this report enabled but want to disable it for a specific run, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -609,7 +675,7 @@ different ways to specify these things.
 
 ??? blank "Read Only Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ro`/`--read-only-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_READ_ONLY_CONFIG`<a class="headerlink" href="#read-only-config" title="Permanent link">¶</a>"
 
-    <div id="read-only-config" />Run without writing to the configuration file.
+    <div id="read-only-config" />Kometa reads in and then writes out a properly formatted version of your `config.yml` on each run; this makes the formatting consistent and ensures that you have visibility into new settings that get added.  If you want to disable this behavior and tell Kometa to leave your `config.yml` as-is, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -629,7 +695,7 @@ different ways to specify these things.
 
 ??? blank "Divider Character&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-d`/`--divider`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DIVIDER`<a class="headerlink" href="#divider" title="Permanent link">¶</a>"
 
-    <div id="divider" />Change the terminal output divider character. Will default to `=` if not specified.
+    <div id="divider" />The log is split into sections with lines of `=`.  If you wish to change that character to a different one, you can do that with this flag.
 
     <hr style="margin: 0px;">
 
@@ -651,7 +717,7 @@ different ways to specify these things.
 
 ??? blank "Screen Width&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-w`/`--width`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_WIDTH`<a class="headerlink" href="#width" title="Permanent link">¶</a>"
 
-    <div id="width" />Change the terminal output width. Will default to `100` if not specified.
+    <div id="width" />The log is formatted to fit within a certain width.  If you wish to change that width, you can do that with this flag.  Not that long lines are not wrapped or truncated to this width; this controls the minimum width of the log.
 
     <hr style="margin: 0px;">
 
@@ -677,7 +743,7 @@ different ways to specify these things.
     format `KOMETA_***`, where `***` is the name you want to call the variable, will be loaded in as Config Secrets.
     
     These Config Secrets can be loaded into the config by placing `<<***>>` in any field in the config, where `***` is 
-    whatever name you called the variable.  
+    whatever name you called the variable.
 
     <hr style="margin: 0px;">
 
@@ -701,3 +767,5 @@ different ways to specify these things.
         tmdb:
           apikey: <<mysecret>>
         ```
+
+        **IMPORTANT: DO NOT use underscores in the secret name. `<<mysecret>>` works, `<<my_secret>>` will not.**
