@@ -27,9 +27,6 @@ def fmt_filter(record):
 
 _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
 
-import os
-from logging.handlers import RotatingFileHandler
-
 class CustomRotatingFileHandler(RotatingFileHandler):
     def rotation_filename(self, default_name):
         dirname, basename = os.path.split(default_name)
