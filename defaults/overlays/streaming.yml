@@ -148,7 +148,7 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   Paramount:
-    variables: {key: paramount, tmdb_key: 531, weight: 90}
+    variables: {key: paramount, tmdb_key: 531|1770, weight: 90}
     template: [name: standard, name: mdb_streaming]
 
   AppleTV:
@@ -160,7 +160,7 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   Showtime:
-    variables: {key: showtime, tmdb_key: 37, weight: 60}
+    variables: {key: showtime, tmdb_key: 531|1770, weight: 60}
     template: [name: standard, name: mdb_streaming]
 
   discovery+:
