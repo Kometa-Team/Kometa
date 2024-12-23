@@ -624,3 +624,7 @@ overlays:
   limburgish:
     variables: {key: li, text: LI, weight: 16, country: be}
     template: [name: flags, name: standard]
+
+  irish:
+    variables: {key: ga, text: GA, weight: 17, country: ie}
+    template: [name: flags, name: standard]
