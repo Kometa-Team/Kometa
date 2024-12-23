@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 LOG_DIR = "logs"
 COLLECTION_DIR = "collections"
 PLAYLIST_DIR = "playlists"
-MAIN_LOG = "meta.log"
+MAIN_LOG = "kometa.log"
 LIBRARY_LOG = "library.log"
 COLLECTION_LOG = "collection.log"
 PLAYLIST_LOG = "playlist.log"
@@ -26,6 +26,35 @@ def fmt_filter(record):
     return True
 
 _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
+
+import os
+from logging.handlers import RotatingFileHandler
+
+class CustomRotatingFileHandler(RotatingFileHandler):
+    def rotation_filename(self, default_name):
+        dirname, basename = os.path.split(default_name)
+        base, ext = os.path.splitext(basename)
+        base = base.split('-')[0] if '-' in base else base
+        return os.path.join(dirname, f"{base}-{self.backupCount}{ext}")
+
+    def doRollover(self):
+        if self.stream:
+            self.stream.close()
+            self.stream = None
+
+        base_name = self.baseFilename.rsplit('.', 1)[0]
+        for i in range(self.backupCount - 1, 0, -1):
+            source = f"{base_name}-{i}.log"
+            dest = f"{base_name}-{i + 1}.log"
+            if os.path.exists(source):
+                os.replace(source, dest)
+
+        dest = f"{base_name}-1.log"
+        if os.path.exists(self.baseFilename):
+            os.replace(self.baseFilename, dest)
+
+        self.stream = self._open()
+
 
 
 class MyLogger:
@@ -63,16 +92,14 @@ class MyLogger:
 
     def clear_errors(self):
         self.saved_errors = []
-
     def _get_handler(self, log_file, count=3):
-        _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
+        _handler = CustomRotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
         self._formatter(handler=_handler)
         if os.path.isfile(log_file):
             self._logger.removeHandler(_handler)
             _handler.doRollover()
             self._logger.addHandler(_handler)
         return _handler
-
     def _formatter(self, handler=None, border=True, trace=False, log_only=False, space=False):
         console = f"| %(message)-{self.screen_width - 2}s |" if border else f"%(message)-{self.screen_width - 2}s"
         file = f"{' '*65}" if space else f"[%(asctime)s] %(filename)-27s {'[TRACE]   ' if trace else '%(levelname)-10s'} "
