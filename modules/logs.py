@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 LOG_DIR = "logs"
 COLLECTION_DIR = "collections"
 PLAYLIST_DIR = "playlists"
-MAIN_LOG = "kometa.log"
+MAIN_LOG = "meta.log"
 LIBRARY_LOG = "library.log"
 COLLECTION_LOG = "collection.log"
 PLAYLIST_LOG = "playlist.log"
