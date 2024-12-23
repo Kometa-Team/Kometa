@@ -1174,7 +1174,7 @@ class MetadataFile(DataFile):
                         elif "title_format" in methods:
                             title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
                         if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
-                            logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
+                            logger.error(f"Config Error: <<key_name>> not in title_format: {title_format}. Using the default value: {default_title_format}")
                             title_format = default_title_format
                         if "post_format_override" in methods:
                             methods["title_override"] = methods.pop("post_format_override")

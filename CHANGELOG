@@ -3,6 +3,9 @@ Update pillow requirement to 11.0.0
 Update psutil requirement to 6.1.0
 Update setuptools requirement to 75.3.0
 
+# Important Changes
+Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
+
 # New Features
 Added the `character` search option to the `imdb_search` builder
 Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
@@ -21,6 +24,7 @@ Fixes an issue where Prime Video overlays/collections would not be built when th
 Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
 Updates `Alien vs Predator` and `X-Men` lists to new lists which include most recent releases
 Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
+Added `Paramount+ with Showtime` to both `Paramount+` and `Showtime` for Networks and Streaming, any existing weighting is unchanged.
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
@@ -40,3 +44,4 @@ Fixes #2354 by updating version of tmdbapi dependency
 Added Start Time, Finished and Run Time to Summary of run.
 Fixed an issue where custom repositories would not work correctly if the URL did not end in a trailing `/` character.
 Kometa will now check for `.yaml` extension in filenames if `.yml` is not found and vice-versa
+
