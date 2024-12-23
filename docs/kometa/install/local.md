@@ -11,7 +11,7 @@ This article will walk you through getting Kometa set up and running.  It will c
 
 The specific steps you will be taking:
 
-1. Verify that Python 3.8 or better is installed and install it if not
+1. Verify that the version of Python installed is between 3.9 and 3.13.
 2. Verify that the Git tools are installed and install them if not
 3. Use `git` to retrieve the code
 4. Install requirements [extra bits of code required for Kometa]
@@ -89,7 +89,7 @@ First let's check if it's installed already [type this into your terminal]:
 python3 --version
 ```
 
-If this doesn't return `3.8.0` or higher, you'll need to get Python 3 installed.
+If this doesn't return a version between `3.9` and `3.13`, you'll need to installed a supported version of Python.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -107,13 +107,9 @@ If this doesn't return `3.8.0` or higher, you'll need to get Python 3 installed.
     ```
     python --version
     ```
-    Depending on the version of Python, you may need to use one or the other.  If this works, you're ready to go, jsut substitute `python` for `python3` in the couple places it appears below.
+    Depending on the version of Python, you may need to use one or the other.  If this works, you're ready to go, just substitute `python` for `python3` in the couple places it appears below.
     
-    Go to http://www.python.org/download and download the next-to-latest minor version of Python for Windows in 32 or 64-bit as appropriate for your system [probably 64-bit].  As this is written, that's 3.10, while the latest is 3.11.
-    
-    #### Why the next-to-latest?
-    
-    There is one dependency [`lxml`] that lags behind new Python releases; this will cause a failure when installing requirements in a moment if the newest Python version is too new [at time of writing the current is 3.11, and the requirements install fails on the lxml library].  You can avoid this by using the next-to-latest release.  At some point this will no longer be a problem, but that is outside the control of Kometa.
+    Go to http://www.python.org/download and download Python 3.13.  **Kometa has not been tested and may be non-functional on any version of Python beyond 3.13**
     
     Once downloaded, run the installer.  Tick “Add to path” checkbox at the bottom and click “Install Now”.
     
