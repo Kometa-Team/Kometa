@@ -259,7 +259,11 @@ class YAML:
                     with open(self.path, encoding="utf-8") as fp:
                         self.data = self.yaml.load(fp)
         except ruamel.yaml.error.YAMLError as e:
-            e = str(e).replace("\n", "\n      ")
+            if "found character '\\t' that cannot start any token" in e.problem:
+                e = "Tabs are not allowed in YAML files; only spaces are allowed"
+            else:
+                e = str(e).replace("\n", "\n      ")
+            
             raise Failed(f"YAML Error: {e}")
         except Exception as e:
             raise Failed(f"YAML Error: {e}")
