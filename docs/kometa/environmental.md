@@ -162,7 +162,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN`<a class="headerlink" href="#run" title="Permanent link">¶</a>"
 
-    <div id="run" />If you want Kometa to run immediately rather than waiting until 5AM, set this flag to TRUE.
+    <div id="run" />If you want Kometa to run immediately rather than waiting until 5AM, set this flag to `true`.
 
     <hr style="margin: 0px;">
 
