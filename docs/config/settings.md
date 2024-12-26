@@ -206,16 +206,26 @@ The available setting attributes which can be set at each level are outlined bel
     all other image sources.
 
     Standard priority is as follows:
-    1. url_poster
-    2. file_poster
-    3. tmdb_poster
-    4. tvdb_poster
-    5. asset_directory
-    6. tmdb_person
-    7. tmdb_collection_details
-    8+. all other _details methods
 
-    This setting pushes `asset_directory` to the top of the list.
+    1. `url_poster`
+    
+    2. `file_poster`
+    
+    3. `tmdb_poster`
+    
+    4. `tvdb_poster`
+    
+    5. Asset directory
+    
+    6. `tmdb_person`
+    
+    7. `tmdb_collection_details`
+    
+    8+. all other `_details` methods
+    
+    So if you have a poster for "Some Collection" specified as a `url_poster` and *also* as an asset, the `url_poster` will win and the asset will be ignored.
+
+    This setting pushes `asset_directory` to the top of the list, so the asset would win over teh `url_poster`.
 
     <hr style="margin: 0px;">
     

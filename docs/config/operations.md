@@ -47,7 +47,7 @@ You can create individual blocks of operations by using a list under `operations
 
 ??? blank "`assets_for_all` - Used to search the asset directories for images for all items in the library.<a class="headerlink" href="#assets-for-all" title="Permanent link">¶</a>"
 
-    <div id="assets-for-all" />Searches the asset directories for images for all items in the library.
+    <div id="assets-for-all" />Ordinarily, Kometa searches the asset directories for collection artwork.  Enabling this operation tells Kometa to searches the asset directories for images for all items [movies, shows, seasons, episodes, etc] in the library.
     
     <hr style="margin: 0px;">
     

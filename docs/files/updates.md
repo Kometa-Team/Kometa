@@ -94,13 +94,21 @@ that folder (replacing .ext with the image extension).
 | `file_poster`      | **Description:** Changes poster to the image in the file system<br>**Values:** Path to image in the file system                                                                 |
 
 Standard priority is as follows [lower numbers take precedence]:
+
 1. url_poster
+
 2. file_poster
+
 3. tmdb_poster
+
 4. tvdb_poster
+
 5. asset_directory
+
 6. tmdb_person
+
 7. tmdb_collection_details
+
 8+. all other _details methods
 
 You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
@@ -121,3 +129,17 @@ for a folder named either the collection/playlist name or the `name_mapping` if 
 | `tmdb_background` | **Description:** Changes background to the TMDb Movie/Collection background for a movie library or the TMDb Show background for a show library<br>**Values:** TMDb Movie/Show/Collection ID |
 | `tvdb_background` | **Description:** Changes background to the TVDb Movie background for a movie library or the TVDb Show background for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
 | `file_background` | **Description:** Changes background to the image in the file system<br>**Values:** Path to image in the file system                                                                         |
+
+Standard priority is as follows [lower numbers take precedence]:
+
+1. url_background
+
+2. file_background
+
+3. tmdb_background
+
+4. tvdb_background
+
+5. asset_directory
+
+You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
