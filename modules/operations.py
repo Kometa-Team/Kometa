@@ -755,18 +755,44 @@ class Operations:
                     try:
                         new_poster, new_background, item_dir, name = self.library.find_item_assets(item)
                     except Failed:
-                        item_dir = None
-                        name = None
-                        new_poster = None
-                        new_background = None
+                        new_poster, new_background, item_dir, name = None, None, None, None
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
                         tmdb_item = None
+
                     if self.library.mass_poster_update:
-                        self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title) # noqa
+                        source = self.library.mass_poster_update["source"]
+                        ignore_locked = self.library.mass_poster_update["ignore_locked"]
+                        ignore_overlays = self.library.mass_poster_update.get("ignore_overlays")
+                        thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
+                        labels = [la.tag for la in self.library.item_labels(item)]
+                        has_overlay_label = "Overlay" in labels
+                        
+                        # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
+                        if source in ["unlock", "lock"]:
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+                        elif ignore_locked and thumb_locked:
+                            # Skip processing if ignore_locked is True and thumb is locked
+                            pass
+                        elif ignore_overlays and has_overlay_label:
+                            # Skip processing if ignore_overlays is True and Overlay label is found
+                            pass
+                        else:
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+
                     if self.library.mass_background_update:
-                        self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title) # noqa
+                        source = self.library.mass_background_update["source"]
+                        ignore_locked = self.library.mass_background_update["ignore_locked"]
+                        ignore_overlays = self.library.mass_poster_update["ignore_overlays"]
+                        art_locked = any(f.name == "art" and f.locked for f in item.fields)
+
+                        if source in ["unlock", "lock"]:
+                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title) # noqa
+
+                        elif not (ignore_locked and art_locked):
+                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title) # noqa
+
 
                     if self.library.is_show and (
                             (self.library.mass_poster_update and
