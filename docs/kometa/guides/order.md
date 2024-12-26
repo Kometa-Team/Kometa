@@ -244,6 +244,7 @@ The Sort Orders available for "Smart" collections are outlined on the **[Smart P
 You can also leverage "Secondary Sorting" This goes beyond the single sort settings you can apply to a collection in Plex.
 
 ???+ example "Example 8 - Secondary Sorting"
+
     ```yaml
     collections:
       Best 2010+ Movies (By Year):
@@ -254,4 +255,4 @@ You can also leverage "Secondary Sorting" This goes beyond the single sort setti
             - year.desc
             - audience_rating.desc
           limit: 20
-      ```
+    ```
