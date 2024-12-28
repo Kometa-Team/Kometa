@@ -81,7 +81,7 @@ Here's the absolute minimum `config.yml` file you need to get started:
 
 ```yaml
 libraries:
-  NAME_OF_YOUR_MOVIE_LIBRARY
+  NAME_OF_YOUR_MOVIE_LIBRARY:
     collection_files:
       - default: basic
  
