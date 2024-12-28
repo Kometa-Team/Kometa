@@ -216,6 +216,7 @@ NL
 Nokmål
 NOSUCHLIBRARY
 notifiarr
+num
 Nynorsk
 oauth
 OAuth
