@@ -30,6 +30,15 @@ the list.**
     If you have [authorized Trakt](../../config/trakt.md) then you can use private Trakt Lists, this is not possible if 
     you have not authorized Trakt.
 
+    When you link to a private list, set the list to `private` and then use the standard browser link:
+
+    ```
+    https://trakt.tv/users/YOURTRAKTUSERNAME/lists/YOURLISTNAME
+    ```
+
+    DO NOT set the list to `Share` and attempt to use the "Share link"; Kometa cannot use that address for the list.
+
+
 ???+ warning
 
     Trakt lists and users come and go, and Kometa has no control over this.  The list URLs found in this documentation 
