@@ -87,12 +87,18 @@ class MDBList:
         self.expiration = expiration
         try:
             response = self._request(f"{api_url}user")
+            logger.trace(f"MDB response: {response}")
             self.supporter = response["limits"]["supporter"]
+            logger.info(f"Supporter Key: {self.supporter}")
             self.rating_id_limit = response["limits"]["rating_ids"]
+            logger.info(f"Rating ID limit: {self.rating_id_limit}")
+            logger.info(f"Daily API requests: {response["limits"]["api_requests"]}")
             self.get_item(imdb_id="tt0080684", ignore_cache=True)
         except LimitReached:
+            logger.info(f"MDBList API limit exhausted")
             self.limit = True
-        except Failed:
+        except Failed as fe:
+            logger.info(f"MDBList API connection failed: {fe}")
             self.apikey = None
             raise
 
