@@ -91,7 +91,7 @@ class MDBList:
             self.supporter = response["limits"]["supporter"]
             logger.info(f"Supporter Key: {self.supporter}")
             self.rating_id_limit = response["limits"]["rating_ids"]
-            logger.info(f"Rating ID limit: {self.rating_id_limit}")
+            # logger.info(f"Rating ID limit: {self.rating_id_limit}")
             logger.info(f"Daily API requests: {response["limits"]["api_requests"]}")
             self.get_item(imdb_id="tt0080684", ignore_cache=True)
         except LimitReached:
