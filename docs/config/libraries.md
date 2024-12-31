@@ -405,7 +405,7 @@ The available attributes for each library are as follows:
             collection_files:
               - default: imdb
             settings:
-              asset_directory: config/asssets/Movies
+              asset_directory: config/assets/Movies
         ```
 
 ??? blank "`plex` - Used to override global [`plex` attributes](plex.md) for this library only.<a class="headerlink" href="#plex" title="Permanent link">¶</a>"
