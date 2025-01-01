@@ -307,7 +307,7 @@ def low_priority(niceness):
 
             # Check if the niceness value is valid
             if niceness not in win_priority_map:
-                raise ValueError(f"Invalid niceness value: {niceness}. Valid values are 25, 50, 75, 90, and 100.")
+                raise ValueError(f"Invalid priority value: {niceness}. Valid values are 25, 50, 75, 90, and 100.")
 
             priority_class = win_priority_map.get(niceness, win32process.NORMAL_PRIORITY_CLASS)
             win32process.SetPriorityClass(
