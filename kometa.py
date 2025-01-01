@@ -41,6 +41,7 @@ system_versions = {
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 load_dotenv(os.path.join(default_dir, ".env"))
 
+
 arguments = {
     "config": {"args": "c", "type": "str", "help": "Run with desired *.yml file"},
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
@@ -70,16 +71,26 @@ arguments = {
     "read-only-config": {"args": "ro", "type": "bool", "help": "Run without writing to the config"},
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
+    "priority": {"args": "pr", "type": "int", "default": 50, "help": "Run Kometa with lower priority (Default: 50)"}
+
 }
 
+allowed_priorities = [25, 50, 75, 90, 100]
+
 parser = argparse.ArgumentParser()
+
 for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     args = [f"--{arg_key}"] + [f"--{a}" if len(a) > 2 else f"-{a}" for a in temp_args]
+
     kwargs = {"dest": arg_key.replace("-", "_"), "help": arg_data["help"]}
+
+    if arg_key == "priority":
+        kwargs["choices"] = allowed_priorities
+
     if arg_data["type"] == "bool":
         kwargs["action"] = "store_true"
-        kwargs["default"] = False # noqa
+        kwargs["default"] = False  # noqa
     else:
         kwargs["type"] = int if arg_data["type"] == "int" else str
 
@@ -88,6 +99,7 @@ for arg_key, arg_data in arguments.items():
 
     parser.add_argument(*args, **kwargs)
 
+# Parse the arguments
 args, unknown = parser.parse_known_args()
 
 
@@ -271,6 +283,63 @@ if not uuid_num:
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+priority_map = {25: "Below Normal", 50: "Normal", 75: "Above Normal", 90: "High", 100: "Realtime"}
+
+priority = args.priority
+priority_description = priority_map.get(priority, "Unknown")
+
+def low_priority(niceness):
+    """Set the priority of the process based on the niceness level."""
+
+    isWindows = platform.system() == "Windows"
+
+    if isWindows:
+        try:
+            import win32api, win32process
+
+            win_priority_map = {
+                25: win32process.BELOW_NORMAL_PRIORITY_CLASS,
+                50: win32process.NORMAL_PRIORITY_CLASS,
+                75: win32process.ABOVE_NORMAL_PRIORITY_CLASS,
+                90: win32process.HIGH_PRIORITY_CLASS,
+                100: win32process.REALTIME_PRIORITY_CLASS,
+            }
+
+            # Check if the niceness value is valid
+            if niceness not in win_priority_map:
+                raise ValueError(f"Invalid niceness value: {niceness}. Valid values are 25, 50, 75, 90, and 100.")
+
+            priority_class = win_priority_map.get(niceness, win32process.NORMAL_PRIORITY_CLASS)
+            win32process.SetPriorityClass(
+                win32api.GetCurrentProcess(),
+                priority_class
+            )
+
+        except ImportError:
+            print("Error: The 'pywin32' module is required to set priority on Windows.")
+        except ValueError as e:
+            print(f"Error: {e}")
+        except Exception as e:
+            print(f"Failed to set process priority on Windows: {e}")
+
+    else:
+        nice_value_map = {
+            25: 10,
+            50: 0,
+            75: -5,
+            90: -10,
+            100: -20,
+        }
+
+        nice_value = nice_value_map.get(niceness, 0)
+
+        try:
+            os.nice(nice_value)
+        except PermissionError:
+            print("Error: Insufficient permissions to change the process priority. Try running as an administrator.")
+        except Exception as e:
+            print(f"Failed to set priority: {e}")
+
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
         executor.submit(start, *[attrs])
@@ -298,6 +367,7 @@ def start(attrs):
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
+        logger.info(f"    Process Priority: {priority_description} ({priority})")
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:

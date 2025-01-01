@@ -14,3 +14,4 @@ schedule==1.2.2
 setuptools==75.8.0
 tenacity==9.0.0
 tmdbapis==1.2.26
+pywin32==308; sys_platform == 'win32'
