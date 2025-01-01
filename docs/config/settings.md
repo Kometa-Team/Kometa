@@ -898,9 +898,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Playlist
     
-    **Accepted Values:** `all`, list of users, or comma-separated string of users
-
-    **Default Value:** `all`
+    **Accepted Values:** `all`, list of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
 
     ???+ example "Example"
         
