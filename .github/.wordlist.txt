@@ -213,6 +213,7 @@ pcm
 persistentvolumeclaim
 pgid
 pkkid
+planetrocky
 plex
 plex's
 plexapi
@@ -235,6 +236,7 @@ razzie
 razzies
 readme
 readwriteonce
+Realtime
 reciperr
 reddit
 redheadjedi
