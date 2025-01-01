@@ -2,7 +2,7 @@ arrapi==1.4.13
 GitPython==3.1.43
 lxml==5.3.0
 num2words==0.5.14
-pathvalidate==3.2.1
+pathvalidate==3.2.2
 pillow==10.4.0
 PlexAPI==4.16.0
 psutil==6.1.1
