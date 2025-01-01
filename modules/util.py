@@ -519,7 +519,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             non_existing = True
         elif run_time == "never":
             schedule_str += f"\nNever scheduled to run"
-        elif run_time.startswith(("hour", "week", "month", "year", "range")):
+        elif run_time.startswith(("hour", "week", "month", "year", "date", "range")):
             match = re.search("\\(([^)]+)\\)", run_time)
             if not match:
                 logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
@@ -591,6 +591,20 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                         raise ValueError
                 except ValueError:
                     logger.error(f"Schedule Error: yearly {display} must be in the MM/DD format i.e. yearly(11/22)")
+            elif run_time.startswith("date"):
+                try:
+                    if "/" in param:
+                        opt = param.split("/")
+                        month = int(opt[0])
+                        day = int(opt[1])
+                        year = int(opt[2])
+                        schedule_str += f"\nScheduled on {pretty_months[month]} {num2words(day, to='ordinal_num')}, {year}"
+                        if current_time.year == year and current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
+                            all_check += 1
+                    else:
+                        raise ValueError
+                except ValueError:
+                    logger.error(f"Schedule Error: date {display} must be in the MM/DD/YYYY format i.e. date(12/25/2024)")
             elif run_time.startswith("range"):
                 ranges = []
                 range_pass = False
