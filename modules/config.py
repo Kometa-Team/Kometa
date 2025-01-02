@@ -220,8 +220,25 @@ class ConfigFile:
         replace_attr(self.data, "save_missing", "plex")
         if self.data["libraries"]:
             for library in self.data["libraries"]:
+
                 if not self.data["libraries"][library]:
                     continue
+
+                def fail_on_definition(found_this):
+                    raise Failed(f"The '{library}' library config contains {found_this} definitions. These belong in external YAML files, not in the config.yml.")
+                if "collections" in self.data["libraries"][library]:
+                    fail_on_definition("collections")
+                if "dynamic_collections" in self.data["libraries"][library]:
+                    fail_on_definition("dynamic_collections")
+                if "metadata" in self.data["libraries"][library]:
+                    fail_on_definition("metadata")
+                if "overlays" in self.data["libraries"][library]:
+                    fail_on_definition("overlays")
+                if "templates" in self.data["libraries"][library]:
+                    fail_on_definition("templates")
+                if "playlists" in self.data["libraries"][library]:
+                    fail_on_definition("playlists")
+
                 if "metadata_path" in self.data["libraries"][library]:
                     logger.warning("Config Warning: metadata_path has been deprecated and split into collection_files and metadata_files, Please visit the wiki to learn more about this transition.")
                     path_dict = self.data["libraries"][library].pop("metadata_path")
