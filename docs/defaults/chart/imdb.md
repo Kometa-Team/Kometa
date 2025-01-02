@@ -84,6 +84,6 @@ work. Any value not specified will use its default value if it has one if not it
     ```
 
     1.  Do not create the "IMDb Lowest Rated" collection
-    2.  Pin the "AniList Popular" collection to the Recommended tab of the library
-    3.  Pin the "AniList Popular" collection to the home screen of the server owner
-    4.  Pin the "AniList Popular" collection to the home screen of other users of the server
+    2.  Pin the "IMDB Top 250" collection to the Recommended tab of the library
+    3.  Pin the "IMDB Top 250" collection to the home screen of the server owner
+    4.  Pin the "IMDB Top 250" collection to the home screen of other users of the server
