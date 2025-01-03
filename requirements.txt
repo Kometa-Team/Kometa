@@ -1,5 +1,5 @@
 arrapi==1.4.13
-GitPython==3.1.43
+GitPython==3.1.44
 lxml==5.3.0
 num2words==0.5.14
 pathvalidate==3.2.1
