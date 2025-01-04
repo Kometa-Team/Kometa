@@ -57,7 +57,7 @@ libraries:
           use_common: false
 ```
 
-The specifics of what template variables are available for a given default are found on the wiki page for each default, which you can fiund starting [here](../../defaults/guide.md).
+The specifics of what template variables are available for a given default are found on the wiki page for each default, which you can find starting [here](../../defaults/guide.md).
 
 Like the rest of the [external files](../../config/file_types.md), these default references cannot be moved out of the `config.yml` file.
 
