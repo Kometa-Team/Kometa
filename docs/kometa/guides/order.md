@@ -2,17 +2,116 @@
 
 There are various sort options available depending on what you want to sort.
 
-## ASCII Sort Order
+## Plex Sort Order
 
-The first thing to note is that Kometa utilizes the ASCII sort order, which defines which priority a character gets.
+The first thing to note is that Plex utilizes an ASCII based sort order, which defines which priority a character gets.
 
-![](images/sorts.jpg)
+???+ important "Character Priority for Plex Sorting"
+
+    This is the sorting priority as of Plex Media Server release 1.41.2.9200
+
+    ```yaml linenums="1"
+      - space
+    _ - underscore
+    - - dash
+    , - comma
+    ; - semicolon
+    : - colon
+    ! - exclamation
+    ? - question mark
+    . - period
+    ' - apostrophe
+    " - quotation mark
+    ( - open parenthesis
+    ) - close parenthesis
+    [ - open bracket
+    ] - close bracket
+    { - open curly brace
+    } - close curly brace
+    @ - at sign
+    * - asterisk
+    / - forward slash
+    \ - backslash
+    # - hash
+    % - percent
+    ` - backtick
+    ^ - caret
+    + - plus
+    < - less than
+    = - equals
+    > - greater than
+    | - pipe
+    ~ - tilde
+    $ - dollar sign
+    0 - zero
+    1 - one
+    2 - two
+    3 - three
+    4 - four
+    5 - five
+    6 - six
+    7 - seven
+    8 - eight
+    9 - nine
+    a - lowercase a
+    A - uppercase A
+    b - lowercase b
+    B - uppercase B
+    c - lowercase c
+    C - uppercase C
+    d - lowercase d
+    D - uppercase D
+    e - lowercase e
+    E - uppercase E
+    f - lowercase f
+    F - uppercase F
+    g - lowercase g
+    G - uppercase G
+    h - lowercase h
+    H - uppercase H
+    i - lowercase i
+    I - uppercase I
+    j - lowercase j
+    J - uppercase J
+    k - lowercase k
+    K - uppercase K
+    l - lowercase l
+    L - uppercase L
+    m - lowercase m
+    M - uppercase M
+    n - lowercase n
+    N - uppercase N
+    o - lowercase o
+    O - uppercase O
+    p - lowercase p
+    P - uppercase P
+    q - lowercase q
+    Q - uppercase Q
+    r - lowercase r
+    R - uppercase R
+    s - lowercase s
+    S - uppercase S
+    t - lowercase t
+    T - uppercase T
+    u - lowercase u
+    U - uppercase U
+    v - lowercase v
+    V - uppercase V
+    w - lowercase w
+    W - uppercase W
+    x - lowercase x
+    X - uppercase X
+    y - lowercase y
+    Y - uppercase Y
+    z - lowercase z
+    Z - uppercase Z
+    ```
 
 ## Collection Sorting
 
 Collections can be sorted so that they appear in a specific order in the `Collections` and `Library` tab of your library. This is done using the `sort_title` attribute.
 
-When using the above [ASCII Sort Order](#ascii-sort-order), a collection with a sort title of `!!!My Collection` would appear before a sort title of `!My Collection`, which would be placed before a sort title of `My Collection`
+When using the above [Plex Sort Order](#plex-sort-order), a collection with a sort title of `!!!My Collection` would appear before a sort title of `!My Collection`, which would be placed before a sort title of `My Collection`
 
 Let's start with an unmodified set of collections which do **not** specify a custom sort order:
 
