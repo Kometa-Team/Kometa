@@ -404,6 +404,23 @@ The available setting attributes which can be set at each level are outlined bel
           sync_mode: sync
         ```
 
+    ???+ tip "What does this mean?"
+        
+        You have a Trakt list of ten movies.  You run Kometa and create a collection from the list.  The collection contains those ten movies.
+
+        Tomorrow the list contains a different ten movies.  You run Kometa.
+
+        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, but they are the ones that are in the Trakt list today.  The original ten have been removed from the collection.
+
+        `sync_mode: append` - Kometa appends the ten new movies to the collection, which now has twenty movies in it.
+
+        The next day five movies change in the list.  You run Kometa.
+
+        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, the ones that are in the Trakt list today.  The five that are no longer in the Trakt list are removed from the collection.
+
+        `sync_mode: append` - Kometa appends the five new movies to the collection, which now has twenty-five movies in it. 
+
+
 ??? blank "`default_collection_order` - Used to set the `collection_order` for every collection run.<a class="headerlink" href="#default-collection-order" title="Permanent link">¶</a>"
 
     <div id="default-collection-order" />Set the `collection_order` for every collection run by Kometa unless the 
