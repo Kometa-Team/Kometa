@@ -59,8 +59,8 @@ plugins:
         'discord.md': 'https://kometa.wiki/en/nightly/link/'
         'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
         'link.md': 'https://discord.com/invite/kometa-822460010649878528'
-        'malauth.md': 'https://replit.com/@chazlarson/MALAuth'
-        'traktauth.md': 'https://replit.com/@chazlarson/TraktAuth'
+        'malauth.md': 'config/authentication.md'
+        'traktauth.md': 'config/authentication.md'
   - material-plausible
 extra:
   alternate:
