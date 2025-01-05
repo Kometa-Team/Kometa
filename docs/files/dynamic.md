@@ -71,14 +71,6 @@ A `key_name` is the name that replaces `<<key_name>>` in `title_format` to creat
 
 An example of some keys and their names that would be generated from a `tmdb_collection` dynamic collection are:
 
-* `key`: "10"
-
-    * `key_name`: Star Wars Collection
-
-* `key`: "1241"
-
-    * `key_name`: Harry Potter Collection
-
 | `key` | `key_name`              |
 |:------|:------------------------|
 | 10    | Star Wars Collection    |

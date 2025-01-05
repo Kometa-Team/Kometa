@@ -20,7 +20,46 @@ One thing that seems like a bit of an exception are the [defaults](../../default
 
 There are defaults that create collections, overlays, and playlists.  There are no default metadata files.
 
-However, like the rest of the [external files](../../config/file_types.md), these default references cannot be moved out of the `config.yml` file.
+The defaults are referenced in the `config.yml` under a library with the `default` file type:
+
+```yaml
+libraries:
+  Movies:
+    collection_files:
+      - default: imdb
+      - default: genre
+    overlay_files:
+      - default: resolution
+      - default: ribbon
+```
+
+Typically, the defaults can be customized with template variables:
+
+```yaml
+libraries:
+  Movies:
+    collection_files:
+      - default: imdb
+        template_variables:
+          use_lowest: false 
+      - default: genre
+        template_variables:
+          sep_style: red 
+    overlay_files:
+      - default: resolution
+        template_variables:
+          use_576p: false
+          use_480p: false
+      - default: ribbon
+        template_variables:
+          style: black
+          weight_metacritic: 35
+          use_common: false
+```
+
+The specifics of what template variables are available for a given default are found on the wiki page for each default, which you can find starting [here](../../defaults/guide.md).
+
+Like the rest of the [external files](../../config/file_types.md), these default references cannot be moved out of the `config.yml` file.
 
 ???+ tip
 
