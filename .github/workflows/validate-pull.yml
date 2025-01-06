@@ -60,8 +60,8 @@ jobs:
         id: changed_files
         with:
           files: |
-             **.md
-             CHANGELOG
+            **.md
+            CHANGELOG
 
       - name: Run Spellcheck on changed files
         id: spellcheck
