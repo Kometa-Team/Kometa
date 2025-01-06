@@ -785,22 +785,34 @@ class CollectionBuilder:
                 "after": util.parse(self.Type, "after", parsed_birthday, datatype="int", methods=parsed_methods, minimum=0, default=0),
                 "this_month": util.parse(self.Type, "this_month", parsed_birthday, datatype="bool", methods=parsed_methods, default=False)
             }
-
         first_person = None
         self.tmdb_person_birthday = None
+
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
+
             if not self.data[methods["tmdb_person"]]:
                 raise Failed(f"{self.Type} Error: tmdb_person attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
+
                 for tmdb_person in util.get_list(self.data[methods["tmdb_person"]]):
                     try:
                         if not first_person:
                             first_person = tmdb_person
-                        person = self.config.TMDb.get_person(util.regex_first_int(tmdb_person, "TMDb Person ID"))
+
+                        # Added logic to allow names like "50 Cent" to be passed as a string rather than it passing "50" as the ID to use.
+                        if tmdb_person.isdigit():
+                            person = self.config.TMDb.get_person(int(tmdb_person))
+                        else:
+                            results = self.config.TMDb.search_people(tmdb_person)
+                            if not results:
+                                raise Failed(f"TMDb Error: No results for '{tmdb_person}'")
+                            result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
+                            person = results[result_index]
+
                         valid_names.append(person.name)
                         if person.biography:
                             self.summaries["tmdb_person"] = person.biography
@@ -808,27 +820,14 @@ class CollectionBuilder:
                             self.posters["tmdb_person"] = person.profile_url
                         if person.birthday and not self.tmdb_person_birthday:
                             self.tmdb_person_birthday = person.birthday
+
                     except Failed as e:
-                        if str(e).startswith("TMDb Error"):
-                            logger.error(e)
-                        else:
-                            try:
-                                results = self.config.TMDb.search_people(tmdb_person)
-                                if results:
-                                    result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
-                                    valid_names.append(tmdb_person)
-                                    if results[result_index].biography:
-                                        self.summaries["tmdb_person"] = results[result_index].biography
-                                    if results[result_index].profile_url:
-                                        self.posters["tmdb_person"] = results[result_index].profile_url
-                                    if results[result_index].birthday and not self.tmdb_person_birthday:
-                                        self.tmdb_person_birthday = results[result_index].birthday
-                            except Failed as ee:
-                                logger.error(ee)
+                        logger.error(f"Failed to fetch data for '{tmdb_person}': {e}")
+
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
-                    raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
+                    raise Failed(f"{self.Type} Error: No valid TMDb Person IDs or names in {self.data[methods['tmdb_person']]}")
 
         if self.tmdb_birthday:
             if "tmdb_person" not in methods:
