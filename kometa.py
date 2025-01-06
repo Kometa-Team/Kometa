@@ -209,8 +209,8 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
             print(f"Config Error: Unable to copy the Template file (config.yml.template) from {template_path} to {config_path}. Details: {e}")
             sys.exit(1)
     else:
-        github_branch = git_branch if git_branch else "master"
-        github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{github_branch}/config/config.yml.template"
+        git_branch = git_branch or "master"
+        github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
         try:
             response = requests.get(github_url, timeout=10)
             if response.status_code == 200:
