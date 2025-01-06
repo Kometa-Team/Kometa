@@ -47,7 +47,7 @@ You can create individual blocks of operations by using a list under `operations
 
 ??? blank "`assets_for_all` - Used to search the asset directories for images for all items in the library.<a class="headerlink" href="#assets-for-all" title="Permanent link">¶</a>"
 
-    <div id="assets-for-all" />Searches the asset directories for images for all items in the library.
+    <div id="assets-for-all" />Ordinarily, Kometa searches the asset directories for collection artwork.  Enabling this operation tells Kometa to searches the asset directories for images for all items [movies, shows, seasons, episodes, etc] in the library.
     
     <hr style="margin: 0px;">
     
@@ -495,10 +495,15 @@ You can create individual blocks of operations by using a list under `operations
     
     <table class="clearTable">
       <tr><td>`source`</td><td>Source of the poster update</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
-      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked<sup>1</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_overlays`</td><td>Skip updating image if the current image has an Overlay<sup>2</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
-    
+
+    1. The poster field will be locked if a previous `mass_poster_update` was run or if an Overlay has been applied.
+    2. Kometa checks for the `Overlay` label on the item in Plex to determine if an Overlay is applied.
+
     ???+ example "Example"
 
         ```yaml
@@ -531,10 +536,13 @@ You can create individual blocks of operations by using a list under `operations
     
     <table class="clearTable">
       <tr><td>`source`</td><td>Source of the poster update</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
-      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` (default) or `false`</td></tr>
+      <tr><td>`seasons`</td><td>Update season posters while updating shows **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode posters while updating shows **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked.<sup>1</sup> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
     
+    1. The background field will be locked if a previous `mass_background_update` was run.
+
     ???+ example "Example"
 
         ```yaml

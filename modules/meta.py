@@ -152,10 +152,15 @@ class DataFile:
             content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
-                if file_type == "Default":
-                    raise Failed(f"File Error: Default does not exist {file_path}")
+                if content_path.endswith(".yml") and os.path.exists(content_path[:-4] + ".yaml"):
+                    content_path = content_path[:-4] + ".yaml"
+                elif content_path.endswith(".yaml") and os.path.exists(content_path[:-5] + ".yml"):
+                    content_path = content_path[:-5] + ".yml"
                 else:
-                    raise Failed(f"File Error: File does not exist {content_path}")
+                    if file_type == "Default":
+                        raise Failed(f"File Error: Default does not exist {file_path}")
+                    else:
+                        raise Failed(f"File Error: File does not exist {content_path}")
             yaml = self.config.Requests.file_yaml(content_path, check_empty=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
@@ -1169,7 +1174,7 @@ class MetadataFile(DataFile):
                         elif "title_format" in methods:
                             title_format = util.parse("Config", "title_format", dynamic, parent=map_name, methods=methods, default=default_title_format)
                         if "<<key_name>>" not in title_format and "<<title>>" not in title_format:
-                            logger.error(f"Config Error: <<key_name>> not in title_format: {title_format} using default: {default_title_format}")
+                            logger.error(f"Config Error: <<key_name>> not in title_format: {title_format}. Using the default value: {default_title_format}")
                             title_format = default_title_format
                         if "post_format_override" in methods:
                             methods["title_override"] = methods.pop("post_format_override")
