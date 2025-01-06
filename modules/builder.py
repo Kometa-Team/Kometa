@@ -800,7 +800,15 @@ class CollectionBuilder:
                     try:
                         if not first_person:
                             first_person = tmdb_person
-                        person = self.config.TMDb.get_person(util.regex_first_int(tmdb_person, "TMDb Person ID"))
+                        # Added logic to allow names like "50 Cent" to be passed as a string rather than it passing "50" as the ID to use.
+                        if tmdb_person.isdigit():
+                            person = self.config.TMDb.get_person(int(tmdb_person))
+                        else:
+                            results = self.config.TMDb.search_people(tmdb_person)
+                            if not results:
+                                raise Failed(f"TMDb Error: No results for '{tmdb_person}'")
+                            result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
+                            person = results[result_index]
                         valid_names.append(person.name)
                         if person.biography:
                             self.summaries["tmdb_person"] = person.biography
