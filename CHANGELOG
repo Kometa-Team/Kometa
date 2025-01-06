@@ -55,3 +55,4 @@ Fixes #2354 by updating version of tmdbapi dependency
 Added Start Time, Finished and Run Time to Summary of run.
 Fixed an issue where custom repositories would not work correctly if the URL did not end in a trailing `/` character.
 Kometa will now check for `.yaml` extension in filenames if `.yml` is not found and vice-versa
+Kometa will no longer automatically sync playlists to all users if you do not specify who you want to sync them to. Only the server admin will receive playlists unless otherwise specified using `sync_to_users` or `playlist_sync_to_users`
