@@ -35,7 +35,7 @@ _Please replace this line with a meaningful description of your PR. What does it
     We like to follow [Github's guidance on linking issues to pull requests](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
 
     For example having the text: "closes #1234" would connect the current pull request to issue 1234.
-    And when the merged pull request reaches the mast branch, Github will automatically close the issue.
+    And when the merged pull request reaches the master branch, Github will automatically close the issue.
 -->
 - Related Issue #
 - Closes #
