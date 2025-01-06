@@ -85,5 +85,5 @@ work. Any value not specified will use its default value if it has one if not it
           - default: runtimes
             template_variables:
               builder_level: episode
-            font: fonts/Inter-Bold.ttf
+              font: fonts/Inter-Bold.ttf
     ```

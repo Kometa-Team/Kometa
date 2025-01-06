@@ -19,7 +19,11 @@ This page discusses how to set up this "When should Kometa run" level of schedul
 
 **You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like.  That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../config/schedule.md)**
 
-IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path to that directory on *your* system.
+IMPORTANT: Every time you see `/path/to/` below, it's a placeholder for the path to that directory on *your* system.  You will need to change that to the relevant path on your machine.  The same goes for things like `YOUR_USERNAME`.
+
+IMPORTANT: These guides are intended as just that, **guides**.  Kometa has no special requirements with regard to any of these things compared to any other Python script or Docker image, so if something here conflicts with normal procedure on your OS, or if the screenshots don't match some future version of Windows or the like, you will possibly need to interpret the concepts discussed here and apply them to your specific setup.
+
+IMPORTANT: Any links to tools are just suggestions for a thing that can do the job; they are typically not required or specifically endorsed beyond "Here's a thing that the author used for this purpose".
 
 === "Docker"
     Using docker is the simplest and most robust solution to automating Kometa scheduling.
@@ -75,7 +79,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
         1. Create a `waiter.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
         
            ```batch
-           cd C:\Users\USERNAMEHERE\Kometa
+           cd C:\Users\YOUR_USERNAME\Kometa
            .\kometa-venv\Scripts\python .\kometa.py
            ```
            * This will navigate to the Kometa directory, then run Kometa. At the scheduled time [as defined within Kometa], Kometa will process the Configuration File and will then wait until the next scheduled time.
@@ -126,12 +130,12 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
         1. Create a `runner.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
         
            ```batch
-           cd C:\Users\USERNAMEHERE\Kometa
+           cd C:\Users\YOUR_USERNAME\Kometa
            .\kometa-venv\Scripts\python .\kometa.py --run
            ```
            * This will navigate to the Kometa directory, then launch Kometa using the `-r`/`--run` flag which triggers an immediate run. Once complete, Kometa will exit.
         
-              Save this file to C:\Users\USERNAMEHERE\Kometa\runner.cmd`.
+              Save this file to C:\Users\YOUR_USERNAME\Kometa\runner.cmd`.
         
         2. Open Task Scheduler by searching for it in the Start Menu or by opening the Run window (Windows + R) and typing taskschd.msc before hitting OK.
         
@@ -319,6 +323,7 @@ IMPORTANT: Every time you see `/path/to` below, it's a placeholder for the path 
     
           ```shell
           sudo systemctl daemon-reload
+          sudo systemctl enable kometa.service
           sudo systemctl start kometa.service
           ```
     

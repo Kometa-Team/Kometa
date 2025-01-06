@@ -92,9 +92,10 @@ Supported library types: Movie & Show
 | Bambara                  | `bm`  | `12`   | `ml`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Afrikaans                | `af`  | `13`   | `af`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Mongolian                | `mn`  | `14`   | `mn`         |  :fontawesome-solid-circle-xmark:{ .red }  |
-| Khmer                    | `kh`  | `15`   | `kh`         |  :fontawesome-solid-circle-xmark:{ .red }  |
-| Limburgish               | `li`  | `16`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
-| Irish                    | `ga`  | `17`   | `ie`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Khmer                    | `kh`  | `16`   | `kh`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Limburgish               | `li`  | `17`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Irish                    | `ga`  | `18`   | `ie`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Aymara                   | `ay`  | `19`   | `bo`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 ??? tip "Square Style (click to expand)"
