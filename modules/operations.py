@@ -376,6 +376,8 @@ class Operations:
                                         found_rating = tmdb_obj().vote_average # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
+                                    elif option == "trakt":
+                                        found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
                                     elif option == "trakt_user":
                                         _ratings = trakt_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
@@ -916,6 +918,8 @@ class Operations:
                                                     logger.error(er)
                                             elif imdb_id and option == "imdb":
                                                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
+                                            elif imdb_id and option == "trakt":
+                                                found_rating = self.config.Trakt.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
                                             else:
                                                 try:
                                                     found_rating = float(option)

@@ -242,6 +242,15 @@ class Trakt:
         id_type = "tmdb" if is_movie else "tvdb"
         return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s")}
 
+    def get_episode_rating(self, show_id, season, episode):
+        response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
+        return response["rating"]
+
+    def get_rating(self, show_id, is_movie):
+        item_type = 'movies' if is_movie else 'shows'
+        response = self._request(f"/{item_type}/{show_id}/ratings")
+        return response["rating"]
+
     def convert(self, external_id, from_source, to_source, media_type):
         path = f"/search/{from_source}/{external_id}"
         params = {"type": media_type} if from_source in ["tmdb", "tvdb"] else None

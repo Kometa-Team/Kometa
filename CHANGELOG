@@ -21,6 +21,8 @@ Logic added to Kometa to create `config.yml` if it does not exist from the `conf
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
+Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
+Add `trakt` ratings source for mass episode operations.
 
 # Docs
 Added "getting started" page
