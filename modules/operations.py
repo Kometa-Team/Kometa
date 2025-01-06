@@ -784,7 +784,7 @@ class Operations:
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
                         ignore_locked = self.library.mass_background_update["ignore_locked"]
-                        ignore_overlays = self.library.mass_poster_update["ignore_overlays"]
+                        ignore_overlays = self.library.mass_background_update["ignore_overlays"]
                         art_locked = any(f.name == "art" and f.locked for f in item.fields)
 
                         if source in ["unlock", "lock"]:

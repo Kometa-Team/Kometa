@@ -1,4 +1,4 @@
-import argparse, os, platform, re, sys, time, uuid, requests
+import argparse, os, platform, re, sys, time, uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
