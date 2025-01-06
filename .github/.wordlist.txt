@@ -243,6 +243,7 @@ PlexCollection
 PlexPosters
 PNG
 Pokémon
+popeadam
 popularplex
 portainer
 Powershell
