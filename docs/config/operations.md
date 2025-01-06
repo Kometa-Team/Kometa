@@ -385,6 +385,7 @@ You can create individual blocks of operations by using a list under `operations
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
+      <tr><td>`trakt`</td><td>Use Trakt Rating</td></tr>
       <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating</td></tr>
       <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
       <tr><td>`omdb_metascore`</td><td>Use Metacritic Metascore through OMDb</td></tr>
@@ -456,6 +457,7 @@ You can create individual blocks of operations by using a list under `operations
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
+      <tr><td>`trakt`</td><td>Use Trakt Rating</td></tr>
       <tr><td>`lock`</td><td>Lock Rating Field</td></tr>
       <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
       <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
