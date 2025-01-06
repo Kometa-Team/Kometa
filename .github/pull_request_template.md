@@ -28,7 +28,7 @@
 
 _Please replace this line with a meaningful description of your PR. What does it do? Why? Has it been tested? What were the results?_
 
-## Related Issues
+## Related Issues [optional]
 
 <!--
     For pull requests that relate or close an issue, please include them below. 
