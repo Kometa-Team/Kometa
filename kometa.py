@@ -221,10 +221,10 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
                 print(f"A Configuration file (config.yml) has been downloaded from GitHub and saved as {config_path}. Please update this file with your API keys and other required settings.")
                 sys.exit(1)
             else:
-                print(f"Config Error: No Configuration file (config.yml) or Template file (config.yml.template) found in the config path, and the template file(config.yml.template) could not be downloaded from GitHub. Please visit the GitHub repository to manually download the config.yml.template file and place it in {template_path} prior to running Kometa again.")
+                print(f"Config Error: No Configuration file (config.yml) or Template file (config.yml.template) found in the config path, and the template file(config.yml.template) could not be downloaded from GitHub (Branch {git_branch}). Please visit the GitHub repository to manually download the config.yml.template file and place it in {template_path} prior to running Kometa again.")
                 sys.exit(1)
         except requests.RequestException as e:
-            print(f"Config Error: Failed to download the configuration template file (config.yml.template) from GitHub. Details: {e}")
+            print(f"Config Error: Failed to download the configuration template file (config.yml.template) from GitHub. Details: {e}. Branch Detected: {git_branch}")
             sys.exit(1)
 
 
