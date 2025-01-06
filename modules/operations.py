@@ -376,8 +376,6 @@ class Operations:
                                         found_rating = tmdb_obj().vote_average # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
-                                    elif option == "omdb":
-                                        found_rating = omdb_obj().imdb_rating # noqa
                                     elif option == "trakt_user":
                                         _ratings = trakt_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
@@ -385,6 +383,14 @@ class Operations:
                                             found_rating = _ratings[_id]
                                         else:
                                             raise Failed
+                                    elif str(option).startswith("omdb"):
+                                        omdb_item = omdb_obj()
+                                        if option == "omdb":
+                                            found_rating = omdb_item.imdb_rating # noqa
+                                        elif option == "omdb_metascore":
+                                            found_rating = omdb_item.metacritic_rating / 10 if omdb_item.metacritic_rating else None # noqa
+                                        elif option == "omdb_tomatoes":
+                                            found_rating = omdb_item.rotten_tomatoes / 10 if omdb_item.rotten_tomatoes else None # noqa
                                     elif str(option).startswith("mdb"):
                                         mdb_item = mdb_obj()
                                         if option == "mdb_average":

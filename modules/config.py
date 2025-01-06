@@ -108,6 +108,8 @@ mass_rating_options = {
     "imdb": "Use IMDb Rating",
     "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
+    "omdb_metascore": "Use Metacritic Metascore through OMDb",
+    "omdb_tomatoes": "Use Rotten Tomatoes rating through OMDb",
     "mdb": "Use MDBList Score",
     "mdb_average": "Use MDBList Average Score",
     "mdb_imdb": "Use IMDb Rating through MDBList",
