@@ -17,7 +17,7 @@ Added the `character` search option to the `imdb_search` builder
 Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
 Add `show_unfiltered` setting to display items which make it through a filter
 Allow `sync_to_trakt_list` on episode-level collections
-Logic added to Kometa to create `config.yml` if it does not exist from the `config.yml.template` file. If the template file cannot be found, Kometa will attempt to download it from GitHub.
+Logic added to create `config.yml` if it does not exist from the `config.yml.template` file. If the template file cannot be found, Kometa will attempt to download it from GitHub.
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
