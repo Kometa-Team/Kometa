@@ -61,7 +61,7 @@ jobs:
         with:
           files: |
              **.md
-            CHANGELOG
+             CHANGELOG
 
       - name: Run Spellcheck on changed files
         id: spellcheck
