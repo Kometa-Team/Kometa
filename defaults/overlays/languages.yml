@@ -618,13 +618,17 @@ overlays:
     template: [name: flags, name: standard]
 
   khmer:
-    variables: {key: km, text: KM, weight: 15, country: kh}
+    variables: {key: km, text: KM, weight: 16, country: kh}
     template: [name: flags, name: standard]
 
   limburgish:
-    variables: {key: li, text: LI, weight: 16, country: be}
+    variables: {key: li, text: LI, weight: 17, country: be}
     template: [name: flags, name: standard]
 
   irish:
-    variables: {key: ga, text: GA, weight: 17, country: ie}
+    variables: {key: ga, text: GA, weight: 18, country: ie}
+    template: [name: flags, name: standard]
+
+  aymara:
+    variables: {key: ay, text: AY, weight: 19, country: bo}
     template: [name: flags, name: standard]

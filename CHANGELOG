@@ -35,6 +35,7 @@ Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
 Updates `Alien vs Predator` and `X-Men` lists to new lists which include most recent releases
 Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
 Added `Paramount+ with Showtime` to both `Paramount+` and `Showtime` for Networks and Streaming, any existing weighting is unchanged.
+Added Aymara language with Bolivian flag to audio/subtitle overlay languages (credit to popeadam)
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
