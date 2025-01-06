@@ -410,21 +410,30 @@ Don't worry about the WARNING about `pip version thus-and-such` if it comes up.
   This told Python to use the `pip` module to install some libraries that Kometa needs.
 </details>
 
-Let’s make sure it’s working so far.
+### Verify install and create config template
+
+Running the script at this point will verify that all is well and will create a template config for you to start with.
 
 {%
    include-markdown "./wt/wt-run-shell.md"
 %}
 
-This is going to fail with an error, which you will then fix.
-
 You should see something like this:
 
 ```
-Config Error: config not found at /Users/mroche/Kometa/config
+Configuration file (config.yml) created at /SOME/PATH/TO/Kometa/config/config.yml. Please open this file and update it with your API keys and other required settings.
 ```
 
-That error means you don’t have a config file, but we at least know that the requirements are in place and the script can run.
+If, instead, you see something like:
+
+```
+Traceback (most recent call last):
+  File "/some/path/to/Kometa/kometa.py", line 1, in <module>
+    import argparse, os, platform, re, sys, time, uuid, requests
+ModuleNotFoundError: No module named 'requests'
+```
+
+You either haven't activated the virtual environment OR you haven't installed the requirements [OR you've done both these things but you installed the requirements outside the virtual environment].  Review the previous two steps.
 
 ### Create a directory to quiet an error later
 
@@ -460,33 +469,9 @@ We'll create it here so the error doesn't show up later.
    include-markdown "./wt/wt-01-basic-config.md"
 %}
 
-#### Editing the config template
+#### Editing the config file
 
-First, make a copy of the template.  This is going to create a copy of the base template that you can then edit.  You only need to do this once.
-
-=== ":fontawesome-brands-linux: Linux"
-
-    [type this into your terminal]
-    ```
-    cp config/config.yml.template config/config.yml
-    ```
-
-=== ":fontawesome-brands-apple: macOS"
-
-    [type this into your terminal]
-    ```
-    cp config/config.yml.template config/config.yml
-    ```
-
-=== ":fontawesome-brands-windows: Windows"
-
-    [type this into your terminal]
-    ```
-    copy .\config\config.yml.template .\config\config.yml
-    ```
-
-
-Now open the copy in an editor:
+Open the config file in an editor:
 
 {% include-markdown "./wt/wt-editor.md" %}
 
