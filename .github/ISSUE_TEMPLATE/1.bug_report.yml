@@ -15,7 +15,7 @@ body:
     attributes:
       label: Version Number
       description: Can be found at the beginning of your log file
-      placeholder: eg. 1.16.0
+      placeholder: eg. 2.1.0
     validations:
       required: true
   - type: dropdown
