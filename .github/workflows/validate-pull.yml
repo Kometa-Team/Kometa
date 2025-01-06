@@ -55,8 +55,21 @@ jobs:
                 fi
             done
 
-      - name: Run Spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.45.0
+      - name: Get all changed files
+        uses: tj-actions/changed-files@v45
+        id: changed_files
+        with:
+          files: |
+             **.md
+            CHANGELOG
+
+      - name: Run Spellcheck on changed files
+        id: spellcheck
+        uses: rojopolis/spellcheck-github-actions@v0
+        with:
+          task_name: Markdown
+          source_files: ${{ steps.changed_files.outputs.all_changed_files }}
+
 
   docker-build-pull:
     runs-on: ubuntu-latest
