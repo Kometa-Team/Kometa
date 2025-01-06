@@ -12,9 +12,6 @@ Update setuptools requirement to 75.6.0
 # Important Changes
 Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
 
-# Important Changes
-Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
-
 # New Features
 Added the `character` search option to the `imdb_search` builder
 Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
