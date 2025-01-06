@@ -519,7 +519,7 @@ class CollectionBuilder:
                 self.sync_to_users = self.data[methods[s_attr]]
             else:
                 self.sync_to_users = config.general["playlist_sync_to_users"]
-                logger.warning(f"Playlist Warning: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
+                logger.info(f"Playlist Warning: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
 
             if "exclude_users" in methods or "exclude_user" in methods:
                 s_attr = f"exclude_user{'s' if 'exclude_users' in methods else ''}"
@@ -529,7 +529,7 @@ class CollectionBuilder:
                 self.exclude_users = self.data[methods[s_attr]]
             elif config.general["playlist_exclude_users"]:
                 self.exclude_users = config.general["playlist_exclude_users"]
-                logger.warning(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
+                logger.info(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
             plex_users = self.library.users + [self.library.account.username]
 
