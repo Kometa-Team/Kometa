@@ -22,7 +22,7 @@ When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` att
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
 Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
-Add `trakt` ratings source for mass episodeoperations.
+Add `trakt` ratings source for mass episode operations.
 
 # Docs
 Added "getting started" page
