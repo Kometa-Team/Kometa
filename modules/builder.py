@@ -3032,7 +3032,7 @@ class CollectionBuilder:
     def run_missing(self):
         added_to_radarr = 0
         added_to_sonarr = 0
-        if len(self.missing_movies) > 0:
+        if len(self.missing_movies) > 0 and self.library.is_movie:
             if self.details["show_missing"] is True:
                 logger.info("")
                 logger.separator(f"Missing Movies from Library: {self.library.name}", space=False, border=False)
