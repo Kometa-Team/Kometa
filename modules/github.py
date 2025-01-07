@@ -21,6 +21,8 @@ class GitHub:
                 response = self._requests("https://api.github.com/user")
                 logger.info(f"GitHub token validated successfully. Authenticated as {response['login']}")
             except Failed:
+                self.token = None
+                self.headers = None
                 logger.error(f"Connector Error: The GitHub token specified could not be validated. Please verify that the token is correct.")
         self.images_raw_url = f"{raw_url}/Kometa-Team/Image-Sets/master/sets/"
         self.translation_url = f"{raw_url}/Kometa-Team/Translations/master/defaults/"
