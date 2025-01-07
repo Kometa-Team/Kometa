@@ -28,7 +28,7 @@ class GitHub:
             response = self.requests.get("https://api.github.com/user", headers=self.headers)
             if response.ok:
                 self.username = response.json().get("login")
-                logger.info(f"GitHub token validated successfully. Authorized as {self.username}")
+                logger.info(f"GitHub token validated successfully. Authenticated as {self.username}")
                 return True
             logger.error(f"Connector Error: The GitHub token specified could not be validated. Please verify that the token is correct. Response: ({response.status_code} - {response.reason}).")
         except Exception as e:
