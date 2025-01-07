@@ -12,15 +12,29 @@ configs_raw_url = f"{raw_url}/Kometa-Team/Community-Configs"
 class GitHub:
     def __init__(self, requests, params):
         self.requests = requests
-        self.token = params["token"]
+        self.token = params.get("token")
         logger.secret(self.token)
         self.headers = {"Authorization": f"token {self.token}"} if self.token else None
+        self.username = None
+        self.token_valid = self._validate_token()
         self.images_raw_url = f"{raw_url}/Kometa-Team/Image-Sets/master/sets/"
         self.translation_url = f"{raw_url}/Kometa-Team/Translations/master/defaults/"
-        self._configs_url = None
-        self._config_tags = []
-        self._translation_keys = []
-        self._translations = {}
+        self._configs_url, self._config_tags, self._translation_keys, self._translations = None, [], [], {}
+
+    def _validate_token(self):
+        if not self.token:
+            return False
+        try:
+            response = self.requests.get("https://api.github.com/user", headers=self.headers)
+            if response.ok:
+                self.username = response.json().get("login")
+                logger.info(f"GitHub token validated successfully. Authorized as {self.username}")
+                return True
+            logger.error(f"Connector Error: The GitHub token specified could not be validated. Please verify that the token is correct. Response: ({response.status_code} - {response.reason}).")
+        except Exception as e:
+            logger.error(f"GitHub Error: {e}")
+        return False
+
 
     def _requests(self, url, err_msg=None, params=None, yaml=False):
         if not err_msg:
