@@ -12,7 +12,7 @@ configs_raw_url = f"{raw_url}/Kometa-Team/Community-Configs"
 class GitHub:
     def __init__(self, requests, params):
         self.requests = requests
-        self.token = params.get("token")
+        self.token = params["token"]
         logger.secret(self.token)
         self.headers = {"Authorization": f"token {self.token}"} if self.token else None
         self.username = None
