@@ -267,7 +267,12 @@ The available attributes for each library are as follows:
 
 ??? blank "`remove_overlays` - Used to remove overlays.<a class="headerlink" href="#remove-overlays" title="Permanent link">¶</a>"
 
-    <div id="remove-overlays" />Used to remove overlays from this library only.
+    <div id="remove-overlays" />Used to remove overlays from this library only. 
+
+    Kometa will aim to use the Original Posters backup that it created in the "overlays" folder to restore from, and will be unable to remove the overlays if this backup no longer exists. Kometa will also remove the `Overlay` label from the items in Plex.
+
+    The result of setting `remove_overlays` is your Plex library should no longer have any Overlays applied by Kometa.
+    
 
     ???+ warning "Proceed with Caution"
 
@@ -331,13 +336,18 @@ The available attributes for each library are as follows:
 
 ??? blank "`reset_overlays` - Used to reset overlays.<a class="headerlink" href="#reset-overlays" title="Permanent link">¶</a>"
 
-    <div id="reset-overlays" />Used to reset overlays from this library only. This will reset overlays to every item in 
-    your library to your source choice. This will use the reset image when overlaying items in your library.
+    <div id="reset-overlays" />Used to reset the base image used for overlays from this library only.
 
+    Kometa will fetch a new "base" image from the desired source, and will use that as the new Original Poster upon which to apply overlays as part of the run. 
+
+    The result of setting `reset_overlays` is that your Plex library will have Overlays applied based upon the new images taken from the source specified.
+    
     ???+ warning "Proceed with Caution"
 
         This will reset all posters to the desired source on each run and will reapply 
         all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
+
+        Additionally, any image obtained from this setting will take priority over any image you set using an Asset Directory. If you use Asset Directories, you shouldn't really be using this setting as the Asset Directory should be the single source of truth for what the "base" image is.
 
     <hr style="margin: 0px;">
     
