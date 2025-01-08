@@ -716,6 +716,7 @@ class ConfigFile:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
                 try:
+                    logger.info("Attempting AniDB client API connection...")
                     self.AniDB.authorize(
                         check_for_attribute(self.data, "client", parent="anidb", throw=True),
                         check_for_attribute(self.data, "version", parent="anidb", var_type="int", throw=True),
@@ -728,6 +729,7 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"AniDB API Connection {'Successful' if self.AniDB.is_authorized else 'Failed'}")
                 try:
+                    logger.info("Attempting AniDB user/pass connection...")
                     self.AniDB.login(
                         check_for_attribute(self.data, "username", parent="anidb", throw=True),
                         check_for_attribute(self.data, "password", parent="anidb", throw=True)
@@ -737,7 +739,7 @@ class ConfigFile:
                         logger.warning(e)
                     else:
                         logger.error(e)
-                logger.info(f"AniDB Login {'Successful' if self.AniDB.username else 'Failed Continuing as Guest'}")
+                logger.info(f"AniDB Username/Password Login {'Successful' if self.AniDB.username else 'Failed Continuing as Guest'}")
 
             logger.separator()
 
