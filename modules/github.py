@@ -40,7 +40,7 @@ class GitHub:
             return self.requests.get_yaml(url, headers=self.headers, params=params)
         response = self.requests.get(url, headers=self.headers, params=params)
         if response.status_code >= 400:
-            raise Failed(f"GitHub Error: {err_msg}. Response: {response.status_code} - {response.reason} ")
+            raise Failed(f"GitHub Error: {err_msg} Response: {response.status_code} - {response.reason} ")
         try:
             return response.json()
         except ValueError:
