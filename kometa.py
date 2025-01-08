@@ -205,12 +205,10 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
             print(f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings.")
             sys.exit(1)
         else:
-            print(f"Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
-            sys.exit(1)
+            raise requests.RequestException
     except requests.RequestException as e:
         print(f"Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
         sys.exit(1)
-
 
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
