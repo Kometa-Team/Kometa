@@ -23,7 +23,7 @@ anidb:
 
 | Attribute          | Allowed Values                                                                                | Default |                 Required                 |
 |:-------------------|:----------------------------------------------------------------------------------------------|:--------|:----------------------------------------:|
-| `client`           | AniDB Client Name                                                                             | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
+| `client`           | AniDB Client Name. **must be lowercase**                                                      | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 | `version`          | AniDB Client Version                                                                          | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
 | `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language. | en      | :fontawesome-solid-circle-xmark:{ .red } |
 | `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                     | 60      | :fontawesome-solid-circle-xmark:{ .red } |
@@ -48,7 +48,8 @@ matter.
 
     ![AniDB Add Client](images/anidb-2.png)
 
-6. Come up with and enter a unique to AniDB Client Name
+6. Come up with and enter a unique to AniDB Client Name.
+
 
 7. Select `HTTP API` in the API Dropdown
 
@@ -56,11 +57,18 @@ matter.
 
     ![AniDB Client Page](images/anidb-3.png)
 
+???+ example "Case Sensitivity"
+
+    When you press the "Add Client" button, the next page may display your client name as Title Case (i.e. `Mykometaproject` instead of `mykometaproject`.
+
+    Regardless of what the AniDB site shows, **you must enter your client name in full lowercase**
+   
+
 9. Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
 
     ```yaml
     anidb:
-      client: UniqueAniDBName
+      client: mykometaproject
       version: 1
       language: en
       cache_expiration: 60
