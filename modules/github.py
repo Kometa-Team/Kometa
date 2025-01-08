@@ -15,15 +15,17 @@ class GitHub:
         self.token = params["token"]
         self.headers = None
         if self.token:
+            logger.separator()
+            logger.info("Connecting to GitHub...")
             logger.secret(self.token)
             self.headers = {"Authorization": f"token {self.token}"}
             try:
-                response = self._requests("https://api.github.com/user")
+                response = self._requests("https://api.github.com/user", err_msg="The GitHub token specified could not be validated. Please verify that the token is correct.")
                 logger.info(f"GitHub token validated successfully. Authenticated as {response['login']}")
-            except Failed:
+            except Failed as e:
                 self.token = None
                 self.headers = None
-                logger.error(f"Connector Error: The GitHub token specified could not be validated. Please verify that the token is correct.")
+                logger.error(e)
         self.images_raw_url = f"{raw_url}/Kometa-Team/Image-Sets/master/sets/"
         self.translation_url = f"{raw_url}/Kometa-Team/Translations/master/defaults/"
         self._configs_url = None
@@ -38,14 +40,14 @@ class GitHub:
             return self.requests.get_yaml(url, headers=self.headers, params=params)
         response = self.requests.get(url, headers=self.headers, params=params)
         if response.status_code >= 400:
-            logger.stacktrace()
-            logger.error(response.reason)
-            raise Failed(f"Git Error: {err_msg}")
+            logger.error(f"GitHub Response: [{response.status_code}] {response.reason}")
+            raise Failed(f"GitHub Error: {err_msg}")
         try:
             return response.json()
         except ValueError:
+            logger.stacktrace()
             logger.error(str(response.content))
-            raise Failed(f"Git JSON Unpack Error")
+            raise Failed("GitHub JSON Unpack Error")
 
     def get_top_tree(self, repo):
         if not str(repo).startswith("/"):
