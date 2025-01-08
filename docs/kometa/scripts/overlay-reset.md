@@ -1,4 +1,4 @@
-??? warning
+???+ danger
     
     **This script is destructive with NO UNDO.**
 
