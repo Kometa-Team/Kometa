@@ -216,19 +216,19 @@ class IMDb:
                 imdb_dict[main] = imdb_dict["url"]
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
             if main not in dict_methods:
-                raise Failed(f"{err_type} Error: {method} {main} attribute not found")
+                raise Failed(f"[BLE0010] IMDb {err_type} Error: {method} {main} attribute not found")
             elif imdb_dict[dict_methods[main]] is None:
-                raise Failed(f"{err_type} Error: {method} {main} attribute is blank")
+                raise Failed(f"[BLE0011] IMDb {err_type} Error: {method} {main} attribute is blank")
             else:
                 main_data = imdb_dict[dict_methods[main]].strip()
                 if method == "imdb_list":
                     if main_data.startswith(f"{base_url}/search/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search.")
+                        raise Failed(f"[BLE0012] IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search.")
                     if main_data.startswith(f"{base_url}/filmosearch/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search.")
+                        raise Failed(f"[BLE0013] IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search.")
                     search = re.search(r"(ls\d+)", main_data)
                     if not search:
-                        raise Failed(f"IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
+                        raise Failed(f"[BLE0014] IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
                     new_dict = {main: search.group(1)}
                 else:
                     user_id = None
@@ -238,12 +238,12 @@ class IMDb:
                         except ValueError:
                             pass
                     if not user_id:
-                        raise Failed(f"{err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
+                        raise Failed(f"[BLE0015] IMDb {err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
                     new_dict = {main: main_data}
 
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"{err_type} Warning: {method} limit attribute is blank using 0 as default")
+                    logger.warning(f"[BLW0001] IMDb {err_type} Warning: {method} limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
@@ -252,7 +252,7 @@ class IMDb:
                     except ValueError:
                         pass
                 if "limit" not in new_dict:
-                    logger.warning(f"{err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"[BLW0002] IMDb {err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
             if "limit" not in new_dict:
                 new_dict["limit"] = 0
 
@@ -447,10 +447,10 @@ class IMDb:
             logger.exorcise()
             if len(imdb_ids) > 0:
                 return imdb_ids
-            raise Failed("IMDb Error: No IMDb IDs Found")
+            raise Failed("[BLE0016] IMDb Error: No IMDb IDs Found")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
-                raise Failed("Internal IMDB PersistedQuery Error")
+                raise Failed("[BLE0017] IMDb Error: Internal PersistedQuery Error. Contact the Kometa Team.")
             logger.error(f"Response: {response_json}")
             raise
 
@@ -503,7 +503,7 @@ class IMDb:
                 return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
-            raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+            raise Failed(f"[BLE0018] IMDb Error: No keywords found for IMDb ID: {imdb_id}")
         for k in keywords:
             name = k.xpath("div[@class='sodatext']/a/text()")[0]
             relevant = k.xpath("div[@class='did-you-know-actions']/div/a/text()")[0].strip()
@@ -530,14 +530,14 @@ class IMDb:
                 if v not in parental_dict:
                     parental_dict[v] = None
         else:
-            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
+            raise Failed(f"[BLE0019] IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
-            raise Failed(f"IMDb Error: chart: {chart} not ")
+            raise Failed(f"[BLE00020] IMDb Error: chart: {chart} not ")
         script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
         return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 
@@ -571,7 +571,7 @@ class IMDb:
                 logger.info(f"    {k}: {v}")
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
-            raise Failed(f"IMDb Error: Method {method} not supported")
+            raise Failed(f"[BLE00021] IMDb Error: Method {method} not supported")
 
     def _interface(self, interface):
         gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")

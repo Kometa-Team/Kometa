@@ -88,7 +88,7 @@ class AniList:
                 time.sleep(wait_time if wait_time > 0 else 10)
                 if level < 6:
                     return self._request(query, variables, level=level + 1)
-                raise Failed(f"AniList Error: Connection Failed")
+                raise Failed(f"[CFE0004] AniList Error: Connection Failed")
             else:
                 raise Failed(f"AniList Error: {json_obj['errors'][0]['message']}")
         else:
@@ -100,7 +100,7 @@ class AniList:
         media = self._request(query, {"id": anilist_id})["data"]["Media"]
         if media["id"]:
             return media["id"], media["title"]["english" if media["title"]["english"] else "romaji"]
-        raise Failed(f"AniList Error: No AniList ID found for {anilist_id}")
+        raise Failed(f"[BLE0003] AniList Error: No AniList ID found for {anilist_id}")
 
     def _pagenation(self, query, limit=0, variables=None):
         anilist_ids = []
@@ -255,13 +255,13 @@ class AniList:
         variables = {"user": data["username"]}
         json_obj = self._request(query, variables)
         if not json_obj["data"]["MediaListCollection"]:
-            raise Failed(f"AniList Error: User: {data['username']} not found")
+            raise Failed(f"[BLE0007] AniList Error: User: {data['username']} not found")
         list_names = [n["name"] for n in json_obj["data"]["MediaListCollection"]["lists"]]
         if not list_names:
-            raise Failed(f"AniList Error: User: {data['username']} has no Lists")
+            raise Failed(f"[BLE0008] AniList Error: User: {data['username']} has no Lists")
         if data["list_name"] in list_names:
             return data
-        raise Failed(f"AniList Error: List: {data['list_name']} not found\nOptions: {', '.join(list_names)}")
+        raise Failed(f"[BLE0004] AniList Error: List: {data['list_name']} not found\nOptions: {', '.join(list_names)}")
 
     def validate(self, name, data):
         valid = []
@@ -270,7 +270,7 @@ class AniList:
                 valid.append(d)
         if len(valid) > 0:
             return valid
-        raise Failed(f"AniList Error: {name}: {data} does not exist\nOptions: {', '.join([v for k, v in self.options[name].items()])}")
+        raise Failed(f"[BLE0005] AniList Error: {name}: {data} does not exist\nOptions: {', '.join([v for k, v in self.options[name].items()])}")
 
     def validate_anilist_ids(self, anilist_ids, studio=False):
         anilist_id_list = util.get_int_list(anilist_ids, "AniList ID")
@@ -283,7 +283,7 @@ class AniList:
             except Failed as e:     logger.error(e)
         if len(anilist_values) > 0:
             return anilist_values
-        raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
+        raise Failed(f"[BLE0006] AniList Error: No valid AniList IDs in {anilist_ids}")
 
     def get_anilist_ids(self, method, data):
         if method == "anilist_id":
@@ -307,7 +307,7 @@ class AniList:
             elif method == "anilist_top_rated":
                 data = {"limit": data, "score.gt": 3, "sort_by": "score"}
             elif method not in builders:
-                raise Failed(f"AniList Error: Method {method} not supported")
+                raise Failed(f"[BLE0009] AniList Error: Method {method} not supported")
             message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n\tSort By {pretty_names[data['sort_by']]}"
             if data['limit'] > 0:
                 message += f"\n\tLimit to {data['limit']} Anime"
