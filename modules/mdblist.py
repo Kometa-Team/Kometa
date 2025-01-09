@@ -144,7 +144,7 @@ class MDBList:
             params["m"] = "movie" if is_movie else "show"
             key = f"{'tvm' if is_movie else 'tvs'}{tvdb_id}"
         else:
-            raise Failed("[BLE00031] MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type required")
+            raise Failed("[BLE0031] MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type required")
         expired = None
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
@@ -172,13 +172,13 @@ class MDBList:
                 mdb_dict = {"url": mdb_dict}
             dict_methods = {dm.lower(): dm for dm in mdb_dict}
             if "url" not in dict_methods:
-                raise Failed(f"[BLE00032] MDBList Error: {error_type} mdb_list url attribute not found")
+                raise Failed(f"[BLE0032] MDBList Error: {error_type} mdb_list url attribute not found")
             elif mdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"[BLE00033] MDBList Error: {error_type} mdb_list url attribute is blank")
+                raise Failed(f"[BLE0033] MDBList Error: {error_type} mdb_list url attribute is blank")
             else:
                 mdb_url = mdb_dict[dict_methods["url"]].strip()
             if not mdb_url.startswith(base_url):
-                raise Failed(f"[BLE00034] MDBList Error: {error_type} {mdb_url} must begin with {base_url}")
+                raise Failed(f"[BLE0034] MDBList Error: {error_type} {mdb_url} must begin with {base_url}")
             list_count = None
             if "limit" in dict_methods:
                 if mdb_dict[dict_methods["limit"]] is None:
@@ -228,14 +228,14 @@ class MDBList:
                 if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
                     err = response["error"] if isinstance(response, dict) else response[0]["error"]
                     if err in ["empty", "empty or private list"]:
-                        raise Failed(f"[BLE00035] MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later.")
-                    raise Failed(f"[BLE00036] MDBList Error: Invalid Response {response}")
+                        raise Failed(f"[BLE0035] MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later.")
+                    raise Failed(f"[BLE0036] MDBList Error: Invalid Response {response}")
                 results = []
                 for item in response:
                     if item["mediatype"] in ["movie", "show"] and item["id"]:
                         results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
                 return results
             except JSONDecodeError:
-                raise Failed(f"[BLE00037] MDBList Error: Invalid JSON Response received")
+                raise Failed(f"[BLE0037] MDBList Error: Invalid JSON Response received")
         else:
-            raise Failed(f"[BLE00038] MDBList Error: Method {method} not supported")
+            raise Failed(f"[BLE0038] MDBList Error: Method {method} not supported")

@@ -537,7 +537,7 @@ class IMDb:
 
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
-            raise Failed(f"[BLE00020] IMDb Error: chart: {chart} not ")
+            raise Failed(f"[BLE0020] IMDb Error: chart: {chart} not ")
         script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
         return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 
@@ -571,7 +571,7 @@ class IMDb:
                 logger.info(f"    {k}: {v}")
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
-            raise Failed(f"[BLE00021] IMDb Error: Method {method} not supported")
+            raise Failed(f"[BLE0021] IMDb Error: Method {method} not supported")
 
     def _interface(self, interface):
         gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")
