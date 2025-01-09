@@ -27,11 +27,11 @@ class ICheckMovies:
         for icheckmovies_list in util.get_list(icheckmovies_lists, split=False):
             list_url = icheckmovies_list.strip()
             if not list_url.startswith(base_url):
-                raise Failed(f"ICheckMovies Error: {list_url} must begin with: {base_url}")
+                raise Failed(f"[BLE00041] ICheckMovies Error: {list_url} must begin with: {base_url}")
             elif len(self._parse_list(list_url, language)) > 0:
                 valid_lists.append(list_url)
             else:
-                raise Failed(f"ICheckMovies Error: {list_url} failed to parse")
+                raise Failed(f"[BLE00042] ICheckMovies Error: {list_url} failed to parse")
         return valid_lists
 
     def get_imdb_ids(self, method, data, language):
@@ -39,4 +39,4 @@ class ICheckMovies:
             logger.info(f"Processing ICheckMovies List: {data}")
             return self._parse_list(data, language)
         else:
-            raise Failed(f"ICheckMovies Error: Method {method} not supported")
+            raise Failed(f"[BLE00043] ICheckMovies Error: Method {method} not supported")

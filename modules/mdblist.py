@@ -100,10 +100,10 @@ class MDBList:
 
             self.get_item(imdb_id="tt0080684", ignore_cache=True)
         except LimitReached:
-            logger.info(f"MDBList API limit exhausted")
+            logger.warning(f"[CFW0001] Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit.")
             self.limit = True
         except Failed as fe:
-            logger.info(f"MDBList API connection failed: {fe}")
+            logger.error(f"[CFE0010] Connector Error: MDBList API connection failed. Please validate your MDBList API key is valid. Response: {fe}")
             self.apikey = None
             raise
 
@@ -144,7 +144,7 @@ class MDBList:
             params["m"] = "movie" if is_movie else "show"
             key = f"{'tvm' if is_movie else 'tvs'}{tvdb_id}"
         else:
-            raise Failed("MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type Required")
+            raise Failed("[BLE00031] MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type required")
         expired = None
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
@@ -172,17 +172,17 @@ class MDBList:
                 mdb_dict = {"url": mdb_dict}
             dict_methods = {dm.lower(): dm for dm in mdb_dict}
             if "url" not in dict_methods:
-                raise Failed(f"{error_type} Error: mdb_list url attribute not found")
+                raise Failed(f"[BLE00032] MDBList Error: {error_type} mdb_list url attribute not found")
             elif mdb_dict[dict_methods["url"]] is None:
-                raise Failed(f"{error_type} Error: mdb_list url attribute is blank")
+                raise Failed(f"[BLE00033] MDBList Error: {error_type} mdb_list url attribute is blank")
             else:
                 mdb_url = mdb_dict[dict_methods["url"]].strip()
             if not mdb_url.startswith(base_url):
-                raise Failed(f"{error_type} Error: {mdb_url} must begin with: {base_url}")
+                raise Failed(f"[BLE00034] MDBList Error: {error_type} {mdb_url} must begin with {base_url}")
             list_count = None
             if "limit" in dict_methods:
                 if mdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"{error_type} Warning: mdb_list limit attribute is blank using 0 as default")
+                    logger.warning(f"[BLW0003] MDBList Warning: {error_type} mdb_list limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(mdb_dict[dict_methods["limit"]]))
@@ -191,18 +191,18 @@ class MDBList:
                     except ValueError:
                         pass
                 if list_count is None:
-                    logger.warning(f"{error_type} Warning: mdb_list limit attribute must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"[BLW0004] MDBList Warning: {error_type} mdb_list limit attribute must be an integer 0 or greater using 0 as default")
             if list_count is None:
                 list_count = 0
             sort_by = "rank.asc"
             if "sort_by" in dict_methods:
                 if mdb_dict[dict_methods["sort_by"]] is None:
-                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute is blank using score as default")
+                    logger.warning(f"[BLW0005] MDBList Warning: {error_type} mdb_list sort_by attribute is blank using score as default")
                 elif mdb_dict[dict_methods["sort_by"]].lower() in sort_names:
-                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} is missing .desc or .asc defaulting to .desc")
+                    logger.warning(f"[BLW0006] MDBList Warning: {error_type} mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} is missing .desc or .asc defaulting to .desc")
                     sort_by = f"{mdb_dict[dict_methods['sort_by']].lower()}.desc"
                 elif mdb_dict[dict_methods["sort_by"]].lower() not in list_sorts:
-                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
+                    logger.warning(f"[BLW0007] MDBList Warning: {error_type} mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
                 else:
                     sort_by = mdb_dict[dict_methods["sort_by"]].lower()
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
@@ -228,14 +228,14 @@ class MDBList:
                 if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
                     err = response["error"] if isinstance(response, dict) else response[0]["error"]
                     if err in ["empty", "empty or private list"]:
-                        raise Failed(f"MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later.")
-                    raise Failed(f"MDBList Error: Invalid Response {response}")
+                        raise Failed(f"[BLE00035] MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later.")
+                    raise Failed(f"[BLE00036] MDBList Error: Invalid Response {response}")
                 results = []
                 for item in response:
                     if item["mediatype"] in ["movie", "show"] and item["id"]:
                         results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
                 return results
             except JSONDecodeError:
-                raise Failed(f"MDBList Error: Invalid JSON Response received")
+                raise Failed(f"[BLE00037] MDBList Error: Invalid JSON Response received")
         else:
-            raise Failed(f"MDBList Error: Method {method} not supported")
+            raise Failed(f"[BLE00038] MDBList Error: Method {method} not supported")
