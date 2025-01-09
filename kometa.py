@@ -5,7 +5,7 @@ from datetime import datetime
 from modules.logs import MyLogger
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 9:
-    print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    print("[C0001] Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
@@ -16,7 +16,7 @@ try:
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
-    print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
+    print(f"[C0002] Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
 
 system_versions = {
@@ -188,10 +188,11 @@ if run_args["width"] < 90 or run_args["width"] > 300:
     print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
     run_args["width"] = 100
 
+
 if run_args["config"] and os.path.exists(run_args["config"]):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(run_args["config"])))
 elif run_args["config"] and not os.path.exists(run_args["config"]):
-    print(f"Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}")
+    print(f"[CFE0001] Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}")
     sys.exit(0)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     git_branch = git_branch or "master"
@@ -207,9 +208,8 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
         else:
             raise requests.RequestException
     except requests.RequestException as e:
-        print(f"Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
+        print(f"[CFE0005] Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
         sys.exit(1)
-
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
                   run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
@@ -306,7 +306,7 @@ def start(attrs):
                     if sys_ver and sys_ver != required_versions[req_name]:
                         logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
             except FileNotFoundError:
-                logger.error("    File Error: requirements.txt not found")
+                logger.error("[E0001] File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
         elif run_args["tests"]:                                 start_type = "Test "
         elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -363,7 +363,7 @@ def start(attrs):
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
             except Failed as e:
                 logger.stacktrace()
-                logger.error(f"Webhooks Error: {e}")
+                logger.error(f"[E0002] Webhooks Error: {e}")
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
@@ -659,7 +659,7 @@ def run_libraries(config):
                         library.delete(collection)
                         logger.info(f"Collection {collection.title} Deleted")
                     except Failed as e:
-                        logger.error(e)
+                        logger.error(f"[E0003] {collection.title} | Collection could not be removed")
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             if run_args["delete-labels"] and not run_args["playlists-only"]:
@@ -679,7 +679,7 @@ def run_libraries(config):
                             sync = ["Overlay"] if "Overlay" in [lbl.tag for lbl in item.labels] else []
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
-                            logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
+                            logger.error(f"[E0004] {item.title[:25]:<25} | Labels Failed to be Removed")
                 library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split('.')[0]
 
             time_start = datetime.now()
@@ -1180,7 +1180,7 @@ if __name__ == "__main__":
                         time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
                         logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(valid_times)}")
                     else:
-                        logger.error(f"Time Error: {valid_times}")
+                        logger.error(f"[E0005] Time Error: {valid_times}")
                 time.sleep(60)
     except KeyboardInterrupt:
         logger.separator("Exiting Kometa")
