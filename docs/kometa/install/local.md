@@ -85,7 +85,7 @@ In order to run a Python script. the first thing you'll need is a Python interpr
 
 First let's check if it's installed already [type this into your terminal]:
 
-```
+``` { .shell }
 python3 --version
 ```
 
@@ -124,7 +124,7 @@ To copy the Kometa code to your machine, we'll be using git.  This may be instal
 
 First let's check if it's installed already [type this into your terminal]:
 
-```
+``` { .shell }
 git --version
 ```
 
@@ -157,11 +157,21 @@ Now we're going to use `git` to make a copy of the code on your local computer.
 
 Clone the repo into your home directory and go into that directory [type this into your terminal]:
 
-```
+``` { .shell }
 cd ~
 git clone https://github.com/Kometa-Team/Kometa
 cd Kometa
 ```
+
+Now `git checkout` to the branch reflecting the version of the wiki you are reading, as some functionality may be dependent on this.  If you are reading the latest version of the wiki, no `git checkout` is required.
+
+=== ":fontawesome-brands-github: develop"
+
+        git checkout develop
+
+=== ":fontawesome-brands-github: nightly"
+
+        git checkout nightly
 
 **NOTE: The rest of this walkthrough assumes you are staying in this directory in this terminal/Powershell window.**
 
@@ -169,7 +179,7 @@ cd Kometa
 
 When you open a command window to run Kometa, the first step will always be:
 
-```
+``` { .shell }
 cd ~
 cd Kometa
 ```
@@ -179,15 +189,15 @@ There are parts of the code that are assuming and expecting that you will be in 
 <details>
   <summary>What did that do?</summary>
 
-  ```
+  ``` { .shell }
   cd ~
   ```
   This changes to your home directory, which will be something like `/home/yourname` or `/Users/yourname` or `C:\Users\YourName` depending on the platform.
-  ```
+  ``` { .shell }
   git clone https://github.com/Kometa-Team/Kometa
   ```
   This uses `git` to make a copy of (`clone`) the Kometa code from where it is stored on `github`.
-  ```
+  ``` { .shell }
   cd Kometa
   ```
   This moves into the directory that was created by the `clone` command.
@@ -199,15 +209,15 @@ Later on you can move it elsewhere if you want, but for now put it there.  This 
   <summary>Why use git instead of downloading the release ZIP?</summary>
 
   Retrieving the code with `git` makes updating simpler.  When you want to update to the newest version, you can go into this directory and type:
-  ```
+  ``` { .shell }
   git pull
   ```
   No need to download a new ZIP, decompress it, etc.
   Also, if you are asked to [or want to] switch to the latest develop or nightly code, you can do so with:
-  ```
+  ``` { .shell }
   git checkout develop
   ```
-  ```
+  ``` { .shell }
   git checkout nightly
   ```
 </details>
@@ -221,16 +231,16 @@ This walkthrough is going to use a "virtual environment", since that provides a 
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     python3 -m venv kometa-venv
     ```
     If you see an error like:
-    ```
+    ``` { .shell .nocopy }
     Error: Command '['/home/mroche/Kometa/kometa-venv/bin/python3', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1.
     ```
     You probably need to make sure the Python 3.9-specific virtualenv support library is installed:
     [type this into your terminal]
-    ```
+    ``` { .shell }
     sudo apt-get install python3.9-venv
     ```
     Then try the original venv command above again.
@@ -238,18 +248,18 @@ This walkthrough is going to use a "virtual environment", since that provides a 
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     python3 -m venv kometa-venv
     ```
 
 === ":fontawesome-brands-windows: Windows"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     python -m venv kometa-venv
     ```
     If you see:
-    ```
+    ``` { .shell .nocopy }
     Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases.
     ```
     You apparently didn't check the “Add to path” checkbox above under [installing Python](#installing-python).  "Repair" your Python install and check "add python to environment variables".
@@ -258,7 +268,7 @@ This walkthrough is going to use a "virtual environment", since that provides a 
 <details>
   <summary>What did that do?</summary>
 
-  ```
+  ``` { .shell }
   python3 -m venv kometa-venv
   ```
   This tells Python3 to use the `venv` module to create a virtual environment called `kometa-venv`.  The only visible effect will be the creation of a `kometa-venv` directory.
@@ -266,7 +276,7 @@ This walkthrough is going to use a "virtual environment", since that provides a 
 
 That command will not produce any output if it works; it will display an error if a problem occurs.  If everything is fine, you will be looking at something like this:
 
-```
+``` { .shell .nocopy}
 > python -m venv kometa-venv
 >
 ```
@@ -278,14 +288,14 @@ That will create the virtual environment, and then you need to activate it:
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     source kometa-venv/bin/activate
     ```
 
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     source kometa-venv/bin/activate
     ```
 
@@ -310,12 +320,11 @@ That will create the virtual environment, and then you need to activate it:
     
     Once you have done that, try the activation step again.
 
-
 That command will not produce any output if it works; it will display an error if a problem occurs.
 
 You may see a change in your prompt, something like this:
 
-```
+``` { .shell }
 ➜  Kometa git:(master) ✗ source kometa-venv/bin/activate
 (kometa-venv) ➜  Kometa git:(master) ✗
 ```
@@ -335,14 +344,14 @@ An advantage of doing this in a virtual environment is that in the event somethi
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     source kometa-venv/bin/activate
     ```
 
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     source kometa-venv/bin/activate
     ```
 
@@ -359,13 +368,13 @@ Kometa, like every other Python script, depends on support libraries that manage
 
 These support libraries are called “requirements”, and they are defined in that file called `requirements.txt`.  To install them, type the following command [type this into your terminal]:
 
-```
+``` { .shell }
 python -m pip install -r requirements.txt
 ```
 
 You should see something like this [I’ve removed a few lines for space, and the specific versions may have changed since this was captured]:
 
-```
+``` { .shell .nocopy }
 Collecting PlexAPI==4.7.0
   Downloading PlexAPI-4.7.0-py3-none-any.whl (133 kB)
      |████████████████████████████████| 133 kB 821 kB/s
@@ -388,7 +397,7 @@ Don't worry about the WARNING about `pip version thus-and-such` if it comes up.
 
   If you see an error that ends in something like this:
 
-```
+``` { .shell .nocopy }
    ...
    building 'lxml.etree' extension
    error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
@@ -420,13 +429,13 @@ Running the script at this point will verify that all is well and will create a 
 
 You should see something like this:
 
-```
+``` { .shell .nocopy }
 Configuration file (config.yml) created at /SOME/PATH/TO/Kometa/config/config.yml. Please open this file and update it with your API keys and other required settings.
 ```
 
 If, instead, you see something like:
 
-```
+``` { .shell .nocopy }
 Traceback (most recent call last):
   File "/some/path/to/Kometa/kometa.py", line 1, in <module>
     import argparse, os, platform, re, sys, time, uuid, requests
@@ -444,14 +453,14 @@ We'll create it here so the error doesn't show up later.
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     mkdir config/assets
     ```
 
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     mkdir config/assets
     ```
 
@@ -534,7 +543,7 @@ When you are done, deactivate the virtual environment:
 
 [type this into your terminal]
 
-```
+``` { .shell }
 deactivate
 ```
 
@@ -551,7 +560,7 @@ deactivate
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     cd ~/Kometa
     git pull
     source kometa-venv/bin/activate
@@ -561,7 +570,7 @@ deactivate
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     cd ~/Kometa
     git pull
     source kometa-venv/bin/activate
@@ -584,7 +593,7 @@ deactivate
 === ":fontawesome-brands-linux: Linux"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     cd ~/Kometa
     git checkout develop
     git pull
@@ -595,7 +604,7 @@ deactivate
 === ":fontawesome-brands-apple: macOS"
 
     [type this into your terminal]
-    ```
+    ``` { .shell }
     cd ~/Kometa
     git checkout develop
     git pull

@@ -1,5 +1,5 @@
 [type this into your Kometa `>_Console`]
 
-```shell
+``` { .shell }
 python kometa.py -r
 ```

@@ -93,7 +93,7 @@ tmdb:
   apikey: YOUR_TMDB_API_KEY
 ```
 
-Change those four UPPER_CASE items to your actual values, and you're good to go.  Running that file will create a couple of collections in your Plex library.
+Change those four UPPER_CASE items to your actual values, and you're good to go.  Running that file will create a couple of collections in your Plex movie library.
 
 Kometa will *also* fill in that file with a lot of defaults, ready for you to modify and expand as you learn more about Kometa.  It does this so that as new settings are added, the default values are inserted into your config file, ready for you to modify.
 
