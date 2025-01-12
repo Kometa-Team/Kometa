@@ -97,7 +97,7 @@ mass_image_options = {
 }
 mass_episode_rating_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating"
+    "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating", "trakt": "Use Trakt Rating"
 }
 mass_rating_options = {
     "lock": "Lock Rating",
@@ -106,8 +106,11 @@ mass_rating_options = {
     "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
+    "trakt": "Use Trakt Rating",
     "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
+    "omdb_metascore": "Use Metacritic Metascore through OMDb",
+    "omdb_tomatoes": "Use Rotten Tomatoes rating through OMDb",
     "mdb": "Use MDBList Score",
     "mdb_average": "Use MDBList Average Score",
     "mdb_imdb": "Use IMDb Rating through MDBList",
@@ -545,6 +548,7 @@ class ConfigFile:
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
+
         self.GitHub = GitHub(self.Requests, {
             "token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)
         })

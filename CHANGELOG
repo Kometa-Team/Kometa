@@ -21,6 +21,9 @@ Logic added to Kometa to create `config.yml` if it does not exist from the `conf
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
+Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
+Add `trakt` ratings source for mass episode operations.
+Added GitHub token validation during config validation.
 
 # Docs
 Added "getting started" page
@@ -56,3 +59,5 @@ Added Start Time, Finished and Run Time to Summary of run.
 Fixed an issue where custom repositories would not work correctly if the URL did not end in a trailing `/` character.
 Kometa will now check for `.yaml` extension in filenames if `.yml` is not found and vice-versa
 Kometa will no longer automatically sync playlists to all users if you do not specify who you want to sync them to. Only the server admin will receive playlists unless otherwise specified using `sync_to_users` or `playlist_sync_to_users`
+Fixes #2385 `tmdb_person` would pass an integer if the name started with an integer (i.e. `50 Cent` would pass `50` which resolved to `Catherine Deneuve`)
+Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)

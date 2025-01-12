@@ -152,15 +152,14 @@ class DataFile:
             content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
             dir_path = file_path
             if not os.path.exists(content_path):
-                if content_path.endswith(".yml") and os.path.exists(content_path[:-4] + ".yaml"):
-                    content_path = content_path[:-4] + ".yaml"
-                elif content_path.endswith(".yaml") and os.path.exists(content_path[:-5] + ".yml"):
-                    content_path = content_path[:-5] + ".yml"
+                if content_path.endswith(".yml") and os.path.exists(f"{content_path[:-4]}.yaml"):
+                    content_path = f"{content_path[:-4]}.yaml"
+                elif content_path.endswith(".yaml") and os.path.exists(f"{content_path[:-5]}.yml"):
+                    content_path = f"{content_path[:-5]}.yml"
+                elif file_type == "Default":
+                    raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
-                    if file_type == "Default":
-                        raise Failed(f"File Error: Default does not exist {file_path}")
-                    else:
-                        raise Failed(f"File Error: File does not exist {content_path}")
+                    raise Failed(f"File Error: File does not exist {content_path}")
             yaml = self.config.Requests.file_yaml(content_path, check_empty=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
