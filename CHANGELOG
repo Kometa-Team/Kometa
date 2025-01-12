@@ -24,6 +24,8 @@ Add `date` option for schedules
 Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
 Add `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
+Added `text_size` setting to languages overlay to double the country text font size.
+Added `hide_text` setting to languages overlay to only show the flags and hide the country text.
 
 # Docs
 Added "getting started" page
@@ -61,3 +63,4 @@ Kometa will now check for `.yaml` extension in filenames if `.yml` is not found 
 Kometa will no longer automatically sync playlists to all users if you do not specify who you want to sync them to. Only the server admin will receive playlists unless otherwise specified using `sync_to_users` or `playlist_sync_to_users`
 Fixes #2385 `tmdb_person` would pass an integer if the name started with an integer (i.e. `50 Cent` would pass `50` which resolved to `Catherine Deneuve`)
 Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)
+Fixes an issue where `use_subtitles` would ignore `flag_alignment: left` (subtitle flags were hard-coded right.) 

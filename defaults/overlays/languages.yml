@@ -5,22 +5,56 @@
 #         https://kometa.wiki/en/latest/defaults/overlays/languages          #
 ##############################################################################
 
+
 external_templates:
   default: templates
   template_variables:
     conditionals:
-      final_align:
+      default_align:
         default: left
         conditions:
-          - flag_alignment: right
-            value: right
           - use_subtitles: true
             value: right
-      final_text:
+      final_align:
+        default: <<default_align>>
+        conditions:
+          - flag_alignment: left
+            value: left
+      case_text:
         default: <<text>>
         conditions:
           - use_lowercase: true
             value: <<key>>
+      final_font_size:
+        default: 50
+        conditions:
+          - text_size: small
+            value: 50
+          - text_size: big
+            value: 100
+      final_text:
+         default: <<case_text>>
+         conditions:
+          - hide_text: true
+            value: " "
+      final_width:
+        default: 190
+        conditions:
+          - hide_text: true
+            value: 100
+          - text_size: small
+            value: 190
+          - text_size: big
+            value: 250
+      long_width:
+        default: 230
+        conditions:
+          - hide_text: true
+            value: 100
+          - text_size: small
+            value: 230
+          - text_size: big
+            value: 290
       final_style:
         default: round
         conditions:
@@ -44,7 +78,8 @@ external_templates:
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
-      width: 190
+      width: <<final_width>>
+
     queue: flags
     addon_position: <<final_align>>
     addon_offset: <<offset>>
@@ -52,8 +87,11 @@ external_templates:
     back_width: <<width>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
-    font_size: 50
+    font_size: <<final_font_size>>
     final_name: text(<<final_text>>)
+
+
+
 
 vars:
   top_left: &top_left           {vertical_align: top,     horizontal_align: left}
@@ -66,61 +104,111 @@ vars:
   bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
   bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
 
-  v1-1: &v1-1 {vertical_offset: 15}
-  v1-2: &v1-2 {vertical_offset: 76}
-  v1-3: &v1-3 {vertical_offset: 137}
-  v1-4: &v1-4 {vertical_offset: 198}
-  v1-5: &v1-5 {vertical_offset: 259}
+  v1-1_small: &v1-1_s {vertical_offset: 15}
+  v1-2_small: &v1-2_s {vertical_offset: 76}
+  v1-3_small: &v1-3_s {vertical_offset: 137}
+  v1-4_small: &v1-4_s {vertical_offset: 198}
+  v1-5_small: &v1-5_s {vertical_offset: 259}
 
-  v2-1: &v2-1 {vertical_offset: 150}
-  v2-2: &v2-2 {vertical_offset: 211}
-  v2-3: &v2-3 {vertical_offset: 272}
-  v2-4: &v2-4 {vertical_offset: 333}
-  v2-5: &v2-5 {vertical_offset: 394}
+  v2-1_small: &v2-1_s {vertical_offset: 150}
+  v2-2_small: &v2-2_s {vertical_offset: 211}
+  v2-3_small: &v2-3_s {vertical_offset: 272}
+  v2-4_small: &v2-4_s {vertical_offset: 333}
+  v2-5_small: &v2-5_s {vertical_offset: 394}
 
-  v3-1: &v3-1 {vertical_offset: 223}
-  v3-2: &v3-2 {vertical_offset: 284}
-  v3-3: &v3-3 {vertical_offset: 345}
-  v3-4: &v3-4 {vertical_offset: 406}
-  v3-5: &v3-5 {vertical_offset: 467}
+  v3-1_small: &v3-1_s {vertical_offset: 223}
+  v3-2_small: &v3-2_s {vertical_offset: 284}
+  v3-3_small: &v3-3_s {vertical_offset: 345}
+  v3-4_small: &v3-4_s {vertical_offset: 406}
+  v3-5_small: &v3-5_s {vertical_offset: 467}
 
-  vct-1: &vct-1 {vertical_offset: -244}
-  vct-2: &vct-2 {vertical_offset: -183}
-  vct-3: &vct-3 {vertical_offset: -122}
-  vct-4: &vct-4 {vertical_offset: -61}
-  vct-5: &vct-5 {vertical_offset: 0}
+  vct-1_small: &vct-1_s {vertical_offset: -244}
+  vct-2_small: &vct-2_s {vertical_offset: -183}
+  vct-3_small: &vct-3_s {vertical_offset: -122}
+  vct-4_small: &vct-4_s {vertical_offset: -61}
+  vct-5_small: &vct-5_s {vertical_offset: 0}
 
-  vc-1: &vc-1 {vertical_offset: -122}
-  vc-2: &vc-2 {vertical_offset: -61}
-  vc-3: &vc-3 {vertical_offset: 0}
-  vc-4: &vc-4 {vertical_offset: 61}
-  vc-5: &vc-5 {vertical_offset: 122}
+  vc-1_small: &vc-1_s {vertical_offset: -122}
+  vc-2_small: &vc-2_s {vertical_offset: -61}
+  vc-3_small: &vc-3_s {vertical_offset: 0}
+  vc-4_small: &vc-4_s {vertical_offset: 61}
+  vc-5_small: &vc-5_s {vertical_offset: 122}
 
-  vcb-1: &vcb-1 {vertical_offset: 0}
-  vcb-2: &vcb-2 {vertical_offset: 61}
-  vcb-3: &vcb-3 {vertical_offset: 122}
-  vcb-4: &vcb-4 {vertical_offset: 183}
-  vcb-5: &vcb-5 {vertical_offset: 244}
+  vcb-1_small: &vcb-1_s {vertical_offset: 0}
+  vcb-2_small: &vcb-2_s {vertical_offset: 61}
+  vcb-3_small: &vcb-3_s {vertical_offset: 122}
+  vcb-4_small: &vcb-4_s {vertical_offset: 183}
+  vcb-5_small: &vcb-5_s {vertical_offset: 244}
+
+  v1-1_big: &v1-1_b {vertical_offset: 15}
+  v1-2_big: &v1-2_b {vertical_offset: 116}
+  v1-3_big: &v1-3_b {vertical_offset: 217}
+  v1-4_big: &v1-4_b {vertical_offset: 318}
+  v1-5_big: &v1-5_b {vertical_offset: 419}
+
+  v2-1_big: &v2-1_b {vertical_offset: 150}
+  v2-2_big: &v2-2_b {vertical_offset: 251}
+  v2-3_big: &v2-3_b {vertical_offset: 352}
+  v2-4_big: &v2-4_b {vertical_offset: 453}
+  v2-5_big: &v2-5_b {vertical_offset: 554}
+
+  v3-1_big: &v3-1_b {vertical_offset: 223}
+  v3-2_big: &v3-2_b {vertical_offset: 324}
+  v3-3_big: &v3-3_b {vertical_offset: 425}
+  v3-4_big: &v3-4_b {vertical_offset: 526}
+  v3-5_big: &v3-5_b {vertical_offset: 627}
+
+  vct-1_big: &vct-1_b {vertical_offset: -404}
+  vct-2_big: &vct-2_b {vertical_offset: -303}
+  vct-3_big: &vct-3_b {vertical_offset: -202}
+  vct-4_big: &vct-4_b {vertical_offset: -101}
+  vct-5_big: &vct-5_b {vertical_offset: 0}
+
+  vc-1_big: &vc-1_b {vertical_offset: -202}
+  vc-2_big: &vc-2_b {vertical_offset: -101}
+  vc-3_big: &vc-3_b {vertical_offset: 0}
+  vc-4_big: &vc-4_b {vertical_offset: 101}
+  vc-5_big: &vc-5_b {vertical_offset: 202}
+
+  vcb-1_big: &vcb-1_b {vertical_offset: 0}
+  vcb-2_big: &vcb-2_b {vertical_offset: 101}
+  vcb-3_big: &vcb-3_b {vertical_offset: 202}
+  vcb-4_big: &vcb-4_b {vertical_offset: 303}
+  vcb-5_big: &vcb-5_b {vertical_offset: 404}
 
   vc-c: &vc-c {vertical_offset: 0}
   vc-t: &vc-t {vertical_offset: -30}
   vc-b: &vc-b {vertical_offset: 30}
 
-  h1-1: &h1-1 {horizontal_offset: 15}
-  h1-2: &h1-2 {horizontal_offset: 206}
-  h1-3: &h1-3 {horizontal_offset: 397}
-  h1-4: &h1-4 {horizontal_offset: 588}
-  h1-5: &h1-5 {horizontal_offset: 779}
 
-  h0-1: &h0-1 {horizontal_offset: 0}
-  h0-2: &h0-2 {horizontal_offset: 191}
-  h0-3: &h0-3 {horizontal_offset: -191}
-  h0-4: &h0-4 {horizontal_offset: 382}
-  h0-5: &h0-5 {horizontal_offset: -382}
+  h1-1_small: &h1-1_s {horizontal_offset: 15}
+  h1-2_small: &h1-2_s {horizontal_offset: 206}
+  h1-3_small: &h1-3_s {horizontal_offset: 397}
+  h1-4_small: &h1-4_s {horizontal_offset: 588}
+  h1-5_small: &h1-5_s {horizontal_offset: 779}
+
+  h0-1_small: &h0-1_s {horizontal_offset: 0}
+  h0-2_small: &h0-2_s {horizontal_offset: 191}
+  h0-3_small: &h0-3_s {horizontal_offset: -191}
+  h0-4_small: &h0-4_s {horizontal_offset: 382}
+  h0-5_small: &h0-5_s {horizontal_offset: -382}
+
+  h1-1_big: &h1-1_b {horizontal_offset: 15}
+  h1-2_big: &h1-2_b {horizontal_offset: 266}
+  h1-3_big: &h1-3_b {horizontal_offset: 517}
+  h1-4_big: &h1-4_b {horizontal_offset: 768}
+  h1-5_big: &h1-5_b {horizontal_offset: 1019}
+
+  h0-1_big: &h0-1_b {horizontal_offset: 0}
+  h0-2_big: &h0-2_b {horizontal_offset: 251}
+  h0-3_big: &h0-3_b {horizontal_offset: -251}
+  h0-4_big: &h0-4_b {horizontal_offset: 502}
+  h0-5_big: &h0-5_b {horizontal_offset: -502}
 
   hc-c: &hc-c {horizontal_offset: 0}
   hc-l: &hc-l {horizontal_offset: -95}
   hc-r: &hc-r {horizontal_offset: 95}
+
 
 
 queues:
@@ -128,10 +216,10 @@ queues:
     default:
       conditionals:
         horizontal_position:
-          default: left
-          conditions:
-            - use_subtitles: true
-              value: right
+         default: left
+         conditions: 
+           - use_subtitles: true
+             value: right
         vertical_position:
           default: top3
           conditions:
@@ -139,154 +227,315 @@ queues:
               value: top2
             - overlay_level: episode
               value: top2
-      position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
+        text_placement:
+          default: small
+          conditions:
+            - text_size: small
+              value: small
+            - text_size: big
+              value: big
+      position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>_<<text_placement>>
       group_alignment: vertical
       overlay_limit: 3
 
-    vertical_top_left:                      [<<: [*top_left,      *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_left2:                     [<<: [*top_left,      *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center_left:               [<<: [*top_center,    *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center:                    [<<: [*top_center,    *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center_right:              [<<: [*top_center,    *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_right2:                    [<<: [*top_right,     *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_right:                     [<<: [*top_right,     *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_top_left_small:                      [<<: [*top_left,      *v1-1_s, *h1-1_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_left2_small:                     [<<: [*top_left,      *v1-1_s, *h1-2_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_center_left_small:               [<<: [*top_center,    *v1-1_s, *hc-l], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_center_small:                    [<<: [*top_center,    *v1-1_s, *hc-c], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_center_right_small:              [<<: [*top_center,    *v1-1_s, *hc-r], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_right2_small:                    [<<: [*top_right,     *v1-1_s, *h1-2_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_top_right_small:                     [<<: [*top_right,     *v1-1_s, *h1-1_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
 
-    vertical_top2_left:                     [<<: [*top_left,      *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_left2:                    [<<: [*top_left,      *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center_left:              [<<: [*top_center,    *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center:                   [<<: [*top_center,    *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center_right:             [<<: [*top_center,    *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_right2:                   [<<: [*top_right,     *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_right:                    [<<: [*top_right,     *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_top2_left_small:                     [<<: [*top_left,      *v2-1_s, *h1-1_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_left2_small:                    [<<: [*top_left,      *v2-1_s, *h1-2_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_center_left_small:              [<<: [*top_center,    *v2-1_s, *hc-l], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_center_small:                   [<<: [*top_center,    *v2-1_s, *hc-c], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_center_right_small:             [<<: [*top_center,    *v2-1_s, *hc-r], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_right2_small:                   [<<: [*top_right,     *v2-1_s, *h1-2_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_top2_right_small:                    [<<: [*top_right,     *v2-1_s, *h1-1_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
 
-    vertical_top3_left:                     [<<: [*top_left,      *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_left2:                    [<<: [*top_left,      *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center_left:              [<<: [*top_center,    *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center:                   [<<: [*top_center,    *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center_right:             [<<: [*top_center,    *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_right2:                   [<<: [*top_right,     *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_right:                    [<<: [*top_right,     *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_top3_left_small:                     [<<: [*top_left,      *v3-1_s, *h1-1_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_left2_small:                    [<<: [*top_left,      *v3-1_s, *h1-2_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_center_left_small:              [<<: [*top_center,    *v3-1_s, *hc-l], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_center_small:                   [<<: [*top_center,    *v3-1_s, *hc-c], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_center_right_small:             [<<: [*top_center,    *v3-1_s, *hc-r], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_right2_small:                   [<<: [*top_right,     *v3-1_s, *h1-2_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_top3_right_small:                    [<<: [*top_right,     *v3-1_s, *h1-1_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
 
-    vertical_center_top_left:               [<<: [*center_left,   *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_left2:              [<<: [*center_left,   *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center_left:        [<<: [*center_center, *vct-1, *hc-l], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center:             [<<: [*center_center, *vct-1, *hc-c], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center_right:       [<<: [*center_center, *vct-1, *hc-r], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_right2:             [<<: [*center_right,  *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_right:              [<<: [*center_right,  *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
+    vertical_center_top_left_small:               [<<: [*center_left,   *vct-1_s, *h1-1_s], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_left2_small:              [<<: [*center_left,   *vct-1_s, *h1-2_s], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_center_left_small:        [<<: [*center_center, *vct-1_s, *hc-l], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_center_small:             [<<: [*center_center, *vct-1_s, *hc-c], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_center_right_small:       [<<: [*center_center, *vct-1_s, *hc-r], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_right2_small:             [<<: [*center_right,  *vct-1_s, *h1-2_s], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
+    vertical_center_top_right_small:              [<<: [*center_right,  *vct-1_s, *h1-1_s], *vct-2_s, *vct-3_s, *vct-4_s, *vct-5_s]
 
-    vertical_center_left:                   [<<: [*center_left,   *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_left2:                  [<<: [*center_left,   *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center_left:            [<<: [*center_center, *vc-1, *hc-l], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center:                 [<<: [*center_center, *vc-1, *hc-c], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center_right:           [<<: [*center_center, *vc-1, *hc-r], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_right2:                 [<<: [*center_right,  *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_right:                  [<<: [*center_right,  *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
+    vertical_center_left_small:                   [<<: [*center_left,   *vc-1_s, *h1-1_s], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_left2_small:                  [<<: [*center_left,   *vc-1_s, *h1-2_s], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_center_left_small:            [<<: [*center_center, *vc-1_s, *hc-l], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_center_small:                 [<<: [*center_center, *vc-1_s, *hc-c], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_center_right_small:           [<<: [*center_center, *vc-1_s, *hc-r], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_right2_small:                 [<<: [*center_right,  *vc-1_s, *h1-2_s], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
+    vertical_center_right_small:                  [<<: [*center_right,  *vc-1_s, *h1-1_s], *vc-2_s, *vc-3_s, *vc-4_s, *vc-5_s]
 
-    vertical_center_bottom_left:            [<<: [*center_left,   *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_left2:           [<<: [*center_left,   *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center_left:     [<<: [*center_center, *vcb-1, *hc-l], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center:          [<<: [*center_center, *vcb-1, *hc-c], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center_right:    [<<: [*center_center, *vcb-1, *hc-r], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_right2:          [<<: [*center_right,  *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_right:           [<<: [*center_right,  *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
+    vertical_center_bottom_left_small:            [<<: [*center_left,   *vcb-1_s, *h1-1_s], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_left2_small:           [<<: [*center_left,   *vcb-1_s, *h1-2_s], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_center_left_small:     [<<: [*center_center, *vcb-1_s, *hc-l], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_center_small:          [<<: [*center_center, *vcb-1_s, *hc-c], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_center_right_small:    [<<: [*center_center, *vcb-1_s, *hc-r], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_right2_small:          [<<: [*center_right,  *vcb-1_s, *h1-2_s], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
+    vertical_center_bottom_right_small:           [<<: [*center_right,  *vcb-1_s, *h1-1_s], *vcb-2_s, *vcb-3_s, *vcb-4_s, *vcb-5_s]
 
-    vertical_bottom3_left:                  [<<: [*bottom_left,   *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_left2:                 [<<: [*bottom_left,   *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center_left:           [<<: [*bottom_center, *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center:                [<<: [*bottom_center, *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center_right:          [<<: [*bottom_center, *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_right2:                [<<: [*bottom_right,  *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_right:                 [<<: [*bottom_right,  *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
+    vertical_bottom3_left_small:                  [<<: [*bottom_left,   *v3-1_s, *h1-1_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_left2_small:                 [<<: [*bottom_left,   *v3-1_s, *h1-2_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_center_left_small:           [<<: [*bottom_center, *v3-1_s, *hc-l], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_center_small:                [<<: [*bottom_center, *v3-1_s, *hc-c], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_center_right_small:          [<<: [*bottom_center, *v3-1_s, *hc-r], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_right2_small:                [<<: [*bottom_right,  *v3-1_s, *h1-2_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
+    vertical_bottom3_right_small:                 [<<: [*bottom_right,  *v3-1_s, *h1-1_s], *v3-2_s, *v3-3_s, *v3-4_s, *v3-5_s]
 
-    vertical_bottom2_left:                  [<<: [*bottom_left,   *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_left2:                 [<<: [*bottom_left,   *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center_left:           [<<: [*bottom_center, *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center:                [<<: [*bottom_center, *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center_right:          [<<: [*bottom_center, *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_right2:                [<<: [*bottom_right,  *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_right:                 [<<: [*bottom_right,  *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
+    vertical_bottom2_left_small:                  [<<: [*bottom_left,   *v2-1_s, *h1-1_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_left2_small:                 [<<: [*bottom_left,   *v2-1_s, *h1-2_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_center_left_small:           [<<: [*bottom_center, *v2-1_s, *hc-l], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_center_small:                [<<: [*bottom_center, *v2-1_s, *hc-c], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_center_right_small:          [<<: [*bottom_center, *v2-1_s, *hc-r], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_right2_small:                [<<: [*bottom_right,  *v2-1_s, *h1-2_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
+    vertical_bottom2_right_small:                 [<<: [*bottom_right,  *v2-1_s, *h1-1_s], *v2-2_s, *v2-3_s, *v2-4_s, *v2-5_s]
 
-    vertical_bottom_left:                   [<<: [*bottom_left,   *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_left2:                  [<<: [*bottom_left,   *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center_left:            [<<: [*bottom_center, *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center:                 [<<: [*bottom_center, *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center_right:           [<<: [*bottom_center, *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_right2:                 [<<: [*bottom_right,  *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_right:                  [<<: [*bottom_right,  *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
+    vertical_bottom_left_small:                   [<<: [*bottom_left,   *v1-1_s, *h1-1_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_left2_small:                  [<<: [*bottom_left,   *v1-1_s, *h1-2_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_center_left_small:            [<<: [*bottom_center, *v1-1_s, *hc-l], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_center_small:                 [<<: [*bottom_center, *v1-1_s, *hc-c], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_center_right_small:           [<<: [*bottom_center, *v1-1_s, *hc-r], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_right2_small:                 [<<: [*bottom_right,  *v1-1_s, *h1-2_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
+    vertical_bottom_right_small:                  [<<: [*bottom_right,  *v1-1_s, *h1-1_s], *v1-2_s, *v1-3_s, *v1-4_s, *v1-5_s]
 
 
-    horizontal_top_left:                    [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_left2:                   [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_center_left:             [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_center:                  [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_center_right:            [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_right2:                  [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_right:                   [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top_left_small:                    [<<: [*top_left,      *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top_left2_small:                   [<<: [*top_left,      *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top_center_left_small:             [<<: [*top_center,    *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top_center_small:                  [<<: [*top_center,    *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top_center_right_small:            [<<: [*top_center,    *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top_right2_small:                  [<<: [*top_right,     *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top_right_small:                   [<<: [*top_right,     *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_top2_left:                   [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_left2:                  [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_center_left:            [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_center:                 [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_center_right:           [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_right2:                 [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_right:                  [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top2_left_small:                   [<<: [*top_left,      *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top2_left2_small:                  [<<: [*top_left,      *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top2_center_left_small:            [<<: [*top_center,    *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top2_center_small:                 [<<: [*top_center,    *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top2_center_right_small:           [<<: [*top_center,    *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top2_right2_small:                 [<<: [*top_right,     *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top2_right_small:                  [<<: [*top_right,     *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_top3_left:                   [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_left2:                  [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_center_left:            [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_center:                 [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_center_right:           [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_right2:                 [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_right:                  [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_top3_left_small:                   [<<: [*top_left,      *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top3_left2_small:                  [<<: [*top_left,      *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top3_center_left_small:            [<<: [*top_center,    *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top3_center_small:                 [<<: [*top_center,    *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top3_center_right_small:           [<<: [*top_center,    *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_top3_right2_small:                 [<<: [*top_right,     *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_top3_right_small:                  [<<: [*top_right,     *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_center_top_left:             [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_left2:            [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_center_left:      [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_center:           [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_center_right:     [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_right2:           [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_right:            [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_top_left_small:             [<<: [*center_left,   *vc-t, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_top_left2_small:            [<<: [*center_left,   *vc-t, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_top_center_left_small:      [<<: [*center_center, *vc-t, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_top_center_small:           [<<: [*center_center, *vc-t, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_top_center_right_small:     [<<: [*center_center, *vc-t, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_top_right2_small:           [<<: [*center_right,  *vc-t, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_top_right_small:            [<<: [*center_right,  *vc-t, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_center_left:                 [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_left2:                [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_center_left:          [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_center:               [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_center_right:         [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_right2:               [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_right:                [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_left_small:                 [<<: [*center_left,   *vc-c, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_left2_small:                [<<: [*center_left,   *vc-c, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_center_left_small:          [<<: [*center_center, *vc-c, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_center_small:               [<<: [*center_center, *vc-c, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_center_right_small:         [<<: [*center_center, *vc-c, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_right2_small:               [<<: [*center_right,  *vc-c, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_right_small:                [<<: [*center_right,  *vc-c, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_center_bottom_left:          [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_left2:         [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_center_left:   [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_center:        [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_center_right:  [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_right2:        [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_right:         [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_center_bottom_left_small:          [<<: [*center_left,   *vc-b, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_bottom_left2_small:         [<<: [*center_left,   *vc-b, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_bottom_center_left_small:   [<<: [*center_center, *vc-b, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_bottom_center_small:        [<<: [*center_center, *vc-b, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_bottom_center_right_small:  [<<: [*center_center, *vc-b, *h0-1_s], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_center_bottom_right2_small:        [<<: [*center_right,  *vc-b, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_center_bottom_right_small:         [<<: [*center_right,  *vc-b, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_bottom3_left:                [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_left2:               [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_center_left:         [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_center:              [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_center_right:        [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_right2:              [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_right:               [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom3_left_small:                [<<: [*bottom_left,   *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom3_left2_small:               [<<: [*bottom_left,   *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom3_center_left_small:         [<<: [*bottom_center, *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom3_center_small:              [<<: [*bottom_center, *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom3_center_right_small:        [<<: [*bottom_center, *v3-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom3_right2_small:              [<<: [*bottom_right,  *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom3_right_small:               [<<: [*bottom_right,  *v3-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_bottom2_left:                [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_left2:               [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_center_left:         [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_center:              [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_center_right:        [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_right2:              [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_right:               [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom2_left_small:                [<<: [*bottom_left,   *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom2_left2_small:               [<<: [*bottom_left,   *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom2_center_left_small:         [<<: [*bottom_center, *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom2_center_small:              [<<: [*bottom_center, *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom2_center_right_small:        [<<: [*bottom_center, *v2-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom2_right2_small:              [<<: [*bottom_right,  *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom2_right_small:               [<<: [*bottom_right,  *v2-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
 
-    horizontal_bottom_left:                 [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_left2:                [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_center_left:          [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_center:               [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_center_right:         [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_right2:               [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_right:                [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
+    horizontal_bottom_left_small:                 [<<: [*bottom_left,   *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom_left2_small:                [<<: [*bottom_left,   *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom_center_left_small:          [<<: [*bottom_center, *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom_center_small:               [<<: [*bottom_center, *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom_center_right_small:         [<<: [*bottom_center, *v1-1_s, *hc-c], *h0-2_s, *h0-3_s, *h0-4_s, *h0-5_s]
+    horizontal_bottom_right2_small:               [<<: [*bottom_right,  *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+    horizontal_bottom_right_small:                [<<: [*bottom_right,  *v1-1_s, *h1-1_s], *h1-2_s, *h1-3_s, *h1-4_s, *h1-5_s]
+
+
+## added BIG settings. sigh
+
+    vertical_top_left_big:                      [<<: [*top_left,      *v1-1_b, *h1-1_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_left2_big:                     [<<: [*top_left,      *v1-1_b, *h1-2_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_center_left_big:               [<<: [*top_center,    *v1-1_b, *hc-l], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_center_big:                    [<<: [*top_center,    *v1-1_b, *hc-c], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_center_right_big:              [<<: [*top_center,    *v1-1_b, *hc-r], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_right2_big:                    [<<: [*top_right,     *v1-1_b, *h1-2_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_top_right_big:                     [<<: [*top_right,     *v1-1_b, *h1-1_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+
+    vertical_top2_left_big:                     [<<: [*top_left,      *v2-1_b, *h1-1_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_left2_big:                    [<<: [*top_left,      *v2-1_b, *h1-2_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_center_left_big:              [<<: [*top_center,    *v2-1_b, *hc-l], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_center_big:                   [<<: [*top_center,    *v2-1_b, *hc-c], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_center_right_big:             [<<: [*top_center,    *v2-1_b, *hc-r], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_right2_big:                   [<<: [*top_right,     *v2-1_b, *h1-2_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_top2_right_big:                    [<<: [*top_right,     *v2-1_b, *h1-1_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+
+    vertical_top3_left_big:                     [<<: [*top_left,      *v3-1_b, *h1-1_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_left2_big:                    [<<: [*top_left,      *v3-1_b, *h1-2_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_center_left_big:              [<<: [*top_center,    *v3-1_b, *hc-l], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_center_big:                   [<<: [*top_center,    *v3-1_b, *hc-c], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_center_right_big:             [<<: [*top_center,    *v3-1_b, *hc-r], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_right2_big:                   [<<: [*top_right,     *v3-1_b, *h1-2_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_top3_right_big:                    [<<: [*top_right,     *v3-1_b, *h1-1_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+
+    vertical_center_top_left_big:               [<<: [*center_left,   *vct-1_b, *h1-1_b], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_left2_big:              [<<: [*center_left,   *vct-1_b, *h1-2_b], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_center_left_big:        [<<: [*center_center, *vct-1_b, *hc-l], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_center_big:             [<<: [*center_center, *vct-1_b, *hc-c], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_center_right_big:       [<<: [*center_center, *vct-1_b, *hc-r], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_right2_big:             [<<: [*center_right,  *vct-1_b, *h1-2_b], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+    vertical_center_top_right_big:              [<<: [*center_right,  *vct-1_b, *h1-1_b], *vct-2_b, *vct-3_b, *vct-4_b, *vct-5_b]
+
+    vertical_center_left_big:                   [<<: [*center_left,   *vc-1_b, *h1-1_b], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_left2_big:                  [<<: [*center_left,   *vc-1_b, *h1-2_b], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_center_left_big:            [<<: [*center_center, *vc-1_b, *hc-l], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_center_big:                 [<<: [*center_center, *vc-1_b, *hc-c], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_center_right_big:           [<<: [*center_center, *vc-1_b, *hc-r], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_right2_big:                 [<<: [*center_right,  *vc-1_b, *h1-2_b], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+    vertical_center_right_big:                  [<<: [*center_right,  *vc-1_b, *h1-1_b], *vc-2_b, *vc-3_b, *vc-4_b, *vc-5_b]
+
+    vertical_center_bottom_left_big:            [<<: [*center_left,   *vcb-1_b, *h1-1_b], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_left2_big:           [<<: [*center_left,   *vcb-1_b, *h1-2_b], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_center_left_big:     [<<: [*center_center, *vcb-1_b, *hc-l], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_center_big:          [<<: [*center_center, *vcb-1_b, *hc-c], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_center_right_big:    [<<: [*center_center, *vcb-1_b, *hc-r], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_right2_big:          [<<: [*center_right,  *vcb-1_b, *h1-2_b], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+    vertical_center_bottom_right_big:           [<<: [*center_right,  *vcb-1_b, *h1-1_b], *vcb-2_b, *vcb-3_b, *vcb-4_b, *vcb-5_b]
+
+    vertical_bottom3_left_big:                  [<<: [*bottom_left,   *v3-1_b, *h1-1_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_left2_big:                 [<<: [*bottom_left,   *v3-1_b, *h1-2_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_center_left_big:           [<<: [*bottom_center, *v3-1_b, *hc-l], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_center_big:                [<<: [*bottom_center, *v3-1_b, *hc-c], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_center_right_big:          [<<: [*bottom_center, *v3-1_b, *hc-r], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_right2_big:                [<<: [*bottom_right,  *v3-1_b, *h1-2_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+    vertical_bottom3_right_big:                 [<<: [*bottom_right,  *v3-1_b, *h1-1_b], *v3-2_b, *v3-3_b, *v3-4_b, *v3-5_b]
+
+    vertical_bottom2_left_big:                  [<<: [*bottom_left,   *v2-1_b, *h1-1_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_left2_big:                 [<<: [*bottom_left,   *v2-1_b, *h1-2_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_center_left_big:           [<<: [*bottom_center, *v2-1_b, *hc-l], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_center_big:                [<<: [*bottom_center, *v2-1_b, *hc-c], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_center_right_big:          [<<: [*bottom_center, *v2-1_b, *hc-r], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_right2_big:                [<<: [*bottom_right,  *v2-1_b, *h1-2_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+    vertical_bottom2_right_big:                 [<<: [*bottom_right,  *v2-1_b, *h1-1_b], *v2-2_b, *v2-3_b, *v2-4_b, *v2-5_b]
+
+    vertical_bottom_left_big:                   [<<: [*bottom_left,   *v1-1_b, *h1-1_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_left2_big:                  [<<: [*bottom_left,   *v1-1_b, *h1-2_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_center_left_big:            [<<: [*bottom_center, *v1-1_b, *hc-l], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_center_big:                 [<<: [*bottom_center, *v1-1_b, *hc-c], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_center_right_big:           [<<: [*bottom_center, *v1-1_b, *hc-r], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_right2_big:                 [<<: [*bottom_right,  *v1-1_b, *h1-2_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+    vertical_bottom_right_big:                  [<<: [*bottom_right,  *v1-1_b, *h1-1_b], *v1-2_b, *v1-3_b, *v1-4_b, *v1-5_b]
+
+
+    horizontal_top_left_big:                    [<<: [*top_left,      *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top_left2_big:                   [<<: [*top_left,      *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top_center_left_big:             [<<: [*top_center,    *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top_center_big:                  [<<: [*top_center,    *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top_center_right_big:            [<<: [*top_center,    *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top_right2_big:                  [<<: [*top_right,     *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top_right_big:                   [<<: [*top_right,     *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_top2_left_big:                   [<<: [*top_left,      *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top2_left2_big:                  [<<: [*top_left,      *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top2_center_left_big:            [<<: [*top_center,    *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top2_center_big:                 [<<: [*top_center,    *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top2_center_right_big:           [<<: [*top_center,    *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top2_right2_big:                 [<<: [*top_right,     *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top2_right_big:                  [<<: [*top_right,     *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_top3_left_big:                   [<<: [*top_left,      *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top3_left2_big:                  [<<: [*top_left,      *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top3_center_left_big:            [<<: [*top_center,    *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top3_center_big:                 [<<: [*top_center,    *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top3_center_right_big:           [<<: [*top_center,    *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_top3_right2_big:                 [<<: [*top_right,     *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_top3_right_big:                  [<<: [*top_right,     *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_center_top_left_big:             [<<: [*center_left,   *vc-t, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_top_left2_big:            [<<: [*center_left,   *vc-t, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_top_center_left_big:      [<<: [*center_center, *vc-t, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_top_center_big:           [<<: [*center_center, *vc-t, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_top_center_right_big:     [<<: [*center_center, *vc-t, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_top_right2_big:           [<<: [*center_right,  *vc-t, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_top_right_big:            [<<: [*center_right,  *vc-t, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_center_left_big:                 [<<: [*center_left,   *vc-c, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_left2_big:                [<<: [*center_left,   *vc-c, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_center_left_big:          [<<: [*center_center, *vc-c, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_center_big:               [<<: [*center_center, *vc-c, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_center_right_big:         [<<: [*center_center, *vc-c, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_right2_big:               [<<: [*center_right,  *vc-c, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_right_big:                [<<: [*center_right,  *vc-c, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_center_bottom_left_big:          [<<: [*center_left,   *vc-b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_bottom_left2_big:         [<<: [*center_left,   *vc-b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_bottom_center_left_big:   [<<: [*center_center, *vc-b, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_bottom_center_big:        [<<: [*center_center, *vc-b, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_bottom_center_right_big:  [<<: [*center_center, *vc-b, *h0-1_b], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_center_bottom_right2_big:        [<<: [*center_right,  *vc-b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_center_bottom_right_big:         [<<: [*center_right,  *vc-b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_bottom3_left_big:                [<<: [*bottom_left,   *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom3_left2_big:               [<<: [*bottom_left,   *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom3_center_left_big:         [<<: [*bottom_center, *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom3_center_big:              [<<: [*bottom_center, *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom3_center_right_big:        [<<: [*bottom_center, *v3-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom3_right2_big:              [<<: [*bottom_right,  *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom3_right_big:               [<<: [*bottom_right,  *v3-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_bottom2_left_big:                [<<: [*bottom_left,   *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom2_left2_big:               [<<: [*bottom_left,   *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom2_center_left_big:         [<<: [*bottom_center, *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom2_center_big:              [<<: [*bottom_center, *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom2_center_right_big:        [<<: [*bottom_center, *v2-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom2_right2_big:              [<<: [*bottom_right,  *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom2_right_big:               [<<: [*bottom_right,  *v2-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+    horizontal_bottom_left_big:                 [<<: [*bottom_left,   *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom_left2_big:                [<<: [*bottom_left,   *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom_center_left_big:          [<<: [*bottom_center, *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom_center_big:               [<<: [*bottom_center, *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom_center_right_big:         [<<: [*bottom_center, *v1-1_b, *hc-c], *h0-2_b, *h0-3_b, *h0-4_b, *h0-5_b]
+    horizontal_bottom_right2_big:               [<<: [*bottom_right,  *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+    horizontal_bottom_right_big:                [<<: [*bottom_right,  *v1-1_b, *h1-1_b], *h1-2_b, *h1-3_b, *h1-4_b, *h1-5_b]
+
+
+
+## end sigh
+
+
 
 templates:
   flags:
@@ -454,7 +703,7 @@ overlays:
     template: [name: flags, name: standard]
     
   filipino:
-    variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
+    variables: {key: fil, text: FIL, weight: 265, country: ph, width: <<long_width>>}
     template: [name: flags, name: standard]  
 
   galician:
@@ -570,7 +819,7 @@ overlays:
     template: [name: flags, name: standard]
 
   mayan:
-    variables: {key: myn, text: MYN, weight: 8, country: mx, width: 230}
+    variables: {key: myn, text: MYN, weight: 8, country: mx, width: <<long_width>>}
     template: [name: flags, name: standard]
 
   inuktitut:
@@ -578,7 +827,7 @@ overlays:
     template: [name: flags, name: standard]
     
   romani:
-    variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
+    variables: {key: rom, text: ROM, weight: 6, country: ro, width: <<long_width>>}
     template: [name: flags, name: standard]    
     
   amharic:
@@ -598,7 +847,7 @@ overlays:
     template: [name: flags, name: standard]  
 
   mossi:
-    variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
+    variables: {key: mos, text: MOS, weight: 1, country: bf, width: <<long_width>>}
     template: [name: flags, name: standard]
 
   lingala:
