@@ -2,7 +2,7 @@
 
     [type this into your Kometa `>_Console`]
     
-    ```
+    ``` { .shell }
     nano config/config.yml
     ```
     

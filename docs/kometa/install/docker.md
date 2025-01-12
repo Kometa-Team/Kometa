@@ -115,10 +115,27 @@ The great thing about Docker is that all the setup you'd have to do to run Komet
 
 That means we can just jump right into running it.  At the command prompt, type:
 
-```
-docker run --rm kometateam/kometa --run
+=== ":fontawesome-brands-docker: latest"
 
-```
+      ```
+      docker run --rm kometateam/kometa --run
+      ```
+
+=== ":fontawesome-brands-docker: develop"
+
+      ```
+      docker run --rm kometateam/kometa:develop --run
+      ```
+
+=== ":fontawesome-brands-docker: nightly"
+
+      ```
+      docker run --rm kometateam/kometa:nightly --run
+      ```
+
+Use the branch reflecting the version of the wiki you are reading, as some functionality may be dependent on this.  If you are reading the latest version of the wiki, use `latest` [or leave the tag off] as shown above.  If you are reading the develop branch, use `develop`.  If you are reading the nightly branch, use `nightly`.
+
+This same thing holds for all future docker commands in this walkthrough.
 
 This is going to fail with an error.  That's expected.
 
@@ -195,7 +212,7 @@ This will display a full path:
 
 === ":fontawesome-brands-windows: Windows"
 
-      ``` { .shell .no-copy }
+      ``` { .no-copy }
       C:\Users\YOURUSERNAME\kometa
       ```
 
@@ -203,19 +220,19 @@ Add "config" onto the end of that to get the host path to your config directory,
 
 === ":fontawesome-brands-linux: Linux"
 
-      ```
+      ``` { .shell .no-copy }
       /home/YOURUSERNAME/kometa/config
       ```
 
 === ":fontawesome-brands-apple: macOS"
    
-      ```
+      ``` { .shell .no-copy }
       /Users/YOURUSERNAME/kometa/config
       ```
 
 === ":fontawesome-brands-windows: Windows"
 
-      ```
+      ``` { .no-copy }
       C:\Users\YOURUSERNAME\kometa\config
       ```
 
@@ -224,28 +241,27 @@ You'll need to add this to the docker command every time you run it, like this:
 
 === ":fontawesome-brands-linux: Linux"
 
-      ```
+      ``` { .shell .no-copy }
       docker run --rm -it -v "/home/YOURUSERNAME/kometa/config:/config:rw" kometateam/kometa
       ```
 
 === ":fontawesome-brands-apple: macOS"
 
-      ```
+      ``` { .shell .no-copy }
       docker run --rm -it -v "/Users/YOURUSERNAME/kometa/config:/config:rw" kometateam/kometa
       ```
 
 === ":fontawesome-brands-windows: Windows"
 
-      ```
+      ``` { .no-copy }
       docker run --rm -it -v "C:\Users\YOURUSERNAME\kometa\config:/config:rw" kometateam/kometa
       ```
 
-
-If you run that command now it will display a similar error to before, but without all the image loading:
+If you run that command now you should see something like this:
 
 ``` { .bash .no-copy }
 $ docker run --rm -it -v "/Users/mroche/kometa/config:/config:rw" kometateam/kometa --run
-Config Error: config not found at //config
+Configuration File ('config.yml') has been downloaded from GitHub (Branch: 'master') and saved as '//config/config.yml'. Please update this file with your API keys and other required settings.
 ```
 
 Note that I show the example path there.
@@ -253,10 +269,9 @@ Note that I show the example path there.
 <details>
   <summary>Why did we create that `config' directory?</summary>
 
-  This was done so that from here on in the instructions match between this walkthrough and the [Local walkthrough](local.md).
+  This was done so that from here on in the instructions match between this walkthrough and the Local walkthrough, which insures consistency and reduces maintenance and potential error.  This is not required; you can put the config file anywhere you like, but you will need to adjust the paths in the commands you run in this walkthrough to match where you put it.  It's easier to have them match.
 
 </details>
-
 
 ### Create a directory to quiet an error later
 
@@ -267,14 +282,14 @@ We'll create it here so the error doesn't show up later.
 === ":fontawesome-brands-linux: Linux"
    
       [type this into your terminal]
-      ```
+      ``` { .shell }
       mkdir config/assets
       ```
 
 === ":fontawesome-brands-apple: macOS"
 
       [type this into your terminal]
-      ```
+      ``` { .shell }
       mkdir config/assets
       ```
 
@@ -295,31 +310,7 @@ We'll create it here so the error doesn't show up later.
 
 #### Editing the config template
 
-First, make a copy of the template:
-
-=== ":fontawesome-brands-linux: Linux"
-   
-      Get a copy of the template to edit [type this into your terminal]:
-      ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
-      ```
-
-=== ":fontawesome-brands-apple: macOS"
-
-      Get a copy of the template to edit [type this into your terminal]:
-      ```
-      curl -fLvo config/config.yml https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template
-      ```
-
-=== ":fontawesome-brands-windows: Windows"
-
-      Go to [this URL](https://raw.githubusercontent.com/Kometa-Team/Kometa/master/config/config.yml.template) using a web browser; choose the "Save" command, then save the file at:
-      ```
-      C:\Users\YOURUSERNAME\kometa\config\config.yml
-      ```
-
-
-Now open the copy in an editor:
+Open the config file that Kometa created a moment ago in an editor:
 
 {%
    include-markdown "./wt/wt-editor.md"
@@ -443,7 +434,7 @@ Add the `develop` tag to the image name in your run command [or wherever you spe
 
 ```
 docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:develop --run
-                                                                                                  ^^^^^^^
+                                                                            ^^^^^^^
 ```
 
 This may not work if you are not using the official image.
@@ -454,7 +445,7 @@ Add the `nightly` tag to the image name in your run command [or wherever you spe
 
 ```
 docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:nightly --run
-                                                                                                  ^^^^^^^
+                                                                            ^^^^^^^
 ```
 
 This may not work if you are not using the official image.
@@ -465,5 +456,5 @@ Add the `latest` tag to the image name in your run command [or wherever you spec
 
 ```
 docker run --rm -it -v "KOMETA_PATH_GOES_HERE:/config:rw" kometateam/kometa:latest --run
-                                                                                                  ^^^^^^
+                                                                            ^^^^^^
 ```

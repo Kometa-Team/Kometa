@@ -1,5 +1,5 @@
 [type this into your terminal]
 
-```shell
+``` { .shell }
 python kometa.py -r
 ```

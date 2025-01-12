@@ -1,6 +1,6 @@
 You should see that the collection file gets loaded:
 
-```
+``` { .shell .no-copy }
 | Loading Collection File: config/Movies.yml
 | Collection File Loaded Successfully
 ```

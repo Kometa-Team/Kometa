@@ -1,6 +1,6 @@
 I’ve removed some of the lines for space, but have left the important bits:
 
-```
+``` { .shell }
 ...
 |                                            Starting Run|
 ...
