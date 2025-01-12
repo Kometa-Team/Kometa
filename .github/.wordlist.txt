@@ -214,6 +214,7 @@ NAS
 natively
 nitsua
 NL
+nocopy
 Nokmål
 NOSUCHLIBRARY
 notifiarr
