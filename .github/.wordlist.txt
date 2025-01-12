@@ -189,6 +189,10 @@ namespace
 nas
 natively
 nitsua
+NL
+nocopy
+Nokmål
+NOSUCHLIBRARY
 nl
 nokmål
 nosuchlibrary
@@ -328,6 +332,11 @@ xyz
 yaml
 yml
 yourname
+Yozora
+YozoraXCII
+YYYY
+zaP
+ZeroQI
 yozora
 yozoraxcii
 yyyy

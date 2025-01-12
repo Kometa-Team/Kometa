@@ -2,7 +2,7 @@
 
 If you want to remove those overlays, open the config file, change the value of `remove_overlays` to `true`, and rerun Kometa.
 
-```
+```yaml
     remove_overlays: true
     overlay_files:
       - default: resolution
