@@ -390,6 +390,10 @@ You can create individual blocks of operations by using a list under `operations
       <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
       <tr><td>`omdb_metascore`</td><td>Use Metacritic Metascore through OMDb</td></tr>
       <tr><td>`omdb_tomatoes`</td><td>Use Rotten Tomatoes rating through OMDb</td></tr>
+      <tr><td>`plex_imdb`</td><td>Use IMDB Rating through Plex</td></tr>
+      <tr><td>`plex_tmdb`</td><td>Use TMDB Rating through Plex</td></tr>
+      <tr><td>`plex_tomatoes`</td><td>Use Rotten Tomatoes Rating through Plex</td></tr>
+      <tr><td>`plex_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through Plex</td></tr>
       <tr><td>`mdb`</td><td>Use MDBList Score</td></tr>
       <tr><td>`mdb_average`</td><td>Use MDBList Average Score</td></tr>
       <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDBList</td></tr>

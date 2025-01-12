@@ -385,6 +385,12 @@ class Operations:
                                             found_rating = _ratings[_id]
                                         else:
                                             raise Failed
+                                    elif str(option).startswith("plex"):
+                                        ratings = self.library.get_ratings(item)
+                                        try:
+                                            found_rating = ratings[option] # noqa
+                                        except KeyError:
+                                            found_rating = None
                                     elif str(option).startswith("omdb"):
                                         omdb_item = omdb_obj()
                                         if option == "omdb":
