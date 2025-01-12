@@ -23,6 +23,7 @@ When using `mass_background_update`, added `ignore_locked` attribute which will 
 Add `date` option for schedules
 Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
 Add `trakt` ratings source for mass episode operations.
+Added GitHub token validation during config validation.
 add `plex` ratings source for mass operations.
 
 # Docs

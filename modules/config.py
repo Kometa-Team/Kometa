@@ -552,6 +552,7 @@ class ConfigFile:
             self.Cache = Cache(self.config_path, self.general["cache_expiration"])
         else:
             self.Cache = None
+
         self.GitHub = GitHub(self.Requests, {
             "token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)
         })
