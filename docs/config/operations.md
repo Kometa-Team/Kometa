@@ -383,32 +383,32 @@ You can create individual blocks of operations by using a list under `operations
         MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
 
     <table class="clearTable">
-      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
+      <tr><td>`anidb_average`</td><td>Use AniDB Average</td></tr>
+      <tr><td>`anidb_rating`</td><td>Use AniDB Rating</td></tr>
+      <tr><td>`anidb_score`</td><td>Use AniDB Review Score</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
-      <tr><td>`trakt`</td><td>Use Trakt Rating</td></tr>
-      <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
+      <tr><td>`mal`</td><td>Use MyAnimeList Score</td></tr>
+      <tr><td>`mdb_average`</td><td>Use MDBList Average Score</td></tr>
+      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDBList</td></tr>
+      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDBList</td></tr>
+      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDBList</td></tr>
+      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDBList</td></tr>
+      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDBList</td></tr>
+      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDBList</td></tr>
+      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDBList</td></tr>
+      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDBList</td></tr>
+      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDBList</td></tr>
+      <tr><td>`mdb`</td><td>Use MDBList Score</td></tr>
       <tr><td>`omdb_metascore`</td><td>Use Metacritic Metascore through OMDb</td></tr>
       <tr><td>`omdb_tomatoes`</td><td>Use Rotten Tomatoes rating through OMDb</td></tr>
+      <tr><td>`omdb`</td><td>Use IMDbRating through OMDb</td></tr>
       <tr><td>`plex_imdb`</td><td>Use IMDB Rating through Plex</td></tr>
       <tr><td>`plex_tmdb`</td><td>Use TMDB Rating through Plex</td></tr>
       <tr><td>`plex_tomatoes`</td><td>Use Rotten Tomatoes Rating through Plex</td></tr>
       <tr><td>`plex_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through Plex</td></tr>
-      <tr><td>`mdb`</td><td>Use MDBList Score</td></tr>
-      <tr><td>`mdb_average`</td><td>Use MDBList Average Score</td></tr>
-      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDBList</td></tr>
-      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDBList</td></tr>
-      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDBList</td></tr>
-      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDBList</td></tr>
-      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDBList</td></tr>
-      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDBList</td></tr>
-      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDBList</td></tr>
-      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDBList</td></tr>
-      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDBList</td></tr>
-      <tr><td>`anidb_rating`</td><td>Use AniDB Rating</td></tr>
-      <tr><td>`anidb_average`</td><td>Use AniDB Average</td></tr>
-      <tr><td>`anidb_score`</td><td>Use AniDB Review Score</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Score</td></tr>
+      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
+      <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating</td></tr>
+      <tr><td>`trakt`</td><td>Use Trakt Rating</td></tr>
       <tr><td>`lock`</td><td>Lock Rating Field</td></tr>
       <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>
       <tr><td>`remove`</td><td>Remove Rating and Lock Field</td></tr>
@@ -459,8 +459,10 @@ You can create individual blocks of operations by using a list under `operations
     **Accepted Values:** Source or List of sources to use in that order
     
     <table class="clearTable">
-      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating</td></tr>
+      <tr><td>`plex_imdb`</td><td>Use IMDB Rating through Plex</td></tr>
+      <tr><td>`plex_tmdb`</td><td>Use TMDB Rating through Plex</td></tr>
+      <tr><td>`tmdb`</td><td>Use TMDb Rating</td></tr>
       <tr><td>`trakt`</td><td>Use Trakt Rating</td></tr>
       <tr><td>`lock`</td><td>Lock Rating Field</td></tr>
       <tr><td>`unlock`</td><td>Unlock Rating Field</td></tr>

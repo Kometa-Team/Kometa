@@ -917,6 +917,12 @@ class Operations:
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
+                                            if option.startswith("plex"):
+                                                ratings = self.library.get_ratings(ep)
+                                                try:
+                                                    found_rating = ratings[option]  # noqa
+                                                except KeyError:
+                                                    found_rating = None
                                             if tmdb_item and option == "tmdb":
                                                 try:
                                                     found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average  # noqa

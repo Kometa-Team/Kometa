@@ -97,7 +97,11 @@ mass_image_options = {
 }
 mass_episode_rating_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating", "trakt": "Use Trakt Rating"
+    "plex_tmdb": "Use TMDB Rating through Plex",
+    "plex_imdb": "Use IMDB Rating through Plex",
+    "tmdb": "Use TMDb Rating", 
+    "imdb": "Use IMDb Rating", 
+    "trakt": "Use Trakt Rating"
 }
 mass_rating_options = {
     "lock": "Lock Rating",
