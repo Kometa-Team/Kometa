@@ -252,7 +252,7 @@ class TVDb:
             logger.info(f"Processing TVDb List: {data}")
             return self._ids_from_url(data)
         else:
-            raise Failed(f"TVDb Error: Method {method} not supported")
+            raise Failed(f"TVDb Error: Method '{method}' not supported")
 
     def item_filter(self, item, filter_attr, modifier, filter_final, filter_data):
         if filter_attr == "tvdb_title":

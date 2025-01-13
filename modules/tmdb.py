@@ -428,7 +428,7 @@ class TMDb:
                     ids = [(i.movie.id, "tmdb") for i in person.movie_crew if i.department == "Production"]
                     ids.extend([(i.tv_show.id, "tmdb_show") for i in person.tv_crew if i.department == "Production"])
                 else:
-                    raise Failed(f"TMDb Error: Method {method} not supported")
+                    raise Failed(f"TMDb Error: Method '{method}' not supported")
             if len(ids) > 0:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids

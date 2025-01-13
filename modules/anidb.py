@@ -219,7 +219,7 @@ class AniDB:
             logger.info(f"Processing AniDB Relation: {data}")
             anidb_ids.extend(self._relations(data))
         else:
-            raise Failed(f"AniDB Error: Method {method} not supported")
+            raise Failed(f"AniDB Error: Method '{method}' not supported")
         logger.debug("")
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found")
         logger.trace(f"IDs: {anidb_ids}")

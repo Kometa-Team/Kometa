@@ -307,7 +307,7 @@ class AniList:
             elif method == "anilist_top_rated":
                 data = {"limit": data, "score.gt": 3, "sort_by": "score"}
             elif method not in builders:
-                raise Failed(f"AniList Error: Method {method} not supported")
+                raise Failed(f"AniList Error: Method '{method}' not supported")
             message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n\tSort By {pretty_names[data['sort_by']]}"
             if data['limit'] > 0:
                 message += f"\n\tLimit to {data['limit']} Anime"

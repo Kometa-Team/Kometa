@@ -463,7 +463,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: builder_level")
             if level is None:
-                logger.error(f"{self.Type} Error: builder_level attribute is blank")
+                logger.error(f"{self.Type} Error: 'builder_level' attribute is blank")
             else:
                 logger.debug(f"Value: {level}")
                 level = level.lower()
@@ -483,7 +483,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: kometa_poster")
             if self.data[methods["kometa_poster"]] is None:
-                logger.error(f"{self.Type} Error: kometa_poster attribute is blank")
+                logger.error(f"{self.Type} Error: 'kometa_poster' attribute is blank")
             logger.debug(f"Value: {data[methods['kometa_poster']]}")
             try:
                 self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist)
@@ -504,7 +504,7 @@ class CollectionBuilder:
                 if data[methods["suppress_overlays"]]:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
-                    logger.error(f"Overlay Error: suppress_overlays attribute is blank")
+                    logger.error(f"Overlay Error: 'suppress_overlays' attribute is blank")
             self.overlay = Overlay(config, library, metadata, str(self.mapping_name), overlay_data, suppress, self.builder_level)
 
         self.sync_to_users = None
@@ -1209,7 +1209,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
             else:
-                logger.error(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
+                logger.error(f"{self.Type} Error: Poster path does not exist: {os.path.abspath(method_data)}")
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
@@ -1226,7 +1226,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
-                logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+                logger.error(f"{self.Type} Error: Background path does not exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
@@ -1235,7 +1235,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.file_theme = os.path.abspath(method_data)
             else:
-                logger.error(f"{self.Type} Error: Theme Path Does Not Exist: {os.path.abspath(method_data)}")
+                logger.error(f"{self.Type} Error: Theme path does not exist: {os.path.abspath(method_data)}")
         elif method_name == "tmdb_region":
             self.tmdb_region = util.parse(self.Type, method_name, method_data, options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
@@ -1333,11 +1333,11 @@ class CollectionBuilder:
         elif method_name in plex.item_advance_keys:
             key, options = plex.item_advance_keys[method_name]
             if method_name in advance_new_agent and self.library.agent not in plex.new_plex_agents:
-                logger.error(f"Metadata Error: {method_name} attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
+                logger.error(f"Metadata Error: '{method_name}' attribute only works for with the New Plex Movie Agent and New Plex TV Agent")
             elif method_name in advance_show and not self.library.is_show:
-                logger.error(f"Metadata Error: {method_name} attribute only works for show libraries")
+                logger.error(f"Metadata Error: '{method_name}' attribute only works for show libraries")
             elif str(method_data).lower() not in options:
-                logger.error(f"Metadata Error: {method_data} {method_name} attribute invalid")
+                logger.error(f"Metadata Error: {method_data} '{method_name}' attribute invalid")
             else:
                 self.item_details[method_name] = str(method_data).lower() # noqa
 
@@ -2233,7 +2233,7 @@ class CollectionBuilder:
             ids = self.library.Sonarr.get_tvdb_ids(method, value)
         else:
             ids = []
-            logger.error(f"{self.Type} Error: {method} method not supported")
+            logger.error(f"{self.Type} Error: Method '{method}' not supported")
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
@@ -3087,7 +3087,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
+                                logger.error(f"Radarr Error: {e}")
                         if "item_radarr_tag" in self.item_details:
                             try:
                                 self.library.Radarr.edit_tags(missing_tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
@@ -3095,7 +3095,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
+                                logger.error(f"Radarr Error: {e}")
                     if self.run_again:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
@@ -3138,7 +3138,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
+                                logger.error(f"Sonrr Error: {e}")
                         if "item_sonarr_tag" in self.item_details:
                             try:
                                 self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
@@ -3146,7 +3146,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Arr Error: {e}")
+                                logger.error(f"Sonrr Error: {e}")
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
@@ -3272,7 +3272,7 @@ class CollectionBuilder:
                 logger.error(e)
             except ArrException as e:
                 logger.stacktrace()
-                logger.error(f"Arr Error: {e}")
+                logger.error(f"Radarr Error: {e}")
 
         if self.library.Sonarr and tvdb_paths:
             try:
@@ -3285,7 +3285,7 @@ class CollectionBuilder:
                 logger.error(e)
             except ArrException as e:
                 logger.stacktrace()
-                logger.error(f"Arr Error: {e}")
+                logger.error(f"Sonarr Error: {e}")
 
     def load_collection(self):
         if self.obj is None and self.smart_url:
@@ -3346,7 +3346,7 @@ class CollectionBuilder:
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
                     except NotFound:
-                        logger.error("Metadata: Failed to Update Please delete the collection and run again")
+                        logger.error("Playlist Error: Failed to update metadata. Please delete the playlist and try again")
                     logger.info("")
         else:
             self.library.item_reload(self.obj)
@@ -3391,7 +3391,7 @@ class CollectionBuilder:
                     logger.info("Metadata: Update Completed")
                     updated_details.append("Metadata")
                 except NotFound:
-                    logger.error("Metadata: Failed to Update Please delete the collection and run again")
+                    logger.error("Collection Error: Failed to update metadata. Please delete the collection and try again")
                 logger.info("")
 
             advance_update = False
@@ -3412,7 +3412,7 @@ class CollectionBuilder:
                     self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
                     advance_update = True
                 except NotFound:
-                    logger.error("Collection Error: collection_filtering requires a more recent version of Plex Media Server")
+                    logger.error("Collection Error: 'collection_filtering' requires a more recent version of Plex Media Server. Please update your Plex instance and try again.")
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys \
@@ -3449,7 +3449,7 @@ class CollectionBuilder:
             name_mapping = self.name
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
-                else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
+                else:                                               logger.error(f"{self.Type} Error: 'name_mapping' attribute is blank")
             try:
                 asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
@@ -3531,7 +3531,7 @@ class CollectionBuilder:
                     sort_edit = True
                 previous = item
             except Failed:
-                logger.error(f"Failed to Move {util.item_title(item)}")
+                logger.error(f"Failed to move {util.item_title(item)}")
                 sort_edit = True
         if not sort_edit:
             logger.info("No Sorting Required")

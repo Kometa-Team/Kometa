@@ -323,7 +323,7 @@ class MyAnimeList:
             logger.info(f"Processing MyAnimeList UserList: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
         else:
-            raise Failed(f"MyAnimeList Error: Method {method} not supported")
+            raise Failed(f"MyAnimeList Error: Method '{method}' not supported")
         logger.debug("")
         logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found")
         logger.trace(f"IDs: {mal_ids}")

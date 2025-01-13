@@ -239,4 +239,4 @@ class MDBList:
       except JSONDecodeError:
         raise Failed(f"MDBList Error: Invalid JSON Response received")
     else:
-      raise Failed(f"MDBList Error: Method {method} not supported")
+      raise Failed(f"MDBList Error: Method '{method}' not supported")

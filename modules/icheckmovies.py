@@ -39,4 +39,4 @@ class ICheckMovies:
             logger.info(f"Processing ICheckMovies List: {data}")
             return self._parse_list(data, language)
         else:
-            raise Failed(f"ICheckMovies Error: Method {method} not supported")
+            raise Failed(f"ICheckMovies Error: Method '{method}' not supported")

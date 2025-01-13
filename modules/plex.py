@@ -1197,7 +1197,7 @@ class Plex(Library):
                     items.append(item)
             logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
-            raise Failed(f"Plex Error: Method {method} not supported")
+            raise Failed(f"Plex Error: Method '{method}' not supported")
         if not items:
             raise Failed("Plex Error: No Items found in library")
         return [(item.ratingKey, "ratingKey") for item in items]

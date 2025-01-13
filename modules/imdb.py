@@ -786,7 +786,7 @@ class IMDb:
                 logger.info(f"    {k}: {v}")
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
-            raise Failed(f"IMDb Error: Method {method} not supported")
+            raise Failed(f"IMDb Error: Method '{method}' not supported")
 
     def _interface(self, interface):
         gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")

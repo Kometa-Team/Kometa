@@ -144,4 +144,4 @@ class Letterboxd:
             else:
                 raise Failed(f"Letterboxd Error: No List Items found in {data}")
         else:
-            raise Failed(f"Letterboxd Error: Method {method} not supported")
+            raise Failed(f"Letterboxd Error: Method '{method}' not supported")

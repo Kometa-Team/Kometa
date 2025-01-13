@@ -554,4 +554,4 @@ class Trakt:
             logger.info(f"Processing {pretty}: {data} {media_type}{'' if data == 1 else 's'}")
             return self._charts("boxoffice", is_movie, {"limit": data})
         else:
-            raise Failed(f"Trakt Error: Method {method} not supported")
+            raise Failed(f"Trakt Error: Method '{method}' not supported")
