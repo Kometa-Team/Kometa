@@ -27,10 +27,10 @@ class Notifiarr:
         except JSONDecodeError as e:
             logger.debug(f"Content: {response.content}")
             logger.error(e)
-            raise Failed("Notifiarr Error: Invalid JSON response received")
+            raise Failed("Connector Error: Invalid Notifiarr JSON response received")
         if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
             logger.debug(f"Response: {response_json}")
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
         if not response_json["details"]["response"]:
-            raise Failed("Notifiarr Error: Invalid apikey")
+            raise Failed("Connector Error: Notifiarr API key is invalid. Please check the API key is correct.")
         return response

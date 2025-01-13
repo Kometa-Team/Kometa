@@ -453,7 +453,7 @@ class ConfigFile:
                 message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
-                raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
+                raise Failed(f"Connector Error: {parent} attribute {attribute} not found and must be set globally or under this library.")
             options = ""
             if test_list:
                 for test_option, test_description in test_list.items():
@@ -666,10 +666,14 @@ class ConfigFile:
                         "expiration": check_for_attribute(self.data, "cache_expiration", parent="omdb", var_type="int", default=60, int_min=1)
                     })
                 except Failed as e:
-                    if str(e).endswith("is blank"):
-                        logger.warning(e)
+                    error_message = str(e)
+                    if "Invalid API key" in error_message:
+                        logger.error("Connector Error: OMDb API key is invalid. Please check the API key is correct or check OMDb guidance for obtaining a new key.")
+                    elif error_message.endswith("is blank"):
+                        logger.warning(error_message)
                     else:
-                        logger.error(e)
+                        logger.error(error_message)
+
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
                 logger.info("omdb attribute not found")

@@ -366,8 +366,13 @@ def start(attrs):
         try:
             config = ConfigFile(my_requests, default_dir, attrs, secret_args)
         except Exception as e:
-            logger.stacktrace()
-            logger.critical(e)
+            if "Invalid API key" in str(e):
+                logger.stacktrace()
+                logger.critical("Connector Error: TMDb API key could not be validated. Please check the API key is correct or check TMDb guidance for obtaining a new key.")
+            else:
+                logger.stacktrace()
+                logger.critical(e)
+
         else:
             try:
                 stats = run_config(config, stats)
@@ -567,10 +572,12 @@ def run_config(config, stats):
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
+            if data['status'] == 'Kometa Failure' and data.get('errors'):
+                data['status'] = "; ".join(str(error).upper() for error in data['errors'])
             logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
-                    logger.info(error)
+                    logger.info(error.upper() if isinstance(error, str) else str(error).upper())
                 logger.info("")
 
     logger.info("")

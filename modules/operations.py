@@ -216,7 +216,7 @@ class Operations:
                     if _omdb_obj is None:
                         _omdb_obj = False
                         if self.config.OMDb.limit is not False:
-                            logger.error("Daily OMDb Limit Reached")
+                            logger.warning("Connector Warning: OMDb API Limit Reached. Please wait 24 hours or upgrade to a higher API limit.")
                         elif not imdb_id:
                             logger.info(f"No IMDb ID for Guid: {item.guid}")
                         else:
@@ -1212,7 +1212,7 @@ class Operations:
                     while os.path.exists(f"{filename}{i}{file_extension}"):
                         i += 1
                     os.rename(self.library.metadata_backup["path"], f"{filename}{i}{file_extension}")
-                    logger.error(f"Backup failed to load saving copy to {filename}{i}{file_extension}")
+                    logger.error(f"Operation Error: Metadata backup failed to load, saving copy to {filename}{i}{file_extension}")
             if not yaml:
                 yaml = self.config.Requests.file_yaml(self.library.metadata_backup["path"], create=True)
             if "metadata" not in yaml.data or not isinstance(yaml.data["metadata"], dict):

@@ -129,9 +129,9 @@ class Trakt:
             try:
                 pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
             except TimeoutExpired:
-                raise Failed("Input Timeout: Trakt pin required.")
+                raise Failed("Connector Error: Trakt PIN input timed out. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not pin:
-            raise Failed("Trakt Error: Trakt pin required.")
+            raise Failed("Connector Error: Trakt PIN is required. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/.")
         json_data = {
             "code": pin,
             "client_id": self.client_id,
@@ -145,7 +145,7 @@ class Trakt:
         response_json = response.json()
         logger.trace(response_json)
         if not self._save(response_json):
-            raise Failed("Trakt Error: New Authorization Failed")
+            raise Failed("Connector Error: Trakt authorization failed, please check your details and try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
 
     def _check(self, authorization=None):
         token = self.authorization['access_token'] if authorization is None else authorization['access_token']
@@ -158,9 +158,9 @@ class Trakt:
         logger.secret(token)
         response = self.requests.get(f"{base_url}/users/settings", headers=headers)
         if response.status_code == 423:
-            raise Failed("Trakt Error: Account is Locked please Contact Trakt Support")
+            raise Failed("Connector Error: Trakt account is locked. Please contact Trakt Support or use new credentials.")
         if response.status_code != 200:
-            logger.debug(f"Trakt Error: ({response.status_code}) {response.reason}")
+            logger.debug(f"Connector Error: Trakt response: ({response.status_code}) {response.reason}")
         return response.status_code == 200
 
     def _refresh(self):

@@ -492,18 +492,19 @@ class Plex(Library):
             except NotFound:
                 logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
-            logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
-            raise Failed("Plex Error: Plex token is invalid")
+            logger.info(f"Connector Error: Plex authorization failed. Please try again.")
+            raise Failed("Connector Error: Plex token is unauthorized, please check the token is correct or check Plex forums for guidance on obtaining a new token.")
         except ConnectTimeout:
-            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
+            raise Failed(f"Connector Error: Plex did not respond within the {self.timeout}-second timeout. Please check Plex is online and reachable, or try increasing the timeout. Kometa cannot do anything other than wait longer.")
         except ValueError as e:
-            logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
+            logger.info(f"Connector Error: Plex did not respond as expected, and returned 'ValueError'")
             logger.stacktrace()
-            raise Failed(f"Plex Error: {e}")
+            raise Failed(f"Connector Error: Plex: {e}")
         except (ConnectionError, ParseError):
-            logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
+            logger.info(f"Connector Error: Plex did not respond as expected, and returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Plex Error: Plex URL is probably invalid")
+            raise Failed("Connector Error: Plex URL could not be reached. Please check the URL is correct and that Plex is online and accessible. If Plex or Kometa are in a Docker environment, the container(s) must have the network bridged so that they can communicate.")
+
         self.Plex = None
         library_names = []
         for s in self.PlexServer.library.sections():
@@ -512,11 +513,11 @@ class Plex(Library):
                 self.Plex = s
                 break
         if not self.Plex:
-            raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
+            raise Failed(f"Connector Error: Plex Library '{params['name']}' not found. Options: {library_names}")
         if self.Plex.type not in library_types:
-            raise Failed(f"Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
+            raise Failed(f"Connector Error: Plex Library must be a Movies, TV Shows, or Music library")
         if not self.Plex.allowSync:
-            raise Failed("Plex Error: Plex Token is read only. Please get a new token")
+            raise Failed("Connector Error: Plex Token is read only. Please get a new token")
 
         self.type = self.Plex.type.capitalize()
         self.plex_pass = self.PlexServer.myPlexSubscription
@@ -585,7 +586,7 @@ class Plex(Library):
                 return self.reload(current)
         except (BadRequest, NotFound) as e:
             logger.trace(e)
-        raise Failed(f"Plex Error: Item {item} not found")
+        raise Failed(f"Plex Error: Item {item} not found in library")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def fetchItem(self, data):
@@ -972,14 +973,14 @@ class Plex(Library):
         labels = [la.title for la in self.get_tags("label")] # noqa
         if label in labels:
             return True
-        logger.trace(f"Label not found in Plex. Options: {labels}")
+        logger.trace(f"Label {label} not found in Plex. Options: {labels}")
         return False
 
     def test_smart_filter(self, uri_args):
         logger.debug(f"Smart Collection Test: {uri_args}")
         test_items = self.fetchItems(uri_args)
         if len(test_items) < 1:
-            raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
+            raise Failed(f"Plex Error: No items for smart filter: {uri_args} in library")
 
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
         if not ignore_blank_results:
@@ -1198,7 +1199,7 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
-            raise Failed("Plex Error: No Items found in Plex")
+            raise Failed("Plex Error: No Items found in library")
         return [(item.ratingKey, "ratingKey") for item in items]
 
     def get_collection_items(self, collection, smart_label_collection):

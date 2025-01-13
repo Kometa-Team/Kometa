@@ -146,7 +146,7 @@ class TVDb:
         try:
             response = self.get_request(tvdb_url)
         except (ParserError, Failed):
-            raise Failed(f"TVDb Error: Failed not parse {tvdb_url}")
+            raise Failed(f"TVDb Error: Failed to parse {tvdb_url}")
         results = response.xpath(f"//*[text()='TheTVDB.com {media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:
             tvdb_id = int(results[0])

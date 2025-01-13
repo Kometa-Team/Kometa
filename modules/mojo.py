@@ -187,7 +187,7 @@ class BoxOfficeMojo:
         response = self._request(url)
         imdb_url = response.xpath("//select[@id='releasegroup-picker-navSelector']/option[text()='All Releases']/@value")
         if not imdb_url:
-            raise Failed(f"Mojo Error: IMDb ID not found at {base_url}{url}")
+            raise Failed(f"BoxOfficeMojo Error: IMDb ID not found at {base_url}{url}")
         return imdb_url[0][7:-1]
 
     def get_imdb_ids(self, method, data):
@@ -249,7 +249,7 @@ class BoxOfficeMojo:
         logger.info(f"Processing {method.replace('_', ' ').title()}: {text}")
         items = self._parse_list(url, params, data["limit"])
         if not items:
-            raise Failed(f"Mojo Error: No List Items found in {method}: {data}")
+            raise Failed(f"BoxOfficeMojo Error: No List Items found in {method}: {data}")
         ids = []
         total_items = len(items)
         for i, item in enumerate(items, 1):

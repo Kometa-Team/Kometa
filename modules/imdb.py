@@ -430,9 +430,9 @@ class IMDb:
                 imdb_dict[main] = imdb_dict["url"]
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
             if main not in dict_methods:
-                raise Failed(f"{err_type} Error: {method} {main} attribute not found")
+                raise Failed(f"IMDb {err_type} Error: {method} {main} attribute not found")
             elif imdb_dict[dict_methods[main]] is None:
-                raise Failed(f"{err_type} Error: {method} {main} attribute is blank")
+                raise Failed(f"IMDb {err_type} Error: {method} {main} attribute is blank")
             else:
                 main_data = imdb_dict[dict_methods[main]].strip()
                 if method == "imdb_list":
@@ -452,12 +452,12 @@ class IMDb:
                         except ValueError:
                             pass
                     if not user_id:
-                        raise Failed(f"{err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
+                        raise Failed(f"IMDb {err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
                     new_dict = {main: main_data}
 
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"{err_type} Warning: {method} limit attribute is blank using 0 as default")
+                    logger.warning(f"IMDb {err_type} Warning: {method} limit attribute is blank using 0 as default")
                 else:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
@@ -466,7 +466,7 @@ class IMDb:
                     except ValueError:
                         pass
                 if "limit" not in new_dict:
-                    logger.warning(f"{err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"IMDb {err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
             if "limit" not in new_dict:
                 new_dict["limit"] = 0
 
@@ -665,7 +665,7 @@ class IMDb:
             raise Failed("IMDb Error: No IMDb IDs Found")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
-                raise Failed("Internal IMDB PersistedQuery Error")
+                raise Failed("IMDb Error: Internal PersistedQuery Error. Contact the Kometa Team.")
             logger.error(f"Response: {response_json}")
             raise
 
@@ -718,7 +718,7 @@ class IMDb:
                 return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
-            raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
+            raise Failed(f"IMDb Error: No keywords found for IMDb ID: {imdb_id}")
         for k in keywords:
             name = k.xpath("div[@class='sodatext']/a/text()")[0]
             relevant = k.xpath("div[@class='did-you-know-actions']/div/a/text()")[0].strip()

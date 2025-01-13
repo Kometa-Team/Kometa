@@ -549,7 +549,7 @@ class Overlays:
                     if self.cache and poster_compare:
                         self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
-                    logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
+                    logger.error(f"  Overlay Error for {item_title}: {e}. Overlays Attempted: {', '.join(over_names)}")
                 except Exception as e:
                     logger.info(e)
                     logger.info(type(e))
@@ -622,7 +622,7 @@ class Overlays:
                     logger.info("")
                 except Exception as e:
                     logger.stacktrace()
-                    logger.error(f"Unknown Error: {e}")
+                    logger.error(f"Unknown Overlay Error: {e}")
                     logger.info("")
 
         logger.separator(f"Overlay Operation for the {self.library.name} Library")
@@ -708,4 +708,4 @@ class Overlays:
                 if os.path.exists(loc):
                     os.remove(loc)
         else:
-            logger.error(f"No Poster found to restore for {item_title}")
+            logger.error(f"Remove Overlays Error: No Poster found to restore for {item_title}")

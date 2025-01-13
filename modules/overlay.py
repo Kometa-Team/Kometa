@@ -135,7 +135,7 @@ class Overlay:
             self.data = {"name": str(self.data)}
             logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
         if "name" not in self.data or not self.data["name"]:
-            raise Failed(f"Overlay Error: overlay must have the name attribute")
+            raise Failed(f"Overlay Error: overlay definitions must have the 'name' attribute")
         self.name = str(self.data["name"])
 
         self.prefix = f"Overlay File ({self.overlay_file.file_num}) "
@@ -153,15 +153,15 @@ class Overlay:
         if "weight" in self.data:
             self.weight = util.parse("Overlay", "weight", self.data["weight"], datatype="int", parent="overlay", minimum=0)
         if "group" in self.data and (self.weight is None or not self.group):
-            raise Failed(f"Overlay Error: overlay attribute's group requires the weight attribute")
+            raise Failed(f"Overlay Error: overlay attribute group requires the 'weight' attribute")
         elif "queue" in self.data and (self.weight is None or not self.queue_name):
-            raise Failed(f"Overlay Error: overlay attribute's queue requires the weight attribute")
+            raise Failed(f"Overlay Error: overlay attribute queue requires the 'weight' attribute")
         elif self.group and self.queue_name:
-            raise Failed(f"Overlay Error: overlay attribute's group and queue cannot be used together")
+            raise Failed(f"Overlay Error: overlay attributes 'group' and 'queue' cannot be used together")
         self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "overlay")
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
-            raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset must be used together")
+            raise Failed(f"Overlay Error: overlay attribute 'horizontal_offset' and 'vertical_offset' must be used together")
 
         self.scale_width, self.scale_height = util.parse_scale(self.data, "overlay")
 
@@ -183,21 +183,21 @@ class Overlay:
         if self.name == "backdrop":
             self.back_box = (back_width, back_height)
         elif self.back_align != "center" and back_width < 0:
-            raise Failed(f"Overlay Error: overlay attribute back_align only works when back_width is used")
+            raise Failed(f"Overlay Error: overlay attribute 'back_align' must be used with 'back_width'")
         elif back_width >= 0 or back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
         if self.name != "backdrop" and self.has_back and not self.has_coordinates() and not self.queue_name:
-            raise Failed(f"Overlay Error: horizontal_offset and vertical_offset are required when using a backdrop")
+            raise Failed(f"Overlay Error: 'horizontal_offset' and 'vertical_offset' are required when using a backdrop")
 
         def get_and_save_image(image_url):
             response = self.requests.get(image_url)
             if response.status_code == 404:
-                raise Failed(f"Overlay Error: Overlay Image not found at: {image_url}")
+                raise Failed(f"Overlay Error: Overlay image not found at: {image_url}")
             if response.status_code >= 400:
                 raise Failed(f"Overlay Error: Status {response.status_code} when attempting download of: {image_url}")
             if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
-                raise Failed(f"Overlay Error: Overlay Image not a png: {image_url}")
+                raise Failed(f"Overlay Error: Overlay image does not have a PNG extension: {image_url}")
             if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
                 os.makedirs(library.overlay_folder, exist_ok=False)
                 logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
@@ -225,7 +225,7 @@ class Overlay:
                     temp_path = f"{temp_path}.png"
                 images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
                 if not os.path.exists(os.path.abspath(os.path.join(images_path, temp_path))):
-                    raise Failed(f"Overlay Error: Overlay Image not found at: {os.path.abspath(os.path.join(images_path, temp_path))}")
+                    raise Failed(f"Overlay Error: Overlay image not found at: {os.path.abspath(os.path.join(images_path, temp_path))}")
                 self.path = os.path.abspath(os.path.join(images_path, temp_path))
             elif "file" in self.data and self.data["file"]:
                 self.path = self.data["file"]
@@ -237,7 +237,7 @@ class Overlay:
                 self.path = get_and_save_image(self.data["url"])
 
         if "|" in self.name:
-            raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
+            raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|' character")
         elif self.name.startswith("blur"):
             try:
                 match = re.search("\\(([^)]+)\\)", self.name)
@@ -245,14 +245,14 @@ class Overlay:
                     raise ValueError
                 self.name = f"blur({match.group(1)})"
             except ValueError:
-                logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
+                logger.warning(f"Overlay Warning: Unable to fetch the value of blur for name {self.name}, defaulting to 'blur(50)'")
                 self.name = "blur(50)"
         elif self.name.startswith("text"):
             if not self.has_coordinates() and not self.queue_name:
-                raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset are required when using text")
+                raise Failed(f"Overlay Error: overlay attribute 'horizontal_offset' and 'vertical_offset' are required when using text")
             if self.path:
                 if not os.path.exists(self.path):
-                    raise Failed(f"Overlay Error: Text Overlay Addon Image not found at: {self.path}")
+                    raise Failed(f"Overlay Error: Text overlay addon image not found at: {self.path}")
                 self.addon_offset = util.parse("Overlay", "addon_offset", self.data["addon_offset"], datatype="int", parent="overlay") if "addon_offset" in self.data else 0
                 self.addon_position = util.parse("Overlay", "addon_position", self.data["addon_position"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_position" in self.data else "left"
                 image_compare = None
@@ -274,10 +274,10 @@ class Overlay:
                     if self.cache:
                         self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
-                    raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
+                    raise Failed(f"Overlay Error: Overlay image {self.path} failed to load")
             match = re.search("\\(([^)]+)\\)", self.name)
             if not match:
-                raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
+                raise Failed(f"Overlay Error: Failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
             text = f"{match.group(1)}"
             code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -293,7 +293,7 @@ class Overlay:
                     kometa_fonts = os.listdir(font_base)
                     fonts = util.get_system_fonts() + kometa_fonts
                     if font not in fonts:
-                        raise Failed(f"Overlay Error: font: {os.path.abspath(font)} not found. Options: {', '.join(fonts)}")
+                        raise Failed(f"Overlay Error: Font '{os.path.abspath(font)}' could not be found. Options: {', '.join(fonts)}")
                     if font in kometa_fonts:
                         font = os.path.join(font_base, font)
                 self.font_name = font
@@ -304,21 +304,21 @@ class Overlay:
                     if self.data["font_style"] in variation_names:
                         self.font.set_variation_by_name(self.data["font_style"])
                     else:
-                        raise Failed(f"Overlay Error: Font Style {self.data['font_style']} not found. Options: {','.join(variation_names)}")
+                        raise Failed(f"Overlay Error: Font style '{self.data['font_style']}' could not be found. Options: {','.join(variation_names)}")
                 except OSError:
                     logger.warning(f"Overlay Warning: font: {self.font} does not have variations")
             if "font_color" in self.data and self.data["font_color"]:
                 try:
                     self.font_color = ImageColor.getcolor(self.data["font_color"], "RGBA")
                 except ValueError:
-                    raise Failed(f"Overlay Error: overlay font_color: {self.data['font_color']} invalid")
+                    raise Failed(f"Overlay Error: Overlay font color '{self.data['font_color']}' is invalid")
             if "stroke_width" in self.data:
                 self.stroke_width = util.parse("Overlay", "stroke_width", self.data["stroke_width"], datatype="int", parent="overlay", default=self.stroke_width)
             if "stroke_color" in self.data and self.data["stroke_color"]:
                 try:
                     self.stroke_color = ImageColor.getcolor(self.data["stroke_color"], "RGBA")
                 except ValueError:
-                    raise Failed(f"Overlay Error: overlay stroke_color: {self.data['stroke_color']} invalid")
+                    raise Failed(f"Overlay Error: Overlay stroke color '{self.data['stroke_color']}' is invalid")
             if text in old_special_text:
                 text_mod = text[-1] if text[-1] in ["0", "%", "#"] else None
                 text = text if text_mod is None else text[:-1]
@@ -332,7 +332,7 @@ class Overlay:
                     try:
                         datetime.now().strftime(match.group(1))
                     except ValueError:
-                        raise Failed("Overlay Error: originally_available date format not valid")
+                        raise Failed("Overlay Error: 'originally_available' date format specified is not valid")
             box = self.image.size if self.image else None
             self.backdrop_box = box
             self.backdrop_text = self.name[5:-1]
@@ -347,7 +347,7 @@ class Overlay:
                 clean_name, _ = util.validate_filename(self.name)
                 self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
             if not os.path.exists(self.path):
-                raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")
+                raise Failed(f"Overlay Error: Overlay image not found at: {self.path}")
             image_compare = None
             if self.cache:
                 _, image_compare, _ = self.cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
@@ -369,7 +369,7 @@ class Overlay:
                 if self.cache:
                     self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
-                raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
+                raise Failed(f"Overlay Error: Overlay image {self.path} failed to load")
 
     def get_backdrop(self, canvas_box, box=None, text=None, new_cords=None):
         overlay_image = None

@@ -96,7 +96,7 @@ class MyAnimeList:
                     self._authorization()
         except Exception:
             logger.stacktrace()
-            raise Failed("MyAnimeList Error: Failed to Connect")
+            raise Failed("Connector Error: MyAnimeList Failed to Connect. Please confirm MyAnimeList is online and reachable.")
         self._genres = {}
         self._studios = {}
         self._delay = None
@@ -139,7 +139,7 @@ class MyAnimeList:
             if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
         match = re.search("code=([^&]+)", str(url))
         if not match:
-            raise Failed("MyAnimeList Error: Invalid URL")
+            raise Failed("Connector Error: MyAnimeList URL could not be specified. Please check the URL is correct.  If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         code = match.group(1)
         data = {
             "client_id": self.client_id,
@@ -150,9 +150,9 @@ class MyAnimeList:
         }
         new_authorization = self._oauth(data)
         if "error" in new_authorization:
-            raise Failed("MyAnimeList Error: Invalid code")
+            raise Failed("Connector Error: MyAnimeList code is invalid. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not self._save(new_authorization):
-            raise Failed("MyAnimeList Error: New Authorization Failed")
+            raise Failed("Connector Error: MyAnimeList authorization failed. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
 
     def _check(self, authorization):
         try:
@@ -266,7 +266,7 @@ class MyAnimeList:
         while current_page <= last_visible_page:
             if chances > 6:
                 logger.debug(data)
-                raise Failed("AniList Error: Connection Failed")
+                raise Failed("MyAnimeList Error: Connection Failed")
             start_num = (current_page - 1) * per_page + 1
             end_num = limit if limit and (current_page == last_visible_page or limit < start_num + per_page) else current_page * per_page
             logger.ghost(f"Parsing Page {current_page}/{last_visible_page} {start_num}-{end_num}")

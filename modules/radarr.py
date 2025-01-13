@@ -27,7 +27,12 @@ class Radarr:
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"]) # noqa
             self.profiles = self.api.quality_profile()
         except ArrException as e:
-            raise Failed(e)
+            if "Failed to Connect" in str(e):
+                raise Failed("Connector Error: Radarr URL could not be reached. Please check the URL is correct and that Radarr is online and accessible. ") from e
+            elif "401 [Unauthorized]" in str(e):
+                raise Failed("Connector Error: Radarr token could not be validated. Please verify that the token is correct.") from e
+            else:
+                raise Failed(f"Radarr Error: {e}")
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.upgrade_existing = params["upgrade_existing"]
