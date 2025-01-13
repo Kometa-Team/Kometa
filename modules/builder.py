@@ -3138,7 +3138,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Sonrr Error: {e}")
+                                logger.error(f"Sonarr Error: {e}")
                         if "item_sonarr_tag" in self.item_details:
                             try:
                                 self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
@@ -3146,7 +3146,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Sonrr Error: {e}")
+                                logger.error(f"Sonarr Error: {e}")
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
