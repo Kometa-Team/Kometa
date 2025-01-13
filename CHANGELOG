@@ -4,10 +4,10 @@ Update num2words requirement to 0.5.14
 Update pathvalidate requirement to 3.2.3
 Update pillow requirement to 10.4.0
 Update pillow requirement to 11.1.0
-Update plexapi requirement to 4.16.0
+Update plexapi requirement to 4.16.1
 Update psutil requirement to 6.1.1
 Update ruamel-yaml requirement to 0.18.9
-Update setuptools requirement to 75.7.0
+Update setuptools requirement to 75.8.0
 
 # Important Changes
 Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
