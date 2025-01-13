@@ -97,7 +97,11 @@ mass_image_options = {
 }
 mass_episode_rating_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
-    "tmdb": "Use TMDb Rating", "imdb": "Use IMDb Rating", "trakt": "Use Trakt Rating"
+    "plex_tmdb": "Use TMDB Rating through Plex",
+    "plex_imdb": "Use IMDB Rating through Plex",
+    "tmdb": "Use TMDb Rating", 
+    "imdb": "Use IMDb Rating", 
+    "trakt": "Use Trakt Rating"
 }
 mass_rating_options = {
     "lock": "Lock Rating",
@@ -110,7 +114,11 @@ mass_rating_options = {
     "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "omdb_metascore": "Use Metacritic Metascore through OMDb",
-    "omdb_tomatoes": "Use Rotten Tomatoes rating through OMDb",
+    "omdb_tomatoes": "Use Rotten Tomatoes Rating through OMDb",
+    "plex_imdb": "Use IMDB Rating through Plex",
+    "plex_tmdb": "Use TMDB Rating through Plex",
+    "plex_tomatoes": "Use Rotten Tomatoes Rating through Plex",
+    "plex_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through Plex",
     "mdb": "Use MDBList Score",
     "mdb_average": "Use MDBList Average Score",
     "mdb_imdb": "Use IMDb Rating through MDBList",
