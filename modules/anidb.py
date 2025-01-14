@@ -55,7 +55,7 @@ class AniDBObj:
             except (ValueError, TypeError):
                 pass
             if fail:
-                raise Failed(f"AniDB Error: No Anime Found for AniDB ID: {self.anidb_id}")
+                raise Failed(f"[S101] AniDB Error: No Anime Found for AniDB ID: {self.anidb_id}")
             elif is_list:
                 return []
             elif is_dict:
@@ -118,7 +118,7 @@ class AniDB:
             self.version = None
             if self.cache:
                 self.cache.update_testing("anidb_login", self.client, self.version, "False")
-            raise Failed("Connector Error: AniDB Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved")
+            raise Failed("[S201] Connector Error: AniDB Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved")
     @property
     def is_authorized(self):
         return self.client is not None
@@ -128,7 +128,7 @@ class AniDB:
         logger.secret(password)
         data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
         if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
-            raise Failed("Connector Error: AniDB Username/Password could not be verified. Please verify that the username and password are correct. AniDB Builders will still work but Mature content will not be reachable until this is resolved")
+            raise Failed("[S202] Connector Error: AniDB Username/Password could not be verified. Please verify that the username and password are correct. AniDB Builders will still work but Mature content will not be reachable until this is resolved")
         self.username = username
         self.password = password
 
@@ -166,7 +166,7 @@ class AniDB:
                 logger.error(e)
         if len(anidb_values) > 0:
             return anidb_values
-        raise Failed(f"AniDB Error: No valid AniDB IDs in {anidb_list}")
+        raise Failed(f"[S102] AniDB Error: No valid AniDB IDs in {anidb_list}")
 
     def _tag(self, tag, limit):
         anidb_ids = []
@@ -219,7 +219,7 @@ class AniDB:
             logger.info(f"Processing AniDB Relation: {data}")
             anidb_ids.extend(self._relations(data))
         else:
-            raise Failed(f"AniDB Error: Method '{method}' not supported")
+            raise Failed(f"[B302] Builder Error: AniDB builder '{method}' is not valid. Please use a valid builder")
         logger.debug("")
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found")
         logger.trace(f"IDs: {anidb_ids}")

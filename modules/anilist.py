@@ -88,9 +88,9 @@ class AniList:
                 time.sleep(wait_time if wait_time > 0 else 10)
                 if level < 6:
                     return self._request(query, variables, level=level + 1)
-                raise Failed(f"AniList Error: Connection Failed")
+                raise Failed(f"[S202] AniList Error: Connection failed. Please validate AniList is online and reachable")
             else:
-                raise Failed(f"AniList Error: {json_obj['errors'][0]['message']}")
+                raise Failed(f"[S402] AniList Error: {json_obj['errors'][0]['message']}")
         else:
             time.sleep(60 / 90)
         return json_obj
@@ -100,7 +100,7 @@ class AniList:
         media = self._request(query, {"id": anilist_id})["data"]["Media"]
         if media["id"]:
             return media["id"], media["title"]["english" if media["title"]["english"] else "romaji"]
-        raise Failed(f"AniList Error: No AniList ID found for {anilist_id}")
+        raise Failed(f"[S103] AniList Error: No AniList ID found for {anilist_id}")
 
     def _pagenation(self, query, limit=0, variables=None):
         anilist_ids = []
@@ -140,7 +140,7 @@ class AniList:
                     try:
                         value = int(util.validate_date(value, return_as="%Y%m%d"))
                     except Failed as e:
-                        raise Failed(f"Collection Error: anilist_search {key}: {e}")
+                        raise Failed(f"[B401] Builder Error: AniList builder anilist_search {key}: {e}")
                 elif attr in ["format", "status", "genre", "tag", "tag_category"]:
                     temp_value = [self.options[attr.replace('_', ' ').title()][v.lower().replace(' / ', '-').replace(' ', '-')] for v in value]
                     if attr in ["format", "status"]:
@@ -255,13 +255,13 @@ class AniList:
         variables = {"user": data["username"]}
         json_obj = self._request(query, variables)
         if not json_obj["data"]["MediaListCollection"]:
-            raise Failed(f"AniList Error: User: {data['username']} not found")
+            raise Failed(f"[B101] Builder Error: AniList user '{data['username']}' not found. Please use a valid username")
         list_names = [n["name"] for n in json_obj["data"]["MediaListCollection"]["lists"]]
         if not list_names:
-            raise Failed(f"AniList Error: User: {data['username']} has no Lists")
+            raise Failed(f"[B102] Builder Error: AniList user '{data['username']}' has no lists")
         if data["list_name"] in list_names:
             return data
-        raise Failed(f"AniList Error: List: {data['list_name']} not found\nOptions: {', '.join(list_names)}")
+        raise Failed(f"[B103] Builder Error: AniList list: {data['list_name']} not found\nOptions: {', '.join(list_names)}")
 
     def validate(self, name, data):
         valid = []
@@ -270,7 +270,7 @@ class AniList:
                 valid.append(d)
         if len(valid) > 0:
             return valid
-        raise Failed(f"AniList Error: {name}: {data} does not exist\nOptions: {', '.join([v for k, v in self.options[name].items()])}")
+        raise Failed(f"[B104] Builder Error: AniList {name}: {data} does not exist\nOptions: {', '.join([v for k, v in self.options[name].items()])}")
 
     def validate_anilist_ids(self, anilist_ids, studio=False):
         anilist_id_list = util.get_int_list(anilist_ids, "AniList ID")
@@ -283,7 +283,7 @@ class AniList:
             except Failed as e:     logger.error(e)
         if len(anilist_values) > 0:
             return anilist_values
-        raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
+        raise Failed(f"[B105] Builder Error: No valid AniList IDs in {anilist_ids}. The IDs may have been deleted from AniList. If this error persists, try clearing your config.cache file")
 
     def get_anilist_ids(self, method, data):
         if method == "anilist_id":
@@ -307,7 +307,7 @@ class AniList:
             elif method == "anilist_top_rated":
                 data = {"limit": data, "score.gt": 3, "sort_by": "score"}
             elif method not in builders:
-                raise Failed(f"AniList Error: Method '{method}' not supported")
+                raise Failed(f"[B303] Builder Error: AniList builder '{method}' is not valid. Please use a valid builder]")
             message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n\tSort By {pretty_names[data['sort_by']]}"
             if data['limit'] > 0:
                 message += f"\n\tLimit to {data['limit']} Anime"
