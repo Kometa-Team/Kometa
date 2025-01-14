@@ -280,17 +280,6 @@ class Overlays:
                                                         found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
                                                     else:
                                                         found_rating = self.config.IMDb.get_rating(imdb_id)
-                                                elif format_var == "omdb_rating":
-                                                    if self.config.OMDb.limit is not False:
-                                                        raise Failed("Daily OMDb Limit Reached")
-                                                    elif not imdb_id:
-                                                        raise Failed(f"No IMDb ID for Guid: {item.guid}")
-                                                    else:
-                                                        try:
-                                                            found_rating = self.config.OMDb.get_omdb(imdb_id).imdb_rating
-                                                        except Exception:
-                                                            logger.error(f"IMDb ID: {imdb_id}")
-                                                            raise
                                                 elif format_var == "trakt_user_rating":
                                                     _ratings = trakt_ratings()
                                                     _id = tmdb_id if self.library.is_movie else tvdb_id
@@ -298,6 +287,8 @@ class Overlays:
                                                         found_rating = _ratings[_id]
                                                     else:
                                                         raise Failed("No Trakt User Rating Found")
+                                                elif format_var == "trakt_rating":
+                                                    found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
                                                 elif str(format_var).startswith("mdb"):
                                                     mdb_item = None
                                                     if self.config.MDBList.limit is False:
@@ -355,7 +346,22 @@ class Overlays:
                                                         found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
                                                     else:
                                                         found_rating = mdb_item.score / 10 if mdb_item.score else None
-
+                                                elif str(format_var).startswith("omdb"):
+                                                    if self.config.OMDb.limit is not False:
+                                                        raise Failed("Daily OMDb Limit Reached")
+                                                    elif not imdb_id:
+                                                        raise Failed(f"No IMDb ID for Guid: {item.guid}")
+                                                    else:
+                                                        try:
+                                                            if format_var == "omdb_rating":
+                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).imdb_rating
+                                                            elif format_var == "omdb_metascore":
+                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).metacritic_rating
+                                                            elif format_var == "omdb_tomatoes":
+                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).rotten_tomatoes
+                                                        except Exception:
+                                                            logger.error(f"Cannot retrieve {format_var} for: {imdb_id}")
+                                                            raise
                                                 elif str(format_var).startswith(("anidb", "mal")):
                                                     anidb_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
 
@@ -382,6 +388,13 @@ class Overlays:
                                                                 raise Failed(f"{errr} of Guid: {item.guid}")
                                                         if mal_id:
                                                             found_rating = self.config.MyAnimeList.get_anime(mal_id).score
+                                                elif str(format_var).startswith("plex"):
+                                                    ratings = self.library.get_ratings(item)
+                                                    rating_key = format_var.replace("_rating", "")
+                                                    try:
+                                                        found_rating = ratings[rating_key] # noqa
+                                                    except KeyError:
+                                                        found_rating = None
                                             except Failed as err:
                                                 logger.error(err)
                                             if found_rating:
