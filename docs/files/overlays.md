@@ -398,8 +398,15 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `user_rating`                 | Plex User Rating                        | `Movies`, `Shows`, `Seasons`, or `Episodes`                               |
 | `tmdb_rating`                 | TMDb Rating                             | `Movies`, `Shows`, `Seasons`, or `Episodes`                               |
 | `imdb_rating`                 | IMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup>, or `Episodes`                   |
+| `trakt_rating`                | Trakt Rating                            | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `trakt_user_rating`           | Trakt User Rating                       | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `omdb_rating`                 | OMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `omdb_metascore_rating`       | OMDb Metascore Rating                   | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `omdb_tomatoes_rating`        | OMDb Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `plex_imdb`                   | Plex IMDB Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `plex_tmdb`                   | Plex TMDB Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `plex_tomatoes`               | Plex Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons`<sup>1</sup>                                  |
+| `plex_tomatoesaudience`       | Plex Rotten Tomatoes Audience Rating    | `Movies`, `Shows`, `Seasons`<sup>1</sup>                                  |
 | `mdb_rating`                  | MDBList Rating                          | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `mdb_average_rating`          | MDBList Average Rating                  | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `mdb_imdb_rating`             | MDBList IMDb Rating                     | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
