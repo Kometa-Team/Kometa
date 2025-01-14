@@ -548,7 +548,6 @@ class Overlays:
                         logger.info(f"  Overlay Update Not Needed (Current Overlays: {', '.join(over_names)})")
 
                     if self.cache and poster_compare:
-                        logger.info(f"{'|'.join(compare_names)}")
                         self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
