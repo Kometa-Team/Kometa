@@ -35,5 +35,5 @@ class Reciperr:
         else:
             raise Failed(f"{name} Error: Method '{method}' not supported")
         if not ids:
-            raise Failed(f"{name} Error: No IDs found.")
+            raise Failed(f"{name} Error: No IDs found")
         return ids

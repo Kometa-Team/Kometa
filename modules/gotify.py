@@ -16,7 +16,7 @@ class Gotify:
             logger.info(f"Gotify Version: {self._request(path='version', post=False)['version']}")
         except Exception:
             logger.stacktrace()
-            raise Failed("Connector Error: Gotify URL could not be reached. Please check the URL is correct and that Gotify is online and accessible.")
+            raise Failed("Connector Error: Gotify URL could not be reached. Please check the URL is correct and that Gotify is online and accessible")
 
     def _request(self, path="message", json=None, post=True):
         if post:

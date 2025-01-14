@@ -118,7 +118,7 @@ class AniDB:
             self.version = None
             if self.cache:
                 self.cache.update_testing("anidb_login", self.client, self.version, "False")
-            raise Failed("Connector Error: AniDB Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved.")
+            raise Failed("Connector Error: AniDB Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved")
     @property
     def is_authorized(self):
         return self.client is not None
@@ -128,7 +128,7 @@ class AniDB:
         logger.secret(password)
         data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
         if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
-            raise Failed("Connector Error: AniDB Username/Password could not be verified. Please verify that the username and password are correct. AniDB Builders will still work but Mature content will not be reachable until this is resolved.")
+            raise Failed("Connector Error: AniDB Username/Password could not be verified. Please verify that the username and password are correct. AniDB Builders will still work but Mature content will not be reachable until this is resolved")
         self.username = username
         self.password = password
 

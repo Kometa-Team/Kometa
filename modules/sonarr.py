@@ -46,7 +46,7 @@ class Sonarr:
             if "Failed to Connect" in str(e):
                 raise Failed("Connector Error: Sonarr URL could not be reached. Please check the URL is correct and that Sonarr is online and accessible. ") from e
             elif "401 [Unauthorized]" in str(e):
-                raise Failed("Connector Error: Sonarr token could not be validated. Please verify that the token is correct.") from e
+                raise Failed("Connector Error: Sonarr token could not be validated. Please verify that the token is correct") from e
             else:
                 raise Failed(f"Sonarr Error: {e}")
         self.add_missing = params["add_missing"]

@@ -5,7 +5,7 @@ from datetime import datetime
 from modules.logs import MyLogger
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 9:
-    print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+    print("[C001] Python Error: Python version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0. Update python to a supported version")
     sys.exit(0)
 
 try:
@@ -16,7 +16,7 @@ try:
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
-    print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
+    print(f"[C002] Requirements Error: Requirements are not installed. Please follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
 
 system_versions = {
@@ -187,13 +187,13 @@ if run_args["run-collections"]:
     run_args["collections-only"] = True
 
 if run_args["width"] < 90 or run_args["width"] > 300:
-    print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
+    print(f"[C201] Arguments Warning: 'width' argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
     run_args["width"] = 100
 
 if run_args["config"] and os.path.exists(run_args["config"]):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(run_args["config"])))
 elif run_args["config"] and not os.path.exists(run_args["config"]):
-    print(f"Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}")
+    print(f"[C003] Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}. Please check the path is correct and try again")
     sys.exit(0)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     git_branch = git_branch or "master"
@@ -204,12 +204,12 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
         if response.status_code == 200:
             with open(config_path, 'w') as config_file:
                 config_file.write(response.text)
-            print(f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings.")
+            print(f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings")
             sys.exit(1)
         else:
             raise requests.RequestException
     except requests.RequestException as e:
-        print(f"Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
+        print(f"[C004] Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again")
         sys.exit(1)
 
 
@@ -326,7 +326,7 @@ def start(attrs):
                     if sys_ver and sys_ver != required_versions[req_name]:
                         logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
             except FileNotFoundError:
-                logger.error("    File Error: requirements.txt not found")
+                logger.error("    [C101] Requirements Error: 'requirements.txt' file not found. Please download a copy from the GitHub repository and place it at the root of your Kometa directory")
         if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
         elif run_args["tests"]:                                 start_type = "Test "
         elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
@@ -368,7 +368,7 @@ def start(attrs):
         except Exception as e:
             if "Invalid API key" in str(e):
                 logger.stacktrace()
-                logger.critical("Connector Error: TMDb API key could not be validated. Please check the API key is correct or check TMDb guidance for obtaining a new key.")
+                logger.critical("[C005] Connector Error: TMDb API key is invalid. Please check the API key is correct or check TMDb guidance for obtaining a new key")
             else:
                 logger.stacktrace()
                 logger.critical(e)
@@ -388,7 +388,7 @@ def start(attrs):
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
             except Failed as e:
                 logger.stacktrace()
-                logger.error(f"Webhooks Error: {e}")
+                logger.error(f"[C102] Webhooks Error: {e}")
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
@@ -746,7 +746,7 @@ def run_libraries(config):
                         collections_to_run = metadata.get_collections(config.requested_collections)
                         if run_args["resume"] and run_args["resume"] not in collections_to_run:
                             logger.info("")
-                            logger.warning(f"Collection: {run_args['resume']} not in Collection File: {metadata.path}")
+                            logger.warning(f"[C202] Collection: {run_args['resume']} not in Collection File: {metadata.path} whilst attempting to resume. Please validate the collection is defined in Kometa that you are trying to resume from")
                             continue
                         if collections_to_run:
                             logger.info("")
@@ -890,7 +890,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
                 if not builder.found_items and not builder.ignore_blank_results:
-                    raise NonExisting(f"{builder.Type} Warning: No items found")
+                    raise NonExisting(f"[C203] {builder.Type} Warning: No items found")
 
             valid = True
             if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
@@ -1182,11 +1182,14 @@ if __name__ == "__main__":
                         valid_times.append(final_time)
                 except ValueError:
                     if time_to_run:
-                        raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
+                        raise Failed(f"[C103] Argument Error: 'time' argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
                     else:
-                        raise Failed(f"Argument Error: blank time argument")
+                        raise Failed(f"[C104] Argument Error: 'time' argument does not have a value. Please enter a value in the HH:MM format between 00:00-23:59")
             for time_to_run in valid_times:
                 schedule.every().day.at(time_to_run).do(process, {"time": time_to_run})
+            logger.info("Kometa is currently waiting until the next scheduled run. The default run time is 05:00 unless otherwise specified using the `--times` Run Command or `KOMETA_TIMES` Environment Variable.")
+            logger.info("If you would rather run Kometa immediately, use the `--run` Run Command or `KOMETA_RUN` Environment Variable.")
+            logger.info("")
             while True:
                 schedule.run_pending()
                 if not run_args["no-countdown"]:
@@ -1205,9 +1208,10 @@ if __name__ == "__main__":
                         minutes = int((seconds % 3600) // 60)
                         time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                         time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-                        logger.ghost(f"Current Time: {current_time} | {time_str} until the next run at {og_time_str} | Runs: {', '.join(valid_times)}")
+
+                        logger.ghostnopipe(f"Current Time: {current_time} | Next Scheduled Run: {og_time_str} ({time_str} from now) | Scheduled Runs: {', '.join(valid_times)}")
                     else:
-                        logger.error(f"Time Error: {valid_times}")
+                        logger.error(f"[C105] Time Error: {valid_times}")
                 time.sleep(60)
     except KeyboardInterrupt:
         logger.separator("Exiting Kometa")

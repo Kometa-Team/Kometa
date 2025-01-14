@@ -437,9 +437,9 @@ class IMDb:
                 main_data = imdb_dict[dict_methods[main]].strip()
                 if method == "imdb_list":
                     if main_data.startswith(f"{base_url}/search/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search.")
+                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search")
                     if main_data.startswith(f"{base_url}/filmosearch/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search.")
+                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search")
                     search = re.search(r"(ls\d+)", main_data)
                     if not search:
                         raise Failed(f"IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
@@ -665,7 +665,7 @@ class IMDb:
             raise Failed("IMDb Error: No IMDb IDs Found")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
-                raise Failed("IMDb Error: Internal PersistedQuery Error. Contact the Kometa Team.")
+                raise Failed("IMDb Error: Internal PersistedQuery Error. Contact the Kometa Team")
             logger.error(f"Response: {response_json}")
             raise
 

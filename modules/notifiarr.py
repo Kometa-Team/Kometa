@@ -32,5 +32,5 @@ class Notifiarr:
             logger.debug(f"Response: {response_json}")
             raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
         if not response_json["details"]["response"]:
-            raise Failed("Connector Error: Notifiarr API key is invalid. Please check the API key is correct.")
+            raise Failed("Connector Error: Notifiarr API key is invalid. Please check the API key is correct")
         return response

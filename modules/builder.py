@@ -2277,7 +2277,7 @@ class CollectionBuilder:
                                                 if not self.config.OMDb:
                                                     raise Failed("")
                                                 if self.config.OMDb.limit:
-                                                    raise Failed(" and OMDb limit reached.")
+                                                    raise Failed(" and OMDb limit reached")
                                                 omdb_item = self.config.OMDb.get_omdb(input_id)
                                                 tvdb_id = omdb_item.series_id
                                                 season_num = omdb_item.season_num
@@ -3412,7 +3412,7 @@ class CollectionBuilder:
                     self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
                     advance_update = True
                 except NotFound:
-                    logger.error("Collection Error: 'collection_filtering' requires a more recent version of Plex Media Server. Please update your Plex instance and try again.")
+                    logger.error("Collection Error: 'collection_filtering' requires a more recent version of Plex Media Server. Please update your Plex instance and try again")
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys \

@@ -237,7 +237,7 @@ class ConfigFile:
                     continue
 
                 def fail_on_definition(found_this):
-                    raise Failed(f"The '{library}' library config contains {found_this} definitions. These belong in external YAML files, not in the config.yml.")
+                    raise Failed(f"The '{library}' library config contains {found_this} definitions. These belong in external YAML files, not in the config.yml")
                 if "collections" in self.data["libraries"][library]:
                     fail_on_definition("collections")
                 if "dynamic_collections" in self.data["libraries"][library]:
@@ -252,14 +252,14 @@ class ConfigFile:
                     fail_on_definition("playlists")
 
                 if "metadata_path" in self.data["libraries"][library]:
-                    logger.warning("Config Warning: metadata_path has been deprecated and split into collection_files and metadata_files, Please visit the wiki to learn more about this transition.")
+                    logger.warning("Config Warning: metadata_path has been deprecated and split into collection_files and metadata_files, Please visit the wiki to learn more about this transition")
                     path_dict = self.data["libraries"][library].pop("metadata_path")
                     if "collection_files" not in self.data["libraries"][library]:
                         self.data["libraries"][library]["collection_files"] = path_dict
                     if "metadata_files" not in self.data["libraries"][library]:
                         self.data["libraries"][library]["metadata_files"] = path_dict
                 if "overlay_path" in self.data["libraries"][library]:
-                    logger.warning("Config Warning: overlay_path has been deprecated in favor of overlay_files, Please visit the wiki to learn more about this transition.")
+                    logger.warning("Config Warning: overlay_path has been deprecated in favor of overlay_files, Please visit the wiki to learn more about this transition")
                     self.data["libraries"][library]["overlay_files"] = self.data["libraries"][library].pop("overlay_path")
                 if "radarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
@@ -453,7 +453,7 @@ class ConfigFile:
                 message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
-                raise Failed(f"Connector Error: {parent} attribute {attribute} not found and must be set globally or under this library.")
+                raise Failed(f"Connector Error: {parent} attribute {attribute} not found and must be set globally or under this library")
             options = ""
             if test_list:
                 for test_option, test_description in test_list.items():
@@ -668,7 +668,7 @@ class ConfigFile:
                 except Failed as e:
                     error_message = str(e)
                     if "Invalid API key" in error_message:
-                        logger.error("Connector Error: OMDb API key is invalid. Please check the API key is correct or check OMDb guidance for obtaining a new key.")
+                        logger.error("Connector Error: OMDb API key is invalid. Please check the API key is correct or check OMDb guidance for obtaining a new key")
                     elif error_message.endswith("is blank"):
                         logger.warning(error_message)
                     else:
@@ -1130,18 +1130,18 @@ class ConfigFile:
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
                                         or ("remove_overlay" in file and file["remove_overlay"] is True) \
                                         or ("revert_overlays" in file and file["revert_overlays"] is True):
-                                    logger.warning("Config Warning: remove_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: remove_overlays under overlay_files is deprecated it now goes directly under the library attribute")
                                     params["remove_overlays"] = True
                                 if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
                                         or ("reapply_overlay" in file and file["reapply_overlay"] is True):
-                                    logger.warning("Config Warning: reapply_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: reapply_overlays under overlay_files is deprecated it now goes directly under the library attribute")
                                     params["reapply_overlays"] = True
                                 if "reset_overlays" in file or "reset_overlay" in file:
                                     attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                    logger.warning("Config Warning: reset_overlays under overlay_files is deprecated it now goes directly under the library attribute.")
+                                    logger.warning("Config Warning: reset_overlays under overlay_files is deprecated it now goes directly under the library attribute")
                                     old_reset = file[attr]
                                 if "schedule" in file and file["schedule"]:
-                                    logger.warning("Config Warning: schedule under overlay_files is deprecated it now goes directly under the library attribute as schedule_overlays.")
+                                    logger.warning("Config Warning: schedule under overlay_files is deprecated it now goes directly under the library attribute as schedule_overlays")
                                     old_schedule = file["schedule"]
                         params["overlay_files"] = files
                     except Failed as e:

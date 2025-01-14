@@ -216,7 +216,7 @@ class Operations:
                     if _omdb_obj is None:
                         _omdb_obj = False
                         if self.config.OMDb.limit is not False:
-                            logger.warning("Connector Warning: OMDb API Limit Reached. Please wait 24 hours or upgrade to a higher API limit.")
+                            logger.warning("Connector Warning: OMDb API Limit Reached. Please wait 24 hours or upgrade to a higher API limit")
                         elif not imdb_id:
                             logger.info(f"No IMDb ID for Guid: {item.guid}")
                         else:

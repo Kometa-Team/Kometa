@@ -96,7 +96,7 @@ class MyAnimeList:
                     self._authorization()
         except Exception:
             logger.stacktrace()
-            raise Failed("Connector Error: MyAnimeList Failed to Connect. Please confirm MyAnimeList is online and reachable.")
+            raise Failed("Connector Error: MyAnimeList Failed to Connect. Please confirm MyAnimeList is online and reachable")
         self._genres = {}
         self._studios = {}
         self._delay = None
@@ -135,8 +135,8 @@ class MyAnimeList:
             logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
             webbrowser.open(url, new=2)
             try:                                url = util.logger_input("URL").strip()
-            except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
-            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
+            except TimeoutExpired:              raise Failed("Input Timeout: URL required")
+            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required")
         match = re.search("code=([^&]+)", str(url))
         if not match:
             raise Failed("Connector Error: MyAnimeList URL could not be specified. Please check the URL is correct.  If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")

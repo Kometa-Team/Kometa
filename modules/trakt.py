@@ -131,7 +131,7 @@ class Trakt:
             except TimeoutExpired:
                 raise Failed("Connector Error: Trakt PIN input timed out. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not pin:
-            raise Failed("Connector Error: Trakt PIN is required. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/.")
+            raise Failed("Connector Error: Trakt PIN is required. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         json_data = {
             "code": pin,
             "client_id": self.client_id,
@@ -158,7 +158,7 @@ class Trakt:
         logger.secret(token)
         response = self.requests.get(f"{base_url}/users/settings", headers=headers)
         if response.status_code == 423:
-            raise Failed("Connector Error: Trakt account is locked. Please contact Trakt Support or use new credentials.")
+            raise Failed("Connector Error: Trakt account is locked. Please contact Trakt Support or use new credentials")
         if response.status_code != 200:
             logger.debug(f"Connector Error: Trakt response: ({response.status_code}) {response.reason}")
         return response.status_code == 200

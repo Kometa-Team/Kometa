@@ -20,7 +20,7 @@ class GitHub:
             logger.secret(self.token)
             self.headers = {"Authorization": f"token {self.token}"}
             try:
-                response = self._requests("https://api.github.com/user", err_msg="The GitHub token specified could not be validated. Please verify that the token is correct.")
+                response = self._requests("https://api.github.com/user", err_msg="The GitHub token specified could not be validated. Please verify that the token is correct")
                 logger.info(f"GitHub token validated successfully. Authenticated as {response['login']}")
             except Failed as e:
                 self.token = None

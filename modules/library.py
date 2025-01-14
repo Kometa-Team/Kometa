@@ -329,7 +329,7 @@ class Library(ABC):
             exif_tags = image.getexif()
         if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
             os.remove(image_path)
-            raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required.")
+            raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required")
         if remove:
             os.remove(image_path)
         else:

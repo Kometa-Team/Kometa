@@ -493,9 +493,9 @@ class Plex(Library):
                 logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
             logger.info(f"Connector Error: Plex authorization failed. Please try again.")
-            raise Failed("Connector Error: Plex token is unauthorized, please check the token is correct or check Plex forums for guidance on obtaining a new token.")
+            raise Failed("Connector Error: Plex token is unauthorized, please check the token is correct or check Plex forums for guidance on obtaining a new token")
         except ConnectTimeout:
-            raise Failed(f"Connector Error: Plex did not respond within the {self.timeout}-second timeout. Please check Plex is online and reachable, or try increasing the timeout. Kometa cannot do anything other than wait longer.")
+            raise Failed(f"Connector Error: Plex did not respond within the {self.timeout}-second timeout. Please check Plex is online and reachable, or try increasing the timeout. Kometa cannot do anything other than wait longer")
         except ValueError as e:
             logger.info(f"Connector Error: Plex did not respond as expected, and returned 'ValueError'")
             logger.stacktrace()
@@ -503,7 +503,7 @@ class Plex(Library):
         except (ConnectionError, ParseError):
             logger.info(f"Connector Error: Plex did not respond as expected, and returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Connector Error: Plex URL could not be reached. Please check the URL is correct and that Plex is online and accessible. If Plex or Kometa are in a Docker environment, the container(s) must have the network bridged so that they can communicate.")
+            raise Failed("Connector Error: Plex URL could not be reached. Please check the URL is correct and that Plex is online and accessible. If Plex or Kometa are in a Docker environment, the container(s) must have the network bridged so that they can communicate")
 
         self.Plex = None
         library_names = []

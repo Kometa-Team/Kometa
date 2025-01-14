@@ -101,7 +101,7 @@ class MDBList:
 
       self.get_item(imdb_id="tt0080684", ignore_cache=True)
     except LimitReached:
-      logger.warning(f"Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit.")
+      logger.warning(f"Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit")
       self.limit = True
     except Failed as fe:
       logger.error(f"Connector Error: MDBList API connection failed. Please check the API key is correct or try again. Response: {fe}")
@@ -229,7 +229,7 @@ class MDBList:
         if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
           err = response["error"] if isinstance(response, dict) else response[0]["error"]
           if err in ["empty", "empty or private list"]:
-            raise Failed(f"MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later.")
+            raise Failed(f"MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later")
           raise Failed(f"MDBList Error: Invalid Response {response}")
         results = []
         for item in response:
