@@ -283,7 +283,7 @@ class AniList:
             except Failed as e:     logger.error(e)
         if len(anilist_values) > 0:
             return anilist_values
-        raise Failed(f"[B105] Builder Error: No valid AniList IDs in {anilist_ids}. The IDs may have been deleted from AniList. If this error persists, try clearing your config.cache file")
+        raise Failed(f"[B105] Builder Error: No valid AniList IDs in {anilist_ids}. The IDs may have been deleted from AniList.")
 
     def get_anilist_ids(self, method, data):
         if method == "anilist_id":

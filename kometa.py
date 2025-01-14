@@ -1211,7 +1211,7 @@ if __name__ == "__main__":
 
                         logger.ghostnopipe(f"Current Time: {current_time} | Next Scheduled Run: {og_time_str} ({time_str} from now) | Scheduled Runs: {', '.join(valid_times)}")
                     else:
-                        logger.error(f"[E401] Argument Error: {valid_times}")
+                        logger.error(f"Argument Error: {valid_times}")
                 time.sleep(60)
     except KeyboardInterrupt:
         logger.separator("Exiting Kometa")
