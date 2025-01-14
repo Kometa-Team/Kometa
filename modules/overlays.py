@@ -288,7 +288,10 @@ class Overlays:
                                                     else:
                                                         raise Failed("No Trakt User Rating Found")
                                                 elif format_var == "trakt_rating":
-                                                    found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
+                                                    if self.config.Trakt:
+                                                        found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
+                                                    else:
+                                                        raise Failed("No Trakt Rating Found")
                                                 elif str(format_var).startswith("mdb"):
                                                     mdb_item = None
                                                     if self.config.MDBList.limit is False:
@@ -545,6 +548,7 @@ class Overlays:
                         logger.info(f"  Overlay Update Not Needed (Current Overlays: {', '.join(over_names)})")
 
                     if self.cache and poster_compare:
+                        logger.info(f"{'|'.join(compare_names)}")
                         self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
