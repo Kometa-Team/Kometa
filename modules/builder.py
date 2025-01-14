@@ -248,7 +248,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: language")
             if not self.data[methods["language"]]:
-                raise Failed(f"[B308] Builder Error: language attribute has no value set. Please set a value")
+                raise Failed(f"[B308] Builder Error: 'language' attribute has no value set. Please set a value")
             logger.debug(f"Value: {self.data[methods['language']]}")
             if str(self.data[methods["language"]]).lower() not in self.config.GitHub.translation_keys:
                 logger.warning(f"[B309] Builder Warning: Language {str(self.data[methods['language']]).lower()} not found using {self.builder_language}. Options: {', '.join(self.config.GitHub.translation_keys)}")
@@ -258,6 +258,7 @@ class CollectionBuilder:
         self.name = None
         if "name" in methods:
             logger.debug("")
+            logger.debug("Validating Method: name")
             logger.debug("Validating Method: name")
             if not self.data[methods["name"]]:
                 raise Failed(f"[B310] Builder Error: 'name' attribute has no value set. Please set a value")
@@ -663,7 +664,7 @@ class CollectionBuilder:
                         or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
                     self.smart_label["sort_by"] = str(self.data[methods["smart_label"]]).lower()
                 else:
-                    logger.warning(f"Builder Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+                    logger.warning(f"[B326] Builder Warning: smart_label 'sort_by' value {self.data[methods['smart_label']]} is invalid, defaulting to random")
         if self.smart_label_collection and self.library.smart_label_check(self.name):
             try:
                 _, self.smart_filter_details, self.smart_label_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
@@ -683,7 +684,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: schedule")
             if not self.data[methods["schedule"]]:
-                raise Failed(f"Builder Error: schedule attribute has no value set. Please set a value")
+                raise Failed(f"[B327] Builder Error: 'schedule' attribute has no value set. Please set a value")
             else:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
                 err = None
@@ -756,11 +757,11 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: sync_mode")
             if not self.data[methods["sync_mode"]]:
-                logger.warning(f"Collection Warning: sync_mode attribute is blank using general: {self.library.sync_mode}")
+                logger.info(f"Builder Warning: sync_mode attribute is blank, using library sync_mode '{self.library.sync_mode}'")
             else:
                 logger.debug(f"Value: {self.data[methods['sync_mode']]}")
                 if self.data[methods["sync_mode"]].lower() not in ["append", "sync"]:
-                    logger.warning(f"Collection Warning: {self.data[methods['sync_mode']]} sync_mode invalid using general: {self.library.sync_mode}")
+                    logger.warning(f"[B328] Builder Warning: sync_mode '{self.data[methods['sync_mode']]}' is invalid, using library sync_mode '{self.library.sync_mode}'")
                 else:
                     self.sync = self.data[methods["sync_mode"]].lower() == "sync"
 
@@ -777,7 +778,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: tmdb_birthday")
             logger.debug(f"Value: {data[methods['tmdb_birthday']]}")
             if not self.data[methods["tmdb_birthday"]]:
-                raise Failed(f"Builder Error: tmdb_birthday attribute has no value set. Please set a value")
+                raise Failed(f"[B329] Builder Error: 'tmdb_birthday' attribute has no value set. Please set a value")
             parsed_birthday = util.parse(self.Type, "tmdb_birthday", self.data, datatype="dict", methods=methods)
             parsed_methods = {m.lower(): m for m in parsed_birthday}
             self.tmdb_birthday = {
@@ -792,7 +793,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
             if not self.data[methods["tmdb_person"]]:
-                raise Failed(f"Builder Error: tmdb_person attribute has no value set. Please set a value")
+                raise Failed(f"[B330] Builder Error: 'tmdb_person' attribute has no value set. Please set a value")
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
@@ -806,7 +807,7 @@ class CollectionBuilder:
                         else:
                             results = self.config.TMDb.search_people(tmdb_person)
                             if not results:
-                                raise Failed(f"TMDb Error: No results for '{tmdb_person}'")
+                                raise Failed(f"[B331] Builder Error: No TMDb Person results for '{tmdb_person}'")
                             result_index = len(results) - 1 if self.tmdb_person_offset >= len(results) else self.tmdb_person_offset
                             person = results[result_index]
                         valid_names.append(person.name)
@@ -836,7 +837,7 @@ class CollectionBuilder:
                 if len(valid_names) > 0:
                     self.details["tmdb_person"] = valid_names
                 else:
-                    raise Failed(f"Builder Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
+                    raise Failed(f"[B332] Builder Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
         if self.tmdb_birthday:
             if "tmdb_person" not in methods:
@@ -888,13 +889,13 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
-                raise Failed(f"Builder Error: smart_url attribute has no value set. Please set a value")
+                raise Failed(f"[B333] Builder Error: 'smart_url' attribute has no value set. Please set a value")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
                     self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                 except ValueError:
-                    raise Failed(f"Builder Error: smart_url is incorrectly formatted")
+                    raise Failed(f"[B334] Builder Error: smart_url is incorrectly formatted")
 
         if "smart_filter" in methods and not self.playlist and not self.overlay:
             try:
@@ -910,35 +911,35 @@ class CollectionBuilder:
                 if x in methods:
                     self.collectionless = False
                     logger.info("")
-                    logger.warning(f"Builder Error: {x} is not compatible with plex_collectionless removing plex_collectionless")
+                    logger.warning(f"[B335] Builder Warning: 'plex_collectionless' ignored as it is incompatible with '{x}' builder")
 
         if self.run_again and self.smart_url:
             self.run_again = False
             logger.info("")
-            logger.warning(f"Builder Error: smart_filter is not compatible with run_again removing run_again")
+            logger.warning(f"[B336] Builder Warning: 'run_again' ignored as it is incompatible with 'smart_filter' builder")
 
         if self.smart_url and self.smart_label_collection:
-            raise Failed(f"Builder Error: smart_filter is not compatible with smart_label")
+            raise Failed(f"[B337] Builder Error: 'smart_filter' cannot be used with 'smart_label'")
 
         if self.parts_collection and "smart_url" in methods:
-            raise Failed(f"Builder Error: smart_url is not compatible with builder_level: {self.builder_level}")
+            raise Failed(f"[B338] Builder Error: 'smart_url' is not compatible with 'builder_level: {self.builder_level}'")
 
         self.smart = self.smart_url or self.smart_label_collection
 
         test_sort = None
         if "collection_order" in methods and not self.playlist and self.build_collection:
             if self.data[methods["collection_order"]] is None:
-                raise Failed(f"Builder Warning: collection_order attribute has no value set. Please set a value")
+                raise Failed(f"[B339] Builder Error: 'collection_order' attribute has no value set. Please set a value")
             else:
                 test_sort = self.data[methods["collection_order"]]
         elif "collection_order" not in methods and not self.playlist and not self.blank_collection and self.build_collection and self.library.default_collection_order and not self.smart:
             test_sort = self.library.default_collection_order
             logger.info("")
-            logger.warning(f"Builder Warning: collection_order not found using library default_collection_order: {test_sort}")
+            logger.warning(f"[B340] Builder Warning: 'collection_order' not found, using library 'default_collection_order: {test_sort}'")
         self.custom_sort = "custom" if self.playlist else None
         if test_sort:
             if self.smart:
-                raise Failed(f"Builder Error: collection_order does not work with Smart Collections")
+                raise Failed(f"[B341] Builder Error: 'collection_order' is incompatible with Smart Collections. 'sort_by' is the attribute used to sort items within a Smart Collection")
             logger.debug("")
             logger.debug("Validating Method: collection_order")
             logger.debug(f"Value: {test_sort}")
@@ -980,7 +981,7 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
-                    raise Failed(f"Builder Error: {method_final} attribute has no value set. Please set a value")
+                    raise Failed(f"Builder Error: '{method_final}' attribute has no value set. Please set a value")
                 elif method_data is None and method_final not in none_details:
                     logger.warning(f"Collection Warning: {method_final} attribute has no value set. Please set a value")
                 elif self.playlist and method_name not in playlist_attributes:
@@ -2467,7 +2468,7 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"Validating Method: {method}")
         if plex_filter is None:
-            raise Failed(f"Builder Error: {method} attribute has no value set. Please set a value")
+            raise Failed(f"Builder Error: '{method}' attribute has no value set. Please set a value")
         if not isinstance(plex_filter, dict):
             raise Failed(f"Builder Error: {method} must be a dictionary: {plex_filter}")
         if display:
@@ -2481,7 +2482,7 @@ class CollectionBuilder:
         if self.builder_level == "item":
             if "type" in filter_alias:
                 if plex_filter[filter_alias["type"]] is None:
-                    raise Failed(f"Builder Error: type attribute has no value set. Please set a value")
+                    raise Failed(f"Builder Error: 'type' attribute has no value set. Please set a value")
                 if plex_filter[filter_alias["type"]] not in plex.sort_types:
                     raise Failed(f"Builder Error: type: {plex_filter[filter_alias['type']]} is invalid. Options: {', '.join(plex.sort_types)}")
                 sort_type = plex_filter[filter_alias["type"]]
@@ -2502,7 +2503,7 @@ class CollectionBuilder:
         if "sort_by" in filter_alias:
             test_sorts = plex_filter[filter_alias["sort_by"]]
             if test_sorts is None:
-                raise Failed(f"Builder Error: sort_by attribute has no value set. Please set a value")
+                raise Failed(f"Builder Error: 'sort_by' attribute has no value set. Please set a value")
             if not isinstance(test_sorts, list):
                 test_sorts = [test_sorts]
             for test_sort in test_sorts:
@@ -2516,7 +2517,7 @@ class CollectionBuilder:
         limit = None
         if "limit" in filter_alias:
             if plex_filter[filter_alias["limit"]] is None:
-                raise Failed(f"Builder Error: limit attribute has no value set. Please set a value")
+                raise Failed(f"Builder Error: 'limit' attribute has no value set. Please set a value")
             elif str(plex_filter[filter_alias["limit"]]).lower() == "all":
                 filter_details += "Limit: all\n"
             else:
@@ -2532,7 +2533,7 @@ class CollectionBuilder:
         validate = True
         if "validate" in filter_alias:
             if plex_filter[filter_alias["validate"]] is None:
-                raise Failed(f"Builder Error: validate attribute has no value set. Please set a value")
+                raise Failed(f"Builder Error: 'validate' attribute has no value set. Please set a value")
             if not isinstance(plex_filter[filter_alias["validate"]], bool):
                 raise Failed(f"Builder Error: validate attribute must be either true or false")
             validate = plex_filter[filter_alias["validate"]]
@@ -2645,7 +2646,7 @@ class CollectionBuilder:
             base = "all" if "all" in filter_alias else "any"
             base_all = base == "all"
             if plex_filter[filter_alias[base]] is None:
-                raise Failed(f"Builder Error: {base} attribute has no value set. Please set a value")
+                raise Failed(f"Builder Error: '{base}' attribute has no value set. Please set a value")
             if not isinstance(plex_filter[filter_alias[base]], dict):
                 raise Failed(f"Builder Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
             base_dict = plex_filter[filter_alias[base]]
