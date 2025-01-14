@@ -354,11 +354,13 @@ class Overlays:
                                                     else:
                                                         try:
                                                             if format_var == "omdb_rating":
-                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).imdb_rating
-                                                            elif format_var == "omdb_metascore":
-                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).metacritic_rating
-                                                            elif format_var == "omdb_tomatoes":
-                                                                found_rating = self.config.OMDb.get_omdb(imdb_id).rotten_tomatoes
+                                                                found_rating = self.config.OMDb.get_omdb(imdb_id, True).imdb_rating
+                                                            elif format_var == "omdb_metascore_rating":
+                                                                raw = self.config.OMDb.get_omdb(imdb_id, True).metacritic_rating
+                                                                found_rating = raw / 10 if raw else None
+                                                            elif format_var == "omdb_tomatoes_rating":
+                                                                raw = self.config.OMDb.get_omdb(imdb_id, True).rotten_tomatoes
+                                                                found_rating = raw / 10 if raw else None
                                                         except Exception:
                                                             logger.error(f"Cannot retrieve {format_var} for: {imdb_id}")
                                                             raise
@@ -399,8 +401,9 @@ class Overlays:
                                                 logger.error(err)
                                             if found_rating:
                                                 actual_value = found_rating
+                                                logger.trace(f"{format_var}: {actual_value}")
                                             else:
-                                                raise Failed(f"No Rating Found for {item_title}")
+                                                raise Failed(f"No {format_var} found for {item_title}")
                                         elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration

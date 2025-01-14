@@ -51,7 +51,9 @@ types_for_var = {
         "imdb_rating", "mdb_average_rating", "mdb_imdb_rating", "mdb_letterboxd_rating",
         "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_rating",
         "mdb_tmdb_rating", "mdb_tomatoes_rating", "mdb_tomatoesaudience_rating",
-        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "tmdb_rating"
+        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "tmdb_rating",
+        "omdb_metascore_rating", "omdb_tomatoes_rating", "plex_imdb_rating", "plex_tmdb_rating",
+        "plex_tomatoes_rating", "plex_tomatoesaudience_rating", "trakt_rating",
     ],
     "movie_show_season": ["original_title", "trakt_user_rating"],
     "show_season_artist_album": ["total_runtime"],
