@@ -962,7 +962,7 @@ class CollectionBuilder:
                 self.custom_sort = []
                 for ts in test_sort:
                     if ts not in sorts:
-                        raise Failed(f"Builder Error: collection_order: {ts} is invalid. Options: {', '.join(sorts)}")
+                        raise Failed(f"[B342] Builder Error: collection_order value '{ts}' is invalid. Options: {', '.join(sorts)}")
                     self.custom_sort.append(ts)
             if test_sort not in plex.collection_order_options + ["custom.asc", "custom.desc"] and not self.custom_sort:
                 raise Failed(f"Builder Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom.asc/custom.desc (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/Kometa-Team/Kometa/wiki/Smart-Builders#sort-options")
@@ -981,51 +981,51 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
-                    raise Failed(f"Builder Error: '{method_final}' attribute has no value set. Please set a value")
+                    raise Failed(f"[B343] Builder Error: '{method_final}' attribute has no value set. Please set a value")
                 elif method_data is None and method_final not in none_details:
-                    logger.warning(f"Collection Warning: {method_final} attribute has no value set. Please set a value")
+                    logger.warning(f"[B344] Builder Warning: '{method_final}' attribute has no value set. Please set a value")
                 elif self.playlist and method_name not in playlist_attributes:
-                    raise Failed(f"Builder Error: {method_final} attribute not allowed when using playlists")
+                    raise Failed(f"[B345] Builder Error: '{method_final}' attribute not allowed when using playlists")
                 elif not self.config.Trakt and "trakt" in method_name:
-                    raise Failed(f"Builder Error: {method_final} requires Trakt to be configured")
+                    raise Failed(f"[B402] Builder Error: '{method_final}' requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
-                    logger.error(f"Builder Error: {method_final} requires Radarr to be configured")
+                    logger.error(f"[B403] Builder Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
-                    logger.error(f"Builder Error: {method_final} requires Sonarr to be configured")
+                    logger.error(f"[B404] Builder Error: '{method_final}' requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
-                    raise Failed(f"Builder Error: {method_final} requires Tautulli to be configured")
+                    raise Failed(f"[B405] Builder Error: '{method_final}' requires Tautulli to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
-                    raise Failed(f"Builder Error: {method_final} requires MyAnimeList to be configured")
+                    raise Failed(f"[B406] Builder Error: '{method_final}' requires MyAnimeList to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed for show libraries")
+                    raise Failed(f"[B351] Builder Error: '{method_final}' attribute only allowed for show libraries")
                 elif self.library.is_show and method_name in movie_only_builders:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed for movie libraries")
+                    raise Failed(f"[B352] Builder Error: '{method_final}' attribute only allowed for movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:
-                    raise Failed(f"Builder Error: {method_final} plex search only allowed for movie libraries")
+                    raise Failed(f"[B353] Builder Error: '{method_final}' plex search only allowed for movie libraries")
                 elif self.library.is_movie and method_name in plex.show_only_searches:
-                    raise Failed(f"Builder Error: {method_final} plex search only allowed for show libraries")
+                    raise Failed(f"[B354] Builder Error: '{method_final}' plex search only allowed for show libraries")
                 elif self.library.is_music and method_name not in music_attributes:
-                    raise Failed(f"Builder Error: {method_final} attribute not allowed for music libraries")
+                    raise Failed(f"[B355] Builder Error: '{method_final}' attribute not allowed for music libraries")
                 elif self.library.is_music and method_name in album_details and self.builder_level != "album":
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed for album collections")
+                    raise Failed(f"[B356] Builder Error: '{method_final}' attribute only allowed for album collections")
                 elif not self.library.is_music and method_name in music_only_builders:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed for music libraries")
+                    raise Failed(f"[B357] Builder Error: '{method_final}' attribute only allowed for music libraries")
                 elif not self.playlist and self.builder_level != "episode" and method_name in episode_parts_only:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed with Collection Level: episode")
+                    raise Failed(f"[B358] Builder Error: '{method_final}' attribute only allowed with Collection Level: episode")
                 elif self.parts_collection and method_name not in parts_collection_valid:
-                    raise Failed(f"Builder Error: {method_final} attribute not allowed with Collection Level: {self.builder_level.capitalize()}")
+                    raise Failed(f"[B359] Builder Error: '{method_final}' attribute not allowed with Collection Level: {self.builder_level.capitalize()}")
                 elif self.smart and method_name in smart_invalid:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed with normal collections")
+                    raise Failed(f"[B360] Builder Error: '{method_final}' attribute only allowed with normal collections")
                 elif not self.smart and method_name in smart_only:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed with smart collections")
+                    raise Failed(f"[B361] Builder Error: '{method_final}' attribute only allowed with smart collections")
                 elif self.collectionless and method_name not in collectionless_details:
-                    raise Failed(f"Builder Error: {method_final} attribute not allowed for Collectionless collection")
+                    raise Failed(f"[B362] Builder Error: '{method_final}' attribute not allowed for Collectionless collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:
-                    raise Failed(f"Builder Error: {method_final} builder not allowed when using smart_filter")
+                    raise Failed(f"[B363] Builder Error: '{method_final}' builder not allowed when using smart_filter")
                 elif not self.overlay and method_name in overlay_only:
-                    raise Failed(f"Builder Error: {method_final} attribute only allowed in an overlay file")
+                    raise Failed(f"[B364] Builder Error: '{method_final}' attribute only allowed in an overlay file")
                 elif self.overlay and method_name not in overlay_attributes:
-                    raise Failed(f"Builder Error: {method_final} attribute not allowed in an overlay file")
+                    raise Failed(f"[B365] Builder Error: '{method_final}' attribute not allowed in an overlay file")
                 elif method_name in summary_details:
                     self._summary(method_name, method_data)
                 elif method_name in poster_details:
@@ -1071,7 +1071,7 @@ class CollectionBuilder:
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
                 else:
-                    raise Failed(f"Builder Error: {method_final} attribute not supported")
+                    raise Failed(f"[B366] Builder Error: '{method_final}' attribute not supported")
             except Failed as e:
                 if self.validate_builders:
                     raise
@@ -1091,13 +1091,13 @@ class CollectionBuilder:
                 self.details["label"] = append_labels
 
         if not self.server_preroll and not self.smart_url and not self.blank_collection and len(self.builders) == 0:
-            raise Failed(f"Builder Error: No builders were found")
+            raise Failed(f"[B407] Builder Error: No builders were found")
 
         if self.blank_collection and len(self.builders) > 0:
-            raise Failed(f"Builder Error: No builders allowed with blank_collection")
+            raise Failed(f"[B408] Builder Error: No builders allowed with 'blank_collection'")
 
         if not isinstance(self.custom_sort, list) and self.custom_sort and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
-            raise Failed(f"Builder Error: " + ('Playlists' if self.playlist else 'collection_order: custom') +
+            raise Failed(f"[B369] Builder Error: " + ('Playlists' if self.playlist else 'collection_order: custom') +
                          (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
 
         if "add_missing" not in self.radarr_details:
@@ -1133,7 +1133,7 @@ class CollectionBuilder:
         if self.build_collection:
             if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
-                logger.error(f"Builder Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                logger.warning(f"[B409] Builder Warning: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
                 self.obj = None
             if self.smart:
@@ -1152,7 +1152,7 @@ class CollectionBuilder:
         else:
             self.obj = None
             if self.sync:
-                logger.warning(f"Builder Error: Sync Mode can only be append when using build_collection: false")
+                logger.warning(f"[B371] Builder Warning: Sync Mode can only be append when using 'build_collection: false'")
                 self.sync = False
             self.run_again = False
         if self.non_existing is not False and self.obj:
@@ -1180,7 +1180,7 @@ class CollectionBuilder:
             try:
                 self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
             except Failed as e:
-                logger.error(f"Trakt Error: List description not found: {e}")
+                logger.warning(f"[B106] Builder Warning: Trakt list description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -1193,7 +1193,7 @@ class CollectionBuilder:
                     self.config.Requests.get_image(method_data)
                 self.posters[method_name] = method_data
             except Failed:
-                logger.warning(f"Builder Warning: No Poster Found at {method_data}")
+                logger.error(f"[B107] Builder Error: No poster found at {method_data}, please check the URL is correct and points directly to an image")
         elif method_name == "tmdb_list_poster":
             self.posters[method_name] = self.config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).poster_url
         elif method_name == "tvdb_list_poster":
@@ -1210,7 +1210,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
             else:
-                logger.error(f"Builder Error: Poster path does not exist: {os.path.abspath(method_data)}")
+                logger.error(f"[B108] Builder Error: Poster path does not exist: {os.path.abspath(method_data)}, please check the path is correct")
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":
@@ -1218,7 +1218,7 @@ class CollectionBuilder:
                 self.config.Requests.get_image(method_data)
                 self.backgrounds[method_name] = method_data
             except Failed:
-                logger.warning(f"Builder Warning: No Background Found at {method_data}")
+                logger.error(f"[B109] Builder Error: No Background Found at {method_data}, please check the path is correct and points directly to an image")
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, 'TMDb ID'), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
@@ -1227,7 +1227,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
-                logger.error(f"Builder Error: Background path does not exist: {os.path.abspath(method_data)}")
+                logger.error(f"[B110] Builder Error: Background path does not exist: {os.path.abspath(method_data)}, please check the path is correct")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
@@ -1236,7 +1236,7 @@ class CollectionBuilder:
             if os.path.exists(os.path.abspath(method_data)):
                 self.file_theme = os.path.abspath(method_data)
             else:
-                logger.error(f"Builder Error: Theme path does not exist: {os.path.abspath(method_data)}")
+                logger.error(f"[B111] Builder Error: Theme path does not exist: {os.path.abspath(method_data)}, please check the path is correct")
         elif method_name == "tmdb_region":
             self.tmdb_region = util.parse(self.Type, method_name, method_data, options=self.config.TMDb.iso_3166_1)
         elif method_name == "collection_mode":
@@ -1266,9 +1266,9 @@ class CollectionBuilder:
             self.ignore_imdb_ids.extend(util.parse(self.Type, method_name, method_data, datatype="list"))
         elif method_name == "label":
             if "label" in methods and "label.sync" in methods:
-                raise Failed(f"Builder Error: Cannot use label and label.sync together")
+                raise Failed(f"[B372] Builder Error: Cannot use 'label' and 'label.sync' together")
             if "label.remove" in methods and "label.sync" in methods:
-                raise Failed(f"Builder Error: Cannot use label.remove and label.sync together")
+                raise Failed(f"B373] Builder Error: Cannot use 'label.remove' and 'label.sync' together")
             if method_final == "label" and "label_sync_mode" in methods and self.data[methods["label_sync_mode"]] == "sync":
                 self.details["label.sync"] = util.get_list(method_data) if method_data else []
             else:
