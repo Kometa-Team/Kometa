@@ -2094,17 +2094,17 @@ class CollectionBuilder:
                 try:
                     self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
                 except Failed as e:
-                    logger.error(f"Trakt Error: List description not found: {e}")
+                    logger.warning(f"[B106] Builder Warning: Trakt list description not found: {e}")
         elif method_name == "trakt_boxoffice":
             if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
                 self.builders.append((method_name, 10))
             else:
-                raise Failed(f"[B] Builder Error: {method_name} must be set to true")
+                raise Failed(f"[B3139] Builder Error: '{method_name}' must be set to true")
         elif method_name == "trakt_recommendations":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
         elif method_name == "sync_to_trakt_list":
             if method_data not in self.config.Trakt.slugs:
-                raise Failed(f"[B] Builder Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
+                raise Failed(f"[B3140] Builder Error: '{method_data}' invalid. Options {', '.join(self.config.Trakt.slugs)}")
             self.sync_to_trakt_list = method_data
         elif method_name == "sync_missing_to_trakt_list":
             self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
@@ -2126,7 +2126,7 @@ class CollectionBuilder:
                 }
                 final_method = "trakt_chart"
             if method_name != final_method:
-                logger.warning(f"[B] Builder Warning: {method_name} will run as {final_method}")
+                logger.warning(f"[B3141] Builder Warning: '{method_name}' will run as '{final_method}'")
             for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
                 self.builders.append((final_method, trakt_dict))
 
@@ -2157,19 +2157,19 @@ class CollectionBuilder:
             validate = True
             if "validate" in dict_methods:
                 if dict_data[dict_methods["validate"]] is None:
-                    raise Failed(f"[B] Builder Error: validate filter attribute has no value set. Please set a value")
+                    raise Failed(f"[B3142] Builder Error: Filter attribute 'validate' has no value set. Please set a value")
                 if not isinstance(dict_data[dict_methods["validate"]], bool):
-                    raise Failed(f"[B] Builder Error: validate filter attribute must be either true or false")
+                    raise Failed(f"[B3143] Builder Error: Filter attribute 'validate' must be either true or false")
                 validate = dict_data.pop(dict_methods["validate"])
             for filter_method, filter_data in dict_data.items():
                 filter_attr, modifier, filter_final = self.library.split(filter_method)
                 message = None
                 if filter_final not in all_filters:
-                    message = f"Builder Error: {filter_final} is not a valid filter attribute"
+                    message = f"[B3144] Builder Error: '{filter_final}' is not a valid filter attribute"
                 elif self.builder_level in filters and filter_attr not in filters[self.builder_level]:
-                    message = f"Builder Error: {filter_final} is not a valid {self.builder_level} filter attribute"
+                    message = f"[B3145] Builder Error: '{filter_final}' is not a valid {self.builder_level} filter attribute"
                 elif filter_final is None:
-                    message = f"Builder Error: {filter_final} filter attribute has no value set. Please set a value"
+                    message = f"[B3146] Builder Error: '{filter_final}' filter attribute has no value set. Please set a value"
                 else:
                     try:
                         final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
@@ -2234,7 +2234,7 @@ class CollectionBuilder:
             ids = self.library.Sonarr.get_tvdb_ids(method, value)
         else:
             ids = []
-            logger.error(f"Builder Error: Method '{method}' not supported")
+            logger.error(f"[B3147] Builder Error: Method '{method}' not supported")
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
