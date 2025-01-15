@@ -6,7 +6,7 @@ from modules.logs import MyLogger
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 9:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-    sys.exit(0)
+    sys.exit(1)
 
 try:
     import arrapi, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
@@ -17,7 +17,7 @@ try:
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
     print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
-    sys.exit(0)
+    sys.exit(1)
 
 system_versions = {
     "arrapi": arrapi.__version__,
@@ -192,7 +192,7 @@ if run_args["config"] and os.path.exists(run_args["config"]):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(run_args["config"])))
 elif run_args["config"] and not os.path.exists(run_args["config"]):
     print(f"Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}")
-    sys.exit(0)
+    sys.exit(1)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     git_branch = git_branch or "master"
     github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
