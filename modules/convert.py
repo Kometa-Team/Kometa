@@ -58,13 +58,13 @@ class Convert:
         if imdb_id in self._imdb_to_anidb:
             return self._imdb_to_anidb[imdb_id]
         else:
-            raise Failed(f"Convert Warning: AniDB ID not found for IMDb ID: {imdb_id}")
+            raise Failed(f"[M105] Mapping Error: AniDB ID not found for IMDb ID: {imdb_id}")
 
     def tvdb_to_anidb(self, tvdb_id):
         if int(tvdb_id) in self._tvdb_to_anidb:
             return self._tvdb_to_anidb[int(tvdb_id)]
         else:
-            raise Failed(f"Convert Warning: AniDB ID not found for TVDb ID: {tvdb_id}")
+            raise Failed(f"[M106] Mapping Error: AniDB ID not found for TVDb ID: {tvdb_id}")
 
     def ids_to_anidb(self, library, rating_key, tvdb_id, imdb_id, tmdb_id):
         if rating_key in library.reverse_anidb:
@@ -84,7 +84,7 @@ class Convert:
 
     def anidb_to_mal(self, anidb_id):
         if anidb_id not in self._anidb_to_mal:
-            raise Failed(f"Convert Warning: No MyAnimeList Found for AniDB ID: {anidb_id}")
+            raise Failed(f"[M107] Mapping Error: No MyAnimeList Found for AniDB ID: {anidb_id}")
         return self._anidb_to_mal[anidb_id]
 
     def anidb_to_ids(self, anidb_ids, library):
@@ -118,9 +118,9 @@ class Convert:
                     except Failed:
                         pass
             elif str(anidb_id) in self._anidb_ids:
-                logger.warning(f"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
+                logger.warning(f"[M108] Mapping Error: No TVDb ID or IMDb ID found for AniDB ID: {anidb_id}")
             else:
-                logger.error(f"AniDB Error: No Anime found for AniDB ID: {anidb_id}")
+                logger.error(f"[M109] AniDB Error: No Anime found for AniDB ID: {anidb_id}")
         return ids
 
     def anilist_to_ids(self, anilist_ids, library):
@@ -129,7 +129,7 @@ class Convert:
             if anilist_id in self._anilist_to_anidb:
                 anidb_ids.append(self._anilist_to_anidb[anilist_id])
             else:
-                logger.warning(f"Convert Warning: No AniDB ID Found for AniList ID: {anilist_id}")
+                logger.warning(f"[M110] Mapping Error: No AniDB ID Found for AniList ID: {anilist_id}")
         return self.anidb_to_ids(anidb_ids, library)
 
     def myanimelist_to_ids(self, mal_ids, library):
@@ -140,7 +140,7 @@ class Convert:
             elif int(mal_id) in self._mal_to_anidb:
                 ids.extend(self.anidb_to_ids(self._mal_to_anidb[int(mal_id)], library))
             else:
-                logger.warning(f"Convert Warning: No AniDB ID Found for MyAnimeList ID: {mal_id}")
+                logger.warning(f"[M111] Mapping Error: No AniDB ID Found for MyAnimeList ID: {mal_id}")
         return ids
 
     def tmdb_to_imdb(self, tmdb_id, is_movie=True, fail=False):
@@ -159,7 +159,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No IMDb ID Found for TMDb ID: {tmdb_id}")
+            raise Failed(f"[M112] Mapping Error: No IMDb ID Found for TMDb ID: {tmdb_id}")
         else:
             return None
 
@@ -178,7 +178,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No TMDb ID Found for IMDb ID: {imdb_id}")
+            raise Failed(f"[M113] Mapping Error: No TMDb ID Found for IMDb ID: {imdb_id}")
         else:
             return None, None
 
@@ -197,7 +197,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No TVDb ID Found for TMDb ID: {tmdb_id}")
+            raise Failed(f"[M114] Mapping Error: No TVDb ID Found for TMDb ID: {tmdb_id}")
         else:
             return None
 
@@ -216,7 +216,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No TMDb ID Found for TVDb ID: {tvdb_id}")
+            raise Failed(f"[M115] Mapping Error: No TMDb ID Found for TVDb ID: {tvdb_id}")
         else:
             return None
 
@@ -235,7 +235,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No IMDb ID Found for TVDb ID: {tvdb_id}")
+            raise Failed(f"[M116] Mapping Error: No IMDb ID Found for TVDb ID: {tvdb_id}")
         else:
             return None
 
@@ -256,7 +256,7 @@ class Convert:
         except Failed:
             pass
         if fail:
-            raise Failed(f"Convert Warning: No TVDb ID Found for IMDb ID: {imdb_id}")
+            raise Failed(f"[M117] Mapping Error: No TVDb ID Found for IMDb ID: {imdb_id}")
         else:
             return None
 
@@ -304,7 +304,7 @@ class Convert:
                 except ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
-                    raise Failed("No External GUIDs found")
+                    raise Failed("[M118] Mapping Error: No External GUIDs found")
                 if not tvdb_id and not imdb_id and not tmdb_id:
                     library.query(item.refresh)
                     raise Failed("Refresh Metadata")
@@ -313,7 +313,7 @@ class Convert:
             elif item_type == "themoviedb":                 tmdb_id.append(int(check_id))
             elif item_type in ["xbmcnfo", "xbmcnfotv"]:
                 if len(check_id) > 10:
-                    raise Failed(f"XMBC NFO Local ID: {check_id}")
+                    raise Failed(f"[M119] Mapping Error: XMBC NFO Local ID: {check_id}")
                 try:
                     if item_type == "xbmcnfo":
                         tmdb_id.append(int(check_id))
@@ -329,13 +329,13 @@ class Convert:
                     anidb_id = int(anidb_str[1:] if anidb_str[0] == "a" else anidb_str)
                     library.anidb_map[anidb_id] = item.ratingKey
                 else:
-                    raise Failed(f"Hama Agent ID: {check_id} not supported")
+                    raise Failed(f"[M120] Mapping Error: Hama Agent not supported for ID: {check_id}")
             elif item_type == "myanimelist":
                 library.mal_map[int(check_id)] = item.ratingKey
                 if int(check_id) in self._mal_to_anidb:
                     anidb_id = self._mal_to_anidb[int(check_id)]
                 else:
-                    raise Failed(f"Convert Warning: AniDB ID not found for MyAnimeList ID: {check_id}")
+                    raise Failed(f"[M121] Mapping Error: AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise NonExisting("No match in Plex")
             else:                                           raise NonExisting(f"Agent {item_type} not supported")
 
@@ -353,7 +353,7 @@ class Convert:
                 elif anidb_id in self._anidb_to_tvdb:
                     tvdb_id.append(int(self._anidb_to_tvdb[anidb_id]))
                 else:
-                    raise Failed(f"AniDB: {anidb_id} not found")
+                    raise Failed(f"[M122] Mapping Error: AniDB ID not found: {anidb_id}")
             else:
                 if not tmdb_id and imdb_id:
                     for imdb in imdb_id:
@@ -373,7 +373,7 @@ class Convert:
                         if tvdb:
                             tvdb_id.append(int(tvdb))
                     if not tvdb_id:
-                        raise Failed(f"Convert Warning: Unable to convert TMDb ID: {', '.join([str(t) for t in tmdb_id])} to TVDb ID")
+                        raise Failed(f"[M123] Mapping Error: Unable to convert TVDb ID from TMDb ID: {', '.join([str(t) for t in tmdb_id])}")
 
             if not imdb_id and tvdb_id:
                 for tvdb in tvdb_id:
@@ -400,7 +400,7 @@ class Convert:
                 return "movie", tmdb_id, imdb_id
             else:
                 logger.debug(f"TMDb: {tmdb_id}, IMDb: {imdb_id}, TVDb: {tvdb_id}")
-                raise Failed(f"No ID to convert")
+                raise Failed(f"[M1234] Mapping Error: No ID to convert")
         except Failed as e:
             logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
         except NonExisting as e:

@@ -181,4 +181,4 @@ class Ergast:
                 self.cache.update_ergast(expired, year, races, self.cache.expiration)
             return races
         else:
-            raise Failed(f"Ergast Error: F1 Season: {year} Not found")
+            raise Failed(f"[B3189] Builder Error: Ergast F1 Season: {year} not found")

@@ -40,13 +40,13 @@ class GitHub:
             return self.requests.get_yaml(url, headers=self.headers, params=params)
         response = self.requests.get(url, headers=self.headers, params=params)
         if response.status_code >= 400:
-            raise Failed(f"GitHub Error: {err_msg} Response: {response.status_code} - {response.reason} ")
+            raise Failed(f"[S204] Connector Error: GitHub {err_msg}. Response: {response.status_code} - {response.reason}")
         try:
             return response.json()
         except ValueError:
             logger.stacktrace()
             logger.error(str(response.content))
-            raise Failed("GitHub JSON Unpack Error")
+            raise Failed("[S205] Connector Error: GitHub JSON unpack error")
 
     def get_top_tree(self, repo):
         if not str(repo).startswith("/"):

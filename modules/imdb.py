@@ -430,19 +430,19 @@ class IMDb:
                 imdb_dict[main] = imdb_dict["url"]
             dict_methods = {dm.lower(): dm for dm in imdb_dict}
             if main not in dict_methods:
-                raise Failed(f"IMDb {err_type} Error: {method} {main} attribute not found")
+                raise Failed(f"[B3193] Builder Error: IMDb {method} '{main}' attribute not found")
             elif imdb_dict[dict_methods[main]] is None:
-                raise Failed(f"IMDb {err_type} Error: {method} {main} attribute is blank")
+                raise Failed(f"[B3194] Builder Error: IMDb {method} '{main}' attribute is blank")
             else:
                 main_data = imdb_dict[dict_methods[main]].strip()
                 if method == "imdb_list":
                     if main_data.startswith(f"{base_url}/search/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search")
+                        raise Failed(f"[B3195] Builder Error: IMDb URLs with https://www.imdb.com/search/ no longer work with {method}, use imdb_search instead")
                     if main_data.startswith(f"{base_url}/filmosearch/"):
-                        raise Failed(f"IMDb Error: URLs with https://www.imdb.com/filmosearch/ no longer works with {method} use imdb_search")
+                        raise Failed(f"[B3196] Builder Error: IMDb URLs with https://www.imdb.com/filmosearch/ no longer works with {method}, use imdb_search instead")
                     search = re.search(r"(ls\d+)", main_data)
                     if not search:
-                        raise Failed(f"IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
+                        raise Failed(f"[B3197] Builder Error: IMDb {method} '{main}' must begin with ls (ex. ls005526372)")
                     new_dict = {main: search.group(1)}
                 else:
                     user_id = None
@@ -452,12 +452,12 @@ class IMDb:
                         except ValueError:
                             pass
                     if not user_id:
-                        raise Failed(f"IMDb {err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
+                        raise Failed(f"[B3198] Builder Error: IMDb {method} {main}: '{main_data}' not in the format of 'ur########'")
                     new_dict = {main: main_data}
 
             if "limit" in dict_methods:
                 if imdb_dict[dict_methods["limit"]] is None:
-                    logger.warning(f"IMDb {err_type} Warning: {method} limit attribute is blank using 0 as default")
+                    logger.warning(f"[B3199] Builder Warning: IMDb {method} 'limit' attribute is blank, using 0 as default")
                 else:
                     try:
                         value = int(str(imdb_dict[dict_methods["limit"]]))
@@ -466,7 +466,7 @@ class IMDb:
                     except ValueError:
                         pass
                 if "limit" not in new_dict:
-                    logger.warning(f"IMDb {err_type} Warning: {method} limit attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater using 0 as default")
+                    logger.warning(f"[B3200] Builder Warning: IMDb {method} 'limit' attribute: {imdb_dict[dict_methods['limit']]} must be an integer 0 or greater, using 0 as default")
             if "limit" not in new_dict:
                 new_dict["limit"] = 0
 
@@ -662,10 +662,10 @@ class IMDb:
             logger.exorcise()
             if len(imdb_ids) > 0:
                 return imdb_ids
-            raise Failed("IMDb Error: No IMDb IDs Found")
+            raise Failed("[B3201] Builder Error: No IMDb IDs Found")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
-                raise Failed("IMDb Error: Internal PersistedQuery Error. Contact the Kometa Team")
+                raise Failed("[B3202] Builder Error: IMDb Internal PersistedQuery Error. Contact the Kometa Team")
             logger.error(f"Response: {response_json}")
             raise
 
@@ -745,14 +745,14 @@ class IMDb:
                 if v not in parental_dict:
                     parental_dict[v] = None
         else:
-            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
+            raise Failed(f"[B3203] Builder Error: No Parental Guide Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
-            raise Failed(f"IMDb Error: chart: {chart} not ")
+            raise Failed(f"[B3204] Builder Error: IMDb chart: {chart} not ")
         script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
         return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 
@@ -786,7 +786,7 @@ class IMDb:
                 logger.info(f"    {k}: {v}")
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
-            raise Failed(f"IMDb Error: Method '{method}' not supported")
+            raise Failed(f"[B3205] Builder Error: IMDb method '{method}' not supported")
 
     def _interface(self, interface):
         gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")

@@ -16,7 +16,7 @@ class Gotify:
             logger.info(f"Gotify Version: {self._request(path='version', post=False)['version']}")
         except Exception:
             logger.stacktrace()
-            raise Failed("Connector Error: Gotify URL could not be reached. Please check the URL is correct and that Gotify is online and accessible")
+            raise Failed("[S206] Connector Error: Gotify URL could not be reached. Please check the URL is correct and that Gotify is online and accessible")
 
     def _request(self, path="message", json=None, post=True):
         if post:
@@ -30,7 +30,7 @@ class Gotify:
             logger.debug(e)
             raise e
         if response.status_code >= 400:
-            raise Failed(f"({response.status_code} [{response.reason}]) {response_json['errorDescription']}")
+            raise Failed(f"[S207] Connector Error: A Gotify error occurred. ({response.status_code} [{response.reason}]) {response_json['errorDescription']}")
         return response_json
 
     def notification(self, json):
