@@ -965,7 +965,7 @@ class CollectionBuilder:
                         raise Failed(f"[B342] Builder Error: collection_order value '{ts}' is invalid. Options: {', '.join(sorts)}")
                     self.custom_sort.append(ts)
             if test_sort not in plex.collection_order_options + ["custom.asc", "custom.desc"] and not self.custom_sort:
-                raise Failed(f"[B] Builder Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom.asc/custom.desc (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/Kometa-Team/Kometa/wiki/Smart-Builders#sort-options")
+                raise Failed(f"[B3186] Builder Error: collection_order value '{test_sort}' invalid. Options:\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom.asc/custom.desc (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/Kometa-Team/Kometa/wiki/Smart-Builders#sort-options")
 
         if self.smart:
             self.custom_sort = None
@@ -1446,12 +1446,12 @@ class CollectionBuilder:
                         if new_dictionary[search_attr] == "current":
                             new_dictionary[search_attr] = current_season
                         if "year" not in dict_methods:
-                            logger.warning(f"[B] Builder Warning: {method_name} year attribute not found using this year: {default_year} by default")
+                            logger.warning(f"[B3187] Builder Warning: {method_name} attribute 'year' not found,  using {default_year} as default")
                             new_dictionary["year"] = default_year
                     elif search_attr == "year":
                         new_dictionary[search_attr] = util.parse(self.Type, search_attr, search_data, datatype="int", parent=method_name, default=default_year, minimum=1917, maximum=default_year + 1)
                     elif search_data is None:
-                        raise Failed(f"[B] Builder Error: {method_name} attribute '{search_method}' has no value set. Please set a value")
+                        raise Failed(f"[B3188] Builder Error: {method_name} attribute '{search_method}' has no value set. Please set a value")
                     elif search_attr == "adult":
                         new_dictionary[search_attr] = util.parse(self.Type, search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr == "country":
@@ -2443,7 +2443,7 @@ class CollectionBuilder:
         filtered_items = []
         for i, item in enumerate(items, 1):
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
-                logger.error(f"Builder Error: Item: {item} is an invalid type")
+                logger.error(f"[B3148] Builder Error: Item '{item}' has an invalid type. Invalid types are: Movie, Show, Season, Episode, Artist, Album, Track")
                 continue
             if item not in self.found_items:
                 if item.ratingKey in self.filtered_keys:
@@ -2468,23 +2468,23 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"Validating Method: {method}")
         if plex_filter is None:
-            raise Failed(f"[B] Builder Error: '{method}' attribute has no value set. Please set a value")
+            raise Failed(f"[B3149] Builder Error: Plex filter '{method}' has no value set. Please set a value")
         if not isinstance(plex_filter, dict):
-            raise Failed(f"[B] Builder Error: {method} must be a dictionary: {plex_filter}")
+            raise Failed(f"[B3150] Builder Error: Plex filter '{method}' must be a dictionary: {plex_filter}")
         if display:
             logger.debug(f"Value: {plex_filter}")
 
         filter_alias = {m.lower(): m for m in plex_filter}
 
         if "any" in filter_alias and "all" in filter_alias:
-            raise Failed(f"[B] Builder Error: Cannot have more then one base")
+            raise Failed(f"[B3151] Builder Error: Cannot filter on more than one base ('any' and 'all')")
 
         if self.builder_level == "item":
             if "type" in filter_alias:
                 if plex_filter[filter_alias["type"]] is None:
-                    raise Failed(f"[B] Builder Error: 'type' attribute has no value set. Please set a value")
+                    raise Failed(f"[B3152] Builder Error: 'type' attribute has no value set. Please set a value")
                 if plex_filter[filter_alias["type"]] not in plex.sort_types:
-                    raise Failed(f"[B] Builder Error: type: {plex_filter[filter_alias['type']]} is invalid. Options: {', '.join(plex.sort_types)}")
+                    raise Failed(f"[B3153] Builder Error: type: {plex_filter[filter_alias['type']]} is invalid. Options: {', '.join(plex.sort_types)}")
                 sort_type = plex_filter[filter_alias["type"]]
             elif self.library.is_show:
                 sort_type = "show"
@@ -2503,12 +2503,12 @@ class CollectionBuilder:
         if "sort_by" in filter_alias:
             test_sorts = plex_filter[filter_alias["sort_by"]]
             if test_sorts is None:
-                raise Failed(f"[B] Builder Error: 'sort_by' attribute has no value set. Please set a value")
+                raise Failed(f"[B3154] Builder Error: 'sort_by' attribute has no value set. Please set a value")
             if not isinstance(test_sorts, list):
                 test_sorts = [test_sorts]
             for test_sort in test_sorts:
                 if test_sort not in sorts:
-                    raise Failed(f"[B] Builder Error: sort_by: {test_sort} is invalid. Options: {', '.join(sorts)}")
+                    raise Failed(f"[B3155] Builder Error: sort_by value '{test_sort}' is invalid. Options: {', '.join(sorts)}")
                 sort.append(test_sort)
         if not sort:
             sort.append(default_sort if default_sort else type_default_sort)
@@ -2517,7 +2517,7 @@ class CollectionBuilder:
         limit = None
         if "limit" in filter_alias:
             if plex_filter[filter_alias["limit"]] is None:
-                raise Failed(f"[B] Builder Error: 'limit' attribute has no value set. Please set a value")
+                raise Failed(f"[B3156] Builder Error: 'limit' attribute has no value set. Please set a value")
             elif str(plex_filter[filter_alias["limit"]]).lower() == "all":
                 filter_details += "Limit: all\n"
             else:
@@ -2528,14 +2528,14 @@ class CollectionBuilder:
                         limit = int(plex_filter[filter_alias["limit"]])
                         filter_details += f"Limit: {limit}\n"
                 except ValueError:
-                    raise Failed(f"[B] Builder Error: limit attribute must be an integer greater than 0")
+                    raise Failed(f"[B3157] Builder Error: 'limit' attribute must be an integer greater than 0")
 
         validate = True
         if "validate" in filter_alias:
             if plex_filter[filter_alias["validate"]] is None:
-                raise Failed(f"[B] Builder Error: 'validate' attribute has no value set. Please set a value")
+                raise Failed(f"[B3158] Builder Error: 'validate' attribute has no value set. Please set a value")
             if not isinstance(plex_filter[filter_alias["validate"]], bool):
-                raise Failed(f"[B] Builder Error: validate attribute must be either true or false")
+                raise Failed(f"[B3159] Builder Error: 'validate' attribute must be either true or false")
             validate = plex_filter[filter_alias["validate"]]
             filter_details += f"Validate: {validate}\n"
 
@@ -2565,17 +2565,17 @@ class CollectionBuilder:
 
                 error = None
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
-                    error = f"Builder Error: {final_attr} is not a valid {method} attribute"
+                    error = f"[B3160] Builder Error: '{final_attr}' is not a valid {method} attribute"
                 elif self.library.is_show and final_attr in plex.movie_only_searches:
-                    error = f"Builder Error: {final_attr} {method} attribute only works for movie libraries"
+                    error = f"[B3161] Builder Error: {final_attr} '{method} 'attribute only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
-                    error = f"Builder Error: {final_attr} {method} attribute only works for show libraries"
+                    error = f"[B3162] Builder Error: {final_attr} attribute '{method}' only works for show libraries"
                 elif self.library.is_music and final_attr not in plex.music_searches + ["all", "any"]:
-                    error = f"Builder Error: {final_attr} {method} attribute does not work for music libraries"
+                    error = f"[B3163] Builder Error: {final_attr} attribute '{method}' does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
-                    error = f"Builder Error: {final_attr} {method} attribute only works for music libraries"
+                    error = f"[B3164] Builder Error: {final_attr} attribute '{method}' only works for music libraries"
                 elif _data is not False and _data != 0 and not _data:
-                    error = f"Builder Error: {final_attr} {method} attribute has no value set. Please set a value"
+                    error = f"[B3165] Builder Error: {final_attr} attribute '{method}' has no value set. Please set a value"
                 else:
                     if final_attr.startswith(("any", "all")):
                         dicts = util.get_list(_data)
@@ -2583,7 +2583,7 @@ class CollectionBuilder:
                         display_add = ""
                         for dict_data in dicts:
                             if not isinstance(dict_data, dict):
-                                raise Failed(f"[B] Builder Error: {attr} must be either a dictionary or list of dictionaries")
+                                raise Failed(f"[B3166] Builder Error: '{attr}' must be either a dictionary or list of dictionaries. An example of dictionaries can be found at https://kometa.wiki/en/latest/kometa/yaml/#dictionaries")
                             inside_filter, inside_display = _filter(dict_data, is_all=attr == "all", level=level)
                             if len(inside_filter) > 0:
                                 display_add += inside_display
@@ -2641,14 +2641,14 @@ class CollectionBuilder:
                 base_dict["any"] = any_dicts
             base_all = True
             if len(base_dict) == 0:
-                raise Failed(f"[B] Builder Error: Must have either any or all as a base for {method}")
+                raise Failed(f"[B3167] Builder Error: Must have either 'any' or 'all' as a base for {method}")
         else:
             base = "all" if "all" in filter_alias else "any"
             base_all = base == "all"
             if plex_filter[filter_alias[base]] is None:
-                raise Failed(f"[B] Builder Error: '{base}' attribute has no value set. Please set a value")
+                raise Failed(f"[B3168] Builder Error: '{base}' attribute has no value set. Please set a value")
             if not isinstance(plex_filter[filter_alias[base]], dict):
-                raise Failed(f"[B] Builder Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
+                raise Failed(f"[B3169] Builder Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
             base_dict = plex_filter[filter_alias[base]]
         built_filter, filter_text = _filter(base_dict, is_all=base_all)
         filter_details = f"{filter_details}Filter:{filter_text}"
@@ -2656,7 +2656,7 @@ class CollectionBuilder:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
             filter_url = f"?type={type_key}&{f'limit={limit}&' if limit else ''}sort={'%2C'.join([sorts[s] for s in sort])}&{final_filter}"
         else:
-            raise FilterFailed(f"[B] Builder Error: No Plex Filter Created")
+            raise FilterFailed(f"[B3170] Builder Error: No Plex filter created. Please check your filter criteria")
 
         if display:
             logger.debug(f"Smart URL: {filter_url}")
@@ -2675,7 +2675,7 @@ class CollectionBuilder:
                         used.append(name)
                         valid_list.append((name, key) if plex_search else name)
             if not valid_list:
-                error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
+                error = f"[B3171] Builder Error: When using '{attribute}', no matches found that met the regex pattern '{data}'"
                 if self.details["show_options"]:
                     error += f"\nOptions: {names}"
                 if validate:
@@ -2697,7 +2697,7 @@ class CollectionBuilder:
                         try:
                             final_years.append(datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip())))
                         except ValueError:
-                            raise Failed(f"[B] Builder Error: {final} attribute modifier invalid '{year_values[1]}'")
+                            raise Failed(f"[B3172] Builder Error: '{final}' attribute modifier invalid '{year_values[1]}'")
                     else:
                         final_years.append(util.parse(self.Type, final, value, datatype="int"))
                 return smart_pair(final_years)
@@ -2707,7 +2707,7 @@ class CollectionBuilder:
                     try:
                         return datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                     except ValueError:
-                        raise Failed(f"[B] Builder Error: {final} attribute modifier invalid '{year_values[1]}'")
+                        raise Failed(f"[B3172] Builder Error: '{final}' attribute modifier invalid '{year_values[1]}'")
                 return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) \
                 or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
@@ -2725,7 +2725,7 @@ class CollectionBuilder:
                 if str(data).lower() in ["day", "month"]:
                     return data.lower()
                 else:
-                    raise Failed(f"[B] Builder Error: history attribute invalid: {data} must be a number between 1-30, day, or month")
+                    raise Failed(f"[B3173] Builder Error: 'history' value invalid: '{data}' must be a number between 1-30, day, or month")
         elif attribute == "tmdb_type":
             return util.parse(self.Type, final, data, datatype="commalist", options=[v for k, v in tmdb.discover_types.items()])
         elif attribute == "tmdb_status":
@@ -2733,7 +2733,7 @@ class CollectionBuilder:
         elif attribute == "imdb_keyword":
             new_dictionary = {"minimum_votes": 0, "minimum_relevant": 0, "minimum_percentage": 0}
             if isinstance(data, dict) and "keyword" not in data:
-                raise Failed(f"[B] Builder Error: imdb_keyword requires the keyword attribute")
+                raise Failed(f"[B3174] Builder Error: 'imdb_keyword' builder requires the keyword attribute")
             elif isinstance(data, dict):
                 dict_methods = {dm.lower(): dm for dm in data}
                 new_dictionary["keywords"] = util.parse(self.Type, "keyword", data, methods=dict_methods, parent=attribute, datatype="lowerlist")
@@ -2782,7 +2782,7 @@ class CollectionBuilder:
             try:
                 return util.validate_date(datetime.now() if data == "today" else data, return_as="%Y-%m-%d")
             except Failed as e:
-                raise Failed(f"[B] Builder Error: {final}: {e}")
+                raise Failed(f"[B3175] Builder Error: '{final}' {e}")
         elif attribute in date_attributes and modifier in ["", ".not"]:
             search_mod = "d"
             if plex_search and data and str(data)[-1] in ["s", "m", "h", "d", "w", "o", "y"]:
@@ -2799,11 +2799,11 @@ class CollectionBuilder:
                 percentage = self.default_percent
                 if "percentage" in data:
                     if data["percentage"] is None:
-                        logger.warning(f"[B] Builder Warning: percentage filter attribute is blank using {self.default_percent} as default")
+                        logger.warning(f"[B3176] Builder Warning: 'percentage' attribute is blank, using {self.default_percent} as default")
                     else:
                         maybe = util.check_num(data["percentage"])
                         if maybe < 0 or maybe > 100:
-                            logger.warning(f"[B] Builder Warning: percentage filter attribute must be a number 0-100 using {self.default_percent} as default")
+                            logger.warning(f"[B3177] Builder Warning: 'percentage' attribute must be a number 0-100, using {self.default_percent} as default")
                         else:
                             percentage = maybe
                 final_filters = {"percentage": percentage}
@@ -2813,11 +2813,11 @@ class CollectionBuilder:
                     if filter_final == "percentage":
                         continue
                     if filter_final not in all_filters:
-                        message = f"Builder Error: {filter_final} is not a valid filter attribute"
+                        message = f"[B3178] Builder Error: '{filter_final}' is not a valid filter attribute"
                     elif filter_attr not in filters[attribute[:-1]] or filter_attr in ["seasons", "episodes", "albums", "tracks"]:
-                        message = f"Builder Error: {filter_final} is not a valid {attribute[:-1]} filter attribute"
+                        message = f"[B3179] Builder Error: '{filter_final}' is not a valid {attribute[:-1]} filter attribute"
                     elif filter_final is None:
-                        message = f"Builder Error: {filter_final} filter attribute has no value set. Please set a value"
+                        message = f"[B3180] Builder Error: '{filter_final}' attribute has no value set. Please set a value"
                     else:
                         final_filters[filter_final] = self.validate_attribute(filter_attr, filter_modifier, f"{attribute} {filter_final} filter", filter_data, validate)
                     if message:
@@ -2826,12 +2826,12 @@ class CollectionBuilder:
                         else:
                             logger.error(message)
                 if not final_filters:
-                    raise Failed(f"[B] Builder Error: no filters found under {attribute}")
+                    raise Failed(f"[B3181] Builder Error: No filters found under '{attribute}'")
                 return final_filters
             else:
-                raise Failed(f"[B] Builder Error: {final} attribute must be a dictionary")
+                raise Failed(f"[B3182] Builder Error: '{final}' attribute must be a dictionary")
         else:
-            raise Failed(f"[B] Builder Error: {final} attribute not supported")
+            raise Failed(f"[B3183] Builder Error: '{final}' attribute not supported")
 
     def add_to_collection(self):
         logger.info("")
@@ -2994,7 +2994,7 @@ class CollectionBuilder:
                 if tmdb_f:
                     if not tmdb_item and isinstance(item, (Movie, Show)):
                         if item.ratingKey not in self.library.movie_rating_key_map and item.ratingKey not in self.library.show_rating_key_map:
-                            logger.warning(f"Filter Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
+                            logger.warning(f"[M101] Mapping Error: No {'TMDb' if self.library.is_movie else 'TVDb'} ID found for {item.title}")
                             or_result = False
                         else:
                             try:
@@ -3010,7 +3010,7 @@ class CollectionBuilder:
                 if tvdb_f:
                     if not tvdb_item and isinstance(item, Show):
                         if item.ratingKey not in self.library.show_rating_key_map:
-                            logger.warning(f"Filter Error: No TVDb ID found for {item.title}")
+                            logger.warning(f"[M102] Mapping Error: No TVDb ID found for {item.title}")
                             or_result = False
                         else:
                             try:
@@ -3023,7 +3023,7 @@ class CollectionBuilder:
                 if imdb_f:
                     if not imdb_info and isinstance(item, (Movie, Show)):
                         if item.ratingKey not in self.library.imdb_rating_key_map:
-                            logger.warning(f"Filter Error: No IMDb ID found for {item.title}")
+                            logger.warning(f"[M103] Mapping Error: No IMDb ID found for {item.title}")
                             or_result = False
                         else:
                             try:
@@ -3088,7 +3088,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Radarr Error: {e}")
+                                logger.error(f"[S403] Connector Error: A Radarr error occurred when trying to add missing items: {e}")
                         if "item_radarr_tag" in self.item_details:
                             try:
                                 self.library.Radarr.edit_tags(missing_tmdb_ids, self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
@@ -3096,7 +3096,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Radarr Error: {e}")
+                                logger.error(f"[S404] Connector Error: A Radarr error occurred when trying to tag items: {e}")
                     if self.run_again:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
@@ -3139,7 +3139,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Sonarr Error: {e}")
+                                logger.error(f"[S405] Connector Error: A Sonarr error occurred when trying to add missing items: {e}")
                         if "item_sonarr_tag" in self.item_details:
                             try:
                                 self.library.Sonarr.edit_tags(missing_tvdb_ids, self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
@@ -3147,7 +3147,7 @@ class CollectionBuilder:
                                 logger.error(e)
                             except ArrException as e:
                                 logger.stacktrace()
-                                logger.error(f"Sonarr Error: {e}")
+                                logger.error(f"[S406] Connector Error: A Sonarr error occurred when trying to tag items: {e}")
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
@@ -3169,7 +3169,7 @@ class CollectionBuilder:
             logger.info("")
             self.items = self.found_items
         if not self.items:
-            raise Failed(f"Plex Error: No {self.Type} items found")
+            raise Failed(f"[B112] Builder Error: No Plex {self.Type} items found")
 
     def update_item_details(self):
         logger.info("")
@@ -3210,7 +3210,7 @@ class CollectionBuilder:
                     elif self.library.is_show:
                         path = str(item.locations[0])
                 if not path:
-                    logger.error(f"Plex Error: No location found for {item.title}: {item.locations}")
+                    logger.error(f"[M104] Mapping Error: No Plex location found for {item.title}: {item.locations}")
             if path and self.library.Radarr and item.ratingKey in self.library.movie_rating_key_map:
                 path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                 path = path[:-1] if path.endswith(('/', '\\')) else path
@@ -3228,11 +3228,11 @@ class CollectionBuilder:
                         if key in prefs and getattr(item, key) != options[method_data]:
                             advance_edits[key] = options[method_data]
                 if advance_edits:
-                    logger.debug(f"Metadata Update: {advance_edits}")
+                    logger.debug(f"Metadata update: {advance_edits}")
                     if self.library.edit_advance(item, advance_edits):
-                        logger.info(f"{item.title} Advanced Metadata Update Successful")
+                        logger.info(f"Advanced metadata updated for {item.title}")
                     else:
-                        logger.error(f"{item.title} Advanced Metadata Update Failed")
+                        logger.error(f"[B410] Metadata Error: Advanced metadata update failed for {item.title}")
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
                 try:
@@ -3273,7 +3273,7 @@ class CollectionBuilder:
                 logger.error(e)
             except ArrException as e:
                 logger.stacktrace()
-                logger.error(f"Radarr Error: {e}")
+                logger.error(f"[S407] Connector Error: A Radarr error occurred: {e}")
 
         if self.library.Sonarr and tvdb_paths:
             try:
@@ -3286,7 +3286,7 @@ class CollectionBuilder:
                 logger.error(e)
             except ArrException as e:
                 logger.stacktrace()
-                logger.error(f"Sonarr Error: {e}")
+                logger.error(f"[S408] Connector Error: A Sonarr error occurred: {e}")
 
     def load_collection(self):
         if self.obj is None and self.smart_url:
@@ -3302,7 +3302,7 @@ class CollectionBuilder:
                 if not self.obj:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
-                raise Failed(f"[B] Builder Error: Label: {self.name} was not added to any items in the Library")
+                raise Failed(f"[B3184] Builder Error: Label '{self.name}' was not added to any items in the library")
         self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
         if not self.exists:
             self.created = True
@@ -3347,7 +3347,7 @@ class CollectionBuilder:
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
                     except NotFound:
-                        logger.error("Playlist Error: Failed to update metadata. Please delete the playlist and try again")
+                        logger.error("[B411] Playlist Error: Failed to update metadata on playlist. Please delete the playlist and try again")
                     logger.info("")
         else:
             self.library.item_reload(self.obj)
@@ -3392,7 +3392,7 @@ class CollectionBuilder:
                     logger.info("Metadata: Update Completed")
                     updated_details.append("Metadata")
                 except NotFound:
-                    logger.error("Collection Error: Failed to update metadata. Please delete the collection and try again")
+                    logger.error("[B412] Builder Error: Failed to update metadata on collection. Please delete the collection and try again")
                 logger.info("")
 
             advance_update = False
@@ -3413,7 +3413,7 @@ class CollectionBuilder:
                     self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
                     advance_update = True
                 except NotFound:
-                    logger.error("Collection Error: 'collection_filtering' requires a more recent version of Plex Media Server. Please update your Plex instance and try again")
+                    logger.error("[B413] Builder Error: 'collection_filtering' requires a more recent version of Plex Media Server. Please update your Plex instance and try again")
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys \
@@ -3450,7 +3450,7 @@ class CollectionBuilder:
             name_mapping = self.name
             if "name_mapping" in self.details:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
-                else:                                               logger.error(f"Builder Error: 'name_mapping' attribute has no value set. Please set a value")
+                else:                                               logger.error(f"[B3185] Builder Error: 'name_mapping' attribute has no value set. Please set a value")
             try:
                 asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
@@ -3532,7 +3532,7 @@ class CollectionBuilder:
                     sort_edit = True
                 previous = item
             except Failed:
-                logger.error(f"Failed to move {util.item_title(item)}")
+                logger.error(f"[B414] Builder Error: Failed to move {util.item_title(item)} to the desired location.")
                 sort_edit = True
         if not sort_edit:
             logger.info("No Sorting Required")
@@ -3635,7 +3635,7 @@ class CollectionBuilder:
                 )
             except Failed as e:
                 logger.stacktrace()
-                logger.error(f"Webhooks Error: {e}")
+                logger.error(f"[S401] Connector Error: A Webhooks error occurred: {e}")
 
     def run_collections_again(self):
         self.obj = self.library.get_collection(self.name, force_search=True)

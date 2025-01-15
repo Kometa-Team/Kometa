@@ -388,7 +388,7 @@ def start(attrs):
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
             except Failed as e:
                 logger.stacktrace()
-                logger.error(f"[S401] Webhooks Error: {e}")
+                logger.error(f"[S401] Connector Error: A Webhooks error occurred: {e}")
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
