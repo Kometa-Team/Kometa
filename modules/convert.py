@@ -58,13 +58,13 @@ class Convert:
         if imdb_id in self._imdb_to_anidb:
             return self._imdb_to_anidb[imdb_id]
         else:
-            raise Failed(f"AniDB ID not found for IMDb ID: {imdb_id}")
+            raise Failed(f"Convert Warning: AniDB ID not found for IMDb ID: {imdb_id}")
 
     def tvdb_to_anidb(self, tvdb_id):
         if int(tvdb_id) in self._tvdb_to_anidb:
             return self._tvdb_to_anidb[int(tvdb_id)]
         else:
-            raise Failed(f"AniDB ID not found for TVDb ID: {tvdb_id}")
+            raise Failed(f"Convert Warning: AniDB ID not found for TVDb ID: {tvdb_id}")
 
     def ids_to_anidb(self, library, rating_key, tvdb_id, imdb_id, tmdb_id):
         if rating_key in library.reverse_anidb:
@@ -335,7 +335,7 @@ class Convert:
                 if int(check_id) in self._mal_to_anidb:
                     anidb_id = self._mal_to_anidb[int(check_id)]
                 else:
-                    raise Failed(f"AniDB ID not found for MyAnimeList ID: {check_id}")
+                    raise Failed(f"Convert Warning: AniDB ID not found for MyAnimeList ID: {check_id}")
             elif item_type == "local":                      raise NonExisting("No match in Plex")
             else:                                           raise NonExisting(f"Agent {item_type} not supported")
 
@@ -373,7 +373,7 @@ class Convert:
                         if tvdb:
                             tvdb_id.append(int(tvdb))
                     if not tvdb_id:
-                        raise Failed(f"Unable to convert TMDb ID: {', '.join([str(t) for t in tmdb_id])} to TVDb ID")
+                        raise Failed(f"Convert Warning: Unable to convert TMDb ID: {', '.join([str(t) for t in tmdb_id])} to TVDb ID")
 
             if not imdb_id and tvdb_id:
                 for tvdb in tvdb_id:

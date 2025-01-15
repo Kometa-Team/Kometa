@@ -156,9 +156,9 @@ class ConfigFile:
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
-        elif config_file and not os.path.exists(config_file):               raise Failed(f"Config Error: config not found at {os.path.abspath(config_file)}")
+        elif config_file and not os.path.exists(config_file):               raise Failed(f"[C102] Config Error: Configuration file (config.yml) not found at {os.path.abspath(config_file)}. Please check the path is correct and try again")
         elif os.path.exists(os.path.join(default_dir, "config.yml")):       self.config_path = os.path.abspath(os.path.join(default_dir, "config.yml"))
-        else:                                                               raise Failed(f"Config Error: config not found at {os.path.abspath(default_dir)}")
+        else:                                                               raise Failed(f"[C103] Config Error: Configuration file (config.yml) not found at {os.path.abspath(default_dir)}. Please check the path is correct and try again")
         logger.info(f"Using {self.config_path} as config")
         logger.clear_errors()
 
@@ -237,7 +237,7 @@ class ConfigFile:
                     continue
 
                 def fail_on_definition(found_this):
-                    raise Failed(f"The '{library}' library config contains {found_this} definitions. These belong in external YAML files, not in the config.yml")
+                    raise Failed(f"[C301] Config Error: The '{library}' library config contains {found_this} definitions. These belong in external YAML files, not in the config.yml")
                 if "collections" in self.data["libraries"][library]:
                     fail_on_definition("collections")
                 if "dynamic_collections" in self.data["libraries"][library]:
@@ -252,14 +252,14 @@ class ConfigFile:
                     fail_on_definition("playlists")
 
                 if "metadata_path" in self.data["libraries"][library]:
-                    logger.warning("Config Warning: metadata_path has been deprecated and split into collection_files and metadata_files, Please visit the wiki to learn more about this transition")
+                    logger.warning("[C401] Config Warning: 'metadata_path' has been deprecated and split into 'collection_files' and 'metadata_files', Please visit the wiki to learn more about this transition")
                     path_dict = self.data["libraries"][library].pop("metadata_path")
                     if "collection_files" not in self.data["libraries"][library]:
                         self.data["libraries"][library]["collection_files"] = path_dict
                     if "metadata_files" not in self.data["libraries"][library]:
                         self.data["libraries"][library]["metadata_files"] = path_dict
                 if "overlay_path" in self.data["libraries"][library]:
-                    logger.warning("Config Warning: overlay_path has been deprecated in favor of overlay_files, Please visit the wiki to learn more about this transition")
+                    logger.warning("[C402] Config Warning: 'overlay_path' has been deprecated in favor of 'overlay_files', Please visit the wiki to learn more about this transition")
                     self.data["libraries"][library]["overlay_files"] = self.data["libraries"][library].pop("overlay_path")
                 if "radarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
@@ -434,7 +434,7 @@ class ConfigFile:
                     else:
                         if len(warning_message) > 0:
                             warning_message += "\n"
-                        warning_message += f"Config Warning: Path does not exist: {os.path.abspath(p)}"
+                        warning_message += f"[C104] Config Warning: Path does not exist: {os.path.abspath(p)}"
                 if do_print and warning_message:
                     logger.warning(warning_message)
                 if len(temp_list) > 0:                                              return temp_list
@@ -453,7 +453,7 @@ class ConfigFile:
                 message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
-                raise Failed(f"Connector Error: {parent} attribute {attribute} not found and must be set globally or under this library")
+                raise Failed(f"[C409] Connector Error: {parent} attribute '{attribute}' not found and must be set globally or under this library")
             options = ""
             if test_list:
                 for test_option, test_description in test_list.items():
@@ -463,9 +463,9 @@ class ConfigFile:
             if (default is None and not default_is_none) or throw:
                 if len(options) > 0:
                     message = message + "\n" + options
-                raise Failed(f"Config Error: {message}")
+                raise Failed(f"[C403] Config Error: {message}")
             if do_print:
-                logger.warning(f"Config Warning: {message}")
+                logger.warning(f"[C404] Config Warning: {message}")
                 if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
             return default
@@ -580,7 +580,7 @@ class ConfigFile:
                     logger.error(e)
             logger.info(f"Notifiarr Connection {'Failed' if self.NotifiarrFactory is None else 'Successful'}")
         else:
-            logger.info("notifiarr attribute not found")
+            logger.info("notifiarr section not found in config.yml")
 
         self.GotifyFactory = None
         if "gotify" in self.data:
@@ -598,7 +598,7 @@ class ConfigFile:
                     logger.error(e)
             logger.info(f"Gotify Connection {'Failed' if self.GotifyFactory is None else 'Successful'}")
         else:
-            logger.info("gotify attribute not found")
+            logger.info("gotify section not found in config.yml")
 
         self.NtfyFactory = None
         if "ntfy" in self.data:
@@ -634,7 +634,7 @@ class ConfigFile:
                 self.Webhooks.version_hooks()
         except Failed as e:
             logger.stacktrace()
-            logger.error(f"Webhooks Error: {e}")
+            logger.error(f"[S401] Connector Error: A Webhooks error occurred: {e}")
 
         logger.save_errors = True
         logger.separator()
@@ -653,7 +653,7 @@ class ConfigFile:
                 self.TMDb.region = str(region).upper() if region else region
                 logger.info(f"TMDb Connection {'Failed' if self.TMDb is None else 'Successful'}")
             else:
-                raise Failed("Config Error: tmdb attribute not found")
+                raise Failed("[S410] Config Error: 'tmdb' attribute not found")
 
             logger.separator()
 
@@ -668,7 +668,7 @@ class ConfigFile:
                 except Failed as e:
                     error_message = str(e)
                     if "Invalid API key" in error_message:
-                        logger.error("Connector Error: OMDb API key is invalid. Please check the API key is correct or check OMDb guidance for obtaining a new key")
+                        logger.error("[S203] Connector Error: OMDb API key is invalid. Please check the API key is correct or check OMDb guidance for obtaining a new key")
                     elif error_message.endswith("is blank"):
                         logger.warning(error_message)
                     else:
@@ -676,7 +676,7 @@ class ConfigFile:
 
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
-                logger.info("omdb attribute not found")
+                logger.info("omdb section not found in config.yml")
 
             logger.separator()
 
@@ -696,7 +696,7 @@ class ConfigFile:
                         logger.error(e)
                     logger.info("MDBList Connection Failed")
             else:
-                logger.info("mdblist attribute not found")
+                logger.info("mdblist section not found in config.yml")
 
             logger.separator()
 
@@ -718,13 +718,13 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
             else:
-                logger.info("trakt attribute not found")
+                logger.info("trakt section not found in config.yml")
 
             logger.separator()
 
             self.MyAnimeList = None
             if "mal" in self.data:
-                logger.info("Connecting to My Anime List...")
+                logger.info("Connecting to MyAnimeList...")
                 try:
                     self.MyAnimeList = MyAnimeList(self.Requests, self.Cache, self.read_only, {
                         "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
@@ -739,9 +739,9 @@ class ConfigFile:
                         logger.warning(e)
                     else:
                         logger.error(e)
-                logger.info(f"My Anime List Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
+                logger.info(f"MyAnimeList Connection {'Failed' if self.MyAnimeList is None else 'Successful'}")
             else:
-                logger.info("mal attribute not found")
+                logger.info("mal section not found in config.yml")
 
             self.AniDB = AniDB(self.Requests, self.Cache, {
                 "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
@@ -778,7 +778,7 @@ class ConfigFile:
             self.playlist_names = []
             self.playlist_files = []
             if "playlist_files" not in self.data:
-                logger.info("playlist_files attribute not found")
+                logger.info("playlist_files section not found in config.yml")
             elif not self.data["playlist_files"]:
                 logger.info("playlist_files attribute is blank")
             else:
@@ -786,7 +786,7 @@ class ConfigFile:
                 logger.info("Reading in Playlist Files")
                 files, had_scheduled = util.load_files(self.data["playlist_files"], "playlist_files", schedule=(current_time, self.run_hour, self.ignore_schedules))
                 if not files and not had_scheduled:
-                    raise Failed("Config Error: No Paths Found for playlist_files")
+                    raise Failed("[C3XX] Config Error: No paths found for 'playlist_files'")
                 for file_type, playlist_file, temp_vars, asset_directory in files:
                     try:
                         playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars, asset_directory)
@@ -938,7 +938,7 @@ class ConfigFile:
                             logger.info(f"    {k}: {v}")
                         if "schedule" in config_op and not self.ignore_schedules:
                             if not config_op["schedule"]:
-                                logger.error("Config Error: schedule attribute is blank")
+                                logger.error("[C302] Config Error: 'schedule' attribute found but no value set. Please set a valid schedule")
                             else:
                                 try:
                                     util.schedule_check("schedule", config_op["schedule"], current_time, self.run_hour)
@@ -965,7 +965,7 @@ class ConfigFile:
                                     final_list = []
                                     for list_attr in input_list:
                                         if not list_attr:
-                                            raise Failed(f"has a blank value")
+                                            raise Failed(f" found but no value has been set. Please set a value")
                                         if str(list_attr).lower() in data_type:
                                             final_list.append(str(list_attr).lower())
                                         elif op in ["mass_content_rating_update", "mass_studio_update", "mass_original_title_update"]:
@@ -977,10 +977,10 @@ class ConfigFile:
                                         elif op.endswith("rating_update"):
                                             final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
                                         else:
-                                            raise Failed(f"has an invalid value: {list_attr}")
+                                            raise Failed(f" has an invalid value '{list_attr}'. Please use a valid value")
                                     section_final[op] = final_list
                                 except Failed as e:
-                                    logger.error(f"Config Error: {op} {e}")
+                                    logger.error(f"[C303] Config Error: {op} {e}")
                             elif op == "mass_collection_mode":
                                 section_final[op] = util.check_collection_mode(config_op[op])
                             elif data_type == "dict":
@@ -989,7 +989,7 @@ class ConfigFile:
                                     input_dict = {"source": input_dict}
 
                                 if not input_dict or not isinstance(input_dict, dict):
-                                    raise Failed(f"Config Error: {op} must be a dictionary")
+                                    raise Failed(f"[C304] Config Error: {op} must be a dictionary. An example of dictionaries can be found at https://kometa.wiki/en/latest/kometa/yaml/#dictionaries")
                                 elif op in ["mass_poster_update", "mass_background_update"]:
                                     section_final[op] = {
                                         "source": check_for_attribute(input_dict, "source", test_list=mass_image_options, default_is_none=True, save=False),
@@ -1001,9 +1001,9 @@ class ConfigFile:
                                 elif op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:
-                                        logger.warning(f"Config Warning: path attribute not found. Using the default value: {default_path}")
+                                        logger.warning(f"[C307] Config Warning: 'path' attribute not found. Using the default value: '{default_path}'")
                                     elif "path" in input_dict and not input_dict["path"]:
-                                        logger.warning(f"Config Warning: path attribute not found. Using the default value: {default_path}")
+                                        logger.warning(f"[C307] Config Warning: 'path' attribute not found. Using the default value: '{default_path}'")
                                     else:
                                         default_path = input_dict["path"]
                                     section_final[op] = {
@@ -1016,9 +1016,9 @@ class ConfigFile:
                                     section_final[op] = {}
                                     for old_value, new_value in input_dict.items():
                                         if not old_value:
-                                            logger.warning("Config Warning: The key cannot be empty")
+                                            logger.warning("[C305] Config Warning: When using a Mapper operation, the key cannot be empty")
                                         elif new_value and str(old_value) == str(new_value):
-                                            logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
+                                            logger.warning(f"[C306] Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
                                             section_final[op][str(old_value)] = str(new_value) if new_value else None # noqa
                                 elif op == "delete_collections":
@@ -1040,7 +1040,7 @@ class ConfigFile:
                             if k not in final_operations:
                                 final_operations[k] = v
                             else:
-                                logger.warning(f"Config Warning: Operation {k} already scheduled")
+                                logger.warning(f"[C308] Config Warning: Operation {k} is already scheduled")
                     for k, v in final_operations.items():
                         params[k] = v
 
@@ -1063,7 +1063,7 @@ class ConfigFile:
                             if source and str(source).startswith("trakt") and self.Trakt is None:
                                 raise Failed(f"{source} without a successful Trakt Connection")
                     except Failed as e:
-                        logger.error(f"Config Error: {mass_key} cannot use {e}")
+                        logger.error(f"[C201] Config Error: {mass_key} cannot use {e}")
                         params[mass_key] = None
 
                 lib_vars = {}
@@ -1076,12 +1076,12 @@ class ConfigFile:
                         logger.info("")
                         logger.info("Reading in Collection Files")
                         if not lib["collection_files"]:
-                            raise Failed("Config Error: collection_files attribute is blank")
+                            raise Failed("[C309] Config Error: 'collection_files' attribute is blank")
                         files, had_scheduled = util.load_files(lib["collection_files"], "collection_files", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
                         if files:
                             params["collection_files"] = files
                         elif not had_scheduled:
-                            raise Failed("Config Error: No Paths Found for collection_files")
+                            raise Failed("[C310] Config Error: No paths found for 'collection_files'")
                 except Failed as e:
                     logger.error(e)
 
@@ -1091,12 +1091,12 @@ class ConfigFile:
                         logger.info("")
                         logger.info("Reading in Metadata Files")
                         if not lib["metadata_files"]:
-                            raise Failed("Config Error: metadata_files attribute is blank")
+                            raise Failed("[C311] Config Error: 'metadata_files' attribute is blank")
                         files, had_scheduled = util.load_files(lib["metadata_files"], "metadata_files", schedule=(current_time, self.run_hour, self.ignore_schedules), lib_vars=lib_vars)
                         if files:
                             params["metadata_files"] = files
                         elif not had_scheduled:
-                            raise Failed("Config Error: No Paths Found for metadata_files")
+                            raise Failed("[C312] Config Error: No Paths Found for 'metadata_files'")
                 except Failed as e:
                     logger.error(e)
                 params["default_dir"] = default_dir
@@ -1123,25 +1123,25 @@ class ConfigFile:
                         logger.info("")
                         logger.info("Reading in Overlay Files")
                         if not lib["overlay_files"]:
-                            raise Failed("Config Error: overlay_files attribute is blank")
+                            raise Failed("[C313] Config Error: 'overlay_files' attribute is blank")
                         files, _ = util.load_files(lib["overlay_files"], "overlay_files", lib_vars=lib_vars)
                         for file in util.get_list(lib["overlay_files"], split=False):
                             if isinstance(file, dict):
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) \
                                         or ("remove_overlay" in file and file["remove_overlay"] is True) \
                                         or ("revert_overlays" in file and file["revert_overlays"] is True):
-                                    logger.warning("Config Warning: remove_overlays under overlay_files is deprecated it now goes directly under the library attribute")
+                                    logger.error("[CX=314] Config Error: 'remove_overlays' attribute no longer works within overlay_files, it is now a library attribute. For an example, see the wiki at https://kometa.wiki/en/latest/config/libraries/")
                                     params["remove_overlays"] = True
                                 if ("reapply_overlays" in file and file["reapply_overlays"] is True) \
                                         or ("reapply_overlay" in file and file["reapply_overlay"] is True):
-                                    logger.warning("Config Warning: reapply_overlays under overlay_files is deprecated it now goes directly under the library attribute")
+                                    logger.error("[C315] Config Error: 'reapply_overlays' attribute no longer works within overlay_files, it is now a library attribute. For an example, see the wiki at https://kometa.wiki/en/latest/config/libraries/")
                                     params["reapply_overlays"] = True
                                 if "reset_overlays" in file or "reset_overlay" in file:
                                     attr = f"reset_overlay{'s' if 'reset_overlays' in file else ''}"
-                                    logger.warning("Config Warning: reset_overlays under overlay_files is deprecated it now goes directly under the library attribute")
+                                    logger.error("[C316] Config Error: 'reset_overlays' attribute no longer works within overlay_files, it is now a library attribute. For an example, see the wiki at https://kometa.wiki/en/latest/config/libraries/")
                                     old_reset = file[attr]
                                 if "schedule" in file and file["schedule"]:
-                                    logger.warning("Config Warning: schedule under overlay_files is deprecated it now goes directly under the library attribute as schedule_overlays")
+                                    logger.error("[C317] Config Error: 'schedule' attribute no longer works within overlay_files, it is now a library attribute. For an example, see the wiki at https://kometa.wiki/en/latest/config/libraries/")
                                     old_schedule = file["schedule"]
                         params["overlay_files"] = files
                     except Failed as e:
@@ -1165,14 +1165,14 @@ class ConfigFile:
                             if reset_option and reset_option in reset_overlay_options:
                                 final_list.append(reset_option)
                             else:
-                                final_text = f"Config Error: reset_overlays attribute {reset_option} invalid. Options: "
+                                final_text = f"[C318] Config Error: reset_overlays value '{reset_option}' invalid. Options: "
                                 for option, description in reset_overlay_options.items():
                                     final_text = f"{final_text}\n    {option} ({description})"
                                 logger.error(final_text)
                         if final_list:
                             params["reset_overlays"] = final_list
                         else:
-                            final_text = f"Config Error: No proper reset_overlays option found. {old_reset}. Options: "
+                            final_text = f"[C319] Config Error: No proper reset_overlays option found. '{old_reset}'. Options: "
                             for option, description in reset_overlay_options.items():
                                 final_text = f"{final_text}\n    {option} ({description})"
                             logger.error(final_text)
@@ -1196,16 +1196,16 @@ class ConfigFile:
                             params["remove_overlays"] = False
 
                 if lib and "overlay_files" in lib and not params["overlay_files"] and params["remove_overlays"] is False and params["reset_overlays"] is False:
-                    logger.error("Config Error: No Paths Found for overlay_files")
+                    logger.error("[C320] Config Error: No paths found for 'overlay_files'")
 
                 params["image_files"] = []
                 try:
                     if lib and "image_files" in lib:
                         if not lib["image_files"]:
-                            raise Failed("Config Error: image_files attribute is blank")
+                            raise Failed("[C321] Config Error: 'image_files' attribute is blank")
                         files, _ = util.load_files(lib["image_files"], "image_files")
                         if not files:
-                            raise Failed("Config Error: No Paths Found for image_files")
+                            raise Failed("[C322] Config Error: No paths found for 'image_files'")
                         params["image_files"] = files
                 except Failed as e:
                     logger.error(e)
@@ -1231,7 +1231,7 @@ class ConfigFile:
                                     util.schedule_check(attr, test_attr, current_time, self.run_hour)
                                     params["plex"][attr] = True
                                 except NotScheduled:
-                                    logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
+                                    logger.info(f"Skipping operation as it is not scheduled for {test_attr}")
                             else:
                                 params["plex"][attr] = test_attr
 
@@ -1246,7 +1246,7 @@ class ConfigFile:
                     logger.separator("Scanning Files", space=False, border=False)
                     library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
                     if not library.collection_files and not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
-                        raise Failed("Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
+                        raise Failed("[C105] Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
                 except Failed as e:
                     logger.stacktrace()
                     logger.error(e)
@@ -1347,7 +1347,7 @@ class ConfigFile:
             if len(self.libraries) > 0:
                 logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
-                raise Failed("Config Error: No libraries were found in config")
+                raise Failed("[C106] Config Error: No libraries were found in config.yml")
 
             logger.separator()
 
@@ -1366,14 +1366,14 @@ class ConfigFile:
                 self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
                 logger.stacktrace()
-                logger.error(f"Webhooks Error: {e}")
+                logger.error(f"[S401] Connector Error: A Webhooks error occurred: {e}")
 
     def notify_delete(self, message, server=None, library=None):
         try:
             self.Webhooks.delete_hooks(message, server=server, library=library)
         except Failed as e:
             logger.stacktrace()
-            logger.error(f"Webhooks Error: {e}")
+            logger.error(f"[S401] Connector Error: A Webhooks error occurred: {e}")
 
     @property
     def mediastingers(self):
