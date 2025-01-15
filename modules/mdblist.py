@@ -101,10 +101,10 @@ class MDBList:
 
       self.get_item(imdb_id="tt0080684", ignore_cache=True)
     except LimitReached:
-      logger.warning(f"Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit")
+      logger.warning(f"[S214] Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit")
       self.limit = True
     except Failed as fe:
-      logger.error(f"Connector Error: MDBList API connection failed. Please check the API key is correct or try again. Response: {fe}")
+      logger.error(f"[S215] Connector Error: MDBList API connection failed. Please check the API key is correct or try again. Response: {fe}")
       self.apikey = None
       raise
 
@@ -127,8 +127,8 @@ class MDBList:
     if "response" in response and (response["response"] is False or response["response"] == "False"):
       if response["error"] in ["API Limit Reached!", "API Rate Limit Reached!"]:
         self.limit = True
-        raise LimitReached(f"MDBList Error: {response['error']}")
-      raise Failed(f"MDBList Error: {response['error']}")
+        raise LimitReached(f"[S214] Connector Warning: MDBList API limit has been reached. Wait 24 hours or consider upgrading to a higher API limit")
+      raise Failed(f"[S216] Connector Error: An MDBList error occurred: {response['error']}")
     return response
 
   def get_item(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):
@@ -145,7 +145,7 @@ class MDBList:
       params["m"] = "movie" if is_movie else "show"
       key = f"{'tvm' if is_movie else 'tvs'}{tvdb_id}"
     else:
-      raise Failed("MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type required")
+      raise Failed("[B3212] Builder Error: MDBList item must contain IMDb ID, TVDb ID, or TMDb ID and TMDb Type")
     expired = None
     if self.cache and not ignore_cache:
       mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
@@ -173,17 +173,17 @@ class MDBList:
         mdb_dict = {"url": mdb_dict}
       dict_methods = {dm.lower(): dm for dm in mdb_dict}
       if "url" not in dict_methods:
-        raise Failed(f"MDBList Error: {error_type} mdb_list url attribute not found")
+        raise Failed(f"[B3214] Builder Error: mdblist_list 'url' attribute not found")
       elif mdb_dict[dict_methods["url"]] is None:
-        raise Failed(f"MDBList Error: {error_type} mdb_list url attribute is blank")
+        raise Failed(f"[B3215] Builder Error: mdblist_list 'url' attribute has no value set. Please set a value")
       else:
         mdb_url = mdb_dict[dict_methods["url"]].strip()
       if not mdb_url.startswith(base_url):
-        raise Failed(f"MDBList Error: {error_type} {mdb_url} must begin with {base_url}")
+        raise Failed(f"[B3216] Builder Error: mdblist_list '{mdb_url}' must begin with {base_url}")
       list_count = None
       if "limit" in dict_methods:
         if mdb_dict[dict_methods["limit"]] is None:
-          logger.warning(f"MDBList Warning: {error_type} mdb_list limit attribute is blank using 0 as default")
+          logger.warning(f"[B3217] Builder Warning: mdblist_list 'limit' attribute has no value set, using 0 as default")
         else:
           try:
             value = int(str(mdb_dict[dict_methods["limit"]]))
@@ -192,18 +192,18 @@ class MDBList:
           except ValueError:
             pass
         if list_count is None:
-          logger.warning(f"MDBList Warning: {error_type} mdb_list limit attribute must be an integer 0 or greater using 0 as default")
+          logger.warning(f"[B3218] Builder Warning: mdblist_list 'limit' attribute must be an integer 0 or greater, using 0 as default")
       if list_count is None:
         list_count = 0
       sort_by = "rank.asc"
       if "sort_by" in dict_methods:
         if mdb_dict[dict_methods["sort_by"]] is None:
-          logger.warning(f"MDBList Warning: {error_type} mdb_list sort_by attribute is blank using score as default")
+          logger.warning(f"[B3219] Builder Warning: mdblist_list 'sort_by' attribute has no value set, using score as default")
         elif mdb_dict[dict_methods["sort_by"]].lower() in sort_names:
-          logger.warning(f"MDBList Warning: {error_type} mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} is missing .desc or .asc defaulting to .desc")
+          logger.warning(f"[B3220] Builder Warning: mdblist_list sort_by attribute '{mdb_dict[dict_methods['sort_by']]}' is missing .desc or .asc, defaulting to '{mdb_dict[dict_methods['sort_by']]}.desc'")
           sort_by = f"{mdb_dict[dict_methods['sort_by']].lower()}.desc"
         elif mdb_dict[dict_methods["sort_by"]].lower() not in list_sorts:
-          logger.warning(f"MDBList Warning: {error_type} mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
+          logger.warning(f"[B3221] Builder Warning: mdblist_list sort_by attribute '{mdb_dict[dict_methods['sort_by']]}' not valid, using score as default. Options: {', '.join(list_sorts)}")
         else:
           sort_by = mdb_dict[dict_methods["sort_by"]].lower()
       valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
@@ -229,14 +229,14 @@ class MDBList:
         if (isinstance(response, dict) and "error" in response) or (isinstance(response, list) and response and "error" in response[0]):
           err = response["error"] if isinstance(response, dict) else response[0]["error"]
           if err in ["empty", "empty or private list"]:
-            raise Failed(f"MDBList Error: No Items Returned. Lists can take 24 hours to update so try again later")
-          raise Failed(f"MDBList Error: Invalid Response {response}")
+            raise Failed(f"[B3222] Builder Error: MDBList list returned no items. Lists can take 24 hours to update, check the list URL or try again later")
+          raise Failed(f"[B3223] Builder Error: MDBList provided an invalid response: {response}")
         results = []
         for item in response:
           if item["mediatype"] in ["movie", "show"] and item["id"]:
             results.append((item["id"], "tmdb" if item["mediatype"] == "movie" else "tmdb_show"))
         return results
       except JSONDecodeError:
-        raise Failed(f"MDBList Error: Invalid JSON Response received")
+        raise Failed(f"[B3224] Builder Error: Invalid MDBList JSON response received")
     else:
-      raise Failed(f"MDBList Error: Method '{method}' not supported")
+      raise Failed(f"[B3225] Builder Error: MDBList method '{method}' not supported")
