@@ -96,7 +96,7 @@ class MyAnimeList:
                     self._authorization()
         except Exception:
             logger.stacktrace()
-            raise Failed("Connector Error: MyAnimeList Failed to Connect. Please confirm MyAnimeList is online and reachable")
+            raise Failed("[S208] Connector Error: MyAnimeList Failed to Connect. Please confirm MyAnimeList is online and reachable")
         self._genres = {}
         self._studios = {}
         self._delay = None
@@ -139,7 +139,7 @@ class MyAnimeList:
             if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required")
         match = re.search("code=([^&]+)", str(url))
         if not match:
-            raise Failed("Connector Error: MyAnimeList URL could not be specified. Please check the URL is correct.  If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
+            raise Failed("[S209] Connector Error: MyAnimeList URL could not be verified. Please check the URL is correct.  If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         code = match.group(1)
         data = {
             "client_id": self.client_id,
@@ -150,9 +150,9 @@ class MyAnimeList:
         }
         new_authorization = self._oauth(data)
         if "error" in new_authorization:
-            raise Failed("Connector Error: MyAnimeList code is invalid. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
+            raise Failed("[S210] Connector Error: MyAnimeList code is invalid. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not self._save(new_authorization):
-            raise Failed("Connector Error: MyAnimeList authorization failed. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
+            raise Failed("[S211] Connector Error: MyAnimeList authorization failed. Please try again. If you are struggling to authenticate, please try the Online Authenticator at https://kometa.wiki/en/latest/config/authentication/")
 
     def _check(self, authorization):
         try:
@@ -204,7 +204,7 @@ class MyAnimeList:
             if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
             else:                           return response
         except JSONDecodeError:
-            raise Failed(f"MyAnimeList Error: Connection Failed")
+            raise Failed(f"[S212] Connector Error: MyAnimeList connection failed, please try again")
 
     def _jikan_request(self, url, params=None):
         logger.trace(f"URL: {jikan_base_url}{url}")
@@ -256,7 +256,7 @@ class MyAnimeList:
         if limit is not None:
             total_items = data["pagination"]["items"]["total"]
             if total_items == 0:
-                raise Failed("MyAnimeList Error: No MyAnimeList IDs for Search")
+                raise Failed("[B3210] Builder Error: MyAnimeList IDs found in search")
             if total_items < limit or limit <= 0:
                 limit = total_items
         per_page = len(data["data"])
@@ -266,7 +266,7 @@ class MyAnimeList:
         while current_page <= last_visible_page:
             if chances > 6:
                 logger.debug(data)
-                raise Failed("MyAnimeList Error: Connection Failed")
+                raise Failed("[S212] Connector Error: MyAnimeList connection failed, please try again")
             start_num = (current_page - 1) * per_page + 1
             end_num = limit if limit and (current_page == last_visible_page or limit < start_num + per_page) else current_page * per_page
             logger.ghost(f"Parsing Page {current_page}/{last_visible_page} {start_num}-{end_num}")
@@ -295,9 +295,9 @@ class MyAnimeList:
         try:
             response = self._jikan_request(f"anime/{mal_id}")
         except JSONDecodeError:
-            raise Failed("MyAnimeList Error: JSON Decoding Failed")
+            raise Failed("[S213] Connector Error: MyAnimeList JSON decoding failed")
         if "data" not in response:
-            raise Failed(f"MyAnimeList Error: No Anime found for MyAnimeList ID: {mal_id}")
+            raise Failed(f"[B113] Builder Error: No Anime found for MyAnimeList ID: {mal_id}")
         mal = MyAnimeListObj(self, mal_id, response["data"])
         if self.cache:
             self.cache.update_mal(expired, mal_id, mal, self.expiration)
@@ -323,7 +323,7 @@ class MyAnimeList:
             logger.info(f"Processing MyAnimeList UserList: {data['limit']} Anime from {self._username() if data['username'] == '@me' else data['username']}'s {pretty_names[data['status']]} list sorted by {pretty_names[data['sort_by']]}")
             mal_ids = self._userlist(data["username"], data["status"], data["sort_by"], data["limit"])
         else:
-            raise Failed(f"MyAnimeList Error: Method '{method}' not supported")
+            raise Failed(f"[B3211] Builder Error: MyAnimeList method '{method}' not supported")
         logger.debug("")
         logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found")
         logger.trace(f"IDs: {mal_ids}")

@@ -218,7 +218,7 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
             except Failed:
                 logger.stacktrace()
-                logger.error(f"Metadata: {poster.attribute} failed to update {poster.message}")
+                logger.error(f"[B415] Builder Error: Metadata {poster.attribute} failed to update {poster.message}")
 
         background_uploaded = False
         if background is not None:
@@ -233,7 +233,7 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.prefix}background update not needed")
             except Failed:
                 logger.stacktrace()
-                logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
+                logger.error(f"[B416] Builder Error: Metadata {background.attribute} failed to update {background.message}")
         if self.config.Cache:
             if poster_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
@@ -329,7 +329,7 @@ class Library(ABC):
             exif_tags = image.getexif()
         if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
             os.remove(image_path)
-            raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required")
+            raise Failed("[V401] Overlay Error: Current poster already has an Overlay but does not appear to have the Overlay label. Please select another image for this item to receive overlays or restore the Overlay label. There is no Kometa setting to change")
         if remove:
             os.remove(image_path)
         else:

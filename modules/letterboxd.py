@@ -59,8 +59,8 @@ class Letterboxd:
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
                 return util.regex_first_int(ids[0], "TMDb Movie ID")
-            raise Failed(f"Letterboxd Error: TMDb Movie ID not found in {ids[0]}")
-        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {letterboxd_url}")
+            raise Failed(f"[B3206] Builder Error: TMDb Movie ID not found in {ids[0]}")
+        raise Failed(f"[B3207] Builder Error: TMDb Movie ID not found at Letterboxd URL {letterboxd_url}")
 
     def get_user_lists(self, username, sort, language):
         next_page = [f"/{username}/lists/{sort_options[sort]}"]
@@ -142,6 +142,6 @@ class Letterboxd:
                     logger.info(f"Filtered: {filtered_ids}")
                 return ids
             else:
-                raise Failed(f"Letterboxd Error: No List Items found in {data}")
+                raise Failed(f"[B3208] Builder Error: No Letterboxd list Items found in {data}")
         else:
-            raise Failed(f"Letterboxd Error: Method '{method}' not supported")
+            raise Failed(f"[B3209] Builder Error: Letterboxd method '{method}' not supported")
