@@ -230,6 +230,7 @@ prepend
 preroll
 psutil
 puid
+pywin
 qnap
 radarr
 razzie
