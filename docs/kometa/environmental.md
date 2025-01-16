@@ -737,7 +737,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --width 150
             ```
 
-??? blank "Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-pr`/`--priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PRIORITY`<a class="headerlink" href="#priority" title="Permanent link">¶</a>"
+??? blank "Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lp`/`--low-priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOW_PRIORITY`<a class="headerlink" href="#priority" title="Permanent link">¶</a>"
 
     <div id="priority" />Run the Kometa process at a lower priority.  Will default to normal priority if not specified.
 
