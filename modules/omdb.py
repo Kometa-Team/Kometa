@@ -12,7 +12,7 @@ class OMDbObj:
         self._imdb_id = imdb_id
         self._data = data
         if data["Response"] == "False":
-            raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
+            raise Failed(f"[S219] Connector Error: An OMDb error occurred: {data['Error']} for IMDb ID: {imdb_id}")
 
         def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
             try:
@@ -85,4 +85,4 @@ class OMDb:
                     self.limit = True
             except JSONDecodeError:
                 error = f"Invalid JSON: {response.content}"
-            raise Failed(f"OMDb Error: {error}")
+            raise Failed(f"[S220] Connector Error: An OMDb error occurred: {error}")
