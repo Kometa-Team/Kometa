@@ -1,0 +1,46 @@
+##############################################################################
+#                            Director Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://kometa.wiki/en/latest/defaults/movie/director            #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "150"
+
+collections:
+  Composers Collections:
+    template:
+      - name: separator
+        separator: composer
+        key_name: Composers
+        translation_key: separator
+
+dynamic_collections:
+  Top Composers:
+    type: composer
+    data:
+      depth: 5
+      limit: 25
+    title_format: <<key_name>> (Composer)
+    template:
+      - tmdb_person
+      - smart_filter
+      - shared
+    template_variables:
+      tmdb_person:
+        default: <<value>>
+      tmdb_person_offset:
+        default: 0
+      search_term:
+        default: composer
+      search_value:
+        default: tmdb
+      translation_key:
+        default: composer
+      style:
+        default: bw
+      dynamic:
+        default: true

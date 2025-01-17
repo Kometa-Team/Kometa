@@ -1487,7 +1487,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Warner Animation Group:
-    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Animation]}]
+    template: [name: standard, {name: studios, search: [Warner Animation Group, Warner Bros. Cartoon Studios, Warner Bros. Cartoons, Warner Animation]}]
 
   Warner Bros. Pictures:
     template: [name: standard, {name: studios, search: [Warner, Warner Bros. Pictures]}]

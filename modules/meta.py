@@ -13,7 +13,7 @@ ms_auto = [
     "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"
 ]
 auto = {
-    "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
+    "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "composer", "letterboxd_user_lists"] + all_auto + ms_auto,
     "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto
@@ -953,7 +953,7 @@ class MetadataFile(DataFile):
                                             auto_list[country.iso_3166_1.lower()] = country.name
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
-                        elif auto_type in ["actor", "director", "writer", "producer"]:
+                        elif auto_type in ["actor", "director", "writer", "producer", "composer"]:
                             people = {}
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             if "data" in self.temp_vars:
@@ -970,20 +970,72 @@ class MetadataFile(DataFile):
                             person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
                             person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
-                            lib_all = library.get_all()
+                            lib_all = library.get_all_native()
                             include_cols = []
                             for i, item in enumerate(lib_all, 1):
-                                logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
+                                logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.get('Name')}")
+                                # try:
+                                #     item = self.library.reload(item)
+                                #     for person in getattr(item, f"{auto_type}s")[:person_depth]:
+                                #         if person.tag in include:
+                                #             if person.tag not in include_cols:
+                                #                 include_cols.append(person.tag)
+                                #         else:
+                                #             if person.id not in people:
+                                #                 people[person.id] = {"name": person.tag, "count": 0}
+                                #             people[person.id]["count"] += 1
+                                # except Failed as e:
+                                #     logger.error(f"Plex Error: {e}")
                                 try:
-                                    item = self.library.reload(item)
-                                    for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                        if person.tag in include:
-                                            if person.tag not in include_cols:
-                                                include_cols.append(person.tag)
+                                    # print(include)
+                                    # print(include_cols)
+                                    # print(auto_type)
+                                    emby_people = item.get('People', [])
+                                    actors = [person for person in emby_people if
+                                              person.get('Type') == 'Actor']
+                                    director = [person for person in emby_people if
+                                              person.get('Type') == 'Director']
+                                    writers = [person for person in emby_people if
+                                              person.get('Type') == 'Writer']
+                                    producers = [person for person in emby_people if
+                                              person.get('Type') == 'Producer']
+                                    composers = [person for person in emby_people if
+                                              person.get('Type') == 'Composer']
+                                            # Director, Writer
+                                    the_list = []
+                                    match auto_type:
+                                        case "actor":
+                                            the_list = actors
+                                        case "director":
+                                            the_list = director
+                                        case "writer":
+                                            the_list = writers
+                                        case "composer":
+                                            the_list = composers
+                                        case "producer":
+                                            the_list = producers
+                                        case _:
+                                            print(f"{auto_type} - Missing for People")
+                                    for person in the_list[:person_depth]:
+                                        # provider_info =
+                                        if person.get('Name') in include:
+                                            if person.get('Name')  not in include_cols:
+                                                include_cols.append(person.get('Name'))
                                         else:
-                                            if person.id not in people:
-                                                people[person.id] = {"name": person.tag, "count": 0}
-                                            people[person.id]["count"] += 1
+                                            if int(person.get('Id')) not in people:
+                                                people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
+                                            people[int(person.get('Id'))]["count"] += 1
+
+                                    # emby_actors=
+
+                                    # for person in getattr(item, f"{auto_type}s")[:person_depth]:
+                                    #     if person.tag in include:
+                                    #         if person.tag not in include_cols:
+                                    #             include_cols.append(person.tag)
+                                    #     else:
+                                    #         if person.id not in people:
+                                    #             people[person.id] = {"name": person.tag, "count": 0}
+                                    #         people[person.id]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
@@ -1205,6 +1257,7 @@ class MetadataFile(DataFile):
                         if "<<library_type>>" in title_format:
                             title_format = title_format.replace("<<library_type>>", library.type.lower())
                         if "<<library_typeU>>" in title_format:
+                            # print(library.type)
                             title_format = title_format.replace("<<library_typeU>>", library.type)
                         if "limit" in self.temp_vars and "<<limit>>" in title_format:
                             title_format = title_format.replace("<<limit>>", str(self.temp_vars["limit"]))
@@ -1408,6 +1461,7 @@ class MetadataFile(DataFile):
 
             def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
                 attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
+                # print(attr_name)
                 if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
                     return f"tpdb_{attr_name}", from_repo(f"{check_key}/{quote(git_name) if git_name else f'{attr_name}.tpdb'}")
                 elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
@@ -1775,9 +1829,12 @@ class MetadataFile(DataFile):
                             final_value = value
                         if current != str(final_value):
                             if key == "title":
-                                current_item.editTitle(final_value)
+                                # current_item.editTitle(final_value)
+                                self.library.EmbyServer.editItemTitle(current_item.ratingKey, final_value)
                             else:
-                                current_item.editField(key, final_value)
+                                # current_item.editField(key, final_value)
+                                self.library.EmbyServer.editItemField(current_item.ratingKey, final_value)
+
                             logger.info(f"Metadata: {name} updated to {final_value}")
                             updated = True
                     except Failed as ee:

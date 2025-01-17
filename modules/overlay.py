@@ -455,3 +455,6 @@ class Overlay:
         else:
             canvas_size = portrait_dim
         return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)
+
+    def get_custom_canvas(self, canvas_size):
+        return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)
