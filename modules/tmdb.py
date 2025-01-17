@@ -137,6 +137,7 @@ class TMDbMovie(TMDBObj):
 class TMDbShow(TMDBObj):
     def __init__(self, tmdb, tmdb_id, ignore_cache=False):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
+        self.tmdb_cache = {}
         expired = None
         data = None
         if self._tmdb.cache and not ignore_cache:
@@ -163,7 +164,9 @@ class TMDbShow(TMDBObj):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_show(self):
         try:
-            return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
+            if self.tmdb_id not in self.tmdb_cache:
+                self.tmdb_cache[self.tmdb_id] = self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
+            return self.tmdb_cache[self.tmdb_id]
         except NotFound:
             raise Failed(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:

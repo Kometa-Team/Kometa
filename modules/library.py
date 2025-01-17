@@ -125,7 +125,8 @@ class Library(ABC):
         self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
         self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         self.status = {}
-
+        self.EmbyServer=None
+        self.emby_server_url = None
         self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.remove_title_parentheses \
                                                or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
                                                or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
@@ -208,7 +209,7 @@ class Library(ABC):
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
                 if not image_compare or str(poster.compare) != str(image_compare):
                     if overlay:
-                        self.reload(item, force=True)
+                        # self.reload(item, force=True)
                         if overlay and "Overlay" in [la.tag for la in self.item_labels(item)]:
                             item.removeLabel("Overlay")
                     self._upload_image(item, poster)
@@ -264,6 +265,10 @@ class Library(ABC):
 
     @abstractmethod
     def upload_poster(self, item, image, url=False):
+        pass
+
+    @abstractmethod
+    def upload_poster_overlay(self, item, image, url=False):
         pass
 
     def poster_update(self, item, image, tmdb=None, title=None):
@@ -343,6 +348,13 @@ class Library(ABC):
     @abstractmethod
     def get_all(self, builder_level=None, load=False):
         pass
+    @abstractmethod
+    def get_native_emby_item(self, emby_item_id):
+        pass
+
+    @abstractmethod
+    def get_all_native(self, builder_level=None, load=False):
+        pass
 
     def add_additions(self, collection, items, is_movie):
         self._add_to_file("Added", collection, items, is_movie)
@@ -391,9 +403,17 @@ class Library(ABC):
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
         items = self.get_all()
+        # print(items)
         for item in items:
+            # if item.get("ratingKey") is None:
+            #     print(item)
             self.cached_items[item.ratingKey] = (item, False)
         return items
+
+
+    @abstractmethod
+    def get_provider_ids(self, item):
+        pass
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):
@@ -402,14 +422,23 @@ class Library(ABC):
                 key, guid = item
             else:
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
+                # print(item)
                 key = item.ratingKey
                 guid = item.guid
             if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
+                # print(key, guid)
+                self.config.Convert.scan_guid(guid)
                 if isinstance(item, tuple):
                     item_type, check_id = self.config.Convert.scan_guid(guid)
                     id_type, main_id, imdb_id, _ = self.config.Convert.ids_from_cache(key, guid, item_type, check_id, self)
                 else:
-                    id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
+                    mydata = self.get_provider_ids(item)
+                    id_type, main_id, imdb_id = self.config.Convert.get_id(item, self, mydata)
+
+
+                # print(f" - {id_type} - {main_id} - {imdb_id}")
+                # 1145484 tt0076759
+                #  - movie - [] - ['0076759']
                 if main_id:
                     if id_type == "movie":
                         if len(main_id) > 1:

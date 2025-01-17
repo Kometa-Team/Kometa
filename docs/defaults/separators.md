@@ -36,6 +36,7 @@ These are all the files that contain a separator
 | Actors Collections            | `actor`             |
 | Directors Collections         | `director`          |
 | Producers Collections         | `producer`          |
+| Composers Collections         | `composer`          |
 | Writers Collections           | `writer`            |
 | Based On... Collections       | `based`             |
 
