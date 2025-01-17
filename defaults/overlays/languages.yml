@@ -12,8 +12,8 @@ external_templates:
       final_align:
         default: left
         conditions:
-          - flag_alignment: right
-            value: right
+          - flag_alignment: [left, right]
+            value: <<flag_alignment>>
           - use_subtitles: true
             value: right
       final_text:
@@ -125,7 +125,9 @@ vars:
 
 queues:
   flags:
-    default:
+    settings:
+      default:
+        group_alignment: vertical
       conditionals:
         horizontal_position:
           default: left
@@ -140,7 +142,6 @@ queues:
             - overlay_level: episode
               value: top2
       position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
-      group_alignment: vertical
       overlay_limit: 3
 
     vertical_top_left:                      [<<: [*top_left,      *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
