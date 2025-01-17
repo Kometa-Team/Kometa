@@ -2,6 +2,7 @@ import os, re
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
+from modules.poster import ImageData
 from modules.util import Failed, FilterFailed, NotScheduled, LimitReached
 from num2words import num2words
 from plexapi.exceptions import BadRequest
@@ -30,6 +31,7 @@ class Overlays:
             key_to_overlays, properties = self.compile_overlays()
         ignore_list = [rk for rk in key_to_overlays]
 
+        # I guess this block contains Plex legacy stuff
         old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
         if old_overlays:
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
@@ -47,6 +49,8 @@ class Overlays:
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
                         ])
             logger.info("")
+
+        # emby_image_manager = Emby_Image_Manager(self.library.name)
 
         remove_overlays = self.get_overlay_items(ignore=ignore_list)
         if self.library.is_show:
@@ -82,8 +86,25 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
-                item_title = self.library.get_item_display_title(item)
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
+                # item_title = self.library.get_item_sort_title(item, atr="title")
+                # emby_item = self.library.get_native_emby_item(item.ratingKey)
+                emby_item = self.library.EmbyServer.get_item(item.ratingKey)
+                # 'ProductionLocations' = {list: 1} ['United States of America']
+                #  0 = {str} 'United States of America'
+
+                emby_images = self.library.EmbyServer.get_item_images(item.ratingKey)
+                emby_poster = None
+                emby_thumb = None
+                if emby_images:
+                    for image in emby_images:
+                        match image.get('ImageType', None):
+                            case 'Primary':
+                                emby_poster = image
+                            case 'Thumb':
+                                emby_thumb = image
+
+                item_title = emby_item.get("Name",'')
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
                     image_compare = None
@@ -91,10 +112,13 @@ class Overlays:
                     poster = None
                     if self.cache:
                         image, image_compare, overlay_compare = self.cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
-                    self.library.reload(item, force=True)
+                    # self.library.reload(item, force=True)
 
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
-                    has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
+
+                    my_overlay_path = os.path.join(self.library.overlay_destination_folder, f"{item.ratingKey}.{self.library.overlay_artwork_filetype}")
+                    has_overlay = os.path.exists(my_overlay_path)
+                    # has_overlay = any([item_tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
                     compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
                     blur_num = 0
@@ -151,7 +175,13 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster, background, item_dir, name = self.library.find_item_assets(item)
+                        poster = ImageData("asset_directory", emby_poster.get("Path"), compare=os.stat(my_overlay_path).st_size if has_overlay else "")
+                        # background = ImageData("asset_directory", emby_thumb.get("Path"), compare=emby_item.get("ImageTags").get("Thumb"))
+                        item_dir = os.path.dirname(emby_poster.get("Path"))
+                        name = str(item_dir).split('\\')[-1]
+
+                        # poster, background, item_dir, name = self.library.find_item_assets(item)
+
                         if not poster and self.library.assets_for_all:
                             if (isinstance(item, Episode) and self.library.show_missing_episode_assets) or \
                                     (isinstance(item, Season) and self.library.show_missing_season_assets) or \
@@ -160,64 +190,38 @@ class Overlays:
                                     logger.warning(f"Asset Warning: No poster found for '{item_title}' in the assets folder '{item_dir}'")
                                 else:
                                     logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
-                        if background:
-                            self.library.upload_images(item, background=background)
+                        # if background:
+                        #     self.library.upload_images(item, background=background)
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)
 
-                    has_original = None
-                    new_backup = None
                     changed_image = False
-                    if poster:
-                        if image_compare and str(poster.compare) != str(image_compare):
-                            changed_image = True
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"))
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"))
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp"))
-                    elif has_overlay:
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
-                            has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
-                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
-                            has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
-                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
-                            has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
-                        if self.library.reset_overlays:
-                            reset_list = self.library.reset_overlays
-                        elif has_original is None and not self.library.reset_overlays:
-                            reset_list = ["plex", "tmdb"]
-                        else:
-                            reset_list = []
-                        try:
-                            new_backup = self.library.item_posters(item, providers=reset_list)
-                        except Failed as e:
-                            if any(r in reset_list for r in ["plex", "tmdb"]):
-                                logger.error(e)
-                    else:
-                        new_backup = item.posterUrl
-                    logger.info(f"\n{item_title}")
-                    if new_backup:
-                        try:
-                            has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
-                        except Failed as e:
-                            raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
-                    if poster is None and has_original is None:
-                        logger.error(f"  Overlay Error: No poster found")
-                    elif self.library.reapply_overlays or new_backup or overlay_change or changed_image:
+                    if poster:
+                        if poster.compare and str(poster.compare) != str(image_compare):
+                            changed_image = True
+
+                    if self.library.reapply_overlays or overlay_change or changed_image:
                         try:
-                            if not self.library.reapply_overlays and new_backup:
+                            if not self.library.reapply_overlays:
                                 logger.trace("  Overlay Reason: New image detected")
                             elif not self.library.reapply_overlays and overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
+
+                            # canvas_width = emby_poster.get('Width', 0)
+                            # canvas_height = emby_poster.get('Height',0)
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
-                            with Image.open(poster.location if poster else has_original) as new_poster:
+
+                            # todo if filetype png / emby overlay
+                            # canvas_width, canvas_height = overlay.get_canvas_size(item)
+                            new_poster = Image.new("RGBA", (canvas_width, canvas_height), (0, 0, 0, 0))
+                            with (new_poster):
+                            # with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04bc] = "overlay"
-                                new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+                                # new_poster = new_poster.convert("RGBA").resize((canvas_width, canvas_height), Image.LANCZOS)
+                                # new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
                                 if blur_num > 0:
                                     new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
@@ -528,6 +532,7 @@ class Overlays:
                                             else:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
+                                # ext = "webp" if self.library.overlay_artwork_filetype.startswith("webp") else self.library.overlay_artwork_filetype
                                 ext = "webp" if self.library.overlay_artwork_filetype.startswith("webp") else self.library.overlay_artwork_filetype
                                 temp = os.path.join(self.library.overlay_folder, f"temp.{ext}")
                                 if self.library.overlay_artwork_quality and self.library.overlay_artwork_filetype in ["jpg", "webp_lossy"]:
@@ -536,10 +541,14 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags, lossless=True)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
-                                self.library.upload_poster(item, temp)
-                                self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                                poster_compare = poster.compare if poster else item.thumb
-                                logger.info(f"  Overlays Applied: {', '.join(over_names)}")
+                                # self.library.upload_poster(item, temp)
+                                self.library.upload_poster_overlay(item, temp)
+                                # self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
+                                # poster_compare =  poster.compare if poster else item.thumb
+
+                                poster_compare = os.stat(temp).st_size  # poster.compare if poster else item.thumb
+
+                            logger.info(f"  Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
                             raise Failed(f"  Overlay Error: {e}")
@@ -682,9 +691,11 @@ class Overlays:
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
         items = self.library.search(label=label, libtype=libtype)
+        # todo: get results from image manager ?
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
     def remove_overlay(self, item, item_title, label, locations):
+        #todo: delete overlay png from Emby plugin folder
         try:
             poster, _, _, _ = self.library.find_item_assets(item)
         except Failed:

@@ -816,6 +816,15 @@ class ConfigFile:
                 "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="plex", var_type="bool", default_is_none=True),
                 "db_cache": check_for_attribute(self.data, "db_cache", parent="plex", var_type="int", default_is_none=True)
             }
+            self.general["emby"] = {
+                "url": check_for_attribute(self.data, "url", parent="emby", var_type="url", default_is_none=True),
+                "api_key": check_for_attribute(self.data, "api_key", parent="emby", default_is_none=True),
+                "user_id": check_for_attribute(self.data, "user_id", parent="emby", default_is_none=True),
+                "overlay_destination_folder": check_for_attribute(self.data, "overlay_destination_folder", parent="emby", default_is_none=True),
+                "timeout": check_for_attribute(self.data, "timeout", parent="emby", var_type="int", default=60),
+                "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="emby", var_type="bool", default_is_none=True),
+                "db_cache": check_for_attribute(self.data, "db_cache", parent="emby", var_type="int", default_is_none=True)
+            }
             for attr in ["clean_bundles", "empty_trash", "optimize"]:
                 try:
                     self.general["plex"][attr] = check_for_attribute(self.data, attr, parent="plex", var_type="bool", default=False, throw=True)
@@ -1216,6 +1225,15 @@ class ConfigFile:
                         "verify_ssl": check_for_attribute(lib, "verify_ssl", parent="plex", var_type="bool", default=self.general["plex"]["verify_ssl"], default_is_none=True, save=False),
                         "db_cache": check_for_attribute(lib, "db_cache", parent="plex", var_type="int", default=self.general["plex"]["db_cache"], default_is_none=True, save=False)
                     }
+                    params["emby"] = {
+                        "url": check_for_attribute(lib, "url", parent="emby", var_type="url", default=self.general["emby"]["url"], req_default=True, save=False),
+                        "api_key": check_for_attribute(lib, "api_key", parent="emby", default=self.general["emby"]["api_key"], req_default=True, save=False),
+                        "user_id": check_for_attribute(lib, "user_id", parent="emby", default=self.general["emby"]["user_id"], req_default=True, save=False),
+                        "overlay_destination_folder": check_for_attribute(lib, "overlay_destination_folder", parent="emby", default=self.general["emby"]["overlay_destination_folder"], req_default=True, save=False),
+                        "timeout": check_for_attribute(lib, "timeout", parent="emby", var_type="int", default=self.general["emby"]["timeout"], save=False),
+                        "verify_ssl": check_for_attribute(lib, "verify_ssl", parent="emby", var_type="bool", default=self.general["emby"]["verify_ssl"], default_is_none=True, save=False),
+                        "db_cache": check_for_attribute(lib, "db_cache", parent="emby", var_type="int", default=self.general["emby"]["db_cache"], default_is_none=True, save=False)
+                    }
                     for attr in ["clean_bundles", "empty_trash", "optimize"]:
                         try:
                             params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
@@ -1247,7 +1265,7 @@ class ConfigFile:
                     logger.stacktrace()
                     logger.error(e)
                     logger.info("")
-                    logger.info(f"{display_name} Library Connection Failed")
+                    logger.info(f"Plex {display_name} Library Connection Failed")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):

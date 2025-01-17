@@ -259,6 +259,7 @@ nav:
           - Actors: defaults/both/actor.md
           - Directors: defaults/movie/director.md
           - Producers: defaults/movie/producer.md
+          - Composers: defaults/movie/composer.md
           - Writers: defaults/movie/writer.md
         - Production:
           - Networks: defaults/show/network.md

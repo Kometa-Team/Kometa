@@ -100,8 +100,8 @@ advance_tags_to_edit = {
     "Artist": ["album_sorting"]
 }
 tags_to_edit = {
-    "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
-    "Video": ["genre", "label", "collection", "country", "director", "producer", "writer"],
+    "Movie": ["genre", "label", "collection", "country", "director", "producer", "composer", "writer"],
+    "Video": ["genre", "label", "collection", "country", "director", "producer", "composer", "writer"],
     "Show": ["genre", "label", "collection"],
     "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"]
 }

@@ -100,7 +100,9 @@ class Operations:
             for i, track in enumerate(tracks, 1):
                 logger.ghost(f"Processing Track: {i}/{len(tracks)} {track.title}")
                 if not track.title and track.titleSort:
-                    track.editTitle(track.titleSort)
+                    # track.editTitle(track.titleSort)
+                    self.library.EmbyServer.editItemTitle(track.ratingKey, track.titleSort)
+
                     num_edited += 1
                     logger.info(f"Track: {track.titleSort} was updated with sort title")
             logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
@@ -131,11 +133,11 @@ class Operations:
             for i, item in enumerate(items, 1):
                 logger.info("")
                 logger.info(f"Processing: {i}/{len(items)} {item.title}")
-                try:
-                    item = self.library.reload(item)
-                except Failed as e:
-                    logger.error(e)
-                    continue
+                # try:
+                #     item = self.library.reload(item)
+                # except Failed as e:
+                #     logger.error(e)
+                #     continue
                 current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
 
                 if self.library.assets_for_all and self.library.asset_directory:
@@ -150,7 +152,9 @@ class Operations:
                 if self.library.remove_title_parentheses:
                     if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
                         new_title = re.sub(" \\(\\w+\\)$", "", item.title)
-                        item.editTitle(new_title)
+                        # item.editTitle(new_title)
+                        self.library.EmbyServer.editItemTitle(item.ratingKey, new_title)
+
                         item_edits += f"\nUpdated Title: {item.title[:25]:<25} | {new_title}"
 
                 if self.library.mass_imdb_parental_labels:
@@ -472,7 +476,9 @@ class Operations:
                             except Failed:
                                 continue
 
-                    item_genres = [g.tag for g in item.genres]
+                    # item_genres = [g.tag for g in item.genres]
+                    item_genres = self.library.EmbyServer.get_item(item.ratingKey).get("Genres", [])
+
                     if not new_genres and extra_option not in ["remove", "reset"]:
                         new_genres = item_genres
                     if self.library.genre_mapper:
@@ -484,8 +490,10 @@ class Operations:
                             else:
                                 mapped_genres.append(genre)
                         new_genres = mapped_genres
+
                     _add = list(set(new_genres) - set(item_genres))
                     _remove = list(set(item_genres) - set(new_genres))
+
                     for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
                         if genre_list:
                             for g in genre_list:
@@ -778,7 +786,7 @@ class Operations:
                         thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
                         labels = [la.tag for la in self.library.item_labels(item)]
                         has_overlay_label = "Overlay" in labels
-                        
+
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
                         if source in ["unlock", "lock"]:
                             self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
@@ -961,21 +969,46 @@ class Operations:
                        f"{'s' if total_count > 1 else ''}{'' if out_type or tag_type else f' updated to {display_value}'}"
 
             for tag_attribute, edit_dict in [("Label", label_edits), ("Genre", genre_edits)]:
+
+                item_edits = {}
                 for edit_type, batch_edits in edit_dict.items():
                     _size = len(batch_edits.items())
                     for i, (tag_name, rating_keys) in enumerate(sorted(batch_edits.items()), 1):
                         logger.info(get_batch_info(i, _size, tag_attribute, len(rating_keys), display_value=tag_name, tag_type=edit_type))
-                        self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                        getattr(self.library.Plex, f"{edit_type}{tag_attribute}")(tag_name)
-                        self.library.Plex.saveMultiEdits()
 
+                        for r_key in rating_keys:
+                            if r_key not in item_edits:
+                                base_data = self.library.EmbyServer.get_item(r_key).get("Genres",[])
+                                item_edits.update({r_key:base_data})
+                            if edit_type == "add":
+                                item_edits[r_key].append(tag_name)
+                            elif edit_type == "remove":
+                                item_edits[r_key].remove(tag_name)
+
+
+
+                        # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                        # getattr(self.library.Plex, f"{edit_type}{tag_attribute}")(tag_name)
+                        # self.library.Plex.saveMultiEdits()
+                # todo: add proper sync
+                for key, data in item_edits.items():
+                    print(".", end="", flush=True)
+                    self.library.EmbyServer.set_genres(key, data )
+
+            current_num = 1
             for item_attr, _edits in rating_edits.items():
                 _size = len(_edits.items())
                 for i, (new_rating, rating_keys) in enumerate(sorted(_edits.items()), 1):
-                    logger.info(get_batch_info(i, _size, item_attr, len(rating_keys), display_value=new_rating))
-                    self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                    self.library.Plex.editField(item_attr, new_rating)
-                    self.library.Plex.saveMultiEdits()
+                    logger.info(get_batch_info(current_num, _size, item_attr, len(rating_keys), display_value=new_rating))
+                    current_num+=1
+                    # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                    # self.library.Plex.editField(item_attr, new_rating)
+                    # self.library.Plex.saveMultiEdits()
+                    # fake edit
+                    self.library.EmbyServer.multiEditField(self.library.load_list_from_cache(rating_keys),item_attr, new_rating)
+            # emby_changes = {}
+            # emby_changes.update(self.library.EmbyServer.multiEditRatings(rating_edits))
+
 
             _size = len(content_edits.items())
             for i, (new_rating, rating_keys) in enumerate(sorted(content_edits.items()), 1):
@@ -987,9 +1020,14 @@ class Operations:
             _size = len(studio_edits.items())
             for i, (new_studio, rating_keys) in enumerate(sorted(studio_edits.items()), 1):
                 logger.info(get_batch_info(i, _size, "studio", len(rating_keys), display_value=new_studio))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editStudio(new_studio)
-                self.library.Plex.saveMultiEdits()
+                rkeys = self.library.load_list_from_cache(rating_keys)
+
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex.editStudio(new_studio)
+                # self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multiEditField(self.library.load_list_from_cache(rating_keys), "studio",
+                                                       new_studio)
+
 
             _size = len(date_edits["originallyAvailableAt"].items())
             for i, (new_date, rating_keys) in enumerate(sorted(date_edits["originallyAvailableAt"].items()), 1):
@@ -1017,52 +1055,66 @@ class Operations:
             _size = len(remove_edits.items())
             for i, (field_attr, rating_keys) in enumerate(remove_edits.items(), 1):
                 logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="remov"))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editField(field_attr, None, locked=True)
-                self.library.Plex.saveMultiEdits()
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex.editField(field_attr, None, locked=True)
+                # self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multiEditField(rating_keys,field_attr, None, locked=True)
+
 
             _size = len(reset_edits.items())
             for i, (field_attr, rating_keys) in enumerate(reset_edits.items(), 1):
                 logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="reset"))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editField(field_attr, None, locked=False)
-                self.library.Plex.saveMultiEdits()
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex.editField(field_attr, None, locked=False)
+                # self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multiEditField(rating_keys,field_attr, None, locked=False)
+
 
             _size = len(lock_edits.items())
             for i, (field_attr, rating_keys) in enumerate(lock_edits.items(), 1):
-                logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="lock"))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex._edit(**{f"{field_attr}.locked": 1})
-                self.library.Plex.saveMultiEdits()
+                # logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="lock"))
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex._edit(**{f"{field_attr}.locked": 1})
+                # self.library.Plex.saveMultiEdits()
+
+                self.library.EmbyServer.multi_edit(rating_keys, **{f"{field_attr}.locked": 1})
+
 
             _size = len(unlock_edits.items())
             for i, (field_attr, rating_keys) in enumerate(unlock_edits.items(), 1):
                 logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), out_type="unlock"))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex._edit(**{f"{field_attr}.locked": 0})
-                self.library.Plex.saveMultiEdits()
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex._edit(**{f"{field_attr}.locked": 0})
+                # self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multi_edit(rating_keys, **{f"{field_attr}.locked": 0})
 
             for item_attr, _edits in ep_rating_edits.items():
                 _size = len(_edits.items())
                 for i, (new_rating, rating_keys) in enumerate(sorted(_edits.items()), 1):
                     logger.info(get_batch_info(i, _size, item_attr, len(rating_keys), display_value=new_rating, is_episode=True))
-                    self.library.Plex.batchMultiEdits(rating_keys)
-                    self.library.Plex.editField(item_attr, new_rating)
-                    self.library.Plex.saveMultiEdits()
+                    # self.library.Plex.batchMultiEdits(rating_keys)
+                    # self.library.Plex.editField(item_attr, new_rating)
+                    # self.library.Plex.saveMultiEdits()
+                    self.library.EmbyServer.multiEditField(rating_keys,item_attr, new_rating)
+
 
             _size = len(ep_remove_edits.items())
             for i, (field_attr, rating_keys) in enumerate(ep_remove_edits.items(), 1):
                 logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="remov"))
-                self.library.Plex.batchMultiEdits(rating_keys)
-                self.library.Plex.editField(field_attr, None, locked=True)
-                self.library.Plex.saveMultiEdits()
+                # self.library.Plex.batchMultiEdits(rating_keys)
+                # self.library.Plex.editField(field_attr, None, locked=True)
+                # self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multiEditField(rating_keys,field_attr, None, locked=True)
+
 
             _size = len(ep_reset_edits.items())
             for i, (field_attr, rating_keys) in enumerate(ep_reset_edits.items(), 1):
                 logger.info(get_batch_info(i, _size, field_attr, len(rating_keys), is_episode=True, out_type="reset"))
-                self.library.Plex.batchMultiEdits(rating_keys)
-                self.library.Plex.editField(field_attr, None, locked=False)
-                self.library.Plex.saveMultiEdits()
+                # self.library.Plex.batchMultiEdits(rating_keys)
+                # self.library.Plex.editField(field_attr, None, locked=False)
+                # self.library.Plex.saveMultiEdits()
+
+                self.library.EmbyServer.multiEditField(rating_keys,field_attr, None, locked=False)
 
             _size = len(ep_lock_edits.items())
             for i, (field_attr, rating_keys) in enumerate(ep_lock_edits.items(), 1):
@@ -1126,8 +1178,8 @@ class Operations:
             all_collections = self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
-                col = self.library.reload(col, force=True)
-                labels = [la.tag for la in self.library.item_labels(col)]
+                # col = self.library.reload(col, force=True)
+                labels = [tag for tag in self.library.item_labels(col)]
 
                 if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:

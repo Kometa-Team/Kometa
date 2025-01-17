@@ -36,6 +36,26 @@ def parse_qs(data):
     return parse.parse_qs(data)
 
 
+from urllib.parse import unquote, parse_qsl
+
+def parse_query_with_plus(uri_args: str):
+    """
+    Parses a query string while preserving '+' as a literal character.
+    :param uri_args: The query string to parse.
+    :return: A dictionary of parsed query arguments.
+    """
+    # Entfernt führendes '?' und parst die Query-Parameter
+    parsed_args = parse_qsl(uri_args.lstrip('?'), keep_blank_values=True)
+
+    # Rekonstruiert ein Dictionary
+    result = {}
+    for key, value in parsed_args:
+        # Manuelles Dekodieren von Schlüssel und Wert, wobei '+' nicht ersetzt wird
+        key = unquote(key)
+        value = unquote(value.replace('+', '%2B'))  # Behandle "+" explizit
+        result[key] = value
+
+    return result
 def urlparse(data):
     return parse.urlparse(str(data))
 

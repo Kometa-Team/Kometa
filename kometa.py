@@ -794,7 +794,59 @@ def run_libraries(config):
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
-    for mapping_name, collection_attrs in requested_collections.items():
+
+    all_items = requested_collections.items()
+    new_collections = {}
+
+    for key, value in requested_collections.items():
+        try:
+            templates = value['template']
+        except:
+            raise Failed(f"Error getting template from {value}")
+        has_allowed_libraries = any('allowed_libraries' in template for template in templates)
+
+        # import copy
+        # new_key = f"{library.name} {key}"
+        # new_value = copy.deepcopy(value)
+        # for template in new_value['template']:
+        # # Update 'translation_key'
+        #     if 'translation_key' in template:
+        #         template['translation_key'] = f"{library.name} {template['translation_key']}"
+
+        new_collections[key] = value
+
+
+        # if has_allowed_libraries:
+            # Keep the item as is
+            # new_collections[new_key] = value
+        # For entries without 'allowed_libraries', create new entries
+        # new_key = f"{key} {library.name}"
+        # new_value = copy.deepcopy(value)
+        # for lib_type in [library.name]:
+            # Deep copy the value to modify
+            # Update 'variables' key
+            # new_value['variables']['key'] = f"{value['variables']['key']}_{lib_type}s"
+            # Update 'allowed_libraries' in 'shared' template
+            # Find the 'shared' template dict
+            # new_value['postfix'] = f" {'Movies' if lib_type == 'movie' else 'Shows'}"
+            # for template in new_value['template']:
+            #     if template['name'] == 'shared':
+            #         template['allowed_libraries'] = lib_type
+                    # Update 'translation_key'
+                    # if 'translation_key' in template:
+                    #     template['translation_key'] = f"{template['translation_key']}_{lib_type}s"
+            # Add the new item to new_collections
+
+    # Now, when iterating over new_collections, use .items()
+    # for mapping_name, collection_attrs in new_collections.items():
+    #     print(f"Mapping Name: {mapping_name}")
+    #     print(f"Collection Attributes: {collection_attrs}")
+    #     print("-" * 40)
+    # print(all_items)
+
+    # print(new_collections)
+
+    for mapping_name, collection_attrs in new_collections.items():
         collection_start = datetime.now()
         if run_args["tests"] and ("test" not in collection_attrs or collection_attrs["test"] is not True):
             no_template_test = True
@@ -862,8 +914,12 @@ def run_collection(config, library, metadata, requested_collections):
                             raise Failed(e)
 
                 builder.display_filters()
+                # print(f"Founditems: {builder.found_items}")
 
-                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
+                beginning_count = builder.beginning_count if builder.beginning_count is not None else 0
+                if len(builder.found_items) > 0 and len(
+                        builder.found_items) + beginning_count >= builder.minimum and builder.build_collection:
+                    xtest= 1
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
@@ -886,7 +942,9 @@ def run_collection(config, library, metadata, requested_collections):
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
-            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            # builder.beginning_count = 0
+            # if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count - items_removed < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
@@ -913,13 +971,19 @@ def run_collection(config, library, metadata, requested_collections):
                     run_item_details = False
                     logger.info("")
                     logger.separator(f"No {builder.Type} to Update", space=False, border=False)
-                else:
-                    details_list = builder.update_details()
+                # else:
+                # Emby: not all collections get info on creation, so force it
+                if builder.obj:
+                    details_list = builder.update_details_emby_with_labels_in_json()
                     if details_list:
                         pre = ""
                         if library.status[str(mapping_name)]["status"] != "Unchanged":
                             pre = f"{library.status[str(mapping_name)]['status']} and "
                         library.status[str(mapping_name)]["status"] = f"{pre}Updated {', '.join(details_list)}"
+                    else:
+                        pass
+                else:
+                    pass
 
             if builder.server_preroll is not None:
                 library.set_server_preroll(builder.server_preroll)
@@ -1104,7 +1168,7 @@ def run_playlists(config):
                         logger.info("")
                         logger.separator("No Playlist to Update", space=False, border=False)
                     else:
-                        details_list = builder.update_details()
+                        details_list = builder.update_details_emby_with_labels_in_json()
                         if details_list:
                             pre = ""
                             if status[mapping_name]["status"] != "Unchanged":

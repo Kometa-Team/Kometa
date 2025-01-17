@@ -43,6 +43,7 @@ These are all the files that contain a separator
 | Studio Collections            | `studio`            |
 | Subtitle Language Collections | `subtitle_language` |
 | Universe Collections          | `universe`          |
+| Composers Collections         | `composer`          |
 | Writers Collections           | `writer`            |
 | Year Collections              | `year`              |
 

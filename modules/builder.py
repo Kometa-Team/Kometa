@@ -1,4 +1,6 @@
 import os, re, time
+
+import requests
 from arrapi import ArrException
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -71,19 +73,19 @@ sonarr_details = [
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 sub_filters = [
     "filepath", "audio_track_title", "subtitle_track_title", "resolution", "audio_language", "subtitle_language", "has_dolby_vision",
-    "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile", "versions"
+    "has_hdr", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile", "versions"
 ]
 filters_by_type = {
     "movie_show_season_episode_artist_album_track": ["title", "summary", "collection", "has_collection", "added", "last_played", "user_rating", "plays", "filepath", "label", "audio_track_title", "subtitle_track_title", "versions"],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_season_episode_artist_album": ["has_overlay"],
-    "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"],
+    "movie_show_season_episode": ["resolution", "audio_language", "subtitle_language", "has_dolby_vision", "has_hdr", "channels", "height", "width", "aspect", "audio_codec", "audio_profile", "video_codec", "video_profile"],
     "movie_show_episode_album": ["release", "critic_rating", "history"],
     "movie_show_episode_track": ["duration"],
     "movie_show_artist_album": ["genre"],
     "movie_show_episode": ["actor", "content_rating", "audience_rating"],
     "movie_show": ["studio", "original_language", "tmdb_vote_count", "tmdb_vote_average", "tmdb_year", "tmdb_genre", "tmdb_title", "tmdb_keyword", "imdb_keyword"],
-    "movie_episode": ["director", "producer", "writer"],
+    "movie_episode": ["director", "producer", "writer", "composer"],
     "movie_artist": ["country"],
     "show_artist": ["folder"],
     "show_season": ["episodes"],
@@ -114,11 +116,11 @@ string_filters = [
 ]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends", ".regex"]
 tag_filters = [
-    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "year",
+    "actor", "collection", "content_rating", "country", "director", "network", "genre", "label", "producer", "composer", "year",
     "origin_country", "writer", "resolution", "audio_language", "subtitle_language", "tmdb_keyword", "tmdb_genre", "imdb_keyword", "tvdb_genre"
 ]
 tag_modifiers = ["", ".not", ".regex", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]
-boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vision", "has_stinger"]
+boolean_filters = ["has_collection", "has_edition", "has_overlay", "has_dolby_vision", "has_hdr", "has_stinger"]
 date_filters = ["release", "added", "last_played", "first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 date_modifiers = ["", ".not", ".before", ".after", ".regex"]
 number_filters = [
@@ -368,7 +370,7 @@ class CollectionBuilder:
                 en_summary = apply_vars(en_summary, en_vars, en_key, self.limit)
             if trans_summary:
                 trans_summary = apply_vars(trans_summary, trans_vars, trans_key, self.limit)
-
+            # this del col has no use in Emby due to col names
             delete_cols = []
             if (self.name and self.name != en_name) or (not self.name and trans_name and en_name != trans_name):
                 delete_cols.append(en_name)
@@ -396,7 +398,17 @@ class CollectionBuilder:
 
         if not self.name:
             self.name = self.mapping_name
+        # This code adds additional prefix/icons for Emby
+        self.original_name = self.name
 
+        self.icon = ""
+        match self.library.type:
+            case "Show":
+                self.icon = "📺 "
+            case "Movie":
+                self.icon = "🎥 "
+        self.name = f"{self.icon}{self.library.name} {self.name}"
+# ---------
         if self.library and self.name not in self.library.collections:
             self.library.collections.append(self.name)
 
@@ -425,8 +437,9 @@ class CollectionBuilder:
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
             self.only_run_on_create = util.parse(self.Type, "only_run_on_create", self.data, datatype="bool", methods=methods, default=False)
-        if self.obj and self.only_run_on_create:
-            raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
+        # Deactivated for Emby due to lack of auto collection
+        # if self.obj and self.only_run_on_create:
+        #     raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
         if "allowed_library_types" in methods and "run_definition" not in methods:
             logger.warning(f"{self.Type} Warning: allowed_library_types will run as run_definition")
@@ -444,7 +457,10 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
                 elif library_type == "false":
                     raise NotScheduled(f"Skipped because run_definition is false")
-                elif library_type != "true" and self.library and library_type != self.library.Plex.type:
+                #ToDo:
+                # self.library.lib_type for Emby,
+                # self.library.Plex.type for Plex
+                elif library_type != "true" and self.library and library_type != self.library.lib_type:
                     raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
         if self.playlist:               self.builder_level = "item"
@@ -494,8 +510,8 @@ class CollectionBuilder:
             if "overlay" in methods:
                 overlay_data = data[methods["overlay"]]
             else:
-                overlay_data = str(self.mapping_name)
-                logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.mapping_name} as the overlay name")
+                overlay_data = str(self.original_name)
+                logger.warning(f"{self.Type} Warning: No overlay attribute using mapping name {self.original_name} as the overlay name")
             suppress = []
             if "suppress_overlays" in methods:
                 logger.debug("")
@@ -505,7 +521,7 @@ class CollectionBuilder:
                     suppress = util.get_list(data[methods["suppress_overlays"]])
                 else:
                     logger.error(f"Overlay Error: suppress_overlays attribute is blank")
-            self.overlay = Overlay(config, library, metadata, str(self.mapping_name), overlay_data, suppress, self.builder_level)
+            self.overlay = Overlay(config, library, metadata, str(self.original_name), overlay_data, suppress, self.builder_level)
 
         self.sync_to_users = None
         self.exclude_users = None
@@ -655,7 +671,7 @@ class CollectionBuilder:
             else:
                 logger.debug(f"Value: {self.data[methods['smart_label']]}")
                 if isinstance(self.data[methods["smart_label"]], dict):
-                    _data, replaced = util.replace_label(self.name, self.data[methods["smart_label"]])
+                    _data, replaced = util.replace_label(self.original_name, self.data[methods["smart_label"]])
                     if not replaced:
                         raise Failed("Config Error: <<smart_label>> not found in the smart_label attribute data")
                     self.smart_label = _data
@@ -715,7 +731,9 @@ class CollectionBuilder:
             for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
                 try:
                     del_obj = self.library.get_collection(del_col, force_search=True)
+
                     self.library.delete(del_obj)
+
                     logger.info(f"Collection: {del_obj.title} deleted")
                 except Failed as e:
                     if str(e).startswith("Plex Error: Failed to delete"):
@@ -1093,6 +1111,8 @@ class CollectionBuilder:
                     self._mdblist(method_name, method_data)
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
+                elif method_name == "postfix": # emby
+                    pass
                 else:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
             except Failed as e:
@@ -1154,17 +1174,24 @@ class CollectionBuilder:
                                                           or (self.library.Radarr and self.radarr_details["add_missing"])
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
-                logger.info("")
-                logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
-                self.library.delete(self.obj)
-                self.obj = None
+            # ignored for Emby, collection will be re-used
+            # if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            #     logger.info("")
+            #     logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                # self.beginning_count = len(self.obj.childCount)
+                # self.library.delete(self.obj)
+                # self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj:
-                    if check_url != self.library.smart_filter(self.obj):
-                        self.library.update_smart_collection(self.obj, check_url)
-                        logger.info(f"Metadata: Smart Collection updated to {check_url}")
+                if self.obj and check_url:
+                    self.library.update_smart_collection(self.obj, check_url)
+                    # self.sync_collection()
+                    logger.info(f"Metadata: Smart Collection updated to {check_url}")
+                    # todo needs sort order once available
+
+                    # if check_url != self.library.smart_filter(self.obj):
+                    #     self.library.update_smart_collection(self.obj, check_url)
+                    #     logger.info(f"Metadata: Smart Collection updated to {check_url}")
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
             if self.obj:
                 self.exists = True
@@ -1216,9 +1243,41 @@ class CollectionBuilder:
                     self.config.Requests.get_image(method_data)
                 self.posters[method_name] = method_data
             except Failed:
-                logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
+                import urllib.parse
+
+                # Parse die URL
+                parsed_url = urllib.parse.urlparse(method_data)
+                # Hole den Pfad aus der URL
+                path = parsed_url.path
+
+                # URL-kodiere den Library-Namen mit vorangestelltem Leerzeichen (entspricht '%20')
+                # encoded_library_name = urllib.parse.quote(f"{self.icon}{self.library.name} ")
+                encoded_library_name = urllib.parse.quote(f"{self.library.mapping_name} ") # unicode icon becomes invisible
+
+                # Entferne '%20{self.library.name}' aus dem Pfad
+                if encoded_library_name in path:
+                    modified_path = path.replace(encoded_library_name, '')
+                    # Baue die neue URL mit dem modifizierten Pfad
+                    modified_method_data = urllib.parse.urlunparse((
+                        parsed_url.scheme,
+                        parsed_url.netloc,
+                        modified_path,
+                        parsed_url.params,
+                        parsed_url.query,
+                        parsed_url.fragment
+                    ))
+                    try:
+                        if not modified_method_data.startswith("https://theposterdb.com/api/assets/"):
+                            self.config.Requests.get_image(modified_method_data)
+                        self.posters[method_name] = modified_method_data
+                        method_data = modified_method_data  # Aktualisiere method_data, falls benötigt
+                    except Failed:
+                        logger.warning(f"{self.Type} Warning: No Poster Found at {modified_method_data}")
+                else:
+                    logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
         elif method_name == "tmdb_list_poster":
-            self.posters[method_name] = self.config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).poster_url
+            self.posters[method_name] = self.config.TMDb.get_list(
+                util.regex_first_int(method_data, "TMDb List ID")).poster_url
         elif method_name == "tvdb_list_poster":
             _, poster = self.config.TVDb.get_list_description(method_data)
             if poster:
@@ -2488,7 +2547,9 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
-            if item not in self.found_items:
+            # if item not in self.found_items:
+            if item.ratingKey not in [found_item.ratingKey for found_item in self.found_items]:
+                    # Weiteres Processing
                 if item.ratingKey in self.filtered_keys:
                     if self.details["show_filtered"] is True:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
@@ -2880,21 +2941,28 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        try:
+            name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        except:
+            name = self.obj if self.obj else self.name
+            collection_items =[]
         total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
         amount_added = 0
         amount_unchanged = 0
         items_added = []
+        collection_items_keys = [key.ratingKey for key in collection_items]
         for i, item in enumerate(self.found_items, 1):
             if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
                 logger.info(f"{self.Type} Limit reached")
                 self.found_items = self.found_items[:i - 1]
                 break
-            current_operation = "=" if item in collection_items else "+"
+            current_operation = "=" if item.ratingKey in collection_items_keys else "+"
+            # current_operation = "=" if item in collection_items else "+"
             number_text = f"{i}/{total}"
             logger.info(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}")
-            if item in collection_items:
+            if item.ratingKey in collection_items_keys:
+            # if item in collection_items:
                 self.remove_item_map[item.ratingKey] = None
                 amount_unchanged += 1
             else:
@@ -2936,10 +3004,11 @@ class CollectionBuilder:
                 if self.details["changes_webhooks"]:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
-                self.library.item_reload(self.obj)
+                # emby
+                # self.library.item_reload(self.obj)
                 self.obj.removeItems(items_removed)
             elif items_removed:
-                self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
+                self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False, collection_id = self.obj.ratingKey)
             if self.do_report and items_removed:
                 self.library.add_removed(self.name, [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed], self.library.is_movie)
             logger.info("")
@@ -2967,15 +3036,15 @@ class CollectionBuilder:
                 return False
         return True
 
-    def check_missing_filters(self, item_id, is_movie, tmdb_item=None, check_released=False):
+    def check_missing_filters(self, tmdb_id, is_movie, tmdb_item=None, check_released=False):
         imdb_info = None
         if self.has_tmdb_filters or self.has_imdb_filters or check_released:
             try:
                 if tmdb_item is None:
                     if is_movie:
-                        tmdb_item = self.config.TMDb.get_movie(item_id, ignore_cache=True)
+                        tmdb_item = self.config.TMDb.get_movie(tmdb_id, ignore_cache=True)
                     else:
-                        tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
+                        tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(tmdb_id, fail=True), ignore_cache=True)
             except Failed:
                 return False
             if self.has_imdb_filters and tmdb_item and tmdb_item.imdb_id:
@@ -3014,7 +3083,7 @@ class CollectionBuilder:
         final_return = True
         if self.filters and not self.details["only_filter_missing"]:
             logger.ghost(f"Filtering {display} {item.title}")
-            item = self.library.reload(item)
+            # item = self.library.reload(item)
             final_return = False
             tmdb_item = None
             tvdb_item = None
@@ -3204,7 +3273,7 @@ class CollectionBuilder:
         return added_to_radarr, added_to_sonarr
 
     def load_collection_items(self):
-        if self.build_collection and self.obj:
+        if self.build_collection and self.obj is not None:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
@@ -3236,8 +3305,10 @@ class CollectionBuilder:
         tmdb_paths = []
         tvdb_paths = []
         for item in self.items:
-            item = self.library.reload(item)
-            current_labels = [la.tag for la in self.library.item_labels(item)]
+            # item = self.library.reload(item)
+            # current_labels = [la.tag for la in self.library.item_labels(item)]
+            current_labels = self.library.item_labels(item)
+            # todo: check for file, no overlay in tags
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
@@ -3283,7 +3354,9 @@ class CollectionBuilder:
                     names = {s.season_number: s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
                     for season in self.library.query(item.seasons):
                         if season.index in names and season.title != names[season.index]:
-                            season.editTitle(names[season.index])
+                            # season.editTitle(names[season.index])
+                            self.library.EmbyServer.editItemTitle(season.ratingKey, names[season.index])
+
                 except Failed as e:
                     logger.error(e)
 
@@ -3332,21 +3405,43 @@ class CollectionBuilder:
                 logger.error(f"Arr Error: {e}")
 
     def load_collection(self):
+        emby_id = None
         if self.obj is None and self.smart_url:
-            self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url, self.ignore_blank_results)
+            emby_id = self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url, self.ignore_blank_results, self.minimum)
+            # mycol_id = self.library.EmbyServer.get_collection_id(self.name)
+            # mycol = self.library.EmbyServer.get_item(mycol_id)
+            # self.obj = self.library.EmbyServer.convert_emby_to_plex([mycol])[0]
             logger.debug(f"Smart Collection Created: {self.smart_url}")
         elif self.obj is None and self.blank_collection:
-            self.library.create_blank_collection(self.name)
+            emby_id = self.library.create_blank_collection(self.name)
+
         elif self.smart_label_collection:
             try:
                 if not self.library.smart_label_check(self.name):
                     raise Failed
                 smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
-                if not self.obj:
-                    self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
+                emby_col_id = self.library.EmbyServer.get_collection_id(self.name)
+                if emby_col_id:
+                    new_col = self.library.EmbyServer.get_item(emby_col_id)
+                    self.obj = self.library.EmbyServer.convert_emby_to_plex([new_col])[0]
+                if self.obj is None:
+                    emby_id= self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results, minimum = self.minimum)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
-        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+
+        if emby_id is None:
+            emby_id = self.library.EmbyServer.get_collection_id(self.name)
+
+        if self.obj is None and emby_id is not None:
+            new_col = self.library.EmbyServer.get_item(emby_id)
+            if new_col is not None:
+                self.obj = self.library.EmbyServer.convert_emby_to_plex([new_col])[0]
+
+
+        # try:
+        #     self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+        # except Failed:
+        #     self.obj = None
         if not self.exists:
             self.created = True
 
@@ -3393,7 +3488,8 @@ class CollectionBuilder:
                         logger.error("Metadata: Failed to Update Please delete the collection and run again")
                     logger.info("")
         else:
-            self.library.item_reload(self.obj)
+            # emby
+            # self.library.item_reload(self.obj)
             #self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
             if summary[1] and str(summary[1]) != str(self.obj.summary):
@@ -3408,6 +3504,7 @@ class CollectionBuilder:
                         if title.startswith(f"{op} "):
                             title = f"{title[len(op):].strip()}, {op.strip()}"
                             break
+
                     new_sort_title = new_sort_title.replace("<<title>>", title)
                 if new_sort_title != str(self.obj.titleSort):
                     self.obj.editSortTitle(new_sort_title)
@@ -3503,8 +3600,8 @@ class CollectionBuilder:
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
-        if self.mapping_name in self.library.collection_images or self.name in self.library.collection_images:
-            style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
+        if self.mapping_name in self.library.collection_images or self.original_name in self.library.collection_images:
+            style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.original_name]
             if style_data and "url_poster" in style_data and style_data["url_poster"]:
                 self.posters["style_data"] = style_data["url_poster"]
             elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
@@ -3514,8 +3611,9 @@ class CollectionBuilder:
             elif style_data and "tpdb_background" in style_data and style_data["tpdb_background"]:
                 self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
 
-        self.collection_poster = self.library.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
-        self.collection_background = self.library.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
+        # use the original name for the poster instead of self.obj.title
+        self.collection_poster = self.library.pick_image(self.original_name, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
+        self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -3541,7 +3639,316 @@ class CollectionBuilder:
             self.library.upload_theme(self.obj, filepath=self.file_theme)
         return updated_details
 
+    import requests
+
+    def update_details_emby_with_labels_in_json(self):
+        """
+        Aktualisiert die Details einer Sammlung in Emby, wobei Tags/Labels über JSON (`kometa_labels`) bearbeitet werden,
+        und die restlichen Eigenschaften über die Emby-API.
+        """
+        updated_details = []
+        logger.info("")
+        logger.separator(f"Updating EMBY Metadata of {self.name} {self.Type}", space=False, border=False)
+        logger.info("")
+
+        embyserver = self.library.EmbyServer
+        headers = embyserver.headers
+
+        if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
+        elif "translation" in self.summaries:               summary = ("translation", self.summaries["translation"])
+        elif "tmdb_description" in self.summaries:          summary = ("tmdb_description", self.summaries["tmdb_description"])
+        elif "tvdb_description" in self.summaries:          summary = ("tvdb_description", self.summaries["tvdb_description"])
+        elif "letterboxd_description" in self.summaries:    summary = ("letterboxd_description", self.summaries["letterboxd_description"])
+        elif "tmdb_summary" in self.summaries:              summary = ("tmdb_summary", self.summaries["tmdb_summary"])
+        elif "tvdb_summary" in self.summaries:              summary = ("tvdb_summary", self.summaries["tvdb_summary"])
+        elif "tmdb_biography" in self.summaries:            summary = ("tmdb_biography", self.summaries["tmdb_biography"])
+        elif "tmdb_person" in self.summaries:               summary = ("tmdb_person", self.summaries["tmdb_person"])
+        elif "tmdb_collection_details" in self.summaries:   summary = ("tmdb_collection_details", self.summaries["tmdb_collection_details"])
+        elif "trakt_list_details" in self.summaries:        summary = ("trakt_list_details", self.summaries["trakt_list_details"])
+        elif "tmdb_list_details" in self.summaries:         summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
+        elif "tvdb_list_details" in self.summaries:         summary = ("tvdb_list_details", self.summaries["tvdb_list_details"])
+        elif "letterboxd_list_details" in self.summaries:   summary = ("letterboxd_list_details", self.summaries["letterboxd_list_details"])
+        elif "icheckmovies_list_details" in self.summaries: summary = ("icheckmovies_list_details", self.summaries["icheckmovies_list_details"])
+        elif "tmdb_actor_details" in self.summaries:        summary = ("tmdb_actor_details", self.summaries["tmdb_actor_details"])
+        elif "tmdb_crew_details" in self.summaries:         summary = ("tmdb_crew_details", self.summaries["tmdb_crew_details"])
+        elif "tmdb_director_details" in self.summaries:     summary = ("tmdb_director_details", self.summaries["tmdb_director_details"])
+        elif "tmdb_producer_details" in self.summaries:     summary = ("tmdb_producer_details", self.summaries["tmdb_producer_details"])
+        elif "tmdb_writer_details" in self.summaries:       summary = ("tmdb_writer_details", self.summaries["tmdb_writer_details"])
+        elif "tmdb_movie_details" in self.summaries:        summary = ("tmdb_movie_details", self.summaries["tmdb_movie_details"])
+        elif "tvdb_movie_details" in self.summaries:        summary = ("tvdb_movie_details", self.summaries["tvdb_movie_details"])
+        elif "tvdb_show_details" in self.summaries:         summary = ("tvdb_show_details", self.summaries["tvdb_show_details"])
+        elif "tmdb_show_details" in self.summaries:         summary = ("tmdb_show_details", self.summaries["tmdb_show_details"])
+        else:                                               summary = (None, None)
+        # bug: list object coming in from somewhere "sight & sound"
+        # Overview (Summary) aktualisieren
+        # print(self.obj)
+
+        if self.playlist:
+            if summary[1]:
+                if str(summary[1]) != str(self.obj.summary):
+                    try:
+                        # self.obj.editSummary(str(summary[1]))
+                        embyserver.set_item_property(self.obj.ratingKey, "Overview", str(summary[1]))
+
+                        logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
+                        logger.info("Metadata: Update Completed")
+                        updated_details.append("Metadata")
+                    except NotFound:
+                        logger.error("Metadata: Failed to Update Please delete the collection and run again")
+                    logger.info("")
+        else:
+
+            batch_display = "Collection Metadata Edits"
+            new_properties = {}
+            try:
+                if summary[1]:
+                    homepage_url = None
+                    # match = re.search(r"<<homepage_url=(https?://[^\]]+)>>", summary[1])
+                    # if match:
+                    #     homepage_url = match.group(1)
+                        # Entferne die URL aus der Summary
+                        # cleaned_summary = re.sub(r"<<homepage_url=https?://[^\]]+>>\n?", "", summary[1])
+
+                    if str(summary[1]) != str(self.obj.summary):
+                    # self.obj.editSummary(summary[1])
+                    # embyserver.set_item_property(self.obj.ratingKey, "Overview", summary[1])
+                        new_properties["Overview"] = summary[1]
+                        batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
+                        # if homepage_url:
+                        #     new_properties["ProviderIds"] = {"Website": homepage_url,
+                        #                                      "Homepage": homepage_url,
+                        #                                      "Official Website": homepage_url}
+            except:
+                raise Warning(f"ERROR: {self.obj} is not a Plex object.")
+            # homepage_url = xxx
+                # SortName (Sortiertitel) aktualisieren
+            # print(self.obj)
+            if "sort_title" in self.details:
+                # todo: add current emby sort title
+                sort_title = str(self.details["sort_title"]).replace("<<title>>", self.name)
+                new_sort_title = str(self.details["sort_title"])
+
+                # '!130_📺 Serien Golden Globe 2023'
+                # '!130_📺 Serien Emmys 2023'
+                # '!130_📺 Serien Emmys 2024'
+                # '!130_Emmys !'
+
+                if "<<title>>" in new_sort_title:
+                    title = self.name
+                    for op in ["The ", "A ", "An "]:
+                        if title.startswith(f"{op} "):
+                            title = f"{title[len(op):].strip()}, {op.strip()}"
+                            break
+                    new_sort_title = new_sort_title.replace("<<title>>", title)
+                else:
+                    parts = new_sort_title.split("_", 1)
+                    expected_prefix = f"{self.icon}{self.library.name} " # entsricht '📺 Serien '
+
+                    if len(parts) > 1 and not parts[1].startswith(expected_prefix) and not parts[1][1:].startswith(f"!{expected_prefix}"):
+                        # Ergänzen, falls der gewünschte Prefix nicht vorhanden ist
+                        new_sort_title = f"{parts[0]}_{expected_prefix}{parts[1]}"
+                    # elif len(parts) == 1:  # Kein Unterstrich vorhanden, einfach anhängen
+                    #     new_sort_title = f"{new_sort_title}_{expected_prefix}"
+
+                if new_sort_title.endswith(" !"):
+                    new_sort_title = new_sort_title[:-2]
+
+                # append icon for filtering the libraries
+                new_sort_title = f"{self.icon}{new_sort_title}"
+
+                if new_sort_title != sort_title:
+                    batch_display += f"\nSort Title | {new_sort_title}"
+                # Konstruiere die URL für den API-Request
+                # print(self.obj['Id'])
+                # print(self.obj.ratingKey)
+                new_properties["ForcedSortName"] = new_sort_title
+                # embyserver.set_item_property(self.obj.ratingKey, "ForcedSortName", new_sort_title)
+
+                # url = f"{emby_server_url}/Items/{self.obj['Id']}?api_key={emby_api_key}"
+                #
+                # # JSON-Payload mit dem neuen Sort Name
+                # payload = {
+                #     "SortName": sort_title
+                # }
+                #
+                # # Führe die POST-Anfrage durch
+                # response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload)
+                #
+                # # Überprüfe den Statuscode und protokolliere die Ergebnisse
+                # if response.status_code == 204:
+                #     logger.info(f"Sort Title updated to: {sort_title}")
+                #     updated_details.append("Metadata")
+                # else:
+                #     logger.warning(f"Failed to update Sort Title: {response.text}")
+
+            # todo add content rating
+            # if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
+            #     self.obj.editContentRating(self.details["content_rating"])
+            #     batch_display += f"\nContent Rating | {self.details['content_rating']}"
+
+            if len(new_properties.items()) > 0:
+                embyserver.update_item(self.obj.ratingKey, new_properties)
+
+            # Tags/Labels in JSON aktualisieren
+
+            add_tags = self.details["label"] if "label" in self.details else []
+            remove_tags = self.details["label.remove"] if "label.remove" in self.details else None
+            sync_tags = self.details["label.sync"] if "label.sync" in self.details else None
+            if sync_tags:
+                sync_tags.append("Kometa")
+            else:
+                add_tags.append("Kometa")
+
+            tag_results = self.library.edit_tags('label', self.obj, add_tags=add_tags, remove_tags=remove_tags,
+                                                 sync_tags=sync_tags, do_print=False)
+            if tag_results:
+                batch_display += f"\n{tag_results}"
+
+            logger.info(batch_display)
+            if len(batch_display) > 25:
+                try:
+                    # self.obj.saveEdits()
+                    logger.info("Metadata: Update Completed")
+                    updated_details.append("Metadata")
+                except NotFound:
+                    logger.error("Metadata: Failed to Update Please delete the collection and run again")
+                logger.info("")
+
+
+            # print(f"EMBY LABELS: {self.obj} - {label_data}")
+
+            # Speichern der Label-Informationen in der JSON-Datei
+            collection_id = self.obj.ratingKey
+            # current_tags = self.details["label"]
+
+            # -----------
+            # todo add / rewrite
+
+            if False:
+                advance_update = False
+                if "collection_mode" in self.details:
+                    if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys \
+                            or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
+                        if self.blank_collection and self.created:
+                            self.library.collection_mode_query(self.obj, "hide")
+                            logger.info(f"Collection Mode | hide")
+                            self.library.collection_mode_query(self.obj, "default")
+                            logger.info(f"Collection Mode | default")
+                        self.library.collection_mode_query(self.obj, self.details["collection_mode"])
+                        logger.info(f"Collection Mode | {self.details['collection_mode']}")
+                        advance_update = True
+
+                if "collection_filtering" in self.details:
+                    try:
+                        self.library.edit_query(self.obj, {"collectionFilterBasedOnUser": 0 if self.details["collection_filtering"] == "admin" else 1}, advanced=True)
+                        advance_update = True
+                    except NotFound:
+                        logger.error("Collection Error: collection_filtering requires a more recent version of Plex Media Server")
+
+                if "collection_order" in self.details:
+                    if int(self.obj.collectionSort) not in plex.collection_order_keys \
+                            or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
+                        self.library.collection_order_query(self.obj, self.details["collection_order"])
+                        logger.info(f"Collection Order | {self.details['collection_order']}")
+                        advance_update = True
+
+                if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
+                    visibility = self.library.collection_visibility(self.obj)
+                    visible_library = None
+                    visible_home = None
+                    visible_shared = None
+
+                    if "visible_library" in self.details and self.details["visible_library"] != visibility["library"]:
+                        visible_library = self.details["visible_library"]
+
+                    if "visible_home" in self.details and self.details["visible_home"] != visibility["home"]:
+                        visible_home = self.details["visible_home"]
+
+                    if "visible_shared" in self.details and self.details["visible_shared"] != visibility["shared"]:
+                        visible_shared = self.details["visible_shared"]
+
+                    if visible_library is not None or visible_home is not None or visible_shared is not None:
+                        self.library.collection_visibility_update(self.obj, visibility=visibility, library=visible_library, home=visible_home, shared=visible_shared)
+                        advance_update = True
+                        logger.info("Collection Visibility Updated")
+
+                if advance_update and "Metadata" not in updated_details:
+                    updated_details.append("Metadata")
+
+
+            # -------------
+
+
+            # save_labels_to_file(file_path_kometa, kometa_labels)
+            logger.info(f"Labels updated in JSON for Collection ID {collection_id}")
+            updated_details.append("Tag")
+
+        asset_location = None
+        if self.asset_directory:
+            name_mapping = self.name
+            if "name_mapping" in self.details:
+                if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
+                else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
+            try:
+                asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                if asset_poster:
+                    self.posters["asset_directory"] = asset_poster
+                if asset_background:
+                    self.backgrounds["asset_directory"] = asset_background
+            except Failed as e:
+                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
+                    logger.warning(e)
+        if self.mapping_name in self.library.collection_images or self.original_name in self.library.collection_images:
+            style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.original_name]
+            if style_data and "url_poster" in style_data and style_data["url_poster"]:
+                self.posters["style_data"] = style_data["url_poster"]
+            elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
+                self.posters["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_poster']}"
+            if style_data and "url_background" in style_data and style_data["url_background"]:
+                self.backgrounds["style_data"] = style_data["url_background"]
+            elif style_data and "tpdb_background" in style_data and style_data["tpdb_background"]:
+                self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
+
+        # use original name for the poster
+        self.collection_poster = self.library.pick_image(self.original_name, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
+        self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
+
+
+        # Bilder (Poster/Backdrop) aktualisieren
+        if self.collection_poster:
+            my_emby = self.library.EmbyServer
+            uploaded_poster = my_emby.set_image(self.obj.ratingKey, self.collection_poster.location)
+
+            if uploaded_poster:
+                logger.info(f"Poster updated: {self.collection_poster.location}")
+                updated_details.append("Image")
+            else:
+                logger.warning(f"Failed to update Backdrop: {response.text}")
+
+            # url = f"{self.library.server_url}/Items/{self.obj['Id']}/Images/Primary"
+            # files = {"image": open(self.collection_poster, "rb")}
+            # response = requests.post(url, headers=headers, files=files)
+            # if response.status_code == 204:
+            #     logger.info(f"Poster updated: {self.collection_poster}")
+            #     updated_details.append("Image")
+            # else:
+            #     logger.warning(f"Failed to update Poster: {response.text}")
+
+        if self.collection_background and not "BackdropImageTags" in self.library.EmbyServer.get_item(self.obj.ratingKey) :
+            uploaded = self.library.EmbyServer.set_image(self.obj.ratingKey,self.collection_background.location, image_type="Backdrop")#.emby_server_url}/Items/{self.obj.ratingKey}/Images/Backdrop"
+            # files = {"image": open(self.collection_background, "rb")}
+            # response = requests.post(url, headers=headers, files=files)
+            if uploaded:
+                logger.info(f"Backdrop updated: {self.collection_background.location}")
+                updated_details.append("Image")
+            else:
+                logger.warning(f"Failed to update Backdrop: {response.text}")
+
+        return updated_details
+
     def sort_collection(self):
+        #emby
+        return
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
@@ -3660,7 +4067,7 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and self.details["changes_webhooks"] and \
+        if self.obj is not None and self.details["changes_webhooks"] and \
                 (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.library.item_reload(self.obj)
             try:
