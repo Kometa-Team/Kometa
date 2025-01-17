@@ -70,6 +70,7 @@ class Operations:
 
             less_check = True
             if less_in is not None:
+
                 col_count = col_in.childCount if col_in.childCount is not None else 0
                 less_check = col_count < less_in
                 logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")

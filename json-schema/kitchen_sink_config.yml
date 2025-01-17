@@ -154,6 +154,15 @@ libraries:
         data:
           depth: 1
           limit: 15
+    - default: composer                             # Composers
+      template_variables:                           # bw, rainier, diiivoy, diiivoycolor, or orig style is used. depth and limit is set low, but sometimes I boost to 10, 150
+        exclude:                                    # ever have some random person... you can exclude them if you want
+#        - Jeremy Kleiner
+#        - Thomas Hayslip
+        style: signature
+        data:
+          depth: 1
+          limit: 15
     - default: writer                               # Writers
       template_variables:                           # bw, rainier, diiivoy, diiivoycolor, or orig style is used. depth and limit is set low, but sometimes I boost to 10, 150
         exclude:                                    # ever have some random person... you can exclude them if you want

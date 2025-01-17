@@ -1027,6 +1027,16 @@ class MetadataFile(DataFile):
                                                 people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
                                             people[int(person.get('Id'))]["count"] += 1
 
+                                    # emby_actors=
+
+                                    # for person in getattr(item, f"{auto_type}s")[:person_depth]:
+                                    #     if person.tag in include:
+                                    #         if person.tag not in include_cols:
+                                    #             include_cols.append(person.tag)
+                                    #     else:
+                                    #         if int(person.get('Id')) not in people:
+                                    #             people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
+                                    #         people[int(person.get('Id'))]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
