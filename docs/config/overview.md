@@ -15,12 +15,12 @@ requirements for setup that can be found by clicking the links within the table 
 
 | Attribute                                   | Required                                                              |
 |:--------------------------------------------|:----------------------------------------------------------------------|
+| [`plex`](plex.md)                           | :fontawesome-solid-circle-check:{ .green } Required here; can be overridden per library             |
+| [`tmdb`](tmdb.md)                           | :fontawesome-solid-circle-check:{ .green }                            |
 | [`libraries`](libraries.md)                 | :fontawesome-solid-circle-check:{ .green }                            |
 | [`playlist_files`](../notused/playlists.md) | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`settings`](settings.md)                   | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`webhooks`](webhooks.md)                   | :fontawesome-solid-circle-xmark:{ .red }                              |
-| [`plex`](plex.md)                           | :fontawesome-solid-circle-check:{ .green } Either here or per library |
-| [`tmdb`](tmdb.md)                           | :fontawesome-solid-circle-check:{ .green }                            |
 | [`tautulli`](tautulli.md)                   | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`github`](github.md)                       | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`omdb`](omdb.md)                           | :fontawesome-solid-circle-xmark:{ .red }                              |
