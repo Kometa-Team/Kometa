@@ -25,6 +25,7 @@ Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operatio
 Add `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
 add `plex` ratings source for mass operations.
+Orderly error and no caching on too-large image
 
 # Docs
 Added "getting started" page
