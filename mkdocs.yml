@@ -171,6 +171,9 @@ nav:
   - CONFIGURATION FILE:
       - Overview: config/overview.md
       - STRUCTURE:
+        - REQUIRED CONNECTIONS:
+          - Plex: config/plex.md
+          - TMDb: config/tmdb.md
         - LIBRARIES:
           - Library Attributes: config/libraries.md
           - File Blocks: config/files.md
@@ -179,11 +182,6 @@ nav:
           - Playlist Files: config/playlists.md
         - SETTINGS:
           - Settings: config/settings.md
-        - WEBHOOKS:
-          - Webhooks: config/webhooks.md
-        - REQUIRED CONNECTIONS:
-          - Plex: config/plex.md
-          - TMDb: config/tmdb.md
         - OPTIONAL CONNECTIONS:
           - Tautulli: config/tautulli.md
           - Github: config/github.md
@@ -197,6 +195,7 @@ nav:
           - Trakt: config/trakt.md
           - MyAnimeList: config/myanimelist.md
           - Trakt and MyAnimeList Authentication: config/authentication.md
+          - Webhooks: config/webhooks.md
       - OTHER:
         - Scheduling Parts: config/schedule.md
   - KOMETA DEFAULTS:
