@@ -1,5 +1,20 @@
 ## This file is a template remove the .template to use the file
 
+## These are the two connections which are required for the script to run
+plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.12:32400
+  token: ####################
+  timeout: 60
+  db_cache:
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl:
+tmdb:                                # REQUIRED for the script to run
+  apikey: ################################
+  language: en
+
+## At least one library has to be configured for the script to do anything meaningful
 libraries:                           # This is called out once within the config.yml file
   Movies:                            # These are names of libraries in your Plex
     remove_overlays: false           # Set this to true to remove all overlays
@@ -83,18 +98,6 @@ webhooks:                            # Can be individually specified per library
   run_start:
   run_end:
   changes:
-plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
-  url: http://192.168.1.12:32400
-  token: ####################
-  timeout: 60
-  db_cache:
-  clean_bundles: false
-  empty_trash: false
-  optimize: false
-  verify_ssl:
-tmdb:                                # REQUIRED for the script to run
-  apikey: ################################
-  language: en
 tautulli:                            # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: ################################
