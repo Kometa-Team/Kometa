@@ -72,7 +72,7 @@ class OMDb:
             if omdb_dict and expired is False:
                 return OMDbObj(imdb_id, omdb_dict)
         logger.trace(f"IMDb ID: {imdb_id}")
-        response = self.requests.get(base_url, params={"i": imdb_id, "apikey": self.apikey})
+        response = self.requests.get(f"{base_url}?i={imdb_id}&apikey={self.apikey}&")
         if response.status_code < 400:
             omdb = OMDbObj(imdb_id, response.json())
             if self.cache and not ignore_cache:
