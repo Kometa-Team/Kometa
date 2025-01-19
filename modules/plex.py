@@ -442,6 +442,8 @@ watchlist_sorts = {
     "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
 }
 
+MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
+
 class Plex(Library):
     def __init__(self, config, params):
         super().__init__(config, params)
@@ -766,6 +768,13 @@ class Plex(Library):
                 item_list.append(item)
         return item_list
 
+    def validate_image_size(self, image):
+        if image.compare < MAX_IMAGE_SIZE:
+            return True
+        else:
+            logger.error(f"Image too large: {image.location}, bytes {image.compare}, MAX {MAX_IMAGE_SIZE}")
+            return False
+
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def reload(self, item, force=False):
         is_full = False
@@ -789,6 +798,7 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def _upload_image(self, item, image):
+        upload_success = True
         try:
             if image.is_url and "theposterdb.com" in image.location:
                 now = datetime.now()
@@ -800,12 +810,17 @@ class Plex(Library):
             if image.is_poster and image.is_url:
                 item.uploadPoster(url=image.location)
             elif image.is_poster:
-                item.uploadPoster(filepath=image.location)
+                upload_success = self.validate_image_size(image)
+                if upload_success:
+                    item.uploadPoster(filepath=image.location)
             elif image.is_url:
                 item.uploadArt(url=image.location)
             else:
-                item.uploadArt(filepath=image.location)
+                upload_success = self.validate_image_size(image)
+                if upload_success:
+                    item.uploadArt(filepath=image.location)
             self.reload(item, force=True)
+            return upload_success
         except BadRequest as e:
             item.refresh()
             raise Failed(e)
