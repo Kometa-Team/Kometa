@@ -62,3 +62,4 @@ Kometa will now check for `.yaml` extension in filenames if `.yml` is not found 
 Kometa will no longer automatically sync playlists to all users if you do not specify who you want to sync them to. Only the server admin will receive playlists unless otherwise specified using `sync_to_users` or `playlist_sync_to_users`
 Fixes #2385 `tmdb_person` would pass an integer if the name started with an integer (i.e. `50 Cent` would pass `50` which resolved to `Catherine Deneuve`)
 Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)
+Fixed an OMDb API issue where API key would intermittently be treated as invalid
