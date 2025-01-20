@@ -885,6 +885,9 @@ def run_collection(config, library, metadata, requested_collections):
                         library.status[str(mapping_name)]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
             if builder.server_preroll is not None:
+                if isinstance(builder.server_preroll, list):
+                    builder.server_preroll = ';'.join(builder.server_preroll)
+
                 library.set_server_preroll(builder.server_preroll)
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
