@@ -161,6 +161,13 @@ class ConfigFile:
         logger.info(f"Using {self.config_path} as config")
         logger.clear_errors()
 
+        # Initialize self.data by loading the YAML configuration file
+        self.Requests = in_request
+        self.data = self.Requests.file_yaml(self.config_path).data
+        
+        # Now safely initialize self.settings
+        self.settings = self.data.get("settings", {})
+
         self._mediastingers = None
         self.Requests = in_request
         self.default_dir = default_dir
