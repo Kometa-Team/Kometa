@@ -88,6 +88,7 @@ settings:
   playlist_sync_to_users:
   playlist_exclude_users:
   playlist_report: false
+  preroll_delimiter: ';'  # Options: ',' or ';'
   verify_ssl: true
   custom_repo:
   overlay_artwork_filetype: jpg
