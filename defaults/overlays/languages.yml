@@ -46,8 +46,17 @@ external_templates:
         conditions:
           - hide_text: true
             value: 100
-          #- text_size: big
-          #  value: 250
+          - size: big
+            value: 250
+      height:
+        conditions:
+          - size: big
+            value: 100
+      final_font_size:
+        default: 50
+        conditions:
+          - size: big
+            value: 100
     default:
       style: round
       country: <<key>>
@@ -57,10 +66,11 @@ external_templates:
     addon_position: <<final_align>>
     addon_offset: <<offset>>
     back_color: "#00000099"
+    back_height: <<height>>
     back_width: <<width>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
-    font_size: 50
+    font_size: <<final_font_size>>
     final_name: text(<<final_text>>)
 
 queues:
@@ -99,10 +109,16 @@ queues:
           default: 0
           conditions:
             - group_alignment: vertical
+              size: big
+              value: 101
+            - group_alignment: vertical
               value: 61
         horizontal_spacing:
           default: 0
           conditions:
+            - group_alignment: horizontal
+              size: big
+              value: 251
             - group_alignment: horizontal
               value: 191
         surround:
