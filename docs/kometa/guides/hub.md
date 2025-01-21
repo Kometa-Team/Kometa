@@ -15,7 +15,7 @@ For the purpose of this guide we will disable **all** enabled recommendations.
 
 ![hub2.png](images/hub2.png)
 
-In order for a Kometa collection to appear as a Row in the Manage Recommendations section, it must have one of the `visible_home`/`visible_shared`/`visible_library` attributes set to `true`, this can be done in your Collection definition or via a template variable for Defaults files. You can also set these visibilities within the Plex UI, you can read [Plex's guidance](https://support.plex.tv/articles/manage-recommendations/) on how to do this. 
+In order for a Kometa collection to appear as a Row in the Manage Recommendations section, it must have one of the `visible_home`/`visible_shared`/`visible_library` attributes set to `true`, this can be done in your Collection definition or via a template variable for Defaults files. You can also set these visibility options within the Plex UI, you can read [Plex's guidance](https://support.plex.tv/articles/manage-recommendations/) on how to do this. 
 
 Here is an example Collection definition setting all three `visible_*` attributes:
 
