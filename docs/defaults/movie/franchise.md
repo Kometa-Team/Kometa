@@ -15,6 +15,14 @@ your library.
 
 Supported Library Types: Movie
 
+It is important to disable Plex's in-built Automatic Collections if you are using this Default file. Please see the below video showing how to do this.
+
+<video controls>
+<source src="../../images/automatic_collections.mp4" type="video/mp4">
+</video>
+
+You'll also need to delete any Collections created automatically by Plex prior to Kometa running this file. You can use the [`delete_collections` operation](../../config/operations.md#delete-collections) to do this, or any other method.
+
 ## <a id="collection_section"></a>Collections
 
 | Collection                                       | Key                                               | Description                                            |
