@@ -19,6 +19,8 @@ external_templates:
       final_text:
         default: <<text>>
         conditions:
+          - hide_text: true
+            value: " "
           - use_lowercase: true
             value: <<key>>
       final_style:
@@ -39,12 +41,18 @@ external_templates:
             git.exists: false
             repo.exists: false
             value: flag/<<final_style>>/<<country_<<key>>>>
+      width:
+        default: 190
+        conditions:
+          - hide_text: true
+            value: 100
+          #- text_size: big
+          #  value: 250
     default:
       style: round
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
-      width: 190
     queue: flags
     addon_position: <<final_align>>
     addon_offset: <<offset>>
@@ -55,239 +63,100 @@ external_templates:
     font_size: 50
     final_name: text(<<final_text>>)
 
-vars:
-  top_left: &top_left           {vertical_align: top,     horizontal_align: left}
-  top_center: &top_center       {vertical_align: top,     horizontal_align: center}
-  top_right: &top_right         {vertical_align: top,     horizontal_align: right}
-  center_left: &center_left     {vertical_align: center,  horizontal_align: left}
-  center_center: &center_center {vertical_align: center,  horizontal_align: center}
-  center_right: &center_right   {vertical_align: center,  horizontal_align: right}
-  bottom_left: &bottom_left     {vertical_align: bottom,  horizontal_align: left}
-  bottom_center: &bottom_center {vertical_align: bottom,  horizontal_align: center}
-  bottom_right: &bottom_right   {vertical_align: bottom,  horizontal_align: right}
-
-  v1-1: &v1-1 {vertical_offset: 15}
-  v1-2: &v1-2 {vertical_offset: 76}
-  v1-3: &v1-3 {vertical_offset: 137}
-  v1-4: &v1-4 {vertical_offset: 198}
-  v1-5: &v1-5 {vertical_offset: 259}
-
-  v2-1: &v2-1 {vertical_offset: 150}
-  v2-2: &v2-2 {vertical_offset: 211}
-  v2-3: &v2-3 {vertical_offset: 272}
-  v2-4: &v2-4 {vertical_offset: 333}
-  v2-5: &v2-5 {vertical_offset: 394}
-
-  v3-1: &v3-1 {vertical_offset: 223}
-  v3-2: &v3-2 {vertical_offset: 284}
-  v3-3: &v3-3 {vertical_offset: 345}
-  v3-4: &v3-4 {vertical_offset: 406}
-  v3-5: &v3-5 {vertical_offset: 467}
-
-  vct-1: &vct-1 {vertical_offset: -244}
-  vct-2: &vct-2 {vertical_offset: -183}
-  vct-3: &vct-3 {vertical_offset: -122}
-  vct-4: &vct-4 {vertical_offset: -61}
-  vct-5: &vct-5 {vertical_offset: 0}
-
-  vc-1: &vc-1 {vertical_offset: -122}
-  vc-2: &vc-2 {vertical_offset: -61}
-  vc-3: &vc-3 {vertical_offset: 0}
-  vc-4: &vc-4 {vertical_offset: 61}
-  vc-5: &vc-5 {vertical_offset: 122}
-
-  vcb-1: &vcb-1 {vertical_offset: 0}
-  vcb-2: &vcb-2 {vertical_offset: 61}
-  vcb-3: &vcb-3 {vertical_offset: 122}
-  vcb-4: &vcb-4 {vertical_offset: 183}
-  vcb-5: &vcb-5 {vertical_offset: 244}
-
-  vc-c: &vc-c {vertical_offset: 0}
-  vc-t: &vc-t {vertical_offset: -30}
-  vc-b: &vc-b {vertical_offset: 30}
-
-  h1-1: &h1-1 {horizontal_offset: 15}
-  h1-2: &h1-2 {horizontal_offset: 206}
-  h1-3: &h1-3 {horizontal_offset: 397}
-  h1-4: &h1-4 {horizontal_offset: 588}
-  h1-5: &h1-5 {horizontal_offset: 779}
-
-  h0-1: &h0-1 {horizontal_offset: 0}
-  h0-2: &h0-2 {horizontal_offset: 191}
-  h0-3: &h0-3 {horizontal_offset: -191}
-  h0-4: &h0-4 {horizontal_offset: 382}
-  h0-5: &h0-5 {horizontal_offset: -382}
-
-  hc-c: &hc-c {horizontal_offset: 0}
-  hc-l: &hc-l {horizontal_offset: -95}
-  hc-r: &hc-r {horizontal_offset: 95}
-
-
 queues:
   flags:
     settings:
       default:
         group_alignment: vertical
+        #vertical_position: top3
+        #horizontal_position: left
       conditionals:
-        horizontal_position:
+        vertical_align:
+          default: top
+          conditions:
+            - vertical_position: [center, center_top, center_bottom]
+              value: center
+            - vertical_position: [bottom, bottom2, bottom3]
+              value: bottom
+            - vertical_position: [top, top2, top3]
+              value: top
+            - builder_level: episode
+              value: top
+            - overlay_level: episode
+              value: top
+        horizontal_align:
           default: left
           conditions:
+            - horizontal_position: [center, center_left, center_right]
+              value: center
+            - horizontal_position: [left, left2]
+              value: left
+            - horizontal_position: [right, right2]
+              value: right
             - use_subtitles: true
               value: right
-        vertical_position:
-          default: top3
+        vertical_spacing:
+          default: 0
           conditions:
-            - builder_level: episode
-              value: top2
-            - overlay_level: episode
-              value: top2
-      position: <<group_alignment>>_<<vertical_position>>_<<horizontal_position>>
+            - group_alignment: vertical
+              value: 61
+        horizontal_spacing:
+          default: 0
+          conditions:
+            - group_alignment: horizontal
+              value: 191
+        surround:
+          default: false
+          conditions:
+            #- group_alignment: vertical
+            #  vertical_position: center
+            #  value: true
+            - group_alignment: horizontal
+              horizontal_position: [center, center_left, center_right]
+              value: true
+        initial_vertical_offset:
+          default: 223
+          conditions:
+            - vertical_position: [top, bottom]
+              value: 15
+            - vertical_position: [top2, bottom2]
+              value: 150
+            - vertical_position: [top3, bottom3]
+              value: 223
+            - group_alignment: horizontal
+              vertical_position: center_top
+              value: -30
+            - vertical_position: center_top
+              value: -244
+            - vertical_position: center
+              value: -122
+            - group_alignment: horizontal
+              vertical_position: center_bottom
+              value: 30
+            - vertical_position: center_bottom
+              value: 0
+        initial_horizontal_offset:
+          default: 15
+          conditions:
+            - horizontal_position: [left, right]
+              value: 15
+            - horizontal_position: [left2, right2]
+              value: 206
+            - horizontal_position: center_left
+              value: -95
+            - horizontal_position: center_right
+              value: 95
+            - horizontal_position: center
+              value: 0
+      dynamic_position:
+        vertical_align: <<vertical_align>>
+        horizontal_align: <<horizontal_align>>
+        initial_vertical_offset: <<initial_vertical_offset>>
+        initial_horizontal_offset: <<initial_horizontal_offset>>
+        vertical_spacing: <<vertical_spacing>>
+        horizontal_spacing: <<horizontal_spacing>>
+        surround: <<surround>>
       overlay_limit: 3
-
-    vertical_top_left:                      [<<: [*top_left,      *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_left2:                     [<<: [*top_left,      *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center_left:               [<<: [*top_center,    *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center:                    [<<: [*top_center,    *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_center_right:              [<<: [*top_center,    *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_right2:                    [<<: [*top_right,     *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_top_right:                     [<<: [*top_right,     *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-
-    vertical_top2_left:                     [<<: [*top_left,      *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_left2:                    [<<: [*top_left,      *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center_left:              [<<: [*top_center,    *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center:                   [<<: [*top_center,    *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_center_right:             [<<: [*top_center,    *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_right2:                   [<<: [*top_right,     *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_top2_right:                    [<<: [*top_right,     *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-
-    vertical_top3_left:                     [<<: [*top_left,      *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_left2:                    [<<: [*top_left,      *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center_left:              [<<: [*top_center,    *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center:                   [<<: [*top_center,    *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_center_right:             [<<: [*top_center,    *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_right2:                   [<<: [*top_right,     *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_top3_right:                    [<<: [*top_right,     *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-
-    vertical_center_top_left:               [<<: [*center_left,   *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_left2:              [<<: [*center_left,   *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center_left:        [<<: [*center_center, *vct-1, *hc-l], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center:             [<<: [*center_center, *vct-1, *hc-c], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_center_right:       [<<: [*center_center, *vct-1, *hc-r], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_right2:             [<<: [*center_right,  *vct-1, *h1-2], *vct-2, *vct-3, *vct-4, *vct-5]
-    vertical_center_top_right:              [<<: [*center_right,  *vct-1, *h1-1], *vct-2, *vct-3, *vct-4, *vct-5]
-
-    vertical_center_left:                   [<<: [*center_left,   *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_left2:                  [<<: [*center_left,   *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center_left:            [<<: [*center_center, *vc-1, *hc-l], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center:                 [<<: [*center_center, *vc-1, *hc-c], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_center_right:           [<<: [*center_center, *vc-1, *hc-r], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_right2:                 [<<: [*center_right,  *vc-1, *h1-2], *vc-2, *vc-3, *vc-4, *vc-5]
-    vertical_center_right:                  [<<: [*center_right,  *vc-1, *h1-1], *vc-2, *vc-3, *vc-4, *vc-5]
-
-    vertical_center_bottom_left:            [<<: [*center_left,   *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_left2:           [<<: [*center_left,   *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center_left:     [<<: [*center_center, *vcb-1, *hc-l], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center:          [<<: [*center_center, *vcb-1, *hc-c], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_center_right:    [<<: [*center_center, *vcb-1, *hc-r], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_right2:          [<<: [*center_right,  *vcb-1, *h1-2], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-    vertical_center_bottom_right:           [<<: [*center_right,  *vcb-1, *h1-1], *vcb-2, *vcb-3, *vcb-4, *vcb-5]
-
-    vertical_bottom3_left:                  [<<: [*bottom_left,   *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_left2:                 [<<: [*bottom_left,   *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center_left:           [<<: [*bottom_center, *v3-1, *hc-l], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center:                [<<: [*bottom_center, *v3-1, *hc-c], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_center_right:          [<<: [*bottom_center, *v3-1, *hc-r], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_right2:                [<<: [*bottom_right,  *v3-1, *h1-2], *v3-2, *v3-3, *v3-4, *v3-5]
-    vertical_bottom3_right:                 [<<: [*bottom_right,  *v3-1, *h1-1], *v3-2, *v3-3, *v3-4, *v3-5]
-
-    vertical_bottom2_left:                  [<<: [*bottom_left,   *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_left2:                 [<<: [*bottom_left,   *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center_left:           [<<: [*bottom_center, *v2-1, *hc-l], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center:                [<<: [*bottom_center, *v2-1, *hc-c], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_center_right:          [<<: [*bottom_center, *v2-1, *hc-r], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_right2:                [<<: [*bottom_right,  *v2-1, *h1-2], *v2-2, *v2-3, *v2-4, *v2-5]
-    vertical_bottom2_right:                 [<<: [*bottom_right,  *v2-1, *h1-1], *v2-2, *v2-3, *v2-4, *v2-5]
-
-    vertical_bottom_left:                   [<<: [*bottom_left,   *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_left2:                  [<<: [*bottom_left,   *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center_left:            [<<: [*bottom_center, *v1-1, *hc-l], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center:                 [<<: [*bottom_center, *v1-1, *hc-c], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_center_right:           [<<: [*bottom_center, *v1-1, *hc-r], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_right2:                 [<<: [*bottom_right,  *v1-1, *h1-2], *v1-2, *v1-3, *v1-4, *v1-5]
-    vertical_bottom_right:                  [<<: [*bottom_right,  *v1-1, *h1-1], *v1-2, *v1-3, *v1-4, *v1-5]
-
-
-    horizontal_top_left:                    [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_left2:                   [<<: [*top_left,      *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_center_left:             [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_center:                  [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_center_right:            [<<: [*top_center,    *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top_right2:                  [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top_right:                   [<<: [*top_right,     *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_top2_left:                   [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_left2:                  [<<: [*top_left,      *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_center_left:            [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_center:                 [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_center_right:           [<<: [*top_center,    *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top2_right2:                 [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top2_right:                  [<<: [*top_right,     *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_top3_left:                   [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_left2:                  [<<: [*top_left,      *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_center_left:            [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_center:                 [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_center_right:           [<<: [*top_center,    *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_top3_right2:                 [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_top3_right:                  [<<: [*top_right,     *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_center_top_left:             [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_left2:            [<<: [*center_left,   *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_center_left:      [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_center:           [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_center_right:     [<<: [*center_center, *vc-t, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_top_right2:           [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_top_right:            [<<: [*center_right,  *vc-t, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_center_left:                 [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_left2:                [<<: [*center_left,   *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_center_left:          [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_center:               [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_center_right:         [<<: [*center_center, *vc-c, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_right2:               [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_right:                [<<: [*center_right,  *vc-c, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_center_bottom_left:          [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_left2:         [<<: [*center_left,   *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_center_left:   [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_center:        [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_center_right:  [<<: [*center_center, *vc-b, *h0-1], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_center_bottom_right2:        [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_center_bottom_right:         [<<: [*center_right,  *vc-b, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_bottom3_left:                [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_left2:               [<<: [*bottom_left,   *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_center_left:         [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_center:              [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_center_right:        [<<: [*bottom_center, *v3-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom3_right2:              [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom3_right:               [<<: [*bottom_right,  *v3-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_bottom2_left:                [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_left2:               [<<: [*bottom_left,   *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_center_left:         [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_center:              [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_center_right:        [<<: [*bottom_center, *v2-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom2_right2:              [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom2_right:               [<<: [*bottom_right,  *v2-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-
-    horizontal_bottom_left:                 [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_left2:                [<<: [*bottom_left,   *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_center_left:          [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_center:               [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_center_right:         [<<: [*bottom_center, *v1-1, *hc-c], *h0-2, *h0-3, *h0-4, *h0-5]
-    horizontal_bottom_right2:               [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
-    horizontal_bottom_right:                [<<: [*bottom_right,  *v1-1, *h1-1], *h1-2, *h1-3, *h1-4, *h1-5]
 
 templates:
   flags:
@@ -453,10 +322,10 @@ overlays:
   tagalog:
     variables: {key: tl, text: FL, weight: 270, country: ph}
     template: [name: flags, name: standard]
-    
+
   filipino:
     variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
-    template: [name: flags, name: standard]  
+    template: [name: flags, name: standard]
 
   galician:
     variables: {key: gl, text: GL, weight: 260, country: es}
@@ -549,7 +418,7 @@ overlays:
   swahili:
     variables: {key: sw, text: SW, weight: 40, country: tz}
     template: [name: flags, name: standard]
-  
+
   somali:
     variables: {key: so, text: SO, weight: 35, country: so}
     template: [name: flags, name: standard]
@@ -577,18 +446,18 @@ overlays:
   inuktitut:
     variables: {key: iu, text: IK, weight: 7, country: ca}
     template: [name: flags, name: standard]
-    
+
   romani:
     variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
-    template: [name: flags, name: standard]    
-    
+    template: [name: flags, name: standard]
+
   amharic:
     variables: {key: am, text: AM, weight: 5, country: et}
-    template: [name: flags, name: standard]    
-  
+    template: [name: flags, name: standard]
+
   sundanese:
     variables: {key: su, text: SU, weight: 4, country: id}
-    template: [name: flags, name: standard]    
+    template: [name: flags, name: standard]
 
   zulu:
     variables: {key: zu, text: ZU, weight: 3, country: za}
@@ -596,7 +465,7 @@ overlays:
 
   luxembourgish:
     variables: {key: lb, text: LB, weight: 2, country: lu}
-    template: [name: flags, name: standard]  
+    template: [name: flags, name: standard]
 
   mossi:
     variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}

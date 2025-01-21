@@ -2253,7 +2253,6 @@ class OverlayFile(DataFile):
         overlay_limit = util.parse("Config", "overlay_limit", temp_vars["overlay_limit"], datatype="int", default=0, minimum=0) if "overlay_limit" in temp_vars else None
         for queue_name, queue in queues.items():
             queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
-            initial_queue = None
             defaults = {"horizontal_align": None, "vertical_align": None, "horizontal_offset": None, "vertical_offset": None}
             if isinstance(queue, dict) and "settings" in queue and queue["settings"] and isinstance(queue["settings"], dict):
                 if "position" in queue["settings"] and not queue_position:
@@ -2263,6 +2262,8 @@ class OverlayFile(DataFile):
                 if "default" in queue["settings"]:
                     for k, v in queue["settings"]["default"].items():
                         defaults[k] = v
+                        if k not in temp_vars:
+                            temp_vars[k] = v
                 if "conditionals" in queue["settings"]:
                     if not queue["settings"]["conditionals"]:
                         raise Failed(f"Queue Error: conditionals is blank")
@@ -2323,6 +2324,42 @@ class OverlayFile(DataFile):
                                 break
                         if not condition_found:
                             defaults[con_key] = con_value["default"]
+                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict):
+                    dynamic_settings = {
+                        "vertical_align": None, "horizontal_align": None, "surround": False,
+                        "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
+                    }
+                    for attr in dynamic_settings:
+                        if attr in queue["settings"]["dynamic_position"]:
+                            attr_value = str(queue["settings"]["dynamic_position"][attr])
+                            for x in range(4):
+                                dict_to_use = temp_vars if x < 2 else defaults
+                                for k, v in dict_to_use.items():
+                                    if f"<<{k}>>" in attr_value:
+                                        attr_value = attr_value.replace(f"<<{k}>>", str(v))
+                            dynamic_settings[attr] = attr_value
+                    dynamic_settings = {
+                        "vertical_align": util.parse("Config", "vertical_align", dynamic_settings["vertical_align"], options=["top", "center", "bottom"], default="top"),
+                        "horizontal_align": util.parse("Config", "horizontal_align", dynamic_settings["horizontal_align"], options=["left", "center", "right"], default="left"),
+                        "initial_vertical_offset": util.parse("Config", "initial_vertical_offset", dynamic_settings["initial_vertical_offset"], datatype="int", default=0, minimum=None),
+                        "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),
+                        "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),
+                        "horizontal_spacing": util.parse("Config", "horizontal_spacing", dynamic_settings["horizontal_spacing"], datatype="int", default=0, minimum=None),
+                        "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False)
+                    }
+                    queue_position = [{
+                        "vertical_align": dynamic_settings["vertical_align"],
+                        "horizontal_align": dynamic_settings["horizontal_align"],
+                        "vertical_offset": dynamic_settings["initial_vertical_offset"],
+                        "horizontal_offset": dynamic_settings["initial_horizontal_offset"]
+                    }]
+                    for x in range(20):
+                        factor = ((int(x / 2) + 1) * (-1 if x % 2 == 1 else 1)) if dynamic_settings["surround"] else (x + 1)
+                        queue_position.append({
+                            "vertical_offset": dynamic_settings["initial_vertical_offset"] + (factor * dynamic_settings["vertical_spacing"]),
+                            "horizontal_offset": dynamic_settings["initial_horizontal_offset"] + (factor * dynamic_settings["horizontal_spacing"]),
+                        })
+            initial_queue = None
             if queue_position and isinstance(queue_position, list):
                 initial_queue = queue_position
             elif isinstance(queue, list):
@@ -2337,6 +2374,8 @@ class OverlayFile(DataFile):
                                 pos_str = pos_str.replace(f"<<{k}>>", str(v))
                     if pos_str in queue:
                         initial_queue = queue[pos_str]
+                    else:
+                        raise Failed(f"Config Error: queue position: {pos_str} does not exists")
                 if not initial_queue:
                     initial_queue = next((v for k, v in queue.items() if k != "settings"), None)
             if not isinstance(initial_queue, list):
