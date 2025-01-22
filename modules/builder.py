@@ -1599,6 +1599,19 @@ class CollectionBuilder:
                                     raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. ev0000292 or be one of {', '.join([e for e in imdb.event_options])}")
                         if events:
                             new_dictionary[lower_method] = events
+                    elif search_attr == "interests":
+                        interests = []
+                        for interest in util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name):
+                            if interest in imdb.interest_options:
+                                interests.append(interest)
+                            else:
+                                res = re.search(r'(in\d+)', interest)
+                                if res:
+                                    interests.append(res.group(1))
+                                else:
+                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. ev0000292 or be one of {', '.join([e for e in imdb.interest_options])}")
+                        if interests:
+                            new_dictionary[lower_method] = interests
                     elif search_attr == "company":
                         companies = []
                         for company in util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name):

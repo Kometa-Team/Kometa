@@ -21,13 +21,13 @@ Allow `sync_to_trakt_list` on episode-level collections
 Logic added to Kometa to create `config.yml` if it does not exist from the `config.yml.template` file. If the template file cannot be found, Kometa will attempt to download it from GitHub.
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
-Add `date` option for schedules
+Added `date` option for schedules
 Added the `--low-priority/-lp` (`KOMETA_LOW_PRIORITY`) command line argument option to run the process at a lower priority. **credit to planetrocky**
-Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
-Add `trakt` ratings source for mass episode operations.
+Added `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
+Added `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
-add `plex` ratings source for mass operations.
-Orderly error and no caching on too-large image
+Added `plex` ratings source for mass operations.
+Added IMDb Interests (sub-genres) to `imdb_search` builder
 Allow `server_preroll` to accept a list
 
 # Docs
@@ -68,3 +68,4 @@ Kometa will no longer automatically sync playlists to all users if you do not sp
 Fixes #2385 `tmdb_person` would pass an integer if the name started with an integer (i.e. `50 Cent` would pass `50` which resolved to `Catherine Deneuve`)
 Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)
 Fixed an OMDb API issue where API key would intermittently be treated as invalid
+Fixed an issue where Kometa would try to upload and cache images larger than Plex allows (10mb is the upper limit)
