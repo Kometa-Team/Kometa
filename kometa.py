@@ -1,4 +1,4 @@
-import argparse, os, platform, re, sys, time, uuid
+import argparse, os, platform, re, sys, sysconfig, time, uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
@@ -30,11 +30,12 @@ system_versions = {
     "psutil": psutil.__version__,
     "python-dotenv": dotenv_version.__version__,
     "python-dateutil": dateutil.__version__, # noqa
+    "pywin32": None,
     "requests": requests.__version__,
-    "tenacity": None,
     "ruamel.yaml": ruamel.yaml.__version__,
     "schedule": None,
     "setuptools": setuptools.__version__,
+    "tenacity": None,
     "tmdbapis": tmdbapis.__version__
 }
 
@@ -70,6 +71,7 @@ arguments = {
     "read-only-config": {"args": "ro", "type": "bool", "help": "Run without writing to the config"},
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
+    "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"}
 }
 
 parser = argparse.ArgumentParser()
@@ -271,6 +273,22 @@ if not uuid_num:
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+if util.windows:
+    import win32api, win32process
+    site_packages = sysconfig.get_paths()["platlib"]
+    with open(os.path.join(site_packages, "pywin32.version.txt")) as v:
+        system_versions["pywin32"] = v.read().strip()
+
+if run_args["low-priority"]:
+    try:
+        if util.windows:
+            win32process.SetPriorityClass(win32api.GetCurrentProcess(), win32process.BELOW_NORMAL_PRIORITY_CLASS)
+        else:
+            os.nice(10)
+    except Exception as e:
+        logger.stacktrace()
+        logger.critical(f"Failed to set priority: {e}")
+
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
         executor.submit(start, *[attrs])
@@ -298,6 +316,7 @@ def start(attrs):
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
+        logger.info(f"    Process Priority: {'low' if run_args["low-priority"] else 'normal'}")
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:

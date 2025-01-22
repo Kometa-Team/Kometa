@@ -737,6 +737,26 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --width 150
             ```
 
+??? blank "Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lp`/`--low-priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOW_PRIORITY`<a class="headerlink" href="#priority" title="Permanent link">¶</a>"
+
+    <div id="priority" />Run the Kometa process at a lower priority.  Will default to normal priority if not specified.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:**  `-lp` or `--low-priority` (ex. `--low-priority`)
+
+    **Environment Variable:** `KOMETA_LOW_PRIORITY` (ex. `KOMETA_LOW_PRIORITY=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --low-priority
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --low-priority
+            ```
+
 ??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`<a class="headerlink" href="#kometa-vars" title="Permanent link">¶</a>"
 
     <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the 
