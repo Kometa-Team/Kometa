@@ -45,6 +45,8 @@ Updates `Alien vs Predator` and `X-Men` lists to new lists which include most re
 Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
 Added `Paramount+ with Showtime` to both `Paramount+` and `Showtime` for Networks and Streaming, any existing weighting is unchanged.
 Added Aymara language with Bolivian flag to audio/subtitle overlay languages (credit to popeadam)
+Added `size` setting to languages overlay to double the overlay size.
+Added `hide_text` setting to languages overlay to only show the flags and hide the country text.
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
@@ -70,3 +72,4 @@ Fixes #2385 `tmdb_person` would pass an integer if the name started with an inte
 Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)
 Fixed an OMDb API issue where API key would intermittently be treated as invalid
 Fixed an issue where Kometa would try to upload and cache images larger than Plex allows (10mb is the upper limit)
+Fixes an issue where `use_subtitles` would ignore `flag_alignment: left`
