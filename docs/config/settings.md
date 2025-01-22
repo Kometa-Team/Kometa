@@ -1042,7 +1042,7 @@ The available setting attributes which can be set at each level are outlined bel
       <tr><td>`webp_lossless`</td><td>Use Lossless WEBP files for saving Overlays</td></tr>
     </table>
 
-    **Default Value:** `jpg`
+    **Default Value:** `webp_lossy`
 
     ???+ example "Example"
         
@@ -1065,13 +1065,13 @@ The available setting attributes which can be set at each level are outlined bel
     **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, 
     perhaps too large to be uploaded to Plex.
 
-    **Default Value:** `None` [when no value is provided the standard 75 is used]
+    **Default Value:** `None` [when no value is provided the standard 90 is used]
 
     ???+ example "Example"
         
         ```yaml
         settings:
-          overlay_artwork_quality: 95
+          overlay_artwork_quality: 90
         ```
 
 ## Default Values
