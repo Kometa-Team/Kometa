@@ -155,6 +155,8 @@ nav:
           - Image Asset Directory Guide: kometa/guides/assets.md
           - Formula 1 Metadata Guide: kometa/guides/formula.md
           - MediUX Assets Guide: kometa/guides/mediux.md
+          - Managing Recommendations: kometa/guides/hub.md
+
           - Reverting Kometa Changes: kometa/guides/revert.md
           - Switching from PMM to Kometa: kometa/guides/rebrand.md
         - Companion Scripts: &scripts
