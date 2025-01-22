@@ -432,3 +432,8 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
 }
 
 .highlight.no-copy .md-clipboard { display: none; }
+
+.md-typeset video {
+    height: auto;
+    max-width: 75%;
+}
