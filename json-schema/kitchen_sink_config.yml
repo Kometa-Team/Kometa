@@ -844,8 +844,8 @@ settings:                                           # Can be individually specif
   - metadata
   - collections
   - overlays
-  overlay_artwork_filetype: jpg   
-  overlay_artwork_quality: 75   
+  overlay_artwork_filetype: webp_lossy
+  overlay_artwork_quality: 90
 # .------------------------------------------------------------------.
 # |  ___  _   _                 ____       _   _   _                 |
 # | / _ \| |_| |__   ___ _ __  / ___|  ___| |_| |_(_)_ __   __ _ ___ |
