@@ -316,7 +316,8 @@ def start(attrs):
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
-        logger.info(f"    Process Priority: {'low' if run_args["low-priority"] else 'normal'}")
+        logger.info(f"    Process Priority: {'low' if run_args['low-priority'] else 'normal'}")
+
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
