@@ -11,7 +11,7 @@ libraries:
       sep_style: purple                               # use the purple separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
       placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
-      ignore_ids: 
+      ignore_ids:
       - 1230
       - 3450
       - 6780
@@ -39,11 +39,15 @@ libraries:
     - default: based
     - default: content_rating_us
     - default: content_rating_uk
+    - default: content_rating_de
+    - default: content_rating_nz
+    - default: content_rating_au
     - default: content_rating_mal
     - default: content_rating_cs
     - default: country
     - default: region
     - default: continent
+    - default: letterboxd
     - default: aspect
     - default: subtitle_language
     - default: actor
@@ -73,8 +77,8 @@ libraries:
     - default: separator_chart                          # An "index card"
     - default: basic                                    # Some basic chart collections
     - default: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
-    - default: audio_language                           # English, French, Arabic, German, etc. audio language 
-    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+    - default: audio_language                           # English, French, Arabic, German, etc. audio language
+    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style
       # template_variables:
       #   style: standards
     - default: studio                                   # DreamWorks Studios, Lucasfilm Ltd, etc.
@@ -118,11 +122,11 @@ libraries:
       asset_directory: config/assets
 
     operations:
-      mass_audience_rating_update: 
+      mass_audience_rating_update:
       - mdb_average
       - imdb
       - 2.0
-      mass_episode_audience_rating_update: 
+      mass_episode_audience_rating_update:
       - tmdb
       - imdb
       - 2.0
@@ -131,9 +135,9 @@ libraries:
       genre_mapper:
         Anime: Animation
         Children: Family
-        Foo: 
+        Foo:
       content_rating_mapper:
-        PG: Y-10 
+        PG: Y-10
         "PG-13": Y-10
         R:
       metadata_backup:
@@ -145,7 +149,7 @@ libraries:
         add_blank_entries: false
 
   New-Style Movies:                                 # Must match a library name in your Plex
-    run_order: 
+    run_order:
     - collections
     - metadata
     - operations
@@ -159,7 +163,7 @@ libraries:
       sep_style: purple                               # use the purple separators globally for this library
       collection_mode: hide                         # hide the collections within the "library" tab in Plex.
       placeholder_imdb_id: tt8579674                # 1917 (2019) placeholder id for the separators, avoids a plex bug.
-      ignore_ids: 
+      ignore_ids:
       - 1230
       - 3450
       - 6780
@@ -221,8 +225,8 @@ libraries:
     - default: separator_chart                          # An "index card"
     - default: basic                                    # Some basic chart collections
     - default: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
-    - default: audio_language                           # English, French, Arabic, German, etc. audio language 
-    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+    - default: audio_language                           # English, French, Arabic, German, etc. audio language
+    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style
       # template_variables:
       #   style: standards
     - default: studio                                   # DreamWorks Studios, Lucasfilm Ltd, etc.
@@ -331,8 +335,8 @@ libraries:
     - default: separator_chart                          # An "index card"
     - default: basic                                    # Some basic chart collections
     - default: tmdb                                     # TMDb Charts (Popular, Trending, etc.)
-    - default: audio_language                           # English, French, Arabic, German, etc. audio language 
-    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style 
+    - default: audio_language                           # English, French, Arabic, German, etc. audio language
+    - default: resolution                               # 4K HDR, 1080P FHD, etc. with the standards style
       # template_variables:
       #   style: standards
     - default: network                                  # ABC, CBC, NBC, FOX, etc.
@@ -370,7 +374,7 @@ libraries:
     - default: ribbon                                   # Used for ribbon in bottom right on show
     - default: status                                   # Airing, Returning, Ended, Canceled on show
     - default: versions                                 # Will show duplicates for that media item on show and episode
-    - default: versions                                 
+    - default: versions
       # template_variables:
       #   overlay_level: episode
     - default: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left on show, episode, and season
@@ -406,7 +410,7 @@ playlist_files:
 settings:
   cache: true
   cache_expiration: 60
-  asset_directory: 
+  asset_directory:
   - config/assets
   asset_folders: true
   asset_depth: 0
@@ -443,6 +447,11 @@ settings:
   custom_repo:
   overlay_artwork_filetype: webp_lossy
   overlay_artwork_quality: 90
+  run_order:
+  - operations
+  - metadata
+  - collections
+  - overlays
 webhooks:                        # Can be individually specified per library as well
   error:
   version:
@@ -451,37 +460,43 @@ webhooks:                        # Can be individually specified per library as 
   changes:
 plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
-  token: this-is-a-placeholder-string
+  token: Enter Plex Token
   timeout: 60
-  db_cache: 999
+  db_cache: 40
   clean_bundles: false
   empty_trash: false
   optimize: false
+  verify_ssl: true
 tmdb:                            # REQUIRED for the script to run
-  apikey: this-is-a-placeholder-string
+  apikey: Enter TMDb API Key
   language: en
+  cache_expiration: 60
 tautulli:                        # Can be individually specified per library as well
   url: http://192.168.1.12:8181
-  apikey: this-is-a-placeholder-string
+  apikey: Enter Tautulli API Key
 github:
-  token: this-is-a-placeholder-string
+  token: Enter GitHub personal access token
 omdb:
-  apikey: this-is-a-placeholder-string
+  apikey: Enter OMDb API Key
   cache_expiration: 60
 mdblist:
-  apikey: this-is-a-placeholder-string
+  apikey: Enter MDBList API Key
   cache_expiration: 60
 notifiarr:
-  apikey: this-is-a-placeholder-string
+  apikey: Enter Notifiarr API Key
 gotify:
   url: http://192.168.1.12:80
-  token: this-is-a-placeholder-string
+  token: Enter Gotify token
 anidb:                           # Not required for AniDB builders unless you want mature content
-  username: this-is-a-placeholder-string
-  password: this-is-a-placeholder-string
+  username: Enter AniDB Username
+  password: Enter AniDB Password
+  client: Enter AniDB Client
+  version: 1
+  language: en
+  cache_expiration: 60
 radarr:                          # Can be individually specified per library as well
   url: http://192.168.1.12:7878
-  token: this-is-a-placeholder-string
+  token: Enter Radarr API Key
   add_missing: false
   add_existing: false
   root_folder_path: S:/Movies
@@ -494,7 +509,7 @@ radarr:                          # Can be individually specified per library as 
   plex_path:
 sonarr:                          # Can be individually specified per library as well
   url: http://192.168.1.12:8989
-  token: this-is-a-placeholder-string
+  token: Enter Sonarr API Key
   add_missing: false
   add_existing: false
   root_folder_path: "S:/TV Shows"
@@ -509,8 +524,8 @@ sonarr:                          # Can be individually specified per library as 
   sonarr_path:
   plex_path:
 trakt:
-  client_id: this-is-a-placeholder-string
-  client_secret: this-is-a-placeholder-string
+  client_id: Enter Trakt Client ID
+  client_secret: Enter Trakt Client Secret
   pin:
   authorization:
     # everything below is autofilled by the script
@@ -521,8 +536,8 @@ trakt:
     scope: public
     created_at:
 mal:
-  client_id: this-is-a-placeholder-string
-  client_secret: this-is-a-placeholder-string
+  client_id: Enter MyAnimeList Client ID
+  client_secret: Enter MyAnimeList Client Secret
   authorization:
     # everything below is autofilled by the script
     access_token:
