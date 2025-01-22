@@ -437,3 +437,24 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
     height: auto;
     max-width: 75%;
 }
+
+.md-tabs__item {
+  font-weight: normal;
+}
+
+.md-tabs__item--active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.md-tabs__item a {
+  color: #000; /* Default color for text */
+}
+
+.md-tabs__item a:hover {
+  color: #dfdfdf; /* Slightly darker color on hover */
+}
+
+.md-tabs__item:not(.md-tabs__item--active) a {
+    color: #ffffff;
+}
