@@ -8,6 +8,7 @@ Update plexapi requirement to 4.16.1
 Update psutil requirement to 6.1.1
 Update ruamel-yaml requirement to 0.18.9
 Update setuptools requirement to 75.8.0
+Update tmdbapis requirement to 1.2.28
 
 # Important Changes
 Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
