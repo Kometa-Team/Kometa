@@ -136,3 +136,48 @@ collections:
 ```
 
 When Kometa adds this to Plex the translated string will be `\\path\\to\\file1;\\path\\to\\file2,\\path\\to\\file3;\\path\\to\\file4`. (Notice that some separators are semicolons `;` and some are commas `,`)
+
+Plex preroll videos and this setting are covered at [Plex Extras](https://support.plex.tv/articles/202920803-extras/).
+
+In a nutshell, this will play **one of** the files in the list before the movie starts:
+```yml
+collections:
+  base:
+    build_collection: false
+    server_preroll: 
+      - "\\path\\to\\file1"
+      - "\\path\\to\\file2"
+      - "\\path\\to\\file3"
+      - "\\path\\to\\file4"
+```
+
+While this will play **all of** the files in the list before the movie starts:
+```yml
+collections:
+  base:
+    build_collection: false
+    server_preroll: 
+      - - "\\path\\to\\file1"
+        - "\\path\\to\\file2"
+        - "\\path\\to\\file3"
+        - "\\path\\to\\file4"
+```
+
+And a mixed example like this:
+
+```yml
+collections:
+  base:
+    build_collection: false
+    server_preroll: 
+      - "\\path\\to\\file1"
+      - - "\\path\\to\\file2"
+        - "\\path\\to\\file3"
+      - "\\path\\to\\file4"
+```
+
+would play one of these three options before the movie starts:
+
+- `file1`
+- both `file2` and `file3`
+- `file4`
