@@ -2253,77 +2253,113 @@ class OverlayFile(DataFile):
         overlay_limit = util.parse("Config", "overlay_limit", temp_vars["overlay_limit"], datatype="int", default=0, minimum=0) if "overlay_limit" in temp_vars else None
         for queue_name, queue in queues.items():
             queue_position = temp_vars[f"position_{queue_name}"] if f"position_{queue_name}" in temp_vars and temp_vars[f"position_{queue_name}"] else position
-            initial_queue = None
             defaults = {"horizontal_align": None, "vertical_align": None, "horizontal_offset": None, "vertical_offset": None}
-            if isinstance(queue, dict) and "default" in queue and queue["default"] and isinstance(queue["default"], dict):
-                for k, v in queue["default"].items():
-                    if k == "position":
-                        if not queue_position:
-                            queue_position = v
-                    elif k == "overlay_limit":
-                        if overlay_limit is None:
-                            overlay_limit = util.parse("Config", "overlay_limit", v, datatype="int", default=0, minimum=0)
-                    elif k == "conditionals":
-                        if not v:
-                            raise Failed(f"Queue Error: default sub-attribute conditionals is blank")
-                        if not isinstance(v, dict):
-                            raise Failed(f"Queue Error: default sub-attribute conditionals is not a dictionary")
-                        for con_key, con_value in v.items():
-                            if not isinstance(con_value, dict):
-                                raise Failed(f"Queue Error: conditional {con_key} is not a dictionary")
-                            if "default" not in con_value:
-                                raise Failed(f"Queue Error: default sub-attribute required for conditional {con_key}")
-                            if "conditions" not in con_value:
-                                raise Failed(f"Queue Error: conditions sub-attribute required for conditional {con_key}")
-                            conditions = con_value["conditions"]
-                            if isinstance(conditions, dict):
-                                conditions = [conditions]
-                            if not isinstance(conditions, list):
-                                raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
-                            condition_found = False
-                            for i, condition in enumerate(conditions, 1):
-                                if not isinstance(condition, dict):
-                                    raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
-                                if "value" not in condition:
-                                    raise Failed(f"{self.data_type} Error: each condition must have a result value")
-                                condition_passed = True
-                                for var_key, var_value in condition.items():
-                                    if var_key == "value":
-                                        continue
-                                    if var_key.endswith(".exists"):
-                                        var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
-                                        if (not var_value and var_key[:-7] in temp_vars and temp_vars[var_key[:-7]]) or (var_value and (var_key[:-7] not in temp_vars or not temp_vars[var_key[:-7]])):
-                                            logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
-                                            condition_passed = False
-                                    elif var_key.endswith(".not"):
-                                        if (isinstance(var_value, list) and temp_vars[var_key] in var_value) or \
-                                                (not isinstance(var_value, list) and str(temp_vars[var_key]) == str(var_value)):
-                                            if isinstance(var_value, list):
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" in {var_value}')
-                                            else:
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is "{var_value}"')
-                                            condition_passed = False
-                                    elif var_key in temp_vars:
-                                        if (isinstance(var_value, list) and temp_vars[var_key] not in var_value) or \
-                                                (not isinstance(var_value, list) and str(temp_vars[var_key]) != str(var_value)):
-                                            if isinstance(var_value, list):
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" not in {var_value}')
-                                            else:
-                                                logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is not "{var_value}"')
-                                            condition_passed = False
-                                    else:
-                                        logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
-                                        condition_passed = False
-                                    if condition_passed is False:
-                                        break
-                                if condition_passed:
-                                    condition_found = True
-                                    defaults[con_key] = condition["value"]
-                                    break
-                            if not condition_found:
-                                defaults[con_key] = con_value["default"]
-                    else:
+            if isinstance(queue, dict) and "settings" in queue and queue["settings"] and isinstance(queue["settings"], dict):
+                if "position" in queue["settings"] and not queue_position:
+                    queue_position = queue["settings"]["position"]
+                if "overlay_limit" in queue["settings"] and overlay_limit is None:
+                    overlay_limit = util.parse("Config", "overlay_limit", queue["settings"]["overlay_limit"], datatype="int", default=0, minimum=0)
+                if "default" in queue["settings"]:
+                    for k, v in queue["settings"]["default"].items():
                         defaults[k] = v
+                        if k not in temp_vars:
+                            temp_vars[k] = v
+                if "conditionals" in queue["settings"]:
+                    if not queue["settings"]["conditionals"]:
+                        raise Failed(f"Queue Error: conditionals is blank")
+                    if not isinstance(queue["settings"]["conditionals"], dict):
+                        raise Failed(f"Queue Error: conditionals is not a dictionary")
+                    for con_key, con_value in queue["settings"]["conditionals"].items():
+                        if not isinstance(con_value, dict):
+                            raise Failed(f"Queue Error: conditional {con_key} is not a dictionary")
+                        if "default" not in con_value:
+                            raise Failed(f"Queue Error: default sub-attribute required for conditional {con_key}")
+                        if "conditions" not in con_value:
+                            raise Failed(f"Queue Error: conditions sub-attribute required for conditional {con_key}")
+                        conditions = con_value["conditions"]
+                        if isinstance(conditions, dict):
+                            conditions = [conditions]
+                        if not isinstance(conditions, list):
+                            raise Failed(f"{self.data_type} Error: conditions sub-attribute must be a list or dictionary")
+                        condition_found = False
+                        for i, condition in enumerate(conditions, 1):
+                            if not isinstance(condition, dict):
+                                raise Failed(f"{self.data_type} Error: each condition must be a dictionary")
+                            if "value" not in condition:
+                                raise Failed(f"{self.data_type} Error: each condition must have a result value")
+                            condition_passed = True
+                            for var_key, var_value in condition.items():
+                                if var_key == "value":
+                                    continue
+                                if var_key.endswith(".exists"):
+                                    var_value = util.parse(self.data_type, var_key, var_value, datatype="bool", default=False)
+                                    if (not var_value and var_key[:-7] in temp_vars and temp_vars[var_key[:-7]]) or (var_value and (var_key[:-7] not in temp_vars or not temp_vars[var_key[:-7]])):
+                                        logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
+                                        condition_passed = False
+                                elif var_key.endswith(".not"):
+                                    if (isinstance(var_value, list) and temp_vars[var_key] in var_value) or \
+                                            (not isinstance(var_value, list) and str(temp_vars[var_key]) == str(var_value)):
+                                        if isinstance(var_value, list):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" in {var_value}')
+                                        else:
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is "{var_value}"')
+                                        condition_passed = False
+                                elif var_key in temp_vars:
+                                    if (isinstance(var_value, list) and temp_vars[var_key] not in var_value) or \
+                                            (not isinstance(var_value, list) and str(temp_vars[var_key]) != str(
+                                                var_value)):
+                                        if isinstance(var_value, list):
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" not in {var_value}')
+                                        else:
+                                            logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is not "{var_value}"')
+                                        condition_passed = False
+                                else:
+                                    logger.debug(f"Condition {i} Failed: {var_key} is not a variable provided or a default variable")
+                                    condition_passed = False
+                                if condition_passed is False:
+                                    break
+                            if condition_passed:
+                                condition_found = True
+                                defaults[con_key] = condition["value"]
+                                break
+                        if not condition_found:
+                            defaults[con_key] = con_value["default"]
+                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict):
+                    dynamic_settings = {
+                        "initial_vertical_align": None, "initial_horizontal_align": None, "surround": False,
+                        "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
+                    }
+                    for attr in dynamic_settings:
+                        if attr in queue["settings"]["dynamic_position"]:
+                            attr_value = str(queue["settings"]["dynamic_position"][attr])
+                            for x in range(4):
+                                dict_to_use = temp_vars if x < 2 else defaults
+                                for k, v in dict_to_use.items():
+                                    if f"<<{k}>>" in attr_value:
+                                        attr_value = attr_value.replace(f"<<{k}>>", str(v))
+                            dynamic_settings[attr] = attr_value
+                    dynamic_settings = {
+                        "initial_vertical_align": util.parse("Config", "initial_vertical_align", dynamic_settings["initial_vertical_align"], options=["top", "center", "bottom"], default="top"),
+                        "initial_horizontal_align": util.parse("Config", "initial_horizontal_align", dynamic_settings["initial_horizontal_align"], options=["left", "center", "right"], default="left"),
+                        "initial_vertical_offset": util.parse("Config", "initial_vertical_offset", dynamic_settings["initial_vertical_offset"], datatype="int", default=0, minimum=None),
+                        "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),
+                        "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),
+                        "horizontal_spacing": util.parse("Config", "horizontal_spacing", dynamic_settings["horizontal_spacing"], datatype="int", default=0, minimum=None),
+                        "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False)
+                    }
+                    queue_position = [{
+                        "vertical_align": dynamic_settings["initial_vertical_align"],
+                        "horizontal_align": dynamic_settings["initial_horizontal_align"],
+                        "vertical_offset": dynamic_settings["initial_vertical_offset"],
+                        "horizontal_offset": dynamic_settings["initial_horizontal_offset"]
+                    }]
+                    for x in range(20):
+                        factor = ((int(x / 2) + 1) * (-1 if x % 2 == 1 else 1)) if dynamic_settings["surround"] else (x + 1)
+                        queue_position.append({
+                            "vertical_offset": dynamic_settings["initial_vertical_offset"] + (factor * dynamic_settings["vertical_spacing"]),
+                            "horizontal_offset": dynamic_settings["initial_horizontal_offset"] + (factor * dynamic_settings["horizontal_spacing"]),
+                        })
+            initial_queue = None
             if queue_position and isinstance(queue_position, list):
                 initial_queue = queue_position
             elif isinstance(queue, list):
@@ -2338,8 +2374,10 @@ class OverlayFile(DataFile):
                                 pos_str = pos_str.replace(f"<<{k}>>", str(v))
                     if pos_str in queue:
                         initial_queue = queue[pos_str]
+                    else:
+                        raise Failed(f"Config Error: queue position: {pos_str} does not exists")
                 if not initial_queue:
-                    initial_queue = next((v for k, v in queue.items() if k != "default"), None)
+                    initial_queue = next((v for k, v in queue.items() if k != "settings"), None)
             if not isinstance(initial_queue, list):
                 raise Failed(f"Config Error: queue {queue_name} must be a list")
             final_queue = []

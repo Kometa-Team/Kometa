@@ -643,12 +643,18 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
 def check_int(value, datatype="int", minimum=1, maximum=None, throw=False):
     try:
         value = int(str(value)) if datatype == "int" else float(str(value))
-        if (maximum is None and minimum <= value) or (maximum is not None and minimum <= value <= maximum):
+        if (maximum is None and minimum is None) or (maximum is not None and minimum is None and maximum >= value) or (maximum is None and minimum is not None and minimum <= value) or (maximum is not None and minimum is not None and minimum <= value <= maximum):
             return value
     except ValueError:
         if throw:
             message = f"{value} must be {'an integer' if datatype == 'int' else 'a number'}"
-            raise Failed(f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}")
+            if maximum is not None and minimum is None:
+                message = f"{message} {maximum} or less"
+            elif maximum is None and minimum is not None:
+                message = f"{message} {minimum} or greater"
+            elif maximum is not None and minimum is not None:
+                message = f"{message} between {minimum} and {maximum}"
+            raise Failed(message)
         return None
 
 def parse_and_or(error, attribute, data, test_list):
@@ -777,7 +783,12 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             if new_value is not None:
                 return new_value
         message = f"{display} {value} must {'each ' if range_split else ''}be {'an integer' if datatype == 'int' else 'a number'}"
-        message = f"{message} {minimum} or greater" if maximum is None else f"{message} between {minimum} and {maximum}"
+        if maximum is not None and minimum is None:
+            message = f"{message} {maximum} or less"
+        elif maximum is None and minimum is not None:
+            message = f"{message} {minimum} or greater"
+        elif maximum is not None and minimum is not None:
+            message = f"{message} between {minimum} and {maximum}"
         if range_split:
             message = f"{message} separated by a {range_split}"
     elif datatype == "date":
