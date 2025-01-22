@@ -78,7 +78,8 @@ the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 | Richard Donner      | `richarddonner` | `9`    |
 | Black and Chrome    | `blackchrome`   | `8`    |
 | Definitive          | `definitive`    | `7`    |
-| Ulysses             | `ulysses`       | `6`    |
+| Open Matte          | `openmatte`     | `6`    |
+| Ulysses             | `ulysses`       | `4`    |
 
 ## "Dovetail" versions
 
