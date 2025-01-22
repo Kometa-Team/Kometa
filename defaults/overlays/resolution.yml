@@ -52,6 +52,7 @@ external_templates:
               - HDR
           - type: resolution_dovetail
             value:
+              - Open-Matte
               - Extended-Edition
               - Uncut-Edition
               - Unrated-Edition
@@ -167,6 +168,8 @@ templates:
             value: '(?i)\bIMAX\b'
           - key: criterion
             value: '(?i)Criterion|\[CC\]'
+          - key: openmatte
+            value: '(?i)\b(Open[ ._-]?Matte)\b'
     optional:
       - search
       - use_<<key>>
@@ -414,8 +417,11 @@ overlays:
   Definitive-Dovetail:
     variables: {key: definitive, weight: 7, search: Definitive, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Open-Matte-Dovetail:
+    variables: {key: openmatte, weight: 6, search: Open Matte, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
   Ulysses-Dovetail:
-    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
+    variables: {key: ulysses, weight: 5, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
 
   4K-DV-HDR-Plus:
@@ -590,6 +596,9 @@ overlays:
   Definitive:
     variables: {key: definitive, weight: 7, search: Definitive, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Open-Matte:
+    variables: {key: openmatte, weight: 6, search: Open Matte, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
   Ulysses:
-    variables: {key: ulysses, weight: 6, search: Ulysses, type: edition, allowed_libraries: movie}
+    variables: {key: ulysses, weight: 5, search: Ulysses, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
