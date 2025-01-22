@@ -28,6 +28,7 @@ Add `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
 add `plex` ratings source for mass operations.
 Orderly error and no caching on too-large image
+Allow `server_preroll` to accept a list
 
 # Docs
 Added "getting started" page

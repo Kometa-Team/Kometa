@@ -1255,7 +1255,10 @@ class CollectionBuilder:
         elif method_name == "default_percent":
             self.default_percent = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1, maximum=100)
         elif method_name == "server_preroll":
-            self.server_preroll = util.parse(self.Type, method_name, method_data)
+            if isinstance(method_data, list):
+                self.server_preroll = ";".join([(",".join([str(v) for v in md if v]) if isinstance(md, list) else str(md)) for md in method_data if md])
+            else:
+                self.server_preroll = util.parse(self.Type, method_name, method_data)
         elif method_name == "ignore_ids":
             self.ignore_ids.extend(util.parse(self.Type, method_name, method_data, datatype="intlist"))
         elif method_name == "ignore_imdb_ids":
