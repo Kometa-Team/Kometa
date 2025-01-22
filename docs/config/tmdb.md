@@ -4,7 +4,7 @@ search:
 ---
 # TMDb Attributes
 
-Configuring [TheMovieDb](https://www.themoviedb.org/) is required in order to run Kometa. 
+Filling in your [TheMovieDb](https://www.themoviedb.org/) API key is mandatory in order to run Kometa. 
 
 A `tmdb` mapping is in the root of the config file.
 
@@ -24,5 +24,8 @@ tmdb:
 | `region`           | [ISO 3166-1 Code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes) of the User Region for use with [Other TMDb Builders](../files/builders/tmdb.md#other-tmdb-builders)    | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                                                                                                         | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-If you do not have a TMDb V3 API key please refer to this 
-[guide](https://developers.themoviedb.org/3/getting-started/introduction).
+## Important Notes
+
+It is important that you use a TMDb **V3** API key. If you do not already have one, follow the [TMDb Getting Started guide](https://developers.themoviedb.org/3/getting-started/introduction)
+
+If you would like to validate your API key valid prior to running Kometa, visit the [TMDb Authentication page](https://developer.themoviedb.org/reference/authentication-validate-key), sign in with your TMDb credentials and press the "Try It!" button on the right-hand side. You should see `"success": true` in the Response box.

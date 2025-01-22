@@ -25,10 +25,6 @@
     --md-code-hl-comment-color: #8b949e;
 }
 
-.md-content h1, .md-content__button {
-    display: none;
-}
-
 table tr td code {
   white-space: pre;
 }

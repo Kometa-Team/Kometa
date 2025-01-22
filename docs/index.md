@@ -1,4 +1,8 @@
-#
+<style>
+.md-content h1, .md-content__button {
+    display: none;
+}
+</style>
 
 <center>
 ![Logo](assets/logo-full.png)
