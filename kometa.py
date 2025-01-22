@@ -5,8 +5,9 @@ from datetime import datetime
 from modules.logs import MyLogger
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 9:
-    print("[E001] Python Error: Python version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0. Update python to a supported version")
-    sys.exit(0)
+    msg = "[E001] Python Error: Python version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0. Update python to a supported version"
+    print(msg)
+    sys.exit(msg)
 
 try:
     import arrapi, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
@@ -16,8 +17,9 @@ try:
     from plexapi.exceptions import NotFound
     from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
-    print(f"[E002] Requirements Error: Requirements are not installed. Please follow the documentation for instructions on installing requirements. ({ie})")
-    sys.exit(0)
+    msg = f"[E002] Requirements Error: Requirements are not installed. Please follow the documentation for instructions on installing requirements. ({ie})"
+    print(msg)
+    sys.exit(msg)
 
 system_versions = {
     "arrapi": arrapi.__version__,
@@ -193,8 +195,9 @@ if run_args["width"] < 90 or run_args["width"] > 300:
 if run_args["config"] and os.path.exists(run_args["config"]):
     default_dir = os.path.join(os.path.dirname(os.path.abspath(run_args["config"])))
 elif run_args["config"] and not os.path.exists(run_args["config"]):
-    print(f"[C001] Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}. Please check the path is correct and try again")
-    sys.exit(0)
+    msg = f"[C001] Config Error: Configuration file (config.yml) not found at {os.path.abspath(run_args['config'])}. Please check the path is correct and try again"
+    print(msg)
+    sys.exit(msg)
 elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     git_branch = git_branch or "master"
     github_url = f"https://raw.githubusercontent.com/Kometa-Team/Kometa/{git_branch}/config/config.yml.template"
@@ -204,13 +207,15 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
         if response.status_code == 200:
             with open(config_path, 'w') as config_file:
                 config_file.write(response.text)
-            print(f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings")
-            sys.exit(1)
+            msg = f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings"
+            print(msg)
+            sys.exit(msg)
         else:
             raise requests.RequestException
     except requests.RequestException as e:
-        print(f"[C002] Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' and complete the relevant sections before running Kometa again")
-        sys.exit(1)
+        msg = f"[C002] Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' and complete the relevant sections before running Kometa again"
+        print(msg)
+        sys.exit(msg)
 
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
@@ -366,13 +371,8 @@ def start(attrs):
         try:
             config = ConfigFile(my_requests, default_dir, attrs, secret_args)
         except Exception as e:
-            if "Invalid API key" in str(e):
-                logger.stacktrace()
-                logger.critical("[S001] Connector Error: TMDb API key is invalid. Please check the API key is correct or check TMDb guidance for obtaining a new key")
-            else:
-                logger.stacktrace()
-                logger.critical(e)
-
+            logger.stacktrace()
+            logger.critical(e)
         else:
             try:
                 stats = run_config(config, stats)
@@ -577,7 +577,7 @@ def run_config(config, stats):
             logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
             if data["errors"]:
                 for error in data["errors"]:
-                    logger.info(error.upper() if isinstance(error, str) else str(error).upper())
+                    logger.info(str(error).upper())
                 logger.info("")
 
     logger.info("")
@@ -1187,8 +1187,9 @@ if __name__ == "__main__":
                         raise Failed(f"[E303] Argument Error: 'time' argument does not have a value. Please enter a value in the HH:MM format between 00:00-23:59")
             for time_to_run in valid_times:
                 schedule.every().day.at(time_to_run).do(process, {"time": time_to_run})
-            logger.info("Kometa is currently waiting until the next scheduled run. The default run time is 05:00 unless otherwise specified using the `--times` Run Command or `KOMETA_TIMES` Environment Variable.")
-            logger.info("If you would rather run Kometa immediately, use the `--run` Run Command or `KOMETA_RUN` Environment Variable.")
+            logger.info("Kometa is currently waiting until the next scheduled run.")
+            logger.info("To change the run times use the `--times` Run Command or `KOMETA_TIMES` Environment Variable.")
+            logger.info("To Run Kometa immediately use the `--run` Run Command or `KOMETA_RUN` Environment Variable.")
             logger.info("")
             while True:
                 schedule.run_pending()
@@ -1208,8 +1209,7 @@ if __name__ == "__main__":
                         minutes = int((seconds % 3600) // 60)
                         time_str = f"{hours} Hour{'s' if hours > 1 else ''} and " if hours > 0 else ""
                         time_str += f"{minutes} Minute{'s' if minutes > 1 else ''}"
-
-                        logger.ghostnopipe(f"Current Time: {current_time} | Next Scheduled Run: {og_time_str} ({time_str} from now) | Scheduled Runs: {', '.join(valid_times)}")
+                        logger.ghost(f"Current Time: {current_time} | Next Scheduled Run: {og_time_str} ({time_str} from now) | Scheduled Runs: {', '.join(valid_times)}", prefix="")
                     else:
                         logger.error(f"Argument Error: {valid_times}")
                 time.sleep(60)

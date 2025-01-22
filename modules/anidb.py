@@ -119,6 +119,7 @@ class AniDB:
             if self.cache:
                 self.cache.update_testing("anidb_login", self.client, self.version, "False")
             raise Failed("[S201] Connector Error: AniDB Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved")
+
     @property
     def is_authorized(self):
         return self.client is not None

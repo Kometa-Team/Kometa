@@ -2,7 +2,7 @@ import re
 from modules import util
 from modules.util import Failed
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
-from tmdbapis import TMDbAPIs, TMDbException, NotFound, Movie
+from tmdbapis import TMDbAPIs, TMDbException, NotFound, Movie, Unauthorized
 
 logger = util.logger
 
@@ -219,6 +219,8 @@ class TMDb:
         logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
+        except Unauthorized:
+            raise Failed("[S001] Connector Error: TMDb API key is invalid. Please check the API key is correct or check TMDb guidance for obtaining a new key")
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()} # noqa

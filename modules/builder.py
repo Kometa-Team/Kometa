@@ -2,7 +2,7 @@ import os, re, time
 from arrapi import ArrException
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mojo, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import anidb, anilist, errors, icheckmovies, imdb, letterboxd, mal, mojo, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import KometaImage
@@ -208,7 +208,7 @@ class CollectionBuilder:
             logger.info("")
 
         if f"{self.type}_name" in methods:
-            logger.info(f"Config Warning: Running {self.type}_name as name")
+            logger.warning(f"Config Warning: Running {self.type}_name as name")
             self.data["name"] = self.data[methods[f"{self.type}_name"]]
             methods["name"] = "name"
 
@@ -259,9 +259,8 @@ class CollectionBuilder:
         if "name" in methods:
             logger.debug("")
             logger.debug("Validating Method: name")
-            logger.debug("Validating Method: name")
             if not self.data[methods["name"]]:
-                raise Failed(f"[B310] Builder Error: 'name' attribute has no value set. Please set a value")
+                raise Failed(errors.no_value("name"))
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
 
@@ -273,7 +272,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: limit")
             if not self.data[methods["limit"]]:
-                raise Failed(f"[B311] Builder Error: 'limit' attribute has no value set. Please set a value")
+                raise Failed(errors.no_value("limit"))
             self.limit = util.parse(self.Type, "limit", self.data[methods["limit"]], datatype="int", minimum=1)
 
         en_key = None
@@ -284,7 +283,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: key_name")
             if not self.data[methods["key_name"]]:
-                raise Failed(f"[B312] Builder Error: 'key_name' attribute has no value set. Please set a value")
+                raise Failed(errors.no_value("key_name"))
             en_key = str(self.data[methods["key_name"]])
             trans_key = en_key
             if self.builder_language != "en":
