@@ -2326,7 +2326,7 @@ class OverlayFile(DataFile):
                             defaults[con_key] = con_value["default"]
                 if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict):
                     dynamic_settings = {
-                        "vertical_align": None, "horizontal_align": None, "surround": False,
+                        "initial_vertical_align": None, "initial_horizontal_align": None, "surround": False,
                         "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
                     }
                     for attr in dynamic_settings:
@@ -2339,8 +2339,8 @@ class OverlayFile(DataFile):
                                         attr_value = attr_value.replace(f"<<{k}>>", str(v))
                             dynamic_settings[attr] = attr_value
                     dynamic_settings = {
-                        "vertical_align": util.parse("Config", "vertical_align", dynamic_settings["vertical_align"], options=["top", "center", "bottom"], default="top"),
-                        "horizontal_align": util.parse("Config", "horizontal_align", dynamic_settings["horizontal_align"], options=["left", "center", "right"], default="left"),
+                        "initial_vertical_align": util.parse("Config", "initial_vertical_align", dynamic_settings["initial_vertical_align"], options=["top", "center", "bottom"], default="top"),
+                        "initial_horizontal_align": util.parse("Config", "initial_horizontal_align", dynamic_settings["initial_horizontal_align"], options=["left", "center", "right"], default="left"),
                         "initial_vertical_offset": util.parse("Config", "initial_vertical_offset", dynamic_settings["initial_vertical_offset"], datatype="int", default=0, minimum=None),
                         "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),
                         "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),
@@ -2348,8 +2348,8 @@ class OverlayFile(DataFile):
                         "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False)
                     }
                     queue_position = [{
-                        "vertical_align": dynamic_settings["vertical_align"],
-                        "horizontal_align": dynamic_settings["horizontal_align"],
+                        "vertical_align": dynamic_settings["initial_vertical_align"],
+                        "horizontal_align": dynamic_settings["initial_horizontal_align"],
                         "vertical_offset": dynamic_settings["initial_vertical_offset"],
                         "horizontal_offset": dynamic_settings["initial_horizontal_offset"]
                     }]

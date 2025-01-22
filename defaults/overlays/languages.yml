@@ -78,10 +78,8 @@ queues:
     settings:
       default:
         group_alignment: vertical
-        #vertical_position: top3
-        #horizontal_position: left
       conditionals:
-        vertical_align:
+        initial_vertical_align:
           default: top
           conditions:
             - vertical_position: [center, center_top, center_bottom]
@@ -94,7 +92,7 @@ queues:
               value: top
             - overlay_level: episode
               value: top
-        horizontal_align:
+        initial_horizontal_align:
           default: left
           conditions:
             - horizontal_position: [center, center_left, center_right]
@@ -124,9 +122,6 @@ queues:
         surround:
           default: false
           conditions:
-            #- group_alignment: vertical
-            #  vertical_position: center
-            #  value: true
             - group_alignment: horizontal
               horizontal_position: [center, center_left, center_right]
               value: true
@@ -165,8 +160,8 @@ queues:
             - horizontal_position: center
               value: 0
       dynamic_position:
-        vertical_align: <<vertical_align>>
-        horizontal_align: <<horizontal_align>>
+        initial_vertical_align: <<initial_vertical_align>>
+        initial_horizontal_align: <<initial_horizontal_align>>
         initial_vertical_offset: <<initial_vertical_offset>>
         initial_horizontal_offset: <<initial_horizontal_offset>>
         vertical_spacing: <<vertical_spacing>>

@@ -145,11 +145,11 @@ Whenever I execute Kometa and the Movies library is run, MyOverlays.yml will run
 
 Overlay Files can utilize the following top-level attributes
 
-| Attribute                                               | Description                                                                                                            |
-|:--------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple Overlays                                           |
+| Attribute                            | Description                                                                                                            |
+|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------------|
+| [`templates`](templates.md)          | contains definitions of templates that can be leveraged by multiple Overlays                                           |
 | [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple overlays |
-| [`overlays`](#overlay-attributes)                       | contains definitions of Overlays you wish to add to one or more libraries                                              |
+| [`overlays`](#overlay-attributes)    | contains definitions of Overlays you wish to add to one or more libraries                                              |
 
 * Example Files can be found in the [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
 
@@ -649,7 +649,7 @@ overlays:
 
 Overlay queues are defined by the name given to the `queue` attribute. The overlay with the highest weight is put into the first queue position, then the second highest is placed in the second queue position and so on. 
 
-You can define the queue positions by using the `queues` attribute at the top level of an Overlay File. You can define as many positions as you want. 
+You can define the queue positions by using the `queues` attribute at the top level of an Overlay File. You can define as many positions as you want.
 
 ```yaml
 queues:
@@ -691,6 +691,57 @@ overlays:
       back_width: 400
       back_height: 105
 ```
+
+To save space when using queues if one attribute is not defined then it will inherit that attribute from the queue before it.
+
+```yaml
+queues:
+  custom_queue_name:
+    - horizontal_offset: 300        # This is the first position
+      horizontal_align: center
+      vertical_offset: 1375
+      vertical_align: top
+    - vertical_offset: 1250         # This is the second position
+    - vertical_offset: 1125         # This is the third position
+```
+
+### Dynamic Queues
+
+Dynamic Queues build queues based on a set of values. To make a dynamic queue instead of having a list under the queue name you use the settings attribute.
+
+| `settings` Attributes | Description                                                             |
+|:----------------------|:------------------------------------------------------------------------|
+| `default`             | Set [default variables](templates.md/#default).                         |
+| `conditionals`        | Set [conditional variables](templates.md/#conditionals).                |
+| `dynamic_position`    | Dynamic Position Attributes                                             |
+| `overlay_limit`       | Max number of overlays to use.<br>**Value:** Any Integer greater then 0 |
+
+| `dynamic_position` Attributes | Description                                                                                                                                                                     |
+|:------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `initial_vertical_align`      | Controls the initial Vertical Alignment of the overlay queue.<br>**Values:** `top`, `center`, or `bottom`                                                                       |
+| `initial_horizontal_align`    | Controls the initial Horizontal Alignment of the overlay queue.<br>**Values:** `left`, `center`, or `right`                                                                     |
+| `initial_vertical_offset`     | Controls the initial Vertical Offset of this overlay queue. Can be a %.<br>**Values:** Number 0 or greater or 0%-100% [pixels assuming a 1000x1500 image]                       |
+| `initial_horizontal_offset`   | Controls the initial Horizontal Offset of this overlay queue. Can be a %.<br>**Values:** Number 0 or greater or 0%-100% [pixels assuming a 1000x1500 image]                     |
+| `vertical_spacing`            | Controls the vertical spacing between different overlays in the queue.<br>**Values:** Number 0 or greater                                                                       |
+| `horizontal_spacing`          | Controls the horizontal spacing between different overlays in the queue.<br>**Values:** Number 0 or greater                                                                     |
+| `surround`                    | Sets the queue so the second queue option is on one side of the original and then the next is on the opposite side.<br>**Values:** `true` to make the queue a surrounded queue. |
+
+```yaml
+queues:
+  flags:
+    settings:
+      dynamic_position:
+        initial_vertical_align: top
+        initial_horizontal_align: left
+        initial_vertical_offset: 15
+        initial_horizontal_offset: 15
+        vertical_spacing: 60
+        horizontal_spacing: 0
+        surround: false
+      overlay_limit: 3
+```
+
+* This will place 3 overlays with a different vertical offset of 15, 75, 135.
 
 ## Suppress Overlays
 
