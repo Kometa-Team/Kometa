@@ -320,7 +320,7 @@ def start(attrs):
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
-                    required_versions = {ln.split("==")[0]: ln.split("==")[1].strip() for ln in file.readlines()}
+                    required_versions = {ln.split("==")[0]: ln.split("==")[1].split(";")[0].strip() for ln in file.readlines()}
                 for req_name, sys_ver in system_versions.items():
                     if sys_ver and sys_ver != required_versions[req_name]:
                         logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")

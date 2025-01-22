@@ -46,8 +46,13 @@ external_templates:
         conditions:
           - hide_text: true
             value: 100
+          - three_characters: true
+            size: big
+            value: 290
           - size: big
             value: 250
+          - three_characters: true
+            value: 230
       height:
         conditions:
           - size: big
@@ -335,7 +340,7 @@ overlays:
     template: [name: flags, name: standard]
 
   filipino:
-    variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
+    variables: {key: fil, text: FIL, weight: 265, country: ph, three_characters: true}
     template: [name: flags, name: standard]
 
   galician:
@@ -451,7 +456,7 @@ overlays:
     template: [name: flags, name: standard]
 
   mayan:
-    variables: {key: myn, text: MYN, weight: 8, country: mx, width: 230}
+    variables: {key: myn, text: MYN, weight: 8, country: mx, three_characters: true}
     template: [name: flags, name: standard]
 
   inuktitut:
@@ -459,7 +464,7 @@ overlays:
     template: [name: flags, name: standard]
 
   romani:
-    variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
+    variables: {key: rom, text: ROM, weight: 6, country: ro, three_characters: true}
     template: [name: flags, name: standard]
 
   amharic:
@@ -479,7 +484,7 @@ overlays:
     template: [name: flags, name: standard]
 
   mossi:
-    variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
+    variables: {key: mos, text: MOS, weight: 1, country: bf, three_characters: true}
     template: [name: flags, name: standard]
 
   lingala:
