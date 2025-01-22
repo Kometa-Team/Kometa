@@ -213,6 +213,7 @@ pcm
 persistentvolumeclaim
 pgid
 pkkid
+planetrocky
 plex
 plex's
 plexapi
@@ -229,12 +230,14 @@ prepend
 preroll
 psutil
 puid
+pywin
 qnap
 radarr
 razzie
 razzies
 readme
 readwriteonce
+realtime
 reciperr
 reddit
 redheadjedi

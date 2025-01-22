@@ -1,13 +1,14 @@
 # Requirements Update (requirements will need to be reinstalled)
+Add pywin32 requirement at 308 (windows only)
 Update gitpython requirement to 3.1.44
 Update num2words requirement to 0.5.14
 Update pathvalidate requirement to 3.2.3
-Update pillow requirement to 10.4.0
 Update pillow requirement to 11.1.0
 Update plexapi requirement to 4.16.1
 Update psutil requirement to 6.1.1
 Update ruamel-yaml requirement to 0.18.9
 Update setuptools requirement to 75.8.0
+Update tmdbapis requirement to 1.2.28
 
 # Important Changes
 Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
@@ -21,6 +22,7 @@ Logic added to Kometa to create `config.yml` if it does not exist from the `conf
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
+Added the `--low-priority/-lp` (`KOMETA_LOW_PRIORITY`) command line argument option to run the process at a lower priority. **credit to planetrocky**
 Add `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
 Add `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
