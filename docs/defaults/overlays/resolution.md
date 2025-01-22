@@ -79,7 +79,7 @@ the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
 | Black and Chrome    | `blackchrome`   | `8`    |
 | Definitive          | `definitive`    | `7`    |
 | Open Matte          | `openmatte`     | `6`    |
-| Ulysses             | `ulysses`       | `4`    |
+| Ulysses             | `ulysses`       | `5`    |
 
 ## "Dovetail" versions
 
