@@ -34,6 +34,7 @@ webhooks:
     run_start:
       - notifiarr
       - gotify
+      - ntfy
     run_end:
       - https://www.myspecialdomain.com/kometa
       - https://www.myotherdomain.com/kometa
@@ -42,6 +43,7 @@ webhooks:
   
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
 * To send notifications to [Gotify](gotify.md) just add `gotify` to a webhook instead of the webhook url.
+* To send notifications to [ntfy](ntfy.md) just add `ntfy` to a webhook instead of the webhook url.
 
 ## Error Notifications
 

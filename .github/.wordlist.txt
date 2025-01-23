@@ -198,6 +198,7 @@ nl
 nokmål
 nosuchlibrary
 notifiarr
+ntfy
 num
 nynorsk
 oauth

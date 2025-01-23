@@ -5,7 +5,7 @@ from modules.util import Failed
 logger = util.logger
 
 class Webhooks:
-    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None):
+    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None, ntfy=None):
         self.config = config
         self.requests = self.config.Requests
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
@@ -16,6 +16,7 @@ class Webhooks:
         self.library = library
         self.notifiarr = notifiarr
         self.gotify = gotify
+        self.ntfy = ntfy
 
     def _request(self, webhooks, json):
         logger.trace("")
@@ -35,6 +36,9 @@ class Webhooks:
             elif webhook == "gotify":
                 if self.gotify:
                     self.gotify.notification(json)
+            elif webhook == "ntfy":
+                if self.ntfy:
+                    self.ntfy.notification(json)
             else:
                 if webhook.startswith("https://discord.com/api/webhooks"):
                     json = self.discord(json)
