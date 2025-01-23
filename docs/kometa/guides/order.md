@@ -212,7 +212,7 @@ Users aren't expected to understand what this does, but users can use the `sort_
 
 #### Sorting the **groups** of Default collections
 
-Each group of collections created by the Kometa defaults has a default "collection section", so the are displayed in a standard order, which is shown [here](../../defaults/collections.md#collection-section-order).  If you want to schange this order in which the sections appear within the set of default-generated collections, you would use the `collection_section` template variable.
+Each group of collections created by the Kometa defaults has a default "collection section", so the are displayed in a standard order, which is shown [here](../../defaults/collections.md#collection-section-order).  If you want to change the order in which the sections appear within the set of default-generated collections, you would use the `collection_section` template variable.
 
 For example, these collection groups display in this order, by default:
 
