@@ -170,9 +170,29 @@ You will often see users using sort titles such as `+++++++_My Collection` or `!
 
 When utilizing the [Kometa Defaults](../../defaults/files.md), they are all built on the same format for their sort titles:
 
-`<<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<sort>>`
+`<<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>`
 
-Users aren't expected to understand what this does, but users can use the `collection_section` template variable to amend the order of categories of collections.
+Users aren't expected to understand what this does, but users can use the `sort_prefix` and `collection_section` template variable to amend the order of categories of collections.
+
+??? important "I want to know what that means"
+
+    `<<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>`
+
+    Those parts are all defined as template variables, and as such you can override any of them.  This format itself is *also* defined as a template variable, so you can override the entire format if you wish.
+
+    As a specific example, the "IMDB Lowest Rated" collection has a sort title of `!020_IMDb Lowest Rated`
+
+    ```
+    <<sort_prefix>><<collection_section>><<pre>><<order_<<key>>>><<title>>
+      !              020                   _                       IMDb Lowest Rated
+    ```
+
+    - The `!` character makes sure these collections appear at the top of the collection tab.
+    - The `020` is the collection section, which is used to group collections together.
+    - The `_` is a separator between the collection section and the title; no particular purpose other than that.
+    - The `IMDb Lowest Rated` is the title of the collection.
+
+    `<<order_<<key>>>>` is a template variable that is used to order collections within the same collection section. Without this, as above, the collections are sorted by their titles, since everything before that will be identical for all the collections in a given "section".  If you want to modify this, you can set the order key.
 
 ???+ example "Example 3 - Reordering Kometa Defaults"
 
@@ -183,14 +203,56 @@ Users aren't expected to understand what this does, but users can use the `colle
           - default: tmdb
           - default: trakt
             template_variables:
-              collection_section: "!000" #(1)!
+              sort_prefix: ":" #(1)!
     ```
 
-    1.  Because the `!` character is a higher priority ASCII character, that will place ahead of the `000` for the seasonal collections.
+    1.  Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), this will place the Trakt collections at the top of the list ahead of all other collections.
 
     ![](images/sorts_example3.jpg)
 
-You can also re-order collections within each Defaults file using the `order_<<key>>` template variable. <<key>> refers to the identifier that Kometa uses for each collection, which you can find on the relative default's wiki page.
+#### Sorting the **groups** of Default collections
+
+Each group of collections created by the Kometa defaults has a default "collection section", so the are displayed in a standard order, which is shown [here](../../defaults/collections.md#collection-section-order).  If you want to schange this order in which the sections appear within the set of default-generated collections, you would use the `collection_section` template variable.
+
+For example, these collection groups display in this order, by default:
+
+```
+streaming 030
+universe  040
+network   050
+genre     060
+```
+
+If you wanted to reverse the order in which those groups of collections appear [not the collections within them], you would use the `collection_section` template variable:
+
+```yaml
+  libraries:
+    Movies:
+      collection_files:
+        - default: streaming
+          template_variables:
+            collection_section: "060" #(1)!
+        - default: universe
+          template_variables:
+            collection_section: "050" #(2)!
+        - default: network
+          template_variables:
+            collection_section: "040" #(3)!
+        - default: genre
+          template_variables:
+            collection_section: "030" #(4)!
+```
+
+1. This sets the `collection_section` for the streaming collections to `060`, so they take the place of the genre collections.
+2. This sets the `collection_section` for the universe collections to `050`, so they take the place of the network collections.
+3. This sets the `collection_section` for the network collections to `040`, so they take the place of the universe collections.
+4. This sets the `collection_section` for the genre collections to `030`, so they take the place of the streaming collections.
+
+That will result in those four groups of collections appearing in the opposite order to the default.
+
+#### Sorting the **collections** within the **groups** of Default collections
+
+You can re-order collections within each Defaults file using the `order_<<key>>` template variable. <<key>> refers to the identifier that Kometa uses for each collection, which you can find on the relevant default's wiki page.
 
 ???+ example "Example 4 - Reordering Collections within a Kometa Defaults file"
 
@@ -200,7 +262,7 @@ You can also re-order collections within each Defaults file using the `order_<<k
         collection_files:
           - default: trakt
             template_variables:
-              collection_section: "!000" #(1)!
+              sort_prefix: ":" #(1)!
           - default: tmdb
             template_variables: #(2)!
               order_top: 1
@@ -210,14 +272,58 @@ You can also re-order collections within each Defaults file using the `order_<<k
               order_trending: 5
     ```
 
-    1.  Because the `!` character is a higher priority ASCII character, that will place ahead of the `000` for the seasonal collections.
+    1.  Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), this will place the Trakt collections at the top of the list ahead of all other collections.
     2.  file has 5 collections, each with a defined key. I have reordered each of the collections to appear in the order that I specified.
 
     ![](images/sorts_example4.jpg)
 
+#### Sorting the **contents** of the **collections** within the **groups** of Default collections
+
+You can also re-order the contents of each collection within a Defaults file using **either** the `sort_by` or `collection_order` template variables. The specific option you use will depend on the specific default file [it is ultimately controlled by which type of collection is created by the file, dumb or smart], and will be listed on the relevant wiki page.
+
+For example:
+
+```yaml
+  libraries:
+    Movies:
+      collection_files:
+        - default: basic
+          template_variables:
+            sort_by: year.desc #(1)!
+            sort_by_episodes: episode_release.asc #(2)!
+        - default: imdb
+          template_variables:
+            collection_order: release #(3)!
+            collection_order_lowest: alpha.asc #(4)!
+```
+
+1. This sets the sort_by for all collections created by `basic` to `year.desc`, overriding the default of `release.desc`.  `basic` creates smart collections, so it uses `sort_by`.
+2. This sets the sort_by for the `New Episodes` collection created by `basic` to `episode_release.`, overriding the default of `release.desc` AND the override value set by the previous template variable.
+3. This sets the `collection_order` for the IMDB collections to `release`, overriding the default of `custom`.  `imdb` creates dumb collections, so it uses `collection_order`.
+4. This sets the `collection_order` for the `IMDb Lowest Rated` collection to `alpha.`,  overriding the default of `custom` AND the override value set by the previous template variable.
+
+
 ## Builder Sorting
 
 When using a collection [Builder](../../files/builders/overview.md), it is possible to sort the items within the collection in a number of ways.
+
+This can be useful to control the particular items that end up in the collection, or to control the order that they appear in.
+
+For example, perhaps you want the ten most recent horror movies in your library ordered by critic rating
+
+```yaml
+collections:
+  Recent Horror:
+    # start with all the horror in my library, sorted in descending release order
+    plex_search:
+      sort_by: release.desc
+      any:
+        genre: horror
+    # put the first ten of those [so the most recent] in the collection
+    limit: 10
+    # Sort the items that end up in the collection by critic rating descending
+    collection_order: critic_rating.desc
+```
 
 ### Collection Order
 
