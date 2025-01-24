@@ -28,6 +28,9 @@
         "gotify": {
             "$ref": "#/definitions/gotify-api"
         },
+        "ntfy": {
+            "$ref": "#/definitions/ntfy-api"
+        },
         "anidb": {
             "$ref": "#/definitions/anidb-api"
         },
@@ -306,6 +309,27 @@
                 "token"
             ],
             "title": "gotify"
+        },
+        "ntfy-api": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "topic": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "url",
+                "token",
+                "topic"
+            ],
+            "title": "ntfy"
         },
         "anidb-api": {
             "type": "object",
@@ -1532,7 +1556,7 @@
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|anidb|radarr|sonarr|trakt|mal).+$": {
+                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|mal).+$": {
                     "additionalProperties": false,
                     "properties": {
                         "metadata_files": {

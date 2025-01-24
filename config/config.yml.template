@@ -114,6 +114,10 @@ notifiarr:
 gotify:
   url: http://192.168.1.12:80
   token: ####################################
+ntfy:
+  url: http://192.168.1.12:80
+  token: ####################################
+  topic: kometa
 anidb:                               # Not required for AniDB builders unless you want mature content
   username: ######
   password: ######

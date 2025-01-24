@@ -191,6 +191,7 @@ nav:
           - MDBList: config/mdblist.md
           - Notifiarr: config/notifiarr.md
           - Gotify: config/gotify.md
+          - ntfy: config/ntfy.md
           - AniDB: config/anidb.md
           - Radarr: config/radarr.md
           - Sonarr: config/sonarr.md

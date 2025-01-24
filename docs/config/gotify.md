@@ -1,7 +1,7 @@
 # Gotify Attributes
 
 Configuring [Gotify](https://gotify.net/) is optional but can allow you to send the [webhooks](webhooks.md) 
-straight to gotify.
+straight to Gotify.
 
 A `gotify` mapping is in the root of the config file.
 
@@ -18,7 +18,7 @@ gotify:
 | `url`     | Gotify Server Url        | :fontawesome-solid-circle-check:{ .green } |
 | `token`   | Gotify Application Token | :fontawesome-solid-circle-check:{ .green } |
 
-Once you have added the apikey your config.yml you have to add `gotify` to any [webhook](webhooks.md) to send that 
+Once you have added the configuration data your config.yml you have to add `gotify` to any [webhook](webhooks.md) to send that 
 notification to Gotify.
 
 ```yaml
