@@ -13,10 +13,33 @@ landscape_dim = (1920, 1080)
 square_dim = (1000, 1000)
 old_special_text = [f"{a}{s}" for a in ["audience_rating", "critic_rating", "user_rating"] for s in ["", "0", "%", "#"]]
 rating_sources = [
-    "tmdb_rating", "imdb_rating", "trakt_user_rating", "omdb_rating", "mdb_rating", "mdb_average_rating",
-    "mdb_imdb_rating", "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_trakt_rating", "mdb_tomatoes_rating",
-    "mdb_tomatoesaudience_rating", "mdb_tmdb_rating", "mdb_letterboxd_rating", "mdb_myanimelist_rating",
-    "anidb_rating", "anidb_average_rating", "anidb_score_rating", "mal_rating"
+    "anidb_average_rating",
+    "anidb_rating",
+    "anidb_score_rating",
+    "imdb_rating",
+    "mal_rating",
+    "mdb_average_rating",
+    "mdb_imdb_rating",
+    "mdb_letterboxd_rating",
+    "mdb_metacritic_rating",
+    "mdb_metacriticuser_rating",
+    "mdb_myanimelist_rating",
+    "mdb_rating",
+    "mdb_tmdb_rating",
+    "mdb_tomatoes_rating",
+    "mdb_tomatoesaudience_rating",
+    "mdb_trakt_rating",
+    "omdb_rating",
+    "omdb_imdb_rating",
+    "omdb_metascore_rating",
+    "omdb_tomatoes_rating",
+    "plex_imdb_rating",
+    "plex_tmdb_rating",
+    "plex_tomatoes_rating",
+    "plex_tomatoesaudience_rating",
+    "tmdb_rating",
+    "trakt_rating",
+    "trakt_user_rating"
 ]
 float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
 int_vars = ["runtime", "total_runtime", "season_number", "episode_number", "episode_count", "versions"]
@@ -28,7 +51,9 @@ types_for_var = {
         "imdb_rating", "mdb_average_rating", "mdb_imdb_rating", "mdb_letterboxd_rating",
         "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_rating",
         "mdb_tmdb_rating", "mdb_tomatoes_rating", "mdb_tomatoesaudience_rating",
-        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "tmdb_rating"
+        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "omdb_imdb_rating", "tmdb_rating",
+        "omdb_metascore_rating", "omdb_tomatoes_rating", "plex_imdb_rating", "plex_tmdb_rating",
+        "plex_tomatoes_rating", "plex_tomatoesaudience_rating", "trakt_rating",
     ],
     "movie_show_season": ["original_title", "trakt_user_rating"],
     "show_season_artist_album": ["total_runtime"],

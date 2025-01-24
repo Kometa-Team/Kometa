@@ -170,6 +170,7 @@ mediux
 meisnate
 metacritic
 metacriticuser
+metascore
 microsoft
 mikenobbs
 minikube

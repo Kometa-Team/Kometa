@@ -1547,21 +1547,21 @@ class Plex(Library):
 
     def get_ratings(self, item):
         ratings = {
-            'plex_imdb': None,
-            'plex_tmdb': None,
-            'plex_tomatoes': None,
-            'plex_tomatoesaudience': None,
-            }
+            "plex_imdb": None,
+            "plex_tmdb": None,
+            "plex_tomatoes": None,
+            "plex_tomatoesaudience": None,
+        }
         for rating in item.ratings:
             if rating.image.startswith("imdb://"):
-                ratings['plex_imdb'] = rating.value
+                ratings["plex_imdb"] = rating.value
             if rating.image.startswith("themoviedb://"):
-                ratings['plex_tmdb'] = rating.value
+                ratings["plex_tmdb"] = rating.value
             if rating.image.startswith("rottentomatoes://"):
                 if rating.image.endswith("ripe") or rating.image.endswith("rotten"):
-                    ratings['plex_tomatoes'] = rating.value
+                    ratings["plex_tomatoes"] = rating.value
                 else:
-                    ratings['plex_tomatoesaudience'] = rating.value
+                    ratings["plex_tomatoesaudience"] = rating.value
         return ratings
 
     def get_locked_attributes(self, item, titles=None, year_titles=None, item_type=None):
