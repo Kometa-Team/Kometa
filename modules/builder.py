@@ -1609,7 +1609,7 @@ class CollectionBuilder:
                                 if res:
                                     interests.append(res.group(1))
                                 else:
-                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. ev0000292 or be one of {', '.join([e for e in imdb.interest_options])}")
+                                    raise Failed(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. in0000092 or be one of {', '.join([e for e in imdb.interest_options])}")
                         if interests:
                             new_dictionary[lower_method] = interests
                     elif search_attr == "company":
