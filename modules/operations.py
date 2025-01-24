@@ -393,12 +393,12 @@ class Operations:
                                             found_rating = None
                                     elif str(option).startswith("omdb"):
                                         omdb_item = omdb_obj()
-                                        if option == "omdb":
-                                            found_rating = omdb_item.imdb_rating # noqa
-                                        elif option == "omdb_metascore":
+                                        if option == "omdb_metascore":
                                             found_rating = omdb_item.metacritic_rating / 10 if omdb_item.metacritic_rating else None # noqa
                                         elif option == "omdb_tomatoes":
                                             found_rating = omdb_item.rotten_tomatoes / 10 if omdb_item.rotten_tomatoes else None # noqa
+                                        else:
+                                            found_rating = omdb_item.imdb_rating # noqa
                                     elif str(option).startswith("mdb"):
                                         mdb_item = mdb_obj()
                                         if option == "mdb_average":
@@ -917,7 +917,7 @@ class Operations:
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
-                                            if option.startswith("plex"):
+                                            if str(option).startswith("plex"):
                                                 ratings = self.library.get_ratings(ep)
                                                 try:
                                                     found_rating = ratings[option]  # noqa
