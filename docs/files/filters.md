@@ -117,6 +117,20 @@ You can use the `plex_all: true` builder to filter from your entire library.
 
     #### Examples
 
+    ```yaml
+    collections:
+      Movies with Mediastingers:
+        plex_all: true
+        filters:
+          has_stinger: true
+    ```
+    ```yaml
+    collections:
+      Movies with Editions:
+        plex_all: true
+        filters:
+          has_edition: true
+    ```
     
 
 === "Date Filters"
@@ -279,7 +293,13 @@ You can use the `plex_all: true` builder to filter from your entire library.
         filters:
           audio_track_title: Commentary
     ```
-
+    ```yaml
+    collections:
+      Movies with Audio Codecs containing DTS:
+        plex_all: true
+        filters:
+          audio_codec: DTS
+    ```
 === "Tag Filters"
 
     **Modifiers:** No Modifier, `.not`, `.regex`, `.count_lt`, `.count_lte`, `.count_gt`, or `.count_gte`
@@ -332,16 +352,6 @@ You can use the `plex_all: true` builder to filter from your entire library.
 
     ```yaml
     collections:
-      1080p Documentaries:
-        plex_search:
-          all:
-            genre: Documentary
-        summary: A collection of 1080p Documentaries
-        filters:
-          resolution: 1080
-    ```
-    ```yaml
-    collections:
       Daniel Craig only James Bonds:
         imdb_list:
           list_id: ls006405458
@@ -357,15 +367,7 @@ You can use the `plex_all: true` builder to filter from your entire library.
         filters:
           audio_language: Français
     ```
-    ```yaml
-    collections:
-      Romantic Comedies:
-        plex_search:
-          all:
-            genre: Romance
-        filters:
-          genre: Comedy
-    ```
+
 
 === "Special Filters"
 
@@ -386,3 +388,20 @@ You can use the `plex_all: true` builder to filter from your entire library.
     | `imdb_keyword`<sup>**2**</sup>                                                 | Uses the keywords from IMDb to match **Also a Tag Filter and can use all of those modifiers**<br>`keywords`: list of keywords to match<br>`minimum_votes`: minimum number of votes keywords must have<br>`minimum_relevant`: minimum number of relevant votes keywords must have<br>`minimum_percentage`: minimum percentage of relevant votes keywords must have | `Movies`, `Shows`                          |
     
     <sup>**2**</sup> Also filters out missing movies/shows from being added to Radarr/Sonarr. These Values also cannot use the `count` modifiers.
+
+    #### Examples
+
+    ```yaml
+    collections:
+      Shows That Finished Too Soon:
+        plex_all: true
+        filters:
+          tmdb_status: canceled
+    ```
+    ```yaml
+    collections:
+      On This Day in Previous Years:
+        plex_all: true
+        filters:
+          history: day
+    ```
