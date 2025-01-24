@@ -27,6 +27,7 @@ requirements for setup that can be found by clicking the links within the table 
 | [`mdblist`](mdblist.md)                     | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`notifiarr`](notifiarr.md)                 | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`gotify`](gotify.md)                       | :fontawesome-solid-circle-xmark:{ .red }                              |
+| [`ntfy`](ntfy.md)                           | :fontawesome-solid-circle-xmark:{ .red }              |
 | [`anidb`](anidb.md)                         | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`radarr`](radarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }                              |
 | [`sonarr`](sonarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }                              |

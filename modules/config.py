@@ -15,6 +15,7 @@ from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
 from modules.notifiarr import Notifiarr
 from modules.gotify import Gotify
+from modules.ntfy import Ntfy
 from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
@@ -339,6 +340,7 @@ class ConfigFile:
         if "mdblist" in self.data:                     self.data["mdblist"] = self.data.pop("mdblist")
         if "notifiarr" in self.data:                   self.data["notifiarr"] = self.data.pop("notifiarr")
         if "gotify" in self.data:                      self.data["gotify"] = self.data.pop("gotify")
+        if "ntfy" in self.data:                        self.data["ntfy"] = self.data.pop("ntfy")
         if "anidb" in self.data:                       self.data["anidb"] = self.data.pop("anidb")
         if "radarr" in self.data:
             if "monitor" in self.data["radarr"] and isinstance(self.data["radarr"]["monitor"], bool):
@@ -598,6 +600,25 @@ class ConfigFile:
         else:
             logger.info("gotify attribute not found")
 
+        self.NtfyFactory = None
+        if "ntfy" in self.data:
+            logger.info("Connecting to ntfy...")
+            try:
+                self.NtfyFactory = Ntfy(self.Requests, {
+                    "url": check_for_attribute(self.data, "url", parent="ntfy", throw=True),
+                    "token": check_for_attribute(self.data, "token", parent="ntfy", throw=True),
+                    "topic": check_for_attribute(self.data, "topic", parent="ntfy", throw=True)
+                })
+            except Failed as e:
+                if str(e).endswith("is blank"):
+                    logger.warning(e)
+                else:
+                    logger.stacktrace()
+                    logger.error(e)
+            logger.info(f"ntfy Connection {'Failed' if self.NtfyFactory is None else 'Successful'}")
+        else:
+            logger.info("ntfy attribute not found")
+
         self.webhooks = {
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "version": check_for_attribute(self.data, "version", parent="webhooks", var_type="list", default_is_none=True),
@@ -606,7 +627,7 @@ class ConfigFile:
             "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True),
             "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True)
         }
-        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory)
+        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
             if self.Requests.has_new_version():
