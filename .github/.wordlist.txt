@@ -290,6 +290,7 @@ tmdb's
 tmdbapi
 tmdbapis
 toastjuh
+toc
 todo
 tomatoesaudience
 tomatometer

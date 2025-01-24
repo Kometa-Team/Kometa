@@ -432,7 +432,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 
 <sup>1</sup> These services do not store season or episode-level ratings, using these options will allow show ratings to be applied at the season or episode level.
 
-??? tip "Special Rating Text Modifiers"
+???+ tip "Special Rating Text Modifiers"
 
     | Modifier | Description                                        | Example                                    |
     |:--------:|:---------------------------------------------------|:-------------------------------------------|
@@ -456,7 +456,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `edition`        | Item's Edition             | `Movies`                                    |
 | `content_rating` | Item's Content Rating      | `Movies`, `Shows`, or `Episodes`            |
 
-??? tip "Special String Text Modifiers"
+???+ tip "Special String Text Modifiers"
 
     | Modifier | Description                            |
     |:--------:|:---------------------------------------|
@@ -474,7 +474,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `episode_number` | Episode Number                 | `Episodes`              |
 | `versions`       | Number of Versions of the Item | `Movies` or `Episodes`  |
 
-??? tip "Special Number Text Modifiers"
+???+ tip "Special Number Text Modifiers"
 
     | Modifier | Description               | Example |
     |:--------:|:--------------------------|:-------:|
