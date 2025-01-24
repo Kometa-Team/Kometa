@@ -244,7 +244,7 @@ def regex_first_int(data, id_type, default=None):
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
 def validate_filename(filename):
-    if is_valid_filename(str(filename)):
+    if is_valid_filename(str(filename), "auto"):
         return filename, None
     else:
         mapping_name = sanitize_filename(str(filename))
