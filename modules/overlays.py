@@ -356,14 +356,13 @@ class Overlays:
                                                         raise Failed(f"No IMDb ID for Guid: {item.guid}")
                                                     else:
                                                         try:
-                                                            if format_var == "omdb_rating":
-                                                                found_rating = self.config.OMDb.get_omdb(imdb_id, True).imdb_rating
-                                                            elif format_var == "omdb_metascore_rating":
-                                                                raw = self.config.OMDb.get_omdb(imdb_id, True).metacritic_rating
-                                                                found_rating = raw / 10 if raw else None
+                                                            omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
+                                                            if format_var == "omdb_metascore_rating":
+                                                                found_rating = omdb_obj.metacritic_rating / 10 if omdb_obj.metacritic_rating else None
                                                             elif format_var == "omdb_tomatoes_rating":
-                                                                raw = self.config.OMDb.get_omdb(imdb_id, True).rotten_tomatoes
-                                                                found_rating = raw / 10 if raw else None
+                                                                found_rating = omdb_obj.rotten_tomatoes / 10 if omdb_obj.rotten_tomatoes else None
+                                                            else:
+                                                                found_rating = omdb_obj.imdb_rating if omdb_obj.imdb_rating else None
                                                         except Exception:
                                                             logger.error(f"Cannot retrieve {format_var} for: {imdb_id}")
                                                             raise

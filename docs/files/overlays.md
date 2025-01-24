@@ -50,9 +50,16 @@ tags:
   - mdb_trakt_rating
   - name
   - omdb_rating
+  - omdb_imdb_rating
+  - omdb_metascore_rating
+  - omdb_tomatoes_rating
   - original_title
   - originally_available
   - overlays
+  - plex_imdb_rating
+  - plex_tmdb_rating
+  - plex_tomatoes_rating
+  - plex_tomatoesaudience_rating
   - queue
   - queues
   - repo
@@ -400,11 +407,11 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `imdb_rating`                  | IMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup>, or `Episodes`                   |
 | `trakt_rating`                 | Trakt Rating                            | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `trakt_user_rating`            | Trakt User Rating                       | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
-| `omdb_rating`                  | OMDb Rating                             | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `omdb_imdb_rating`             | OMDb IMDb Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `omdb_metascore_rating`        | OMDb Metascore Rating                   | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `omdb_tomatoes_rating`         | OMDb Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
-| `plex_imdb_rating`             | Plex IMDB Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
-| `plex_tmdb_rating`             | Plex TMDB Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `plex_imdb_rating`             | Plex IMDb Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
+| `plex_tmdb_rating`             | Plex TMDb Rating                        | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |
 | `plex_tomatoes_rating`         | Plex Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons`<sup>1</sup>                                  |
 | `plex_tomatoesaudience_rating` | Plex Rotten Tomatoes Audience Rating    | `Movies`, `Shows`, `Seasons`<sup>1</sup>                                  |
 | `mdb_rating`                   | MDBList Rating                          | `Movies`, `Shows`, `Seasons`<sup>1</sup> or `Episodes`<sup>1</sup>        |

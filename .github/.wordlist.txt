@@ -171,7 +171,6 @@ meisnate
 metacritic
 metacriticuser
 metascore
-Metascore
 microsoft
 mikenobbs
 minikube

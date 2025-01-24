@@ -25,11 +25,12 @@ rating_sources = [
     "mdb_metacriticuser_rating",
     "mdb_myanimelist_rating",
     "mdb_rating",
-    "mdb_tmdb_rating", 
+    "mdb_tmdb_rating",
     "mdb_tomatoes_rating",
     "mdb_tomatoesaudience_rating",
     "mdb_trakt_rating",
     "omdb_rating",
+    "omdb_imdb_rating",
     "omdb_metascore_rating",
     "omdb_tomatoes_rating",
     "plex_imdb_rating",
@@ -40,7 +41,6 @@ rating_sources = [
     "trakt_rating",
     "trakt_user_rating"
 ]
-
 float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
 int_vars = ["runtime", "total_runtime", "season_number", "episode_number", "episode_count", "versions"]
 date_vars = ["originally_available"]
@@ -51,7 +51,7 @@ types_for_var = {
         "imdb_rating", "mdb_average_rating", "mdb_imdb_rating", "mdb_letterboxd_rating",
         "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_rating",
         "mdb_tmdb_rating", "mdb_tomatoes_rating", "mdb_tomatoesaudience_rating",
-        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "tmdb_rating",
+        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "omdb_imdb_rating", "tmdb_rating",
         "omdb_metascore_rating", "omdb_tomatoes_rating", "plex_imdb_rating", "plex_tmdb_rating",
         "plex_tomatoes_rating", "plex_tomatoesaudience_rating", "trakt_rating",
     ],
