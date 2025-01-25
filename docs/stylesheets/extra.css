@@ -47,6 +47,7 @@ table tr td code {
     border: 1px solid var(--md-default-fg-color--lightest);
     border-radius: 6px;
     padding: 10px;
+    background-color: hsl(225deg 3.85% 13.04%);
 }
 
 .md-typeset :not(.linenodiv) > pre {
@@ -105,7 +106,7 @@ table tr td code {
     right: 0;
     margin-left: 0;
     -webkit-transform: none;
-    transform: none;   
+    transform: none;
   }
 }
 
@@ -459,10 +460,42 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
     color: #ffffff;
 }
 
-.md-typeset .tabbed-set>input:first-child:checked~.tabbed-labels>:first-child, .md-typeset .tabbed-set>input:nth-child(10):checked~.tabbed-labels>:nth-child(10), .md-typeset .tabbed-set>input:nth-child(11):checked~.tabbed-labels>:nth-child(11), .md-typeset .tabbed-set>input:nth-child(12):checked~.tabbed-labels>:nth-child(12), .md-typeset .tabbed-set>input:nth-child(13):checked~.tabbed-labels>:nth-child(13), .md-typeset .tabbed-set>input:nth-child(14):checked~.tabbed-labels>:nth-child(14), .md-typeset .tabbed-set>input:nth-child(15):checked~.tabbed-labels>:nth-child(15), .md-typeset .tabbed-set>input:nth-child(16):checked~.tabbed-labels>:nth-child(16), .md-typeset .tabbed-set>input:nth-child(17):checked~.tabbed-labels>:nth-child(17), .md-typeset .tabbed-set>input:nth-child(18):checked~.tabbed-labels>:nth-child(18), .md-typeset .tabbed-set>input:nth-child(19):checked~.tabbed-labels>:nth-child(19), .md-typeset .tabbed-set>input:nth-child(2):checked~.tabbed-labels>:nth-child(2), .md-typeset .tabbed-set>input:nth-child(20):checked~.tabbed-labels>:nth-child(20), .md-typeset .tabbed-set>input:nth-child(3):checked~.tabbed-labels>:nth-child(3), .md-typeset .tabbed-set>input:nth-child(4):checked~.tabbed-labels>:nth-child(4), .md-typeset .tabbed-set>input:nth-child(5):checked~.tabbed-labels>:nth-child(5), .md-typeset .tabbed-set>input:nth-child(6):checked~.tabbed-labels>:nth-child(6), .md-typeset .tabbed-set>input:nth-child(7):checked~.tabbed-labels>:nth-child(7), .md-typeset .tabbed-set>input:nth-child(8):checked~.tabbed-labels>:nth-child(8), .md-typeset .tabbed-set>input:nth-child(9):checked~.tabbed-labels>:nth-child(9) {
-    color: #00bc8c;
+.md-typeset .tabbed-set > input:first-child:checked ~ .tabbed-labels > :first-child,
+.md-typeset .tabbed-set > input:nth-child(10):checked ~ .tabbed-labels > :nth-child(10),
+.md-typeset .tabbed-set > input:nth-child(11):checked ~ .tabbed-labels > :nth-child(11),
+.md-typeset .tabbed-set > input:nth-child(12):checked ~ .tabbed-labels > :nth-child(12),
+.md-typeset .tabbed-set > input:nth-child(13):checked ~ .tabbed-labels > :nth-child(13),
+.md-typeset .tabbed-set > input:nth-child(14):checked ~ .tabbed-labels > :nth-child(14),
+.md-typeset .tabbed-set > input:nth-child(15):checked ~ .tabbed-labels > :nth-child(15),
+.md-typeset .tabbed-set > input:nth-child(16):checked ~ .tabbed-labels > :nth-child(16),
+.md-typeset .tabbed-set > input:nth-child(17):checked ~ .tabbed-labels > :nth-child(17),
+.md-typeset .tabbed-set > input:nth-child(18):checked ~ .tabbed-labels > :nth-child(18),
+.md-typeset .tabbed-set > input:nth-child(19):checked ~ .tabbed-labels > :nth-child(19),
+.md-typeset .tabbed-set > input:nth-child(2):checked ~ .tabbed-labels > :nth-child(2),
+.md-typeset .tabbed-set > input:nth-child(20):checked ~ .tabbed-labels > :nth-child(20),
+.md-typeset .tabbed-set > input:nth-child(3):checked ~ .tabbed-labels > :nth-child(3),
+.md-typeset .tabbed-set > input:nth-child(4):checked ~ .tabbed-labels > :nth-child(4),
+.md-typeset .tabbed-set > input:nth-child(5):checked ~ .tabbed-labels > :nth-child(5),
+.md-typeset .tabbed-set > input:nth-child(6):checked ~ .tabbed-labels > :nth-child(6),
+.md-typeset .tabbed-set > input:nth-child(7):checked ~ .tabbed-labels > :nth-child(7),
+.md-typeset .tabbed-set > input:nth-child(8):checked ~ .tabbed-labels > :nth-child(8),
+.md-typeset .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > :nth-child(9) {
+    color: #ffffff; /* White text */
+    background-color: #00bc8c; /* Green background */
+    border-color: 0 -.05rem var(--md-default-fg-color--lightest) var(--md-default-fg-color--lightest) #fff inset;
+    text-decoration: underline; /* Adds the underline */
+    text-decoration-thickness: 1.5px; /* Makes the underline thicker */
+    text-underline-offset: 4px; /* Moves the underline away from the text */
+    text-decoration-color: #ffffff; /* Optional: Set the underline color */
+    border-radius: 6px 6px 0 0; /* Rounded top corners only */
+    font-weight: bold; /* Emphasized text */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+}
+
+.md-typeset .tabbed-labels>label {
+    border-bottom: 0rem
 }
 
 .js .md-typeset .tabbed-labels:before {
-    background: #00bc8c;
+    height: 0px;
 }
