@@ -2,12 +2,11 @@
 
 Configuring [MDBList](https://mdblist.com/) is optional but can allow you to mass edit metadata.
 
-A `mdblist` mapping is in the root of the config file.
+A `mdblist` mapping is in the root of the config file, sampled below.
 
-Below is a `mdblist` mapping example and the full set of attributes:
-```yaml
+```yaml title="config.yml MDBList sample"
 mdblist:
-  apikey: #########################
+  apikey: thisismyapikey
   cache_expiration: 60
 ```
 

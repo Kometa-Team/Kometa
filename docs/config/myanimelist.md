@@ -3,20 +3,18 @@
 Configuring [MyAnimeList](https://myanimelist.net/) is optional but is required for MyAnimeList based collections and 
 operations to function.
 
-A `mal` mapping is in the root of the config file.
+A `mal` mapping is in the root of the config file, sampled below.
 
-Below is a `mal` mapping example and the full set of attributes:
-
-```yaml
+```yaml title="config.yml MyAnimeList sample"
 mal:
-  client_id: ################################
-  client_secret: ################################################################
-  localhost_url: 
+  client_id: abc123def456ghi789
+  client_secret: zyx987wvu564tsr321
+  localhost_url: https://localhost:5000/somestuff
   authorization:
-    access_token:
-    token_type:
-    expires_in:
-    refresh_token:
+    access_token: k0met4t0k3nh3r3
+    token_type: Bearer
+    expires_in: 192837465
+    refresh_token: r3fr3sht0k3ng0e5h3r3
 ```
 
 | Attribute       | Allowed Values                        |                  Required                  |

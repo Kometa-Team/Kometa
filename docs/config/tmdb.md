@@ -6,12 +6,11 @@ search:
 
 Filling in your [TheMovieDb](https://www.themoviedb.org/) API key is mandatory in order to run Kometa. 
 
-A `tmdb` mapping is in the root of the config file.
+A `tmdb` mapping is in the root of the config file, sampled below.
 
-Below is a `tmdb` mapping example and the full set of attributes:
-```yaml
+```yaml title="config.yml TMDb sample"
 tmdb:
-  apikey: ################################
+  apikey: 147abc258def369ghi
   language: en
   region: US
   cache_expiration: 60

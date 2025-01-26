@@ -33,7 +33,7 @@ If you are an admin of your own ntfy server, you can follow these steps:
 
 Use the URL, topic and token to configure `ntfy` in the root of the config file:
 
-```yaml
+```yaml title="config.yml ntfy sample"
 ntfy:
   url: https://ntfy.sh  # or a different ntfy server URL
   token: tk_thisismyaccesstoken
@@ -48,7 +48,7 @@ ntfy:
 
 Once you have added the configuration data to your `config.yml`, you can add `ntfy` to any [webhook](webhooks.md) to send that notification to ntfy.
 
-```yaml
+```yaml title="config.yml ntfy webhooks sample"
 webhooks:
   error: ntfy
   version: ntfy

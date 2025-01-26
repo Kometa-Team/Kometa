@@ -12,7 +12,7 @@ When not using a list under `operations` the whole operations value is one block
 
 ???+ example
 
-    ```yaml
+    ```yaml title="config.yml Operations sample"
     libraries:
       Movies:
         collection_files:
@@ -29,7 +29,7 @@ You can create individual blocks of operations by using a list under `operations
 
 ???+ example
 
-    ```yaml
+    ```yaml title="config.yml Operation Blocks sample"
     libraries:
       Movies:
         collection_files:

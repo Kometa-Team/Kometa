@@ -3,13 +3,11 @@
 Configuring [Notifiarr](https://notifiarr.com) is optional but can allow you to send the [webhooks](webhooks.md) 
 straight to notifiarr.
 
-A `notifiarr` mapping is in the root of the config file.
+A `notifiarr` mapping is in the root of the config file, sampled below.
 
-Below is a `notifiarr` mapping example and the full set of attributes:
-
-```yaml
+```yaml title="config.yml Notifiarr sample"
 notifiarr:
-  apikey: ####################################
+  apikey: apikeygoeshere
 ```
 
 | Attribute | Allowed Values                           |                  Required                  |
@@ -19,7 +17,7 @@ notifiarr:
 Once you have added the apikey your config.yml you have to add `notifiarr` to any [webhook](webhooks.md) to send that 
 notification to Notifiarr.
 
-```yaml
+```yaml title="config.yml Notifiarr webhooks sample"
 webhooks:
   error: notifiarr
   version: notifiarr

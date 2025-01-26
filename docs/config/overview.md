@@ -39,9 +39,9 @@ requirements for setup that can be found by clicking the links within the table 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the 
 installation guides.
 
-~~~yaml
+```yaml title="config.yml.template"
 {%    
   include-markdown "../../config/config.yml.template" 
   comments=false
 %}
-~~~
+```
