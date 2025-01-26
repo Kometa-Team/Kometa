@@ -55,9 +55,19 @@ table tr td code {
 .md-typeset :not(.linenodiv) > pre {
   border: 1px solid #30363d;
   border-radius: 6px;
-  padding: 1px;
 }
 
+.highlight span.filename {
+    background-color: var(--md-code-bg-color);
+    border-bottom: .05rem solid #30363d;
+    border-top-left-radius: .1rem;
+    border-top-right-radius: .1rem;
+    display: inline;
+    font-size: .85em;
+    font-weight: 700;
+    margin-top: 1em;
+    padding: .6617647059em 1.1764705882em;
+}
 [data-md-color-scheme="default"] .md-typeset h1, [data-md-color-scheme="slate"] .md-typeset h2, [data-md-color-scheme="slate"] .md-typeset h3, [data-md-color-scheme="slate"] .md-typeset h4 {
     color: #2f2f2f;
 }
