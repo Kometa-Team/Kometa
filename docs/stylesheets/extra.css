@@ -5,7 +5,7 @@
     --md-primary-bg-color--light: #ffffffb3;
     --pg-light-border: rgb(47, 47, 47);
     --md-typeset-a-color: #00bc8c;
-    --md-accent-fg-color: #1281c0;
+    --md-accent-fg-color: #03a37a;
     --md-code-hl-keyword-color: #7ee787;
     --md-code-hl-string-color: #a5d6ff;
     --md-code-hl-comment-color: #8b949e;
@@ -14,15 +14,20 @@
     --md-primary-fg-color:        #00bc8c;
     --md-primary-fg-color--light: #00bc8c;
     --md-primary-fg-color--dark:  #00bc8c;
-    --md-default-bg-color: #252525;
+    --md-default-bg-color: #181818;
     --md-footer-bg-color--dark: var(--md-default-bg-color);
     --md-primary-bg-color--light: #ffffffb3;
     --pg-light-border: rgb(47, 47, 47);
     --md-typeset-a-color: #00bc8c;
-    --md-accent-fg-color: #1281c0;
+    --md-accent-fg-color: #03a37a;
     --md-code-hl-keyword-color: #7ee787;
     --md-code-hl-string-color: #a5d6ff;
     --md-code-hl-comment-color: #8b949e;
+}
+
+a {
+    color: #818181;
+
 }
 
 table tr td code {
@@ -44,14 +49,11 @@ table tr td code {
 }
 
 .md-typeset .tabbed-set {
-    border: 1px solid var(--md-default-fg-color--lightest);
-    border-radius: 6px;
     padding: 10px;
-    background-color: hsl(225deg 3.85% 13.04%);
 }
 
 .md-typeset :not(.linenodiv) > pre {
-  border: 1px solid var(--md-default-fg-color--lightest);
+  border: 1px solid #30363d;
   border-radius: 6px;
   padding: 1px;
 }
@@ -94,6 +96,8 @@ table tr td code {
 [data-md-color-scheme="slate"] .md-typeset code {
     background-color: hsl(225deg 8.87% 10.98%);
 }
+
+
 @media only screen and (min-width: 76.25em) {
   .md-main__inner {
     max-width: 80%;
@@ -169,7 +173,7 @@ table.dualTable td, table.dualTable th {
 }
 
 table.dualTable tr:nth-child(even) {
-    background-color: #1b1b1b;
+    background-color: #1d1d1d;
 }
 
 table.dualTable td, table.dualTable th {
@@ -205,7 +209,7 @@ table.dualTable td, table.dualTable th {
 }
 /* dark mode alternating table bg colors */
 [data-md-color-scheme="slate"] .md-typeset__table tr:nth-child(2n) {
-    background-color: #1b1b1b;
+    background-color: #1d1d1d;
 }
 
 .md-typeset mark {
@@ -273,7 +277,7 @@ table.dualTable td, table.dualTable th {
 
 .md-typeset .grid.cards > :is(ul, ol) > li, .md-typeset .grid > .card { /* Firefox */
     color: var(--md-typeset-color);
-    background: #1b1b1b;
+    background: #1d1d1d;
     border: 1px solid var(--pg-light-border);
     border-radius: 6px;
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
@@ -283,7 +287,7 @@ table.dualTable td, table.dualTable th {
 
 .md-typeset .grid.cards>:-webkit-any(ul,ol)>li, .md-typeset .grid>.card { /* Webkit */
     color: var(--md-typeset-color);
-    background: #1b1b1b;
+    background: #1d1d1d;
     border: 1px solid var(--pg-light-border);
     border-radius: 6px;
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
@@ -313,7 +317,7 @@ table.dualTable td, table.dualTable th {
 
 [data-md-color-scheme="slate"] .md-typeset .grid.cards > :is(ul, ol) > li, .md-typeset .grid > .card { /* Firefox */
     color: var(--md-typeset-color);
-    background: #1b1b1b;
+    background: #1d1d1d;
     border: 1px solid var(--pg-light-border);
     border-radius: 6px;
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
@@ -323,7 +327,7 @@ table.dualTable td, table.dualTable th {
 
 [data-md-color-scheme="slate"] .md-typeset .grid.cards>:-webkit-any(ul,ol)>li, .md-typeset .grid>.card { /* Webkit */
     color: var(--md-typeset-color);
-    background: #1b1b1b;
+    background: #1d1d1d;
     border: 1px solid var(--pg-light-border);
     border-radius: 6px;
     box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px -1px;
@@ -365,7 +369,7 @@ table.dualTable td, table.dualTable th {
 
 [data-md-color-scheme="slate"] .md-typeset .admonition.builder,
 .md-typeset details.quicklink {
-    background-color: #1b1b1b;
+    background-color: #1d1d1d;
 }
 
 .md-typeset .admonition.builder,
@@ -482,7 +486,7 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
 .md-typeset .tabbed-set > input:nth-child(9):checked ~ .tabbed-labels > :nth-child(9) {
     color: #ffffff; /* White text */
     background-color: #00bc8c; /* Green background */
-    border-color: 0 -.05rem var(--md-default-fg-color--lightest) var(--md-default-fg-color--lightest) #fff inset;
+    border-color: 0 -.05rem #30363d #30363d #fff inset;
     text-decoration: underline; /* Adds the underline */
     text-decoration-thickness: 1.5px; /* Makes the underline thicker */
     text-underline-offset: 4px; /* Moves the underline away from the text */
@@ -499,3 +503,15 @@ details[class="quicklink annotate"] > p .md-annotation span span::before {
 .js .md-typeset .tabbed-labels:before {
     height: 0px;
 }
+
+.md-typeset .tabbed-content {
+    width: 100%;
+    border: 1px solid var(--md-default-fg-color--lightest); /* Adds a border with the specified variable color */
+    border-radius: 6px;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: hsl(225deg 3.85% 13.04%);
+}
+
+}
+
