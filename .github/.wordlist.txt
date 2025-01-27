@@ -247,7 +247,7 @@ remux
 repo
 repos
 rholder
-rogerevert
+rogerebert
 romani
 ruamel
 runtime
