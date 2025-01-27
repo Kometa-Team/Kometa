@@ -4,17 +4,15 @@ Configuring Webhooks is optional but can allow you to receive notifications when
 
 Discord and Slack Direct webhooks are supported just use the correct urls. 
 
-A `webhooks` mapping is in the root of the config file.
+A `webhooks` mapping is in the root of the config file, sampled below.
 
-Below is a `webhooks` mapping example and the full set of attributes:
-
-```yaml
+```yaml title="config.yml Webhooks sample"
 webhooks:
   error: https://www.myspecialdomain.com/kometa
-  version:
-  run_start:
-  run_end:
-  changes:
+  version: notifiarr
+  run_start: gotify
+  run_end: ntfy
+  changes: https://myspecialdomain/kometa
 ```
 
 | Attribute                               |                   Global                   |                  Library                   |                  Collection                  |
@@ -27,7 +25,8 @@ webhooks:
 | [`changes`](#changes-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-check:{ .green }  |
 
 * Each Attribute can be either a webhook url as a string or a list of webhooks urls.
-  ```yaml
+
+* ```yaml
   webhooks:
     error: https://www.myspecialdomain.com/kometa
     version: notifiarr

@@ -4,7 +4,7 @@ When using Kometa, the structure of each library is made using File Blocks
 
 ???+ example "Example Library Structure"
 
-    ```yaml
+    ```yaml title="config.yml File Blocks sample"
     libraries:
       Movies:
         collection_files:

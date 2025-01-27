@@ -10,7 +10,7 @@ act on.
 **The libraries used in the playlist attribute `libraries` must be defined under the `libraries` attribute of the 
 [Configuration File](overview.md).**
 
-```yaml
+```yaml title="config.yml Playlists sample"
 playlist_files:
   - file: config/playlists.yml
   - default: playlist

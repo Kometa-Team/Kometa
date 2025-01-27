@@ -6,21 +6,20 @@ search:
 
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
-A `trakt` mapping is in the root of the config file.
+A `trakt` mapping is in the root of the config file, sampled below.
 
-Below is a `trakt` mapping example and the full set of attributes:
-```yaml
+```yaml title="config.yml Trakt sample"
 trakt:
-  client_id: ################################################################
-  client_secret: ################################################################
+  client_id: 1a2b3c4d5e6f7g8h9i
+  client_secret: 1a12b23c34d45e56f6
   pin:
   authorization:
-    access_token:
-    token_type:
-    expires_in:
-    refresh_token:
-    scope:
-    created_at:
+    access_token: 4cc355t0k3nh3r3
+    token_type: Bearer
+    expires_in: 1928374655
+    refresh_token: r3fr35ht0k3nh3r3
+    scope: public 
+    created_at: 137946258
 ```
 
 | Attribute       | Allowed Values                  | Default |                  Required                  |

@@ -8,10 +8,10 @@ Using `username` and `password` allows you to access mature content with AniDB B
 
 **All AniDB Builders still work without this, they will just not have mature content**
 
-An `anidb` mapping is in the root of the config file.
+An `anidb` mapping is in the root of the config file, sampled below.
 
-Below is a `anidb` mapping example and the full set of attributes:
-```yaml
+
+```yaml title="config.yml AniDB sample"
 anidb:
   client: #######
   version: 1
@@ -66,7 +66,7 @@ matter.
 
 9. Put the Client Name and Client Version you just created in your config.yml as `client` and `version` respectively.
 
-    ```yaml
+   ```yaml
     anidb:
       client: mykometaproject
       version: 1

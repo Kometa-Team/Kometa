@@ -3,12 +3,11 @@
 Configuring [Tautulli](https://tautulli.com/) is optional but can allow you to create Collections based on Tautulli's 
 Watch Statistics.
 
-A `tautulli` mapping can be either in the root of the config file as global mapping for all libraries, or you can 
-specify the `tautulli` mapping individually per library.
+A `tautulli` mapping can be either in the root of the config file as global mapping for all libraries, or you can  specify the `tautulli` mapping individually per library.
 
 Below is a `tautulli` mapping example and the full set of attributes:
 
-```yaml
+```yaml title="config.yml Tautulli sample"
 tautulli:
   url: http://192.168.1.12:8659
   apikey: ################################
