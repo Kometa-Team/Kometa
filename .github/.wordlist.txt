@@ -247,6 +247,7 @@ remux
 repo
 repos
 rholder
+rogerebert
 rogerevert
 romani
 ruamel
