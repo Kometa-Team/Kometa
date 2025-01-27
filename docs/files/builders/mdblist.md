@@ -45,13 +45,10 @@ The default `sort_by` when it's not specified is `rank.asc`.
 | Option                                        | Description                            |
 |:----------------------------------------------|:---------------------------------------|
 | `rank.asc`<br>`rank.desc`                     | Sort by MDBList Rank                   |
-| `title.asc`<br>`title.desc`                   | Sort by Title                          |
 | `score.asc`<br>`score.desc`                   | Sort by MDBList Score                  |
 | `score_average.asc`<br>`score_average.desc`   | Sort by MDBList Average Score          |
 | `released.asc`<br>`released.desc`             | Sort by Release Date                   |
 | `releasedigital.asc`<br>`releasedigital.desc` | Sort by Digital Release Date           |
-| `last_air_date.asc`<br>`last_air_date.desc`   | Sort by Last Air Date                  |
-| `runtime.asc`<br>`runtime.desc`               | Sort Runtime                           |
 | `imdbrating.asc`<br>`imdbrating.desc`         | Sort by IMDb Rating                    |
 | `imdbvotes.asc`<br>`imdbvotes.desc`           | Sort by IMDb Votes                     |
 | `imdbpopular.asc`<br>`imdbpopular.desc`       | Sort by IMDb Popular                   |
@@ -59,13 +56,20 @@ The default `sort_by` when it's not specified is `rank.asc`.
 | `rogerebert.asc`<br>`rogerebert.desc`         | Sort by RogerEbert Score               |
 | `rtomatoes.asc`<br>`rtomatoes.desc`           | Sort by Rotten Tomatoes Score          |
 | `rtaudience.asc`<br>`rtaudience.desc`         | Sort by Rotten Tomatoes Audience Score |
-| `letterrating.asc`<br>`letterrating.desc`     | Sort by Letterboxd Rating              |
-| `lettervotes.asc`<br>`lettervotes.desc`       | Sort by Letterboxd Votes               |
 | `metacritic.asc`<br>`metacritic.desc`         | Sort by Metacritic Score               |
 | `myanimelist.asc`<br>`myanimelist.desc`       | Sort by MyAnimeList Score              |
+| `letterrating.asc`<br>`letterrating.desc`     | Sort by Letterboxd Rating              |
+| `lettervotes.asc`<br>`lettervotes.desc`       | Sort by Letterboxd Votes               |
+| `last_air_date.asc`<br>`last_air_date.desc`   | Sort by Last Air Date                  |
+| `watched.asc`<br>`watched.desc`               | Sort by Last Watched Date              |
+| `rating.asc`<br>`rating.desc`                 | Sort by Users Rating                   |
+| `download.asc`<br>`download.desc`             | Sort by Downloaded                     |
+| `usort.asc`<br>`usort.desc`                   | Sort by User Sort                      |
+| `added.asc`<br>`added.desc`                   | Sort by Date Added                     |
+| `runtime.asc`<br>`runtime.desc`               | Sort by Runtime                        |
 | `budget.asc`<br>`budget.desc`                 | Sort by Budget                         |
 | `revenue.asc`<br>`revenue.desc`               | Sort by Revenue                        |
-| `added.asc`<br>`added.desc`                   | Sort by Date Added                     |
+| `title.asc`<br>`title.desc`                   | Sort by Title                          |
 | `random.asc`<br>`random.desc`                 | Sort by Random (Randomized Daily)      |
 
 For these sorts to be reflected in your collection you must use `collection_order: custom`.

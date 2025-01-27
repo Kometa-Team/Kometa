@@ -9,9 +9,9 @@ logger = util.logger
 
 builders = ["mdblist_list"]
 sort_names = [
-    "rank", "score", "score_average", "released", "imdbrating", "imdbvotes", "imdbpopular", "tmdbpopular",
-    "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes", 
-    "updated", "last_air_date", "watched", "rating", "usort", "added", "runtime", "budget", "revenue", "title"
+    "rank", "score", "score_average", "released", "releaseddigital", "imdbrating", "imdbvotes", "imdbpopular",
+    "tmdbpopular", "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes",
+    "last_air_date", "watched", "rating", "download", "usort", "added", "runtime", "budget", "revenue", "title", "random"
 ]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 base_url = "https://mdblist.com/lists"
@@ -197,12 +197,12 @@ class MDBList:
             sort_by = "rank.asc"
             if "sort_by" in dict_methods:
                 if mdb_dict[dict_methods["sort_by"]] is None:
-                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute is blank using score as default")
+                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute is blank using the default rank.asc")
                 elif mdb_dict[dict_methods["sort_by"]].lower() in sort_names:
                     logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} is missing .desc or .asc defaulting to .desc")
                     sort_by = f"{mdb_dict[dict_methods['sort_by']].lower()}.desc"
                 elif mdb_dict[dict_methods["sort_by"]].lower() not in list_sorts:
-                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid score as default. Options: {', '.join(list_sorts)}")
+                    logger.warning(f"{error_type} Warning: mdb_list sort_by attribute {mdb_dict[dict_methods['sort_by']]} not valid using the default rank.asc. Options: {', '.join(list_sorts)}")
                 else:
                     sort_by = mdb_dict[dict_methods["sort_by"]].lower()
             valid_lists.append({"url": mdb_url, "limit": list_count, "sort_by": sort_by})
