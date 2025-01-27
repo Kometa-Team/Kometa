@@ -21,10 +21,11 @@ example of this at the end of the page.
 
 
 Below is a `sonarr` mapping example and the full set of attributes:
-```YAML
+
+```yaml title="config.yml Sonarr sample"
 sonarr:
   url: http://192.168.1.12:32789
-  token: ################################
+  token: 98ab76cd54ef32gh10
   add_missing: false
   add_existing: false
   upgrade_existing: false
@@ -39,7 +40,7 @@ sonarr:
   search: false
   cutoff_search: false
   sonarr_path: /media
-  plex_path: /share/CACHEDEV1_DATA/Multimedia
+  plex_path: /mnt/unionfs/TV
 ```
 
 | Attribute          | Allowed Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Default       |                  Required                  |

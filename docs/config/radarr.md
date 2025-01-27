@@ -20,10 +20,11 @@ At the library level, only those settings which are different to the global sett
 example of this at the end of the page.
 
 Below is a `radarr` mapping example and the full set of attributes:
-```yaml
+
+```yaml title="config.yml Radarr sample"
 radarr:
   url: http://192.168.1.12:32788
-  token: ################################
+  token: 12ab34cd56ef78gh910
   add_missing: false
   add_existing: false
   upgrade_existing: false
@@ -35,7 +36,7 @@ radarr:
   tag: kometa
   search: false
   radarr_path: /media
-  plex_path: /share/CACHEDEV1_DATA/Multimedia
+  plex_path: /mnt/unionfs/Movies
 ```
 
 | Attribute          | Allowed Values                                                                                                                                                                                                                                                                                            | Default     |                  Required                  |

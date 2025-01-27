@@ -5,12 +5,11 @@ GitHub.
 
 Requests made with a GitHub token have a higher rate limit than anonymous requests.
 
-A `github` mapping is in the root of the config file.
+A `github` mapping is in the root of the config file, sampled below.
 
-Below is a `github` mapping example and the full set of attributes:
-```yaml
+```yaml title="config.yml GitHub sample"
 github:
-  token: ################################
+  token: thisismytoken
 ```
 
 | Attribute          | Allowed Values                                                             | Default |                  Required                  |

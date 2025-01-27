@@ -2,12 +2,11 @@
 
 Configuring [OMDb](https://www.omdbapi.com/) is optional but can allow you to mass edit metadata using IMDb.
 
-A `omdb` mapping is in the root of the config file.
+A `omdb` mapping is in the root of the config file sampled below.
 
-Below is a `omdb` mapping example and the full set of attributes:
-```yaml
+```yaml title="config.yml OMDb sample"
 omdb:
-  apikey: ########
+  apikey: 1a2b3c4d
   cache_expiration: 60
 ```
 

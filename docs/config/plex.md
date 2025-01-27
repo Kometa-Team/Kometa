@@ -9,9 +9,7 @@ Filling in your [Plex](https://www.plex.tv/) URL and Token is mandatory as Komet
 A `plex` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify 
 the `plex` mapping individually per library.
 
-Below is a `plex` mapping example and the full set of attributes:
-
-```yaml
+```yaml title="config.yml Plex sample"
 plex:
   url: http://192.168.1.12:32400
   token: ####################
@@ -47,7 +45,7 @@ If you set `optimize: true`, you may find that Plex becomes temporarily unrespon
 The below config.yml extract details how to set up multiple Plex servers within the one Kometa instance, in this example 
 there are two plex servers which are receiving the same Collection File:
 
-```yaml
+```yaml title="config.yml multi-Plex instances"
 libraries:
   Movies:
     collection_files:
