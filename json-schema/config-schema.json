@@ -657,7 +657,7 @@
             "properties": {
                 "cache": {
                     "type": "boolean",
-                    "description": "Used to control Kometa's cache database.\nAllow Plex Meta Manager to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
+                    "description": "Used to control Kometa's cache database.\nAllow Kometa to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
                 },
                 "cache_expiration": {
                     "type": "integer",
@@ -759,11 +759,11 @@
                     "type": "boolean"
                 },
                 "show_unmanaged": {
-                    "description": "Used to show collections not managed by Kometa.\nList all collections not managed by Plex Meta Manager at the end of each run.",
+                    "description": "Used to show collections not managed by Kometa.\nList all collections not managed by Kometa at the end of each run.",
                     "type": "boolean"
                 },
                 "show_unconfigured": {
-                    "description": "Used to show collections not in the current run.\nList all collections not configured in the current Plex Meta Manager run at the end of each run.",
+                    "description": "Used to show collections not in the current run.\nList all collections not configured in the current Kometa run at the end of each run.",
                     "type": "boolean"
                 },
                 "show_filtered": {
@@ -830,7 +830,7 @@
                         },
                         {
                             "type": "string",
-                            "pattern": "^(\\d+)(,(\\d+))*$"
+                            "pattern": "^\\d{1,8}(\\s*,\\s*\\d{1,8})*$"
                         },
                         {
                             "type": "integer"
@@ -845,13 +845,13 @@
                         },
                         {
                             "type": "string",
-                            "pattern": "^(tt\\d{7})(,(tt\\d{7}))*$"
+                            "pattern": "^(tt\\d{7,8})(,(tt\\d{7,8}))*$"
                         },
                         {
                             "type": "array",
                             "items": {
                                 "type": "string",
-                                "pattern": "^tt\\d{7}$"
+                                "pattern": "^tt\\d{7,8}$"
                             },
                             "minItems": 1
                         }
@@ -1584,7 +1584,7 @@
                             "$ref": "#/definitions/operations"
                         },
                         "library_name": {
-                            "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Plex Meta Manager to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
+                            "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Kometa to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
                             "type": "string"
                         },
                         "report_path": {
@@ -2169,7 +2169,7 @@
             "placeholder_imdb_id": {
                 "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
                 "type": "string",
-                "pattern": "^tt\\d{7}$"
+                "pattern": "^tt\\d{7,8}$"
             }
             },
             "required": [],
