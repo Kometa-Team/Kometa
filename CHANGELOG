@@ -77,4 +77,4 @@ Fixes an issue where `show_missing` would display missing movies against show li
 Fixed an OMDb API issue where API key would intermittently be treated as invalid
 Fixed an issue where Kometa would try to upload and cache images larger than Plex allows (10mb is the upper limit)
 Fixes an issue where `use_subtitles` would ignore `flag_alignment: left`
-Fixed typo `radarr_tag_list` instead of `radarr_taglist` in `builder.py` (line 62) causing `Collection Error: radarr_taglist attribute is blank`
+Fixed typo `radarr_tag_list` instead of `radarr_taglist` in `builder` module (line 62) causing `Collection Error: radarr_taglist attribute is blank`
