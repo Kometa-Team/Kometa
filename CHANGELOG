@@ -26,6 +26,7 @@ Add `minimum_items_<<key>>` to universe Default file
 Added workaround to `Streaming` for TMDb issue with TMDb Discover
 
 # Bug Fixes
+Fixed `radarr_tag_list` typo in `builder.py`
 Fixed multiple anime `int()` Errors
 Fixed #2100 `verify_ssl` wasn't working when downloading images
 Fixed an issue with `delete_collections` where items were being deleted if they only matched one criteria vs all criteria
