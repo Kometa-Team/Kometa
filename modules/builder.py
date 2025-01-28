@@ -59,7 +59,7 @@ item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_tit
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh", "item_analyze"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
-none_builders = ["radarr_tag_list", "sonarr_taglist"]
+none_builders = ["radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
     "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
