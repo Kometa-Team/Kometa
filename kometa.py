@@ -1004,9 +1004,9 @@ def run_playlists(config):
                     continue
 
             if "name_mapping" in playlist_attrs and playlist_attrs["name_mapping"]:
-                playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"], config.operating_system_type)
+                playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"], config.general['operating_system_type'])
             else:
-                playlist_log_name, output_str = util.validate_filename(mapping_name, config.operating_system_type)
+                playlist_log_name, output_str = util.validate_filename(mapping_name, config.general['operating_system_type'])
             #logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
