@@ -140,9 +140,9 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [int(value)]
 
-def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True):
+def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
     if split is True:               split = ","
-    if data is None:                return None
+    if data is None:                return None if return_none else []
     elif isinstance(data, list):    list_data = data
     elif isinstance(data, dict):    return [data]
     elif split is False:            list_data = [str(data)]

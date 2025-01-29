@@ -1356,7 +1356,7 @@ class CollectionBuilder:
         elif method_name == "radarr_tag":
             self.radarr_details["tag"] = util.get_list(method_data, lower=True)
         elif method_name == "radarr_taglist":
-            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "radarr_all":
             self.builders.append((method_name, True))
 
@@ -1378,7 +1378,7 @@ class CollectionBuilder:
         elif method_name == "sonarr_tag":
             self.sonarr_details["tag"] = util.get_list(method_data, lower=True)
         elif method_name == "sonarr_taglist":
-            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "sonarr_all":
             self.builders.append((method_name, True))
 
