@@ -59,7 +59,7 @@ item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_tit
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh", "item_analyze"] + item_false_details
 item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
-none_builders = ["radarr_tag_list", "sonarr_taglist"]
+none_builders = ["radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
     "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
@@ -1356,7 +1356,7 @@ class CollectionBuilder:
         elif method_name == "radarr_tag":
             self.radarr_details["tag"] = util.get_list(method_data, lower=True)
         elif method_name == "radarr_taglist":
-            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "radarr_all":
             self.builders.append((method_name, True))
 
@@ -1378,7 +1378,7 @@ class CollectionBuilder:
         elif method_name == "sonarr_tag":
             self.sonarr_details["tag"] = util.get_list(method_data, lower=True)
         elif method_name == "sonarr_taglist":
-            self.builders.append((method_name, util.get_list(method_data, lower=True)))
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "sonarr_all":
             self.builders.append((method_name, True))
 
