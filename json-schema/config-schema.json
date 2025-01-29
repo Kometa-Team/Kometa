@@ -782,6 +782,11 @@
                     "description": "Used to show missing items from collections or playlists.\nWhile show_missing is true items missing from collections or playlists will be displayed.",
                     "type": "boolean"
                 },
+                "operating_system_type": {
+                    "description": "Used to set the operating system type defaults to universal.\nSet the operating system type to either 'Linux', 'Windows', 'macOS', 'POSIX', 'universal'.\nUsed for improving/extending the validation of filenames and paths, taking the operating system into account.",
+                    "type": "string",
+                    "enum": ["Linux", "Windows", "macOS", "POSIX", "universal"] 
+                },
                 "show_missing_assets": {
                     "description": "Used to print a message when assets are missing.\nDisplay missing asset warnings for items, collections, and playlists.",
                     "type": "boolean"

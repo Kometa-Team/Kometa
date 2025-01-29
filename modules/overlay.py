@@ -174,7 +174,7 @@ class Overlay:
             if not os.path.exists(library.overlay_folder) or not os.path.isdir(library.overlay_folder):
                 os.makedirs(library.overlay_folder, exist_ok=False)
                 logger.info(f"Creating Overlay Folder found at: {library.overlay_folder}")
-            clean_image_name, _ = util.validate_filename(self.name)
+            clean_image_name, _ = util.validate_filename(self.name, library.operating_system_type)
             image_path = os.path.join(library.overlay_folder, f"{clean_image_name}.png")
             if os.path.exists(image_path):
                 os.remove(image_path)
@@ -308,7 +308,7 @@ class Overlay:
                 self.vertical_offset = 0
         else:
             if not self.path:
-                clean_name, _ = util.validate_filename(self.name)
+                clean_name, _ = util.validate_filename(self.name, self.library.operating_system_type)
                 self.path = os.path.join(library.overlay_folder, f"{clean_name}.png")
             if not os.path.exists(self.path):
                 raise Failed(f"Overlay Error: Overlay Image not found at: {self.path}")

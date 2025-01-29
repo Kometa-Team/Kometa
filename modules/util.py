@@ -243,11 +243,11 @@ def regex_first_int(data, id_type, default=None):
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
-def validate_filename(filename):
-    if is_valid_filename(str(filename), "auto"):
+def validate_filename(filename, operating_system="universal"):
+    if is_valid_filename(str(filename), operating_system):
         return filename, None
     else:
-        mapping_name = sanitize_filename(str(filename))
+        mapping_name = sanitize_filename(str(filename), operating_system)
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
 
 def item_title(item):

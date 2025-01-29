@@ -638,6 +638,7 @@ def run_libraries(config):
                 logger.debug(f"Asset Directory: {ad}")
             logger.debug(f"Asset Folders: {library.asset_folders}")
             logger.debug(f"Asset Depth: {library.asset_depth}")
+            logger.debug(f"Operating System Type: {library.operating_system_type}")
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")
             logger.debug(f"Prioritize Assets: {library.prioritize_assets}")
             logger.debug(f"Dimensional Asset Rename: {library.dimensional_asset_rename}")
@@ -819,9 +820,9 @@ def run_collection(config, library, metadata, requested_collections):
             logger.separator(f"Resuming Collections")
 
         if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
-            collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
+            collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"], config.operating_system_type)
         else:
-            collection_log_name, output_str = util.validate_filename(mapping_name)
+            collection_log_name, output_str = util.validate_filename(mapping_name, config.operating_system_type)
         #logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
@@ -1003,9 +1004,9 @@ def run_playlists(config):
                     continue
 
             if "name_mapping" in playlist_attrs and playlist_attrs["name_mapping"]:
-                playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
+                playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"], config.operating_system_type)
             else:
-                playlist_log_name, output_str = util.validate_filename(mapping_name)
+                playlist_log_name, output_str = util.validate_filename(mapping_name, config.operating_system_type)
             #logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None

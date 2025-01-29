@@ -53,7 +53,8 @@ class Library(ABC):
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
         self.default_dir = params["default_dir"]
-        self.mapping_name, output = util.validate_filename(self.original_mapping_name)
+        self.operating_system_type = params["operating_system_type"]
+        self.mapping_name, output = util.validate_filename(self.original_mapping_name, self.operating_system_type)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")

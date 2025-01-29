@@ -1457,7 +1457,7 @@ class Plex(Library):
                 folder_name = item.title
             else:
                 folder_name = item
-            folder_name, _ = util.validate_filename(folder_name)
+            folder_name, _ = util.validate_filename(folder_name, self.operating_system_type)
 
         if not self.asset_folders:
             file_name = folder_name if file_name == "poster" else f"{folder_name}_{file_name}"
