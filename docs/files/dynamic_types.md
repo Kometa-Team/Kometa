@@ -191,6 +191,14 @@ requirements of creating the collection.
 
         **Default:** `latest`
 
+    ??? blank "`increment` - Determines amount incremented.<a class="headerlink" href="#number-increment" title="Permanent link">¶</a>"
+        
+        <div id="number-increment" />Determines the amount incremented from one collection to the other.
+
+        **Allowed Values:** Number greater than 0
+
+        **Default:** `1`
+
     **Valid Library Types:** Movies and Shows
     
     **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that year) 
