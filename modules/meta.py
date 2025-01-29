@@ -1015,6 +1015,7 @@ class MetadataFile(DataFile):
                                     dynamic_data[k] = v
                             award_methods = {am.lower(): am for am in dynamic_data}
                             event_id = util.parse("Config", "event_id", dynamic_data, parent=f"{map_name} data", methods=award_methods, regex=(r"(ev\d+)", "ev0000003"))
+                            increment = util.parse("Config", "increment", dynamic_data, parent=f"{map_name} data", methods=award_methods, datatype="int", default=1, minimum=1) if "increment" in award_methods else 1
                             extra_template_vars["event_id"] = event_id
                             if event_id not in self.config.IMDb.events_validation:
                                 raise Failed(f"Config Error: {map_name} data only specific Event IDs work with imdb_awards. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
@@ -1042,7 +1043,7 @@ class MetadataFile(DataFile):
                                 else:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute invalid: {position_value}")
 
-                            found_options = year_options[get_position("starting") - 1:get_position("ending")]
+                            found_options = year_options[get_position("starting") - 1:get_position("ending"):increment]
 
                             if not found_options:
                                 raise Failed(f"Config Error: {map_name} data starting/ending range found no valid events")
