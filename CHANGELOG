@@ -51,6 +51,7 @@ Added Aymara language with Bolivian flag to audio/subtitle overlay languages (cr
 Added `size` setting to languages overlay to double the overlay size.
 Added `hide_text` setting to languages overlay to only show the flags and hide the country text.
 Added `openmatte` edition to default resolution overlay.
+Added `Metacritic Must See Movies` to `other_chart`.
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder
