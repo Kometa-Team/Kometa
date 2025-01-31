@@ -11,6 +11,10 @@ For this reason, it's generally recommended that you install via Docker rather t
 
 If you have some specific reason to avoid Docker, or you prefer running it as a Python script for some particular reason, then this general recommendation is not aimed at you.  It's aimed at someone who doesn't have an existing compelling reason to choose one over the other.
 
+## There is no UI
+
+Kometa is an inherently technical tool, and as such, it does not have a graphical user interface.  It is run from the command line, and all configuration is done via a `config.yml` file.  Kometa will create a template config when it starts up if one is not found, but you will need to edit it to make it useful.  The [Configuration](../config.md) page describes this file.  
+
 ## Where to install Kometa
 
 Kometa communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Kometa does *not* have to be installed on the same machine as Plex. Kometa does not require [nor would it use] access to the file system behind your Plex libraries.
