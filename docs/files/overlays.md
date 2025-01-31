@@ -66,6 +66,8 @@ tags:
   - runtime
   - runtimeH
   - runtimeM
+  - scale_width
+  - scale_height
   - season_number
   - season_title
   - show_title
@@ -286,6 +288,8 @@ The below attributes are also available for Overlay files, to give more granular
 | `back_line_width`          | Backdrop Line Width for the Text Overlay.<br>**Value:** Integer greater than 0                                                                                                                                                                                                      |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `addon_offset`             | Text Addon Image Offset from the text.<br>**`addon_offset` Only works with text overlays**<br>**Value:** Integer 0 or greater                                                                                                                                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `addon_position`           | Text Addon Image Alignment in relation to the text.<br>**`addon_position` Only works with text overlays**<br>**Values:** `left`, `right`, `top`, `bottom`                                                                                                                           |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `scale_height`             | Height to scale the Image to in the overlay. When `scale_width` is not used with this attribute it will be automatically scaled at the same ratio. (Applies to the addon Image for text overlays)<br>**Value:** Integer greater then 0 or Percent greater then 0%                   | 
+| `scale_width`              | Width to scale the Image to in the overlay. When `scale_height` is not used with this attribute it will be automatically scaled at the same ratio. (Applies to the addon Image for text overlays)<br>**Value:** Integer greater then 0 or Percent greater then 0%                   |
 
 * If `url`, `git`, and `repo` are all not defined then Kometa will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 

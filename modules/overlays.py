@@ -147,7 +147,7 @@ class Overlays:
                                     if cache_key in overlay.int_vars:
                                         cache_value = int(cache_value)
                                     if cache_key in overlay.date_vars:
-                                        real_value = real_value.strftime("%Y-%m-%d")
+                                        real_value = real_value.strftime("%Y-%m-%d") # noqa
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
@@ -217,7 +217,7 @@ class Overlays:
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04bc] = "overlay"
-                                new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.LANCZOS)
+                                new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
                                 if blur_num > 0:
                                     new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
@@ -499,9 +499,9 @@ class Overlays:
                                                 new_poster.paste(overlay_image, (0, 0), overlay_image)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
                                         else:
-                                            new_poster = new_poster.resize(current_overlay.image.size, Image.LANCZOS)
+                                            new_poster = new_poster.resize(current_overlay.image.size, Image.Resampling.LANCZOS)
                                             new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
-                                            new_poster = new_poster.resize((canvas_width, canvas_height), Image.LANCZOS)
+                                            new_poster = new_poster.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
                                 for queue, weights in queue_overlays.items():
                                     cords = self.library.queues[queue]

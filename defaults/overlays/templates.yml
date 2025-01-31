@@ -34,6 +34,8 @@ templates:
       back_padding_<<key>>: <<back_padding>>
       back_line_color_<<key>>: <<back_line_color>>
       back_line_width_<<key>>: <<back_line_width>>
+      scale_width_<<key>>: <<scale_width>>
+      scale_height_<<key>>: <<scale_height>>
       final_name: <<overlay_name>>
       builder_level: <<overlay_level>>
     optional:
@@ -66,6 +68,8 @@ templates:
       - back_line_width
       - addon_offset
       - addon_position
+      - scale_width
+      - scale_height
     conditionals:
       final_use:
         conditions:
@@ -109,3 +113,5 @@ templates:
       back_line_width: <<back_line_width_<<key>>>>
       addon_offset: <<addon_offset>>
       addon_position: <<addon_position>>
+      scale_width: <<scale_width_<<key>>>>
+      scale_height: <<scale_height_<<key>>>>

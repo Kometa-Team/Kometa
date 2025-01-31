@@ -163,6 +163,8 @@ class Overlay:
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
             raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset must be used together")
 
+        self.scale_width, self.scale_height = util.parse_scale(self.data, "overlay")
+
         def color(attr):
             if attr in self.data and self.data[attr]:
                 try:
@@ -260,6 +262,15 @@ class Overlay:
                 self.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
                     self.image = Image.open(self.path).convert("RGBA")
+                    if self.scale_width or self.scale_height:
+                        base_width, base_height = self.image.size
+                        width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                        height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                        if height and not width:
+                            width = int(base_width * height / base_height)
+                        if width and not height:
+                            height = int(base_height * width / base_width)
+                        self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
                     if self.cache:
                         self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
@@ -344,6 +355,15 @@ class Overlay:
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
                 self.image = Image.open(self.path).convert("RGBA")
+                if self.scale_width or self.scale_height:
+                    base_width, base_height = self.image.size
+                    width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                    height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                    if height and not width:
+                        width = int(base_width * height / base_height)
+                    if width and not height:
+                        height = int(base_height * width / base_width)
+                    self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
                 if self.has_coordinates():
                     self.backdrop_box = self.image.size
                 if self.cache:
@@ -437,8 +457,8 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding,
-                      self.back_line_color, self.back_line_width, self.stroke_color, self.stroke_width]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color,
+                      self.back_line_width, self.stroke_color, self.stroke_width, self.scale_width, self.scale_height]:
             if value is not None:
                 output += f"{value}"
         return output
