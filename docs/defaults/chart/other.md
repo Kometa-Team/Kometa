@@ -12,12 +12,13 @@ Recommendations: The `StevenLu's Popular Movies` and `Top 10 Pirated Movies of t
 
 ## <a id="collection_section"></a>Collections Section 020
 
-| Collection                          | Key           | Description                                          |
-|:------------------------------------|:--------------|:-----------------------------------------------------|
-| `AniDB Popular`                     | `anidb`       | Collection of the most Popular Anime on AniDB.       |
-| `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
-| `StevenLu's Popular Movies`         | `stevenlu`    | Collection of StevenLu's Popular Movies.             |
-| `Top 10 Pirated Movies of the Week` | `pirated`     | Collection of the Top 10 Pirated Movies of the Week. |
+| Collection                          | Key           | Description                                            |
+|:------------------------------------|:--------------|:-------------------------------------------------------|
+| `AniDB Popular`                     | `anidb`       | Collection of the most Popular Anime on AniDB.         |
+| `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.     |
+| `Metacritic Must See Movies`        | `metacritic`  | Collection of Metacritic Must See Movies.              |
+| `StevenLu's Popular Movies`         | `stevenlu`    | Collection of StevenLu's Popular Movies.               |
+| `Top 10 Pirated Movies of the Week` | `pirated`     | Collection of the Top 10 Pirated Movies of the Week.   |
 
 ## Config
 
