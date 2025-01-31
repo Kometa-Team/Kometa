@@ -66,3 +66,15 @@ collections:
         translation_key: pirated_popular
       - name: arr
       - name: custom
+
+  Metacritic Must See:
+    variables:
+      style: color
+      key: metacritic
+    mdblist_list: https://mdblist.com/lists/k0meta/metacriticmustseemovies
+    template:
+      - name: shared
+        allowed_libraries: movie
+        translation_key: metacritic_must_see
+      - name: arr
+      - name: custom
