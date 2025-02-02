@@ -234,6 +234,8 @@ psutil
 puid
 pywin
 qnap
+Quickstart
+quickstart
 radarr
 razzie
 razzies
