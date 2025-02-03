@@ -46,6 +46,13 @@ filetype_list = {
     "webp_lossy": "Use Lossy WEBP files for saving Overlays",
     "webp_lossless": "Use Lossless WEBP files for saving Overlays"
 }
+operating_system_platforms = {
+    "universal": "Universal Platform available to all OS",
+    "Linux": "Linux Platform",
+    "Windows": "Windows OS",
+    "macOS": "MAC OS",
+    "POSIX": "POSIX",
+}
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
@@ -481,7 +488,7 @@ class ConfigFile:
             "prioritize_assets": check_for_attribute(self.data, "prioritize_assets", parent="settings", var_type="bool", default=False),
             "dimensional_asset_rename": check_for_attribute(self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False),
             "download_url_assets": check_for_attribute(self.data, "download_url_assets", parent="settings", var_type="bool", default=False),
-            "operating_system_type": check_for_attribute(self.data, "operating_system_type", parent="settings", default="universal"),
+            "operating_system_type": check_for_attribute(self.data, "operating_system_type", test_list=operating_system_platforms, parent="settings", default="universal"),
             "show_missing_assets": check_for_attribute(self.data, "show_missing_assets", parent="settings", var_type="bool", default=True),
             "show_missing_season_assets": check_for_attribute(self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False),
             "show_missing_episode_assets": check_for_attribute(self.data, "show_missing_episode_assets", parent="settings", var_type="bool", default=False),
@@ -895,7 +902,7 @@ class ConfigFile:
                 params["show_unfiltered"] = check_for_attribute(lib, "show_unfiltered", parent="settings", var_type="bool", default=self.general["show_unfiltered"], do_print=False, save=False)
                 params["show_options"] = check_for_attribute(lib, "show_options", parent="settings", var_type="bool", default=self.general["show_options"], do_print=False, save=False)
                 params["show_missing"] = check_for_attribute(lib, "show_missing", parent="settings", var_type="bool", default=self.general["show_missing"], do_print=False, save=False)
-                params["operating_system_type"] = check_for_attribute(lib, "operating_system_type", parent="settings",  default=self.general["operating_system_type"], do_print=False, save=False)
+                params["operating_system_type"] = check_for_attribute(lib, "operating_system_type", parent="settings",  default=self.general["operating_system_type"], test_list=operating_system_platforms, do_print=False, save=False)
                 params["show_missing_assets"] = check_for_attribute(lib, "show_missing_assets", parent="settings", var_type="bool", default=self.general["show_missing_assets"], do_print=False, save=False)
                 params["save_report"] = check_for_attribute(lib, "save_report", parent="settings", var_type="bool", default=self.general["save_report"], do_print=False, save=False)
                 params["missing_only_released"] = check_for_attribute(lib, "missing_only_released", parent="settings", var_type="bool", default=self.general["missing_only_released"], do_print=False, save=False)
