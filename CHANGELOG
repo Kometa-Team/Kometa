@@ -53,6 +53,8 @@ Added `size` setting to languages overlay to double the overlay size.
 Added `hide_text` setting to languages overlay to only show the flags and hide the country text.
 Added `openmatte` edition to default resolution overlay.
 Added `Metacritic Must See Movies` to `other_chart`.
+Moved several `universe` and `playlist` default lists away from Trakt and over to IMDb and MDBList
+Removed default emojis from `seasonal` due to Plex issue with emojis and updated some lists
 
 # Bug Fixes
 Fixed the `cast` search option for the `imdb_search` builder

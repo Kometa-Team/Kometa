@@ -5,18 +5,18 @@ show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
 
-??? example "Default Template Variable `trakt_list` (click to expand) <a class="headerlink" href="#trakt-list" title="Permanent link">¶</a>"
+??? example "Default Template Variable `imdb_list` (click to expand) <a class="headerlink" href="#imdb-list" title="Permanent link">¶</a>"
 
-    <div id="trakt-list" />
+    <div id="imdb-list" />
 
     ???+ tip 
     
-        Pass `trakt_list_<<key>>` to the file as template variables to change this value per playlist.
+        Pass `imdb_list_<<key>>` to the file as template variables to change this value per playlist.
 
         ```yaml
           - default: playlists
             template_variables:
-              trakt_list_startrek: https://trakt.tv/users/username/lists/startrek
+              imdb_list_startrek: https://www.imdb.com/list/ls525763569/
         ```
 
     ```yaml
@@ -25,7 +25,32 @@ If you want to customize these values, use the methods described above.
       comments=false
       preserve-includer-indent=true
       dedent=true
-      start="conditions:"
-      end="default:"
+      start="# check1"
+      end="# check2"
+    %}
+    ```
+
+??? example "Default Template Variable `mdblist_list` (click to expand) <a class="headerlink" href="#mdblist-list" title="Permanent link">¶</a>"
+
+    <div id="mdblist-list" />
+
+    ???+ tip 
+    
+        Pass `mdblist_list_<<key>>` to the file as template variables to change this value per playlist.
+
+        ```yaml
+          - default: playlists
+            template_variables:
+              mdblist_list_startrek: https://mdblist.com/lists/angryduckftw/star-trek
+        ```
+
+    ```yaml
+    {%
+      include-markdown "../../../defaults/playlist.yml" 
+      comments=false
+      preserve-includer-indent=true
+      dedent=true
+      start="# check3"
+      end="# check4"
     %}
     ```

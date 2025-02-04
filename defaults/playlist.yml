@@ -11,31 +11,39 @@ external_templates:
 templates:
   playlist:
     conditionals:
-      trakt_list:
+      imdb_list:
         conditions:
+        # check1
           - key: arrow
-            value: https://trakt.tv/users/donxy/lists/arrowverse
-          - key: mcu
-            value: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
-          - key: dcau
-            value: https://trakt.tv/users/donxy/lists/dc-animated-series-universe
-          - key: pokemon
-            value: https://trakt.tv/users/munch54/lists/pokemon-watching-order
-          - key: startrek
-            value: https://trakt.tv/users/goodevilgenius/lists/star-trek-chronology
-          - key: starwars
-            value: https://trakt.tv/users/xrayblaster/lists/star-wars-chronological-order
+            value: https://www.imdb.com/list/ls547852883/
           - key: clonewars
-            value: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
+            value: https://www.imdb.com/list/ls544963772/
+          - key: dcau
+            value: https://www.imdb.com/list/ls566357882/
+          - key: starwars
+            value: https://www.imdb.com/list/ls501373412/
           - key: xmen
-            value: https://trakt.tv/users/alan-pittflix/lists/x-men
+            value: https://www.imdb.com/list/ls567618635/
+        # check2
+      mdblist_list:
+        conditions:
+        # check3
           - key: dragonball
-            value: https://trakt.tv/users/grawler/lists/dragon-ball-in-order
+            value: https://mdblist.com/lists/k0meta/external/46559
+          - key: mcu
+            value: https://mdblist.com/lists/k0meta/external/46496
+          - key: pokemon
+            value: https://mdblist.com/lists/k0meta/external/46555
+          - key: startrek
+            value: https://mdblist.com/lists/k0meta/external/46548
+        # check4
     default:
       libraries: Movies, TV Shows
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       trakt_list_<<key>>: <<trakt_list>>
+      imdb_list_<<key>>: <<imdb_list>>
+      mdblist_list_<<key>>: <<mdblist_list>>
       url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/<<mapping_name_encoded>>.jpg
       name_<<key>>: <<mapping_name>>
       sync_to_users_<<key>>: <<sync_to_users>>
@@ -50,6 +58,9 @@ templates:
       - sync_to_users
       - exclude_users
       - delete_playlist
+      - trakt_list
+      - imdb_list
+      - mdblist_list
     run_definition:
       - <<use_<<key>>>>
     ignore_ids: <<ignore_ids>>
@@ -57,6 +68,8 @@ templates:
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
     cache_builders: 1
     sync_to_users: <<sync_to_users_<<key>>>>
     exclude_users: <<exclude_users_<<key>>>>
