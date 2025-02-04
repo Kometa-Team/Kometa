@@ -25,9 +25,9 @@ If you want to customize these values, use the methods described above.
     %}
     ```
 
-??? example "Default Template Variable`trakt_url` (click to expand) <a class="headerlink" href="#trakt-url" title="Permanent link">¶</a>"
+??? example "Default Template Variable`imdb_url` (click to expand) <a class="headerlink" href="#imdb-url" title="Permanent link">¶</a>"
 
-    <div id="trakt-url" />
+    <div id="imdb-url" />
 
     ```{ .dtd .no-copy }
     ###############################################################################
