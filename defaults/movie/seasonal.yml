@@ -23,6 +23,7 @@ templates:
       imdb_search_<<key>>: <<imdb_search>>
       trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
+      delete_collections_named_<<key>>: <<delete_collections_named>>
       letterboxd_list_<<key>>: <<letterboxd_list>>
       summary_<<key>>: <<summary_format>>
       name_<<key>>: <<name_format>>
@@ -43,6 +44,7 @@ templates:
       - key_name
       - translation_key
       - limit
+      - delete_collections_named
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -56,6 +58,7 @@ templates:
     imdb_list: <<imdb_list_<<key>>>>
     imdb_search: <<imdb_search_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
+    delete_collections_named: <<delete_collections_named_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     letterboxd_list: <<letterboxd_list_<<key>>>>
     cache_builders: 1
@@ -240,6 +243,26 @@ dynamic_collections:
         latinx:
           - https://mdblist.com/lists/k0meta/latinx-heritage-month
       # check8
+      delete_collections_named:
+        years: 🎊 New Year's Day Movies
+        valentine: 💘 Valentine's Day Movies
+        patrick: ☘ St. Patrick's Day Movies
+        easter: 🐰 Easter Movies
+        mother: 🤱 Mother's Day Movies
+        memorial: 🪖 Memorial Day Movies
+        father: 👨 Father's Day Movies
+        independence: 🎆 Independence Day Movies
+        labor: ⚒ Labor Day Movies
+        halloween: 🎃 Halloween Movies
+        veteran: 🎖 Veteran's Day Movies
+        thanksgiving: 🦃 Thanksgiving Movies
+        christmas: 🎅 Christmas Movies
+        aapi: 🌊🌺 Asian American Pacific Islander Movies
+        disabilities: ♿ Disability Month Movies
+        black_history: ✊ 🏿 Black History Month Movies
+        lgbtq: L🏳️‍🌈 LGBTQ Month Movies
+        latinx: 🪅 National Hispanic Heritage Movies
+        women: 🚺 Women's History Month Movies
       visible_home:
         default: true
       visible_shared:
