@@ -20,37 +20,6 @@
     %}
     ```
 
-??? example "Default Template Variable `emoji` (click to expand) <a class="headerlink" href="#emoji" title="Permanent link">¶</a>"
-
-    <div id="emoji" />
-    
-    ???+ tip 
-    
-        Pass `emoji_<<key>>` to the file as template variables to change this value per collection.
-
-        ```yaml
-          - default: seasonal
-            template_variables:
-              emoji_easter: "🥚 "
-        ```
-
-    ```{ .dtd .no-copy }
-    ###############################################################################
-    ################################## IMPORTANT ##################################
-    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
-    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
-    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
-    ###############################################################################
-    {%    
-      include-markdown "../../../../defaults/movie/seasonal.yml" 
-      comments=false
-      preserve-includer-indent=true
-      dedent=true
-      start="# check1"
-      end="# check2"
-    %}
-    ```
-
 ??? example "Default Template Variable `schedule` (click to expand) <a class="headerlink" href="#schedule" title="Permanent link">¶</a>"
 
     <div id="schedule" />
@@ -210,38 +179,5 @@
       dedent=true
       start="# check7"
       end="# check8"
-    %}
-    ```
-
-??? example "Default Template Variable `trakt_list` (click to expand) <a class="headerlink" href="#trakt-list" title="Permanent link">¶</a>"
-
-    <div id="trakt-list" />
-    
-    ???+ tip 
-    
-        Pass `trakt_list_<<key>>` to the file as template variables to change this value per collection.
-
-        ```yaml
-          - default: seasonal
-            template_variables:
-              trakt_list_mother:  
-                - https://trakt.tv/users/robertsnorlax/lists/arizona-westerns
-                - https://trakt.tv/users/pullsa/lists/the-96th-academy-awards-oscars-2024
-        ```
-
-    ```{ .dtd .no-copy }
-    ###############################################################################
-    ################################## IMPORTANT ##################################
-    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
-    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
-    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
-    ###############################################################################
-    {%    
-      include-markdown "../../../../defaults/movie/seasonal.yml" 
-      comments=false
-      preserve-includer-indent=true
-      dedent=true
-      start="# check8"
-      end="# check9"
     %}
     ```
