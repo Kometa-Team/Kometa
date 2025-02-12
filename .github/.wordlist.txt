@@ -164,7 +164,7 @@ md
 mdb
 mdblist
 mdblists
-MDBList's
+mdblist's
 mediastinger
 mediastingers
 mediux
