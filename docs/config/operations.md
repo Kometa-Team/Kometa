@@ -43,7 +43,7 @@ You can create individual blocks of operations by using a list under `operations
 
 ## A Note on Data Sources
 
-Several of these operations use data from external sources such as MDBList.  Some of these sources have free and paid tiers of access, Your entire library may not be able to be updated in a single run on a free tier; you may need to make multiple runs over some number of days.  For example, MDBList's free tier is limited [at time of writing] to 1000 API requests daily.  Changes in external site paid/free status and limits are not under Kometa's control.
+Several of these operations use data from external sources such as MDBList. Some of these sources have free and paid tiers of access. Your entire library may not be able to be updated in a single run on a free tier; you may need to make multiple runs over some number of days. For example, MDBList's free tier is limited [at time of writing] to 1000 API requests daily. Changes in external site paid/free status and limits are not under Kometa's control.
 
 ## Operation Attributes
 
