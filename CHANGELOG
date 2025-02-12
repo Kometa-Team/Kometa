@@ -83,3 +83,6 @@ Fixed an issue where Kometa would try to upload and cache images larger than Ple
 Fixes an issue where `use_subtitles` would ignore `flag_alignment: left`
 Fixed typo `radarr_tag_list` instead of `radarr_taglist` in `builder` module causing `Collection Error: radarr_taglist attribute is blank`
 Fixed NoneError when using a blank `radarr_taglist` or `sonarr_taglist`.
+Fixes an issue with boolean filter matching.
+Fixes an issue where tge decade default collection names were incorrect.
+Fixes the playlist default to automatically work with a supplied list.

@@ -17,9 +17,9 @@ jobs:
           webhook_id_token: ${{ secrets.RELEASE_WEBHOOK }}
           release: true
           title: Release VERSION
-          message: "<@&967002324646113290> - A new version of Kometa has been released and is available to all users.\n\nWe **strongly** recommend users who previously switched to the `nightly` or `develop` branches to resolve any previous issues to now switch back to the `latest` branch now."
+          message: "${{ vars.MASTER_ROLE }} - A new version of ${{ vars.NAME }} has been released and is available to all users.\n\nWe **strongly** recommend users who previously switched to the `nightly` or `develop` branches to resolve any previous issues to now switch back to the `latest` branch now."
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
           avatar_url: ${{ vars.BOT_IMAGE }}
-          author: Kometa Release
+          author: ${{ vars.NAME }} Release
           author_icon_url: ${{ vars.RELEASE_IMAGE }}
