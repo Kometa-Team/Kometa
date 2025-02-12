@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Spellcheck on changed files
         id: spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.46.0
+        uses: rojopolis/spellcheck-github-actions@0.47.0
         with:
           task_name: Markdown
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
