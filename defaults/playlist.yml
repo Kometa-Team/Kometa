@@ -11,7 +11,7 @@ external_templates:
 templates:
   playlist:
     conditionals:
-      imdb_list:
+      imdb_url:
         conditions:
         # check1
           - key: arrow
@@ -25,7 +25,13 @@ templates:
           - key: xmen
             value: https://www.imdb.com/list/ls567618635/
         # check2
-      mdblist_list:
+      imdb_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            trakt_list_<<key>>.exists: false
+            value: <<imdb_url>>
+      mdblist_url:
         conditions:
         # check3
           - key: dragonball
@@ -37,6 +43,12 @@ templates:
           - key: startrek
             value: https://mdblist.com/lists/k0meta/external/46548
         # check4
+      mdblist_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            trakt_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            value: <<mdblist_url>>
     default:
       libraries: Movies, TV Shows
       item_radarr_tag_<<key>>: <<item_radarr_tag>>

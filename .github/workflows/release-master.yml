@@ -53,7 +53,7 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add VERSION
-            git commit -m "Kometa Release ${NEW_VERSION}"
+            git commit -m "${{ vars.NAME }} Release ${NEW_VERSION}"
             git push origin nightly
             git push origin refs/heads/nightly:refs/heads/develop
             git push origin refs/heads/nightly:refs/heads/master
@@ -63,7 +63,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -77,7 +77,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.NAME }} master release ${{ steps.release.outputs.new_ver }}: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}

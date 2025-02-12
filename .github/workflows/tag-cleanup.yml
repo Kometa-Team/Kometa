@@ -1,0 +1,33 @@
+name: Tag Cleanup
+
+on:
+  pull_request_target:
+    types: [closed, unlabeled]
+
+jobs:
+
+  tag-cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed' || (contains(github.event.pull_request.labels.*.name, 'docker') == false && contains(github.event.pull_request.labels.*.name, 'tester') == false)
+    steps:
+
+      - name: Get Tag Name
+        id: get-tag-name
+        run: |
+          branch_name=${{ github.event.pull_request.head.ref }}
+          repo_name=${{ github.event.pull_request.head.repo.full_name }}
+          base_name="${repo_name%/*}"
+          if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+              tag_name="${base_name}"
+          else
+              tag_name="${branch_name}"
+          fi
+          echo "tag-name=${tag_name}" >> $GITHUB_OUTPUT
+
+      - name: remove tag
+        run: |
+          HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKER_HUB_USERNAME }}\", \"password\": \"${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}\"}" https://hub.docker.com/v2/users/login/ | jq -r .token)
+          curl -i -X DELETE \
+          -H "Accept: application/json" \
+          -H "Authorization: JWT $HUB_TOKEN" \
+          https://hub.docker.com/v2/repositories/${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}/tags/${{ steps.get-tag-name.outputs.tag_name }}/

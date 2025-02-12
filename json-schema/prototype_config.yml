@@ -432,6 +432,7 @@ settings:
   show_unmanaged: true
   show_unconfigured: true
   show_filtered: false
+  show_unfiltered: false
   show_options: false
   show_missing: true
   show_missing_assets: true
@@ -475,7 +476,7 @@ tautulli:                        # Can be individually specified per library as 
   url: http://192.168.1.12:8181
   apikey: Enter Tautulli API Key
 github:
-  token: Enter GitHub personal access token
+  token: Enter GitHub Personal Access Token
 omdb:
   apikey: Enter OMDb API Key
   cache_expiration: 60
@@ -486,11 +487,11 @@ notifiarr:
   apikey: Enter Notifiarr API Key
 gotify:
   url: http://192.168.1.12:80
-  token: Enter Gotify token
+  token: Enter Gotify Token
 ntfy:
   url: http://192.168.1.12:80
-  token: Enter ntfy access token
-  topic: Enter ntfy topic
+  token: Enter ntfy Access Token
+  topic: Enter ntfy Topic
 anidb:                           # Not required for AniDB builders unless you want mature content
   username: Enter AniDB Username
   password: Enter AniDB Password

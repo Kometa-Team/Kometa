@@ -96,6 +96,7 @@ Supported library types: Movie & Show
 | Limburgish               | `li`  | `17`   | `be`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Irish                    | `ga`  | `18`   | `ie`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Aymara                   | `ay`  | `19`   | `bo`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Lao                      | `lo`  | `9`    | `la`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 ??? tip "Square Style (click to expand)"

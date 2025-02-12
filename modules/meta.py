@@ -69,7 +69,7 @@ class DataFile:
     def __init__(self, config, file_type, path, temp_vars, asset_directory, data_type):
         if file_type != "Data":
             logger.info("")
-            logger.info(f"Loading {data_type} {file_type}: {path}")
+            logger.separator(f"Loading {data_type} {file_type}: {path}")
             logger.info("")
         self.config = config
         self.library = None
@@ -1154,14 +1154,15 @@ class MetadataFile(DataFile):
                                     auto_list[k] = v
                         custom_keys = True
                         if "custom_keys" in self.temp_vars:
-                            custom_keys = util.parse("Config", "custom_keys", self.temp_vars["custom_keys"], parent="template_variables", default=custom_keys)
+                            custom_keys = util.parse("Config", "custom_keys", self.temp_vars["custom_keys"], parent="template_variables", datatype="bool", default=custom_keys)
                         elif "custom_keys" in methods:
-                            custom_keys = util.parse("Config", "custom_keys", dynamic, parent=map_name, methods=methods, default=custom_keys)
+                            custom_keys = util.parse("Config", "custom_keys", dynamic, parent=map_name, methods=methods, datatype="bool", default=custom_keys)
                         for add_key, combined_keys in addons.items():
                             if add_key not in all_keys and add_key not in og_exclude:
                                 final_keys = [ck for ck in combined_keys if ck in all_keys]
                                 if custom_keys and final_keys:
-                                    auto_list[add_key] = add_key
+                                    if add_key not in auto_list:
+                                        auto_list[add_key] = add_key
                                     addons[add_key] = final_keys
                                 elif custom_keys:
                                     logger.trace(f"Config Warning: {add_key} Custom Key must have at least one Key")
@@ -1223,7 +1224,7 @@ class MetadataFile(DataFile):
                                 if any([a in str(self.templates[template_name][0]) for a in ["<<value", "<<key", f"<<{auto_type}"]]):
                                     has_var = True
                             if not has_var:
-                                raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the template variable <<value>>")
+                                raise Failed(f"Config Error: One {map_name} template: {template_names} is required to have the Template Variable <<value>>")
                         elif auto_type in ["number", "list"]:
                             raise Failed(f"Config Error: {map_name} template required for type: {auto_type}")
                         else:
@@ -2395,7 +2396,7 @@ class OverlayFile(DataFile):
                 }
                 for pk, pv in new_pos.items():
                     if pv is None:
-                        raise Failed(f"Config Error: queue missing {pv} attribute")
+                        raise Failed(f"Config Error: queue missing {pk} attribute")
                 final_queue.append(util.parse_cords(new_pos, f"{queue_name} queue", required=True))
                 if overlay_limit and len(final_queue) >= overlay_limit:
                     break

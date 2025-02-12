@@ -518,3 +518,7 @@ overlays:
   aymara:
     variables: {key: ay, text: AY, weight: 19, country: bo}
     template: [name: flags, name: standard]
+
+  lao:
+    variables: {key: lo, text: LO, weight: 9, country: la}
+    template: [name: flags, name: standard]

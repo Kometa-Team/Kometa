@@ -40,7 +40,7 @@ jobs:
             "BRANCH_NAME=develop"
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: kometateam/kometa:develop
+          tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -49,7 +49,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} develop: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.NANE }} develop: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -63,7 +63,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} develop: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.NANE }} develop: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}
@@ -82,7 +82,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.DEVELOP_WEBHOOK }}
           title: ${{ vars.TEXT_COMMITS }}
-          message: "<@&954835263731949623> - An update to Kometa has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
+          message: "${{ vars.DEVELOP_ROLE }} - An update to ${{ vars.NAME }} has been published and is available to users of the **develop** branch.\n\nWe **strongly** recommend users who previously switched to the `nightly` branch to resolve any previous issues to now switch back to the `develop` branch now."
           commits: "true"
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
