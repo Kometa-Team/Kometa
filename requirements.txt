@@ -5,7 +5,7 @@ num2words==0.5.14
 pathvalidate==3.2.3
 pillow==11.1.0
 PlexAPI==4.16.1
-psutil==6.1.1
+psutil==7.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pywin32==308; sys_platform == 'win32'
