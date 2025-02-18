@@ -1,19 +1,20 @@
 ## This file is a template remove the .template to use the file
 
-## These are the two connections which are required for the script to run
+## Plex and TMDb are the two connections which are required for the script to run
 plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
-  url: http://192.168.1.12:32400
-  token: Enter Plex Token
-  timeout: 60
-  db_cache: 40
   clean_bundles: false
+  db_cache: 40
   empty_trash: false
   optimize: false
+  timeout: 60
+  token: Enter Plex Token
+  url: http://192.168.1.12:32400
   verify_ssl: true
-tmdb:                                # REQUIRED for the script to run
+tmdb:
   apikey: Enter TMDb API Key
-  language: en
   cache_expiration: 60
+  language: en
+  region:
 
 ## At least one library has to be configured for the script to do anything meaningful
 libraries:                           # This is called out once within the config.yml file
@@ -54,54 +55,55 @@ settings:
   - metadata
   - collections
   - overlays
-  cache: true
-  cache_expiration: 60
+  asset_depth: 0
   asset_directory: config/assets
   asset_folders: true
-  asset_depth: 0
+  cache: true
+  cache_expiration: 60
   create_asset_folders: false
-  prioritize_assets: false
-  dimensional_asset_rename: false
-  download_url_assets: false
-  show_missing_season_assets: false
-  show_missing_episode_assets: false
-  show_asset_not_needed: true
-  sync_mode: append
-  minimum_items: 1
+  custom_repo:
   default_collection_order: release
   delete_below_minimum: true
   delete_not_scheduled: false
-  run_again_delay: 2
-  missing_only_released: false
-  only_filter_missing: false
-  show_unmanaged: true
-  show_unconfigured: true
-  show_filtered: false
-  show_unfiltered: false
-  show_options: true
-  show_missing: true
-  show_missing_assets: true
-  save_report: false
-  tvdb_language: eng
+  dimensional_asset_rename: false
+  download_url_assets: false
   ignore_ids:
   ignore_imdb_ids:
   item_refresh_delay: 0
-  playlist_sync_to_users:
-  playlist_exclude_users:
-  playlist_report: false
-  verify_ssl: true
-  custom_repo:
+  minimum_items: 1
+  missing_only_released: false
+  only_filter_missing: false
   overlay_artwork_filetype: webp_lossy
   overlay_artwork_quality: 90
+  playlist_exclude_users:
+  playlist_report: false
+  playlist_sync_to_users:
+  prioritize_assets: false
+  run_again_delay: 2
+  save_report: false
+  show_asset_not_needed: true
+  show_filtered: false
+  show_missing: true
+  show_missing_assets: true
+  show_missing_episode_assets: false
+  show_missing_season_assets: false
+  show_options: true
+  show_unconfigured: true
+  show_unfiltered: false
+  show_unmanaged: true
+  sync_mode: append
+  tvdb_language: eng
+  verify_ssl: true
 webhooks:                            # Can be individually specified per library as well
-  error:
-  version:
-  run_start:
-  run_end:
   changes:
+  delete:
+  error:
+  run_end:
+  run_start:
+  version:
 tautulli:                            # Can be individually specified per library as well
-  url: http://192.168.1.12:8181
   apikey: Enter Tautulli API Key
+  url: http://192.168.1.12:8181
 github:
   token: Enter GitHub Personal Access Token
 omdb:
@@ -113,70 +115,72 @@ mdblist:
 notifiarr:
   apikey: Enter Notifiarr API Key
 gotify:
-  url: http://192.168.1.12:80
   token: Enter Gotify Token
-ntfy:
   url: http://192.168.1.12:80
+ntfy:
   token: Enter ntfy Access Token
   topic: Enter ntfy Topic
+  url: http://192.168.1.12:80
 anidb:                               # Not required for AniDB builders unless you want mature content
-  username: Enter AniDB Username
-  password: Enter AniDB Password
-  client: Enter AniDB Client
-  version: 1
-  language: en
   cache_expiration: 60
+  client: Enter AniDB Client
+  language: en
+  password: Enter AniDB Password
+  username: Enter AniDB Username
+  version: 1
 radarr:                              # Can be individually specified per library as well
-  url: http://192.168.1.12:7878
-  token: Enter Radarr API Key
-  add_missing: false
   add_existing: false
-  upgrade_existing: false
-  monitor_existing: false
-  root_folder_path: "S:/Movies"
-  monitor: true
+  add_missing: false
   availability: announced
-  quality_profile: HD-1080p
-  tag:
-  search: false
-  radarr_path:
-  plex_path:
-sonarr:                              # Can be individually specified per library as well
-  url: http://192.168.1.12:8989
-  token: Enter Sonarr API Key
-  add_missing: false
-  add_existing: false
-  upgrade_existing: false
+  ignore_cache: false
+  monitor: true
   monitor_existing: false
-  root_folder_path: "S:/TV Shows"
-  monitor: all
-  quality_profile: HD-1080p
-  language_profile: English
-  series_type: standard
-  season_folder: true
-  tag:
-  search: false
-  cutoff_search: false
-  sonarr_path:
   plex_path:
+  quality_profile: HD-1080p
+  radarr_path:
+  root_folder_path: "S:/Movies"
+  search: false
+  tag:
+  token: Enter Radarr API Key
+  upgrade_existing: false
+  url: http://192.168.1.12:7878
+sonarr:                              # Can be individually specified per library as well
+  add_existing: false
+  add_missing: false
+  cutoff_search: false
+  ignore_cache: false
+  language_profile: English
+  monitor: all
+  monitor_existing: false
+  plex_path:
+  quality_profile: HD-1080p
+  root_folder_path: "S:/TV Shows"
+  search: false
+  season_folder: true
+  series_type: standard
+  sonarr_path:
+  tag:
+  token: Enter Sonarr API Key
+  upgrade_existing: false
+  url: http://192.168.1.12:8989
 trakt:
-  client_id: Enter Trakt Client ID
-  client_secret: Enter Trakt Client Secret
-  pin:
   authorization:
-    # everything below is autofilled by the script
+    # authorization section is autofilled by the script
     access_token:
-    token_type:
+    created_at:
     expires_in:
     refresh_token:
     scope: public
-    created_at:
-mal:
-  client_id: Enter MyAnimeList Client ID
-  client_secret: Enter MyAnimeList Client Secret
-  authorization:
-    # everything below is autofilled by the script
-    access_token:
     token_type:
+  client_id: Enter Trakt Client ID
+  client_secret: Enter Trakt Client Secret
+  pin:
+mal:
+  authorization:
+    # authorization section is autofilled by the script
+    access_token:
     expires_in:
     refresh_token:
+    token_type:
+  client_id: Enter MyAnimeList Client ID
+  client_secret: Enter MyAnimeList Client Secret
