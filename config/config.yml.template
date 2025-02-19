@@ -144,7 +144,6 @@ radarr:                              # Can be individually specified per library
   radarr_path:
   plex_path:
   ignore_cache: false
-  monitor_existing: false
 sonarr:                              # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: Enter Sonarr API Key
