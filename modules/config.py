@@ -471,48 +471,205 @@ class ConfigFile:
             return default
 
         self.general = {
-            "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="lower_list", test_list=run_order_options, default=["operations", "metadata", "collections", "overlays"]),
-            "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
-            "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
-            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
-            "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
-            "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
-            "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
-            "prioritize_assets": check_for_attribute(self.data, "prioritize_assets", parent="settings", var_type="bool", default=False),
-            "dimensional_asset_rename": check_for_attribute(self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False),
-            "download_url_assets": check_for_attribute(self.data, "download_url_assets", parent="settings", var_type="bool", default=False),
-            "show_missing_assets": check_for_attribute(self.data, "show_missing_assets", parent="settings", var_type="bool", default=True),
-            "show_missing_season_assets": check_for_attribute(self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False),
-            "show_missing_episode_assets": check_for_attribute(self.data, "show_missing_episode_assets", parent="settings", var_type="bool", default=False),
-            "show_asset_not_needed": check_for_attribute(self.data, "show_asset_not_needed", parent="settings", var_type="bool", default=True),
-            "sync_mode": check_for_attribute(self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes),
-            "default_collection_order": check_for_attribute(self.data, "default_collection_order", parent="settings", default_is_none=True),
-            "minimum_items": check_for_attribute(self.data, "minimum_items", parent="settings", var_type="int", default=1),
-            "item_refresh_delay": check_for_attribute(self.data, "item_refresh_delay", parent="settings", var_type="int", default=0),
-            "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
-            "delete_not_scheduled": check_for_attribute(self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False),
-            "run_again_delay": check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0),
-            "missing_only_released": check_for_attribute(self.data, "missing_only_released", parent="settings", var_type="bool", default=False),
-            "only_filter_missing": check_for_attribute(self.data, "only_filter_missing", parent="settings", var_type="bool", default=False),
-            "show_unmanaged": check_for_attribute(self.data, "show_unmanaged", parent="settings", var_type="bool", default=True),
-            "show_unconfigured": check_for_attribute(self.data, "show_unconfigured", parent="settings", var_type="bool", default=True),
-            "show_filtered": check_for_attribute(self.data, "show_filtered", parent="settings", var_type="bool", default=False),
-            "show_unfiltered": check_for_attribute(self.data, "show_unfiltered", parent="settings", var_type="bool", default=False),
-            "show_options": check_for_attribute(self.data, "show_options", parent="settings", var_type="bool", default=False),
-            "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
-            "save_report": check_for_attribute(self.data, "save_report", parent="settings", var_type="bool", default=False),
-            "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
-            "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
-            "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True),
-            "playlist_sync_to_users": check_for_attribute(self.data, "playlist_sync_to_users", parent="settings", default_is_none=True),
-            "playlist_exclude_users": check_for_attribute(self.data, "playlist_exclude_users", parent="settings", default_is_none=True),
-            "playlist_report": check_for_attribute(self.data, "playlist_report", parent="settings", var_type="bool", default=True),
-            "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="settings", var_type="bool", default=True, save=False),
-            "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
-            "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="webp_lossy"),
-            "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default=90, int_min=1, int_max=100),
-            "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
+            "run_order": check_for_attribute(
+                self.data, "run_order", parent="settings", var_type="lower_list",
+                test_list=run_order_options, default=["operations", "metadata", "collections", "overlays"]
+            ),
+            "cache": check_for_attribute(
+                self.data, "cache", parent="settings", var_type="bool", default=True
+            ),
+            "cache_expiration": check_for_attribute(
+                self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1
+            ),
+            "asset_directory": check_for_attribute(
+                self.data, "assets_directory", parent="settings", var_type="list_path", default_is_none=True
+            ) if "assets_directory" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True
+            ),
+            "asset_folders": check_for_attribute(
+                self.data, "assets_folders", parent="settings", var_type="bool", default=True
+            ) if "assets_folders" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "asset_folders", parent="settings", var_type="bool", default=True
+            ),
+            "asset_depth": check_for_attribute(
+                self.data, "assets_depth", parent="settings", var_type="int", default=0
+            ) if "assets_depth" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "asset_depth", parent="settings", var_type="int", default=0
+            ),
+            "create_asset_folders": check_for_attribute(
+                self.data, "assets_create_folders", parent="settings", var_type="bool", default=False
+            ) if "assets_create_folders" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "create_asset_folders", parent="settings", var_type="bool", default=False
+            ),
+            "prioritize_assets": check_for_attribute(
+                self.data, "assets_prioritize", parent="settings", var_type="bool", default=False
+            ) if "assets_prioritize" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "prioritize_assets", parent="settings", var_type="bool", default=False
+            ),
+            "dimensional_asset_rename": check_for_attribute(
+                self.data, "assets_dimensional_rename", parent="settings", var_type="bool", default=False
+            ) if "assets_dimensional_rename" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "dimensional_asset_rename", parent="settings", var_type="bool", default=False
+            ),
+            "download_url_assets": check_for_attribute(
+                self.data, "assets_download_from_urls", parent="settings", var_type="bool", default=False
+            ) if "assets_download_from_urls" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "download_url_assets", parent="settings", var_type="bool", default=False
+            ),
+            "show_missing_assets": check_for_attribute(
+                self.data, "assets_display_missing", parent="settings", var_type="bool", default=True
+            ) if "assets_display_missing" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_missing_assets", parent="settings", var_type="bool", default=True
+            ),
+            "show_missing_season_assets": check_for_attribute(
+                self.data, "assets_display_missing_for_episodes", parent="settings", var_type="bool", default=False
+            ) if "assets_display_missing_for_episodes" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False
+            ),
+            "show_missing_episode_assets": check_for_attribute(
+                self.data, "assets_display_missing_for_seasons", parent="settings", var_type="bool", default=False
+            ) if "assets_display_missing_for_seasons" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_missing_episode_assets", parent="settings", var_type="bool", default=False
+            ),
+            "show_asset_not_needed": check_for_attribute(
+                self.data, "assets_only_display_changes", parent="settings", var_type="bool", default=True
+            ) if "assets_only_display_changes" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_asset_not_needed", parent="settings", var_type="bool", default=True
+            ),
+            "sync_mode": check_for_attribute(
+                self.data, "collections_sync_mode", parent="settings", default="append", test_list=sync_modes
+            ) if "collections_sync_mode" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "sync_mode", parent="settings", default="append", test_list=sync_modes
+            ),
+            "default_collection_order": check_for_attribute(
+                self.data, "collections_default_order", parent="settings", default_is_none=True
+            ) if "collections_default_order" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "default_collection_order", parent="settings", default_is_none=True
+            ),
+            "minimum_items": check_for_attribute(
+                self.data, "collections_minimum_items", parent="settings", var_type="int", default=1
+            ) if "collections_minimum_items" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "minimum_items", parent="settings", var_type="int", default=1
+            ),
+            "item_refresh_delay": check_for_attribute(
+                self.data, "collections_item_refresh_delay", parent="settings", var_type="int", default=0
+            ) if "collections_item_refresh_delay" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "item_refresh_delay", parent="settings", var_type="int", default=0
+            ),
+            "delete_below_minimum": check_for_attribute(
+                self.data, "collections_delete_below_minimum", parent="settings", var_type="bool", default=False
+            ) if "collections_delete_below_minimum" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False
+            ),
+            "delete_not_scheduled": check_for_attribute(
+                self.data, "collections_delete_not_scheduled", parent="settings", var_type="bool", default=False
+            ) if "collections_delete_not_scheduled" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False
+            ),
+            "run_again_delay": check_for_attribute(
+                self.data, "collections_run_again_delay", parent="settings", var_type="int", default=0
+            ) if "collections_run_again_delay" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "run_again_delay", parent="settings", var_type="int", default=0
+            ),
+            "missing_only_released": check_for_attribute(
+                self.data, "logs_exclude_unreleased_from_missing", parent="settings", var_type="bool", default=False
+            ) if "logs_exclude_unreleased_from_missing" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "missing_only_released", parent="settings", var_type="bool", default=False
+            ),
+            "only_filter_missing": check_for_attribute(
+                self.data, "collections_filter_only_missing_items", parent="settings", var_type="bool", default=False
+            ) if "collections_filter_only_missing_items" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "only_filter_missing", parent="settings", var_type="bool", default=False
+            ),
+            "show_unmanaged": check_for_attribute(
+                self.data, "logs_display_unmanaged", parent="settings", var_type="bool", default=True
+            ) if "logs_display_unmanaged" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_unmanaged", parent="settings", var_type="bool", default=True
+            ),
+            "show_unconfigured": check_for_attribute(
+                self.data, "logs_display_unconfigured", parent="settings", var_type="bool", default=True
+            ) if "logs_display_unconfigured" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_unconfigured", parent="settings", var_type="bool", default=True
+            ),
+            "show_filtered": check_for_attribute(
+                self.data, "logs_display_filtered", parent="settings", var_type="bool", default=False
+            ) if "logs_display_filtered" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_filtered", parent="settings", var_type="bool", default=False
+            ),
+            "show_unfiltered": check_for_attribute(
+                self.data, "logs_display_unfiltered", parent="settings", var_type="bool", default=False
+            ) if "logs_display_unfiltered" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_unfiltered", parent="settings", var_type="bool", default=False
+            ),
+            "show_options": check_for_attribute(
+                self.data, "logs_display_options", parent="settings", var_type="bool", default=False
+            ) if "logs_display_options" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_options", parent="settings", var_type="bool", default=False
+            ),
+            "show_missing": check_for_attribute(
+                self.data, "logs_display_missing", parent="settings", var_type="bool", default=True
+            ) if "logs_display_missing" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "show_missing", parent="settings", var_type="bool", default=True
+            ),
+            "save_report": check_for_attribute(
+                self.data, "logs_save_report", parent="settings", var_type="bool", default=False
+            ) if "logs_save_report" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "save_report", parent="settings", var_type="bool", default=False
+            ),
+            "tvdb_language": check_for_attribute(
+                self.data, "tvdb_language", parent="settings", default="default"
+            ),
+            "ignore_ids": check_for_attribute(
+                self.data, "collections_ignore_ids", parent="settings", var_type="int_list", default_is_none=True
+            ) if "collections_ignore_ids" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True
+            ),
+            "ignore_imdb_ids": check_for_attribute(
+                self.data, "collections_ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True
+            ) if "collections_ignore_imdb_ids" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True
+            ),
+            "playlist_sync_to_users": check_for_attribute(
+                self.data, "playlists_sync_to", parent="settings", default_is_none=True
+            ) if "playlists_sync_to" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "playlist_sync_to_users", parent="settings", default_is_none=True
+            ),
+            "playlist_exclude_users": check_for_attribute(
+                self.data, "playlists_exclude_from", parent="settings", default_is_none=True
+            ) if "playlists_exclude_from" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "playlist_exclude_users", parent="settings", default_is_none=True
+            ),
+            "playlist_report": check_for_attribute(
+                self.data, "playlists_report", parent="settings", var_type="bool", default=True
+            ) if "playlists_report" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "playlist_report", parent="settings", var_type="bool", default=True
+            ),
+            "verify_ssl": check_for_attribute(
+                self.data, "verify_ssl", parent="settings", var_type="bool", default=True, save=False
+            ),
+            "custom_repo": check_for_attribute(
+                self.data, "github_custom_repo", parent="settings", default_is_none=True
+            ) if "github_custom_repo" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "custom_repo", parent="settings", default_is_none=True
+            ),
+            "overlay_artwork_filetype": check_for_attribute(
+                self.data, "overlays_filetype", parent="settings", test_list=filetype_list,
+                translations={"webp": "webp_lossy"}, default="webp_lossy"
+            ) if "overlays_filetype" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list,
+                translations={"webp": "webp_lossy"}, default="webp_lossy"
+            ),
+            "overlay_artwork_quality": check_for_attribute(
+                self.data, "overlays_quality", parent="settings", var_type="int", default=90, int_min=1, int_max=100
+            ) if "overlays_quality" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "overlay_artwork_quality", parent="settings", var_type="int", default=90, int_min=1, int_max=100
+            ),
+            "assets_for_all": check_for_attribute(
+                self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False
+            )
         }
+
+
         self.custom_repo = None
         if self.general["custom_repo"]:
             repo = self.general["custom_repo"]

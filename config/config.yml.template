@@ -50,50 +50,50 @@ playlist_files:
       libraries: Movies, TV Shows    # list of libraries that you want the Kometa Defaults playlists to look at
   # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
+  assets_create_folders: false
+  assets_depth: 0
+  assets_dimensional_rename: false
+  assets_directory: config/assets
+  assets_display_missing: true
+  assets_display_missing_for_episodes: false
+  assets_display_missing_for_seasons: false
+  assets_download_from_urls: false
+  assets_folders: true
+  assets_only_display_changes: true
+  assets_prioritize: false
+  cache: true
+  cache_expiration: 60
+  collections_default_order: release
+  collections_delete_below_minimum: true
+  collections_delete_not_scheduled: false
+  collections_filter_only_missing_items: false
+  collections_ignore_ids:
+  collections_ignore_imdb_ids:
+  collections_item_refresh_delay: 0
+  collections_minimum_items: 1
+  collections_run_again_delay: 2
+  collections_sync_mode: append
+  github_custom_repo:
+  logs_display_filtered: false
+  logs_display_missing: true
+  logs_display_options: true
+  logs_display_unconfigured: true
+  logs_display_unfiltered: false
+  logs_display_unmanaged: true
+  logs_exclude_unreleased_from_missing: false
+  logs_save_report: false
+  overlays_filetype: webp_lossy
+  overlays_quality: 90
+  playlists_exclude_from:
+  playlists_report: false
+  playlists_sync_to:
   run_order:
   - operations
   - metadata
   - collections
   - overlays
-  cache: true
-  cache_expiration: 60
-  asset_directory: config/assets
-  asset_folders: true
-  asset_depth: 0
-  create_asset_folders: false
-  prioritize_assets: false
-  dimensional_asset_rename: false
-  download_url_assets: false
-  show_missing_season_assets: false
-  show_missing_episode_assets: false
-  show_asset_not_needed: true
-  sync_mode: append
-  minimum_items: 1
-  default_collection_order: release
-  delete_below_minimum: true
-  delete_not_scheduled: false
-  run_again_delay: 2
-  missing_only_released: false
-  only_filter_missing: false
-  show_unmanaged: true
-  show_unconfigured: true
-  show_filtered: false
-  show_unfiltered: false
-  show_options: true
-  show_missing: true
-  show_missing_assets: true
-  save_report: false
   tvdb_language: eng
-  ignore_ids:
-  ignore_imdb_ids:
-  item_refresh_delay: 0
-  playlist_sync_to_users:
-  playlist_exclude_users:
-  playlist_report: false
   verify_ssl: true
-  custom_repo:
-  overlay_artwork_filetype: webp_lossy
-  overlay_artwork_quality: 90
 webhooks:                            # Can be individually specified per library as well
   changes:
   delete:
