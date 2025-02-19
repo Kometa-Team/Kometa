@@ -1233,7 +1233,7 @@ class Operations:
                 if isinstance(item, (Movie, Show)):
                     year_titles.append(f"{item.title} ({item.year})")
             for i, item in enumerate(items, 1):
-                logger.ghost(f"({i}/{total_items}) {item.title}", info_backup=True)
+                logger.ghost(f"({i}/{total_items}) {item.title}")
                 map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
