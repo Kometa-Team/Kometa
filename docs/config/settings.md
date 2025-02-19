@@ -137,9 +137,9 @@ The available setting attributes which can be set at each level are outlined bel
           assets_display_missing: false
         ```
 
-??? blank "`assets_display_missing_for_episodes` - Used to show any missing season assets.<a class="headerlink" href="#assets-display-missing-for-episodes" title="Permanent link">¶</a>"
+??? blank "`assets_display_missing_for_seasons` - Used to show any missing season assets.<a class="headerlink" href="#assets-display-missing-for-seasons" title="Permanent link">¶</a>"
 
-    <div id="assets-display-missing-for-episodes" />Whilst scanning for assets for a TV show, notify if season posters 
+    <div id="assets-display-missing-for-seasons" />Whilst scanning for assets for a TV show, notify if season posters 
     (e.g. `/ASSET_NAME/Season##.ext`) are missing.
     
     ???+ tip "Shows/Hides messages for seasons/albums"
@@ -150,35 +150,7 @@ The available setting attributes which can be set at each level are outlined bel
     
     <hr style="margin: 0px;">
     
-    **Attribute:** `assets_display_missing_for_episodes` (`show_missing_season_assets` also accepted)
-    
-    **Levels with this Attribute:** Global/Library
-    
-    **Accepted Values:** `true` or `false`
-    
-    **Default Value:** `true`
-    
-    ???+ example "Example"
-        
-        ```yaml
-        settings:
-          assets_display_missing_for_episodes: true
-        ```
-
-??? blank "`assets_display_missing_for_seasons` - Used to show any missing episode assets.<a class="headerlink" href="#assets-display-missing-for-seasons" title="Permanent link">¶</a>"
-
-    <div id="assets-display-missing-for-seasons" />Whilst scanning for assets for a TV show, notify if episode title cards 
-    (e.g. `/ASSET_NAME/S##E##.ext`) are missing.
-    
-    ???+ tip "Shows/Hides messages for episodes"
-    
-      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"  
-      "Asset Warning: No poster '{name}' found in the assets folders"  
-      "Missing S##E## Title Card"
-    
-    <hr style="margin: 0px;">
-    
-    **Attribute:** `assets_display_missing_for_seasons` (`show_missing_episode_assets` also accepted)
+    **Attribute:** `assets_display_missing_for_seasons` (`show_missing_season_assets` also accepted)
     
     **Levels with this Attribute:** Global/Library
     
@@ -191,6 +163,34 @@ The available setting attributes which can be set at each level are outlined bel
         ```yaml
         settings:
           assets_display_missing_for_seasons: true
+        ```
+
+??? blank "`assets_display_missing_for_episodes` - Used to show any missing episode assets.<a class="headerlink" href="#assets-display-missing-for-episodes" title="Permanent link">¶</a>"
+
+    <div id="assets-display-missing-for-episodes" />Whilst scanning for assets for a TV show, notify if episode title cards 
+    (e.g. `/ASSET_NAME/S##E##.ext`) are missing.
+    
+    ???+ tip "Shows/Hides messages for episodes"
+    
+      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"  
+      "Asset Warning: No poster '{name}' found in the assets folders"  
+      "Missing S##E## Title Card"
+    
+    <hr style="margin: 0px;">
+    
+    **Attribute:** `assets_display_missing_for_episodes` (`show_missing_episode_assets` also accepted)
+    
+    **Levels with this Attribute:** Global/Library
+    
+    **Accepted Values:** `true` or `false`
+    
+    **Default Value:** `true`
+    
+    ???+ example "Example"
+        
+        ```yaml
+        settings:
+          assets_display_missing_for_episodes: true
         ```
 
 ??? blank "`assets_directory` - Used to define where local assets are located.<a class="headerlink" href="#assets-directory" title="Permanent link">¶</a>"

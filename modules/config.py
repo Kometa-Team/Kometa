@@ -522,13 +522,13 @@ class ConfigFile:
                 self.data, "show_missing_assets", parent="settings", var_type="bool", default=True
             ),
             "show_missing_season_assets": check_for_attribute(
-                self.data, "assets_display_missing_for_episodes", parent="settings", var_type="bool", default=False
-            ) if "assets_display_missing_for_episodes" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "assets_display_missing_for_seasons", parent="settings", var_type="bool", default=False
+            ) if "assets_display_missing_for_seasons" in self.data.get("settings", {}) else check_for_attribute(
                 self.data, "show_missing_season_assets", parent="settings", var_type="bool", default=False
             ),
             "show_missing_episode_assets": check_for_attribute(
-                self.data, "assets_display_missing_for_seasons", parent="settings", var_type="bool", default=False
-            ) if "assets_display_missing_for_seasons" in self.data.get("settings", {}) else check_for_attribute(
+                self.data, "assets_display_missing_for_episodes", parent="settings", var_type="bool", default=False
+            ) if "assets_display_missing_for_episodes" in self.data.get("settings", {}) else check_for_attribute(
                 self.data, "show_missing_episode_assets", parent="settings", var_type="bool", default=False
             ),
             "show_asset_not_needed": check_for_attribute(
