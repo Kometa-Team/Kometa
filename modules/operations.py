@@ -132,9 +132,10 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
+            total_items = len(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
-                logger.info(f"({i}/{len(items)}) {item.title}")
+                logger.info(f"({i}/{total_items}) {item.title}")
                 try:
                     item = self.library.reload(item)
                 except Failed as e:
@@ -1224,6 +1225,7 @@ class Operations:
                     if "year" in mv:
                         special_names[f"{mv['title']} ({mv['year']})"] = mk
             items = self.library.get_all(load=True)
+            total_items = len(items)
             titles = []
             year_titles = []
             for item in items:
@@ -1231,7 +1233,7 @@ class Operations:
                 if isinstance(item, (Movie, Show)):
                     year_titles.append(f"{item.title} ({item.year})")
             for i, item in enumerate(items, 1):
-                logger.ghost(f"({i}/{len(items)}) {item.title}")
+                logger.ghost(f"({i}/{total_items}) {item.title}", info_backup=True)
                 map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]
