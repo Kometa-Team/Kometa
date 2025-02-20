@@ -57,7 +57,8 @@ settings:
   - overlays
   cache: true
   cache_expiration: 60
-  asset_directory: config/assets
+  asset_directory:
+  - config/assets
   asset_folders: true
   asset_depth: 0
   create_asset_folders: false
