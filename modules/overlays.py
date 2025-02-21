@@ -608,7 +608,7 @@ class Overlays:
                                 properties[prop_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.info(f"{len(added_titles)} Items found for {prop_name}")
-                        logger.trace(f"Titles Found: {[self.library.get_item_sort_title(a, atr='title') for a in added_titles]}")
+                        logger.trace(f"Titles Found: {[a.titleSort for a in added_titles]}")
                     else:
                         logger.warning(f"No Items found for {prop_name}")
                     logger.info("")
