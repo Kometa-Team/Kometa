@@ -597,6 +597,19 @@ class Overlays:
                             else:
                                 raise Failed(e)
 
+                    def get_log_title(item):
+                        try:
+                            log_title = item.titleSort
+                            if item.type == 'episode':
+                                # Happy Days S01E01
+                                log_title = item.grandparentTitle + " " + item.seasonEpisode.upper()
+                            if item.type == 'season':
+                                # Happy Days Season 1
+                                log_title = item.parentTitle + " " + item.titleSort
+                        except:
+                            log_title = "UNKNOWN"
+                        return log_title
+
                     added_titles = []
                     if builder.found_items:
                         for item in builder.found_items:
@@ -608,7 +621,7 @@ class Overlays:
                                 properties[prop_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.info(f"{len(added_titles)} Items found for {prop_name}")
-                        logger.trace(f"Titles Found: {[a.titleSort for a in added_titles]}")
+                        logger.trace(f"Titles Found: {[get_log_title(a) for a in added_titles]}")
                     else:
                         logger.warning(f"No Items found for {prop_name}")
                     logger.info("")
