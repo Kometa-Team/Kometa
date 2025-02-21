@@ -87,3 +87,4 @@ Fixed NoneError when using a blank `radarr_taglist` or `sonarr_taglist`.
 Fixes an issue with boolean filter matching.
 Fixes an issue where the decade default collection names were incorrect.
 Fixes the playlist default to automatically work with a supplied list.
+Remove an unecessary request to Plex while processing overlays.
