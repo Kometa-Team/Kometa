@@ -1674,7 +1674,7 @@ class Plex(Library):
 
         return map_key, attrs
 
-    def get_item_sort_title(self, item_to_sort, sort=False):
+    def get_item_display_title(self, item_to_sort, sort=False):
         if isinstance(item_to_sort, Album):
             return f"{item_to_sort.artist().titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"
         elif isinstance(item_to_sort, Season):

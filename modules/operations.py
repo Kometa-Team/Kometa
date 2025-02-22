@@ -877,7 +877,7 @@ class Operations:
 
                     for ep in item.episodes():
                         ep = self.library.reload(ep)
-                        item_title = self.library.get_item_sort_title(ep)
+                        item_title = self.library.get_item_display_title(ep)
                         logger.info("")
                         logger.info(f"Processing {item_title}")
                         item_edits = ""
