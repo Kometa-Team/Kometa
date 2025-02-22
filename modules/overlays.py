@@ -41,7 +41,7 @@ class Overlays:
                     logger.separator(f"Removing {old_overlay.title}")
                     logger.info("")
                     for i, item in enumerate(label_items, 1):
-                        item_title = self.library.get_item_sort_title(item, atr="title")
+                        item_title = self.library.get_item_sort_title(item)
                         logger.ghost(f"Restoring {old_overlay.title}: {i}/{len(label_items)} {item_title}")
                         self.remove_overlay(item, item_title, old_overlay.title, [
                             os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
@@ -58,7 +58,7 @@ class Overlays:
         if remove_overlays:
             logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
             for i, item in enumerate(remove_overlays, 1):
-                item_title = self.library.get_item_sort_title(item, atr="title")
+                item_title = self.library.get_item_sort_title(item)
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
                 self.remove_overlay(item, item_title, "Overlay", [
                     os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
@@ -82,8 +82,8 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
-                item_title = self.library.get_item_sort_title(item, atr="title")
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0], sort=True)), 1):
+                item_title = self.library.get_item_sort_title(item)
                 try:
                     logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
                     image_compare = None
@@ -597,19 +597,6 @@ class Overlays:
                             else:
                                 raise Failed(e)
 
-                    def get_log_title(item):
-                        try:
-                            log_title = item.titleSort
-                            if item.type == 'episode':
-                                # Happy Days S01E01
-                                log_title = item.grandparentTitle + " " + item.seasonEpisode.upper()
-                            if item.type == 'season':
-                                # Happy Days Season 1
-                                log_title = item.parentTitle + " " + item.titleSort
-                        except:
-                            log_title = "UNKNOWN"
-                        return log_title
-
                     added_titles = []
                     if builder.found_items:
                         for item in builder.found_items:
@@ -621,7 +608,7 @@ class Overlays:
                                 properties[prop_name].keys.append(item.ratingKey)
                     if added_titles:
                         logger.info(f"{len(added_titles)} Items found for {prop_name}")
-                        logger.trace(f"Titles Found: {[get_log_title(a) for a in added_titles]}")
+                        logger.trace(f"Titles Found: {[self.library.get_item_sort_title(a) for a in added_titles]}")
                     else:
                         logger.warning(f"No Items found for {prop_name}")
                     logger.info("")
