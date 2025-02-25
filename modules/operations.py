@@ -68,15 +68,12 @@ class Operations:
             if all((x is None for x in [configured_in, managed_in, less_in])):
                 return False
 
-            less_check = not ignore_smart_in if col_in.smart else True
+            less_check = (not ignore_smart_in) if col_in.smart else True
             if less_in is not None:
                 if less_check:
                     col_count = col_in.childCount if col_in.childCount is not None else 0
                     less_check = col_count < less_in
                     logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
-                else:
-                    logger.trace(f"{col_in.title} - skipping size check:  smart - {col_in.smart}, ignore_smart - {ignore_smart_in}")
-                    
 
             managed_check = True
             if managed_in is not None:
