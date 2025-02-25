@@ -64,16 +64,15 @@ class Operations:
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug("")
 
-        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, ignore_smart_in):
+        def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
             if all((x is None for x in [configured_in, managed_in, less_in])):
                 return False
 
-            less_check = (not ignore_smart_in) if col_in.smart else True
+            less_check = True
             if less_in is not None:
-                if less_check:
-                    col_count = col_in.childCount if col_in.childCount is not None else 0
-                    less_check = col_count < less_in
-                    logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
+                col_count = col_in.childCount if col_in.childCount is not None else 0
+                less_check = col_count < less_in
+                logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
 
             managed_check = True
             if managed_in is not None:
@@ -1130,7 +1129,7 @@ class Operations:
                 col = self.library.reload(col, force=True)
                 labels = [la.tag for la in self.library.item_labels(col)]
 
-                if should_be_deleted(col, labels, configured, managed, less, ignore_smart):
+                if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:
                         self.library.delete(col)
                         logger.info(f"{col.title} Deleted")
