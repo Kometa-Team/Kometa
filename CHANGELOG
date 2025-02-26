@@ -1,14 +1,15 @@
 # Requirements Update (requirements will need to be reinstalled)
 Add pywin32 requirement at 308 (windows only)
+Add cloudscraper requirement at 1.2.71
 Update gitpython requirement to 3.1.44
 Update lxml requirement to 5.3.1
 Update num2words requirement to 0.5.14
 Update pathvalidate requirement to 3.2.3
 Update pillow requirement to 11.1.0
 Update plexapi requirement to 4.16.1
-Update psutil requirement to 6.1.1
+Update psutil requirement to 7.0.0
 Update ruamel-yaml requirement to 0.18.9
-Update setuptools requirement to 75.8.0
+Update setuptools requirement to 75.8.1
 Update tmdbapis requirement to 1.2.28
 
 # Important Changes
@@ -88,3 +89,4 @@ Fixes an issue with boolean filter matching.
 Fixes an issue where the decade default collection names were incorrect.
 Fixes the playlist default to automatically work with a supplied list.
 Remove an unnecessary request to Plex while processing overlays.
+Fixes issue with ICheckMovies parsing.
