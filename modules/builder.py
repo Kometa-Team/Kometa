@@ -1477,11 +1477,11 @@ class CollectionBuilder:
 
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
-            icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
+            icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data)
             for icheckmovies_list in icheckmovies_lists:
                 self.builders.append(("icheckmovies_list", icheckmovies_list))
             if method_name.endswith("_details"):
-                self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
+                self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0])
 
     def _imdb(self, method_name, method_data):
         if method_name == "imdb_id":
@@ -2214,7 +2214,7 @@ class CollectionBuilder:
         elif "imdb" in method:
             ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
         elif "icheckmovies" in method:
-            ids = self.config.ICheckMovies.get_imdb_ids(method, value, self.language)
+            ids = self.config.ICheckMovies.get_imdb_ids(method, value)
         elif "letterboxd" in method:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "reciperr" in method or "stevenlu" in method:
