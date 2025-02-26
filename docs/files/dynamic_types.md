@@ -1581,7 +1581,7 @@ requirements of creating the collection.
               all-4: All 4
               appletv: Apple TV+
               bet: BET+
-              britbox: BritBox
+              itvx: ITVX
               disney: Disney+
               max: Max
               hulu: Hulu
@@ -1596,6 +1596,4 @@ requirements of creating the collection.
               - shared
         ```
 
-{%
-   include-markdown "./dynamic_examples.md"
-%}
+{% include-markdown "./../templates/snippets/dynamic_examples.md" %}

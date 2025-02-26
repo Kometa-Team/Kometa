@@ -36,13 +36,14 @@ settings:
 A YAML format primarily uses 3 node types:
 
 1. Dictionaries/Mappings:
-    The content of a mapping node is an unordered set of key/value node pairs, with the restriction that each of the keys is unique. YAML places no further restrictions on the nodes. 
+    * The content of a mapping node is an unordered set of key/value node pairs, with the restriction that each of the keys is unique. 
+      YAML places no further restrictions on the nodes. 
 
 2. Lists/Arrays:
-    The content of a list node is an ordered series of zero or more nodes. In particular, a sequence may contain the same node more than once. It could even contain itself. 
+    * The content of a list node is an ordered series of zero or more nodes. In particular, a sequence may contain the same node more than once. It could even contain itself. 
 
 3. Literals (Strings, numbers, boolean, etc.):
-    The content of a scalar node is an opaque datum that can be presented as a series of zero or more Unicode characters.
+    * The content of a scalar node is an opaque datum that can be presented as a series of zero or more Unicode characters.
 
 Let us try and identify where these appear in the sample YAML file we saw earlier.
 
@@ -102,7 +103,8 @@ settings:                         # Nesting Level 1
 
 ## Dictionaries
 
-Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation, or new dictionaries can be created at the same level by resolving the previous one.
+Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation, 
+or new dictionaries can be created at the same level by resolving the previous one.
 
 ```yaml
 cache: true
@@ -212,7 +214,8 @@ Everything after `#` on a line is ignored.
 
 With a lot of configuration, configuration files can become quite large.
 
-In YAML files, anchors (`&`) and aliases (`*`) are used to avoid duplication. When writing large configurations in YAML, it is common for a specific configuration to be repeated. For example, the vars config is repeated for all three services in the following YAML snippet.
+In YAML files, anchors (`&`) and aliases (`*`) are used to avoid duplication. When writing large configurations in YAML, it is common for a specific configuration to be repeated. 
+For example, the vars config is repeated for all three services in the following YAML snippet.
 
 ```yaml
 libraries:

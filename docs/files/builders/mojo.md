@@ -1,8 +1,10 @@
+---
+hide:
+  - toc
+---
 # BoxOfficeMojo Builders
 
 You can find items using the lists on [boxofficemojo.com](https://www.boxofficemojo.com/) (BoxOfficeMojo). 
-
-No configuration is required for these builders.
 
 ??? blank "`mojo_domestic` - Uses the Domestic Box Office.<a class="headerlink" href="#mojo-domestic" title="Permanent link">¶</a>"
 

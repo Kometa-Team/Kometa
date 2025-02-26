@@ -22,7 +22,7 @@ metadata:
 
 You should have something like this:
 
-![Step 1](images/step1.png)
+![initial](../../assets/images/kometa/guides/mediux/initial.png)
 
 
 ## Adding your Set
@@ -37,7 +37,7 @@ Now let's navigate to the MediUX website and find the Set that we want to use. I
 
 Once I have logged in to MediUX, I can click on the "YAML" button here:
 
-![Step 2](images/step2.png)
+![lnk](../../assets/images/kometa/guides/mediux/link.png)
 
 I am now presented with a "Copy Links" button which includes the YAML code I need to set the assets from the Set against my library.
 
@@ -49,17 +49,17 @@ I am now presented with a "Copy Links" button which includes the YAML code I nee
 
 I will click the copy button highlighted:
 
-![Step 3](images/step3.png)
+![copy](../../assets/images/kometa/guides/mediux/copy.png)
 
 And now I will paste it directly into my `mediux.yml` file, and it now looks like this:
 
-![Step 4](images/step4.png)
+![metadata](../../assets/images/kometa/guides/mediux/metadata.png)
 
 The file can now be saved and is ready for use.
 
 ## Running the Metadata File
 
-Now that my metadata file is ready, I can run it against my library.
+Now that my Metadata File is ready, I can run it against my library.
 
 I will open my `config.yml` file and add the `mediux.yml` within the `metadata_files` section of my Movies library:
 
@@ -73,4 +73,4 @@ libraries:
 
 After running Kometa and navigating to Plex, I can see that my posters for the Toy Story movies have been updated with the images from the Set in MediUX:
 
-![Step 5](images/step5.png)
+![posters](../../assets/images/kometa/guides/mediux/posters.png)

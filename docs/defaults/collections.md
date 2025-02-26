@@ -1,19 +1,20 @@
+---
+hide:
+  - toc
+---
+
 # Collection Defaults
 
-There are many Default Collection Files built into Kometa itself which offer an easy-to-use and customizable set of 
-Collections that the user can achieve without having to worry about creating the files that makes the collections 
-possible.
+There are many Default Collection Files built into Kometa itself which offer an easy-to-use and customizable set of Collections 
+that the user can achieve without having to worry about creating the files that makes the collections possible.
 
 This is the simplest way to create Collections using Kometa.
 
-{%
-   include-markdown "./collection_list.md"
-
-%}
+{% include-markdown "./../templates/snippets/collection_list.md" %}
 
 ## Configurations
 
-To run a default Kometa Collection file you can simply add it to your `collection_files` using `default` like so:
+To run a default Kometa Collection File you can simply add it to your `collection_files` using `default` like so:
 
 ```yaml
 libraries:
@@ -25,15 +26,13 @@ libraries:
 
 ## Separators
 
-Most Metadata files use separators to denote different sections of collection like actor collections vs studio 
-collections.
+Most Metadata Files use separators to denote different sections of collection like actor collections vs studio collections.
 
-**Chart Separator and Award Separator each have their own file, while the other Separators are part of their respective 
-files.**
+**Chart Separator and Award Separator each have their own file, while the other Separators are part of their respective files.**
 
 ??? tip "Click to expand to see an example of Separators."
 
-    ![](images/separators.jpg)
+    ![](../assets/images/defaults/separators.jpg)
 
 ### Library On/Off
 
@@ -51,11 +50,9 @@ libraries:
 
 ## Collection Section Order
 
-All Default Collection Files have a `collection_section` attribute. These attributes determine the order of the various 
-sections and can be set by [customizing your config](#customizing-configs).
+All Default Collection Files have a `collection_section` attribute. These attributes determine the order of the various sections and can be set by [customizing your config](#customizing-configs).
 
-For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` 
-and so for `genre` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
+For example: `collection_section: 01` translates to `sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<sort>>"` and so for `genre` if you have a `Fantasy` collection, plex is going to show `!06_Fantasy`
 
 This is the default Kometa collection ordering:
 
@@ -116,9 +113,8 @@ This is the default Kometa collection ordering:
 Configs can be customized using the `template_variables` attribute when calling the file. These `template_variables` 
 will be given to every template call in the file which allows them to affect how that file runs.
 
-This example disables two keys, which will prevent those collections from being created. It also sets the visibility of 
-one of the keys so that it is visible on the library tab, the server owner's homescreen and shared user's homescreens 
-(assuming they server owner and/or the shared users have the library pinned to their homescreen)
+This example disables two keys, which will prevent those collections from being created. It also sets the visibility of one of the keys so that it is visible on the library tab, 
+the server owner's home screen and shared user's home screens (assuming the server owner and/or the shared users have the library pinned to their home screen).
 
 ```yaml
 libraries:
@@ -133,16 +129,13 @@ libraries:
           visible_shared_top: true
 ```
 
-Each file has a page on the wiki showing the available `template_variables` for each file. For example the default 
-`default: genre` has a page [here](both/genre.md).
+Each file has a page on the wiki showing the available `template_variables` for each file. For example the default`default: genre` has a page [here](both/genre.md).
 
-**In addition to the defined `template_variables` almost all default Metadata files have access to the 
-[Shared Variables](collection_variables.md).**
+**In addition to the defined `template_variables` almost all default Metadata Files have access to the [Shared Variables](./shared.md).**
 
 ### Examples
 
-For example if you want yearly oscar collections that go back 10 years instead of 5 all of which gets sent to radarr 
-use the `data` and `radarr_add_missing` template variables.
+For example if you want yearly oscar collections that go back 10 years instead of 5 all of which gets sent to radarr use the `data` and `radarr_add_missing` Template Variables.
 
 ```yaml
 libraries:
@@ -207,6 +200,4 @@ libraries:
           use_separator: false
 ```
 
-{%
-   include-markdown "./example.md"
-%}
+{% include-markdown "./../templates/snippets/example_config.md" %}

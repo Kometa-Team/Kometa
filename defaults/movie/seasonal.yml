@@ -163,6 +163,9 @@ dynamic_collections:
         valentine:
           list.any:
             - ls032692441
+            - ls000094398
+            - ls057783436
+            - ls064427905
           limit: 500
         patrick:
           list.any: ls067580975
@@ -243,6 +246,10 @@ dynamic_collections:
         latinx:
           - https://mdblist.com/lists/k0meta/latinx-heritage-month
       # check8
+      letterboxd_list:
+        black_history:
+          - https://letterboxd.com/mardarrius/list/black-is-beautiful/
+      # check9
       delete_collections_named:
         years: 🎊 New Year's Day Movies
         valentine: 💘 Valentine's Day Movies

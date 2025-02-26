@@ -26,7 +26,7 @@
     
     ???+ tip 
     
-        Pass `schedule_<<key>>` to the file as template variables to change this value per collection.
+        Pass `schedule_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
           - default: seasonal
@@ -57,7 +57,7 @@
     
     ???+ tip 
     
-        Pass `imdb_search_<<key>>` to the file as template variables to change this value per collection.
+        Pass `imdb_search_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
           - default: seasonal
@@ -91,7 +91,7 @@
     
     ???+ tip 
     
-        Pass `tmdb_collection_<<key>>` to the file as template variables to change this value per collection.
+        Pass `tmdb_collection_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
           - default: seasonal
@@ -124,7 +124,7 @@
     
     ???+ tip 
     
-        Pass `tmdb_movie_<<key>>` to the file as template variables to change this value per collection.
+        Pass `tmdb_movie_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
           - default: seasonal
@@ -157,7 +157,7 @@
     
     ???+ tip 
     
-        Pass `mdblist_list_<<key>>` to the file as template variables to change this value per collection.
+        Pass `mdblist_list_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
           - default: seasonal
@@ -179,5 +179,37 @@
       dedent=true
       start="# check7"
       end="# check8"
+    %}
+    ```
+
+
+??? example "Default Template Variable `letterboxd_list` (click to expand) <a class="headerlink" href="#letterboxd-list" title="Permanent link">¶</a>"
+
+    <div id="letterboxd-list" />
+    
+    ???+ tip 
+    
+        Pass `letterboxd_list_<<key>>` to the file as Template Variables to change this value per collection.
+
+        ```yaml
+          - default: seasonal
+            template_variables:
+              letterboxd_list_christmas: https://letterboxd.com/patrickb15/list/christmas
+        ```
+
+    ```{ .dtd .no-copy }
+    ###############################################################################
+    ################################## IMPORTANT ##################################
+    #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################
+    ##  DO NOT COPY/PASTE THIS INTO YOUR CONFIG FILE, IT WILL ONLY CAUSE ERRORS ###
+    #############  SEE ABOVE FOR HOW TO MODIFY OR AUGMENT THESE VALUES ############
+    ###############################################################################
+    {%    
+      include-markdown "../../../../defaults/movie/seasonal.yml" 
+      comments=false
+      preserve-includer-indent=true
+      dedent=true
+      start="# check8"
+      end="# check9"
     %}
     ```

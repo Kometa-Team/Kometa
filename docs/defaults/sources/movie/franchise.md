@@ -1,6 +1,6 @@
 # Franchise Collections
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+These are lists provided for reference to show what values will be in use if you do no customization. **These do not 
 show how to change a name or a list.**
 
 If you want to customize these values, use the methods described above.
@@ -51,7 +51,7 @@ If you want to customize these values, use the methods described above.
 
     ???+ tip 
 
-        Pass `movie_<<key>>` to the file as template variables to change this value per collection. 
+        Pass `movie_<<key>>` to the file as Template Variables to change this value per collection. 
 
         ```yaml
           - default: franchise
@@ -84,7 +84,7 @@ If you want to customize these values, use the methods described above.
     
     ???+ tip 
     
-        Pass `name_mapping_<<key>>` to the file as template variables to change this value per collection. 
+        Pass `name_mapping_<<key>>` to the file as Template Variables to change this value per collection. 
     
         ```yaml
           - default: franchise

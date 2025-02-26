@@ -1,13 +1,11 @@
 # Playlists
 
-The `playlist` Default Collection File is used to create playlists based on popular Movie/TV Show universes (such as the
-Marvel Cinematic Universe or Star Trek).
+The `playlist` Default Collection File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
 
-This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to 
-use alternative/additional libraries, use the `libraries` template variable which is outlined in the 
-[Template Variables](#template-variables) table.
+This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries, 
+use the `libraries` template variable which is outlined in the [Template Variables](#template-variables) table.
 
-![](images/playlist.png)
+![](../assets/images/defaults/playlist.png)
 
 ## Playlists
 
@@ -34,11 +32,10 @@ playlist_files:
 
 ## Template Variables
 
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
-make your own local copy.
+Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
-work. Any value not specified will use its default value if it has one if not it's just ignored.
+Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults work. 
+Any value not specified will use its default value if it has one if not it's just ignored.
 
 ??? abstract "Variable Lists (click to expand)"
 
@@ -100,7 +97,7 @@ work. Any value not specified will use its default value if it has one if not it
           radarr_add_missing: true #(1)!
     ```
 
-    1.  Adds items from the source list which are not in Plex to Radarr
+    1. Adds items from the source list which are not in Plex to Radarr
 
 ???+ example "Example Template Adding Default Playlists"
 

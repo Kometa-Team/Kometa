@@ -62,6 +62,7 @@ d'or
 dbader
 de
 deneuve
+desc
 deva
 diiivoy
 diiivoycolor
@@ -75,6 +76,7 @@ dolby
 dreamworks
 dropdown
 dsm
+dtd
 dts
 dv
 emmys
@@ -126,6 +128,7 @@ integrations
 ints
 io
 iteratively
+itvx
 jd
 jinja
 jkirkcaldy
@@ -193,6 +196,7 @@ mza
 namespace
 nas
 natively
+nfr
 nitsua
 NL
 nocopy
@@ -214,6 +218,7 @@ ozzy
 palme
 pathing
 pathvalidate
+pca
 pcm
 persistentvolumeclaim
 pgid
@@ -232,12 +237,13 @@ portainer
 powershell
 pre
 prepend
+prepended
 preroll
 psutil
 puid
+py
 pywin
 qnap
-Quickstart
 quickstart
 radarr
 razzie
@@ -259,6 +265,7 @@ runtime
 runtimeh
 runtimem
 runtimes
+rw
 schemas
 sci-fi
 scifi
@@ -344,11 +351,6 @@ xyz
 yaml
 yml
 yourname
-Yozora
-YozoraXCII
-YYYY
-zaP
-ZeroQI
 yozora
 yozoraxcii
 yyyy

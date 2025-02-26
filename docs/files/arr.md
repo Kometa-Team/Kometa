@@ -39,8 +39,7 @@ tags:
 
 ## Radarr Definition Settings
 
-All the following attributes can override the global/library [Radarr](../config/radarr.md) attributes which are the 
-default unless otherwise specified.
+All the following attributes can override the global/library [Radarr](../config/radarr.md) attributes which are the default unless otherwise specified.
 
 | Attribute                 | Description & Values                                                                                                                                                            |
 |:--------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -61,8 +60,7 @@ default unless otherwise specified.
 
 ## Sonarr Definition Settings
 
-All the following attributes can override the global/library [Sonarr](../config/sonarr.md) attributes which are the 
-default unless otherwise specified.
+All the following attributes can override the global/library [Sonarr](../config/sonarr.md) attributes which are the default unless otherwise specified.
 
 | Attribute                 | Description & Values                                                                                                                                                             |
 |:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -91,33 +89,28 @@ You can add items to Radarr/Sonarr in two different ways.
 
 ### Arr Add Missing
 
-When `radarr_add_missing`/`sonarr_add_missing` are true the items missing from the collection/playlist will be added to 
-Radarr/Sonarr.
+When `radarr_add_missing`/`sonarr_add_missing` are true the items missing from the collection/playlist will be added to Radarr/Sonarr.
 
 ### Arr Add Existing
 
-When `radarr_add_existing`/`sonarr_add_existing` are true the items that exist in the collection/playlist will be added 
-to Radarr/Sonarr. 
+When `radarr_add_existing`/`sonarr_add_existing` are true the items that exist in the collection/playlist will be added to Radarr/Sonarr. 
 
-If your Radarr/Sonarr has different file system mappings from your Plex use `radarr_path`/`sonarr_path` along with 
-`plex_path` from your [Radarr](../config/radarr.md)/[Sonarr](../config/sonarr.md) global config settings.
+If your Radarr/Sonarr has different file system mappings from your Plex use `radarr_path`/`sonarr_path` along with `plex_path` from your 
+[Radarr](../config/radarr.md)/[Sonarr](../config/sonarr.md)global config settings.
 
 ### Radarr Add Settings
 
-When adding a movie in Radarr you get the screen below to set these options use `radarr_folder`, `radarr_monitor`, 
-`radarr_availability`, `radarr_quality`, `radarr_tag`, and `radarr_search`.
+When adding a movie in Radarr you get the screen below to set these options use `radarr_folder`, `radarr_monitor`,`radarr_availability`, `radarr_quality`, `radarr_tag`, and `radarr_search`.
 
-![Radarr Details](images/radarr.png)
+![Radarr Details](../assets/images/files/radarr-settings.png)
 
 ### Sonarr Add Settings
 
-When adding a show in Sonarr you get the screen below to set these options use `sonarr_folder`, `sonarr_monitor`, 
-`sonarr_quality`, `sonarr_language`, `sonarr_series`, `sonarr_season`, `sonarr_tag`, `sonarr_search`, and 
-`sonarr_cutoff_search`.
+When adding a show in Sonarr you get the screen below to set these options use `sonarr_folder`, `sonarr_monitor`, `sonarr_quality`, `sonarr_language`, `sonarr_series`, 
+`sonarr_season`, `sonarr_tag`, `sonarr_search`, and `sonarr_cutoff_search`.
 
-![Sonarr Details](images/sonarr.png)
+![Sonarr Details](../assets/images/files/sonarr-settings.png)
 
 ## Arr Edit Settings
 
-When editing the details of items that exist in the collection/playlist and in Radarr/Sonarr use `item_radarr_tag` and 
-`item_sonarr_tag`
+When editing the details of items that exist in the collection/playlist and in Radarr/Sonarr use `item_radarr_tag` and `item_sonarr_tag`

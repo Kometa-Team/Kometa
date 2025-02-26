@@ -1,27 +1,32 @@
-# Data sources
+---
+hide:
+  - toc
+---
 
-This page is a reference showing the sources of the data used in the defaults files.
+# Defaults Sources
+
+This page is a reference showing the sources of the data used in the Defaults Files.
 
 For example, if you are wondering what list is used by the Christmas Collection, you can find that information here.
 
-Nothing on this page is required for using the defaults files, but it can be useful for understanding where the data comes from.
+Nothing on this page is required for using the Defaults Files, but it can be useful for understanding where the data comes from.
 
 Nothing on this page is directly useful for customizing the defaults.
 
-Nothing here is a code example for end user use.  It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use, and is expressed in a different format to the way you would customize the defaults via template variables.
+Nothing here is a code example for end user use. It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use, and is expressed in a different format to the way you would customize the defaults via Template Variables.
 
 ## I want to customize the defaults
 
 You will want to start [here](./guide.md).
 
-Each default has its own set of template variables, which are used to control the behavior of that default.  Those will be listed on the individual page for each default.
+Each default has its own set of Template Variables, which are used to control the behavior of that default. Those will be listed on the individual page for each default.
 
 ## I want to know what's behind the defaults
 
-These are lists provided for reference to show what values will be in use if you do no customization.  **These do not 
+These are lists provided for reference to show what values will be in use if you do no customization. **These do not 
 show how to customize the defaults.**
 
-Nothing here is a code example for end user use.  It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use.
+Nothing here is a code example for end user use. It all *looks* like code, since it is taken directly *from* the Kometa source code to ensure it is up-to-date and accurate, but it is not intended for end user use.
 
 If you want to customize these values, refer to [this](#i-want-to-customize-the-defaults).
 
@@ -53,25 +58,25 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### AniList Collections
 
-The AniList collections use the [anilist builder](../files/builders/anilist.md) to create the collections.
+The AniList collections use the [AniList Builder](../files/builders/anilist.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
 ### IMDB Collections
 
-The IMDb collections use the [IMDb builder](../files/builders/imdb.md) to create the collections.
+The IMDb collections use the [IMDb Builder](../files/builders/imdb.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
 ### Letterboxd Collections
 
-The Letterboxd collections use the [Letterboxd builder](../files/builders/letterboxd.md) to create the collections.
+The Letterboxd collections use the [Letterboxd Builder](../files/builders/letterboxd.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
 ### MyAnimeList Collections
 
-The MyAnimeList collections use the [MyAnimeList builder](../files/builders/myanimelist.md) to create the collections.
+The MyAnimeList collections use the [MyAnimeList Builder](../files/builders/myanimelist.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
@@ -83,26 +88,26 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 | Collection                          | Source                                                                                                                                  |
 |:------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------|
-| `AniDB Popular`                     | ['anidb_popular' builder](../files/builders/anidb.md)                                                                                   |
+| `AniDB Popular`                     | ['anidb_popular' Builder](../files/builders/anidb.md)                                                                                   |
 | `Common Sense Selection`            | Sourced from mdblist:<br>`https://mdblist.com/lists/k0meta/cssfamiliesmovies` or<br>`https://mdblist.com/lists/k0meta/cssfamiliesshows` |
-| `StevenLu's Popular Movies`         | [`stevenlu_popular` builder](../files/builders/stevenlu.md)                                                                             |
+| `StevenLu's Popular Movies`         | [`stevenlu_popular` Builder](../files/builders/stevenlu.md)                                                                             |
 | `Top 10 Pirated Movies of the Week` | Sourced from mdblist:<br>`https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/`                      |
 
 ### Tautulli Collections
 
-The Tautulli collections use the [Tautulli builder](../files/builders/tautulli.md) to create the collections.
+The Tautulli collections use the [Tautulli Builder](../files/builders/tautulli.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
 ### TMDB Collections
 
-The TMDB collections use the [TMDB builder](../files/builders/tmdb.md) to create the collections.
+The TMDB collections use the [TMDB Builder](../files/builders/tmdb.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
 ### Trakt Collections
 
-The Trakt collections use the [Trakt builder](../files/builders/trakt.md) to create the collections.
+The Trakt collections use the [Trakt Builder](../files/builders/trakt.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
@@ -340,7 +345,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Content Ratings Collections
 
-The Content Rating collections all use the [dynamic collections](../files/dynamic.md) system based on the content ratings of the items in your libraries.  They each have a addons which combine all the ratings in your library into collections reflecting the desired system.
+The Content Rating collections all use the [dynamic collections](../files/dynamic.md) system based on the content ratings of the items in your libraries. They each have a addons which combine all the ratings in your library into collections reflecting the desired system.
 
 For example, if you use the US Content Ratings collection, it will create collections for each of the US content ratings, and map any non-US content ratings in your library into one of the US content ratings.
 
@@ -426,7 +431,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Awards Collections
 
-All the Awards collections use the [IMDb Awards builder](../files/builders/imdb.md) to create the collections.
+All the Awards collections use the [IMDb Awards Builder](../files/builders/imdb.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
@@ -470,7 +475,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Collectionless Collections
 
-The Collectionless collections use the [`plex_collectionless` builder](../files/builders/plex.md) to create the collection.
+The Collectionless collections use the [`plex_collectionless` Builder](../files/builders/plex.md) to create the collection.
 
 Collections and their items are excluded from this collection based on a name prefix or the collection name.
 
@@ -494,11 +499,11 @@ Most overlays are based on Plex searches and filters; they typically assume TRaS
 
 ### aspect Overlays
 
-[`plex_search` builder](../files/builders/plex.md) with filters on a limited set of aspect ratios.
+[`plex_search` Builder](../files/builders/plex.md) with filters on a limited set of aspect ratios.
 
 ### audio_codec Overlays
 
-[`plex_all` builder](../files/builders/plex.md) with filters on both audio channel name and filepath.
+[`plex_all` Builder](../files/builders/plex.md) with filters on both audio channel name and filepath.
 
 ### Content Rating Overlays
 
@@ -506,7 +511,7 @@ All Content Rating overlays are based on Plex searches; they all search for a se
 
 ### direct_play Overlays
 
-[`plex_search` builder](../files/builders/plex.md) for 4K items.
+[`plex_search` Builder](../files/builders/plex.md) for 4K items.
 
 ### episode_info Overlays
 
@@ -514,31 +519,31 @@ Applies to every episode in the library.
 
 ### language_count Overlays
 
-[`plex_search` builder](../files/builders/plex.md) for items with any number or <3 audio tracks.
+[`plex_search` Builder](../files/builders/plex.md) for items with any number or <3 audio tracks.
 
 ### languages Overlays
 
-[`plex_search` builder](../files/builders/plex.md) on either audio or subtitle tracks names.
+[`plex_search` Builder](../files/builders/plex.md) on either audio or subtitle tracks names.
 
 ### mediastinger Overlays
 
-[`plex_all` builder](../files/builders/plex.md) with filters on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`
+[`plex_all` Builder](../files/builders/plex.md) with filters on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`
 
 ### network Overlays
 
-[`plex_search` builder](../files/builders/plex.md) on network name.  The list of networks is not exposed for customization using template variables.
+[`plex_search` Builder](../files/builders/plex.md) on network name. The list of networks is not exposed for customization using Template Variables.
 
 ### ratings Overlays
 
-[`plex_search` builder](../files/builders/plex.md) on ratings as set on items in Plex.
+[`plex_search` Builder](../files/builders/plex.md) on ratings as set on items in Plex.
 
 ### resolution Overlays
 
-[`plex_search` builder](../files/builders/plex.md) on resolutions and editions as set on items in Plex.
+[`plex_search` Builder](../files/builders/plex.md) on resolutions and editions as set on items in Plex.
 
 ### ribbon Overlays
 
-For the most part, based on the [IMDb Award builder](../files/builders/imdb.md). 
+For the most part, based on the [IMDb Award Builder](../files/builders/imdb.md). 
 
 ### runtimes Overlays
 
@@ -546,7 +551,7 @@ Applies to every item in the library.
 
 ### status Overlays
 
-Applies to every show in the library; uses the [`tmdb_status` builder](../files/builders/tmdb.md).
+Applies to every show in the library; uses the [`tmdb_status` Builder](../files/builders/tmdb.md).
 
 ### streaming Overlays
 
@@ -558,15 +563,15 @@ If you are using `originals_only`, the overlays are applied using Kometa-maintai
 
 ### studio Overlays
 
-[`plex_search` builder](../files/builders/plex.md) on studio name.  The list of studio is not exposed for customization using template variables.
+[`plex_search` Builder](../files/builders/plex.md) on studio name. The list of studio is not exposed for customization using Template Variables.
 
 ### versions Overlays
 
-[`plex_search` builder](../files/builders/plex.md) for duplicate items or episodes.
+[`plex_search` Builder](../files/builders/plex.md) for duplicate items or episodes.
 
 ### video_format Overlays
 
-[`plex_all` builder](../files/builders/plex.md) with filters on filepath.
+[`plex_all` Builder](../files/builders/plex.md) with filters on filepath.
 
 ## Playlists
 
