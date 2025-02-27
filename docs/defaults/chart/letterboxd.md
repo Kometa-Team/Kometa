@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Letterboxd Charts", 
+        "COLLECTION": "Letterboxd Chart", 
         "CODE_NAME": "letterboxd",
         "LIBRARY_TYPE": "Movie", 
         "DESCRIPTION": "create collections based on lists from Letterboxd",
@@ -78,3 +78,8 @@ collections on within the Letterboxd defaults using Template Variables.
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Letterboxd Chart Collections"
+        
+        The Letterboxd Chart collections use [Letterboxd Builders](../../../files/builders/letterboxd) to create the collections.

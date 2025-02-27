@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Tautulli Charts", 
+        "COLLECTION": "Tautulli Chart", 
         "CODE_NAME": "tautulli",
         "LIBRARY_TYPE": "Movie, Show", 
         "DESCRIPTION": "create collections based on Tautulli/Plex charts",
@@ -50,3 +50,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Tautulli Chart Collections"
+        
+        The Tautulli Chart collections use [Tautulli Builders](../../../files/builders/tautulli) to create the collections.

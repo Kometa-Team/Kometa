@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Basic Charts", 
+        "COLLECTION": "Basic Chart", 
         "CODE_NAME": "basic",
         "LIBRARY_TYPE": "Movie, Show", 
         "SECTION_NUMBER": "010", 
@@ -44,3 +44,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Basic Chart Collections"
+        
+        The Basic Chart collections are based on [Smart Filters](./../../../files/builders/plex#smart-filter-builder) using the `in_the_last` attribute, not external lists.

@@ -99,4 +99,10 @@
     {% include-markdown "./../variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "FULL_NAME Awards Collections"
+        
+        All the FULL_NAME Awards Collections use the [IMDb Awards Builder](../../../files/builders/imdb) to create the collections.
+
 <!--all-->

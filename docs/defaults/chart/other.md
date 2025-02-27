@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Other Charts", 
+        "COLLECTION": "Other Chart", 
         "CODE_NAME": "other_chart",
         "LIBRARY_TYPE": "Movie, Show", 
         "DESCRIPTION": "create collections based on other charts",
@@ -49,3 +49,15 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Other Chart Collections"
+        
+        The collections created here use a variety of sources.
+        
+        | Collection                          | Source                                                                                                                                                                                                                                             |
+        |:------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `AniDB Popular`                     | [`anidb_popular` Builder](../../../files/builders/anidb#anidb-popular)                                                                                                                                                                                        |
+        | `Common Sense Selection`            | Sourced from mdblist:<br>[`https://mdblist.com/lists/k0meta/cssfamiliesmovies`](https://mdblist.com/lists/k0meta/cssfamiliesmovies) or<br>[`https://mdblist.com/lists/k0meta/cssfamiliesshows`](https://mdblist.com/lists/k0meta/cssfamiliesshows) |
+        | `StevenLu's Popular Movies`         | [`stevenlu_popular` Builder](../../../files/builders/stevenlu)                                                                                                                                                                                  |
+        | `Top 10 Pirated Movies of the Week` | Sourced from mdblist:<br>[`https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/`](https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/)                                      |

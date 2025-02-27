@@ -99,9 +99,9 @@ The Tautulli collections use the [Tautulli Builder](../files/builders/tautulli.m
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
-### TMDB Collections
+### TMDb Collections
 
-The TMDB collections use the [TMDB Builder](../files/builders/tmdb.md) to create the collections.
+The TMDb collections use the [TMDb Builder](../files/builders/tmdb.md) to create the collections.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 
@@ -437,7 +437,7 @@ If you want to customize these collections, refer to [this](#i-want-to-customize
 
 ### Actors/Directors/Producers/Writers Collections
 
-All the Awards collections use the [dynamic collections](../files/dynamic.md) system based on the Actors/Directors/Producers/Writers in your library.
+All the People collections use the [dynamic collections](../files/dynamic.md) system based on the Actors/Directors/Producers/Writers in your library.
 
 If you want to customize these collections, refer to [this](#i-want-to-customize-the-defaults).
 

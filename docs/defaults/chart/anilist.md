@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Anilist Charts", 
+        "COLLECTION": "Anilist Chart", 
         "CODE_NAME": "anilist",
         "LIBRARY_TYPE": "Movie, Show", 
         "SECTION_NUMBER": "020", 
@@ -53,3 +53,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Anilist Chart Collections"
+        
+        The AniList Chart collections use [AniList Builders](../../../files/builders/anilist) to create the collections.

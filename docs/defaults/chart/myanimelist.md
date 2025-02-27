@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "MyAnimeList Charts", 
+        "COLLECTION": "MyAnimeList Chart", 
         "CODE_NAME": "myanimelist",
         "LIBRARY_TYPE": "Movie, Show", 
         "SECTION_NUMBER": "020", 
@@ -51,3 +51,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "MyAnimeList Chart Collections"
+        
+        The MyAnimeList Chart collections use [MyAnimeList Builders](../../../files/builders/myanimelist) to create the collections.
