@@ -240,7 +240,7 @@ class Trakt:
     def user_ratings(self, is_movie):
         media = "movie" if is_movie else "show"
         id_type = "tmdb" if is_movie else "tvdb"
-        return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s")}
+        return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s") if i[media]["ids"][id_type]}
 
     def get_episode_rating(self, show_id, season, episode):
         response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
