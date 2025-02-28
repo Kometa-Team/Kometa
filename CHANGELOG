@@ -9,7 +9,7 @@ Update pillow requirement to 11.1.0
 Update plexapi requirement to 4.16.1
 Update psutil requirement to 7.0.0
 Update ruamel-yaml requirement to 0.18.9
-Update setuptools requirement to 75.8.1
+Update setuptools requirement to 75.8.2
 Update tmdbapis requirement to 1.2.28
 
 # Important Changes
@@ -90,3 +90,4 @@ Fixes an issue where the decade default collection names were incorrect.
 Fixes the playlist default to automatically work with a supplied list.
 Remove an unnecessary request to Plex while processing overlays.
 Fixes issue with ICheckMovies parsing.
+Fixes issue with Letterboxd parsing.
