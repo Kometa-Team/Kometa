@@ -91,3 +91,5 @@ Fixes the playlist default to automatically work with a supplied list.
 Remove an unnecessary request to Plex while processing overlays.
 Fixes issue with ICheckMovies parsing.
 Fixes issue with Letterboxd parsing.
+Fixes issue with the `mojo_domestic` BoxOfficeMojo Builder.
+Fixes an issue updating Trakt UserRatings when the show doesn't exist on TVDb.

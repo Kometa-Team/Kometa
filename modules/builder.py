@@ -1905,7 +1905,7 @@ class CollectionBuilder:
                             except ValueError:
                                 raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
                         else:
-                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + util.lower_months)
+                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + [k for k in util.lower_months])
                             final["range_data"] = chart_date.month if _v == "current" else util.lower_months[_v]
                     elif final["range"] == "quarterly":
                         if str(og_data).startswith("current-"):
