@@ -55,7 +55,7 @@ class Letterboxd:
         return items
 
     def _tmdb(self, letterboxd_url, language):
-        ids = self._request(letterboxd_url, language, "//a[@data-track-action='TMDb']/@href")
+        ids = self._request(letterboxd_url, language, "//a[@data-track-action='TMDb' or @data-track-action='TMDB']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
                 return util.regex_first_int(ids[0], "TMDb Movie ID")
