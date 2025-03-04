@@ -13,7 +13,7 @@
     rewrite-relative-urls=false
 %}
 
-### Installing Python.
+### Installing Python
 
 In order to run a Python script. the first thing you'll need is a Python interpreter. 
 This is typically already present on Linux and Mac, but will probably have to be installed on Windows.

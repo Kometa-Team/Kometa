@@ -636,7 +636,7 @@ Kometa also features multiple layers of scheduling, which you can leverage to co
 
  - You can run Kometa in the background, telling it to wake up and process your libraries at fixed times during the day. The default behavior in this regard is to wake up at 5AM and process the config. If you leave the `-r` off the commands you have been using in this walkthrough, that's what will happen.
 
-   You can control when Kometa wakes up with the [time-to-run](../../environmental.md) env-var/runtime flag.
+   You can control when Kometa wakes up with the [time-to-run](./../../../environmental#all-available-runtime-flagsenvironment-variables) env-var/runtime flag.
 
  - You can skip using that internal schedule and just do manual runs as you have been doing throughout this walkthrough using standard tools available in your OS.
 
@@ -687,18 +687,18 @@ Kometa also features multiple layers of scheduling, which you can leverage to co
 <!--local-->
 
 <!--all-->
-{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace'{"BRANCH": "develop", "NAME": "develop"}' %}
+{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "develop", "NAME": "develop"}' %}
 
-{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace'{"BRANCH": "nightly", "NAME": "nightly"}' %}
+{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "nightly", "NAME": "nightly"}' %}
 
 <!--all-->
 
 <!--local-->
-{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace'{"BRANCH": "master", "NAME": "master"}' %}
+{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "master", "NAME": "master"}' %}
 
 <!--local-->
 
 <!--docker-unraid-->
-{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace'{"BRANCH": "latest", "NAME": "master"}' %}
+{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "latest", "NAME": "master"}' %}
 
 <!--docker-unraid-->

@@ -185,11 +185,11 @@ You should now see 2 folders, `test_tv_lib` and `test_movie_lib`. You will want 
 
     Library Name: `test_movie_lib`
 
-    ![test_movie_lib](./../../assets/images/kometa/install/test_movie_lib.png){ width="600" }
+    ![test_movie_lib](./../../../../assets/images/kometa/install/test_movie_lib.png){ width="600" }
 
     Library Name: `test_tv_lib`
 
-    ![test_movie_lib](./../../assets/images/kometa/install/test_tv_lib.png){ width="600" }
+    ![test_movie_lib](./../../../../assets/images/kometa/install/test_tv_lib.png){ width="600" }
 
 <!--all-->
 
