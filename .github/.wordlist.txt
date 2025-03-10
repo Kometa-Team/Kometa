@@ -99,6 +99,7 @@ generalizable
 github
 githubusercontent
 gitpython
+glightbox
 gotify
 gp
 grenvilles
