@@ -491,7 +491,7 @@ overlays:
 
   Hallmark:
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [Hallmark, Hallmark Channel, Hallmark Drama, Hallmark Movie & Mysteries, Hallmark Movies Now]}]
+    template: [name: standard, {name: networks, search: [Hallmark, Hallmark+, Hallmark Channel, Hallmark Drama, Hallmark Movie & Mysteries, Hallmark Movies Now]}]
 
   HBO:
     variables: { weight: 10}

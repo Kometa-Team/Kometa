@@ -398,6 +398,7 @@ dynamic_collections:
       Freevee:
         - Amazon Freevee
       Hallmark:
+        - Hallmark+
         - Hallmark Channel
         - Hallmark Drama
         - Hallmark Movie & Mysteries
