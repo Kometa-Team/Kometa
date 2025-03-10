@@ -28,88 +28,89 @@ hide:
 
 <div class="randomized half-height very-slow padded rounded stylized scroller">
   <div class="scroller__inner">
-    <figure data-label="Max">
+    <figure>
       <img src="assets/images/scrollers/collections/Max.jpg" loading="lazy">
     </figure>
-    <figure data-label="Metacritic Must See">
+    <figure>
       <img src="assets/images/scrollers/collections/Metacritic%20Must%20See.jpg" loading="lazy">
     </figure>
-    <figure data-label="Shrek">
+    <figure>
       <img src="assets/images/scrollers/collections/Shrek.jpg" loading="lazy">
     </figure>
-    <figure data-label="Animation">
+    <figure>
       <img src="assets/images/scrollers/collections/Animation.jpg" loading="lazy">
     </figure>
-    <figure data-label="Common Sense Selection">
+    <figure>
       <img src="assets/images/scrollers/collections/Common%20Sense%20Selection.jpg" loading="lazy">
     </figure>
-    <figure data-label="Newly Released Episodes">
+    <figure>
       <img src="assets/images/scrollers/collections/Newly%20Released%20Episodes.jpg" loading="lazy">
     </figure>
-    <figure data-label="United Kingdom">
+    <figure>
       <img src="assets/images/scrollers/collections/UK.jpg" loading="lazy">
     </figure>
-    <figure data-label="Oscars Best Pictures">
+    <figure>
       <img src="assets/images/scrollers/collections/Oscar%20Best%20Picture%20Winners.jpg" loading="lazy">
     </figure>
-    <figure data-label="Best of 2000s">
+    <figure>
       <img src="assets/images/scrollers/collections/2000.jpg" loading="lazy">
     </figure>
-    <figure data-label="Plex Popular">
+    <figure>
       <img src="assets/images/scrollers/collections/Plex%20Popular.jpg" loading="lazy">
     </figure>
-    <figure data-label="IMDb Top 250">
+    <figure>
       <img src="assets/images/scrollers/collections/IMDb%20Top%20250.jpg" loading="lazy">
     </figure>
-    <figure data-label="Food Network">
+    <figure>
       <img src="assets/images/scrollers/collections/Food%20Network.jpg" loading="lazy">
     </figure>
-    <figure data-label="Emmy Best Directors">
+    <figure>
       <img src="assets/images/scrollers/collections/best_director_winner.jpg" loading="lazy">
     </figure>
-    <figure data-label="Netflix">
+    <figure>
       <img src="assets/images/scrollers/collections/Netflix.jpg" loading="lazy">
     </figure>
-    <figure data-label="Based on a Book">
+    <figure>
       <img src="assets/images/scrollers/collections/Book.jpg" loading="lazy">
     </figure>
-    <figure data-label="Marvel Cinematic Universe">
+    <figure>
       <img src="assets/images/scrollers/collections/mcu.jpg" loading="lazy">
     </figure>
-    <figure data-label="Parental Guidance">
+    <figure>
       <img src="assets/images/scrollers/collections/PG.jpg" loading="lazy">
     </figure>
-    <figure data-label="Hallmark">
+    <figure>
       <img src="assets/images/scrollers/collections/Hallmark.jpg" loading="lazy">
     </figure>
-    <figure data-label="Bafta Best Pictures">
+    <figure>
       <img src="assets/images/scrollers/collections/bafta_best_picture_winner.jpg" loading="lazy">
     </figure>
-    <figure data-label="IMDb Popular">
+    <figure>
       <img src="assets/images/scrollers/collections/IMDb%20Popular.jpg" loading="lazy">
     </figure>
-    <figure data-label="Golden Globes Best Pictures">
+    <figure>
       <img src="assets/images/scrollers/collections/best_picture_winner.jpg" loading="lazy">
     </figure>
-    <figure data-label="Hulu">
+    <figure>
       <img src="assets/images/scrollers/collections/Hulu.jpg" loading="lazy">
     </figure>
-    <figure data-label="DC Extended Universe">
+    <figure>
       <img src="assets/images/scrollers/collections/dcu.jpg" loading="lazy">
     </figure>
-    <figure data-label="Disney+ Originals">
+    <figure>
       <img src="assets/images/scrollers/collections/Disney%2B_originals.jpg" loading="lazy">
     </figure>
-    <figure data-label="In Association with Marvel">
+    <figure>
       <img src="assets/images/scrollers/collections/marvel.jpg" loading="lazy">
     </figure>
-    <figure data-label="RT Certified Fresh">
+    <figure>
       <img src="assets/images/scrollers/collections/RT%20Certified%20Fresh.jpg" loading="lazy">
     </figure>
-
   </div>
 </div>
-
+<figcaption style="text-align: center; max-width: 100%; margin-top: 0.1rem;" >
+  Collections created using the <a href="https://kometa.wiki/en/latest/defaults/guide/" target="_blank">Kometa Defaults</a>
+</figcaption>
 {%
     include-markdown "../README.md"
     start="<!--whatcanitdo-start-->"
@@ -195,11 +196,11 @@ hide:
     <figure>
       <img src="assets/images/scrollers/overlays/23.webp" loading="lazy">
     </figure>
-
-
   </div>
 </div>
-
+<figcaption style="text-align: center; max-width: 100%; margin-top: 0.1rem;" >
+  Overlays created using the <a href="https://kometa.wiki/en/latest/defaults/guide/" target="_blank">Kometa Defaults</a> or by community created Overlay Files
+</figcaption>
 {%
     include-markdown "../README.md"
     start="<!--started-start-->"
