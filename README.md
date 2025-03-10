@@ -24,60 +24,14 @@ to create one-of-a-kind collections, overlays and more. Your media library will 
 
 ## What Can Kometa Do?
 <!--intro-end-->
-
-### Overhaul Your Media Libraries
-
-<ul><li>
-<!--card1-start-->
+<!--whatcanitdo-start-->
 Elevate your library with beautifully crafted metadata - customize artwork, titles, summaries, and more to create a stunning library.
-<!--card1-end-->
-</li></ul>
 
-### Kometa Defaults
+Harness the power of Trakt, TMDb, IMDb and more to create collections and overlays. Take advantage of pre-made modular Collections & Overlays to reduce the manual effort and get to the good stuff with less effort! You can see some example Collection images above and some example Overlay images below.
 
-<ul><li>
-<!--card2-start-->
-Take advantage of pre-made modular Collections & Overlays to reduce the manual effort and get to the good stuff with less effort!
-<!--card2-end-->
-</li></ul>
-
-### Third-Party Integrations
-
-<ul><li>
-<!--card3-start-->
-Harness the power of Trakt, TMDb, IMDb and more to create collections and overlays!
-<!--card3-end-->
-</li><li>
-<!--card4-start-->
 Integrate with Sonarr and Radarr to automate your library growth.
-<!--card4-end-->
-</li></ul>
+<!--whatcanitdo-end-->
 
-### Library Operations
-
-<ul><li>
-<!--card5-start-->
-Use operations to overhaul aspects of your library
-<!--card5-end-->
-</li><li>
-<!--card6-start-->
-Replace ratings with your preferred source, fetch new posters from TMDb, backup your metadata to a file and more!
-<!--card6-end-->
-</li></ul>
-
-### And More!
-
-<ul><li>
-<!--card7-start-->
-We're constantly working on new features to take your library management experience to the next level.
-<!--card7-end-->
-</li><li>
-<!--card8-start-->
-Consider sponsoring the project to allow us to continue building great features for you!
-<!--card8-end-->
-</li></ul>
-
-<!--started-start-->
 ## Example Kometa Libraries 
 
 Here are some examples of the things you can achieve using Kometa!
@@ -90,32 +44,33 @@ Here are some examples of the things you can achieve using Kometa!
 
 <img src="https://kometa.wiki/en/latest/assets/images/show-overlays.png" width="600" alt="Show Collection Preview">
 
-## Kometa Defaults
+<!--collecionsoverlays-start-->
+## Collections & Overlays
 
-Want your library to look like the above images? With the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/) you can! These powerful and modular files were designed 
-by the Kometa team to make it simple to create a personalized, one-of-a-kind media collection without the hassle of manually defining each one.
+The [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/) are modular files designed by the Kometa team to make it simple to create a personalized, one-of-a-kind media collection without the hassle of manually defining each one.
 
-Want to see what the community has to offer? Check out the [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs)
-repository on GitHub to see user-submitted configuration files, or even add your own to the mix!
+Want to see what the community has to offer? Check out the [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs) repository on GitHub to see user-submitted configuration files, or even add your own to the mix!
 
 With Kometa, you can also manage metadata for all your media types, from movies and shows to music and more and since your metadata is managed outside your libraries, 
 you'll never have to worry about losing your customizations in the event of a media server database loss, you can simply reapply them! 
 It is also easy to move your customizations between servers if you need to.
+<!--collecionsoverlays-end-->
 
+<!--started-start-->
 ## Getting Started
 
 To get started with Kometa, follow these simple steps:
 
-1. Install Kometa on your device. You can find the installation instructions for a variety of platforms [here](https://kometa.wiki/en/latest/kometa/install/overview/).
+1.  Install Kometa on your device. You can find the installation instructions for a variety of platforms [here](https://kometa.wiki/en/latest/kometa/install/overview/).
 
-2. Once you have installed Kometa, create your [Configuration File](https://kometa.wiki/en/latest/config/overview/). 
-   This file contains important information such as URLs and credentials needed to connect to services like Plex and TMDb.
+2.  Once you have installed Kometa, create your [Configuration File](https://kometa.wiki/en/latest/config/overview/). 
+     file contains important information such as URLs and credentials needed to connect to services like Plex and TMDb.
 
-3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a 
-   [Collection File](https://kometa.wiki/en/latest/files/collections/) for each Library you want to work with. 
-   If you'd rather use some of our pre-made Collection Files, take a look at the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/).
+3.  After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a 
+    [Collection File](https://kometa.wiki/en/latest/files/collections/) for each Library you want to work with. 
+    If you'd rather use some of our pre-made Collection Files, take a look at the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/).
 
-4. Finally, check out the [Wiki](https://kometa.wiki), you'll find new and exciting ways to truly unlock the potential of your libraries.
+4.  Finally, check out the [Wiki](https://kometa.wiki), you'll find new and exciting ways to truly unlock the potential of your libraries.
 
 ## Step-by-Step Guides
 
@@ -136,6 +91,7 @@ If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following ba
   * [Kubernetes Walkthrough](https://kometa.wiki/en/latest/kometa/install/kubernetes/)
   * [QNAP Walkthrough](https://kometa.wiki/en/latest/kometa/install/qnap/)
   * [Synology Walkthrough](https://kometa.wiki/en/latest/kometa/install/synology/)
+<!--started-end-->
 
 ## Example Usage
 
@@ -166,7 +122,6 @@ These branches are where bug fixes, new features, and other changes are added be
 However, these branches (especially Nightly) are recommended for more technical users who don't mind updating frequently to get the latest changes. 
 Keep in mind that these beta branches may have bugs or other issues that could cause problems with Kometa or your media server. 
 So, if you're not comfortable with technical issues, it's best to stick with the Master branch.
-<!--started-end-->
 
 ### Develop Branch
 
@@ -258,12 +213,13 @@ git checkout master
 As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://kometa.wiki/en/nightly/) branch of the wiki and all 
 discussions relating to changes made in the nightly branch will be held within the [Kometa Discord Server](https://kometa.wiki/en/latest/discord/).
 <!--nightly2-end-->
-<!--outro-start-->
+<!--discord-start-->
 ## Discord Support Server
 
 If you're looking for support for any questions or issues you might have, or if you just want to be a part of our 
 growing community, Join the [Kometa Discord Server](https://kometa.wiki/en/latest/discord/).
-
+<!--discord-end-->
+<!--outro-start-->
 ## Feature Requests
 
 At Kometa, we value our community's input and actively seek feedback to drive the evolution of our product. We want to hear your ideas on how to enhance Kometa, 

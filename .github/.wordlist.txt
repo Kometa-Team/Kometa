@@ -269,6 +269,7 @@ rw
 schemas
 sci-fi
 scifi
+scrollers
 scudlee
 sdtv
 semver

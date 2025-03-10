@@ -106,6 +106,7 @@ table tr td code {
 @media only screen and (min-width: 76.25em) {
     .md-main__inner {
         max-width: 80%;
+        margin-top: 0;
     }
 
     .md-sidebar--primary {
@@ -664,4 +665,86 @@ code {
     margin-left: 50%;
     background-color: #00bc8c;
     color: #FFFFFF;
+}
+
+
+/* Stylize horizontal marquee / scrollers */
+.scroller {
+  max-width: 100%;
+  overflow-x: hidden; /* Add this if you want horizontal scrolling */
+  overflow-y: hidden;
+}
+
+.scroller > .scroller__inner {
+  display: flex; /* All content should display inline */
+}
+
+/* Reduce speed of slow scrollers */
+.very-slow.scroller {
+  --_animation-duration: 100s;
+}
+
+.scroller[data-animated=true] > .scroller__inner {
+  /* The inner scroller should be the size of all inner content */
+  width: max-content;
+  flex-wrap: nowrap;
+  animation: scroll var(--_animation-duration, 55s) linear infinite;
+}
+.reversed.scroller[data-animated=true] > .scroller__inner {
+  animation-direction: reverse;
+}
+@keyframes scroll {
+  to {
+    transform: translate(-50%);
+  }
+}
+
+/* Add inner-item padding to padded scroller content */
+.padded.scroller[data-animated=true] > .scroller__inner > * {
+  margin-right: 0.5em;
+}
+
+/* Round corners of rounded scrollers */
+.rounded.padded.scroller[data-animated=true] > .scroller__inner img {
+  border-radius: 4px;
+}
+
+/* Stylized scrollers have images which expand when hovered */
+.stylized.scroller > .scroller__inner > * {
+  transition: all 350ms ease-in-out;
+}
+.stylized.scroller > .scroller__inner > *:hover {
+  transition: all 350ms ease-in-out;
+}
+.stylized.scroller > .scroller__inner > *:hover {
+  scale: 1.15;
+  z-index: 3;
+}
+/* Erase the subtitle text when the image is expanded */
+.stylized.scroller > .scroller__inner > *:hover::after {
+  content: "";
+}
+
+/* Reduce image height if scroller is enabled */
+.scroller[data-animated=true] img {
+  height: 75vh;
+}
+.half-height.scroller[data-animated=true] img {
+  height: 38vh;
+}
+.scroller > .scroller__inner > *::after {
+  content: attr(data-label);
+  position: relative;
+  display: block;
+  text-align: center;
+  font-style: italic;
+}
+/* Reduce height on mobile */
+@media (max-width: 768px) {
+  .scroller[data-animated=true] img {
+    height: 40vh;
+  }
+  .half-height.scroller[data-animated=true] img {
+    height: 18vh;
+  }
 }
