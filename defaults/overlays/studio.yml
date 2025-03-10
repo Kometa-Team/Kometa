@@ -965,7 +965,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Hallmark:
-    template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
+    template: [name: standard, {name: studios, search: [Hallmark Channel, Hallmark+, Hallmark Entertainment, Hallmark Media, Hallmark Movies & Mysteries, The Hallmark Channel]}]
 
   HandMade Films:
     template: [name: standard, name: studios]
