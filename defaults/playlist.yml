@@ -22,6 +22,8 @@ templates:
             value: https://www.imdb.com/list/ls566357882/
           - key: starwars
             value: https://www.imdb.com/list/ls501373412/
+          - key: startrek
+            value: https://www.imdb.com/list/ls525763569/
           - key: xmen
             value: https://www.imdb.com/list/ls567618635/
         # check2
