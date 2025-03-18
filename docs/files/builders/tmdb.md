@@ -8,7 +8,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
 ## TMDb Standard Builders
 
-| Attribute                        | Description                                              |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+| Builder                        | Description                                              |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:---------------------------------|:---------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`tmdb_discover`](#discover)     | Uses [TMDb's Discover Search](https://developer.themoviedb.org/docs/search-and-query-for-details) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`tmdb_collection`](#collection) | Finds every item in the TMDb collection                  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -21,7 +21,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
 ## TMDb Chart Builders
 
-| Attribute                                  | Description                                                                                                                                                     |              Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort     |
+| Builder                                  | Description                                                                                                                                                     |              Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort     |
 |:-------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------:|:------------------------------------------:|:-------------------------------------------:|
 | [`tmdb_popular`](#popular)                 | Finds the movies/shows in TMDb's [Popular Movies](https://www.themoviedb.org/movie)/[Popular Shows](https://www.themoviedb.org/tv) list                         | :fontawesome-solid-circle-check:{ .green }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green }  |
 | [`tmdb_now_playing`](#now-playing)         | Finds the movies in TMDb's [Now Playing](https://www.themoviedb.org/movie/now-playing) list                                                                     | :fontawesome-solid-circle-check:{ .green }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green }  |
@@ -35,7 +35,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
 ## TMDb People Builders
 
-| Attribute                    | Description                                                                                                                                                     |              Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort     |
+| Builder                    | Description                                                                                                                                                     |              Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort     |
 |:-----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------:|:------------------------------------------:|:-------------------------------------------:|
 | [`tmdb_actor`](#actor)       | Finds every item in the TMDb Person's Actor Credits      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`tmdb_crew`](#crew)         | Finds every item in the TMDb Person's Crew Credits       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |

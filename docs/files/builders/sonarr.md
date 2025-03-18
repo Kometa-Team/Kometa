@@ -10,7 +10,7 @@ You can find items in your Plex using the features of [Sonarr](https://sonarr.tv
 
     [Configuring Sonarr](../../config/sonarr.md) in the config is required for any of these builders.
 
-| Attribute                           | Description                                  |            Works with Movies             |              Works with Shows              |   Works with Playlists and Custom Sort   |
+| Builder                           | Description                                  |            Works with Movies             |              Works with Shows              |   Works with Playlists and Custom Sort   |
 |:------------------------------------|:---------------------------------------------|:----------------------------------------:|:------------------------------------------:|:----------------------------------------:|
 | [`sonarr_all`](#sonarr-all)         | Gets all Series in Sonarr.                   | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |
 | [`sonarr_taglist`](#sonarr-taglist) | Gets Series from Sonarr based on their tags. | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |

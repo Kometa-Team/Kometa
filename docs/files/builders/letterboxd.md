@@ -6,7 +6,7 @@ hide:
 
 You can find items using the lists on [Letterboxd.com](https://letterboxd.com/) (Letterboxd). 
 
-| Attribute                             | Description                              |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
+| Builder                             | Description                              |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
 |:--------------------------------------|:-----------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
 | [`letterboxd_list`](#letterboxd-list) | Finds every movie in the Letterboxd List | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
 

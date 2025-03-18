@@ -10,7 +10,7 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
 
     [Configuring MyAnimeList](../../config/myanimelist.md) in the config is required for any of these builders to function.
 
-| Attribute                                    | Description                                                                                                             |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+| Builder                                    | Description                                                                                                             |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:---------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`mal_search`](#myanimelist-search)          | Finds every anime in a MyAnimeList Search list                                                                          | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | 
 | [`mal_all`](#myanimelist-top-all)            | Finds every anime in MyAnimeList's [Top All Anime](https://myanimelist.net/topanime.php) list                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | 

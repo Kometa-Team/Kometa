@@ -6,7 +6,7 @@ hide:
 
 You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb).
 
-| Attribute                           | Description                                                                                                           |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+| Builder                           | Description                                                                                                           |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:------------------------------------|:----------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`imdb_id`](#imdb-id)               | Gets the movie/show specified.                                                                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`imdb_chart`](#imdb-chart)         | Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |

@@ -175,7 +175,7 @@ Smart Builders are usually the recommended approach as they are lightweight and 
      
     The results of these builders are static and require Kometa to re-run in order to update.
     
-    | Attribute                                     | Description                                                                 |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+    | Builder                                     | Description                                                                 |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
     |:----------------------------------------------|:----------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
     | [`plex_all`](#plex-all)                       | Gets every movie/show in your library. Useful with [Filters](../filters.md) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | [`plex_search`](#plex-search)                 | Gets every movie/show based on the search parameters provided               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
