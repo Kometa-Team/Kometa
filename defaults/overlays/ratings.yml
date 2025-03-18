@@ -76,7 +76,6 @@ templates:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: rt_popcorn
-            library_type: movie
             value: https://mdblist.com/lists/k0meta/verifiedhot<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: rt_tomato
@@ -92,6 +91,10 @@ templates:
       run_this:
         default: true
         conditions:
+          - image_level: Top
+            rating<<rating_num>>_image: rt_popcorn
+            library_type: show
+            value: false
           - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, mdb, tmdb, trakt, mal, star]
             value: false
