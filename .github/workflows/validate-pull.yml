@@ -56,7 +56,7 @@ jobs:
             done
 
       - name: Get all changed files
-        uses: tj-actions/changed-files@v45
+        uses: tj-actions/changed-files@v46
         id: changed_files
         with:
           files: |

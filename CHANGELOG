@@ -8,8 +8,9 @@ Update pathvalidate requirement to 3.2.3
 Update pillow requirement to 11.1.0
 Update plexapi requirement to 4.16.1
 Update psutil requirement to 7.0.0
+Update pywin32 requirement to 310
 Update ruamel-yaml requirement to 0.18.9
-Update setuptools requirement to 75.8.2
+Update setuptools requirement to 76.1.0
 Update tmdbapis requirement to 1.2.28
 
 # Important Changes

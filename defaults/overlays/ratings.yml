@@ -76,6 +76,7 @@ templates:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: rt_popcorn
+            library_type: movie
             value: https://mdblist.com/lists/k0meta/verifiedhot<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: rt_tomato
