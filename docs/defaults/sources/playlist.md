@@ -16,7 +16,7 @@ If you want to customize these values, use the methods described above.
         ```yaml
           - default: playlists
             template_variables:
-              imdb_list_startrek: https://www.imdb.com/list/ls525763569/
+              imdb_list_startrek: https://www.imdb.com/list/ls547463722/
         ```
 
     ```yaml
@@ -33,16 +33,6 @@ If you want to customize these values, use the methods described above.
 ??? example "Default Template Variable `mdblist_list` (click to expand) <a class="headerlink" href="#mdblist-list" title="Permanent link">¶</a>"
 
     <div id="mdblist-list" />
-
-    ???+ tip 
-    
-        Pass `mdblist_list_<<key>>` to the file as template variables to change this value per playlist.
-
-        ```yaml
-          - default: playlists
-            template_variables:
-              mdblist_list_startrek: https://mdblist.com/lists/angryduckftw/star-trek
-        ```
 
     ```yaml
     {%
