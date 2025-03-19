@@ -1,0 +1,650 @@
+{
+    "AniDB": [
+        {
+            "builder": "anidb_id",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anidb/#anidb-id",
+            "description": "Finds the anime specified by the AniDB ID.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "anidb_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anidb/#anidb-popular",
+            "description": "Finds every anime in AniDB's [Popular Anime](https://anidb.net/latest/anime/popular/?h=1) list.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "anidb_relation",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anidb/#anidb-relation",
+            "description": "Finds all anime in the relation graph of the specified AniDB ID.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "anidb_tags",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anidb/#anidb-tag",
+            "description": "Finds every anime in a AniDB Tag.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        }
+    ],
+    "AniList": [
+        {
+            "builder": "anilist_id",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-id",
+            "description": "Finds the anime specified by the AniList ID",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "anilist_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-popular",
+            "description": "Finds every anime in AniList's [Popular Anime](https://anilist.co/search/anime/popular) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "anilist_relations",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-relations",
+            "description": "Finds the anime specified by the AniList ID and every relation in its relation tree except Character and Other relations",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "anilist_search",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-search",
+            "description": "Finds the anime specified by the AniList search parameters provided",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "anilist_studio",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-studio",
+            "description": "Finds all anime specified by the AniList Studio ID",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "anilist_top_rated",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-top-rated",
+            "description": "Finds every anime in AniList's [Top Rated Anime](https://anilist.co/search/anime?sort=SCORE_DESC) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "anilist_trending",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-trending",
+            "description": "Finds every anime in AniList's [Trending Anime](https://anilist.co/search/anime/trending) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "anilist_userlist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anilist/#anilist-userlist",
+            "description": "Finds the anime in AniList User's Anime list the options are detailed below",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "ICheckMovies": [
+        {
+            "builder": "icheckmovies_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/icheckmovies/#icheckmovies-list",
+            "description": "Finds every movie in the ICheckMovies List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "IMDb": [
+        {
+            "builder": "imdb_award",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-award",
+            "description": "Gets every movie/show in an [IMDb Event](https://www.imdb.com/event/).",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "imdb_chart",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-chart",
+            "description": "Gets every movie/show in an IMDb Chart like [IMDb Top 250 Movies](https://www.imdb.com/chart/top).",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "imdb_id",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-id",
+            "description": "Gets the movie/show specified.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "imdb_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-list",
+            "description": "Gets every movie/show in an IMDb List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "imdb_search",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-search",
+            "description": "Gets every movie/show in an [IMDb Search](https://www.imdb.com/search/title/). Can also be used for Keyword searches.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "imdb_watchlist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/imdb/#imdb-watchlist",
+            "description": "Gets every movie/show in an IMDb User's Watchlist.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "Letterboxd": [
+        {
+            "builder": "letterboxd_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/letterboxd/#letterboxd-list",
+            "description": "Finds every movie in the Letterboxd List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "MDBList": [
+        {
+            "builder": "mdblist_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/mdblist/#mdblist-list",
+            "description": "Gets every movie/show in a [MDBList List](https://mdblist.com/toplists/).",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "MyAnimeList": [
+        {
+            "builder": "mal_airing",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-airing",
+            "description": "Finds every anime in MyAnimeList's [Top Airing Anime](https://myanimelist.net/topanime.php?type=airing) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_all",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-all",
+            "description": "Finds every anime in MyAnimeList's [Top All Anime](https://myanimelist.net/topanime.php) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_favorite",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-most-favorite",
+            "description": "Finds every anime in MyAnimeList's [Most Favorited Anime](https://myanimelist.net/topanime.php?type=favorite) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_id",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-id",
+            "description": "Finds the anime specified by the MyAnimeList ID",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "mal_movie",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-movie",
+            "description": "Finds every anime in MyAnimeList's [Top Anime Movies](https://myanimelist.net/topanime.php?type=movie) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_ova",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-ova",
+            "description": "Finds every anime in MyAnimeList's [Top Anime OVA Series](https://myanimelist.net/topanime.php?type=ova) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-most-popular",
+            "description": "Finds every anime in MyAnimeList's [Most Popular Anime](https://myanimelist.net/topanime.php?type=bypopularity) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_search",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-search",
+            "description": "Finds every anime in a MyAnimeList Search list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_season",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-seasonal",
+            "description": "Finds anime in MyAnimeList's [Seasonal Anime](https://myanimelist.net/anime/season) list the options are detailed below",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_special",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-special",
+            "description": "Finds every anime in MyAnimeList's [Top Anime Specials](https://myanimelist.net/topanime.php?type=special) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_suggested",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-suggested",
+            "description": "Finds the suggested anime in by MyAnimeList for the authorized user",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_tv",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-tv",
+            "description": "Finds every anime in MyAnimeList's [Top Anime TV Series](https://myanimelist.net/topanime.php?type=tv) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_upcoming",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-top-upcoming",
+            "description": "Finds every anime in MyAnimeList's [Top Upcoming Anime](https://myanimelist.net/topanime.php?type=upcoming) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mal_userlist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/myanimelist/#myanimelist-userlist",
+            "description": "Finds anime in MyAnimeList User's Anime list the options are detailed below",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "Plex": [
+        {
+            "builder": "plex_all",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-all",
+            "description": "Gets every movie/show in your library. Useful with [Filters](../filters.md)",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "plex_collectionless",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-collectionless",
+            "description": "Gets every movie/show that is not in a collection",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "plex_pilots",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-pilots",
+            "description": "Gets the first episode of every show in your library",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "plex_search",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-search",
+            "description": "Gets every movie/show based on the search parameters provided",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "plex_watchlist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-watlist",
+            "description": "Gets every movie/show in your Watchlist.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "Radarr": [
+        {
+            "builder": "radarr_all",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/radarr/#radarr-all",
+            "description": "Gets all Movies in Radarr.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "radarr_taglist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/radarr/#radarr-taglist",
+            "description": "Gets Movies from Radarr based on their tags.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "No"
+        }
+    ],
+    "Reciperr": [
+        {
+            "builder": "reciperr_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/reciperr/#reciperr-list",
+            "description": "Finds every movie at a Reciperr JSON data URL.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "Sonarr": [
+        {
+            "builder": "sonarr_all",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/sonarr/#sonarr-all",
+            "description": "Gets all Series in Sonarr.",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "sonarr_taglist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/sonarr/#sonarr-taglist",
+            "description": "Gets Series from Sonarr based on their tags.",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        }
+    ],
+    "StevenLu": [
+        {
+            "builder": "stevenlu_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/stevenlu/#stevenlus-popular-movies-list",
+            "description": "Finds every movie on [StevenLu's Popular Movies List](https://movies.stevenlu.com/).",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "Tautulli": [
+        {
+            "builder": "tautulli_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tautulli/#tautulli-popularwatched",
+            "description": "Gets the Tautulli Most Popular List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tautulli_watched",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tautulli/#tautulli-popularwatched",
+            "description": "Gets the Tautulli Most Watched List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "TMDb": [
+        {
+            "builder": "tmdb_actor",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#actor",
+            "description": "Finds every item in the TMDb Person's Actor Credits",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_airing_today",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#airing-today",
+            "description": "Finds the shows in TMDb's [Airing Today Shows](https://www.themoviedb.org/tv/airing-today) list",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_collection",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#collection",
+            "description": "Finds every item in the TMDb collection",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_company",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#company",
+            "description": "Finds every item from the TMDb company's movie/show list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_crew",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#crew",
+            "description": "Finds every item in the TMDb Person's Crew Credits",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_director",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#director",
+            "description": "Finds every item in the TMDb Person's Director Credits",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_discover",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#discover",
+            "description": "Uses [TMDb's Discover Search](https://developer.themoviedb.org/docs/search-and-query-for-details) to find every movie/show based on the [movie search parameters](https://developers.themoviedb.org/3/discover/movie-discover) or [show search parameters](https://developers.themoviedb.org/3/discover/tv-discover) provided",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_keyword",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#keyword",
+            "description": "Finds every item from the TMDb keyword's movie/show list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#list",
+            "description": "Finds every item in the TMDb List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_movie",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#movie",
+            "description": "Finds the movie specified",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_network",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#network",
+            "description": "Finds every item from the TMDb network's show list",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_now_playing",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#now-playing",
+            "description": "Finds the movies in TMDb's [Now Playing](https://www.themoviedb.org/movie/now-playing) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_on_the_air",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#on-the-air",
+            "description": "Finds the shows in TMDb's [On TV Shows](https://www.themoviedb.org/tv/on-the-air) list",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#popular",
+            "description": "Finds the movies/shows in TMDb's [Popular Movies](https://www.themoviedb.org/movie)/[Popular Shows](https://www.themoviedb.org/tv) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_producer",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#producer",
+            "description": "Finds every item in the TMDb Person's Producer Credits",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_show",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#show",
+            "description": "Finds the show specified",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tmdb_top_rated",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#top-rated",
+            "description": "Finds the movies/shows in TMDb's [Top Rated Movies](https://www.themoviedb.org/movie/top-rated)/[Top Rated Shows](https://www.themoviedb.org/tv/top-rated) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_trending_daily",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#trending-daily",
+            "description": "Finds the movies/shows in TMDb's Trending Daily list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_trending_weekly",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#trending-weekly",
+            "description": "Finds the movies/shows in TMDb's Trending Weekly list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_upcoming",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#upcoming",
+            "description": "Finds the movies in TMDb's [Upcoming Movies](https://www.themoviedb.org/movie/upcoming) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tmdb_writer",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tmdb/#writer",
+            "description": "Finds every item in the TMDb Person's Writer Credits",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        }
+    ],
+    "Trakt": [
+        {
+            "builder": "trakt_boxoffice",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-box-office",
+            "description": "Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "trakt_chart",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-chart",
+            "description": "Finds the movies/shows in the Trakt Chart",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "trakt_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-list",
+            "description": "Finds every movie/show in the Trakt List",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "trakt_recommendations",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-recommendations",
+            "description": "Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations)",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "trakt_userlist",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-userlist",
+            "description": "Finds every movie/show in the Trakt UserList",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
+    "TVDb": [
+        {
+            "builder": "tvdb_list",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tvdb/#tvdb-list",
+            "description": "Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb UserList](https://www.thetvdb.com/lists/custom)",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tvdb_movie",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tvdb/#tvdb-movie",
+            "description": "Finds the movie specified",
+            "works_with_movies": "Yes",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
+            "builder": "tvdb_show",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tvdb/#tvdb-show",
+            "description": "Finds the series specified",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        }
+    ]
+}
