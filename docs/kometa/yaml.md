@@ -258,3 +258,79 @@ libraries:
     overlay_files:
       - default: ribbon
 ```
+
+## YAML Editors
+
+A code-focused editor can make your life simpler by highlighting common errors that other editors do not pick up on - from incorrect indentation to invalid attributes or values. They can help with checking YML structure, and warning you of potential errors before you run the file through Kometa. This helps save time and reduce troubleshooting efforts.
+
+It also formats the code to be easier to work with, highlighting elements and colorizing indents to make errors more noticeable and navigation simpler.
+
+Here is a quick example of how a config.yml extract looks in Visual Studio Code compared to Notepad.
+
+=== "Visual Studio Code"
+
+    ![vscode.png](../assets/images/kometa/guides/vscode.png)
+   
+=== "Notepad"
+
+    ![notepad.png](../assets/images/kometa/guides/notepad.png)
+   
+As you can see above, Visual Studio Code has some red squiggly lines where it has identified issues with the code. These issues are not as easy to spot in the Notepad image.
+
+See the below code example and press the :fontawesome-solid-circle-plus: icon to see what error Visual Studio Code presents for each of the error lines:
+
+```yaml
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
+
+libraries:
+  Movies:
+    collection_files:
+      - file: config/Movies.yml
+        asset_directory: config/assets/Movies/General
+       - default: universe #(1)!
+        template_variables:
+          use_xmen: false
+      - default: wow #(2)!
+
+plex:
+  url: #(3)!
+  token: #(3)!
+  db_cache: 40
+  timeout: 60
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl: #(3)!
+```
+
+1.  All sequence items must start at the same column (i.e. bad indentation)
+2.  Value is not accepted. Valid values: actor, anilist, aspect, etc...
+3.  Incorrect type. Expected "string" (i.e. there should be a value here)
+
+The above issues may not be super noticeable if you aren't using a code-aware editor, this makes it much more obvious that something may be wrong with the config.yml
+
+You should add this line **at the very top** of your config.yml, eligible editors will use it to check your config.yml is valid against the Kometa validation schema:
+
+```
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
+
+```
+### Visual Studio Code (VSCode)
+
+Visual Studio Code is a free, open-source editor renowned for its extensive language support and powerful extension ecosystem. Its built-in support for YAML is enhanced by extensions—such as the YAML Language Support by Red Hat—that provide features like syntax highlighting, auto-completion, and error detection. This makes it especially effective for managing configuration files in modern development workflows including containerization and infrastructure as code.
+
+**Operating Systems Supported**: Windows, macOS, Linux - [Visit the Visual Studio Code Website](https://code.visualstudio.com/)
+
+**Suggested Extensions**: [indent-rainbow](https://marketplace.visualstudio.com/items?itemName=oderwat.indent-rainbow) by oderwat, [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) by Red Hat
+
+*Special shoutout to VSCodium which is a fork of VSCode without Microsoft's branding/telemetry/licensing*
+
+### Sublime Text
+
+Sublime Text is a fast, lightweight, and highly customizable editor that many developers favor for its clean interface and powerful performance. With native syntax highlighting for YAML and an extensive library of plugins available through Package Control, it offers features such as code folding and snippets that streamline the editing of complex configuration files. Its minimalistic design coupled with robust performance makes it a favorite for users who demand speed and flexibility.
+
+**Operating Systems Supported**: Windows, macOS, Linux - [Visit the Sublime Text Website](https://www.sublimetext.com/)
+
+**Suggested Extensions**: [RainbowIdent](https://packagecontrol.io/packages/RainbowIndent) by jfcherng
+

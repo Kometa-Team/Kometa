@@ -332,7 +332,11 @@ utills
 vecteezy
 venv
 visualstudio
-vladimir
+Vladimir
+vscode
+VSCode
+vscodium
+VSCodium
 wachowski
 walkthrough
 walkthroughs
