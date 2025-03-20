@@ -131,6 +131,7 @@ io
 iteratively
 itvx
 jd
+jfcherng
 jinja
 jkirkcaldy
 johnfawkes
@@ -168,8 +169,8 @@ mcu
 md
 mdb
 mdblist
-mdblists
 mdblist's
+mdblists
 mediastinger
 mediastingers
 mediux
@@ -180,6 +181,7 @@ metascore
 microsoft
 mikenobbs
 minikube
+minimalistic
 mnt
 mojo
 mojo's
@@ -200,11 +202,11 @@ natively
 nfr
 nitsua
 NL
+nl
 nocopy
 Nokmål
-NOSUCHLIBRARY
-nl
 nokmål
+NOSUCHLIBRARY
 nosuchlibrary
 notifiarr
 ntfy
@@ -212,6 +214,7 @@ num
 nynorsk
 oauth
 octicons
+oderwat
 omdb
 oscar
 osx
@@ -276,6 +279,7 @@ sdtv
 semver
 setuptools
 shawshank
+shoutout
 skywalker
 sohjiro
 sohjiro's
@@ -333,10 +337,10 @@ vecteezy
 venv
 visualstudio
 Vladimir
-vscode
 VSCode
-vscodium
+vscode
 VSCodium
+vscodium
 wachowski
 walkthrough
 walkthroughs
