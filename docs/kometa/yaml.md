@@ -295,19 +295,20 @@ libraries:
 
 plex:
   url: #(3)!
-  token: #(3)!
+  token: #(4)!
   db_cache: 40
   timeout: 60
   clean_bundles: false
   empty_trash: false
   optimize: false
-  verify_ssl: #(3)!
+  verify_ssl: #(5)!
 ```
 
 1.  All sequence items must start at the same column (i.e. bad indentation)
 2.  Value is not accepted. Valid values: actor, anilist, aspect, etc...
 3.  Incorrect type. Expected "string" (i.e. there should be a value here)
-
+4.  Incorrect type. Expected "string" (i.e. there should be a value here)
+5.  Incorrect type. Expected "string" (i.e. there should be a value here)
 The above issues may not be super noticeable if you aren't using a code-aware editor, this makes it much more obvious that something may be wrong with the config.yml
 
 You should add this line **at the very top** of your config.yml, eligible editors will use it to check your config.yml is valid against the Kometa validation schema:
