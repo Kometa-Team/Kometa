@@ -250,6 +250,7 @@ pywin
 qnap
 quickstart
 radarr
+Rainbow​Indent
 razzie
 razzies
 readme
