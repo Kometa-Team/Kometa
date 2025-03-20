@@ -332,5 +332,5 @@ Sublime Text is a fast, lightweight, and highly customizable editor that many de
 
 **Operating Systems Supported**: Windows, macOS, Linux - [Visit the Sublime Text Website](https://www.sublimetext.com/)
 
-**Suggested Extensions**: [RainbowIdent](https://packagecontrol.io/packages/RainbowIndent) by jfcherng
+**Suggested Extensions**: [RainbowIndent](https://packagecontrol.io/packages/RainbowIndent) by jfcherng
 
