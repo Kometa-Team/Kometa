@@ -16,3 +16,6 @@ schedule==1.2.2
 setuptools==80.1.0
 tenacity==9.1.2
 tmdbapis==1.2.28
+opencv-python==4.11.0.86
+numpy==2.1.3
+retina-face==0.0.17

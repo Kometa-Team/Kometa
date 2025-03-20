@@ -337,6 +337,33 @@ overlays:
 
 ![Blur Overlay Example](../assets/images/files/overlays-example-blur.png)
 
+### Googly Eyes Overlay
+
+There is a special overlay named `googlyeyes` that when given as the overlay name will add googly eyes to any faces found on the poster.
+
+You can control the size of the eyes by adjusting `size_factor`. The default is 25% of the width of the face.
+
+Googly eyes will face down by default, but rotation can be enabled by setting `rotate` to `true`, randomly rotating the pupil position.
+
+The `confidence` for finding faces can be lowered from the default of 90%, but will increase the amount of false positives found resulting in googly eyes being placed where there's not actually a face.
+
+A custom googly eye image can be specified with the `file` variable.
+
+Note: animated faces, faces where a lot of the face is obscured, or where the person is looking fully to the side may not be matched.
+
+```yaml
+overlays:
+  googlyeyes_movies:
+    overlay:
+      name: googlyeyes
+      size_factor: 25   # default value, 0 > size_factor <= 100
+      rotate: false     # default value, true or false
+      confidence: 90    # default value, 0 >= confidence <= 100
+    plex_all: true
+```
+
+![Googly Eyes Overlay Example](../assets/images/files/overlays-example-googlyeyes.png)
+
 ### Backdrop Overlay
 
 There is a special overlay named `backdrop` that when given as the overlay name will instead of finding the image will just apply the background instead.

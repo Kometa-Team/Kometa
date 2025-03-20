@@ -2,6 +2,7 @@ import os, re
 from datetime import datetime
 from modules import plex, util, overlay
 from modules.builder import CollectionBuilder
+from modules.filters.googlyeyes_filter import GooglyEyes
 from modules.util import Failed, FilterFailed, NotScheduled, LimitReached
 from num2words import num2words
 from plexapi.exceptions import BadRequest
@@ -100,6 +101,7 @@ class Overlays:
 
                     compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
                     blur_num = 0
+                    googlyeyes_filter = None
                     applied_names = []
                     queue_overlays = {}
                     for over_name in over_names:
@@ -109,6 +111,15 @@ class Overlays:
                             blur_test = int(re.search("\\(([^)]+)\\)", current_overlay.name).group(1))
                             if blur_test > blur_num:
                                 blur_num = blur_test
+                        elif current_overlay.name.startswith("googlyeyes"):
+                            logger.info(over_name)
+                            size_factor = current_overlay.data[GooglyEyes.size_factor_variable]
+                            rotate = current_overlay.data[GooglyEyes.rotate_variable]
+                            confidence = current_overlay.data[GooglyEyes.confidence_variable]
+                            try:
+                                googlyeyes_filter = GooglyEyes(current_overlay.image, size_factor, rotate, confidence)
+                            except ValueError:
+                                pass
                         elif current_overlay.queue_name:
                             if current_overlay.queue not in queue_overlays:
                                 queue_overlays[current_overlay.queue] = {}
@@ -221,6 +232,9 @@ class Overlays:
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04bc] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+
+                                if googlyeyes_filter:
+                                    new_poster = googlyeyes_filter.filter(new_poster)
 
                                 if blur_num > 0:
                                     new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))

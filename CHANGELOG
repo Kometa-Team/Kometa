@@ -18,7 +18,7 @@ Adds overlay guide
 [Franchise] Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva. Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
 
 # Bug Fixes
-
 Fixed an issue where Playlists could not add to both Radarr and Sonarr in a single run
 Fixed an issue where `trakt_list_details` would not find a list's summary if it was an "official" Trakt list
 Fixed an issue where log file paths with >2 periods would cause a ValueError
+Added Googly Eyes as a new special overlay

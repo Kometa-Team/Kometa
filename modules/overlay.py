@@ -1,6 +1,7 @@
 import os, re, time
 from datetime import datetime
 from modules import util
+from modules.filters.googlyeyes_filter import GooglyEyes
 from modules.util import Failed
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from plexapi.audio import Album
@@ -247,6 +248,48 @@ class Overlay:
             except ValueError:
                 logger.error(f"Overlay Error: failed to parse overlay blur name: {self.name} defaulting to blur(50)")
                 self.name = "blur(50)"
+        elif self.name.startswith("googlyeyes"):
+            radius = self.data.get(GooglyEyes.size_factor_variable, GooglyEyes.default_size_factor)
+            rotate = self.data.get(GooglyEyes.rotate_variable, GooglyEyes.default_rotate)
+            confidence = self.data.get(GooglyEyes.confidence_variable, GooglyEyes.default_confidence)
+
+            try:
+                GooglyEyes.check_preconditions(radius, rotate, confidence)
+            except ValueError:
+                temp_name = f"{self.name}({radius}, {rotate}, {confidence})"
+                default_name = f"{self.name}({GooglyEyes.default_size_factor}, {GooglyEyes.default_rotate}, {GooglyEyes.default_confidence})"
+                logger.error(f"Overlay Error: failed to parse arguments for googlyeyes: {temp_name} defaulting to {default_name}")
+                radius = GooglyEyes.default_size_factor
+                rotate = GooglyEyes.default_rotate
+                confidence = GooglyEyes.default_confidence
+
+            self.data[GooglyEyes.size_factor_variable] = radius
+            self.data[GooglyEyes.rotate_variable] = rotate
+            self.data[GooglyEyes.confidence_variable] = confidence
+            self.name = f"{self.name}({radius}, {rotate}, {confidence})"
+
+            if not self.path:
+                temp_path = "googlyeye.png"
+                images_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults", "overlays", "images")
+                self.path = os.path.abspath(os.path.join(images_path, temp_path))
+
+            logger.info(f"Path: {self.path}")
+
+            if not os.path.exists(self.path):
+                raise Failed(f"Overlay Error: googlyeye image not found at: {self.path}")
+            image_compare = None
+            if self.cache:
+                _, image_compare, _ = self.cache.query_image_map(self.mapping_name,
+                                                                 f"{self.library.image_table_name}_overlays")
+            overlay_size = os.stat(self.path).st_size
+            self.updated = not image_compare or str(overlay_size) != str(image_compare)
+            try:
+                self.image = Image.open(self.path).convert("RGBA")
+                if self.cache:
+                    self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", "googlyeyes", overlay_size)
+            except OSError:
+                raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
+
         elif self.name.startswith("text"):
             if not self.has_coordinates() and not self.queue_name:
                 raise Failed(f"Overlay Error: overlay attribute's horizontal_offset and vertical_offset are required when using text")
