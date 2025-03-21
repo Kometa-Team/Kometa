@@ -830,3 +830,7 @@ code {
   width: 20px;
   vertical-align: middle;
 }
+
+.md-typeset pre>code {
+    scrollbar-color: #03a37a #0000;
+}
