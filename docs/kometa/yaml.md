@@ -261,7 +261,7 @@ libraries:
 
 ## YAML Editors
 
-A code-focused editor can make your life simpler by highlighting common errors that other editors do not pick up on - from incorrect indentation to invalid attributes or values. They can help with checking YML structure, and warning you of potential errors before you run the file through Kometa. This helps save time and reduce troubleshooting efforts.
+An editor that understands YAML syntax can make your life simpler by highlighting common errors that other editors do not pick up on - from incorrect indentation to invalid attributes or values. They can help with checking YML structure, and warning you of potential errors before you run the file through Kometa. This helps save time and reduce troubleshooting efforts.
 
 It also formats the code to be easier to work with, highlighting elements and colorizing indents to make errors more noticeable and navigation simpler.
 

@@ -90,6 +90,7 @@ fi
 filepath
 filetype
 flac
+RainbowIndent
 flixpatrol
 fontawesome
 fribb
