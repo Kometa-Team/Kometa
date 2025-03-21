@@ -6,7 +6,7 @@ This tutorial will help you understand the specific parts of the files.
 
 ## Example YAML File
 
-```yaml
+```{ .yaml .no-copy }
 libraries:
   Movies:
     collection_files:
@@ -47,7 +47,7 @@ A YAML format primarily uses 3 node types:
 
 Let us try and identify where these appear in the sample YAML file we saw earlier.
 
-```yaml
+```{ .yaml .no-copy }
 # Starts with a top level Dictionary with keys `libraries` and `settings`
 libraries:                        # Value is a Dictionary with keys `Movies` and `TV Shows`
   Movies:                         # Value is a Dictionary with keys `collection_files` and `overlay_files`
@@ -79,7 +79,7 @@ A YAML file relies on whitespace and indentation to indicate nesting. The number
 
 **It is critical to note that tab characters cannot be used for indentation in YAML files; only spaces can be used.**
 
-```yaml
+```{ .yaml .no-copy }
 libraries:                        # Nesting Level 1
   Movies:                         # Nesting Level 2
     collection_files:             # Nesting Level 3
@@ -106,7 +106,7 @@ settings:                         # Nesting Level 1
 Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation, 
 or new dictionaries can be created at the same level by resolving the previous one.
 
-```yaml
+```{ .yaml .no-copy }
 cache: true
 cache_expiration: 60
 ```
@@ -117,13 +117,13 @@ The "keys" are `cache` and `cache_expiration` and the "values" are `true` and `6
 
 you can represent a dictionary on a single line by using `{` and `}`
 
-```yaml
+```{ .yaml .no-copy }
 settings: {cache: true, cache_expiration: 60}
 ```
 
 is equivalent to
 
-```yaml
+```{ .yaml .no-copy }
 settings:
   cache: true
   cache_expiration: 60
@@ -133,7 +133,7 @@ settings:
 
 Lists in YAML are represented by using the hyphen (-) and space. They are ordered and can be embedded inside a map using indentation.
 
-```yaml
+```{ .yaml .no-copy }
 asset_directory:
   - config/movie assets
   - config/tv assets
@@ -145,14 +145,14 @@ The first item in the list is `config/movie assets` and the second is `config/tv
 
 you can represent a dictionary on a single line by using `[` and `]`
 
-```yaml
+```{ .yaml .no-copy }
 settings:
     asset_directory: [config/movie assets, config/tv assets]
 ```
 
 is equivalent to
 
-```yaml
+```{ .yaml .no-copy }
 settings:
     asset_directory:
       - config/movie assets
@@ -179,7 +179,7 @@ YAML Special Characters: `{`, `}`, `[`, `]`, `,`, `&`, `:`, `*`, `#`, `?`, `|`, 
 
 There are many occurrences of these special characters where quotes are not needed but if the YAML fails to load it could easily be because one of these are unquoted.
 
-```yaml
+```{ .yaml .no-copy }
 message1: YAML & JSON                 # breaks as a & is a special character
 message2: "YAML & JSON"               # Works as the string is quoted
 message: 3: YAML                      # breaks as a : is a special character
@@ -190,7 +190,7 @@ message: 3: YAML                      # breaks as a : is a special character
 
 Strings can be interpreted as multi-line using the pipe (`|`) character.
 
-```yaml
+```{ .yaml .no-copy }
 message: |
  this is
  a real multi-line
@@ -203,7 +203,7 @@ This would be read as `this is\na real multi-line\nmessage`
 
 YAML file also supports comments, unlike JSON. A comment starts with #.
 
-```yaml
+```{ .yaml .no-copy }
 # Starts with a top level Dictionary with keys `libraries` and `settings`
 libraries:                        # Value is a Dictionary with keys `Movies` and `TV Shows`
 ```
@@ -217,7 +217,7 @@ With a lot of configuration, configuration files can become quite large.
 In YAML files, anchors (`&`) and aliases (`*`) are used to avoid duplication. When writing large configurations in YAML, it is common for a specific configuration to be repeated. 
 For example, the vars config is repeated for all three services in the following YAML snippet.
 
-```yaml
+```{ .yaml .no-copy }
 libraries:
   Movies:
     collection_files:
@@ -242,7 +242,7 @@ Anchors and aliases allow us to rewrite the same snippet without having to repea
 
 Anchors (`&`) are used to define a chunk of configuration, and aliases (`*`) are used to refer to that chunk at a different part of the configuration.
 
-```yaml
+```{ .yaml .no-copy }
 libraries:
   Movies:
     collection_files: &paths   # Anchor called `paths`
@@ -279,7 +279,7 @@ As you can see above, Visual Studio Code has some red squiggly lines where it ha
 
 See the below code example and press the :fontawesome-solid-circle-plus: icon to see what error Visual Studio Code presents for each of the error lines:
 
-```yaml
+```{ .yaml .no-copy }
 
 # yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
 
@@ -309,6 +309,7 @@ plex:
 3.  Incorrect type. Expected "string" (i.e. there should be a value here)
 4.  Incorrect type. Expected "string" (i.e. there should be a value here)
 5.  Incorrect type. Expected "string" (i.e. there should be a value here)
+
 The above issues may not be super noticeable if you aren't using a code-aware editor, this makes it much more obvious that something may be wrong with the config.yml
 
 You should add this line **at the very top** of your config.yml, eligible editors will use it to check your config.yml is valid against the Kometa validation schema:

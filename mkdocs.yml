@@ -11,7 +11,7 @@ theme:
   favicon: assets/images/icons/favicon.png
   custom_dir: docs/overrides
   font:
-    text: Open Sans
+    text: DM Sans
     code: Fira Code
   features:
     - content.code.annotate

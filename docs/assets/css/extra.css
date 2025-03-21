@@ -748,3 +748,85 @@ code {
     height: 18vh;
   }
 }
+
+.md-typeset pre {
+  position: relative;
+  overflow: hidden;
+}
+
+.md-typeset pre > code {
+  display: block;
+  overflow-x: auto;
+  padding-right: 3rem;
+  white-space: pre;
+}
+
+/* Right-side fade into #30363d */
+.md-typeset pre::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3rem;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, #1f2327);
+  z-index: 1;
+}
+
+
+.md-clipboard:not(.focus-visible) {
+  -webkit-tap-highlight-color: #00bc8c;
+  outline: none;
+}
+
+.md-clipboard {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  width: 1.5em;
+  height: 1.5em;
+  cursor: pointer;
+  border-radius: 0.2rem;
+  z-index: 2;
+
+  /* Color and background */
+  color: #00bc8c; /* Green icon */
+  background-color: rgba(128, 128, 128, 0.25); /* Semi-transparent gray */
+
+  /* Optional style polish */
+  backdrop-filter: blur(2px); /* Optional: blur behind for contrast */
+  padding: 0.2em;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.highlight .c, .highlight .c1, .highlight .ch, .highlight .cm, .highlight .cs, .highlight .sd {
+    color: #565e67;
+}
+
+/* Force Discord icons to be white */
+.announce-bar svg {
+  fill: white !important;
+  color: white !important;
+}
+
+/* Align icons and text vertically */
+.announce-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.announce-bar a {
+  display: inline-flex;
+  align-items: center;
+  color: white;
+  text-decoration: underline;
+}
+
+.announce-bar svg {
+  height: 20px;
+  width: 20px;
+  vertical-align: middle;
+}
