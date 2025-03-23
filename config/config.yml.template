@@ -74,7 +74,7 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
-  overlay_artwork_filetype: jpg
+  overlay_artwork_filetype: jpg # must be PNG for Emby
   overlay_artwork_quality: 75
 webhooks:                            # Can be individually specified per library as well
   error:
@@ -85,6 +85,17 @@ webhooks:                            # Can be individually specified per library
 plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: ####################
+  timeout: 60
+  db_cache:
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl:
+emby: # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.12:8096
+  api_key:   ####################
+  user_id: ####################
+  overlay_destination_folder: /emby_overlays
   timeout: 60
   db_cache:
   clean_bundles: false
