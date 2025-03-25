@@ -15,11 +15,13 @@ templates:
         conditions:
         # check1
           - key: arrow
-            value: https://www.imdb.com/list/ls547852883/
+            value: https://www.imdb.com/list/ls566667558/
           - key: clonewars
             value: https://www.imdb.com/list/ls544963772/
           - key: dcau
             value: https://www.imdb.com/list/ls566357882/
+          - key: mcu
+            value: https://www.imdb.com/list/ls539646485/
           - key: starwars
             value: https://www.imdb.com/list/ls501373412/
           - key: startrek
@@ -38,8 +40,6 @@ templates:
         # check3
           - key: dragonball
             value: https://mdblist.com/lists/k0meta/external/46559
-          - key: mcu
-            value: https://mdblist.com/lists/k0meta/external/46496
           - key: pokemon
             value: https://mdblist.com/lists/k0meta/external/46555
         # check4
