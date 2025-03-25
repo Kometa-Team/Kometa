@@ -52,19 +52,19 @@ Let us try and identify where these appear in the sample YAML file we saw earlie
 libraries:                        # Value is a Dictionary with keys `Movies` and `TV Shows`
   Movies:                         # Value is a Dictionary with keys `collection_files` and `overlay_files`
     collection_files:             # Value is a List with two Items
-      - default: basic                # List Item is a Dictionary with one key pair whose value is a String Literal
-      - default: imdb                 # List Item is a Dictionary with one key pair whose value is a String Literal
+      - default: basic            # List Item is a Dictionary with one key pair whose value is a String Literal
+      - default: imdb             # List Item is a Dictionary with one key pair whose value is a String Literal
     overlay_files:                # Value is a List with one Item
-      - default: ribbon               # List Item is a Dictionary with keys `default` and `template_variables` with `default`'s value a String Literal
+      - default: ribbon           # List Item is a Dictionary with keys `default` and `template_variables` with `default`'s value a String Literal
         template_variables:       # Value is a Dictionary with keys `use_metacritic` and `use_common`
           use_metacritic: false   # Value is a Boolean Literal
           use_common: false       # Value is a Boolean Literal
   TV Shows:                       # Value is a Dictionary with keys `collection_files` and `overlay_files`
     collection_files:             # Value is a List with two Items
-      - default: basic                # List Item is a Dictionary with one key pair whose value is a String Literal
-      - default: imdb                 # List Item is a Dictionary with one key pair whose value is a String Literal
+      - default: basic            # List Item is a Dictionary with one key pair whose value is a String Literal
+      - default: imdb             # List Item is a Dictionary with one key pair whose value is a String Literal
     overlay_files:                # Value is a List with one Item
-      - default: ribbon               # List Item is a Dictionary with one key pair whose value is a String Literal
+      - default: ribbon           # List Item is a Dictionary with one key pair whose value is a String Literal
 settings:                         # Value is a Dictionary with keys `cache` and `cache_expiration`
   cache: true                     # Value is a Boolean Literal
   cache_expiration: 60            # Value is a Number Literal
@@ -83,19 +83,19 @@ A YAML file relies on whitespace and indentation to indicate nesting. The number
 libraries:                        # Nesting Level 1
   Movies:                         # Nesting Level 2
     collection_files:             # Nesting Level 3
-      - default: basic                # Nesting Level 4
-      - default: imdb                 # Nesting Level 4
+      - default: basic            # Nesting Level 4
+      - default: imdb             # Nesting Level 4
     overlay_files:                # Nesting Level 3
-      - default: ribbon               # Nesting Level 4
+      - default: ribbon           # Nesting Level 4
         template_variables:       # Nesting Level 5
           use_metacritic: false   # Nesting Level 6
           use_common: false       # Nesting Level 6
   TV Shows:                       # Nesting Level 2
     collection_files:             # Nesting Level 3
-      - default: basic                # Nesting Level 4
-      - default: imdb                 # Nesting Level 4
+      - default: basic            # Nesting Level 4
+      - default: imdb             # Nesting Level 4
     overlay_files:                # Nesting Level 3
-      - default: ribbon               # Nesting Level 4
+      - default: ribbon           # Nesting Level 4
 settings:                         # Nesting Level 1
   cache: true                     # Nesting Level 2
   cache_expiration: 60            # Nesting Level 2
@@ -267,14 +267,17 @@ It also formats the code to be easier to work with, highlighting elements and co
 
 Here is a quick example of how a config.yml extract looks in Visual Studio Code compared to Notepad.
 
-=== "Visual Studio Code"
+<table>
+    <thead>
+        <th style="text-align: center">Visual Studio Code</th>
+        <th style="text-align: center">Notepad</th>
+    </thead>
+    <tr>
+        <td><img src="../../assets/images/kometa/guides/vscode.png" alt="vscode"></td>
+        <td><img src="../../assets/images/kometa/guides/notepad.png" alt="notepad"></td>
+    </tr>
+</table>
 
-    ![vscode.png](../assets/images/kometa/guides/vscode.png)
-   
-=== "Notepad"
-
-    ![notepad.png](../assets/images/kometa/guides/notepad.png)
-   
 As you can see above, Visual Studio Code has some red squiggly lines where it has identified issues with the code. These issues are not as easy to spot in the Notepad image.
 
 See the below code example and press the :fontawesome-solid-circle-plus: icon to see what error Visual Studio Code presents for each of the error lines:
@@ -302,6 +305,10 @@ plex:
   empty_trash: false
   optimize: false
   verify_ssl: #(5)!
+  
+  
+...
+  
 ```
 
 1.  All sequence items must start at the same column (i.e. bad indentation)

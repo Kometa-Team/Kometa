@@ -18,16 +18,6 @@ We do not provide support for issues which specifically relate to using third-pa
 
 One alternate image we see a lot is the Linuxserver image, due to its prominent placement in unRAID and linuxserver's general reputation.
 
-### LXML Images
-
-In March 2024, `lxml`, a prerequisite for operating Kometa, ceased support for older CPUs. This impedes users from running Kometa on affected hardware.
-
-To address this issue, we have implemented 'lxml' variants for each Kometa branch (master, develop, and nightly). 
-These variants resume compatibility with older hardware by freezing `lxml` on a previous version which has wider hardware support.
-
-To transition to the lxml branch, simply prepend 'lxml-' to the branch name you are currently utilizing. 
-For instance, `kometateam/kometa:lxml-master`, `kometateam/kometa:lxml-develop` and `kometateam/kometa:lxml-nightly`.
-
 ### LinuxServer
 
 The first image offered in unRAID for Kometa is the Linuxserver.io image [`linuxserver/kometa`]

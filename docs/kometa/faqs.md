@@ -323,7 +323,7 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 ??? question "Any tips on increasing Kometa performance?"
 
     Use Kometa Caching where possible, this allows Kometa to temporarily store commonly-used information so that it can be retrieved more efficiently. 
-    There are [multiple things](https://kometa.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within Kometa.
+    There are [multiple things](./?q=cache&check_keywords=yes&area=default) that can be cached within Kometa.
     
     Run Kometa after PLEX Scheduled Tasks, as Plex's API tends to be slower at responding whilst it is performing the tasks. 
     By default, Kometa runs at 5AM to avoid the 3-5am window that Plex suggests for Scheduled Tasks.
@@ -388,10 +388,7 @@ so if you installed it somewhere else you will have to change the path[s] to ref
     
     The scripts can be found here. Click the green play button, wait a little bit, then follow the prompts. 
 
-    [MyAnimeList Authenticator](https://replit.com/@chazlarson/MALAuth)
-
-    [Trakt Authenticator](https://replit.com/@chazlarson/TraktAuth)
-
+    [Trakt & MyAnimeList Authentication](../../config/authentication)
 
 ??? question "Why am I seeing "(500) Internal Server Error" in my log files?"
 
@@ -500,7 +497,7 @@ With the release of Kometa 1.20, several changes have been made. Please read the
 
     All URLs used with `imdb_list` **must** start with `https://www.imdb.com/list/`
 
-    We have introduced the [IMDb Search Builder](../files/builders/imdb.md#__tabbed_1_3) which replaces the functionality that 
+    We have introduced the [IMDb Search Builder](../files/builders/imdb.md#imdb-search) which replaces the functionality that 
     `search/title/` and `search/keyword/` used to provide.
 
     As an example, the `imdb_search` Builder for `https://www.imdb.com/search/keyword/?keywords=christmas-movie` would be:

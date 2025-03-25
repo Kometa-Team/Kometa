@@ -65,7 +65,7 @@ libraries:
 
 The specifics of what Template Variables are available for a given default are found on the wiki page for each default, which you can find starting [here](../../defaults/guide.md).
 
-Like the rest of the [external files](../../config/file_types.md), these default references cannot be moved out of the `config.yml` file.
+Like the rest of the [external files](../../files/overview.md), these default references cannot be moved out of the `config.yml` file.
 
 ???+ tip
 
@@ -197,9 +197,9 @@ This would go in a file like `config/my-neat-playlist.yml` and be referenced in 
 ```yaml
 libraries:
   Movies:
-...
+    ...
   TV Shows:
-...
+    ...
 playlist_files:
   - file: config/my-neat-playlist.yml
 ```

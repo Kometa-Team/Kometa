@@ -1,14 +1,10 @@
-# QNAP Walkthrough
-
-This is a quick walkthrough of setting up the Kometa Docker container in the QNAP "Container Station" UI.
-
-The "Container Station" UI on your QNAP may differ from these screenshots, but the concepts are the same:
-
-1. Create a container based on the `kometateam/kometa` image.
-2. Set environment variables to control the container's behavior [optional].
-3. Point the container to the directory where your configuration files are to be stored.
-
-Detailed steps:
+{%
+    include-markdown "./../../../templates/walkthrough/container.md"
+    replace='{
+        "CONTAINER": "QNAP \"Container Station\"",
+        "NAS_TYPE": "QNAP"
+    }'
+%}
 
 === "Container Station v. 3.0.5.623"
 
@@ -55,7 +51,7 @@ Detailed steps:
     
         ![](./../../../assets/images/kometa/install/qnap/qnap3-06.png) 
     
-    8. You can add [command-line switches](../environmental.md) to the "Command" field here. Do not edit the "Entrypoint" field.
+    8. You can add [command-line switches](../../../environmental) to the "Command" field here. Do not edit the "Entrypoint" field.
     
         ![](./../../../assets/images/kometa/install/qnap/qnap3-07.png) 
     
@@ -67,7 +63,7 @@ Detailed steps:
     
         It is more typical in Docker contexts to set these things with environment variables.
     
-        Anything you can do via command-line arguments can be done with [Environment Variables](../environmental.md), which is more typical in Docker environments.
+        Anything you can do via command-line arguments can be done with [Environment Variables](../../../environmental), which is more typical in Docker environments.
     
         For example, you could add an environment variable named `KOMETA_TESTS` with a value of `true` to run the collections you have defined as tests.
     
@@ -135,7 +131,7 @@ Detailed steps:
         Typically, in a Docker environment, this sort of thing is done via Environment Variables [the next step here]. 
         Editing the "Entrypoint" is not recommended, as it's easy to render the container non-functional if you are not sure what you're doing.
 
-        Information on available command line arguments can be found [here](../environmental.md)
+        Information on available command line arguments can be found [here](../../../environmental)
 
         Click "Advanced Settings >>"
 
@@ -147,7 +143,7 @@ Detailed steps:
 
         For example, you could add an environment variable named `KOMETA_RUN` with a value of `True` to make Kometa run immediately when the container starts up.
 
-        Information on available Environment Variables can be found [here](../environmental.md)
+        Information on available Environment Variables can be found [here](../../../environmental)
 
         ![](./../../../assets/images/kometa/install/qnap/qnap5.png)
 

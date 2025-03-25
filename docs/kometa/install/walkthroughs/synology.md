@@ -1,16 +1,10 @@
-# Synology Walkthrough
-
-This is a quick walkthrough of setting up the Kometa Docker container in the Synology UI.
-
-This walkthrough discusses **only** the steps required to set up a Kometa container on a Synology NAS. It does not cover creating a config file for Kometa.
-
-There are two walkthroughs for getting familiar with Kometa:
-
-1. [Local Python script](local.md)
-2. [Docker container](docker.md)
-
-You should go through one of those prior to doing this container setup, as they will familiarize you with the tool and how it works, 
-and will produce the `config.yml` you will need to use with this process.
+{%
+    include-markdown "./../../../templates/walkthrough/container.md"
+    replace='{
+        "CONTAINER": "Synology",
+        "NAS_TYPE": "Synology"
+    }'
+%}
 
 === "DiskStation Manager v. 7.2"
 

@@ -30,7 +30,7 @@ In all cases, the first step is to open the [`meta.log`](#locating-log-files) wi
 
 1. Check that you are running the latest [`version`](#checking-kometa-version) of your branch. Your current version can be found in the `meta.log` file either below the 
    Kometa ASCII art, or at the end of the run. If you are not on the latest version of your branch, you will see `Newest Version: X.X.X` below this. 
-   Ensure you [`upgrade`](install/walkthroughs/local.md#i-want-to-update-to-the-latest-version-of-kometa) to the latest version of Kometa.
+   Ensure you [`upgrade`](install/walkthroughs/local.md#i-want-to-update-to-the-latest-version-of-the-current-kometa-branch) to the latest version of Kometa.
 2. When scanning your meta.log file, search for `[CRITICAL]` items first as these will definitely need to be fixed
 3. Scan your meta.log file for `[ERROR]` and make a note of the content of the full line to start your search below on how to resolve
 
@@ -73,44 +73,149 @@ This section aims to explain some commonly seen event messages that are produced
 
 This table details examples of the most commonly-seen `[CRITICAL]` events and what they mean for the user.
 
-| Type       | Short Info                                          | Description                                                                      | Recommendation                                                                                              |
-|:-----------|:----------------------------------------------------|:---------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| `CRITICAL` | `Failed to Connect to https://api.themoviedb.org/3` | Current step Kometa was on made an API call to TMDb, but it aborted and moved on | Determine if TMDb was offline and not replying to API requests. Try again and see if it fails again or not. |
+<table>
+    <thead>
+        <th>Type</th>
+        <th>Short Info</th>
+    </thead>
+    <tr>
+        <td><code>CRITICAL</code></td>
+        <td><code>Failed to Connect to https://api.themoviedb.org/</code></td>
+    </tr>
+    <tr>
+        <td colspan="2"><strong>Description:</strong> Current step Kometa was on made an API call to TMDb, but it aborted and moved on<br><strong>Recommendation:</strong> Determine if TMDb was offline and not replying to API requests. Try again and see if it fails again or not.</td>
+    </tr>
+</table>
 
 #### ERROR
 
 This table details examples of the most commonly-seen `[ERROR]` events and what they mean for the user.
 
-| Type    | Short Info                                                        | Description                                                                         | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                   |
-|:--------|:------------------------------------------------------------------|:------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ERROR` | `Playlist Error: Library: XYZ not defined`                        | Plex library XYZ is not found                                                       | Ensure that your config file has defined the proper library name as found in Plex                                                                                                                                                                                                                                                                                                                                                |
-| `ERROR` | `Plex Error: resolution: No matches found with regex pattern XYZ` | While looking for a pattern in Plex, this one was not found                         | This may be normal and require 0 actions. However, if you expect that Plex should have returned records, check the pattern to ensure it is working properly                                                                                                                                                                                                                                                                      |
-| `ERROR` | `Plex Error: No Items found in Plex`                              | While using the Kometa Builder, no items with that criteria were returned from Plex | This may be normal and require 0 actions. However, if you expect that Plex should have returned records, check the Builder to ensure it is working properly                                                                                                                                                                                                                                                                      |
-| `ERROR` | `IMDb Error: Failed to parse URL:`                                | While using the Kometa Builder, url does not exist                                  | This may be normal and require 0 actions. However, if you expect that the URL should have returned records, check the url in your browser to ensure it is working properly                                                                                                                                                                                                                                                       |
-| `ERROR` | `Trakt Error: No TVDb ID found for Nightfall (2022)`              | Online sources are missing information                                              | These sorts of errors indicate that the thing can't be cross-referenced between sites.</br>For example, at the time of that error, the Trakt record for "Nightfall (2022)" didn't contain a TVDb ID.</br>This could be because the record just hasn't been updated, or because "Nightfall (2022)" is not listed on TVDb.</br>The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data. |
-| `ERROR` | `MDBList Error: Not Found`                                        | Online sources are missing information                                              | These sorts of errors indicate that the thing can't be cross-referenced between sites. For example, at the time of that error, the MDBList record was trying to get a rating for a media item and could not find it.                                                                                                                                                                                                             |
-| `ERROR` | `Plex Error: actor: Mel B not found`                              | Actor not found and hence unable to create the collection                           | Report error in #kometa-help channel and see if there is a fix.                                                                                                                                                                                                                                                                                                                                                                  |
-| `ERROR` | `Input Failed`                                                    | A token or password is no longer valid for an online source of information          | Review the meta.log for more information                                                                                                                                                                                                                                                                                                                                                                                         |
-| `ERROR` | `Collection Error: trakt_list requires Trakt to be configured`    | You are using a builder that has not been configured yet.                           | Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)                                                                                                                                                                                                                                                                                            |
+<table>
+    <thead>
+        <th>Type</th>
+        <th>Short Info</th>
+    </thead>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Playlist Error: Library: XYZ not defined</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Plex library XYZ is not found<br><strong>Recommendation:</strong> Ensure that your config file has defined the proper library name as found in Plex</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Plex Error: resolution: No matches found with regex pattern XYZ</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> While looking for a pattern in Plex, this one was not found<br><strong>Recommendation:</strong> This may be normal and require 0 actions. However, if you expect that Plex should have returned records, check the pattern to ensure it is working properly</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Plex Error: No Items found in Plex</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> While using the Kometa Builder, no items with that criteria were returned from Plex<br><strong>Recommendation:</strong> This may be normal and require 0 actions. However, if you expect that Plex should have returned records, check the Builder to ensure it is working properly</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>IMDb Error: Failed to parse URL:</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> While using the Kometa Builder, url does not exist<br><strong>Recommendation:</strong> This may be normal and require 0 actions. However, if you expect that the URL should have returned records, check the url in your browser to ensure it is working properly</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Trakt Error: No TVDb ID found for Nightfall (2022)</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites.</br>For example, at the time of that error, the Trakt record for "Nightfall (2022)" didn't contain a TVDb ID.</br>This could be because the record just hasn't been updated, or because "Nightfall (2022)" is not listed on TVDb.</br>The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>MDBList Error: Not Found</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites. For example, at the time of that error, the MDBList record was trying to get a rating for a media item and could not find it.</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Plex Error: actor: Mel B not found</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Actor not found and hence unable to create the collection<br><strong>Recommendation:</strong> Report error in #kometa-help channel and see if there is a fix.</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Input Failed</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> A token or password is no longer valid for an online source of information<br><strong>Recommendation:</strong> Review the meta.log for more information</td>
+	</tr>
+	<tr>
+		<td><code>ERROR</code></td>
+		<td><code>Collection Error: trakt_list requires Trakt to be configured</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> You are using a builder that has not been configured yet.<br><strong>Recommendation:</strong> Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)</td>
+	</tr>
+</table>
 
 #### WARNING
 
 This table details examples of the most commonly-seen `[WARNING]` events and what they mean for the user.
 
-| Type      | Short Info                                                         | Description                             | Recommendation                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-|:----------|:-------------------------------------------------------------------|:----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `WARNING` | `Convert Warning: No TVDb ID Found for TMDb ID: 15733`             | Online sources are missing information  | These sorts of errors indicate that the thing can't be cross-referenced between sites.</br>For example, at the time of that error, the TMDb record for "The Two Mrs. Grenvilles" [ID 15733] didn't contain a TVDb ID.</br>This could be because the record just hasn't been updated, or because "The Two Mrs. Grenvilles" is not listed on TVDB.</br>The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data. |
-| `WARNING` | `Convert Warning: AniDB ID not found for AniList ID: 21400`        | Online sources are missing information  | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.                                                                                                                                                                                                                                                               |
-| `WARNING` | `Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: 14719` | Online sources are missing information  | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.                                                                                                                                                                                                                                                               |
-| `WARNING` | `Convert Warning: AniDB ID not found for MyAnimeList ID: 36838`    | Online sources are missing information  | These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.                                                                                                                                                                                                                                                               |
-
+<table>
+	<thead>
+		<th>Type</th>
+		<th>Short Info</th>
+	</thead>
+	<tr>
+		<td><code>WARNING</code></td>
+		<td><code>Convert Warning: No TVDb ID Found for TMDb ID: 15733</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites. For example, at the time of that error, the TMDb record for "The Two Mrs. Grenvilles" [ID 15733] didn't contain a TVDb ID. This could be because the record just hasn't been updated, or because "The Two Mrs. Grenvilles" is not listed on TVDB. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
+	</tr>
+	<tr>
+		<td><code>WARNING</code></td>
+		<td><code>Convert Warning: AniDB ID not found for AniList ID: 21400</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
+	</tr>
+	<tr>
+		<td><code>WARNING</code></td>
+		<td><code>Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: 14719</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
+	</tr>
+	<tr>
+		<td><code>WARNING</code></td>
+		<td><code>Convert Warning: AniDB ID not found for MyAnimeList ID: 36838</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites. The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
+	</tr>
+</table>
 #### INFO
 
 This table details examples of the most commonly-seen `[INFO]` events and what they mean for the user.
 
-| Type   | Short Info                                    | Description                           | Recommendation                                                                                                                   |
-|:-------|:----------------------------------------------|:--------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
-| `INFO` | `Detail: TMDb_person updated poster to [URL]` | Person image was downloaded from TMDb | May require you to update the people poster image to your style or request it in the style of the Kometa defaults people posters |
+<table>
+	<thead>
+		<th>Type</th>
+		<th>Short Info</th>
+	</thead>
+	<tr>
+		<td><code>INFO</code></td>
+		<td><code>Detail: TMDb_person updated poster to [URL]</code></td>
+	</tr>
+	<tr>
+		<td colspan="2"><strong>Description:</strong> Person image was downloaded from TMDb<br><strong>Recommendation:</strong> May require you to update the people poster image to your style or request it in the style of the Kometa defaults people posters</td>
+	</tr>
+</table>
 
 ### Other Troubleshooting Examples
 

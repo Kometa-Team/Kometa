@@ -17,7 +17,7 @@ It's aimed at someone who doesn't have an existing compelling reason to choose o
 
 Kometa is an inherently technical tool, and as such, it does not have a graphical user interface. It is run from the command line, 
 and all configuration is done via a `config.yml`file. Kometa will create a template config when it starts up if one is not found, 
-but you will need to edit it to make it useful. The [Configuration](../config.md) page describes this file. 
+but you will need to edit it to make it useful. The [Configuration](../../../config/overview) page describes this file. 
 
 ## Where to install Kometa
 
