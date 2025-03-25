@@ -13,9 +13,10 @@ urls = {
     "popular": f"{base_url}/latest/anime/popular/?h=1",
     "relation": "/relation/graph",
     "tag": f"{base_url}/tag",
-    "login": f"{base_url}/perl-bin/animedb.pl"
+    "login": f"{base_url}/perl-bin/animedb.pl",
 }
 weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
+
 
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
@@ -192,13 +193,7 @@ class AniDB:
             if self._delay is not None:
                 while time_check - self._delay < 2:
                     time_check = time.time()
-            anidb_dict = self._request(api_url, params={
-                "client": self.client,
-                "clientver": self.version,
-                "protover": 1,
-                "request": "anime",
-                "aid": anidb_id
-            })
+            anidb_dict = self._request(api_url, params={"client": self.client, "clientver": self.version, "protover": 1, "request": "anime", "aid": anidb_id})
             self._delay = time.time()
         obj = AniDBObj(self, anidb_id, anidb_dict)
         if self.cache and not ignore_cache:

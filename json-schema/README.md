@@ -14,9 +14,9 @@ For example, VS Code with the Red Hat YAML extension.
 
 This will give you context-sensitive hints and auto-complete for much of the Kometa `config.yml`
 
-![yaml1](./../docs/assets/images/yaml1.png)
+![schema-example](./../docs/assets/images/schema-example.png)
 
-![yaml2](./../docs/assets/images/yaml2.png)
+![schema-error](./../docs/assets/images/schema-error.png)
 
 limitations:
 
