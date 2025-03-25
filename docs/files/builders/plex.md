@@ -175,11 +175,11 @@ Smart Builders are usually the recommended approach as they are lightweight and 
      
     The results of these builders are static and require Kometa to re-run in order to update.
     
-    | Builder                                     | Description                                                                 |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+    | Builder                                       | Description                                                                 |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
     |:----------------------------------------------|:----------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
     | [`plex_all`](#plex-all)                       | Gets every movie/show in your library. Useful with [Filters](../filters.md) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | [`plex_search`](#plex-search)                 | Gets every movie/show based on the search parameters provided               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [`plex_watchlist`](#plex-watlist)           | Gets every movie/show in your Watchlist.                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | [`plex_watchlist`](#plex-watlist)             | Gets every movie/show in your Watchlist.                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | [`plex_pilots`](#plex-pilots)                 | Gets the first episode of every show in your library                        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | [`plex_collectionless`](#plex-collectionless) | Gets every movie/show that is not in a collection                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     

@@ -13,8 +13,8 @@ It has watch analytics that can show the most watched or most popular Movies/Sho
     [Configuring Tautulli](../../config/tautulli.md) in the config is required for any of these builders.
 
 
-| Builder                           | Description                         |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
-|:------------------------------------|:------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
+| Builder                                        | Description                         |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+|:-----------------------------------------------|:------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`tautulli_popular`](#tautulli-popularwatched) | Gets the Tautulli Most Popular List | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`tautulli_watched`](#tautulli-popularwatched) | Gets the Tautulli Most Watched List | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 

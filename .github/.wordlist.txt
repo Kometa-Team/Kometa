@@ -90,7 +90,6 @@ fi
 filepath
 filetype
 flac
-RainbowIndent
 flixpatrol
 fontawesome
 fribb
@@ -251,7 +250,7 @@ pywin
 qnap
 quickstart
 radarr
-Rainbow​Indent
+rainbowindent
 razzie
 razzies
 readme
@@ -338,10 +337,8 @@ utills
 vecteezy
 venv
 visualstudio
-Vladimir
-VSCode
+vladimir
 vscode
-VSCodium
 vscodium
 wachowski
 walkthrough

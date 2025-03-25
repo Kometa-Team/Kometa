@@ -6,7 +6,7 @@ hide:
 
 You can find anime using the features of [AniList.co](https://anilist.co/) (AniList).
 
-| Builder                                 | Description                                                                                                              |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+| Builder                                   | Description                                                                                                              |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`anilist_search`](#anilist-search)       | Finds the anime specified by the AniList search parameters provided                                                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`anilist_top_rated`](#anilist-top-rated) | Finds every anime in AniList's [Top Rated Anime](https://anilist.co/search/anime?sort=SCORE_DESC) list                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |

@@ -6,7 +6,7 @@ hide:
 
 You can find items using the features of [MDBList.com](https://mdblist.com/) (MDBList).
 
-| Builder                       | Description                                                               |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
+| Builder                         | Description                                                               |             Works with Movies              |              Works with Shows              |    Works with Playlists and Custom Sort    |
 |:--------------------------------|:--------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`mdblist_list`](#mdblist-list) | Gets every movie/show in a [MDBList List](https://mdblist.com/toplists/). | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
