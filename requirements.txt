@@ -13,6 +13,6 @@ pywin32==310; sys_platform == 'win32'
 requests==2.32.3
 ruamel.yaml==0.18.10
 schedule==1.2.2
-setuptools==76.1.0
+setuptools==78.0.2
 tenacity==9.0.0
 tmdbapis==1.2.28

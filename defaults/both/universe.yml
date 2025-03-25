@@ -36,6 +36,7 @@ templates:
       mdblist_list_<<key>>: <<mdblist_list>>
       imdb_list_<<key>>: <<imdb_list>>
       name_mapping_<<key>>: <<name_mapping>>
+      delete_collections_named_<<key>>: <<delete_collections_named>>
       minimum_items: 2
     optional:
       - name_mapping
@@ -46,11 +47,13 @@ templates:
       - trakt_url
       - imdb_url
       - minimum_items
+      - delete_collections_named
     minimum_items: <<minimum_items_<<key>>>>
     name_mapping: <<name_mapping_<<key>>>>
     trakt_list: <<trakt_list_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
+    delete_collections_named: <<delete_collections_named_<<key>>>>
 
 collections:
   Universe Collections:
@@ -68,7 +71,7 @@ dynamic_collections:
       arrow: Arrowverse
       askew: View Askewniverse
       dca: DC Animated Universe
-      dcu: DC Extended Universe
+      dcu: DC Universe
       fast: Fast & Furious
       marvel: In Association With Marvel
       mcu: Marvel Cinematic Universe
@@ -93,24 +96,26 @@ dynamic_collections:
         mummy: movie
       # check1
       imdb_url:
+        arrow: https://www.imdb.com/list/ls566667558/
+        avp: https://www.imdb.com/list/ls543971628/
+        dca: https://www.imdb.com/list/ls590606031/
+        dcu: https://www.imdb.com/list/ls524274984/
+        mcu: https://www.imdb.com/list/ls539646485/
+        star: https://www.imdb.com/list/ls501373412/
+        trek: https://www.imdb.com/list/ls547463722/
         xmen: https://www.imdb.com/list/ls567618635/
-      
       # check2
       mdblist_url:
-        avp: https://mdblist.com/lists/johnfawkes/alien-vs-predator
-        arrow: https://mdblist.com/lists/k0meta/external/15113
-        dca: https://mdblist.com/lists/k0meta/external/15405
-        dcu: https://mdblist.com/lists/k0meta/external/15107
         fast: https://mdblist.com/lists/k0meta/external/9246
         marvel: https://mdblist.com/lists/k0meta/external/15110
-        mcu: https://mdblist.com/lists/k0meta/external/46496
         middle: https://mdblist.com/lists/k0meta/external/46550
         mummy: https://mdblist.com/lists/k0meta/external/9249
         rocky: https://mdblist.com/lists/k0meta/external/9248
-        star: https://mdblist.com/lists/k0meta/external/15105
-        trek: https://mdblist.com/lists/k0meta/external/46548
         askew: https://mdblist.com/lists/k0meta/external/15362
         wizard: https://mdblist.com/lists/k0meta/external/23683
       # check3
       image:
         default: universe/<<key>>
+      # check4
+      delete_collections_named:
+        dcu: DC Extended Universe
