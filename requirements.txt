@@ -8,7 +8,7 @@ pillow==11.1.0
 PlexAPI==4.16.1
 psutil==7.0.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 pywin32==310; sys_platform == 'win32'
 requests==2.32.3
 ruamel.yaml==0.18.10
