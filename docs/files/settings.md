@@ -117,7 +117,7 @@ collections:
 
 The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a "Marvel Cinematic Universe" label to each of the items in Plex.
 
-It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of <<smart_label>> (equating to a search of `label: Unplayed Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
+It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` (equating to a search of `label: Unplayed Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
 
 Smart Label definitions can be used with any other Smart Builder search criteria, allowing for additional filtering and views that otherwise would not be possible.
 
