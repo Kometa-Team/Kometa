@@ -5,17 +5,38 @@ hide:
 
 # Plex Builders
 
-Plex has two categories of builders - Smart and Dumb (non-smart).
+Plex Builders utilize media that already exists within your Plex library to place them into a Collection.
 
-Smart Builders use rules (filters) to automatically include items that match the criteria of the Builder. When new media is added to your library, or if metadata of any item in your library changes to match the Builder's rules, the media is automatically included in the collection without the need to run Kometa again. 
+Plex has two categories of Collections - Smart and Manual. The same search criteria can be used to build a Smart or Manual collection in most instances. 
 
-Dumb (non-Smart) Builders are static in nature and will not dynamically update as new media is added/metadata criteria changes across your library - you will have to run Kometa any time you want the Builder to re-run.
+To keep things simple we will use the term Smart Builders and Manual Builders, which refers to the criteria that is used to build the Collection.
 
-Smart Builders are usually the recommended approach as they are lightweight and faster to process than Dumb Builders.
+Smart Builders use filters (rules) to build collections that match the criteria of the Builder. When new media is added to your library, or if metadata of any item in your library changes to match the Builder's rules, the media is automatically included in the collection without the need to run Kometa again. 
+
+Manual (also known as Dumb or non-Smart) Builders are static in nature and will not dynamically update as new media is added/metadata criteria changes across your library - you will have to run Kometa any time you want the Builder to re-run.
+
+Smart Builders are usually the recommended approach as they are lightweight and faster to process than Dumb Builders
+
+## Understanding Smart vs Manual Collections
+
+There are some key differences that you should understand before choosing if you want to use a Smart or Manual Builder, this table shows you the key differences between the Collections that are built from each type of Builder.
+
+| Feature                                          | **Smart Collection**                                                                                      | **Manual (Dumb) Collection**                                              |
+|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| Automation                                       | Automatically includes or removes items as your library changes                                           | Requires manual updates—items must be added or removed by hand            |
+| Use Case                                         | Great for auto-generating groups like “Movies Released This Year” or “Top-Rated Thrillers”                | Ideal for curated lists like “My Favorites” or “Family Movie Night Picks” |
+| Customization                                    | Built using Plex’s filter system; limited to available filter options                                     | Fully customizable—any item from the library can be included              |
+| Accuracy                                         | Always reflects real-time library data based on filter criteria                                           | Remains the same unless manually edited                                   |
+| Icon                                             | Identified with a gear icon in the Plex UI (⚙️)                                                           | No special icon—just a standard collection                                |
+| Behavior After Library Scan                      | Automatically refreshes based on updated metadata                                                         | No change unless edited manually                                          |
+| Editing                                          | Filters can be edited to change which items are included                                                  | Items must be individually added/removed                                  |
+| Metadata Changes (via Refresh or Kometa updates) | Filters remain intact; collection contents may shift as metadata changes                                  | Content stays fixed unless explicitly modified by scripts or user         |
+
+There are some exceptions to the above when using a Smart Builder (namely when using a [Smart Label Definition](../settings.md#smart-label-definitions)), but the above should offer a basic understanding of the key differences.
 
 ???+ important
 
-    The `Smart Builders` and `Dumb Builders` tabs below will give examples of how to use the Builders, whilst the `Search Options`, `Sort Options` and `Builder Attributes` will give the full list of attributes and customizations available for use with the Builders.
+    The `Smart Builders` and `Manual Builders` tabs below will give examples of how to use the Builders, and the `Search Options`, `Sort Options` and `Builder Attributes` tabs will give the full list of attributes and customizations available for use with the Builders.
 
 === "Smart Builders"
  
@@ -27,8 +48,6 @@ Smart Builders are usually the recommended approach as they are lightweight and 
     Smart Filter and Smart Label are the two methods available for Smart Builders.
 
     Smart Filter Bulders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
-
-    Smart Label Builders attaches a label to every item that meets the criteria, and then creates a Smart Filter to search for that label. This is the normal approach used when you want to use a third-party list (such as Trakt or TMDb) with a Smart Builder.
 
     ???+ important
         
@@ -129,46 +148,6 @@ Smart Builders are usually the recommended approach as they are lightweight and 
             tmdb_person: 138
         ```
 
-    === "Smart Label Builder"
-
-        A Smart Label Collection is a smart collection that grabs every item with a specific label generated by the program. 
-        That label is added to all the items the Collection Builders find instead of being added to a normal collection. 
-        
-        To make a collection a Smart Label Collection, the `smart_label` attribute must be added to the collection definition. 
-        It functions in two different ways:
-
-        1. Define the sort using the Movies/Shows column of the [Sorts Table](#sort-options) below along with any other Builder 
-        to make that collection a Smart Label Collection.
-            ```yaml
-            collections:
-              Marvel Cinematic Universe:
-                trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
-                smart_label: release.desc
-            ```
-        
-        2. Provide a whole `smart_filter` to determine exactly how the smart collection should be built, ensuring to include `label: <<smart_label>>`, which will link it to the collection labels.
-            ```yaml
-            collections:
-              Unplayed Marvel Cinematic Universe:
-                trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
-                smart_label:
-                  sort_by: release.desc
-                  all:
-                    label: <<smart_label>>
-                    unplayed: true
-            ```
-        
-        This is extremely useful because smart collections don't follow normal show/hide rules and can eliminate the need to 
-        have [Plex Collectionless](#plex-collectionless) when used correctly. To fix the issue described in 
-        [Plex Collectionless](#plex-collectionless) you would make `Marvel Cinematic Universe` a Smart Label Collection 
-        and all other Marvel collection just normal collections, and they will show/hide all the movie properly.
-        
-        To have the Smart Label Collections to eliminate Plex Collectionless you have to go all in on using them. A good rule of 
-        thumb to make sure this works correctly is that every item in your library should have a max of one non-smart collection.
-        
-        Reach out on the [Kometa Discord](https://kometa.wiki/en/latest/discord/) or in the [GitHub Discussions](https://github.com/Kometa-Team/Kometa/discussions) for help if you're having any issues getting 
-        this to work properly.
-
     {%
         include-markdown "../../templates/snippets/plex_search_options.md"
     %}
@@ -182,7 +161,7 @@ Smart Builders are usually the recommended approach as they are lightweight and 
     %}
 
 
-=== "Dumb Builders"
+=== "Manual Builders"
 
     This Builder finds items by using data held solely within Plex.
      

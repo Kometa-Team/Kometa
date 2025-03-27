@@ -47,7 +47,7 @@ tags:
 All the following attributes serve various functions as how the definition functions inside of Kometa.
 
 | Attribute                    | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `blank_collection`           | **Description:** When set to true the collection will be created with no builders and no items added.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `build_collection`           | **Description:** When set to false the collection won't be created but items can still be added to Radarr/Sonarr. Does not work for playlists.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search`, `trakt_list`, or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                            |
@@ -83,8 +83,69 @@ All the following attributes serve various functions as how the definition funct
 | `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                      |
 | `tmdb_region`                | **Description:** Sets the region for `tmdb_popular`, `tmdb_now_playing`, `tmdb_top_rated`, and `tmdb_upcoming`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `validate_builders`          | **Description:** When set to false the definition will not fail if one Builder fails.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `smart_label`                | **Description:** Adds a label to all items found by the builder, which is then used to create a Smart Collection searching for the label<br>See [Smart Label Definitions](#smart-label-defintiions) for more information and use-cases                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-### Default Percent Example
+## Smart Label Definitions
+
+Smart Labels is a process that Kometa uses to build [Smart Collections](builders/plex.md#understanding-smart-vs-manual-collections) using non-Plex builders.
+
+Instead of building a Manual Collection with items from third-party builders, Kometa applies a label to every item that is discovered by the builder.
+
+This label is then used as part of a [Smart Filter Builder](builders/plex.md#smart-filter-builder) to create a Smart Collection showing any item that has that label.
+
+The result is a Smart Collection which only updates when the specific label is added/removed from items within Plex (either by the user or Kometa adding or remove the label).
+
+Here is an example of a Smart Label definition being used to create a Smart Collection.
+
+```yaml
+collections:
+  Marvel Cinematic Universe:
+    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    smart_label: release.desc
+```
+
+The above can also be defined as:
+```yaml
+collections:
+  Marvel Cinematic Universe:
+    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    smart_label:
+      sort_by: release.desc
+      all:
+        label: <<smart_label>>
+```
+
+The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a "Marvel Cinematic Universe" label to each of the items in Plex.
+
+It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of <<smart_label>> (equating to a search of `label: Unplayed Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
+
+Smart Label definitions can be used with any other Smart Builder search criteria, allowing for additional filtering and views that otherwise would not be possible.
+
+Let's add some new criteria to our previous example:
+
+```yaml
+collections:
+  Unplayed Marvel Cinematic Universe with Robert Downey Jr:
+    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    smart_label:
+      sort_by: release.desc
+      all:
+        label: <<smart_label>>
+        unplayed: true
+        actor: "Robert Downey Jr."
+```
+
+The above workflow would still happen as described (note that the label applied to the items would now be "Unplayed Marvel Cinematic Universe with Robert Downey Jr."), but the Smart Filter now includes two new criteria; that the item must be unplayed and must feature Robert Downey Jr.
+
+### Smart Labels & Plex Collectionless 
+
+Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect manual collections. As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
+
+For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are normal (manual) collections, Plex will handle the visibility correctly across grouped collections.
+
+To fully take advantage of this method and eliminate the need for Plex Collectionless, it’s important to commit to using this system consistently. A good rule of thumb is: each item in your library should belong to no more than one non-smart collection.
+
+## Default Percent Example
 
 An example of using `default_percent` which is used in an external yml file and not within config.yml:
 
