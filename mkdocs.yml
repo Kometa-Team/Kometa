@@ -90,7 +90,6 @@ extra:
     provider: plausible
     domain: kometa.wiki/en/latest
     src: "https://analytics.kometa.wiki/js/script.js"
-copyright: Copyright &copy; 2024 meisnate12
 markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
@@ -126,6 +125,8 @@ extra_javascript:
   - stylesheets/termynal.js
   - stylesheets/custom.js
   - stylesheets/branch.js
+hooks:
+  - hooks/copyright.py
 
 nav:
   - KOMETA:
