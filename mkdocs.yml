@@ -83,7 +83,6 @@ extra:
     provider: plausible
     domain: kometa.wiki/en/latest
     src: "https://analytics.kometa.wiki/js/script.js"
-copyright: Copyright &copy; 2025 meisnate12
 markdown_extensions:
   - abbr
   - admonition
@@ -119,6 +118,8 @@ extra_css:
 extra_javascript:
   - assets/js/extra.js
 
+hooks:
+  - docs/hooks/copyright.py
 
 nav:
   - KOMETA:
