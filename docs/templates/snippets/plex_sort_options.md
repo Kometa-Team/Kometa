@@ -1,7 +1,7 @@
 
 === "Sort Options"
 
-    The majority of Smart and Dumb Builders utilize the same Sort Options. Any deviation from this will be highlighted against the specific Builder.
+    The majority of Smart and Manual Builders utilize the same Sort Options. Any deviation from this will be highlighted against the specific Builder.
  
     | Sort Option                                     | Description                                         |                   Movies                   |                   Shows                    |                  Seasons                   |                  Episodes                  |                  Artists                   |                   Albums                   |                   Tracks                   |
     |:------------------------------------------------|:----------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|

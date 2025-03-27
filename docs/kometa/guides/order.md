@@ -288,7 +288,7 @@ You can re-order collections within each Defaults File using the `order_<<key>>`
 #### Sorting the **contents** of the **collections** within the **groups** of Default collections
 
 You can also re-order the contents of each collection within a Defaults File using **either** the `sort_by` or `collection_order` Template Variables. The specific option you use will depend 
-on the specific default file [it is ultimately controlled by which type of collection is created by the file, dumb or smart], and will be listed on the relevant wiki page.
+on the specific default file [it is ultimately controlled by which type of collection is created by the file, manual or smart], and will be listed on the relevant wiki page.
 
 For example:
 
@@ -309,7 +309,7 @@ For example:
 1. This sets the sort_by for all collections created by `basic` to `year.desc`, overriding the default of `release.desc`. `basic` creates smart collections, so it uses `sort_by`.
 2. This sets the sort_by for the `New Episodes` collection created by `basic` to `episode_release.`, 
 overriding the default of `release.desc` AND the override value set by the previous Template Variable.
-3. This sets the `collection_order` for the IMDB collections to `release`, overriding the default of `custom`. `imdb` creates dumb collections, so it uses `collection_order`.
+3. This sets the `collection_order` for the IMDB collections to `release`, overriding the default of `custom`. `imdb` creates manual collections, so it uses `collection_order`.
 4. This sets the `collection_order` for the `IMDb Lowest Rated` collection to `alpha.`,  overriding the default of `custom` AND the override value set by the previous Template Variable.
 
 ## Builder Sorting
@@ -356,17 +356,17 @@ When using Kometa builders, the majority of builders will require `collection_or
         collection_order: custom
     ```
 
-## Dumb and Smart Collection Sorting
+## Manual and Smart Collection Sorting
 
-Plex has two types of collections, "Dumb" and "Smart".
+Plex has two types of collections, "Manual" and "Smart".
 
-When using Kometa, a "Dumb" collection is one which is static - the collection will only update when you run Kometa.
+When using Kometa, a "Manual" collection is one which is static - the collection will only update when you run Kometa.
 
 A "Smart" collection is one which is a living/breathing collection, as you add new media or the data about your media changes, the collection will update in real-time to reflect those changes.
 
-Dumb collections can utilize the `sort_by` attribute to define the sorting.
+Manual collections can utilize the `sort_by` attribute to define the sorting.
 
-???+ example "Example 6 - Dumb Collection Sorting"
+???+ example "Example 6 - Manual Collection Sorting"
 
     ```yaml
     collections:
@@ -392,11 +392,11 @@ Dumb collections can utilize the `sort_by` attribute to define the sorting.
           limit: 50
     ```
 
-The Sort Orders available for "Dumb" collections are outlined on the **[Dumb Plex Builder](../../files/builders/plex.md)** page.
+The Sort Orders available for "Manual" collections are outlined on the **[Manual Plex Builder](../../files/builders/plex.md)** page.
 
 ??? tip
     
-    Although the Sort Options are listed on the Dumb Plex Builder page, the options are available to mostly any Builder if you use the `collection_order` attribute to define a `sort_by` value
+    Although the Sort Options are listed on the Manual Plex Builder page, the options are available to mostly any Builder if you use the `collection_order` attribute to define a `sort_by` value
 
     ```yaml
     collections:

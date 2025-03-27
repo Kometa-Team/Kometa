@@ -11,7 +11,7 @@
 
     Attribute and Value elements are mandatory, whilst modifiers are optional. Typically speaking, Plex will have a default modifier of "is" or "contains" if you do not specify a modifier.
 
-    The majority of Smart and Dumb Builders utilize the same Search Options, meaning that the criteria for the builders is largely interchangeable between the two. Any deviation from this will be highlighted against the specific Builder.
+    The majority of Smart and Manual Builders utilize the same Search Options, meaning that the criteria for the builders is largely interchangeable between the two. Any deviation from this will be highlighted against the specific Builder.
 
     === "Boolean Filters"
         

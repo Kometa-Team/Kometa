@@ -1,7 +1,7 @@
 
 === "Builder Attributes"
 
-    The majority of Smart and Dumb Builders utilize the same Builder Attributes. Any deviation from this will be highlighted against the specific Builder.
+    The majority of Smart and Manual Builders utilize the same Builder Attributes. Any deviation from this will be highlighted against the specific Builder.
 
     | Attribute  | Description & Values                                                                                                                                                                                                                               |
     |:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
