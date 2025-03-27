@@ -89,7 +89,7 @@ All the following attributes serve various functions as how the definition funct
 
 Smart Labels is a process that Kometa uses to build [Smart Collections](builders/plex.md#understanding-smart-vs-manual-collections) using non-Plex builders.
 
-Instead of building a Manual Collection with items from third-party builders, Kometa applies a label to every item that is discovered by the builder.
+Instead of building a Manual (also known as Dumb or non-Smart) Collection with items from third-party builders, Kometa applies a label to every item that is discovered by the builder.
 
 This label is then used as part of a [Smart Filter Builder](builders/plex.md#smart-filter-builder) to create a Smart Collection showing any item that has that label.
 
@@ -117,7 +117,7 @@ collections:
 
 The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a "Marvel Cinematic Universe" label to each of the items in Plex.
 
-It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` (equating to a search of `label: Unplayed Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
+It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` (equating to a search of `label: Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
 
 Smart Label definitions can be used with any other Smart Builder search criteria, allowing for additional filtering and views that otherwise would not be possible.
 
@@ -139,9 +139,9 @@ The above workflow would still happen as described (note that the label applied 
 
 ### Smart Labels & Plex Collectionless 
 
-Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect manual collections. As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
+Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect Manual collections. As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
 
-For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are normal (manual) collections, Plex will handle the visibility correctly across grouped collections.
+For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are Manual collections, Plex will handle the visibility correctly across grouped collections.
 
 To fully take advantage of this method and eliminate the need for Plex Collectionless, it’s important to commit to using this system consistently. A good rule of thumb is: each item in your library should belong to no more than one non-smart collection.
 
