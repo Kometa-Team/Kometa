@@ -87,9 +87,10 @@ All the following attributes serve various functions as how the definition funct
 
 ## Smart Label Definitions
 
-Smart Labels is a process that Kometa uses to build [Smart Collections](builders/plex.md#understanding-smart-vs-manual-collections) using non-Plex builders.
+Smart Labels are a process that Kometa uses to build [Smart Collections](builders/plex.md#understanding-smart-vs-manual-collections) using non-Plex builders.
 
-Instead of building a Manual (also known as Dumb or non-Smart) Collection with items from third-party builders, Kometa applies a label to every item that is discovered by the builder.
+Instead of building a Manual (also known as Dumb or non-Smart) Collection with items from third-party builders, 
+Kometa applies a label to every item that is discovered by the builder.
 
 This label is then used as part of a [Smart Filter Builder](builders/plex.md#smart-filter-builder) to create a Smart Collection showing any item that has that label.
 
@@ -115,9 +116,11 @@ collections:
         label: <<smart_label>>
 ```
 
-The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a "Marvel Cinematic Universe" label to each of the items in Plex.
+The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a 
+"Marvel Cinematic Universe" label to each of the items in Plex.
 
-It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` (equating to a search of `label: Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
+It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` 
+(equating to a search of `label: Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
 
 Smart Label definitions can be used with any other Smart Builder search criteria, allowing for additional filtering and views that otherwise would not be possible.
 
@@ -135,15 +138,23 @@ collections:
         actor: "Robert Downey Jr."
 ```
 
-The above workflow would still happen as described (note that the label applied to the items would now be "Unplayed Marvel Cinematic Universe with Robert Downey Jr."), but the Smart Filter now includes two new criteria; that the item must be unplayed and must feature Robert Downey Jr.
+The above workflow would still happen as described (note that the label applied to the items would now be "Unplayed Marvel Cinematic Universe with Robert Downey Jr."), 
+but the Smart Filter now includes two new criteria; that the item must be unplayed and must feature Robert Downey Jr.
 
 ### Smart Labels & Plex Collectionless 
 
-Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect Manual collections. As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
+Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect Manual collections. 
+As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
 
-For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are Manual collections, Plex will handle the visibility correctly across grouped collections.
+For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are Manual collections, 
+Plex will handle the visibility correctly across grouped collections.
 
-To fully take advantage of this method and eliminate the need for Plex Collectionless, it’s important to commit to using this system consistently. A good rule of thumb is: each item in your library should belong to no more than one non-smart collection.
+To fully take advantage of this method and eliminate the need for Plex Collectionless, it’s important to commit to using this system consistently. 
+A good rule of thumb is: each item in your library should belong to no more than one non-smart collection.
+
+The only downside of using smart collections is that they are unable to be sorted by `custom` (which uses the order of the original builder). 
+In order to have a custom ordered Marvel Cinematic Universe Collection  with the show/hide of the collection to work correctly you will have to use
+[Plex Collectionless](builders/plex.md#plex-collectionless).
 
 ## Default Percent Example
 
@@ -196,7 +207,8 @@ collections:
       - "\\path\\to\\file4"
 ```
 
-When Kometa adds this to Plex the translated string will be `\\path\\to\\file1;\\path\\to\\file2,\\path\\to\\file3;\\path\\to\\file4`. (Notice that some separators are semicolons `;` and some are commas `,`)
+When Kometa adds this to Plex the translated string will be `\\path\\to\\file1;\\path\\to\\file2,\\path\\to\\file3;\\path\\to\\file4`. 
+(Notice that some separators are semicolons `;` and some are commas `,`)
 
 Plex preroll videos and this setting are covered at [Plex Extras](https://support.plex.tv/articles/202920803-extras/).
 

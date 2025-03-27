@@ -1513,11 +1513,27 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: imdb_award event_year attribute is blank")
                 if og_year in ["all", "latest"]:
                     event_year = og_year
-                elif not isinstance(og_year, list) and "-" in str(og_year) and len(str(og_year)) > 7:
+                elif not isinstance(og_year, list) and "-" in str(og_year)[1:] and (len(str(og_year)) > 6 or str(og_year).startswith("-") or "--" in str(og_year)):
                     try:
+                        first_neg = False
+                        second_neg = False
+                        if str(og_year)[0] == "-":
+                            first_neg = True
+                            og_year = str(og_year)[1:]
+                        if "--" in str(og_year):
+                            second_neg = True
+                            og_year = str(og_year).replace("--", "-")
                         min_year, max_year = og_year.split("-")
-                        min_year = int(min_year)
-                        max_year = int(max_year) if max_year != "current" else None
+                        if first_neg:
+                            min_year = self.current_year - int(min_year)
+                        else:
+                            min_year = int(min_year)
+                        if second_neg:
+                            max_year = self.current_year - int(max_year)
+                        elif max_year == "current":
+                            max_year = None
+                        else:
+                            max_year = int(max_year)
                         event_year = []
                         for option in year_options:
                             check = int(option.split("-")[0] if "-" in option else option)
@@ -1525,6 +1541,10 @@ class CollectionBuilder:
                                 event_year.append(option)
                     except ValueError:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
+                elif str(og_year).startswith("-"):
+                    event_year = str(self.current_year + int(og_year))
+                    if event_year not in year_options:
+                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year}. Event Options: [{', '.join(year_options)}]")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
                 if (event_year == "all" or len(event_year) > 1) and not git_event:
