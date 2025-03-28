@@ -46,27 +46,27 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `season`   | `winter`, `spring`, `summer`, `fall`, `holiday`, or `current` |
         | `holiday`  | `new_years_day`, `new_year_weekend`, `mlk_day`, `mlk_day_weekend`, `presidents_day`, `presidents_day_weekend`, `easter`, `easter_weekend`, `memorial_day`, `memorial_day_weekend`, `independence_day`, `independence_day_weekend`, `labor_day`, `labor_day_weekend`, `indigenous_day`, `indigenous_day_weekend`, `halloween`, `thanksgiving`, `thanksgiving_3`, `thanksgiving_4`, `thanksgiving_5`, `post_thanksgiving_weekend`, `christmas_day`, `christmas_weekend`, `new_years_eve` |
         
-    === "Example"
+    ### Example Mojo Domestic Builder(s)
         
-        ```yaml
-        collections:
-          Current Domestic Box Office:
-            mojo_domestic:
-              range: yearly
-              year: current
-        
-          Last Year's Domestic Box Office:
-            mojo_domestic:
-              range: yearly
-              year: current-1
-        
-          Last Month's Top 10 Domestic Box Office:
-            mojo_domestic:
-              range: monthly
-              range_data: current
-              year: current-1
-              limit: 10
-        ```
+    ```yaml
+    collections:
+      Current Domestic Box Office:
+        mojo_domestic:
+          range: yearly
+          year: current
+    
+      Last Year's Domestic Box Office:
+        mojo_domestic:
+          range: yearly
+          year: current-1
+    
+      Last Month's Top 10 Domestic Box Office:
+        mojo_domestic:
+          range: monthly
+          range_data: current
+          year: current-1
+          limit: 10
+    ```
 
 === "International"
     
@@ -94,29 +94,29 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `monthly`  | `january`, `february`, ..., `december`, `current`, or relative (`current-#`) where `#` is days before current |
         | `quarterly`| `q1`, `q2`, `q3`, `q4`, `current`, or relative (`current-#`) where `#` is days before current |
         
-    === "Example"
+    ### Example Mojo International Builder(s)
         
-        ```yaml
-        collections:
-        
-          Current International Box Office:
-            mojo_international:
-              range: yearly
-              year: current
-        
-          Last Year's International Box Office:
-            mojo_international:
-              range: yearly
-              year: current-1
-        
-          Last Month's Top 10 German Box Office:
-            mojo_international:
-              range: monthly
-              range_data: current
-              chart: germany
-              year: current-1
-              limit: 10
-        ```
+    ```yaml
+    collections:
+    
+      Current International Box Office:
+        mojo_international:
+          range: yearly
+          year: current
+    
+      Last Year's International Box Office:
+        mojo_international:
+          range: yearly
+          year: current-1
+    
+      Last Month's Top 10 German Box Office:
+        mojo_international:
+          range: monthly
+          range_data: current
+          chart: germany
+          year: current-1
+          limit: 10
+    ```
 
 === "Worldwide"
     
@@ -133,24 +133,24 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `year`    | The year of the [Worldwide Box Office](https://www.boxofficemojo.com/year/world/) to pull.<br>**Allowed Values:** Number between 1977 and the current year, `current`, or relative current (`current-#`) |
         | `limit`   | The maximum number of results to return.<br>**Default Value:** Returns all results<br>**Allowed Values:** Number greater than 0 |
     
-    === "Example"
+    ### Example Mojo Worldwide Builder(s)
         
-        ```yaml
-        collections:
-        
-          Current Worldwide Box Office:
-            mojo_world:
-              year: current
-        
-          Last Year's Worldwide Box Office:
-            mojo_world:
-              year: current-1
-        
-          2020 Top 10 Worldwide Box Office:
-            mojo_world:
-              year: 2020
-              limit: 10
-        ```
+    ```yaml
+    collections:
+    
+      Current Worldwide Box Office:
+        mojo_world:
+          year: current
+    
+      Last Year's Worldwide Box Office:
+        mojo_world:
+          year: current-1
+    
+      2020 Top 10 Worldwide Box Office:
+        mojo_world:
+          year: 2020
+          limit: 10
+    ```
 
 === "All Time"
     
@@ -168,27 +168,27 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `content_rating_filter`| Determines the content rating chart to use.<br>**Allowed Values:** `g`, `g/pg`, `pg`, `pg-13`, `r`, or `nc-17` |
         | `limit`                | The maximum number of results to return.<br>**Default Value:** Returns all results<br>**Allowed Values:** Number greater than 0 |
     
-    === "Example"
+    ### Example Mojo All Time Builder(s)
         
-        ```yaml
-        collections:
-        
-          Top 100 Domestic All Time Grosses:
-            mojo_all_time:
-              chart: domestic
-              limit: 100
-        
-          Top 100 Worldwide All Time Grosses:
-            mojo_all_time:
-              chart: worldwide
-              limit: 100
-        
-          Top 10 Domestic All Time G Movie Grosses:
-            mojo_all_time:
-              chart: domestic
-              content_rating_filter: g
-              limit: 10
-        ```
+    ```yaml
+    collections:
+    
+      Top 100 Domestic All Time Grosses:
+        mojo_all_time:
+          chart: domestic
+          limit: 100
+    
+      Top 100 Worldwide All Time Grosses:
+        mojo_all_time:
+          chart: worldwide
+          limit: 100
+    
+      Top 10 Domestic All Time G Movie Grosses:
+        mojo_all_time:
+          chart: domestic
+          content_rating_filter: g
+          limit: 10
+    ```
 
 === "Never Hit"
     
@@ -206,27 +206,27 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `never`   | Determines the never filter to use.<br>**Default Value:** `1`<br>**Allowed Values:** `1`, `5`, or `10` |
         | `limit`   | The maximum number of results to return.<br>**Default Value:** Returns all results<br>**Allowed Values:** Number greater than 0 |
         
-    === "Example"
-        
-        ```yaml
-        collections:
-        
-          "Top 100 Domestic Never #1":
-            mojo_never:
-              chart: domestic
-              limit: 100
-        
-          "Top 100 Domestic Never #10":
-            mojo_never:
-              chart: domestic
-              never: 10
-              limit: 100
-        
-          "Top 100 German Never #1":
-            mojo_never:
-              chart: germany
-              limit: 100
-        ```
+    ### Example Mojo Never Hit Builder(s)
+    
+    ```yaml
+    collections:
+    
+      "Top 100 Domestic Never #1":
+        mojo_never:
+          chart: domestic
+          limit: 100
+    
+      "Top 100 Domestic Never #10":
+        mojo_never:
+          chart: domestic
+          never: 10
+          limit: 100
+    
+      "Top 100 German Never #1":
+        mojo_never:
+          chart: germany
+          limit: 100
+    ```
 
 === "Other Records"
     
@@ -243,23 +243,23 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
         | `chart`   | Determines the record you want to use.<br>**Allowed Values:**<br>`second_weekend_drop`, `post_thanksgiving_weekend_drop`, `top_opening_weekend`, `worst_opening_weekend_theater_avg`, `mlk_opening`, `easter_opening`, `memorial_opening`, `labor_opening`, `president_opening`, `thanksgiving_3_opening`, `thanksgiving_5_opening`, `mlk`, `easter`, `4th`, `memorial`, `labor`, `president`, `thanksgiving_3`, `thanksgiving_5`, `january`, `february`, `march`, `april`, `may`, `june`, `july`, `august`, `september`, `october`, `november`, `december`, `spring`, `summer`, `fall`, `holiday_season`, `winter`, `g`, `g/pg`, `pg`, `pg-13`, `r`, `nc-17`, `top_opening_weekend_theater_avg_all`, `top_opening_weekend_theater_avg_wide`, `opening_day`, `single_day_grosses`, `christmas_day_gross`, `new_years_day_gross`, `friday`, `saturday`, `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday_non_opening`, `saturday_non_opening`, `sunday_non_opening`, `monday_non_opening`, `tuesday_non_opening`, `wednesday_non_opening`, `thursday_non_opening`, `biggest_theater_drop`, `opening_week` |
         | `limit`   | The maximum number of results to return.<br>**Default Value:** Returns all results<br>**Allowed Values:** Number greater than 0 |
         
-    === "Example"
-        
-        ```yaml
-        collections:
-        
-          Top 10 Biggest Opening Weekends:
-            mojo_record:
-              chart: top_opening_weekend
-              limit: 10
-        
-          Top 10 Biggest Opening Day:
-            mojo_record:
-              chart: opening_day
-              limit: 10
-        
-          Top 10 Biggest Opening Weeks:
-            mojo_record:
-              chart: opening_week
-              limit: 10
-        ```
+    ### Example Mojo Other Records Builder(s)
+    
+    ```yaml
+    collections:
+    
+      Top 10 Biggest Opening Weekends:
+        mojo_record:
+          chart: top_opening_weekend
+          limit: 10
+    
+      Top 10 Biggest Opening Day:
+        mojo_record:
+          chart: opening_day
+          limit: 10
+    
+      Top 10 Biggest Opening Weeks:
+        mojo_record:
+          chart: opening_week
+          limit: 10
+    ```
