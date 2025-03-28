@@ -20,14 +20,14 @@ anidb:
   password: ######
 ```
 
-| Attribute          | Allowed Values                                                                                | Default |                 Required                 |
-|:-------------------|:----------------------------------------------------------------------------------------------|:--------|:----------------------------------------:|
-| `client`           | AniDB Client Name. **must be lowercase**                                                      | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
-| `version`          | AniDB Client Version.                                                                         | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
-| `language`         | [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of the User Language. | en      | :fontawesome-solid-circle-xmark:{ .red } |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.                     | 60      | :fontawesome-solid-circle-xmark:{ .red } |
-| `username`         | AniDB Username.                                                                               | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
-| `password`         | AniDB Password.                                                                               | N/A     | :fontawesome-solid-circle-xmark:{ .red } |
+| Attribute          | Description                                                             | Allowed Values (default in **bold**)                                                  |                  Required                  |
+|:-------------------|:------------------------------------------------------------------------|:--------------------------------------------------------------------------------------|:------------------------------------------:|
+| `client`           | AniDB client name.                                                      | Any lowercase string or leave **blank**<br><strong>Note:</strong> must be lowercase   |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `version`          | AniDB client version.                                                   | Any version string or leave **blank**                                                 | :fontawesome-solid-circle-xmark:{ .red }   |
+| `language`         | [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) | Two-letter code, e.g. **`en`**                                                        |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `cache_expiration` | Days before each cache mapping expires and must be re-cached.           | Integer, e.g. **`60`**                                                                |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `username`         | AniDB username.                                                         | Any valid username or leave **blank**                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `password`         | AniDB password.                                                         | Any valid password or leave **blank**                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 To get a Client Name and Client Version please follow the following steps.
 

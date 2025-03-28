@@ -20,27 +20,22 @@ plex:
   verify_ssl:
 ```
 
-| Attribute       | Allowed Values                                                                                                                 | Default |                  Required                  |
-|:----------------|:-------------------------------------------------------------------------------------------------------------------------------|:--------|:------------------------------------------:|
-| `url`           | Plex Server URL<br><strong>Example:</strong> http://192.168.1.12:32400                                                         | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `token`         | Plex Server Authentication Token                                                                                               | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `timeout`       | Plex Server Timeout [in seconds]                                                                                               | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `db_cache`      | Plex Server Database Cache Size [in MB, Plex defaults to 40]                                                                   | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `clean_bundles` | Runs Clean Bundles on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md)) | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `empty_trash`   | Runs Empty Trash on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))   | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `optimize`      | Runs Optimize on the Server after all Collection Files are run<br>(`true`, `false` or Any [schedule option](schedule.md))      | false   |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `verify_ssl`    | Turns SSL verification on/off for only Plex                                                                                    | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Attribute          | Description                                                                                                                           | Allowed Values (default in **bold**)                                               |                  Required                  |
+|:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------|:------------------------------------------:|
+| `url`              | Plex server URL.                                                                                                                      | Any valid URL<sup>1</sup><br><strong>Example:</strong> `http://192.168.1.12:32400` | :fontawesome-solid-circle-check:{ .green } |
+| `token`            | Plex server authentication token                                                                                                      | Any valid token<sup>2</sup>                                                        | :fontawesome-solid-circle-check:{ .green } |
+| `timeout`          | Timeout value for Plex server communication (in seconds)                                                                              | Integer, e.g. **`60`**                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `db_cache`         | Plex database cache size (in MB). Plex defaults to 40                                                                                 | Integer, e.g. **`40`**                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `clean_bundles`    | Run [Clean Bundles](https://support.plex.tv/articles/226836308-help/) after all collection files have been processed.                 | `true`, **`false`**, or any [schedule option](schedule.md)                         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `empty_trash`      | Run [Empty Trash](https://support.plex.tv/articles/200289326-emptying-library-trash/) after all collection files have been processed. | `true`, **`false`**, or any [schedule option](schedule.md)                         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `optimize`         | Run [Optimize Database](https://support.plex.tv/articles/226836308-help/) after all collection files have been processed.             | `true`, **`false`**, or any [schedule option](schedule.md)                         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `verify_ssl`       | Enable or disable SSL verification for Plex only                                                                                      | `true`, **`false`**, or leave **blank**                                            | :fontawesome-solid-circle-xmark:{ .red }   |
 
-## Important Notes
+<sup>1</sup> You cannot use https://app.plex.tv as your `url` as that is invalid, you **must** provide the direct address you use to access your server.  There have been instances of issues when Kometa tries to communicate with Plex via a Proxy, so we suggest that Kometa is given direct, unfettered access to Plex to avoid any middle-man issues.
 
-You cannot use https://app.plex.tv as your `url` as that is invalid, you must provide the direct address you use to access your server. 
-There have been instances of issues when Kometa tries to communicate with Plex via a Proxy, so we suggest that Kometa is given direct, unfettered access to Plex to avoid any middle-man issues.
+<sup>2</sup> If you need help finding your Plex Authentication Token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). **Do not** use the Plex Token found in Plex's Preferences.xml file and **do not** use the token that you get via https://app.plex.tv.
 
-If you need help finding your Plex Authentication Token, please see Plex's [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
-**Do not** use the Plex Token found in Plex's Preferences.xml file and **do not** use the token that you get via https://app.plex.tv.
-
-If you set `optimize: true`, you may find that Plex becomes temporarily unresponsive after Kometa has finished running, 
-this is normal and expected behaviour which is reproducible if you run Optimize Database within the Plex UI.
+If you set `optimize: true`, you may find that Plex becomes temporarily unresponsive after Kometa has finished running,  this is normal and expected behaviour which is reproducible if you run Optimize Database within the Plex UI.
 
 # Multi-Plex Instance Setup:
 

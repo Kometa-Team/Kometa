@@ -9,9 +9,9 @@ notifiarr:
   apikey: apikeygoeshere
 ```
 
-| Attribute | Allowed Values     |                  Required                  |
-|:----------|:-------------------|:------------------------------------------:|
-| `apikey`  | Notifiarr API Key. | :fontawesome-solid-circle-check:{ .green } |
+| Attribute  | Description             | Allowed Values (default in **bold**)        |                   Required                   |
+|:-----------|:------------------------|:--------------------------------------------|:--------------------------------------------:|
+| `apikey`   | Notifiarr API key.      | Any valid key or leave **blank**            | :fontawesome-solid-circle-check:{ .green }   |
 
 Once you have added the apikey your config.yml you have to add `notifiarr` to any [webhook](webhooks.md) to send that notification to Notifiarr.
 

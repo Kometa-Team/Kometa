@@ -22,13 +22,16 @@ trakt:
     created_at: 137946258
 ```
 
-| Attribute       | Allowed Values                   | Default |                  Required                  |
-|:----------------|:---------------------------------|:--------|:------------------------------------------:|
-| `client_id`     | Trakt Application Client ID.     | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `client_secret` | Trakt Application Client Secret. | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `pin`           | Trakt Pin.                       | None    |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Attribute        | Description                           | Allowed Values (default in **bold**)         |                  Required                  |
+|:-----------------|:--------------------------------------|:---------------------------------------------|:------------------------------------------:|
+| `client_id`      | Trakt application client ID.          | Any valid ID or leave **blank**              | :fontawesome-solid-circle-check:{ .green } |
+| `client_secret`  | Trakt application client secret.      | Any valid secret or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
+| `pin`            | Trakt PIN.                            | PIN string or leave **blank**                | :fontawesome-solid-circle-xmark:{ .red }   |
 
-* All other attributes will be filled in by Kometa. 
+
+*All other attributes will be filled in by Kometa as part of the authentication process**
+
+## Trakt Authentication
 
 To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:
 

@@ -16,13 +16,16 @@ mal:
     refresh_token: r3fr3sht0k3ng0e5h3r3
 ```
 
-| Attribute       | Allowed Values                         |                  Required                  |
-|:----------------|:---------------------------------------|:------------------------------------------:|
-| `client_id`     | MyAnimeList Application Client ID.     | :fontawesome-solid-circle-check:{ .green } |
-| `client_secret` | MyAnimeList Application Client Secret. | :fontawesome-solid-circle-check:{ .green } |
-| `localhost_url` | MyAnimeList Authorization URL.         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Attribute       | Description                                | Allowed Values (default in **bold**)         |                   Required                   |
+|:----------------|:-------------------------------------------|:---------------------------------------------|:--------------------------------------------:|
+| `client_id`     | MyAnimeList application client ID.         | Any valid ID or leave **blank**              |  :fontawesome-solid-circle-check:{ .green }  |
+| `client_secret` | MyAnimeList application client secret.     | Any valid secret or leave **blank**          |  :fontawesome-solid-circle-check:{ .green }  |
+| `localhost_url` | Redirect URL used for authorization flow.  | Valid localhost URL or leave **blank**       | :fontawesome-solid-circle-xmark:{ .red }     |
 
-All other attributes will be filled in by Kometa.
+
+*All other attributes will be filled in by Kometa as part of the authentication process**
+
+## MyAnimeList Authentication
 
 To connect to MyAnimeList.net you must create a MyAnimeList application and supply Kometa the `client id` and `client secret` provided, please do the following:
 

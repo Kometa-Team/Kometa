@@ -2,6 +2,21 @@
 
 Configuring [ntfy](https://ntfy.sh/) is optional but can allow you to send the [webhooks](webhooks.md) straight to ntfy.
 
+A `ntfy` mapping is in the root of the config file, sampled below.
+
+```yaml title="config.yml ntfy sample"
+ntfy:
+  url: https://ntfy.sh  # or a different ntfy server URL
+  token: tk_thisismyaccesstoken
+  topic: kometa  # or a different topic name
+```
+
+| Attribute | Description               | Allowed Values (default in **bold**)        | Required                                   |
+|:----------|:---------------------------|:--------------------------------------------|:------------------------------------------:|
+| `url`     | ntfy server URL.           | Any valid URL or leave **blank**            | :fontawesome-solid-circle-check:{ .green } |
+| `token`   | ntfy user access token.    | Any valid token or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
+| `topic`   | ntfy topic name.           | Any valid topic or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
+
 ## Setup
 
 Users can either use the [public ntfy server](https://ntfy.sh), or [host their own ntfy server](https://docs.ntfy.sh/install/).
@@ -32,22 +47,7 @@ If you are an admin of your own ntfy server, you can follow these steps:
    [create a user](https://docs.ntfy.sh/config/#users-and-roles)and [generate an access token](https://docs.ntfy.sh/config/#access-tokens).
 4. Follow the same steps as above for generating/reserving a topic, but with the server URL and token provided by your server.
 
-### Configuring `ntfy` in the Config File
-
-Use the URL, topic and token to configure `ntfy` in the root of the config file:
-
-```yaml title="config.yml ntfy sample"
-ntfy:
-  url: https://ntfy.sh  # or a different ntfy server URL
-  token: tk_thisismyaccesstoken
-  topic: kometa  # or a different topic name
-```
-
-| Attribute | Allowed Values          |                  Required                  |
-|:----------|:------------------------|:------------------------------------------:|
-| `url`     | ntfy Server URL.        | :fontawesome-solid-circle-check:{ .green } |
-| `token`   | ntfy User Access Token. | :fontawesome-solid-circle-check:{ .green } |
-| `topic`   | ntfy Topic.             | :fontawesome-solid-circle-check:{ .green } |
+Use the URL, topic and token to configure `ntfy` in the root of the config file.
 
 Once you have added the configuration data to your `config.yml`, you can add `ntfy` to any [webhook](webhooks.md) to send that notification to ntfy.
 

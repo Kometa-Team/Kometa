@@ -10,35 +10,31 @@ Within each library, operations can be defined by using the `operations` attribu
 
 When not using a list under `operations` the whole operations value is one block.
 
-???+ example
-
-    ```yaml title="config.yml Operations sample"
-    libraries:
-      Movies:
-        collection_files:
-          - default: imdb
-        operations:
-          mass_critic_rating_update: tmdb
-          split_duplicates: true
-    ```
+```yaml title="config.yml Operations sample"
+libraries:
+  Movies:
+    collection_files:
+      - default: imdb
+    operations:
+      mass_critic_rating_update: tmdb
+      split_duplicates: true
+```
 
 ## Operation Blocks
 
 You can create individual blocks of operations by using a list under `operations` with each item in the list being a "block" that can be individually scheduled. 
 
-???+ example
-
-    ```yaml title="config.yml Operation Blocks sample"
-    libraries:
-      Movies:
-        collection_files:
-          - default: imdb
-        operations:
-          - schedule: weekly(friday)
-            mass_critic_rating_update: tmdb
-          - schedule: weekly(saturday)
-            split_duplicates: true
-    ```
+```yaml title="config.yml Operation Blocks sample"
+libraries:
+  Movies:
+    collection_files:
+      - default: imdb
+    operations:
+      - schedule: weekly(friday)
+        mass_critic_rating_update: tmdb
+      - schedule: weekly(saturday)
+        split_duplicates: true
+```
 
 ## A Note on Data Sources
 
