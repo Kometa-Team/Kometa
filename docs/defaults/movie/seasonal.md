@@ -98,3 +98,126 @@ hide:
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Seasonal Collections"
+
+        The Seasonal collections are based on lists from a few different sources.
+
+    === "Default `data`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        data: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="data:\n"
+      end="title_format:"
+    %}
+        ```
+
+    === "Default `schedule`"
+    
+        ???+ tip 
+        
+            Pass `schedule_<<key>>` to the file as Template Variables to change this value per collection.
+    
+            ```yaml
+              - default: seasonal
+                template_variables:
+                  schedule_valentine: range(02/10-02/15)
+            ```
+
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        schedule: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="schedule:\n"
+      end="imdb_search:"
+    %}
+        ```
+
+    === "Default `imdb_search`"
+        
+        ???+ tip 
+        
+            Pass `imdb_search_<<key>>` to the file as Template Variables to change this value per collection.
+    
+            ```yaml
+              - default: seasonal
+                template_variables:
+                  imdb_search_easter: 
+                    list.any:
+                      - ls075298827
+                      - ls000099714
+            ```
+
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        imdb_search: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/seasonal.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```

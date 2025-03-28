@@ -48,3 +48,7 @@
 
 {% include-markdown "./base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "Country Collections"
+
+        The Country collections use the [dynamic collections](../../../files/dynamic) system with a default include list and some default addons to consolidate some of the countries.

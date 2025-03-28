@@ -75,3 +75,7 @@ might be seen as controversial. You are welcome to edit this to fit your own aud
 
 {% include-markdown "./base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "Region Collections"
+
+        The Region collections use the [dynamic collections](../../../files/dynamic) system with a default include list and some default addons to consolidate some of the regions.

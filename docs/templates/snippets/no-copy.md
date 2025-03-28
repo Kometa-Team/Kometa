@@ -1,6 +1,6 @@
 **These lists are provided for reference only. If you want to customize this default, refer to ["I want to customize this default"](#i-want-to-customize-this-default).**
 
-```dtd { .no-copy }
+```ymal { .no-copy }
 ###############################################################################
 ################################## IMPORTANT ##################################
 #####################  THIS DATA IS PROVIDED FOR REFERENCE ####################

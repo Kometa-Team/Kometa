@@ -51,3 +51,30 @@ hide:
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Audio Language Collections"
+        
+        The Audio Languages collections use smart filters based on a default list of target languages.
+
+    === "Default `include`"
+
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        include: 
+    {%    
+      include-markdown "../../../defaults/both/audio_language.yml" 
+      comments=false
+      start="include:\n"
+      end="key_name_override:"
+    %}
+        ```
+
+    === "Default `key_name_override`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        key_name_override: 
+    {%    
+      include-markdown "../../../defaults/both/audio_language.yml" 
+      comments=false
+      start="key_name_override:\n"
+    %}
+        ```

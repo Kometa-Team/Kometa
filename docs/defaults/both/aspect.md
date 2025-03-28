@@ -52,3 +52,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Aspect Ratio Collections"
+        
+        The Aspect Ratio collections use Plex searches and filters based on a fixed list of aspect ratios.

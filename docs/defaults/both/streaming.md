@@ -84,3 +84,12 @@ Some logic is applied for specific regions to prevent collections appearing whic
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Streaming Collections"
+        
+        The Streaming collections use two builders to create the collections:
+        
+        If you are not using `originals_only`, the collections are created using [`tmdb_discover`](../../../files/builders/tmdb#discover).
+        
+        If you are using `originals_only`, the collections are created using Kometa-maintained MDBLists.

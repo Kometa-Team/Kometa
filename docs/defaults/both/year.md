@@ -47,3 +47,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Year Collections"
+        
+        The Year collections use the [dynamic collections](./../../files/dynamic.md) system based on the release dates of the items in your libraries.

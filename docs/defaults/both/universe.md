@@ -66,3 +66,43 @@ hide:
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Universe Collections"
+        
+        The Universe collections are based on either Trakt lists or MDB lists.
+
+    === "Default `data`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        data: 
+    {%    
+      include-markdown "../../../defaults/both/universe.yml" 
+      comments=false
+      start="data:\n"
+      end="template:"
+    %}
+        ```
+
+    === "Default `imdb_url`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        imdb_url: 
+  {%    
+    include-markdown "../../../defaults/both/universe.yml" 
+    comments=false
+    start="imdb_url:\n"
+    end="mdblist_url:"
+  %}
+        ```
+
+    === "Default `mdblist_url`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        mdblist_url: 
+  {%    
+    include-markdown "../../../defaults/both/universe.yml" 
+    comments=false
+    start="mdblist_url:\n"
+    end="image:"
+  %}
+        ```

@@ -19,7 +19,7 @@ For example, the \"Iron Man\" franchise collection will appear next to the \"Iro
         "image": "![](./../../../../images/franchise_movie.png)",
         "rec-sub": "It is important to disable Plex\'s in-built Automatic Collections if you are using this Default file. Please see the below video showing how to do this.
 
-<video controls><source src=\"./../../../../assets/images/defaults/automatic_collections.mp4\" type=\"video/mp4\"></video>
+<video controls><source src=\"./../../../../../assets/images/defaults/automatic_collections.mp4\" type=\"video/mp4\"></video>
 
 You\'ll also need to delete any Collections created automatically by Plex prior to Kometa running this file. 
 You can use the [`delete_collections` operation](./../../../../config/operations.md#delete-collections) to do this, or any other method."
@@ -63,3 +63,66 @@ You can use the [`delete_collections` operation](./../../../../config/operations
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Franchise Collections"
+        
+        The Continents collections use the [dynamic collections](../../../files/dynamic) system with a default list of target franchises and some default addons to group shows and movies into those franchises.
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/movie/franchise.yml" 
+      comments=false
+      start="addons:\n"
+      end="title_override:"
+    %}
+        ```
+
+    === "Default `title_override`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        title_override: 
+    {%    
+      include-markdown "../../../defaults/movie/franchise.yml" 
+      comments=false
+      start="title_override:\n"
+      end="template_variables:"
+    %}
+        ```
+
+    === "Default `movie`"
+    
+        ???+ tip 
+    
+            Pass `movie_<<key>>` to the file as Template Variables to change this value per collection. 
+    
+            ```yaml
+              - default: franchise
+                template_variables:
+                  movie_131292:
+                    - 1234
+                    - 5678
+            ```
+
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        movie: 
+  {%    
+    include-markdown "../../../defaults/movie/franchise.yml" 
+    comments=false
+    start="movie:\n"
+    end="name_mapping:"
+  %}
+        ```
+
+    === "Default `name_mapping`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        name_mapping: 
+  {%    
+    include-markdown "../../../defaults/movie/franchise.yml" 
+    comments=false
+    start="name_mapping:\n"
+  %}
+        ```

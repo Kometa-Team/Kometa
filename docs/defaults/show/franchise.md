@@ -60,3 +60,30 @@ For example, the \"Pretty Little Liars\" franchise collection will appear next t
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Franchise Collections"
+        
+        The Continents collections use the [dynamic collections](../../../files/dynamic) system with a default list of target franchises and some default addons to group shows and movies into those franchises.
+
+    === "Default `data`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        data: 
+    {%    
+      include-markdown "../../../defaults/show/franchise.yml" 
+      comments=false
+      start="data:\n"
+      end="template:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/show/franchise.yml" 
+      comments=false
+      start="addons:\n"
+    %}
+        ```

@@ -58,15 +58,13 @@ hide:
 
     === "Genre Collections"
 
-        The Genre collections use the [dynamic collections](../files/dynamic.md) system based on the genres found in your library
+        The Genre collections use the [dynamic collections](../../../files/dynamic) system based on the genres found in your library
         and some default addons to consolidate some of the genres.
 
         i.e. `SciFi` and `Sci-Fi` are both addons of `Science Fiction` so that they all end up in the same `Science Fiction` collection despite technically having different genres.
 
     === "Default `addons`"
     
-        <div id="addons" />
-
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         addons: 
     {%    

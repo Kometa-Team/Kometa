@@ -59,3 +59,9 @@ Requirements:
     %}                                                                                                                                                                                                                                                                                                                                                                                                                             |
     
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Collectionless Collection"
+
+        The Collectionless collection use the [`plex_collectionless` Builder](../../../files/builders/plex#plex-collectionless) to create the collection.
+        
+        Collections and their items are excluded from this collection based on a name prefix or the collection name.

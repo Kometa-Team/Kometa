@@ -56,3 +56,33 @@ Standards Style takes the base resolutions ("4K" and "720p") and turns them into
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Resolution Collections"
+
+        The Resolution collections use the [dynamic collections](../../../files/dynamic) system based on the resolution of the items in your libraries.
+        
+        They use a default list of resolutions to create the collections, and some default addons to group resolutions together.
+
+
+    === "Default `include`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        include: 
+    {%    
+      include-markdown "../../../defaults/both/resolution.yml" 
+      comments=false
+      start="include:\n"
+      end="addons:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/both/resolution.yml" 
+      comments=false
+      start="addons:\n"
+    %}
+        ```

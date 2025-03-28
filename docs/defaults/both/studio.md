@@ -51,3 +51,30 @@ hide:
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Studio Collections"
+
+        The Studio collections use the [dynamic collections](../../../files/dynamic) system with a default include list and some default addons to consolidate some of the studios.
+
+    === "Default `include`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        include: 
+    {%    
+      include-markdown "../../../defaults/both/studio.yml" 
+      comments=false
+      start="include:\n"
+      end="addons:"
+    %}
+        ```
+
+    === "Default `addons`"
+    
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/both/studio.yml" 
+      comments=false
+      start="addons:\n"
+    %}
+        ```

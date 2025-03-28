@@ -41,3 +41,8 @@
     {% include-markdown "./../variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./base/collection/shared.md" rewrite-relative-urls=false %}
+{% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "Decade Collections"
+
+        The Decade collections use the [dynamic collections](../../../files/dynamic) system based on the release dates of the items in your libraries.

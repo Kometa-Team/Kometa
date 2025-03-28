@@ -47,3 +47,8 @@
 
 {% include-markdown "./base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "COLLECTION Collections"
+        
+        The COLLECTION collections use the [dynamic collections](../../../files/dynamic) system based on the content ratings of the items in your libraries. 
+        They each have a addons which combine all the ratings in your library into collections reflecting the desired system.

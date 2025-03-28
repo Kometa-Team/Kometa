@@ -53,3 +53,7 @@
 
 {% include-markdown "./base/collection/shared.md" rewrite-relative-urls=false %}
 {% include-markdown "./base/values.md" rewrite-relative-urls=false %}
+
+    === "Continent Collections"
+
+        The Continents collections use the [dynamic collections](../../../files/dynamic) system with some default addons to consolidate the countries into continents.

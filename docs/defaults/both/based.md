@@ -56,3 +56,9 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/collection/shared.md" rewrite-relative-urls=false %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Based On A ... Collections"
+        
+        The Based On A ... collections are created using Kometa-maintained MDBLists.
+
