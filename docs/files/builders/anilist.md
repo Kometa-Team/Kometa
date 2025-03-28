@@ -112,7 +112,7 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
             
             
 
-    === "AniList Search Examples"
+    ### Example AniList Search Builder(s)
     
     ```yaml
     collections:
@@ -160,6 +160,8 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     The expected input is a single integer value of how many movies/shows to query. 
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+
+    ### Example AniList Top Rated Builder(s)
     
     ```yaml
     collections:
@@ -176,6 +178,8 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     The expected input is a single integer value of how many movies/shows to query. 
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+
+    ### Example AniList Popular Builder(s)
     
     ```yaml
     collections:
@@ -192,7 +196,9 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     The expected input is a single integer value of how many movies/shows to query. 
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example AniList Trending Builder(s)
+
     ```yaml
     collections:
       Trending Anime:
@@ -206,7 +212,9 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     Finds the anime specified by the AniList ID and every relation in its relation tree except Character and Other relations.
     
     The expected input is an AniList ID. Multiple values are supported as either a list or a comma-separated string.
-    
+
+    ### Example AniList Relations Builder(s)
+
     ```yaml
     collections:
       One Piece:
@@ -218,6 +226,8 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     Finds all anime specified by the AniList Studio ID.
     
     The expected input is an AniList ID. Multiple values are supported as either a list or a comma-separated string.
+
+    ### Example AniList Studio Builder(s)
     
     ```yaml
     collections:
@@ -230,6 +240,8 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     Finds the anime specified by the AniList ID.
     
     The expected input is an AniList ID. Multiple values are supported as either a list or a comma-separated string.
+
+    ### Example AniList ID Builder(s)
     
     ```yaml
     collections:
@@ -256,7 +268,9 @@ You can find anime using the features of [AniList.co](https://anilist.co/) (AniL
     | `sort_by`               | **Description:** Sort Order to return<br>**Default:** `score`<br>**Values:**<table class="clearTable"><tr><td>`score`</td><td>Sort by User Score</td></tr><tr><td>`popularity`</td><td>Sort by Popularity</td></tr><tr><td>`status`</td><td>Sort by Status</td></tr><tr><td>`progress`</td><td>Sort by Progress</td></tr><tr><td>`last_updated`</td><td>Sort by Last Updated</td></tr><tr><td>`last_added`</td><td>Sort by Last Added</td></tr><tr><td>`start_date`</td><td>Sort by Start Date</td></tr><tr><td>`completed_date`</td><td>Sort by Completed Date</td></tr></table> |
     
     <sup>1</sup> You can use multiple score filters but the number will have to match every filter. All unrated items are considered to have a 0 rating. 
-    
+
+    ### Example AniList UserList Builder(s)
+
     ```yaml
     collections:
       Currently Watching Anime:

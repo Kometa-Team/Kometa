@@ -52,7 +52,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     
         Trakt lists and users come and go, and Kometa has no control over this. The list URLs found in this documentation 
         are used here as examples and are available and working at time of writing, but they may disappear at any time. Do not take their use here as a guarantee that they exist or are working when you read this.
-    
+
+    ### Example Trakt List Builder(s)
+
     ```yaml
     collections:
       Christmas:
@@ -121,7 +123,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     | Monthly     | [Movies](https://trakt.tv/movies/collected/monthly)/[Shows](https://trakt.tv/shows/collected/monthly) | [Movies](https://trakt.tv/movies/recommended/monthly)/[Shows](https://trakt.tv/shows/recommended/monthly) | [Movies](https://trakt.tv/movies/watched/monthly)/[Shows](https://trakt.tv/shows/watched/monthly) |
     | Yearly      |  [Movies](https://trakt.tv/movies/collected/yearly)/[Shows](https://trakt.tv/shows/collected/yearly)  |  [Movies](https://trakt.tv/movies/recommended/yearly)/[Shows](https://trakt.tv/shows/recommended/yearly)  |  [Movies](https://trakt.tv/movies/watched/yearly)/[Shows](https://trakt.tv/shows/watched/yearly)  |
     | All-Time    |     [Movies](https://trakt.tv/movies/collected/all)/[Shows](https://trakt.tv/shows/collected/all)     |     [Movies](https://trakt.tv/movies/recommended/all)/[Shows](https://trakt.tv/shows/recommended/all)     |     [Movies](https://trakt.tv/movies/watched/all)/[Shows](https://trakt.tv/shows/watched/all)     |
-    
+
+    ### Example Trakt Chart Builder(s)
+
     ```yaml
     collections:
       Trakt Trending:
@@ -157,7 +161,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     | `userlist` | **Description:** Which Trakt userlist to query<br>**Values:**<table class="clearTable"><tr><td>`watchlist`</td><td>Trakt User's Watchlist</td></tr><tr><td>`favorites`</td><td>Trakt User's Personal Favorite list</td></tr><tr><td>`watched`</td><td>Trakt User's Personal Watched list</td></tr><tr><td>`collection`</td><td>Trakt User's Personal Collection list</td></tr></table> |
     | `user`     | **Description:** The User who's user lists you want to query.<br>**Default:** `me`<br>**Values:** Username of User or `me` for the authenticated user.                                                                                                                                                                                                                                 |
     | `sort_by`  | **Description:** How to sort the results<br>**Default:** `rank`<br>**Values:** `rank`, `added`, `released`, `title`                                                                                                                                                                                                                                                                    |
-    
+
+    ### Example Trakt UserList Builder(s)
+
     ```yaml
     collections:
       Trakt Watchlist:
@@ -191,7 +197,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
     and in a specific order. 
-    
+
+    ### Example Trakt Recommendations Builder(s)
+
     ```yaml
     collections:
       Trakt Recommendations:
@@ -208,7 +216,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
     and in a specific order. 
-    
+
+    ### Example Trakt Box Office Builder(s)
+
     ```yaml
     collections:
       Trakt Collected:
@@ -223,7 +233,9 @@ You can find items using the features of [Trakt.tv](https://trakt.tv/) (Trakt).
     blank or existing Trakt List.
     
     NOTE: You must either create an empty Trakt list or specify an existing Trakt list which you have write access to.
-    
+
+    ### Example Plex Collection to Trakt List Sync
+
     ```yaml
     collections:
       My Favourite Movies:

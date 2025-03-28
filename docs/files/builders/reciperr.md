@@ -12,13 +12,15 @@ No configuration is required for this Builder.
 |:----------------------------------|:-----------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
 | [`reciperr_list`](#reciperr-list) | Finds every movie at a Reciperr JSON data URL. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
 
-### Reciperr List
+## Reciperr List
 
 Finds every movie on Reciperr a list.
 
 The expected input is the url that points to the JSON data or a list of urls that do.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+
+### Example Reciperr List Builder(s)
 
 ```yaml
 collections:

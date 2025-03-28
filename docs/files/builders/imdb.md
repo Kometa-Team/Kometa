@@ -16,13 +16,14 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
 | [`imdb_award`](#imdb-award)         | Gets every movie/show in an [IMDb Event](https://www.imdb.com/event/).                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
-
 === "IMDb ID"
     
     Gets the movie/show specified.
     
     The expected input is an IMDb ID. Multiple values are supported as either a list or a comma-separated string.
-    
+
+    ### Example IMDb ID Builder(s)
+
     ```yaml
     collections:
       Star Wars (Animated Shows):
@@ -53,6 +54,8 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
     | [Trending Indian Movies & Shows](https://www.imdb.com/india/upcoming/)               | `trending_india`  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | [Trending Tamil Movies](https://www.imdb.com/india/tamil/)                           | `trending_tamil`  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | [Trending Telugu Movies](https://www.imdb.com/india/telugu/)                         | `trending_telugu` | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+
+    ### Example IMDb Chart Builder(s)
 
     ```yaml
     collections:
@@ -152,8 +155,6 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
     | `runtime.lte`           | Item must have a Runtime less than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                              |
     | `adult`                 | Include adult titles in the search results.<br>**Options:** `true`/`false`                                                                                                                                                                                                                                                                                                                        |
     
-
-
     ??? tip "Interests Options"
     
         You can use the Key or the ID for interests
@@ -373,7 +374,7 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
         | Zombie Horror                    | `zombie_horror`                    | `in0000122`  |
     
     
-    ### Examples
+    ### Example IMDb Search Builder(s)
     
     ```yaml
     collections:
@@ -436,7 +437,9 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
     Multiple values are supported as a list only a comma-separated string will not work.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
-    
+
+    ### Example IMDb List Builder(s)
+
     ```yaml
     collections:
       James Bonds:
@@ -486,7 +489,9 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
     Multiple values are supported as a list only a comma-separated string will not work.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
-    
+
+    ### Example IMDb Watchlist Builder(s)
+
     ```yaml
     collections:
       My Watch Watchlist:
@@ -536,7 +541,8 @@ You can find items using the features of [IMDb.com](https://www.imdb.com/) (IMDb
       comments=false
     %}
     ```
-    
+    ### Example IMDb Award Builder(s)
+
     ```yaml
     collections:
       Academy Award Winners 2023:

@@ -21,6 +21,8 @@ You can find items using the features of [MDBList.com](https://mdblist.com/) (MD
     The expected input is an MDBList List URL. Multiple values are supported as a list only a comma-separated string will not work.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
+
+    ### Example MDBList List Builder(s)
     
     ```yaml
     collections:
@@ -78,7 +80,8 @@ You can find items using the features of [MDBList.com](https://mdblist.com/) (MD
     | `title.asc`<br>`title.desc`                   | Sort by Title                          |
     | `random.asc`<br>`random.desc`                 | Sort by Random (Randomized Daily)      |
     
-    
+    ### Example MDBList List Builder(s) with Sort Option
+
     ```yaml
     collections:
       Top 10 Movies of The Week:

@@ -53,7 +53,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     * Genre options can be found on [MyAnimeList's Search](https://myanimelist.net/anime.php) Page.
     * To find the ID click on a Studio or Genre in the link above and there should be a number in the URL that's the `id`.
     * For example if the url is `https://myanimelist.net/anime/producer/4/Bones` the `id` would be `4` or if the url is `https://myanimelist.net/anime/genre/1/Action` the `id` would be `1`.
-     
+
+    ### Example MyAnimeList Search Builder(s)
+
     ```yaml
     collections:
       Top Action Anime:
@@ -72,7 +74,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top All Builder(s)
+
     ```yaml
     collections:
       Top All Anime:
@@ -88,7 +92,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top Airing Builder(s)
+
     ```yaml
     collections:
       Top Airing Anime:
@@ -104,7 +110,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top Upcoming Builder(s)
+
     ```yaml
     collections:
       Top Upcoming Anime:
@@ -120,7 +128,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top TV Series Builder(s)
+
     ```yaml
     collections:
       Top Anime TV Series:
@@ -136,7 +146,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top Movies Builder(s)
+
     ```yaml
     collections:
       Top Anime Movies:
@@ -152,7 +164,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top OVA Series Builder(s)
+
     ```yaml
     collections:
       Top Anime OVA Series:
@@ -168,7 +182,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Top Specials Builder(s)
+
     ```yaml
     collections:
       Top Anime Specials:
@@ -184,7 +200,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Most Popular Builder(s)
+
     ```yaml
     collections:
       Most Popular Anime:
@@ -200,7 +218,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Most Favorited Builder(s)
+
     ```yaml
     collections:
       Most Favorited Anime:
@@ -216,7 +236,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     The expected input value is a single integer value of how many movies/shows to query.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
-    
+
+    ### Example MyAnimeList Suggested Builder(s)
+
     ```yaml
     collections:
       Suggested Anime:
@@ -230,7 +252,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     Gets the anime specified by the MyAnimeList ID.
     
     The expected input is a MyAnimeList ID. Multiple values are supported as either a list or a comma-separated string.
-    
+
+    ### Example MyAnimeList ID Builder(s)
+
     ```yaml
     collections:
       Cowboy Bebop:
@@ -249,7 +273,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     | `status`   | **Description:** Status to search for<br>**Default:** `all`<br>**Values:**<table class="clearTable"><tr><td>`all`</td><td>All Anime List</td></tr><tr><td>`watching`</td><td>Currently Watching List</td></tr><tr><td>`completed`</td><td>Completed List</td></tr><tr><td>`on_hold`</td><td>On Hold List</td></tr><tr><td>`dropped`</td><td>Dropped List</td></tr><tr><td>`plan_to_watch`</td><td>Plan to Watch</td></tr></table> |
     | `sort_by`  | **Description:** Sort Order to return<br>**Default:** `score`<br>**Values:**<table class="clearTable"><tr><td>`score`</td><td>Sort by Score</td></tr><tr><td>`last_updated`</td><td>Sort by Last Updated</td></tr><tr><td>`title`</td><td>Sort by Anime Title</td></tr><tr><td>`start_date`</td><td>Sort by Start Date</td></tr></table>                                                                                          |
     | `limit`    | **Description:** Don't return more than this number<br>**Default:** `100`<br>**Values:** Number of Anime to query from MyAnimeList (max: 1000)                                                                                                                                                                                                                                                                                    |
-    
+
+    ### Example MyAnimeList UserList Builder(s)
+
     ```yaml
     collections:
       Currently Watching Anime:
@@ -275,7 +301,9 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
     | `sort_by`       | **Description:** Sort Order<br>**Default:** `members`<br>**Values:**<table class="clearTable"><tr><td>`members`</td><td>Sort by Most Members</td></tr><tr><td>`score`</td><td>Sort by Score</td></tr></table>                                                                                                                                                                                                                                                                    |
     | `limit`         | **Description:** Don't return more than this number<br>**Default:** `100`<br>**Values:** Number of Anime to query from MyAnimeList (max: 500)                                                                                                                                                                                                                                                                                                                                    |
     | `starting_only` | **Description:** Return only anime that began airing in the selected season<br>**Default:** `False`<br>**Values:** `True` or `False`                                                                                                                                                                                                                                                                                                                                             |
-    
+
+    ### Example MyAnimeList Seasonal Builder(s)
+
     ```yaml
     collections:
       Current Anime Season:

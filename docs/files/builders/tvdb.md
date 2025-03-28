@@ -26,6 +26,8 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
 
         You can replace `tvdb_list` with `tvdb_list_details` if you would like to fetch and use the description from the list
 
+    ### Example TVDb List Builder(s)
+
     ```yaml
     collections:
       Arrowverse:
@@ -63,6 +65,8 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
 
         You can replace `tvdb_show` with `tvdb_show_details` if you would like to fetch and use the description from the list
 
+    ### Example TVDb Show Builder(s)
+
     ```yaml
     collections:
       Star Wars (Animated Shows):
@@ -96,7 +100,9 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
     ???+ tip "Details Builder"
 
         You can replace `tvdb_movie` with `tvdb_movie_details` if you would like to fetch and use the description from the list
-    
+
+    ### Example TVDb Movie Builder(s)
+
     ```yaml
     collections:
       The Lord of the Rings:

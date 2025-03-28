@@ -18,7 +18,9 @@ You can find items in your Plex using the features of [Sonarr](https://sonarr.tv
 === "Sonarr All"
     
     Gets all Series in Sonarr.
-    
+
+    ### Example Sonarr All Builder(s)
+
     ```yaml
     collections:
       ALL Sonarr Series:
@@ -31,7 +33,9 @@ You can find items in your Plex using the features of [Sonarr](https://sonarr.tv
     
     Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated 
     string. 
-    
+
+    ### Example Sonarr Taglist Builder(s)
+
     ```yaml
     collections:
       Sonarr Tag1 and Tag2 Series:

@@ -118,7 +118,6 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
             | `watch_region`                  | An [ISO 3166-1 code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes). Combine this filter with `with_watch_providers` in order to filter your results by a specific watch provider in a specific region.<br>**Type:** String<br>**Values:** [ISO 3166-1 code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes) |
             | `with_watch_monetization_types` | In combination with `watch_region`, you can filter by monetization type.<br>Can be a comma (`,`) for an AND, or a pipe (`|`) for an OR separated query<br>**Type:** String<br>**Values:** `flatrate`, `free`, `ads`, `rent`, `buy`                                                                                                        |
             
-            
         === "Discover Shows Attributes"
             
             ???+ warning "Important"
@@ -188,7 +187,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
             | `vote_average.desc`         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
             | `vote_count.asc`            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
             | `vote_count.desc`           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-        
+
+        ### Example TMDb Discover Builder(s)
+
         ```yaml
         collections:
           Movies Released in October 2020:
@@ -310,6 +311,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
 
+        ### Example TMDb Collection Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           The Lord of the Rings:
@@ -337,7 +340,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order. 
-         
+
+        ### Example TMDb List Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Top 50 Grossing Films of All Time (Worldwide):
@@ -361,7 +366,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         Finds the movie specified.
         
         This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
-         
+
+        ### Example TMDb Movie Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Anaconda:
@@ -385,7 +392,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         Finds the show specified.
         
         This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
-        
+
+        ### Example TMDb Show Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Star Wars (Animated Shows):
@@ -410,6 +419,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
 
+        ### Example TMDb Company Builder(s)
+
         ```yaml
         collections:
           Studio Ghibli:
@@ -424,6 +435,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
 
+        ### Example TMDb Network Builder(s)
+
         ```yaml
         collections:
           CBS:
@@ -437,7 +450,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
     === "Keyword"
 
         Finds every item from the TMDb keyword's movie/show list.
-        
+
+        ### Example TMDb Keyword Builder(s)
+
         ```yaml
         collections:
           Marvel Cinematic Universe:
@@ -461,6 +476,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
         
+        ### Example TMDb Popular Builder(s)
+
         ```yaml
         collections:
           TMDb Popular:
@@ -479,7 +496,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Now Playing Builder(s)
+
         ```yaml
         collections:
           TMDb Now Playing:
@@ -498,7 +517,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Top Rated Builder(s)
+
         ```yaml
         collections:
           TMDb Top Rated:
@@ -517,7 +538,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Upcoming Builder(s)
+
         ```yaml
         collections:
           TMDb Upcoming:
@@ -534,7 +557,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Airing Today Builder(s)
+
         ```yaml
         collections:
           TMDb Airing Today:
@@ -551,7 +576,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb On the Air Builder(s)
+
         ```yaml
         collections:
           TMDb On the Air:
@@ -568,7 +595,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Trending Daily Builder(s)
+
         ```yaml
         collections:
           TMDb Daily Trending:
@@ -585,7 +614,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order.
-        
+
+        ### Example TMDb Trending Weekly Builder(s)
+
         ```yaml
         collections:
           TMDb Weekly Trending:
@@ -608,6 +639,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds every item in the TMDb Person's Actor Credits.
 
+        ### Example TMDb Actor Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Robin Williams:
@@ -626,7 +659,9 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
     === "Crew"
 
         Finds every item in the TMDb Person's Crew Credits.
-        
+
+        ### Example TMDb Crew Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Quentin Tarantino:
@@ -649,6 +684,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds every item in the TMDb Person's Director Credits.
 
+        ### Example TMDb Director Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Steven Spielberg:
@@ -668,6 +705,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds every item in the TMDb Person's Producer Credits.
 
+        ### Example TMDb Producer Builder(s)
+
         ```yaml title="Press the + icon to learn more"
         collections:
           Adam Sandler:
@@ -685,6 +724,8 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
     === "Writer"
 
         Finds every item in the TMDb Person's Writer Credits.
+
+        ### Example TMDb Writer Builder(s)
 
         ```yaml title="Press the + icon to learn more"
         collections:

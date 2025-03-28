@@ -20,6 +20,8 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
     
     The expected input is an AniDB ID or AniDB Anime URL. Multiple values are supported as either a list or a comma-separated string.
     
+    ### Example AniDB ID Builder(s)
+
     ```yaml
     collections:
       Sword Art Online Shows:
@@ -47,6 +49,8 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
     
     **Value:** The expected input is an AniDB ID, AniDB Anime URL, or AniDB Anime Relation URL. Multiple values are supported as either a list or a comma-separated string.
     
+    ### Example AniDB Relation Builder(s)
+
     ```yaml
     collections:
       All Sword Art Online:
@@ -71,6 +75,8 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
     
+    ### Example AniDB Popular Builder(s)
+
     ```yaml
     collections:
       AniDB Popular:
@@ -87,7 +93,9 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
     |:----------|:--------------------------------------------------------------|:------------------------------------------:|:-------:|
     | `tag`     | AniDB Tag ID to search by                                     | :fontawesome-solid-circle-check:{ .green } |   N/A   |
     | `limit`   | Number of Anime to query from AniDB (use 0 for all; max: 500) |  :fontawesome-solid-circle-xmark:{ .red }  |    0    |
-    
+
+    ### Example AniDB Tag Builder(s)
+
     ```yaml
     collections:
       Pirates Anime:

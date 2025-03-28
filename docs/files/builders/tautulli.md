@@ -20,7 +20,7 @@ It has watch analytics that can show the most watched or most popular Movies/Sho
 
 Both Tautulli Popular and Tautulli Watched have the same sub-attributes detailed below.
 
-### Tautulli Popular/Watched
+## Tautulli Popular/Watched
 
 | Attribute      | Description                                                |                 Required                 | Default |
 |:---------------|:-----------------------------------------------------------|:----------------------------------------:|:-------:|
@@ -30,6 +30,8 @@ Both Tautulli Popular and Tautulli Watched have the same sub-attributes detailed
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order. 
+
+### Example Tautulli Popular/Watched Builder(s)
 
 ```yaml
 collections:

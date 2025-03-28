@@ -18,7 +18,9 @@ You can find items in your Plex using the features of [Radarr](https://radarr.vi
 === "Radarr All"
 
     Gets all Movies in Radarr.
-    
+
+    ### Example Radarr All Builder(s)
+
     ```yaml
     collections:
       ALL Radarr Movies:
@@ -30,6 +32,8 @@ You can find items in your Plex using the features of [Radarr](https://radarr.vi
     Gets Movies from Radarr based on their tags. 
     
     Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated string. 
+
+    ### Example Radarr Taglist Builder(s)
     
     ```yaml
     collections:

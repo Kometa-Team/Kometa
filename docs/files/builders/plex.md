@@ -64,9 +64,8 @@ There are some exceptions to the above when using a Smart Builder (namely when u
         **Note: To search by `season`, `episode`, `album`, or `track` you must use the `builder_level` [Setting](../settings.md) 
         to change the type of items the collection holds.**
 
-        ## Smart Filter Examples
-        
-        A few examples are listed below:
+
+        ### Example Smart Filter Builder(s)
         
         ```yaml
         collections:
@@ -180,7 +179,9 @@ There are some exceptions to the above when using a Smart Builder (namely when u
         Finds every item in your library. Useful with [Filters](../filters.md).
         
         The expected input is either true or false.
-        
+
+        ### Example Plex All Builder(s)
+
         ```yaml
         collections:
           9.0 Movies:
@@ -210,9 +211,8 @@ There are some exceptions to the above when using a Smart Builder (namely when u
         
         There are a couple other attributes you can have at the top level only along with the base attribute are:
     
-        ## Plex Search Examples
-        
-        A few examples are listed below:
+
+        ### Example Plex Search Builder(s)
         
         ```yaml
         collections:
@@ -339,7 +339,9 @@ There are some exceptions to the above when using a Smart Builder (namely when u
         | `added.asc`<br>`added.desc`                 | Sort by Date Added to your Watchlist        |
         
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended.
-        
+
+        ### Example Plex Watchlist Builder(s)
+
         ```yaml
         collections:
           My Watchlist:
@@ -351,7 +353,9 @@ There are some exceptions to the above when using a Smart Builder (namely when u
     === "Plex Pilots"
     
         Gets the first episode of every show in your library. This only works with `builder_level: episode`
-        
+
+        ### Example Plex Pilots Builder(s)
+
         ```yaml
         collections:
           Pilots:
@@ -388,7 +392,9 @@ There are some exceptions to the above when using a Smart Builder (namely when u
         collectionless. 
          
         **At least one exclusion is required.**
-        
+
+        ### Example Plex Collectionless Builder(s)
+
         ```yaml
         collections:
           Collectionless:
