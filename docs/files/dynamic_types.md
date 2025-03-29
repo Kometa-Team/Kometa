@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Dynamic Collection Types & Data
 
 Every dynamic collection definition requires the `type` attribute which determines the attribute used to dynamically 

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Installing Kometa
 
 Generally, Kometa can be installed in one of two ways:

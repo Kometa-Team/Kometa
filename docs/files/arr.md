@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - radarr_add_missing
   - radarr_add_existing

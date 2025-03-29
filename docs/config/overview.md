@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Config File
 
 Kometa uses a YAML configuration file; this file contains settings that determine how Kometa behaves, and the required 
@@ -20,13 +24,13 @@ requirements for setup that can be found by clicking the links within the table 
 
 | Attribute                                   | Required                                                                                   |
 |:--------------------------------------------|:-------------------------------------------------------------------------------------------|
-| [`plex`](plex.md)                           | :fontawesome-solid-circle-check:{ .green }<sup>1</sup> |
+| [`plex`](plex.md)                           | :fontawesome-solid-circle-check:{ .green }<sup>**1**</sup> |
 | [`tmdb`](tmdb.md)                           | :fontawesome-solid-circle-check:{ .green }                                                 |
 | [`libraries`](libraries.md)                 | :fontawesome-solid-circle-check:{ .green }                                                 |
 | [`playlist_files`](../notused/playlists.md) | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`settings`](settings.md)                   | :fontawesome-solid-circle-xmark:{ .red }                                                   |
-| [`webhooks`](webhooks.md)                   | :fontawesome-solid-circle-xmark:{ .red }<sup>1</sup>                                                   |
-| [`tautulli`](tautulli.md)                   | :fontawesome-solid-circle-xmark:{ .red }<sup>1</sup>                                                   |
+| [`webhooks`](webhooks.md)                   | :fontawesome-solid-circle-xmark:{ .red }<sup>**1**</sup>                                                   |
+| [`tautulli`](tautulli.md)                   | :fontawesome-solid-circle-xmark:{ .red }<sup>**1**</sup>                                                   |
 | [`github`](github.md)                       | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`omdb`](omdb.md)                           | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`mdblist`](mdblist.md)                     | :fontawesome-solid-circle-xmark:{ .red }                                                   |
@@ -34,12 +38,12 @@ requirements for setup that can be found by clicking the links within the table 
 | [`gotify`](gotify.md)                       | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`ntfy`](ntfy.md)                           | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`anidb`](anidb.md)                         | :fontawesome-solid-circle-xmark:{ .red }                                                   |
-| [`radarr`](radarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }<sup>1</sup>                                                   |
-| [`sonarr`](sonarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }<sup>1</sup>                                                   |
+| [`radarr`](radarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }<sup>**1**</sup>                                                   |
+| [`sonarr`](sonarr.md)                       | :fontawesome-solid-circle-xmark:{ .red }<sup>**1**</sup>                                                   |
 | [`trakt`](trakt.md)                         | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 | [`mal`](myanimelist.md)                     | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 
-<sup>1</sup> These connectors can be configured either at the root level of the Config File, or per-library - examples are available on each of the connector's pages.
+<sup>**1**</sup> These connectors can be configured either at the root level of the Config File, or per-library - examples are available on each of the connector's pages.
 ## Configuration Template File Example
 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.

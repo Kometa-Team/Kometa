@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Builders
 
 Builders use third-party services to source items to be added to the collection. Multiple builders can be used in the same collection from a variety of sources listed below.

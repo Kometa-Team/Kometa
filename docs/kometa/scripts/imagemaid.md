@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 {%
   include-markdown "https://raw.githubusercontent.com/Kometa-Team/ImageMaid/develop/README.md"
   comments=false

@@ -1,6 +1,6 @@
 ---
-search:
-  boost: 2
+hide:
+  - toc
 ---
 # Switching from Plex-Meta-Manager to Kometa
 

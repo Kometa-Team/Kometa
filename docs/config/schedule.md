@@ -1,3 +1,9 @@
+---
+search:
+  boost: 2
+hide:
+  - toc
+---
 # Scheduling Parts of Kometa
 
 Kometa allows you to schedule libraries, files, overlays, operations, and more so that runs can be tailored to suit your needs.

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Run Commands & Environment Variables
 
 ## What does it mean to "run" Kometa?

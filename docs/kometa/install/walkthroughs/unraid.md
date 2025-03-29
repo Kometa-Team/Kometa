@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 {%
     include-markdown "./../../../templates/walkthrough/header.md"
     include-tags='all|unraid|local-unraid|docker-unraid'

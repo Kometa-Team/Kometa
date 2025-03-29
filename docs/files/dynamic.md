@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - addons
   - append_addons

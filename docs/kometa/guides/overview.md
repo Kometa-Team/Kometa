@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Kometa Guides, Explanations & Recipes
 
 This page outlines the explanations, guides and recipes that will help you understand certain aspects of Kometa that 

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Formula 1 Metadata Guide
 
 This is a guide for setting up Formula 1 in Plex using the `f1_season` metadata attribute.

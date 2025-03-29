@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Separators Default Collection Files
 
 Separators are a special form of collections which are used similar to index cards in a library, they help to "split up" collections by identifying categories 

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # YAML Files Explained
 
 All of Kometa's Config, Metadata, Overlay, and Playlist Files are written in the YAML data structure.
