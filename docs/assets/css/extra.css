@@ -105,7 +105,6 @@ table tr td code {
 
 @media only screen and (min-width: 76.25em) {
     .md-main__inner {
-        max-width: 80%;
         margin-top: 0;
     }
 
@@ -120,6 +119,16 @@ table tr td code {
         -webkit-transform: none;
         transform: none;
     }
+}
+
+.md-grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+}
+
+.md-content {
+    border-left: 2px solid #2f2f2f;
 }
 
 @keyframes heart {
