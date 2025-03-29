@@ -1874,17 +1874,16 @@
                 },
                 "mass_genre_update": {
                     "anyOf": [
-                        {
-                            "type": "string",
-                            "enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]
-                        },
-                        {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items":
-                            {
-                                "anyOf": [
-                                    {"enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]}
+                    {
+                        "type": "string",
+                        "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"]
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                        "anyOf": [
+                                { "type": "string", "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"] },
+                                { "type": "array", "items": { "type": "string" } }
                                 ]
                             }
                         }
