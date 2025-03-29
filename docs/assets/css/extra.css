@@ -733,12 +733,12 @@ code {
 }
 
 /* Reduce image height if scroller is enabled */
-.scroller[data-animated=true] img {
+.scroller img {
 
 	max-height: 300px;
 }
 
-.half-height.scroller[data-animated=true] img {
+.half-height.scroller img {
 
 	max-height: 300px;
 }
@@ -753,14 +753,14 @@ code {
 
 /* Reduce height on mobile */
 @media (max-width: 768px) {
-	.scroller[data-animated=true] img {
+	.scroller img {
 
-		max-height: 300px;
+		max-height: 200px;
 	}
 
-	.half-height.scroller[data-animated=true] img {
+	.half-height.scrollerimg {
 
-		max-height: 300px;
+		max-height: 200px;
 	}
 }
 
