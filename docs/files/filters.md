@@ -202,7 +202,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | `width`                                     | Uses the width attribute to match<br>minimum: `0`                                                                                                                           | `Movies`, `Shows`<sup>**[1](#table-annotations)**</sup>, `Seasons`<sup>**[1](#table-annotations)**</sup>,<br>`Episodes`                                       |
     | `year`<sup>**[3](#table-annotations)**</sup>                      | Uses the year attribute to match<br>minimum: `1`                                                                                                                            | `Movies`, `Shows`, `Seasons`,<br>`Episodes`, `Albums`, `Tracks`                                                   |
 
-     ???+ tip "Number Filter Modifiers"
+    ???+ tip "Number Filter Modifiers"
         
         | Number Modifier | Description                                                                                | Format                                            |
         | :-------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------ |
