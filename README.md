@@ -1,4 +1,4 @@
-# <img src="https://kometa.wiki/en/latest/assets/images/logo-full.png" alt="Kometa">
+# <img src="https://kometa.wiki/en/nightly/assets/images/icons/logo-full.png" alt="Kometa">
 
 <!--shield-start-->
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic)](https://github.com/Kometa-Team/Kometa/releases)
@@ -38,11 +38,11 @@ Here are some examples of the things you can achieve using Kometa!
 
 **Example Movie Collections using the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/collections/)** (click to enlarge):
 
-<img src="https://kometa.wiki/en/latest/assets/images/movie-collections.png" width="600" alt="Movie Collection Preview">
+<img src="https://kometa.wiki/en/nightly/assets/images/movie-collections.png" width="600" alt="Movie Collection Preview">
 
 **Example Show Overlays using the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/overlays/)** (click to enlarge):
 
-<img src="https://kometa.wiki/en/latest/assets/images/show-overlays.png" width="600" alt="Show Collection Preview">
+<img src="https://kometa.wiki/en/nightly/assets/images/show-overlays.png" width="600" alt="Show Collection Preview">
 
 <!--collecionsoverlays-start-->
 ## Collections & Overlays
