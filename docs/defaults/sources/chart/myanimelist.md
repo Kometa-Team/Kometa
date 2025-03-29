@@ -1,1 +1,0 @@
-# MyAnimeList Charts Collections

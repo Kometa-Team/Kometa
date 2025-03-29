@@ -94,7 +94,6 @@ dynamic_collections:
         fast: movie
         rocky: movie
         mummy: movie
-      # check1
       imdb_url:
         arrow: https://www.imdb.com/list/ls566667558/
         avp: https://www.imdb.com/list/ls543971628/
@@ -104,7 +103,6 @@ dynamic_collections:
         star: https://www.imdb.com/list/ls501373412/
         trek: https://www.imdb.com/list/ls547463722/
         xmen: https://www.imdb.com/list/ls567618635/
-      # check2
       mdblist_url:
         fast: https://mdblist.com/lists/k0meta/external/9246
         marvel: https://mdblist.com/lists/k0meta/external/15110
@@ -113,9 +111,7 @@ dynamic_collections:
         rocky: https://mdblist.com/lists/k0meta/external/9248
         askew: https://mdblist.com/lists/k0meta/external/15362
         wizard: https://mdblist.com/lists/k0meta/external/23683
-      # check3
       image:
         default: universe/<<key>>
-      # check4
       delete_collections_named:
         dcu: DC Extended Universe

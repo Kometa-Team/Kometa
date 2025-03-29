@@ -1,13 +1,14 @@
+---
+hide:
+  - toc
+---
 # ICheckMovies Builders
 
 You can find items using the lists on [ICheckMovies.com](https://www.icheckmovies.com/) (ICheckMovies). 
 
-No configuration is required for these builders.
-
-| Attribute                                         | Description                                                                                                         |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
-|:--------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
-| [`icheckmovies_list`](#icheckmovies-list)         | Finds every movie in the ICheckMovies List                                                                          | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
-| [`icheckmovies_list_details`](#icheckmovies-list) | Finds every movie in the ICheckMovies List and updates the collection with the description of the ICheckMovies list | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
+| Builder                                   | Description                                |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
+|:------------------------------------------|:-------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
+| [`icheckmovies_list`](#icheckmovies-list) | Finds every movie in the ICheckMovies List | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
 
 ## ICheckMovies List
 
@@ -16,6 +17,12 @@ Finds every movie in the ICheckMovies List.
 The expected input is a ICheckMovies List URL. Multiple values are supported as either a list or a comma-separated string.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+
+???+ tip "Details Builder"
+
+    You can replace `icheckmovies_list` with `icheckmovies_list_details` if you would like to fetch and use the description from the list
+
+### Example ICheckMovies List Builder(s)
 
 ```yaml
 collections:

@@ -4,21 +4,44 @@
 <script>
   const currentURL = window.location.href;
 
-  // Base announcement for Discord support
-  let announceText = 'For any questions and support, please reach out to us on <a href="https://kometa.wiki/en/latest/discord/">Discord</a>';
+  const discordSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin: 0 8px;">
+      <path d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.802 13.802 0 0 0-.601 1.237 19.736 19.736 0 0 0-5.908 0 13.27 13.27 0 0 0-.614-1.237.077.077 0 0 0-.078-.037A19.736 19.736 0 0 0 3.677 4.37a.069.069 0 0 0-.03.027C.533 9.06-.32 13.579.099 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.034.077.077 0 0 0 .084-.028c.462-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.105 13.142 13.142 0 0 1-1.872-.902.077.077 0 0 1-.008-.129c.126-.094.252-.19.374-.287a.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.009c.122.097.248.193.375.288a.077.077 0 0 1-.006.13 12.533 12.533 0 0 1-1.873.901.076.076 0 0 0-.04.106c.36.698.772 1.362 1.225 1.993a.077.077 0 0 0 .085.028 19.874 19.874 0 0 0 6.002-3.033.076.076 0 0 0 .03-.056c.5-5.177-.838-9.653-3.548-13.661a.062.062 0 0 0-.03-.028zM8.02 15.331c-1.182 0-2.156-1.085-2.156-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.175 1.093 2.156 2.419 0 1.333-.955 2.418-2.156 2.418zm7.974 0c-1.182 0-2.156-1.085-2.156-2.419 0-1.333.955-2.418 2.156-2.418 1.21 0 2.175 1.093 2.156 2.419 0 1.333-.946 2.418-2.156 2.418z"/>
+    </svg>
+  `;
 
-  // Check if URL includes nightly or develop
-  if (currentURL.includes("en/nightly") || currentURL.includes("en/develop")) {
+  const isNightly = currentURL.includes("en/nightly");
+  const isDevelop = currentURL.includes("en/develop");
+  const isPreRelease = isNightly || isDevelop;
 
-    // Find the branch name ("nightly" or "develop")
-    let branchName = currentURL.includes("en/nightly") ? "NIGHTLY" : "DEVELOP";
+  let announceText;
 
-    // Create a new URL pointing to the "latest" version of the current page
-    let latestURL = currentURL.replace(/en\/(nightly|develop)\//, 'en/latest/');
-
-    // Update the announceText to include the custom link and branch name
-    announceText = `️⚠️ You are viewing the ${branchName} branch's wiki. <a href="${latestURL}">Click here to go to the main wiki.</a> ⚠️️`;
+  if (isPreRelease) {
+    const branchName = isNightly ? "NIGHTLY" : "DEVELOP";
+    const latestURL = currentURL.replace(/en\/(nightly|develop)\//, 'en/latest/');
+    announceText = `⚠️ You are viewing the ${branchName} branch's wiki. <a href="${latestURL}">Click here to go to the main wiki.</a> ⚠️`;
+  } else {
+    announceText = `
+      <div class="announce-bar">
+        <a href="https://kometa.wiki/en/latest/discord/" aria-label="Discord link">
+          ${discordSVG}
+        </a>
+        For any questions and support, please reach out to us on
+        <a href="https://kometa.wiki/en/latest/discord/">Discord</a>
+        <a href="https://kometa.wiki/en/latest/discord/" aria-label="Discord link">
+          ${discordSVG}
+        </a>
+      </div>
+    `;
   }
+
+  // Apply background color after DOM loads
+  window.addEventListener("DOMContentLoaded", function () {
+    const banner = document.querySelector(".md-banner");
+    if (banner) {
+      banner.style.backgroundColor = isPreRelease ? "#570000" : "#5865F2";
+    }
+  });
 
   document.write(announceText);
 </script>
