@@ -199,7 +199,7 @@ hide:
   </div>
 </div>
 <figcaption style="text-align: center; max-width: 100%; margin-top: 0.1rem;" >
-  Overlays created using the <a href="defaults/guide/">Kometa Defaults</a> or by [community](defaults/guide) created Overlay Files
+  Overlays created using the <a href="defaults/guide/">Kometa Defaults</a> or by community created Overlay Files
 </figcaption>
 {%
     include-markdown "../README.md"
