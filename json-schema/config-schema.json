@@ -1895,8 +1895,7 @@
                         "type": "string",
                         "anyOf": [
                         {
-                            "enum": [
-                            "mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
+                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
                         {
                             "pattern": ".*"
                         }
@@ -1904,8 +1903,18 @@
                     }
                 },
                 "mass_original_title_update": {
-                    "type": "string",
-                    "enum": ["anidb","anidb_official","mal","mal_english","mal_japanese","lock","unlock","remove","reset"]
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "anyOf": [
+                        {
+                            "enum": ["anidb", "anidb_official", "mal","mal_english", "mal_japanese","lock", "unlock", "remove", "reset"]
+                        },
+                        {
+                            "pattern": ".*"
+                        }
+                        ]
+                    }
                 },
                 "mass_studio_update": {
                     "anyOf": [
