@@ -2,11 +2,6 @@
 
 These files apply overlays and can generally be used on both Movie and Show library-types, and often works at the season and episode-level too.
 
-It should be noted that when an overlay has :fontawesome-solid-circle-exclamation:{ .orange } for a season or episode, it 
-normally means that whilst the overlay can technically be applied at the level, it wasn't designed for this purpose. For 
-example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a common 
-sense age-rating since only Movies and Shows are rated by Common Sense. 
-
 In the scenario where there is missing data such as age ratings for episodes, then generally the highest-level data 
 available will be applied at the lower level (i.e. a Show's Common Sense age rating would apply to all episodes).
 
