@@ -6,6 +6,6 @@
 <!--file-header-->
 
 === "File-Specific Template Variables"
-
-    | Variable | Description & Values |
-    |:---------|:---------------------|
+    
+    | Attribute   | Description                  | Allowed Values (default in **bold**)         |
+    |:------------|:-----------------------------|:---------------------------------------------|

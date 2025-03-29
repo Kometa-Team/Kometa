@@ -1890,18 +1890,22 @@
                     ]
                 },
                 "mass_content_rating_update": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "anyOf": [
+                    "anyOf": [
                         {
-                            "enum": [
-                            "mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
+                            "type": "string",
+                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]
+                        },
                         {
-                            "pattern": ".*"
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items":
+                            {
+                                "anyOf": [
+                                    {"enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]}
+                                ]
+                            }
                         }
-                        ]
-                    }
+                    ]
                 },
                 "mass_original_title_update": {
                     "type": "string",
