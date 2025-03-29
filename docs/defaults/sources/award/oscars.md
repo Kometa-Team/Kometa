@@ -1,1 +1,0 @@
-# Academy Awards (Oscars) Collections

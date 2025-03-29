@@ -775,9 +775,6 @@ class MetadataFile(DataFile):
             self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
         else:
-            logger.info("")
-            logger.separator(f"Loading {self.type_str} {file_type}: {path}")
-            logger.info("")
             data = self.load_file(self.type, self.path)
             if self.file_style == "metadata":
                 self.metadata = get_dict("metadata", data, library.metadatas)

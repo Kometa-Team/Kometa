@@ -93,7 +93,6 @@ dynamic_collections:
       535313: Godzilla (MonsterVerse)
       535790: Godzilla (Anime)
     template_variables:
-      # check1
       movie:
         521226:     # A Quiet Place
           - 762441    # A Quiet Place: Day One
@@ -169,7 +168,6 @@ dynamic_collections:
           - 73362     # TRON: The Next Day
         748:        # X-Men
           - 567604    # Once Upon a Deadpool
-      # check2
       name_mapping:
         1565: 28 Days-Weeks Later
         508334: Angels in the

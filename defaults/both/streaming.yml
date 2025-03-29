@@ -17,7 +17,9 @@ templates:
       - use_<<tmdb_key>>
       - allowed_libraries
       - originals_only
+      - delete_collections_named
     conditionals:
+
       discover_sort:
         conditions:
           - originals_only: false
@@ -52,10 +54,10 @@ templates:
       allowed_streaming:
         conditions:
           - originals_only: true
-            tmdb_key: [103, 1759, 151, 230, 283, 510, 39, 37, 188]
+            tmdb_key: [103, 1759, 41, 2300, 230, 283, 510, 39, 37, 188]
             value: False
           - region.not: GB
-            tmdb_key: [103, 151, 39]
+            tmdb_key: [103, 41, 2300, 39]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -71,6 +73,7 @@ templates:
       discover_with_<<key>>: <<discover_with>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
+      delete_collections_named_<<key>>: <<delete_collections_named>>
     run_definition:
       - <<use_<<key>>>>
       - <<use_<<tmdb_key>>>>
@@ -80,6 +83,7 @@ templates:
     smart_label: <<sort_by_<<key>>>>
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
+    delete_collections_named: <<delete_collections_named_<<key>>>>
     limit: <<limit>>
     tmdb_discover:
       limit: <<discover_limit>>
@@ -99,14 +103,14 @@ dynamic_collections:
   Streaming:
     type: custom
     data:
-      all4: All 4
+      channel4: Channel 4
       appletv: Apple TV+
       bet: BET+
-      britbox: BritBox
       crave: Crave
       crunchyroll: Crunchyroll
       discovery: discovery+
       disney: Disney+
+      itvx: ITVX
       max: Max
       hayu: hayu
       hulu: Hulu
@@ -115,7 +119,6 @@ dynamic_collections:
       paramount: Paramount+
       peacock: Peacock
       amazon: Prime Video
-      showtime: Showtime
       youtube: YouTube
     title_format: <<key_name>> <<library_typeU>>s
     template:
@@ -126,14 +129,14 @@ dynamic_collections:
       image:
         default: streaming/<<style>>/<<key_name_encoded>>
       tmdb_key:
-        all4: 103
+        channel4: 103
         appletv: 350
         bet: 1759
-        britbox: 151
         crave: 230
         crunchyroll: 283
         discovery: 510
         disney: 337
+        itvx: 41|2300
         max: 1899
         hayu: 223
         hulu: 15
@@ -156,3 +159,13 @@ dynamic_collections:
         default: true
       style:
         default: color
+      delete_collections_named:
+        channel4:
+          - All 4 Movies
+          - All 4 Shows
+        paramount:
+          - Showtime Movies
+          - Showtime Shows
+        itvx:
+          - BritBox Movies
+          - BritBox Shows

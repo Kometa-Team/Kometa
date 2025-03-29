@@ -1,1 +1,0 @@
-# Anilist Charts Collections

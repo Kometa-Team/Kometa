@@ -1,18 +1,16 @@
-# Ribbon Overlays
-
-The `ribbon` Default Overlay File is used to create a ribbon overlay based on the Top Lists of various sites on each 
-item within your library.
-
-![](images/ribbon.png)
-
-## Requirements & Recommendations
-
-Supported Overlay Level: Movie, Show
-
-## Supported Ribbon
-
-| Ribbon                          | Key               | Weight |
-|:--------------------------------|:------------------|:-------|
+---
+hide:
+  - toc
+---
+{%
+    include-markdown "./../../templates/defaults/base/overlays/header.md"
+    replace='{
+        "OVERLAY_NAME": "Ribbon", 
+        "CODE_NAME": "ribbon",
+        "OVERLAY_LEVEL": "Movie, Show",
+        "DESCRIPTION": "a ribbon overlay based on the Top Lists of various sites on each item within your library"
+    }'
+%}
 | Oscars Best Picture             | `oscars`          | `190`  |
 | Oscars Best Director            | `oscars_director` | `180`  |
 | Golden Globe Winner             | `golden`          | `170`  |
@@ -34,71 +32,50 @@ Supported Overlay Level: Movie, Show
 | Common Sense Selection          | `common`          | `20`   |
 | Razzies Winner                  | `razzie`          | `10`   |
 
-## Config
+{% 
+    include-markdown "./../../templates/defaults/base/mid.md" 
+    replace='{"CODE_NAME": "ribbon", "collection_files": "overlay_files"}' 
+    include-tags='all|movie|show' 
+%}
 
-The below YAML in your config.yml will create the overlays:
-
-```yaml
-libraries:
-  Movies:
-    overlay_files:
-      - default: ribbon
-  TV Shows:
-    overlay_files:
-      - default: ribbon
-```
-
-## Template Variables
-
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
-make your own local copy.
-
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
-work. Any value not specified will use its default value if it has one if not it's just ignored.
-
-??? abstract "Variable Lists (click to expand)"
-
-    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
-
-    * **Overlay Template Variables** are additional variables shared across the Kometa Overlay Defaults.
-
-    ??? example "Default Template Variable Values (click to expand)"
-
-        | Variable            | Default  |
-        |:--------------------|:---------|
-        | `horizontal_offset` | `0`      |
-        | `horizontal_align`  | `right`  |
-        | `vertical_offset`   | `0`      |
-        | `vertical_align`    | `bottom` |
-        
-    === "File-Specific Template Variables"
-
-        | Variable                     | Description & Values                                                                                                    |
-        |:-----------------------------|:------------------------------------------------------------------------------------------------------------------------|
-        | `use_all`                    | **Description:** Used to turn on/off all keys. <br>**Default:** `true` <br>**Values:** `true` or `false`                |
-        | `weight_<<key>>`<sup>1</sup> | **Description:** Controls the weight of the Overlay. Higher numbers have priority.<br>**Values:** Any Number            |
-        | `style`                      | **Description:** Controls the color of the ribbon. <br>**Default:** `yellow` <br>**Values:** `yellow, gray, black, red` |
-
-        1. Each default overlay has a `key` that when calling to effect a specific overlay you must replace `<<key>>` 
-        with when calling.
-
-    === "Overlay Template Variables"
-
-        {%
-           include-markdown "../overlay_variables.md"
-        %}
-    
-???+ example "Example Template Variable Amendments"
-
-    The below is an example config.yml extract with some Template Variables added in to change how the file works.
-    
     ```yaml
     libraries:
       Movies:
         overlay_files:
           - default: ribbon
             template_variables:
-              style: black
-              weight_metacritic: 35
-              use_common: false
+              style: black #(1)!
+              weight_IMDB: 200 #(2)!
+              use_common: false #(3)!
     ```
+
+    1.  Changes the ribbon color to black
+    2.  Gives the `imdb` key the highest weight, meaning this ribbon image will always be chosen over other ribbons.
+    3.  Disables the "Common Sense Selection" overlay
+
+{% 
+    include-markdown "./../../templates/defaults/base/overlays/variables_header.md"
+    include-tags='all'
+    exclude-tags='text-vars'
+    replace='{
+        "HORIZONTAL_OFFSET": "`0`",
+        "HORIZONTAL_ALIGN": "`right`",
+        "VERTICAL_OFFSET": "`0`",
+        "VERTICAL_ALIGN": "`bottom`"
+    }'
+%}
+    {%
+        include-markdown "./../../templates/variable_list.md"
+        include-tags="ribbon-overlay|weight"
+        rewrite-relative-urls=false
+    %}
+
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Ribbon Overlays"
+    
+        The Ribbon overlays use the [`imdb_award` Builder](../../../files/builders/imdb#imdb-award), [`imdb_chart` Builder](../../../files/builders/imdb#imdb-chart), 
+        [`mdblist_list` Builder](../../../files/builders/mdblist#mdblist-list), 

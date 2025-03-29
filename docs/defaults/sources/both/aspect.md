@@ -1,1 +1,0 @@
-# Aspect Ratio Collections

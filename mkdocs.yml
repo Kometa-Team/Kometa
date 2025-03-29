@@ -7,11 +7,11 @@ repo_url: https://github.com/Kometa-Team/Kometa
 
 theme:
   name: material
-  logo: assets/icon.png
-  favicon: assets/favicon.png
+  logo: assets/images/icons/icon.png
+  favicon: assets/images/icons/favicon.png
   custom_dir: docs/overrides
   font:
-    text: Open Sans
+    text: DM Sans
     code: Fira Code
   features:
     - content.code.annotate
@@ -31,21 +31,8 @@ theme:
     - search.share
   language: en
   palette:
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      toggle:
-        icon: material/weather-night
-        name: Switch to light mode
-
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to dark mode
+    scheme: slate
+    primary: custom
   icon:
     alternate: material/file-document-multiple-outline
 plugins:
@@ -61,6 +48,12 @@ plugins:
         'link.md': 'https://discord.com/invite/kometa-822460010649878528'
         'malauth.md': 'config/authentication.md'
         'traktauth.md': 'config/authentication.md'
+        'kometa/install/local.md': 'kometa/install/walkthroughs/local.md'
+        'kometa/install/docker.md': 'kometa/install/walkthroughs/docker.md'
+        'kometa/install/unraid.md': 'kometa/install/walkthroughs/unraid.md'
+        'kometa/install/kubernetes.md': 'kometa/install/walkthroughs/kubernetes.md'
+        'kometa/install/qnap.md': 'kometa/install/walkthroughs/qnap.md'
+        'kometa/install/synology.md': 'kometa/install/walkthroughs/synology.md'
   - material-plausible
 extra:
   alternate:
@@ -90,42 +83,43 @@ extra:
     provider: plausible
     domain: kometa.wiki/en/latest
     src: "https://analytics.kometa.wiki/js/script.js"
-copyright: Copyright &copy; 2024 meisnate12
 markdown_extensions:
-  - pymdownx.tasklist:
-      custom_checkbox: true
+  - abbr
+  - admonition
+  - attr_list
+  - md_in_html
+  - neoteroi.cards
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.details
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
-  - admonition
-  - attr_list
-  - md_in_html
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.tilde
   - tables
   - toc:
       permalink: true
       toc_depth: 3
-  - pymdownx.emoji:
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-  - neoteroi.cards
 extra_css:
-  - stylesheets/cards.css
-  - stylesheets/extra.css
-  - stylesheets/termynal.css
-  - stylesheets/custom.css
+  - assets/css/extra.css
 
 extra_javascript:
-  - stylesheets/termynal.js
-  - stylesheets/custom.js
-  - stylesheets/branch.js
+  - assets/js/extra.js
+
+hooks:
+  - docs/hooks/copyright.py
 
 nav:
   - KOMETA:
@@ -136,12 +130,12 @@ nav:
         - Getting Started: kometa/install/getting_started.md
         - Configuring Kometa: kometa/install/files.md
         - Walkthroughs:
-          - Local (Win/Mac/Linux): kometa/install/local.md
-          - Docker: kometa/install/docker.md
-          - unRAID: kometa/install/unraid.md
-          - Kubernetes: kometa/install/kubernetes.md
-          - QNAP: kometa/install/qnap.md
-          - Synology: kometa/install/synology.md
+          - Local (Win/Mac/Linux): kometa/install/walkthroughs/local.md
+          - Docker: kometa/install/walkthroughs/docker.md
+          - unRAID: kometa/install/walkthroughs/unraid.md
+          - Kubernetes: kometa/install/walkthroughs/kubernetes.md
+          - QNAP: kometa/install/walkthroughs/qnap.md
+          - Synology: kometa/install/walkthroughs/synology.md
       - POST-INSTALL:
         - Run Commands & Env Variables: kometa/environmental.md
         - YAML Files Explained: kometa/yaml.md
@@ -156,7 +150,6 @@ nav:
           - Formula 1 Metadata Guide: kometa/guides/formula.md
           - MediUX Assets Guide: kometa/guides/mediux.md
           - Managing Recommendations: kometa/guides/hub.md
-
           - Reverting Kometa Changes: kometa/guides/revert.md
           - Switching from PMM to Kometa: kometa/guides/rebrand.md
         - Companion Scripts: &scripts
@@ -172,18 +165,14 @@ nav:
         - Acknowledgements: kometa/acknowledgements.md
   - CONFIGURATION FILE:
       - Overview: config/overview.md
-      - STRUCTURE:
+      - LIBRARIES:
+        - Library Attributes: config/libraries.md
+        - File Blocks: config/files.md
+        - Library Operations: config/operations.md
+      - CONNECTIONS:
         - REQUIRED CONNECTIONS:
           - Plex: config/plex.md
           - TMDb: config/tmdb.md
-        - LIBRARIES:
-          - Library Attributes: config/libraries.md
-          - File Blocks: config/files.md
-          - Library Operations: config/operations.md
-        - PLAYLISTS:
-          - Playlist Files: config/playlists.md
-        - SETTINGS:
-          - Settings: config/settings.md
         - OPTIONAL CONNECTIONS:
           - Tautulli: config/tautulli.md
           - Github: config/github.md
@@ -200,13 +189,14 @@ nav:
           - Trakt and MyAnimeList Authentication: config/authentication.md
           - Webhooks: config/webhooks.md
       - OTHER:
+        - Settings: config/settings.md
         - Scheduling Parts: config/schedule.md
+        - Playlist Files: config/playlists.md
   - KOMETA DEFAULTS:
       - Defaults Usage Guide: defaults/guide.md
       - Defaults Files: defaults/files.md
       - COLLECTIONS DEFAULTS:
         - Collections: defaults/collections.md
-        - Shared Variables: defaults/collection_variables.md
         - Separators: defaults/separators.md
         - Award:
           - Separator: defaults/award/separator.md
@@ -265,25 +255,22 @@ nav:
           - Resolutions: defaults/both/resolution.md
           - Audio Languages: defaults/both/audio_language.md
           - Subtitle Languages: defaults/both/subtitle_language.md
-        - Production:
-          - Networks: defaults/show/network.md
-          - Streaming: defaults/both/streaming.md
-          - Studios: defaults/both/studio.md
         - People:
           - Actors: defaults/both/actor.md
           - Directors: defaults/movie/director.md
           - Producers: defaults/movie/producer.md
           - Writers: defaults/movie/writer.md
+        - Production:
+          - Networks: defaults/show/network.md
+          - Streaming: defaults/both/streaming.md
+          - Studios: defaults/both/studio.md
         - Time:
           - Seasonal: defaults/movie/seasonal.md
           - Years: defaults/both/year.md
           - Decades (Movie): defaults/movie/decade.md
           - Decades (Show): defaults/show/decade.md
-      - PLAYLIST DEFAULTS:
-        - Playlists: defaults/playlist.md
       - OVERLAY DEFAULTS:
         - Overlays: defaults/overlays.md
-        - Shared Variables: defaults/overlay_variables.md
         - Chart:
           - Ribbon: defaults/overlays/ribbon.md
         - Content:
@@ -314,7 +301,8 @@ nav:
           - Studios: defaults/overlays/studio.md
         - Utility:
           - Direct Play Only: defaults/overlays/direct_play.md
-      - Defaults Sources: defaults/sources.md
+      - PLAYLIST DEFAULTS:
+        - Playlists: defaults/playlist.md
   - FILES & BUILDERS:
       - Overview: files/overview.md
       - FILES:
@@ -328,8 +316,7 @@ nav:
       - DEFINITION ATTRIBUTES:
         - Builders:
           - Overview: files/builders/overview.md
-          - Dumb Plex Builders: files/builders/plex.md
-          - Smart Plex Builders: files/builders/smart.md
+          - Plex Builders: files/builders/plex.md
           - TMDb Builders: files/builders/tmdb.md
           - TVDb Builders: files/builders/tvdb.md
           - IMDb Builders: files/builders/imdb.md

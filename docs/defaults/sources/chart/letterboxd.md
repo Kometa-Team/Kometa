@@ -1,1 +1,0 @@
-# Letterboxd Charts Collections

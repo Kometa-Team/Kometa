@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Managing Recommendations
 
 The Recommendations Hub allows you granular control over which collections appear on your home screen, the home screen of other users, and the Recommended tab of any given library.
@@ -7,15 +11,18 @@ You can use this to disable Plex's default recommendations (such as "Recently Ad
 
 ## Getting Started
 
-The Recommendations tab is accessed by going to `Settings > Server > Manage > Libraries` within Plex. You can then press the "Manage Recommendations" button against any of your libraries to view the current configuration.
+The Recommendations tab is accessed by going to `Settings > Server > Manage > Libraries` within Plex. 
+You can then press the "Manage Recommendations" button against any of your libraries to view the current configuration.
 
-![hub1.gif](images/hub1.gif)
+![started](../../assets/images/kometa/guides/hub/started.gif)
 
 For the purpose of this guide we will disable **all** enabled recommendations.
 
-![hub2.png](images/hub2.png)
+![recommendations](../../assets/images/kometa/guides/hub/recommendations.png)
 
-In order for a Kometa collection to appear as a Row in the Manage Recommendations section, it must have one of the `visible_home`/`visible_shared`/`visible_library` attributes set to `true`, this can be done in your Collection definition or via a template variable for Defaults files. You can also set these visibility options within the Plex UI, you can read [Plex's guidance](https://support.plex.tv/articles/manage-recommendations/) on how to do this. 
+In order for a Kometa collection to appear as a Row in the Manage Recommendations section, it must have one of the `visible_home`/`visible_shared`/`visible_library` attributes set to `true`, 
+this can be done in your Collection definition or via a Template Variable for Defaults files. You can also set these visibility options within the Plex UI,
+you can read [Plex's guidance](https://support.plex.tv/articles/manage-recommendations/) on how to do this. 
 
 Here is an example Collection definition setting all three `visible_*` attributes:
 
@@ -28,7 +35,7 @@ collections:
     visible_library: true
 ```
 
-And an example Defaults file setting the same attributes:
+And an example Defaults File setting the same attributes:
 ```yaml
 libraries:
   Movie Recommendations:
@@ -42,13 +49,13 @@ libraries:
 
 The results are:
 
-![hub3.png](images/hub3.png)
+![recommendations2](../../assets/images/kometa/guides/hub/recommendations2.png)
 
 And if I visit my Plex homepage:
 
-![hub4.png](images/hub4.png)
+![homepage](../../assets/images/kometa/guides/hub/homepage.png)
 
-Collections will be added in the order that Kometa processes them, but you can reorganize them by drag-and-dropping each Row using the tree-line icon.
+Collections will be added in the order that Kometa processes them, but you can reorganize them by drag-and-dropping each Row using the three-line icon.
 
-![hub5.gif](images/hub5.gif)
+![moving](../../assets/images/kometa/guides/hub/moving.gif)
 

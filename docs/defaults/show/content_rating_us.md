@@ -1,118 +1,48 @@
-# US Content Rating Collections
+---
+hide:
+  - toc
+---
+{%
+    include-markdown "./../../templates/defaults/content_rating.md"
+    replace='{
+        "LIBRARY_TYPE": "Show",
+        "Movies/Shows": "Shows",
+        "movie|show": "show",
+        "Movies:": "Shows:",
+        "COLLECTION": "US Content Rating", 
+        "CODE_NAME": "content_rating_us",
+        "SHORT_NAME": "US",
+        "PLEX_NAME": "United States",
+        "EXAMPLE_NAME": "TV-14 Shows",
+        "EXAMPLE1": "TV-14",
+        "EXAMPLE2": "de/18"
+    }'
+    replace-tags='{
+        "title-sub": "**[This file has a Movie Library Counterpart.](./../../../../movie/content_rating_us)**",
+        "image": "![](../../../../assets/images/defaults/content_rating_us_show.png)"
+    }'
+    rewrite-relative-urls=false
+%}
 
-The `content_rating_us` Default Collection File is used to dynamically create collections based on the content ratings 
-available in your library.
-
-If you do not use the US-based rating system within Plex, this file will attempt to match the ratings in your library to
-the respective rating system.
-
-**[This file has a Movie Library Counterpart.](../movie/content_rating_us.md)**
-
-![](../images/moviecontent_rating_us.png)
-
-## Requirements & Recommendations
-
-Supported Library Types: Show
-
-## <a id="collection_section"></a>Collections Section 110
-
-| Collection                                               | Key                                          | Description                                                                    |
-|:---------------------------------------------------------|:---------------------------------------------|:-------------------------------------------------------------------------------|
-| `Ratings Collections`                                    | `separator`                                  | [Separator Collection](../separators.md) to denote the Section of Collections. |
-| `<<Content Rating>> Shows`<br>**Example:** `TV-14 Shows` | `<<Content Rating>>`<br>**Example:** `TV-14` | Collection of Shows that have this Content Rating.                             |
-| `Not Rated Shows`                                        | `other`                                      | Collection of Shows that are Unrated, Not Rated or any other uncommon Ratings. |
-
-## Config
-
-The below YAML in your config.yml will create the collections:
-
-```yaml
-libraries:
-  TV Shows:
-    collection_files:
-      - default: content_rating_us
-```
-
-## Template Variables
-
-Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to 
-make your own local copy.
-
-Note that the `template_variables:` section only needs to be used if you do want to actually change how the defaults 
-work. Any value not specified will use its default value if it has one if not it's just ignored.
-
-??? abstract "Variable Lists (click to expand)"
-
-    * **File-Specific Template Variables** are variables available specifically for this Kometa Defaults file.
-
-    * **Shared Template Variables** are additional variables shared across the Kometa Defaults.
-
-    * **Shared Separator Variables** are additional variables available since this Default contains a 
-    [Separator](../separators.md).
-
-    === "File-Specific Template Variables"
-
-        | Variable                      | Description & Values                                                                                                                                                                                                                                            |
-        |:------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `limit`                       | **Description:** Changes the Builder Limit for all collections in a Defaults file.<br>**Values:** Number Greater than 0                                                                                                                                         |
-        | `limit_<<key>>`<sup>1</sup>   | **Description:** Changes the Builder Limit of the [key's](#collection_section) collection.<br>**Default:** `limit`<br>**Values:** Number Greater than 0                                                                                                                      |
-        | `sort_by`                     | **Description:** Changes the Smart Filter Sort for all collections in a Defaults file.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                               |
-        | `sort_by_<<key>>`<sup>1</sup> | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/smart.md#sort-options)                                                         |
-        | `include`                     | **Description:** Overrides the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                   |
-        | `append_include`              | **Description:** Appends to the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                  |
-        | `remove_include`              | **Description:** Removes from the [default include list](#default-values).<br>**Values:** List of Content Ratings found in your library                                                                                                                                |
-        | `exclude`                     | **Description:** Exclude these Content Ratings from creating a Dynamic Collection.<br>**Values:** List of Content Ratings found in your library                                                                                                                 |
-        | `addons`                      | **Description:** Overrides the [default addons dictionary](#default-values). Defines how multiple keys can be combined under a parent key. The parent key doesn't have to already exist in Plex<br>**Values:** Dictionary List of Content Ratings found in your library |
-        | `append_addons`               | **Description:** Appends to the [default addons dictionary](#default-values).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                   |
-        | `remove_addons`               | **Description:** Removes from the [default addons dictionary](#default-values).<br>**Values:** Dictionary List of Content Ratings found in your library                                                                                                                 |
-        | `name_format`                 | **Description:** Changes the title format of the Dynamic Collections.<br>**Default:** `<<key_name>> <<library_translationU>>s`<br>**Values:** Any string with `<<key_name>>` in it.                                                                             |
-        | `summary_format`              | **Description:** Changes the summary format of the Dynamic Collections.<br>**Default:** `<<library_translationU>>s that are rated <<key_name>>.`<br>**Values:** Any string.                                                                                     |
-
-        1. Each default collection has a `key` that when calling to effect a specific collection you must replace `<<key>>` with when calling.
-
-    === "Shared Template Variables"
-
-        {%
-          include-markdown "../collection_variables.md"
-        %}
-
-    === "Shared Separator Variables"
-
-        {%
-          include-markdown "../separator_variables.md"
-        %}
+    === "Default `include`"
     
-???+ example "Example Template Variable Amendments"
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        include: 
+    {%    
+      include-markdown "../../../defaults/show/content_rating_us.yml" 
+      comments=false
+      start="include:\n"
+      end="addons:"
+    %}
+        ```
 
-    The below is an example config.yml extract with some Template Variables added in to change how the file works.
-
-    Click the :fontawesome-solid-circle-plus: icon to learn more
+    === "Default `addons`"
     
-    ```yaml
-    libraries:
-      Movies:
-        collection_files:
-          - default: content_rating_us
-            template_variables:
-              sep_style: blue #(1)!
-              use_other: false #(2)!
-              append_addons:
-                R: #(3)!
-                  - "de/18" #(4)!
-              sort_by: title.asc
-    ```
-
-    1.  Use the blue [Separator Style](../separators.md#separator-styles)
-    2.  Do not create a "Not Rated Movies" collection
-    3.  Defines a collection which will be called "R", this does not need to already exist in your library
-    4.  Adds the "de/18" content rating to the "R" addon list, "de/18" must exist in your library if the "R" content 
-    rating does not
-
-
-## Default Values
-
-Unless you customize them as described above, these collections use default lists and searches to create the collections.
-
-If you are interested in customizing the default values, you can find that information [here](#template-variables).
-
-If you are interested in seeing what those default builders are, you can find that information [here](../sources.md).
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        addons: 
+    {%    
+      include-markdown "../../../defaults/show/content_rating_us.yml" 
+      comments=false
+      start="addons:\n"
+    %}
+        ```

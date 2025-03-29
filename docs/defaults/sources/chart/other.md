@@ -1,1 +1,0 @@
-# Other Charts Collections

@@ -1,4 +1,4 @@
-FROM python:3.11-slim-buster
+FROM python:3-slim
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
 ENV TINI_VERSION=v0.19.0
