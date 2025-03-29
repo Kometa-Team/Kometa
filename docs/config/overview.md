@@ -44,6 +44,7 @@ requirements for setup that can be found by clicking the links within the table 
 | [`mal`](myanimelist.md)                     | :fontawesome-solid-circle-xmark:{ .red }                                                   |
 
 <sup>**1**</sup> These connectors can be configured either at the root level of the Config File, or per-library - examples are available on each of the connector's pages.
+
 ## Configuration Template File Example
 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.

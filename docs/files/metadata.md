@@ -242,32 +242,34 @@ can match and edit multiple items. The available matching options are outlined b
 === "Movies"
     | <div style="width:165px">Attribute</div> | Description                                                                                                   |
     | :--------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
-    | `blank_edition`<sup>**3**</sup>              | Only matches movies that have no Edition.<br>**Default:** `false`<br>**Values:** `true` or `false`            |
-    | `edition_contains`<sup>**3**</sup>           | Only matches where the movie's Edition contains the given string.<br>Can be a list (only one needs to match). |
-    | `edition`<sup>**3**</sup>                    | Only matches movies that exactly match the movie's Edition.<br>Can be a list (only one needs to match).       |
-    | `mapping_id`<sup>**2**</sup>                 | Only matches movies that have the given TMDb or IMDb ID.                                                      |
-    | `title`<sup>**1**</sup>                      | Only matches movies that exactly match the movie's Title.<br>Can be a list (only one needs to match).         |
+    | `blank_edition`<sup>**[3](#table-annotations)**</sup>              | Only matches movies that have no Edition.<br>**Default:** `false`<br>**Values:** `true` or `false`            |
+    | `edition_contains`<sup>**[3](#table-annotations)**</sup>           | Only matches where the movie's Edition contains the given string.<br>Can be a list (only one needs to match). |
+    | `edition`<sup>**[3](#table-annotations)**</sup>                    | Only matches movies that exactly match the movie's Edition.<br>Can be a list (only one needs to match).       |
+    | `mapping_id`<sup>**[2](#table-annotations)**</sup>                 | Only matches movies that have the given TMDb or IMDb ID.                                                      |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches movies that exactly match the movie's Title.<br>Can be a list (only one needs to match).         |
     | `year`                                   | Only matches movies that were released in the given year.                                                     |
 
 === "TV Shows"
     | <div style="width:165px">Attribute</div> | Allowed Values                                                                                      |
     |:-----------------------------------------|:----------------------------------------------------------------------------------------------------|
-    | `mapping_id`<sup>**2**</sup>                 | Only matches shows that have the given TVDb or IMDb ID.                                             |
-    | `title`<sup>**1**</sup>                      | Only matches shows that exactly match the show's Title.<br>Can be a list (only one needs to match). |
+    | `mapping_id`<sup>**[2](#table-annotations)**</sup>                 | Only matches shows that have the given TVDb or IMDb ID.                                             |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches shows that exactly match the show's Title.<br>Can be a list (only one needs to match). |
     | `year`                                   | Only matches shows that were released in the given year.                                            |
 
 === "Music"
     | <div style="width:165px">Attribute</div> | Allowed Values                                                                                          |
     |:-----------------------------------------|:--------------------------------------------------------------------------------------------------------|
-    | `title`<sup>**1**</sup>                      | Only matches artists that exactly match the artist's Title.<br>Can be a list (only one needs to match). |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches artists that exactly match the artist's Title.<br>Can be a list (only one needs to match). |
 
-1. When `title` is not provided and the mapping name was not specified as an ID, the default behaviour is to use the 
+### Table Annotations
+
+<sup>**1**</sup> When `title` is not provided and the mapping name was not specified as an ID, the default behaviour is to use the 
 mapping name as `title` for matching.
 
-2. When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the 
+<sup>**2**</sup> When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the 
 mapping name as `mapping_id` for matching.
 
-3. When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check 
+<sup>**3**</sup> When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check 
 the movie's filepath for `{edition-...}` to determine what the edition is.
 
 ??? example "Matching Examples (click to expand)"
