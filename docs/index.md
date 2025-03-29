@@ -128,73 +128,73 @@ hide:
 <div class="reversed randomized half-height very-slow padded rounded stylized scroller">
   <div class="scroller__inner">
     <figure>
-      <img src="assets/images/scrollers/overlays/1.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/1.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/2.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/2.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/3.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/3.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/4.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/4.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/5.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/5.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/6.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/6.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/7.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/7.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/8.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/8.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/9.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/9.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/10.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/10.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/11.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/11.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/12.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/12.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/13.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/13.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/14.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/14.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/15.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/15.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/16.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/16.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/17.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/17.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/18.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/18.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/19.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/19.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/20.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/20.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/21.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/21.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/22.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/22.jpg" loading="lazy">
     </figure>
     <figure>
-      <img src="assets/images/scrollers/overlays/23.webp" loading="lazy">
+      <img src="assets/images/scrollers/overlays/23.jpg" loading="lazy">
     </figure>
   </div>
 </div>
