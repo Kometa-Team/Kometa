@@ -14,62 +14,64 @@ These overlays are applied by calling the below paths into the `overlay_files` [
 
 === "Awards/Charts"
 
-    | Default                      | Path     | Example Overlays                     |                   Movies                   |                   Shows                    |                 Seasons                  |                 Episodes                 |
-    |:-----------------------------|:---------|:-------------------------------------|:------------------------------------------:|:------------------------------------------:|:----------------------------------------:|:----------------------------------------:|
-    | [Ribbon](overlays/ribbon.md) | `ribbon` | IMDb Top 250 Ribbon, RT Fresh Ribbon | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
+    | Default                      | Path     | Example Overlays                     | Allowed Media        |
+    |:-----------------------------|:---------|:-------------------------------------|:----------------------|
+    | [Ribbon](overlays/ribbon.md) | `ribbon` | IMDb Top 250 Ribbon, RT Fresh Ribbon | `Movies`, `Shows`     |
 
 === "Content"
 
-    | Default                                    | Path           | Example Overlays                                 |                   Movies                   |                   Shows                    |                 Seasons                  |                  Episodes                  |
-    |:-------------------------------------------|:---------------|:-------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
-    | [Episode Info](overlays/episode_info.md)   | `episode_info` | "S01E01", "S02E09"                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
-    | [Mediastinger](overlays/mediastinger.md)   | `mediastinger` | Mediastinger Logo for After/During Credit Scenes | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | [Ratings](overlays/ratings.md)<sup>1</sup> | `ratings`      | IMDb Audience Rating, Metacritic Critic Rating   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-check:{ .green } |
-    | [Status](overlays/status.md)               | `status`       | Airing, Returning, Canceled, Ended               |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | Default                                    | Path           | Example Overlays                                 | Allowed Media        |
+    |:-------------------------------------------|:---------------|:-------------------------------------------------|:----------------------|
+    | [Episode Info](overlays/episode_info.md)   | `episode_info` | "S01E01", "S02E09"                               | `Episodes`            |
+    | [Mediastinger](overlays/mediastinger.md)   | `mediastinger` | Mediastinger Logo for After/During Credit Scenes | `Movies`, `Shows`     |
+    | [Ratings](overlays/ratings.md)<sup>**1**</sup> | `ratings`      | IMDb Audience Rating, Metacritic Critic Rating   | `Movies`, `Shows`, `Episodes` |
+    | [Status](overlays/status.md)               | `status`       | Airing, Returning, Canceled, Ended               | `Shows`               |
 
-    <sup>1</sup> Requires Template Variables to function
+    <sup>**1**</sup> Requires Template Variables to function
 
 === "Content Ratings"
 
-    | Default                                                           | Path                      | Example Overlays                                      |                   Movies                   |                   Shows                    |                  Seasons                   |                  Episodes                  |
-    |:------------------------------------------------------------------|:--------------------------|:------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | [US Content Ratings (Movie)](overlays/content_rating_us_movie.md) | `content_rating_us_movie` | G, PG, PG-13, R, NC-17, NR                            | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | [US Content Ratings (Show)](overlays/content_rating_us_show.md)   | `content_rating_us_show`  | TV-G, TV-Y, TV-PG, TV-14, TV-MA, NR                   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [UK Content Ratings](overlays/content_rating_uk.md)               | `content_rating_uk`       | U, PG, 12, 12a, 15, 18, R18, NR                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [DE Content Ratings](overlays/content_rating_de.md)               | `content_rating_de`       | 0, 6, 12, 16, 18, BPjM, NR                            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [AU Content Ratings](overlays/content_rating_au.md)               | `content_rating_au`       | G, PG, M, MA15+, R18+, X18+, NR                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [NZ Content Ratings](overlays/content_rating_nz.md)               | `content_rating_nz`       | G, PG, M, R13, RP13, R15, R16, RP16, R18, RP18, R, NR | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [Common Sense Age Rating](overlays/commonsense.md)                | `commonsense`             | 1+, 2+, 3+, 4+, ..., 17+, 18+, NR                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Default                                                           | Path                      | Example Overlays                                      | Allowed Media        |
+    |:------------------------------------------------------------------|:--------------------------|:------------------------------------------------------|:----------------------|
+    | [US Content Ratings (Movie)](overlays/content_rating_us_movie.md) | `content_rating_us_movie` | G, PG, PG-13, R, NC-17, NR                            | `Movies`              |
+    | [US Content Ratings (Show)](overlays/content_rating_us_show.md)   | `content_rating_us_show`  | TV-G, TV-Y, TV-PG, TV-14, TV-MA, NR                   | `Shows`, `Seasons`, `Episodes` |
+    | [UK Content Ratings](overlays/content_rating_uk.md)               | `content_rating_uk`       | U, PG, 12, 12a, 15, 18, R18, NR                       | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [DE Content Ratings](overlays/content_rating_de.md)               | `content_rating_de`       | 0, 6, 12, 16, 18, BPjM, NR                            | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [AU Content Ratings](overlays/content_rating_au.md)               | `content_rating_au`       | G, PG, M, MA15+, R18+, X18+, NR                       | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [NZ Content Ratings](overlays/content_rating_nz.md)               | `content_rating_nz`       | G, PG, M, R13, RP13, R15, R16, RP16, R18, RP18, R, NR | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Common Sense Age Rating](overlays/commonsense.md)                | `commonsense`             | 1+, 2+, 3+, 4+, ..., 17+, 18+, NR                     | `Movies`, `Shows`, `Seasons`, `Episodes` |
 
-    <sup>1</sup> Requires Template Variables to function
+    <sup>**1**</sup> Requires Template Variables to function
 
 === "Media"
 
-    | Default                                                     | Path             | Example Overlays                                                          |                   Movies                   |                       Shows                       |                      Seasons                      |                  Episodes                  |
-    |:------------------------------------------------------------|:-----------------|:--------------------------------------------------------------------------|:------------------------------------------:|:-------------------------------------------------:|:-------------------------------------------------:|:------------------------------------------:|
-    | [Aspect Ratio](overlays/aspect.md)<sup>1</sup>              | `aspect`         | "1.33","1.78"                                                             | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |    :fontawesome-solid-circle-check:{ .green }     | :fontawesome-solid-circle-check:{ .green } |
-    | [Audio Codec](overlays/audio_codec.md)<sup>1</sup>          | `audio_codec`    | Dolby Atmos logo, DTS logo                                                | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |    :fontawesome-solid-circle-check:{ .green }     | :fontawesome-solid-circle-check:{ .green } |
-    | [Audio/Subtitle Language Count](overlays/language_count.md) | `language_count` | Dual-Audio, Multi-Audio, Dual-Subtitle, Multi-Subtitle                    | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |    :fontawesome-solid-circle-check:{ .green }     | :fontawesome-solid-circle-check:{ .green } |
-    | [Audio/Subtitle Language Flags](overlays/languages.md)      | `languages`      | Flags Based on the Audio/Subtitles a file has                             | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |    :fontawesome-solid-circle-check:{ .green }     | :fontawesome-solid-circle-check:{ .green } |
-    | [Resolution/Editions](overlays/resolution.md)<sup>2</sup>   | `resolution`     | 4K Dolby Vision logo, 720P logo, "Director's Cut", "Criterion Collection" | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |     :fontawesome-solid-circle-xmark:{ .red }      | :fontawesome-solid-circle-check:{ .green } |
-    | [Runtimes](overlays/runtimes.md)                            | `runtimes`       | "Runtime: 1h 30m"                                                         | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |     :fontawesome-solid-circle-xmark:{ .red }      | :fontawesome-solid-circle-check:{ .green } |
-    | [Versions](overlays/versions.md)                            | `versions`       | Multiple Versions logo                                                    | :fontawesome-solid-circle-check:{ .green } |    :fontawesome-solid-circle-check:{ .green }     |    :fontawesome-solid-circle-check:{ .green }     | :fontawesome-solid-circle-check:{ .green } |
-    | [Video Format](overlays/video_format.md)<sup>1</sup>        | `video_format`   | "REMUX", "HDTV"                                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-exclamation:{ .orange } | :fontawesome-solid-circle-exclamation:{ .orange } | :fontawesome-solid-circle-check:{ .green } |
+    | Default                                                     | Path             | Example Overlays                                                          | Allowed Media        |
+    |:------------------------------------------------------------|:-----------------|:--------------------------------------------------------------------------|:----------------------|
+    | [Aspect Ratio](overlays/aspect.md)<sup>**1**</sup>              | `aspect`         | "1.33","1.78"                                                             | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Audio Codec](overlays/audio_codec.md)<sup>**1**</sup>          | `audio_codec`    | Dolby Atmos logo, DTS logo                                                | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Audio/Subtitle Language Count](overlays/language_count.md) | `language_count` | Dual-Audio, Multi-Audio, Dual-Subtitle, Multi-Subtitle                    | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Audio/Subtitle Language Flags](overlays/languages.md)      | `languages`      | Flags Based on the Audio/Subtitles a file has                             | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Resolution/Editions](overlays/resolution.md)<sup>**2**</sup>   | `resolution`     | 4K Dolby Vision logo, 720P logo, "Director's Cut", "Criterion Collection" | `Movies`, `Shows`, `Episodes`            |
+    | [Runtimes](overlays/runtimes.md)                            | `runtimes`       | "Runtime: 1h 30m"                                                         | `Movies`, `Shows`, `Episodes`            |
+    | [Versions](overlays/versions.md)                            | `versions`       | Multiple Versions logo                                                    | `Movies`, `Shows`, `Seasons`, `Episodes` |
+    | [Video Format](overlays/video_format.md)<sup>**1**</sup>        | `video_format`   | "REMUX", "HDTV"                                                           | `Movies`, `Shows`<sup>**3**</sup>, `Seasons`<sup>**3**</sup>, `Episodes`|
 
-    <sup>1</sup> Designed to use the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
-
-    <sup>2</sup> Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the [TRaSH Guides](https://trash-guides.info/) filename naming scheme
+    <sup>**1**</sup> Designed to use the [TRaSH Guides](https://trash-guides.info/) filename naming scheme<br>
+    <sup>**2**</sup> Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the [TRaSH Guides](https://trash-guides.info/) filename naming scheme<br>
+    <sup>**3**</sup> While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.
 
 === "Production"
 
-    | Default                            | Path        | Example Overlays                                |                   Movies                   |                   Shows                    |                  Seasons                   |                  Episodes                  |
-    |:-----------------------------------|:------------|:------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | [Network](overlays/network.md)     | `network`   | "ABC", "CBS"                                    |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | [Streaming](overlays/streaming.md) | `streaming` | Netflix logo, Hulu logo                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | [Studio](overlays/studio.md)       | `studio`    | "Warner Bros. Pictures", "Amblin Entertainment" | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Default                            | Path        | Example Overlays                                | Allowed Media        |
+    |:-----------------------------------|:------------|:------------------------------------------------|:----------------------|
+    | [Network](overlays/network.md)     | `network`   | "ABC", "CBS"                                    | `Shows`, `Seasons`, `Episodes` |
+    | [Streaming](overlays/streaming.md) | `streaming` | Netflix logo, Hulu logo                         | `Movies`, `Shows`     |
+    | [Studio](overlays/studio.md)       | `studio`    | "Warner Bros. Pictures", "Amblin Entertainment" | `Movies`, `Shows`, `Seasons`, `Episodes` |
 
 === "Utility"
 
-    | Default                                | Path          | Example Overlays   |                   Movies                   |                       Shows                       |                      Seasons                      |                  Episodes                  |
-    |:---------------------------------------|:--------------|:-------------------|:------------------------------------------:|:-------------------------------------------------:|:-------------------------------------------------:|:------------------------------------------:|
-    | [Direct Play](overlays/direct_play.md) | `direct_play` | "Direct Play Only" | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-exclamation:{ .orange } | :fontawesome-solid-circle-exclamation:{ .orange } | :fontawesome-solid-circle-check:{ .green } |
+    | Default                                | Path          | Example Overlays   | Allowed Media        |
+    |:---------------------------------------|:--------------|:-------------------|:----------------------|
+    | [Direct Play](overlays/direct_play.md) | `direct_play` | "Direct Play Only" | `Movies`, `Shows`<sup>**3**</sup>, `Seasons`<sup>**3**</sup>, `Episodes` |
+
+    <sup>**3**</sup> While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.

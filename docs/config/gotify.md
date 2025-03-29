@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Gotify Attributes
 
 Configuring [Gotify](https://gotify.net/) is optional but can allow you to send the [webhooks](webhooks.md) straight to Gotify.

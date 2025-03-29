@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # ntfy Attributes
 
 Configuring [ntfy](https://ntfy.sh/) is optional but can allow you to send the [webhooks](webhooks.md) straight to ntfy.

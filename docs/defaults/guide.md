@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Defaults Usage Guide
 
 Kometa includes a pre-created set of Collection Files and Overlay Files which can be found in the "defaults" folder in the root of your Kometa installation directory.

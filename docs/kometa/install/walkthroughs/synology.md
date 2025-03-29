@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 {%
     include-markdown "./../../../templates/walkthrough/container.md"
     replace='{

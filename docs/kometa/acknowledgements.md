@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Acknowledgements
 
 ## Kometa Team

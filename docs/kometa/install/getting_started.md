@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Getting Started with Kometa
 
 Kometa has a relatively simple startup process. This guide will walk you through the things you *have* to do to get started with Kometa.

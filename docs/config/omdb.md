@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # OMDb Attributes
 
 Configuring [OMDb](https://www.omdbapi.com/) is optional but can allow you to mass edit metadata using IMDb.

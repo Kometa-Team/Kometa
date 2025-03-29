@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # GitHub Attributes
 
 Configuring [GitHub](https://github.com/) is optional but can allow you to avoid rate limits when requesting data from GitHub.

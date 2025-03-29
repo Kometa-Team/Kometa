@@ -1,6 +1,8 @@
 ---
 search:
   boost: 5 
+hide:
+  - toc
 ---
 # Settings
 

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Templates
 
 Collection, Playlist, Metadata, and Overlay Files often share a lot of common or generalizable configuration details. 

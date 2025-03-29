@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # MyAnimeList Attributes
 
 Configuring [MyAnimeList](https://myanimelist.net/) is optional but is required for MyAnimeList based collections and operations to function.

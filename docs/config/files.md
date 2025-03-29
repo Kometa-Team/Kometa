@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # File Blocks
 
 When using Kometa, the structure of each library is made using File Blocks.

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 Files define the structure and format for creating Collections, Overlays, Playlists, and Metadata Edits within your libraries.
 
 Files are modular and when properly leveraged, they not only facilitate the management of your library's collections and 

@@ -3,6 +3,7 @@ search:
   boost: 3
 hide:
   - tags
+  - toc
 tags:
   - addons
   - name

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Kubernetes Walkthrough
 
 This article will walk you through getting Kometa set up and running in Kubernetes. It will cover:

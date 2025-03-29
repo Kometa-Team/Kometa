@@ -1,6 +1,8 @@
 ---
 search:
   boost: 4
+hide:
+   - toc
 ---
 # Log files and where to find them
 
