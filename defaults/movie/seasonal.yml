@@ -107,7 +107,6 @@ dynamic_collections:
       - shared
       - arr
     template_variables:
-      # check1
       emoji:
         years: ""
         valentine: ""
@@ -128,7 +127,6 @@ dynamic_collections:
         latinx: ""
         women: ""
         black_history: ""
-      # check2
       schedule:
         years: range(12/26-01/04)
         valentine: range(02/01-02/29)
@@ -149,7 +147,6 @@ dynamic_collections:
         lgbtq: range(05/31-06/30)
         latinx: range(09/15-10/15)
         women: range(02/28-03/31)
-      # check4
       imdb_search:
         years:
           list.any: ls066838460
@@ -216,7 +213,6 @@ dynamic_collections:
           keyword.any: women in film, women's rights, women's suffrage, womens rights, womens suffrage
           sort_by: rating.desc
           limit: 500
-      # check5
       tmdb_collection:
         halloween:
           - 185103    # Hotel Transylvania
@@ -229,11 +225,9 @@ dynamic_collections:
           - 8091      # Alien Collection
           - 2980      # Ghostbusters
           - 751156    # Hocus Pocus
-      # check6
       tmdb_movie:
         halloween:
           - 23437    # A Nightmare on Elm Street (2010)
-      # check7
       mdblist_list:
         aapi:
           - https://mdblist.com/lists/k0meta/asian-american-pacific-islander-heritage-month
@@ -245,11 +239,9 @@ dynamic_collections:
           - https://mdblist.com/lists/k0meta/lgbtq-pride-month
         latinx:
           - https://mdblist.com/lists/k0meta/latinx-heritage-month
-      # check8
       letterboxd_list:
         black_history:
           - https://letterboxd.com/mardarrius/list/black-is-beautiful/
-      # check9
       delete_collections_named:
         years: 🎊 New Year's Day Movies
         valentine: 💘 Valentine's Day Movies

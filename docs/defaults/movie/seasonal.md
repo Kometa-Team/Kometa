@@ -129,12 +129,12 @@ hide:
 
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         schedule: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="schedule:\n"
-      end="imdb_search:"
-    %}
+  {%    
+    include-markdown "../../../defaults/movie/seasonal.yml" 
+    comments=false
+    start="schedule:\n"
+    end="imdb_search:"
+  %}
         ```
 
     === "Default `imdb_search`"
@@ -154,70 +154,102 @@ hide:
 
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         imdb_search: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+  {%    
+    include-markdown "../../../defaults/movie/seasonal.yml" 
+    comments=false
+    start="imdb_search:\n"
+    end="tmdb_collection:"
+  %}
         ```
 
-    === "Default `addons`"
+    === "Default `tmdb_collection`"
+    
+        ???+ tip 
+        
+            Pass `tmdb_collection_<<key>>` to the file as Template Variables to change this value per collection.
+    
+            ```yaml
+              - default: seasonal
+                template_variables:
+                  tmdb_collection_years: 
+                    - 1234
+                    - 5678
+            ```
     
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
-        addons: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+        tmdb_collection: 
+  {%    
+  include-markdown "../../../defaults/movie/seasonal.yml" 
+  comments=false
+  start="tmdb_collection:\n"
+  end="tmdb_movie:"
+  %}
         ```
 
-    === "Default `addons`"
+    === "Default `tmdb_movie`"
+    
+        ???+ tip 
+        
+            Pass `tmdb_movie_<<key>>` to the file as Template Variables to change this value per collection.
+    
+            ```yaml
+              - default: seasonal
+                template_variables:
+                  tmdb_movie_valentine: 
+                    - 4321
+                    - 8765
+            ```
     
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
-        addons: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+        tmdb_movie: 
+  {%    
+    include-markdown "../../../defaults/movie/seasonal.yml" 
+    comments=false
+    start="tmdb_movie:\n"
+    end="mdblist_list:"
+  %}
         ```
 
-    === "Default `addons`"
+    === "Default `mdblist_list`"
     
+        ???+ tip 
+        
+            Pass `mdblist_list_<<key>>` to the file as Template Variables to change this value per collection.
+    
+            ```yaml
+              - default: seasonal
+                template_variables:
+                  mdblist_list_memorial: https://mdblist.com/lists/rizreflects/world-war-related-movies 
+            ```
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
-        addons: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+        mdblist_list: 
+  {%    
+    include-markdown "../../../defaults/movie/seasonal.yml" 
+    comments=false
+    start="mdblist_list:\n"
+    end="letterboxd_list:"
+  %}
         ```
 
-    === "Default `addons`"
+    === "Default `letterboxd_list`"
+
+        ???+ tip 
     
-        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
-        addons: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+        Pass `letterboxd_list_<<key>>` to the file as Template Variables to change this value per collection.
+
+        ```yaml
+          - default: seasonal
+            template_variables:
+              letterboxd_list_christmas: https://letterboxd.com/patrickb15/list/christmas
         ```
 
-    === "Default `addons`"
-    
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
-        addons: 
-    {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
-      comments=false
-      start="addons:\n"
-      end="title_override:"
-    %}
+        letterboxd_list: 
+  {%    
+    include-markdown "../../../defaults/movie/seasonal.yml" 
+    comments=false
+    start="letterboxd_list:\n"
+    end="delete_collections_named:"
+  %}
         ```
