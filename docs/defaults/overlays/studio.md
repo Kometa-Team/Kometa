@@ -81,3 +81,9 @@ Below is a screenshot of the alternative Bigger (`bigger`) style which can be se
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Studio Overlays"
+    
+        The Studio overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on studio names. 
+        The list of studio is not exposed for customization using Template Variables.

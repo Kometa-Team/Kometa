@@ -303,7 +303,6 @@ nav:
           - Direct Play Only: defaults/overlays/direct_play.md
       - PLAYLIST DEFAULTS:
         - Playlists: defaults/playlist.md
-      - Defaults Sources: defaults/sources.md
   - FILES & BUILDERS:
       - Overview: files/overview.md
       - FILES:

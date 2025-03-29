@@ -53,3 +53,8 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Versions Overlays"
+    
+        The Versions overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) for duplicate items or episodes.

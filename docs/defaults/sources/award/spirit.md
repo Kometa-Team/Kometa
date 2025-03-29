@@ -1,1 +1,0 @@
-# Independent Spirit Awards Collections

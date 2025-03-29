@@ -162,3 +162,8 @@ This is not something you can enable or disable independently; it's an internal 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Resolution/Edition Overlays"
+    
+        The Resolution/Edition overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on resolutions and editions as set on items in Plex.

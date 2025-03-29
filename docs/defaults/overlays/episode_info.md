@@ -46,3 +46,8 @@ hide:
 %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Episode Info Overlays"
+    
+        The Episode Info overlays use the [`plex_all` Builder](../../../files/builders/plex#plex-all) to apply to every episode in the library.

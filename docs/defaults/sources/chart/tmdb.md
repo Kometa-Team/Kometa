@@ -1,1 +1,0 @@
-# TMDb Charts Collections

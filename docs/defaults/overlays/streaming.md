@@ -83,3 +83,12 @@ Some logic is applied to allow for regional streaming service lists to be availa
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Streaming Overlays"
+    
+        The Streaming Services overlays use two builders:
+
+        If you are not using `originals_only`, the overlays are applied using [`tmdb_discover`](../../../files/builders/tmdb#tmdb-discover).
+        
+        If you are using `originals_only`, the overlays are applied using Kometa-maintained [MDBLists](../../../files/builders/mdblist#mdblist-list).

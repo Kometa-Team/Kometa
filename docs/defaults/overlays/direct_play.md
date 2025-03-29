@@ -49,3 +49,8 @@ hide:
     %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Direct Play Overlays"
+    
+        The Direct Play overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) for 4K items.

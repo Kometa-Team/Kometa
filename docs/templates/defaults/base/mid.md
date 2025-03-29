@@ -89,6 +89,8 @@ libraries:
 <!--all-->
 ```
 
+<!--vars-->
+
 ## Template Variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.

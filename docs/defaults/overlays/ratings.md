@@ -117,3 +117,9 @@ Recommendations: Use the [Mass * Rating Update Library Operation](../../config/o
         "notes-sub": "**IMPORTANT**: To amend `horizontal_offset` and `vertical_offset` you **must** prepend the variable with `rating1_`, `rating2_`, or `rating3_`."
     }'
 %}
+
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Ratings Overlays"
+    
+        The Ratings overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on ratings as set on items in Plex.

@@ -73,3 +73,9 @@ hide:
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
+
+    === "Ribbon Overlays"
+    
+        The Ribbon overlays use the [`imdb_award` Builder](../../../files/builders/imdb#imdb-award), [`imdb_chart` Builder](../../../files/builders/imdb#imdb-chart), 
+        [`mdblist_list` Builder](../../../files/builders/mdblist#mdblist-list), 

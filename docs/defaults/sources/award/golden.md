@@ -1,1 +1,0 @@
-# Golden Globes Awards Collections
