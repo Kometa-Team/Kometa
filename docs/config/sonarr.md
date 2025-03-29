@@ -1,6 +1,8 @@
 ---
 search:
   boost: 3
+hide:
+  - toc
 ---
 # Sonarr Attributes
 

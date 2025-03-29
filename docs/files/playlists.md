@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - libraries
   - sync_to_users

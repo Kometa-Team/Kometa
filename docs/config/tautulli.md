@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Tautulli Attributes
 
 Configuring [Tautulli](https://tautulli.com/) is optional but can allow you to create Collections based on Tautulli's Watch Statistics.

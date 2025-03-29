@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # MDBList Attributes
 
 Configuring [MDBList](https://mdblist.com/) is optional but can allow you to mass edit metadata.

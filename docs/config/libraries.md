@@ -1,8 +1,9 @@
 ---
 search:
   boost: 5 
+hide:
+  - toc
 ---
-
 # Library Attributes
 
 Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants Kometa to act on.

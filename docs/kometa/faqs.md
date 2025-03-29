@@ -1,6 +1,8 @@
 ---
 search:
   boost: 4
+hide:
+  - toc
 ---
 # FAQ & Knowledge Base
 

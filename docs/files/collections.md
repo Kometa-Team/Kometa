@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Collection Files
 
 Collection Files holds information on how Kometa should create collections. There are a large number of 

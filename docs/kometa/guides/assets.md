@@ -1,6 +1,8 @@
 ---
 search:
   boost: 2
+hide:
+  - toc
 ---
 # Image Asset Directory Guide
 

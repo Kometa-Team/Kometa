@@ -1,3 +1,9 @@
+---
+search:
+  boost: 3
+hide:
+  - toc
+---
 # AniDB Attributes
 
 Configuring [AniDB](https://anidb.net/) is optional but can unlock more features from the site.

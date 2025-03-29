@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - tmdb_person
   - tmdb_person_offset

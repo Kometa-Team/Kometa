@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Playlist Files Attribute
 
 As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](../files/playlists.md) to work.

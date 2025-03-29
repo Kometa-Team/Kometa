@@ -1,6 +1,8 @@
 ---
 search:
   boost: 2
+hide:
+  - toc
 ---
 # Kometa Ratings Explained
 

@@ -1,3 +1,10 @@
+---
+hide:
+  - toc
+tags:
+  - sort
+  - sorting
+---
 # Sorting Guide
 
 There are various sort options available depending on what you want to sort.

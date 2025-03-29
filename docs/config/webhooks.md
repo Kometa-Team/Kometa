@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Webhooks Attributes
 
 Configuring Webhooks is optional but can allow you to receive notifications when certain events happen.

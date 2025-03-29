@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Trakt and MyAnimeList Authentication
 
 When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details. 

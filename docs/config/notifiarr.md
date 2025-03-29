@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Notifiarr Attributes
 
 Configuring [Notifiarr](https://notifiarr.com) is optional but can allow you to send the [webhooks](webhooks.md) straight to notifiarr.

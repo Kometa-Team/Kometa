@@ -3,6 +3,7 @@ search:
   boost: 2
 hide:
   - tags
+  - toc
 tags:
   - undo
   - revert

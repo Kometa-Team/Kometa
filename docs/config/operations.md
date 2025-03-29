@@ -1,6 +1,8 @@
 ---
 search:
   boost: 4
+hide:
+  - toc
 ---
 # Library Operations
 
@@ -505,8 +507,8 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
       <tr><td>`source`</td><td>Source of the poster update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked<sup>1</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_overlays`</td><td>Skip updating image if the current image has an Overlay<sup>2</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked<sup>**1**</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_overlays`</td><td>Skip updating image if the current image has an Overlay<sup>**2**</sup>.<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
 
     1. The poster field will be locked if a previous `mass_poster_update` was run or if an Overlay has been applied.
@@ -546,7 +548,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
       <tr><td>`source`</td><td>Source of the poster update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked.<sup>1</sup> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked.<sup>**1**</sup> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
     
     1. The background field will be locked if a previous `mass_background_update` was run.

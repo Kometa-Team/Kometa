@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Configuration Files
 
 Kometa is configured via YAML files. These files are used to define the various components of Kometa. 

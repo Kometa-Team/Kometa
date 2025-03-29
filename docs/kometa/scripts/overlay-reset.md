@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 ???+ danger
     
     **This script is destructive with NO UNDO.**
