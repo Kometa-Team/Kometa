@@ -96,3 +96,4 @@ Fixes issue with ICheckMovies parsing.
 Fixes issue with Letterboxd parsing.
 Fixes issue with the `mojo_domestic` BoxOfficeMojo Builder.
 Fixes an issue updating Trakt User Ratings when the show doesn't exist on TVDb.
+Fixes #2560 count display issue

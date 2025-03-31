@@ -970,7 +970,7 @@ class Operations:
                         self.library.Plex.saveMultiEdits()
 
             for item_attr, _edits in rating_edits.items():
-                _size = len(rating_edits.items())
+                _size = len(_edits.items())
                 for i, (new_rating, rating_keys) in enumerate(sorted(_edits.items()), 1):
                     logger.info(get_batch_info(i, _size, item_attr, len(rating_keys), display_value=new_rating))
                     self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))

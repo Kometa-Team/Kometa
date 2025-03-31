@@ -16,7 +16,7 @@ hide:
 For example, the \"Iron Man\" franchise collection will appear next to the \"Iron Man\" movies within your library.
 
 **[This file has a Show Library Counterpart.](./../../../../show/franchise)**",
-        "image": "![](./../../../../images/franchise_movie.png)",
+        "image": "![](./../../../../assets/images/defaults/posters/franchise_movie.png)",
         "rec-sub": "It is important to disable Plex\'s in-built Automatic Collections if you are using this Default file. Please see the below video showing how to do this.
 
 <video controls><source src=\"./../../../../../assets/images/defaults/automatic_collections.mp4\" type=\"video/mp4\"></video>

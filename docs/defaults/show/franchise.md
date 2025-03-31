@@ -16,7 +16,7 @@ hide:
 For example, the \"Pretty Little Liars\" franchise collection will appear next to the \"Pretty Little Liars\" show in your library.
 
 **[This file has a Movie Library Counterpart.](./../../../../movie/franchise)**",
-        "image": "![](./../../../../images/franchise_show.png)"
+        "image": "![](./../../../../assets/images/defaults/posters/franchise_show.png)"
     }'
 %}
 | `<<Collection Name>>`<br>**Example:** `Pretty Little Liars` | `<<Starting TMDb Show ID>>`<br>**Example:** `31917` | Collection of Shows specified for this Collection. |
