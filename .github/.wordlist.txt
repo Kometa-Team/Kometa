@@ -62,6 +62,7 @@ césar
 d'or
 dbader
 de
+deathday
 deneuve
 desc
 deva
@@ -150,6 +151,7 @@ jpeg
 jpg
 json
 kesleyalfa
+kkelly
 koltom
 kometa
 kometa's

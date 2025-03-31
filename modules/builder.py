@@ -47,7 +47,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay", "kometa_poster",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name", "limit",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday"
+    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday", "tmdb_deathday"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "url_theme",
@@ -786,8 +786,25 @@ class CollectionBuilder:
                 "this_month": util.parse(self.Type, "this_month", parsed_birthday, datatype="bool", methods=parsed_methods, default=False)
             }
 
+        self.tmdb_deathday = None
+        if "tmdb_deathday" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_deathday")
+            logger.debug(f"Value: {data[methods['tmdb_deathday']]}")
+            if not self.data[methods["tmdb_deathday"]]:
+                raise Failed(f"{self.Type} Error: tmdb_deathday attribute is blank")
+            parsed_deathday = util.parse(self.Type, "tmdb_deathday", self.data, datatype="dict", methods=methods)
+            parsed_methods = {m.lower(): m for m in parsed_deathday}
+            self.tmdb_deathday = {
+                "before": util.parse(self.Type, "before", parsed_deathday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "after": util.parse(self.Type, "after", parsed_deathday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "this_month": util.parse(self.Type, "this_month", parsed_deathday, datatype="bool", methods=parsed_methods, default=False)
+            }
+
+
         first_person = None
         self.tmdb_person_birthday = None
+        self.tmdb_person_deathday = None
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
@@ -816,6 +833,8 @@ class CollectionBuilder:
                             self.posters["tmdb_person"] = person.profile_url
                         if person.birthday and not self.tmdb_person_birthday:
                             self.tmdb_person_birthday = person.birthday
+                        if person.deathday and not self.tmdb_person_deathday:
+                            self.tmdb_person_deathday = person.deathday
                     except Failed as e:
                         if str(e).startswith("TMDb Error"):
                             logger.error(e)
@@ -831,6 +850,8 @@ class CollectionBuilder:
                                         self.posters["tmdb_person"] = results[result_index].profile_url
                                     if results[result_index].birthday and not self.tmdb_person_birthday:
                                         self.tmdb_person_birthday = results[result_index].birthday
+                                    if results[result_index].deathday and not self.tmdb_person_deathday:
+                                        self.tmdb_person_deathday = results[result_index].deathday
                             except Failed as ee:
                                 logger.error(ee)
                 if len(valid_names) > 0:
@@ -838,49 +859,52 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
-        if self.tmdb_birthday:
-            if "tmdb_person" not in methods:
-                raise NotScheduled("Skipped because tmdb_person is required when using tmdb_birthday")
-            if not self.tmdb_person_birthday:
-                raise NotScheduled(f"Skipped because No Birthday was found for {first_person}")
-            now = datetime(self.current_time.year, self.current_time.month, self.current_time.day)
+        for attr in ["tmdb_birthday", "tmdb_deathday"]:
+            tmdb_day = getattr(self, attr)
+            tmdb_person_day = getattr(self, attr.replace("_", "_person_"))
+            if tmdb_day:
+                if "tmdb_person" not in methods:
+                    raise NotScheduled(f"Skipped because tmdb_person is required when using {attr}")
+                if not tmdb_person_day:
+                    raise NotScheduled(f"Skipped because No {attr[5:]} was found for {first_person}")
+                now = datetime(self.current_time.year, self.current_time.month, self.current_time.day)
 
-            try:
-                delta = datetime(now.year, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-            except ValueError:
-                delta = datetime(now.year, self.tmdb_person_birthday.month, 28)
+                try:
+                    delta = datetime(now.year, tmdb_person_day.month, tmdb_person_day.day)
+                except ValueError:
+                    delta = datetime(now.year, tmdb_person_day.month, 28)
 
-            before_delta = delta
-            after_delta = delta
-            if delta < now:
-                try:
-                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-                except ValueError:
-                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, 28)
-            elif delta > now:
-                try:
-                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-                except ValueError:
-                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, 28)
-            days_after = (now - after_delta).days
-            days_before = (before_delta - now).days
-            msg = ""
-            if self.tmdb_birthday["this_month"]:
-                if now.month != self.tmdb_person_birthday.month:
-                    msg = f"Skipped because Birthday Month: {self.tmdb_person_birthday.month} is not {now.month}"
-            elif days_before > self.tmdb_birthday["before"] and days_after > self.tmdb_birthday["after"]:
-                msg = f"Skipped because days until {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_before} > {self.tmdb_birthday['before']} and days after {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_after} > {self.tmdb_birthday['after']}"
-            if msg:
-                suffix = ""
-                if self.details["delete_not_scheduled"]:
+                before_delta = delta
+                after_delta = delta
+                if delta < now:
                     try:
-                        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
-                        logger.info(self.delete())
-                        self.deleted = True
-                        suffix = f" and was deleted"
-                    except Failed:
-                        suffix = f" and could not be found to delete"
-                raise NotScheduled(f"{msg}{suffix}")
+                        before_delta = datetime(now.year + 1, tmdb_person_day.month, tmdb_person_day.day)
+                    except ValueError:
+                        before_delta = datetime(now.year + 1, tmdb_person_day.month, 28)
+                elif delta > now:
+                    try:
+                        after_delta = datetime(now.year - 1, tmdb_person_day.month, tmdb_person_day.day)
+                    except ValueError:
+                        after_delta = datetime(now.year - 1, tmdb_person_day.month, 28)
+                days_after = (now - after_delta).days
+                days_before = (before_delta - now).days
+                msg = ""
+                if tmdb_day["this_month"]:
+                    if now.month != tmdb_person_day.month:
+                        msg = f"Skipped because {attr[5:]} Month: {tmdb_person_day.month} is not {now.month}"
+                elif days_before > tmdb_day["before"] and days_after > tmdb_day["after"]:
+                    msg = f"Skipped because days until {tmdb_person_day.month}/{tmdb_person_day.day}: {days_before} > {tmdb_day['before']} and days after {tmdb_person_day.month}/{tmdb_person_day.day}: {days_after} > {tmdb_day['after']}"
+                if msg:
+                    suffix = ""
+                    if self.details["delete_not_scheduled"]:
+                        try:
+                            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+                            logger.info(self.delete())
+                            self.deleted = True
+                            suffix = f" and was deleted"
+                        except Failed:
+                            suffix = f" and could not be found to delete"
+                    raise NotScheduled(f"{msg}{suffix}")
 
         self.smart_url = None
         self.smart_type_key = None
