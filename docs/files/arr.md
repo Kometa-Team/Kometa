@@ -35,29 +35,36 @@ tags:
   - item_sonarr_tag.remove
   - item_sonarr_tag.sync
 ---
-
 # Radarr/Sonarr Definition Settings
 
 ## Radarr Definition Settings
 
 All the following attributes can override the global/library [Radarr](../config/radarr.md) attributes which are the default unless otherwise specified.
 
-| Attribute                 | Description & Values                                                                                                                                                            |
-|:--------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `radarr_add_missing`      | **Description:** Override Radarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                       |
-| `radarr_add_existing`     | **Description:** Override Radarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                      |
-| `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                  |
-| `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                  |
-| `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                      |
-| `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                        |
-| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `movie`, `collection`, or `none`                                                                            |
-| `radarr_availability`     | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                               |
-| `radarr_quality`          | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                              |
-| `radarr_tag`              | **Description:** Override Radarr `tag` attribute<br>**Values:** List or comma-separated string of tags                                                                          |
-| `radarr_search`           | **Description:** Override Radarr `search` attribute<br>**Values:** `true` or `false`                                                                                            |
-| `item_radarr_tag`         | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List or comma-separated string of tags                    |
-| `item_radarr_tag.remove`  | **Description:** Used to remove existing tags in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List or comma-separated string of tags            |
-| `item_radarr_tag.sync`    | **Description:** Matches the tags in Radarr for every movie found by the builders that's in Radarr with the provided tags<br>**Values:** List or comma-separated string of tags |
+<div class="annotate" markdown>
+
+| Attribute                 | Description & Values                                                                                                                                                                |
+|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `radarr_add_missing`      | **Description:** Override Radarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                           |
+| `radarr_add_existing`     | **Description:** Override Radarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                          |
+| `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                      |
+| `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                      |
+| `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                          |
+| `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                            |
+| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `movie`, `collection`, or `none`                                                                                |
+| `radarr_availability`     | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                                   |
+| `radarr_quality`          | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                                  |
+| `radarr_tag`              | **Description:** Override Radarr `tag` attribute<br>**Values:** List (1) or comma-separated string of tags                                                                          |
+| `radarr_search`           | **Description:** Override Radarr `search` attribute<br>**Values:** `true` or `false`                                                                                                |
+| `item_radarr_tag`         | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List (2) or comma-separated string of tags                    |
+| `item_radarr_tag.remove`  | **Description:** Used to remove existing tags in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List (3)or comma-separated string of tags             |
+| `item_radarr_tag.sync`    | **Description:** Matches the tags in Radarr for every movie found by the builders that's in Radarr with the provided tags<br>**Values:** List (4) or comma-separated string of tags |
+
+</div>
+
+{%    
+  include-markdown "../templates/snippets/tooltips/arr_radarr.md"
+%}
 
 ## Sonarr Definition Settings
 
@@ -115,3 +122,4 @@ When adding a show in Sonarr you get the screen below to set these options use `
 ## Arr Edit Settings
 
 When editing the details of items that exist in the collection/playlist and in Radarr/Sonarr use `item_radarr_tag` and `item_sonarr_tag`
+

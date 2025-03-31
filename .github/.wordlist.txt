@@ -42,6 +42,7 @@ cappella
 cd
 chazlarson
 cloudscraper
+cn
 codec
 codecs
 collectionless
@@ -69,6 +70,7 @@ diiivoycolor
 dir
 diskstation
 disneytoon
+dk
 dockerfile
 dockerfiles
 dockerhub
@@ -81,6 +83,8 @@ dsm
 dtd
 dts
 dv
+ee
+el
 emmys
 env
 etree
@@ -111,12 +115,15 @@ hayu
 hd
 hdr
 hemsworth
+hk
 homescreen
 homescreens
 hra
 html
 http
 https
+hu
+hu
 hulu
 icheckmovies
 imagemaid
@@ -132,6 +139,7 @@ ints
 io
 iteratively
 itvx
+ja
 jd
 jfcherng
 jinja
@@ -163,6 +171,8 @@ looper
 lossy
 lsio
 luxembourgish
+lv
+lv
 lxml
 macos
 mal
@@ -190,6 +200,7 @@ mojo's
 monetization
 mossi
 mpaa
+mx
 myanimelist
 myanimelist's
 mycollections
@@ -203,12 +214,12 @@ nas
 natively
 nfr
 nitsua
-NL
+nl
 nl
 nocopy
-Nokmål
 nokmål
-NOSUCHLIBRARY
+nokmål
+nosuchlibrary
 nosuchlibrary
 notifiarr
 ntfy
@@ -265,6 +276,8 @@ remux
 repo
 repos
 rholder
+ro
+ro
 rogerebert
 romani
 ruamel
@@ -292,6 +305,7 @@ stevenlu
 stevenlu's
 subprocess
 sundance
+sv
 sxxeyy
 symlink
 symlinks
@@ -315,6 +329,7 @@ toc
 todo
 tomatoesaudience
 tomatometer
+tooltips
 trakt
 trakt's
 transcoded
@@ -325,6 +340,8 @@ ttf
 tutin
 tv
 tvdb
+tw
+ua
 ui
 uncompress
 unionfs
@@ -340,6 +357,7 @@ vecteezy
 venv
 visualstudio
 vladimir
+vn
 vscode
 vscodium
 wachowski
@@ -367,3 +385,4 @@ yozoraxcii
 yyyy
 zap
 zeroqi
+zh

@@ -436,7 +436,12 @@ table.dualTable th {
 
 .md-tooltip {
 	border-radius: 6px;
+    top: inherit;
+    left: inherit;
+    margin-left: 12px;
+    margin-top: 7px;
 }
+
 
 [data-md-color-scheme="slate"] .md-typeset .admonition.builder,
 .md-typeset details.quicklink {
