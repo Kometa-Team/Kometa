@@ -97,6 +97,7 @@ All the following attributes can override the global/library [Sonarr](../config/
 {%    
   include-markdown "../templates/snippets/tooltips/arr_radarr.md"
 %}
+
 ## Adding to Arr
 You can add items to Radarr/Sonarr in two different ways.
   1. Items found by Kometa that are missing from your collections/playlists.
