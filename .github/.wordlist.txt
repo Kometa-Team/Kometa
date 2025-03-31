@@ -329,6 +329,7 @@ toc
 todo
 tomatoesaudience
 tomatometer
+tooltips
 trakt
 trakt's
 transcoded
