@@ -70,26 +70,33 @@ All the following attributes can override the global/library [Radarr](../config/
 
 All the following attributes can override the global/library [Sonarr](../config/sonarr.md) attributes which are the default unless otherwise specified.
 
-| Attribute                 | Description & Values                                                                                                                                                             |
-|:--------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sonarr_add_missing`      | **Description:** Override Sonarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                        |
-| `sonarr_add_existing`     | **Description:** Override Sonarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                       |
-| `sonarr_upgrade_existing` | **Description:** Override Sonarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                   |
-| `sonarr_monitor_existing` | **Description:** Override Sonarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                   |
-| `sonarr_ignore_cache`     | **Description:** Override Sonarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                       |
-| `sonarr_folder`           | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                         |
-| `sonarr_monitor`          | **Description:** Override Sonarr `monitor` attribute<br>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                   |
-| `sonarr_quality`          | **Description:** Override Sonarr `quality_profile` attribute<br>**Values:** Sonarr Quality Profile                                                                               |
-| `sonarr_language`         | **Description:** Override Sonarr `language_profile` attribute<br>**Values:** Sonarr Language Profile                                                                             |
-| `sonarr_series`           | **Description:** Override Sonarr `series_type` attribute<br>**Values:** `standard`, `daily`, `anime`                                                                             |
-| `sonarr_season`           | **Description:** Override Sonarr `season_folder` attribute<br>**Values:** `true` or `false`                                                                                      |
-| `sonarr_tag`              | **Description:** Override Sonarr `tag` attribute<br>**Values:** List or comma-separated string of tags                                                                           |
-| `sonarr_search`           | **Description:** Override Sonarr `search` attribute<br>**Values:** `true` or `false`                                                                                             |
-| `sonarr_cutoff_search`    | **Description:** Override Sonarr `cutoff_search` attribute<br>**Values:** `true` or `false`                                                                                      |
-| `item_sonarr_tag`         | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List or comma-separated string of tags                    |
-| `item_sonarr_tag.remove`  | **Description:** Used to remove existing tags in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List or comma-separated string of tags            |
-| `item_sonarr_tag.sync`    | **Description:** Matches the tags in Sonarr for every series found by the builders that's in Sonarr with the provided tags<br>**Values:** List or comma-separated string of tags |
+<div class="annotate" markdown>
 
+| Attribute                 | Description & Values                                                                                                                                                                 |
+|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sonarr_add_missing`      | **Description:** Override Sonarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                            |
+| `sonarr_add_existing`     | **Description:** Override Sonarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                           |
+| `sonarr_upgrade_existing` | **Description:** Override Sonarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                       |
+| `sonarr_monitor_existing` | **Description:** Override Sonarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                       |
+| `sonarr_ignore_cache`     | **Description:** Override Sonarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                           |
+| `sonarr_folder`           | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                             |
+| `sonarr_monitor`          | **Description:** Override Sonarr `monitor` attribute<br>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                       |
+| `sonarr_quality`          | **Description:** Override Sonarr `quality_profile` attribute<br>**Values:** Sonarr Quality Profile                                                                                   |
+| `sonarr_language`         | **Description:** Override Sonarr `language_profile` attribute<br>**Values:** Sonarr Language Profile                                                                                 |
+| `sonarr_series`           | **Description:** Override Sonarr `series_type` attribute<br>**Values:** `standard`, `daily`, `anime`                                                                                 |
+| `sonarr_season`           | **Description:** Override Sonarr `season_folder` attribute<br>**Values:** `true` or `false`                                                                                          |
+| `sonarr_tag`              | **Description:** Override Sonarr `tag` attribute<br>**Values:** List (1) or comma-separated string of tags                                                                           |
+| `sonarr_search`           | **Description:** Override Sonarr `search` attribute<br>**Values:** `true` or `false`                                                                                                 |
+| `sonarr_cutoff_search`    | **Description:** Override Sonarr `cutoff_search` attribute<br>**Values:** `true` or `false`                                                                                          |
+| `item_sonarr_tag`         | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List (2) or comma-separated string of tags                    |
+| `item_sonarr_tag.remove`  | **Description:** Used to remove existing tags in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List (3) or comma-separated string of tags            |
+| `item_sonarr_tag.sync`    | **Description:** Matches the tags in Sonarr for every series found by the builders that's in Sonarr with the provided tags<br>**Values:** List (4) or comma-separated string of tags |
+
+</div>
+
+{%    
+  include-markdown "../templates/snippets/tooltips/arr_radarr.md"
+%}
 ## Adding to Arr
 You can add items to Radarr/Sonarr in two different ways.
   1. Items found by Kometa that are missing from your collections/playlists.
