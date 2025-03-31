@@ -21,27 +21,37 @@ requirements for setup that can be found by clicking the links within the table 
 ???+ tip "Connectors"
 
      Although most connectors are not required for core Kometa functionality, some (such as Trakt and MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
+    
+    <div class="annotate" markdown>
+    
+    | Attribute                          | Required                                                                 |
+    |:-----------------------------------|:------------------------------------------------------------------------|
+    | [`plex`](plex.md)(1)               | :fontawesome-solid-circle-check:{ .green }                              |
+    | [`tmdb`](tmdb.md)                  | :fontawesome-solid-circle-check:{ .green }                              |
+    | [`libraries`](libraries.md)        | :fontawesome-solid-circle-check:{ .green }                              |
+    | [`playlist_files`](playlists.md)   | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`settings`](settings.md)          | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`webhooks`](webhooks.md)(2)       | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`tautulli`](tautulli.md)(3)       | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`github`](github.md)              | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`omdb`](omdb.md)                  | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`mdblist`](mdblist.md)            | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`notifiarr`](notifiarr.md)        | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`gotify`](gotify.md)              | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`ntfy`](ntfy.md)                  | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`anidb`](anidb.md)                | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`radarr`](radarr.md)(4)           | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`sonarr`](sonarr.md)(5)           | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`trakt`](trakt.md)                | :fontawesome-solid-circle-xmark:{ .red }                                |
+    | [`mal`](myanimelist.md)            | :fontawesome-solid-circle-xmark:{ .red }                                |
 
-| Attribute                          | Required                                                                                                                                                                                                                                                                     |
-|:-----------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`plex`](plex.md)                  | :fontawesome-solid-circle-check:{ .green }<span class="aqua"><sup>:material-numeric-1-circle-outline:{ title="This connector can be configured either at the root level of the Config File, or per-library - examples are available on the connector's page." }</sup></span> |
-| [`tmdb`](tmdb.md)                  | :fontawesome-solid-circle-check:{ .green }                                                                                                                                                                                                                                   |
-| [`libraries`](libraries.md)        | :fontawesome-solid-circle-check:{ .green }                                                                                                                                                                                                                                   |
-| [`playlist_files`](playlists.md)   | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`settings`](settings.md)          | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`webhooks`](webhooks.md)          | :fontawesome-solid-circle-xmark:{ .red }<span class="aqua"><sup>:material-numeric-1-circle-outline:{ title="This connector can be configured either at the root level of the Config File, or per-library - examples are available on the connector's page." }</sup></span>   |
-| [`tautulli`](tautulli.md)          | :fontawesome-solid-circle-xmark:{ .red }<span class="aqua"><sup>:material-numeric-1-circle-outline:{ title="This connector can be configured either at the root level of the Config File, or per-library - examples are available on the connector's page." }</sup></span>   |
-| [`github`](github.md)              | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`omdb`](omdb.md)                  | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`mdblist`](mdblist.md)            | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`notifiarr`](notifiarr.md)        | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`gotify`](gotify.md)              | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`ntfy`](ntfy.md)                  | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`anidb`](anidb.md)                | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`radarr`](radarr.md)              | :fontawesome-solid-circle-xmark:{ .red }<span class="aqua"><sup>:material-numeric-1-circle-outline:{ title="This connector can be configured either at the root level of the Config File, or per-library - examples are available on the connector's page." }</sup></span>   |
-| [`sonarr`](sonarr.md)              | :fontawesome-solid-circle-xmark:{ .red }<span class="aqua"><sup>:material-numeric-1-circle-outline:{ title="This connector can be configured either at the root level of the Config File, or per-library - examples are available on the connector's page." }</sup></span>   |
-| [`trakt`](trakt.md)                | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
-| [`mal`](myanimelist.md)            | :fontawesome-solid-circle-xmark:{ .red }                                                                                                                                                                                                                                     |
+    </div>
+
+    1. This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page.  
+    2. This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page.  
+    3. This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page.  
+    4. This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page.  
+    5. This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page.  
 
 ## Configuration Template File Example
 
