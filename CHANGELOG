@@ -26,7 +26,7 @@ Logic added to Kometa to create `config.yml` if it does not exist from the `conf
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Added `date` option for schedules
-Added the `--low-priority/-lp` (`KOMETA_LOW_PRIORITY`) command line argument option to run the process at a lower priority. **credit to planetrocky**
+Added the `--low-priority/-lp` (`KOMETA_LOW_PRIORITY`) command line argument option to run the process at a lower priority. **credit to @planetrocky**
 Added `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
 Added `trakt` ratings source for mass episode operations.
 Added GitHub token validation during config validation.
@@ -37,6 +37,7 @@ Allow `server_preroll` to accept a list
 Changed default `overlay_artwork_filetype` to `webp_lossy` and `overlay_artwork_quality` to 90
 Added `ntfy` as a notification option
 Added `scale_width` and `scale_height` overlay options.
+Added `tmdb_deathday` **credit to @Kevin2kkelly**
 
 # Docs
 Added "getting started" page
