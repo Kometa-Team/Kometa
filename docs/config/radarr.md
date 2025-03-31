@@ -38,6 +38,8 @@ radarr:
   plex_path: /mnt/unionfs/Movies
 ```
 
+<div class="annotate" markdown>
+
 | Attribute            | Description                                                                   | Allowed Values (default in **bold**)                                                               |                  Required                   |
 |:---------------------|:------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------|:-------------------------------------------:|
 | `url`                | Radarr server URL.                                                            | Any valid URL, including URL base if set.<br><strong>Example:</strong> `http://192.168.1.12:32788` | :fontawesome-solid-circle-check:{ .green }  |
@@ -51,28 +53,22 @@ radarr:
 | `monitor`            | Monitor new movies when adding.                                               | **`true`** or `false`                                                                              |  :fontawesome-solid-circle-xmark:{ .red }   |
 | `availability`       | Minimum availability for new movies.                                          | **`announced`**, `cinemas`, `released`, `db`                                                       | :fontawesome-solid-circle-check:{ .green }  |
 | `quality_profile`    | Quality profile for new movies.                                               | Name of Radarr profile or leave **blank**                                                          | :fontawesome-solid-circle-check:{ .green }  |
-| `tag`                | Tag(s) for new movies.                                                        | List or comma-separated tags or leave **blank**                                                    | :fontawesome-solid-circle-xmark:{ .red }    |
+| `tag`                | Tag(s) for new movies.                                                        | List (1) or comma-separated tags or leave **blank**                                                | :fontawesome-solid-circle-xmark:{ .red }    |
 | `search`             | Start a search after adding movies.                                           | `true` or **`false`**                                                                              |  :fontawesome-solid-circle-xmark:{ .red }   |
 | `plex_path`          | Convert this part of the path to `radarr_path` (used with `add_existing`).    | Path string or leave **blank**                                                                     |  :fontawesome-solid-circle-xmark:{ .red }   |
 | `radarr_path`        | Target path replacing `plex_path` (used with `add_existing`).                 | Path string or leave **blank**                                                                     |  :fontawesome-solid-circle-xmark:{ .red }   |
 
-| Attribute          | Allowed Values                                                                                                                                                                                        | Default     | Required                                   |
-|:------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------|:------------------------------------------:|
-| `url`              | Radarr URL (including URL base if set).<br>**Example:** `http://192.168.1.12:32788`                                                                             | N/A         | :fontawesome-solid-circle-check:{ .green } |
-| `token`            | Radarr API token.                                                                                                                                               | N/A         | :fontawesome-solid-circle-check:{ .green } |
-| `add_missing`      | Add missing movies from collections to Radarr.<br>Use `radarr_add_missing` in the collection for per-collection control.<br>**boolean:** `true` or `false`      | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `add_existing`     | Add existing movies from collections to Radarr.<br>Use `radarr_add_existing` in the collection for per-collection control.<br>**boolean:** `true` or `false`    | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `upgrade_existing` | Upgrade existing movies to match the collection’s Quality Profile.<br>Use `radarr_upgrade_existing` per collection.<br>**boolean:** `true` or `false`           | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `monitor_existing` | Apply monitor settings to existing movies.<br>Use `radarr_monitor_existing` per collection.<br>**boolean:** `true` or `false`                                  | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `ignore_cache`     | Ignore Kometa's cache when adding to Radarr.<br>Use `radarr_ignore_cache` per collection.<br>**boolean:** `true` or `false`                                    | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `root_folder_path` | Default root folder path for new movies.<br>Use `radarr_folder` per collection to override.                                                                   | N/A         | :fontawesome-solid-circle-check:{ .green } |
-| `monitor`          | Monitor movies when adding.<br>Use `radarr_monitor` per collection.<br>**boolean:** `true` or `false`                                                          | `true`      | :fontawesome-solid-circle-xmark:{ .red }   |
-| `availability`     | Minimum availability for new movies.<br>Use `radarr_availability` per collection.<br>**options:** `announced`, `cinemas`, `released`, `db`                     | `announced` | :fontawesome-solid-circle-check:{ .green } |
-| `quality_profile`  | Quality profile to use for new movies.<br>Use `radarr_quality` per collection.                                                                                 | N/A         | :fontawesome-solid-circle-check:{ .green } |
-| `tag`              | Default tag(s) for new movies (list or comma-separated).<br>Use `radarr_tag` per collection.                                                                  | ` `         | :fontawesome-solid-circle-xmark:{ .red }   |
-| `search`           | Start search after adding new movies.<br>Use `radarr_search` per collection.<br>**boolean:** `true` or `false`                                                 | `false`     | :fontawesome-solid-circle-xmark:{ .red }   |
-| `plex_path`        | Used with `add_existing` or `radarr_add_all`. Convert this part of the path to `radarr_path`.                                                                 | ` `         | :fontawesome-solid-circle-xmark:{ .red }   |
-| `radarr_path`      | Used with `add_existing` or `radarr_add_all`. Converts `plex_path` to this value.                                                                             | ` `         | :fontawesome-solid-circle-xmark:{ .red }   |
+</div>
+
+1.  Lists in YAML are represented by using the hyphen (-) and space. They are ordered and can be embedded inside a map using indentation.
+  
+    ```{ .yaml .no-copy }
+    asset_directory:
+      - config/movie assets
+      - config/tv assets
+    ```
+
+    The first item in the list is `config/movie assets` and the second is `config/tv assets`.
 
 ## What are `plex_path` and `radarr_path` and when do I use them?
 
