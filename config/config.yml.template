@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
-# # Do not remove the above line
-# # This file is a template remove the .template to use the file
+## Do not remove the above line
+## This file is a template remove the .template to use the file
 
-# # Plex and TMDb are the two connections which are required for the script to run
+## Plex and TMDb are the two connections which are required for the script to run
 
 plex:                              # Can be individually specified per library as well; REQUIRED for the script to run
-  url: http://192.168.1.12:32400
+  url: http://192.168.1.12:32400   # Enter Plex URL (REQUIRED); this needs to point to your server, not app.plex.tv
   token:                           # Enter Plex Token (REQUIRED)
   timeout: 60
   db_cache: 40
@@ -106,7 +106,7 @@ webhooks:                          # Can be individually specified per library a
   run_start:
   version:
 tautulli:                          # Can be individually specified per library as well
-  url: http://192.168.1.12:8181
+  url: http://192.168.1.12:8181    # Enter Tautulli URL (Optional)
   apikey:                          # Enter Tautulli API Key (Optional)
 github:
   token:                           # Enter GitHub Personal Access Token (Optional)
@@ -119,10 +119,10 @@ mdblist:
 notifiarr:
   apikey:                          # Enter Notifiarr API Key (Optional)
 gotify:
-  url: http://192.168.1.12:80
+  url: http://192.168.1.12:80      # Enter Gotify server URL (Optional)
   token:                           # Enter Gotify Token (Optional)
 ntfy:
-  url: http://192.168.1.12:80
+  url: http://192.168.1.12:80      # Enter ntfy server URL (Optional)
   token:                           # Enter ntfy Access Token (Optional)
   topic:                           # Enter ntfy Topic (Optional)
 anidb:                             # Not required for AniDB builders unless you want mature content
@@ -133,39 +133,39 @@ anidb:                             # Not required for AniDB builders unless you 
   language: en
   version: 1
 radarr:                            # Can be individually specified per library as well
-  url: http://192.168.1.12:7878
+  url: http://192.168.1.12:7878    # Enter Radarr server URL (Optional)
   token:                           # Enter Radarr API Key (Optional)
   add_missing: false
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
-  root_folder_path: "S:/Movies"
+  root_folder_path: "S:/Movies"    # This value is CASE SENSITIVE
   monitor: true
   availability: announced
-  quality_profile: HD-1080p
+  quality_profile: HD-1080p        # This value is CASE SENSITIVE
   tag:
   search: false
-  radarr_path:
-  plex_path:
+  radarr_path:                    # This value is only needed in combination with the *_existing settings
+  plex_path:                      # This value is only needed in combination with the *_existing settings
   ignore_cache: false
 sonarr:                            # Can be individually specified per library as well
-  url: http://192.168.1.12:8989
+  url: http://192.168.1.12:8989    # Enter Sonarr server URL (Optional)
   token:                           # Enter Sonarr API Key (Optional)
   add_missing: false
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
-  root_folder_path: "S:/TV Shows"
+  root_folder_path: "S:/TV Shows"  # This value is CASE SENSITIVE
   monitor: all
-  quality_profile: HD-1080p
+  quality_profile: HD-1080p        # This value is CASE SENSITIVE
   language_profile: English
   series_type: standard
   season_folder: true
   tag:
   search: false
   cutoff_search: false
-  sonarr_path:
-  plex_path:
+  sonarr_path:                     # This value is only needed in combination with the *_existing settings
+  plex_path:                       # This value is only needed in combination with the *_existing settings
   ignore_cache: false
 trakt:
   client_id:                       # Enter Trakt Client ID (Optional)
