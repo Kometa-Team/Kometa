@@ -210,7 +210,7 @@ hide:
         "![Movie Collection Preview](assets/images/movie-collections.png){ width=\"600\" }",
         "<img src=\"https://kometa.wiki/en/latest/assets/images/show-overlays.png\" width=\"600\" alt=\"Show Collection Preview\">": 
         "![Show Collection Preview](assets/images/show-overlays.png){ width=\"600\" }",
-        "(https://kometa.wiki/en/latest/": "(", "/)": ".md)"
+        "(https://kometa.wiki/en/latest/": "(", "/)": ")"
     }'
     rewrite-relative-urls=false
 %}
@@ -219,4 +219,10 @@ hide:
     include-markdown "../README.md"
     start="<!--discord-start-->"
     end="<!--discord-end-->"
+%}
+
+{%
+    include-markdown "../README.md"
+    start="<!--outro-start-->"
+    end="<!--outro-end-->"
 %}
