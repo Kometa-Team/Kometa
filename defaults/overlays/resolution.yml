@@ -515,7 +515,7 @@ overlays:
     variables: {key: 480p, alt: "", weight: 10, type: resolution}
     template: [name: resolution, name: standard]
   DV-HDR-Plus:
-    variables: {key: "", alt: dvhdr, weight: 9, type: resolution, all: true}
+    variables: {key: "", alt: dvhdrplus, weight: 9, type: resolution, all: true}
     template: [name: resolution, name: standard]
   DV-HDR:
     variables: {key: "", alt: dvhdr, weight: 8, type: resolution, all: true}
