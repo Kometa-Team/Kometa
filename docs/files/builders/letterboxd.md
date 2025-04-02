@@ -35,7 +35,7 @@ Using the `limit` filter attribute is recommended when using a Letterboxd Film S
 
 ???+ tip "Details Builder"
 
-    You can replace `icheckmovies_list` with `icheckmovies_list_details` if you would like to fetch and use the description from the list
+    You can replace `letterboxd_list` with `letterboxd_list_details` if you would like to fetch and use the description from the list
 
 
 ### Example Letterboxd List Builder(s)
