@@ -862,7 +862,7 @@ requirements of creating the collection.
             type: content_rating
         ```
 
-??? blank "`year` - Collections based on content ratings.<a class="headerlink" href="#year" title="Permanent link">¶</a>"
+??? blank "`year` - Collections based on years.<a class="headerlink" href="#year" title="Permanent link">¶</a>"
 
     <div id="year" />Creates collections for each year found in the library.
 
@@ -901,7 +901,7 @@ requirements of creating the collection.
             type: year
         ```
 
-??? blank "`episode_year` - Collections based on content ratings.<a class="headerlink" href="#episode-year" title="Permanent link">¶</a>"
+??? blank "`episode_year` - Collections based on episode year.<a class="headerlink" href="#episode-year" title="Permanent link">¶</a>"
 
     <div id="episode-year" />Creates collections for each year associated with episodes found in the library.
 
