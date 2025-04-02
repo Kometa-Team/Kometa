@@ -184,9 +184,9 @@ templates:
     filters:
       - edition: <<search>>
       - filepath.regex:
-          - <<regex>>
-          - '(?i)edition-\b(4k )?<<search>>(s|ed)?\b'           # New TRaSH naming
-          - '(?<=[0-9]{4}[)}>\]]\s)\b(4k )?<<search>>(s|ed)?\b' # Original TRaSH naming
+        - <<regex>>
+        - '(?i)edition-\b(4k )?<<search>>(s|ed)?\b'           # New TRaSH naming
+        - '(?<=[0-9]{4}[)}>\]]\s)\b(4k )?<<search>>(s|ed)?\b' # Original TRaSH naming
 
   resolution:
     conditionals:
