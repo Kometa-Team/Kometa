@@ -73,15 +73,15 @@ If this doesn't return a version number, you'll need to get git installed.
 
 === ":fontawesome-brands-linux: Linux"
 
-    The git install is discussed here: [Download for Linux and Unix](https://git-scm.com/download/linux)
+    The git install is discussed here: [Download for Linux and Unix](https://git-scm.com/downloads/linux)
 
 === ":fontawesome-brands-apple: macOS"
 
-    The git install is discussed here: [Git - Downloading Package](https://git-scm.com/download/mac)
+    The git install is discussed here: [Git - Downloading Package](https://git-scm.com/downloads/mac)
 
 === ":fontawesome-brands-windows: Windows"
 
-    Download the installer from [here](https://git-scm.com/download/windows)
+    Download the installer from [here](https://git-scm.com/downloads/win)
 
     Run the install; you can probably just accept the defaults and click through except for the step that asks you to choose an editor; 
     you probably want to choose something other than the default there:

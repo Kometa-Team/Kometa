@@ -214,7 +214,7 @@
 | `in_the_last_<<key>>`<sup>**1**</sup> | **Description:** Changes how far back the Smart Filter looks.<br>**Default:**<table class="clearTable"><tr><td>Key</td><td>Value</td></tr><tr><td>`released`</td><td>`90`</td></tr><tr><td>`episodes`</td><td>`7`</td></tr></table><br>**Values:** Number greater than 0 |
 <!--basic-->
 <!--myanimelist-->
-| `starting_only` | **Description:** Changes the season collection to only use anime listed under the new section on [MAL Seasons](https://myanimelist.net/anime/season/)<br>**Default:** `False`<br>**Values:** `True` or `False` |
+| `starting_only` | **Description:** Changes the season collection to only use anime listed under the new section on [MAL Seasons](https://myanimelist.net/anime/season)<br>**Default:** `False`<br>**Values:** `True` or `False` |
 <!--myanimelist-->
 <!--tautulli-->
 | `list_days`                     | **Description:** Changes the `list_days` attribute of the Builder for all collections in a Defaults File.<br>**Values:** Number greater than 0         |
@@ -244,7 +244,8 @@
 | `summary_collectionless` | **Description:** Changes the summary of the collection.<br>**Values:** New Collection Summary                                                                                                                                                |
 <!--collectionless-->
 <!--people-data-->
-| `data` | **Description:** Replaces the `data` dynamic collection value.<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>depth</code></td><td>Controls the depth within the casting credits to search for common actors<br><strong>Default:</strong> 5<br><strong>Values:</strong> Number greater than 0</td></tr><tr><td><code>limit</code></td><td>Controls the maximum number of collections to create<br><strong>Default:</strong> 25<br><strong>Values:</strong> Number greater than 0</td></tr></table> |
+| `data`  | **Description:** Replaces the `data` dynamic collection value.<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>depth</code></td><td>Controls the depth within the casting credits to search for common actors<br><strong>Default:</strong> 5<br><strong>Values:</strong> Number greater than 0</td></tr><tr><td><code>limit</code></td><td>Controls the maximum number of collections to create<br><strong>Default:</strong> 25<br><strong>Values:</strong> Number greater than 0</td></tr></table> |
+| `style` | **Description:** Controls the visual theme of the collections created.<br>**Default:** `bw`<br>**Values:** `bw`, `rainier`, `signature`, `diiivoy`, or `diiivoycolor`                                                                                                                                                                                                                                                                                                                                                                                  |
 <!--people-data-->
 <!--award-data-->
 | `data` | **Description:** Replaces the `data` dynamic collection value.<br><table class="clearTable"><tr><th>Attribute</th><th>Description & Values</th></tr><tr><td><code>starting</code></td><td>Controls the starting year for collections<br><strong>Default:</strong> latest-5<br><strong>Values:</strong> Number greater than 0</td></tr><tr><td><code>ending</code></td><td>Controls the ending year for collections<br><strong>Default:</strong> latest<br><strong>Values:</strong> Number greater than 1</td></tr><tr><td><code>increment</code></td><td>Controls the increment (i.e. every 5th year)<br><strong>Default:</strong> 1<br><strong>Values:</strong> Number greater than 0</td><td></td></tr></table><ul><li><strong><code>starting</code> and <code>ending</code> can also have the value <code>latest</code></strong></li><li><strong>You can also use a value relative to the <code>latest</code> by doing <code>latest-5</code></strong></li></ul> |
@@ -299,9 +300,6 @@
 | `sort_by` | **Description:** Changes the Smart Filter Sort for all collections in a Defaults File.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex.md#sort-options) |
 | `sort_by_<<key>>`<sup>**1**</sup> | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex.md#sort-options) |
 <!--sort_by-->
-<!--style-->
-| `style` | **Description:** Controls the visual theme of the collections created.<br>**Default:** `bw`<br>**Values:** `bw`, `rainier`, `signature`, `diiivoy`, or `diiivoycolor` |
-<!--style-->
 <!--resolution-style-->
 | `style` | **Description:** Controls the visual theme of the collections created.<br>**Default:** `default`<br>**Values:** `default` or `standards` |
 <!--resolution-style-->

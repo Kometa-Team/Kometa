@@ -22,7 +22,7 @@ hide:
 {% include-markdown "./../../templates/defaults/base/collection/variables_header.md" rewrite-relative-urls=false %}
     {%
         include-markdown "./../../templates/variable_list.md"
-        include-tags="people-data|exclude|include|limit|sort_by|style|format|tmdb_birthday|tmdb_person_offset"
+        include-tags="people-data|exclude|include|limit|sort_by|format|tmdb_birthday|tmdb_person_offset"
         replace='{
             "DYNAMIC_NAME": "Writers", 
             "DYNAMIC_VALUE": "Writer Names",

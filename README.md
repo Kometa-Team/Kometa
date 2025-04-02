@@ -79,19 +79,19 @@ started. These guides will take you through the process of installing Kometa, cr
 
 For those who need full installation walkthroughs, please refer to the following walkthrough guides:
 
-  * [Local Walkthrough](https://kometa.wiki/en/latest/kometa/install/local/) - follow this if you are running the script directly on Windows, OS X, or Linux.
-  * [Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/docker/) - this discusses using Docker at the command line.
+  * [Local Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/local/) - follow this if you are running the script directly on Windows, OS X, or Linux.
+  * [Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/docker/) - this discusses using Docker at the command line.
 
 If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to Docker container setup for each system:
 
 **This doesn't cover the Kometa setup specifics found in the guides above with regard to creating the config file and collection file, so you may want to go through the 
-[Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/docker/) first on your computer to gain that understanding.**
+[Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/docker/) first on your computer to gain that understanding.**
 
-  * [unRAID Walkthrough](https://kometa.wiki/en/latest/kometa/install/unraid/)
-  * [Kubernetes Walkthrough](https://kometa.wiki/en/latest/kometa/install/kubernetes/)
-  * [QNAP Walkthrough](https://kometa.wiki/en/latest/kometa/install/qnap/)
-  * [Synology Walkthrough](https://kometa.wiki/en/latest/kometa/install/synology/)
-<!--started-end-->
+  * [unRAID Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/unraid/)
+  * [Kubernetes Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/kubernetes/)
+  * [QNAP Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/qnap/)
+  * [Synology Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/synology/)
+
 
 ## Example Usage
 
@@ -113,7 +113,7 @@ Collections and Overlays that fit your unique preferences and make discovering y
 
 But if you don't want to spend time manually creating Collections and Overlays, we've got you covered. Check out the 
 [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/) - a handcrafted selection of tried-and-tested Collections and Overlays made by the Kometa team.
-
+<!--started-end-->
 ## Alternate Branches
 
 The Develop and Nightly branches are "beta" versions of Kometa that are updated more frequently than the stable version (Master branch). 
@@ -219,13 +219,13 @@ discussions relating to changes made in the nightly branch will be held within t
 If you're looking for support for any questions or issues you might have, or if you just want to be a part of our 
 growing community, Join the [Kometa Discord Server](https://kometa.wiki/en/latest/discord/).
 <!--discord-end-->
-<!--outro-start-->
 ## Feature Requests
 
 At Kometa, we value our community's input and actively seek feedback to drive the evolution of our product. We want to hear your ideas on how to enhance Kometa, 
 and we encourage you to visit our [Feature Request](https://features.kometa.wiki/features) page to share your thoughts or vote on what features you would like to see added next. 
 Your voice matters and helps shape the future of Kometa, so please don't hesitate to join in the conversation and be a part of our community-driven development process.
 
+<!--outro-start-->
 ## Errors and Configuration Questions
 
 If you're having trouble, we recommend first joining the [Kometa Discord Server](https://kometa.wiki/en/latest/discord/) 
@@ -240,7 +240,7 @@ and seeking support there. If that isn't possible for you, here's what you can d
   Remember, the community helps shape the future of Kometa, so your input is valuable!
 
 For support on any of the above, visit the [Discord server](https://kometa.wiki/en/latest/discord/).
-
+<!--outro-end-->
 ## Contributing
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
-<!--outro-end-->
+
