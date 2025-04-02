@@ -10,9 +10,15 @@ hide:
 
 The meta.log file can be found within the `logs` folder of your Kometa config folder [right next to `config.yml`].
 
-`meta.log` is the most recent run of Kometa, `meta.log.1` is the previous run, `meta.log.2` is the run before that, so on and so forth.
+`meta.log` is the most recent run of Kometa.
 
-As new log files are created, the old ones get a numeric suffix added: `meta.log.1`. **The most recent is always the one without a number at the end.**
+As new log files are created, the old ones get a numeric suffix added: `meta-1.log`. **The most recent is always the one without a number at the end.**
+
+`meta-1.log` is the previous run, `meta-2.log` is the run before that, so on and so forth.
+
+???+ info "Old Naming Convention"
+
+    In an older release of Kometa, prevous run logs followed the naming pattern of `meta.log.1`, `meta.log.2` etc. These files can safely be renamed if you no longer require them.
 
 ### Providing Log Files on Discord
 
