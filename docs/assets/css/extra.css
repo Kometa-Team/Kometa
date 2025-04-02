@@ -771,12 +771,10 @@ code {
 
 .md-typeset pre {
 	position: relative;
-	overflow: hidden;
 }
 
 .md-typeset pre>code {
 	display: block;
-	overflow-x: auto;
 	padding-right: 3rem;
 	white-space: pre;
 }
