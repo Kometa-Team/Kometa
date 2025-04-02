@@ -272,8 +272,6 @@ not required or specifically endorsed beyond "Here's a thing that the author use
        </plist>
        ```
 
-       A useful tool to generate these plist files is [https://zerolaunched.herokuapp.com/](https://zerolaunched.herokuapp.com/)
-    
        Save this file as `com.YOUR_USERNAME.kometa.plist` in `~/Library/LaunchAgents`.
 
     2. Load and start the agent 🚀
