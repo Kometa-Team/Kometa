@@ -220,9 +220,3 @@ hide:
     start="<!--discord-start-->"
     end="<!--discord-end-->"
 %}
-
-{%
-    include-markdown "../README.md"
-    start="<!--outro-start-->"
-    end="<!--outro-end-->"
-%}
