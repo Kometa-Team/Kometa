@@ -19,7 +19,7 @@ tmdb:
   language: en
   region:
 
-                                   # # At least one library has to be configured for the script to do anything meaningful
+                                   ## At least one library has to be configured for the script to do anything meaningful
 libraries:                         # This is called out once within the config.yml file
   Movies:                          # These are names of libraries in your Plex
     remove_overlays: false         # Set this to true to remove all overlays
