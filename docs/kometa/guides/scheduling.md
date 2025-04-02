@@ -62,7 +62,7 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running, 
     Kometa will not begin the run until the scheduled time.
     
-    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental#times)
+    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../../environmental#times)
 
 === "Windows Task Scheduler"
     
@@ -87,7 +87,7 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     
     This is the recommended approach as it allows the user additional control over how and when Kometa processes.
     
-    If you don't specify a time, the script will run at 5AM each day. You can change this with the [time-to-run](../environmental#times) runtime flag.
+    If you don't specify a time, the script will run at 5AM each day. You can change this with the [time-to-run](../../environmental#times) runtime flag.
 
     ??? abstract "Background Run Scheduled Task"
     
