@@ -14,5 +14,5 @@ requests==2.32.3
 ruamel.yaml==0.18.10
 schedule==1.2.2
 setuptools==78.1.0
-tenacity==9.0.0
+tenacity==9.1.2
 tmdbapis==1.2.28
