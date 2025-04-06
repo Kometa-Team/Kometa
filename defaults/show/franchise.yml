@@ -81,18 +81,21 @@ dynamic_collections:
       "79744": The Rookie
       "80748": FBI
       "85536": Star Wars
+      "46296": Spartacus
+      "41956": Death in Paradise
+      "108978": Reacher
     template:
       - tmdbshow
     addons:
       121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
       253: [655, 580, 1855, 1992, 314, 103516, 67198, 82491, 85948, 85949, 106393] # TOS, TAS, TNG, DS9, VOY, ENT, DIS, SHO, PIC, LOW, PRO, SNW
-      549: [2734, 4601, 3357, 32632, 72496, 106158]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime
+      549: [2734, 4601, 3357, 32632, 72496, 106158, 7098]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime, UK
       951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
       1399: [94997] # Game of Thrones, House of the Dragon
       1402: [62286, 94305, 194583, 211684, 206586] # The Walking Dead: Fear the Walking Dead, World Beyond, Dead City, Daryl Dixon, The Ones Who Live
       1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
       1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
-      4614: [17610, 124271, 61387, 4376, 157950, 243006]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG, Sydney, Origins
+      4614: [17610, 124271, 61387, 4376, 157950, 243006, 247732]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG, Sydney, Origins, Tony & Ziva
       4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
       8514: [200870, 212798, 38409, 200865, 67482, 124045, 216276, 77233, 92611, 98888, 94038, 127841, 67564, 122692, 139203, 203734, 108934, 204701, 210689, 155431, 106475, 152261, 66769] #Drag Race: Sweden, Sweden Untucked, Untucked, Belgium, All-Stars, Spain, Brazil, Thailand, UK, Secret Celebrity, Canada, Italy, All Stars Untucked, Australia, Philippines, Canada VS the World, Holland, Philippines Untucked, Spain Untucked, UK VS the World, Vegas Revue, France, Ruvealed
       6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
@@ -105,3 +108,6 @@ dynamic_collections:
       79744: 201992 # The Rookie: Feds
       80748: [94372, 121658] # FBI: Most Wanted, International
       85536: [71412, 3478, 105971, 92830, 83867, 60554, 82856, 115036, 114461, 202879, 114478, 79093] # Star Wars Galaxy of Adventures: Forces of Destiny, The Clone Wars, The Bad Batch, Obi-Wan Kenobi, Andor, Rebels, The Mandalorian, The Book of Boba Fett, Ahsoka, Skeleton Crew, Visions, Resistance
+      46296: 240459 # Spartacus: House of Ashur
+      41956: [205072, 244978] # Beyond Paradise, Return to Paradise
+      108978: 273207 # Neagley
