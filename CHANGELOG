@@ -61,7 +61,7 @@ Added `Metacritic Must See Movies` to `other_chart`.
 Moved several `universe` and `playlist` default lists away from Trakt and over to IMDb and MDBList
 Removed default emojis from `seasonal` due to Plex issue with emojis and updated some lists
 Removed BritBox and replaced with ITVX in `streaming` following service shutdown 
-Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Zeva
+Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva
 Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
 
 # Bug Fixes
