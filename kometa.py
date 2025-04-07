@@ -1082,6 +1082,7 @@ def run_playlists(config):
                     status[mapping_name]["status"] = delete_status
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                    builder.is_playlist = True
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add
                     status[mapping_name]["radarr"] += radarr_add

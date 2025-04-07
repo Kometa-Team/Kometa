@@ -10,4 +10,5 @@ Update pillow requirement to 11.2.0
 # Defaults
 
 # Bug Fixes
+Fixed an issue where Playlists could not add to both Radarr and Sonarr in a single run
 Fixed an issue where `trakt_list_details` would not find a list's summary if it was an "official" Trakt list
