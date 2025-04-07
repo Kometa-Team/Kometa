@@ -2068,7 +2068,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2076,7 +2076,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2090,7 +2090,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2098,7 +2098,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2112,7 +2112,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2120,7 +2120,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
