@@ -192,6 +192,7 @@ class CollectionBuilder:
         self.library = library
         self.libraries = []
         self.summaries = {}
+        self.is_playlist = False
         self.playlist = library is None
         self.overlay = overlay
         methods = {m.lower(): m for m in self.data}
@@ -3161,7 +3162,7 @@ class CollectionBuilder:
     def run_missing(self):
         added_to_radarr = 0
         added_to_sonarr = 0
-        if len(self.missing_movies) > 0 and self.library.is_movie:
+        if len(self.missing_movies) > 0 and (self.library.is_movie or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
                 logger.separator(f"Missing Movies from Library: {self.library.name}", space=False, border=False)
@@ -3213,7 +3214,7 @@ class CollectionBuilder:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
                 self.library.add_filtered(self.name, filtered_movies_with_names, True)
-        if len(self.missing_shows) > 0 and self.library.is_show:
+        if len(self.missing_shows) > 0 and (self.library.is_show or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
                 logger.separator(f"Missing Shows from Library: {self.name}", space=False, border=False)
