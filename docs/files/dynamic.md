@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - addons
   - append_addons
@@ -210,7 +211,7 @@ by this dynamic collection.
     <div id="template" />Used to define which templates are used for these dynamic collections. Each dynamic collection 
     `type` has its own default template, but if you want to define and use your own template you can.
 
-    Each template is passed a few template variables you can use.
+    Each template is passed a few Template Variables you can use.
 
     * `value`: The list of keys and addons
 
@@ -248,9 +249,9 @@ by this dynamic collection.
         2. This is the mapping name of the Dynamic Collection Definition.
         3. This must match the mapping name of the template you want to use.
 
-??? blank "`template_variables` - Used to define template variables by key.<a class="headerlink" href="#template-variables" title="Permanent link">¶</a>"
+??? blank "`template_variables` - Used to define Template Variables by key.<a class="headerlink" href="#template-variables" title="Permanent link">¶</a>"
 
-    <div id="template-variables" />Used to define template variables by key. This attribute will allow multiple template
+    <div id="template-variables" />Used to define Template Variables by key. This attribute will allow multiple template
     variables to be set per dynamic key. 
 
     ???+ tip
@@ -261,9 +262,9 @@ by this dynamic collection.
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the template variable and the value 
+    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the Template Variable and the value 
     is another [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` of the collection you want 
-    change the template variable for and the value is the new value for the template variable.
+    change the Template Variable for and the value is the new value for the Template Variable.
 
     ???+ example "Example"
 
@@ -289,9 +290,9 @@ by this dynamic collection.
         ```
 
         1. Template variables are placed under `template_variables`.
-        2. `my_collection_poster` is the template variable being changed.
-        3. For key `119` use the url as the my_collection_poster template variable.
-        4. For key `531241` use the url as the my_collection_poster template variable.
+        2. `my_collection_poster` is the Template Variable being changed.
+        3. For key `119` use the url as the my_collection_poster Template Variable.
+        4. For key `531241` use the url as the my_collection_poster Template Variable.
 
 ??? blank "`remove_suffix` - Used to remove the defined suffixes.<a class="headerlink" href="#remove-suffix" title="Permanent link">¶</a>"
 
@@ -343,7 +344,7 @@ by this dynamic collection.
 
     * `<<key_name>>` is **required** and is what will be replaced by the dynamic key name.
 
-    * `<<limit>>` will be replaced the limit template variable if passed to the definition.
+    * `<<limit>>` will be replaced the limit Template Variable if passed to the definition.
 
     * `<<library_type>>` will be replaced with either `movie`, `show`, `artist`, or `video` depending on your library 
     type.
@@ -563,7 +564,7 @@ by this dynamic collection.
         To use an other collection you must be using the [`include`](#include) and [`other_name`](#other-name) 
         attributes.
 
-    Each template is passed a few template variables you can use.
+    Each template is passed a few Template Variables you can use.
 
     * `value`: The list of keys and addons
 
@@ -610,7 +611,7 @@ by this dynamic collection.
 
 ## Dynamic Collection Template Variables
 
-When calling a collection file with dynamic collection all the following are automatically accepted as template 
+When calling a Collection File with dynamic collection all the following are automatically accepted as template 
 variables which will just replace the same attribute when running the file.
 
 * `data`
@@ -627,7 +628,7 @@ variables which will just replace the same attribute when running the file.
 * `include`
 * `other_name`
 
-There are also several template variables that will be automatically append/remove from `data`, `exclude`, `include`, 
+There are also several Template Variables that will be automatically append/remove from `data`, `exclude`, `include`, 
 and `addons` so they can be changed by the user on the fly when needed.
 
 * `append_data`
@@ -639,6 +640,4 @@ and `addons` so they can be changed by the user on the fly when needed.
 * `append_addons`
 * `remove_addons`
 
-{%
-   include-markdown "./dynamic_examples.md"
-%}
+{% include-markdown "./../templates/snippets/dynamic_examples.md" %}

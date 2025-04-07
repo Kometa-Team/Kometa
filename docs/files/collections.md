@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Collection Files
 
 Collection Files holds information on how Kometa should create collections. There are a large number of 
@@ -23,10 +27,10 @@ list will be added/removed from the collection in the Plex library.
         sync_mode: sync #(4)!
     ```
 
-    1.  This must appear once and **only once** in any Metadata file
-    2.  This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
-    3.  This will sort the items in the Plex collection to be the same as the order in the list
-    4.  Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the 
+    1. This must appear once and **only once** in any Metadata File
+    2. This creates a collection based on tmdb list ID 10, https://www.themoviedb.org/list/10 would also be accepted
+    3. This will sort the items in the Plex collection to be the same as the order in the list
+    4. Syncs the collection to the list, so that if an item is added/removed from the list, the same is done to the 
     collection. Set this to `append` if you only want it to add things and not remove them.
 
 For the purpose of this example, we are going to save the File as `MyCollections.yml` within the location mapped as 
@@ -45,8 +49,8 @@ I then call "MyCollections.yml" in my [Configuration File](../config/overview.md
           - file: config/MyCollections.yml #(2)!
     ```
 
-    1.  This must match the name of a library in your Plex server
-    2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
+    1. This must match the name of a library in your Plex server
+    2. `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
 Whenever I execute Kometa and the Movies library is run, MyCollections.yml will run and my "Top 50 Grossing Films of 
 All Time (Worldwide)" will be created/updated.
@@ -55,12 +59,12 @@ All Time (Worldwide)" will be created/updated.
 
 Collection Files can utilize the following top-level attributes
 
-| Attribute                                               | Description                                                                                                               |
-|:--------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple collections                                           |
-| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
-| [`collections`](#collection-operations-attributes)     | contains definitions of collections you wish to add to one or more libraries                                              |
-| [`dynamic_collections`](#dynamic-collections)           | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
+| Attribute                                          | Description                                                                                                               |
+|:---------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| [`collections`](#collection-operations-attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
+| [`dynamic_collections`](#dynamic-collections)      | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
+| [`external_templates`](templates.md)               | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
+| [`templates`](templates.md)                        | contains definitions of templates that can be leveraged by multiple collections                                           |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the File to run, else you will receive 
 an error when trying to run the file against your library.
@@ -100,10 +104,10 @@ Examples of these can be seen here
             collection_order: custom #(3)!
         ```
 
-        1.  This is a Trakt List builder, telling Kometa to build a collection based on the items in this list
-        2.  If items are removed from the source list, having sync mode set to `append` means they will not be removed 
+        1. This is a Trakt List Builder, telling Kometa to build a collection based on the items in this list
+        2. If items are removed from the source list, having sync mode set to `append` means they will not be removed 
         from the collection in Plex. Set this to `sync` if you want the items removed in the collection too
-        3.  Sort the collection in the order that it is received from the Trakt list
+        3. Sort the collection in the order that it is received from the Trakt list
 
     === "Example 2 - Send to Arr"
     
@@ -115,9 +119,9 @@ Examples of these can be seen here
             radarr_add_missing: true #(2)!
         ```
 
-        1.  Sorts the collection in the same order as is received by the source list
-        2.  Sends items that are in the source list but are not in your Plex library to Radarr. Replace with 
-        `sonarr_add_missing` for any show-based builder.
+        1. Sorts the collection in the same order as is received by the source list
+        2. Sends items that are in the source list but are not in your Plex library to Radarr. Replace with 
+        `sonarr_add_missing` for any show-based Builder.
 
     === "Example 3 - Add labels"
 
@@ -129,9 +133,9 @@ Examples of these can be seen here
             item_label: myplextag #(3)!
         ```
 
-        1.  Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
-        2.  Find all items in Radarr that have the tag `mytag`
-        3.  For each of the items with `mytag` in Radarr, apply the `myplextag` to the items in the Plex library
+        1. Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
+        2. Find all items in Radarr that have the tag `mytag`
+        3. For each of the items with `mytag` in Radarr, apply the `myplextag` to the items in the Plex library
 
     === "Example 4 - Schedule Collection"
 
@@ -143,9 +147,9 @@ Examples of these can be seen here
             delete_not_scheduled: true #(3)!
         ```
 
-        1.  Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
-        2.  Only run this collection from December 1st through December 31st
-        3.  If today is not part of the above scheduled range, delete the Christmas Extravaganza collection if it exists
+        1. Tells Kometa to not physically build a collection, but it will still perform the actions of the collection
+        2. Only run this collection from December 1st through December 31st
+        3. If today is not part of the above scheduled range, delete the Christmas Extravaganza collection if it exists
         in the Plex library
 
 There are multiple types of attributes that can be utilized within a collection:

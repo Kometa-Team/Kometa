@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - addon_offset
   - album_sorting
@@ -235,38 +236,40 @@ You can have the script edit the metadata of Items by adding them to the `metada
 
 ## Matching Items
 
-The `match` attribute is used to match movies within Plex to that definition within the Metadata file. One definition 
+The `match` attribute is used to match movies within Plex to that definition within the Metadata File. One definition 
 can match and edit multiple items. The available matching options are outlined below.
 
 === "Movies"
     | <div style="width:165px">Attribute</div> | Description                                                                                                   |
-    |:-----------------------------------------|:--------------------------------------------------------------------------------------------------------------|
-    | `title`<sup>1</sup>                      | Only matches movies that exactly match the movie's Title.<br>Can be a list (only one needs to match).         |
+    | :--------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+    | `blank_edition`<sup>**[3](#table-annotations)**</sup>              | Only matches movies that have no Edition.<br>**Default:** `false`<br>**Values:** `true` or `false`            |
+    | `edition_contains`<sup>**[3](#table-annotations)**</sup>           | Only matches where the movie's Edition contains the given string.<br>Can be a list (only one needs to match). |
+    | `edition`<sup>**[3](#table-annotations)**</sup>                    | Only matches movies that exactly match the movie's Edition.<br>Can be a list (only one needs to match).       |
+    | `mapping_id`<sup>**[2](#table-annotations)**</sup>                 | Only matches movies that have the given TMDb or IMDb ID.                                                      |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches movies that exactly match the movie's Title.<br>Can be a list (only one needs to match).         |
     | `year`                                   | Only matches movies that were released in the given year.                                                     |
-    | `mapping_id`<sup>2</sup>                 | Only matches movies that have the given TMDb or IMDb ID.                                                      |
-    | `edition`<sup>3</sup>                    | Only matches movies that exactly match the movie's Edition.<br>Can be a list (only one needs to match).       |
-    | `edition_contains`<sup>3</sup>           | Only matches where the movie's Edition contains the given string.<br>Can be a list (only one needs to match). |
-    | `blank_edition`<sup>3</sup>              | Only matches movies that have no Edition.<br>**Default:** `false`<br>**Values:** `true` or `false`            |
 
 === "TV Shows"
     | <div style="width:165px">Attribute</div> | Allowed Values                                                                                      |
     |:-----------------------------------------|:----------------------------------------------------------------------------------------------------|
-    | `title`<sup>1</sup>                      | Only matches shows that exactly match the show's Title.<br>Can be a list (only one needs to match). |
+    | `mapping_id`<sup>**[2](#table-annotations)**</sup>                 | Only matches shows that have the given TVDb or IMDb ID.                                             |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches shows that exactly match the show's Title.<br>Can be a list (only one needs to match). |
     | `year`                                   | Only matches shows that were released in the given year.                                            |
-    | `mapping_id`<sup>2</sup>                 | Only matches shows that have the given TVDb or IMDb ID.                                             |
 
 === "Music"
     | <div style="width:165px">Attribute</div> | Allowed Values                                                                                          |
     |:-----------------------------------------|:--------------------------------------------------------------------------------------------------------|
-    | `title`<sup>1</sup>                      | Only matches artists that exactly match the artist's Title.<br>Can be a list (only one needs to match). |
+    | `title`<sup>**[1](#table-annotations)**</sup>                      | Only matches artists that exactly match the artist's Title.<br>Can be a list (only one needs to match). |
 
-1. When `title` is not provided and the mapping name was not specified as an ID, the default behaviour is to use the 
+### Table Annotations
+
+<sup>**1**</sup> When `title` is not provided and the mapping name was not specified as an ID, the default behaviour is to use the 
 mapping name as `title` for matching.
 
-2. When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the 
+<sup>**2**</sup> When `mapping_id` is not provided and the mapping name was specified as an ID, the default behaviour is to use the 
 mapping name as `mapping_id` for matching.
 
-3. When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check 
+<sup>**3**</sup> When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check 
 the movie's filepath for `{edition-...}` to determine what the edition is.
 
 ??? example "Matching Examples (click to expand)"
@@ -458,17 +461,17 @@ The available attributes for editing movies are as follows
 
 | Attribute         | Description                                                                                                                                                                                                                                                                              | Item Types                   |
 |:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------|
-| `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false`                                          | `Movies`, `Shows`, `Artists` |
-| `tmdb_show`       | TMDb Show ID to use for metadata. Used when the Movie in your library is actually a miniseries on TMDb. (Example: [Halo 4: Forward Unto Dawn](https://www.themoviedb.org/tv/56295) or [IT](https://www.themoviedb.org/tv/19614)) **This is not used to say this movie is the given ID.** | `Movies`                     |
-| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../kometa/guides/formula.md) for more information.                                                                                                                                           | `Shows`                      |
-| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                                                                       | `Shows`                      |
-| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                                                                 | `Shows`                      |
-| `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                                                                   | `Shows`                      |
-| `episodes`        | Attribute used to edit episode metadata. The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.                                                                                                        | `Seasons`                    |
-| `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                                                                     | `Shows`                      |
-| `update_episodes` | Used to specify if this definition's episodes metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                                                                    | `Shows`                      |
 | `albums`          | Attribute used to edit album metadata. The mapping name is the album name.                                                                                                                                                                                                               | `Artists`                    |
+| `episodes`        | Attribute used to edit episode metadata. The mapping name is the episode number in that season, the title of the episode, or the Originally Available date in the format `MM/DD`.                                                                                                        | `Seasons`                    |
+| `f1_season`       | F1 Season Year to make the Show represent a Season of F1 Races. See [Formula 1 Metadata Guide](../kometa/guides/formula.md) for more information.                                                                                                                                        | `Shows`                      |
+| `round_prefix`    | Used only with `f1_season` to add the round as a prefix to the Season (Race) Titles i.e. `Australian Grand Prix` --> `01 - Australian Grand Prix`.                                                                                                                                       | `Shows`                      |
+| `run_definition`  | Used to specify if this definition runs.<br>Multiple can be used for one definition as a list or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false`                                          | `Movies`, `Shows`, `Artists` |
+| `seasons`         | Attribute used to edit season metadata. The mapping name is the season number (use 0 for specials) or the season name.                                                                                                                                                                   | `Shows`                      |
+| `shorten_gp`      | Used only with `f1_season` to shorten `Grand Prix` to `GP` in the Season (Race) Titles i.e. `Australian Grand Prix` --> `Australian GP`.                                                                                                                                                 | `Shows`                      |
+| `tmdb_show`       | TMDb Show ID to use for metadata. Used when the Movie in your library is actually a miniseries on TMDb. (Example: [Halo 4: Forward Unto Dawn](https://www.themoviedb.org/tv/56295) or [IT](https://www.themoviedb.org/tv/19614)) **This is not used to say this movie is the given ID.** | `Movies`                     |
 | `tracks`          | Attribute used to edit track metadata. The mapping name is the track number on that Album, or the title of the Track.                                                                                                                                                                    | `Albums`                     |
+| `update_episodes` | Used to specify if this definition's episodes metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                                                                    | `Shows`                      |
+| `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                                                                     | `Shows`                      |
 
 1. If the server does not have a Plex Pass then the Edition Field is not accessible. In this case Kometa will check the 
 movies filepath for `{edition-MOVIES EDITION}` to determine what the edition is.
@@ -477,22 +480,22 @@ movies filepath for `{edition-MOVIES EDITION}` to determine what the edition is.
 
 | Attribute              | <div style="width:295px">Allowed Values</div>                  | Item Types                                                              |
 |:-----------------------|:---------------------------------------------------------------|:------------------------------------------------------------------------|
-| `title`                | Text to change Title.                                          | `Movies`, `Shows`, `Seasons`, `Episodes`, `Tracks`                      |
-| `sort_title`           | Text to change Sort Title.                                     | `Movies`, `Shows`, `Episodes`, `Artists`, `Albums`, `Tracks`            |
-| `edition`<sup>1</sup>  | Text to change Edition.                                        | `Movies`                                                                |
+| `audience_rating`      | Number to change Audience Rating.                              | `Movies`, `Shows`, `Episodes`                                           |
+| `content_rating`       | Text to change Content Rating.                                 | `Movies`, `Shows`, `Episodes`                                           |
+| `critic_rating`        | Number to change Critic Rating.                                | `Movies`, `Shows`, `Episodes`, `Albums`                                 |
+| `disc`                 | Text to change Disc.                                           | `Tracks`                                                                |
+| `edition`<sup>**1**</sup>  | Text to change Edition.                                        | `Movies`                                                                |
+| `original_artist`      | Text to change Original Artist.                                | `Tracks`                                                                |
 | `original_title`       | Text to change Original Title.                                 | `Movies`, `Shows`                                                       |
 | `originally_available` | Date to change Originally Available.<br>**Format:** YYYY-MM-DD | `Movies`, `Shows`, `Episodes`, `Albums`                                 |
-| `content_rating`       | Text to change Content Rating.                                 | `Movies`, `Shows`, `Episodes`                                           |
-| `user_rating`          | Number to change User Rating.                                  | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
-| `audience_rating`      | Number to change Audience Rating.                              | `Movies`, `Shows`, `Episodes`                                           |
-| `critic_rating`        | Number to change Critic Rating.                                | `Movies`, `Shows`, `Episodes`, `Albums`                                 |
-| `studio`               | Text to change Studio.                                         | `Movies`, `Shows`                                                       |
-| `tagline`              | Text to change Tagline.                                        | `Movies`, `Shows`                                                       |
-| `summary`              | Text to change Summary.                                        | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
 | `record_label`         | Text to change Record Label.                                   | `Albums`                                                                |
+| `sort_title`           | Text to change Sort Title.                                     | `Movies`, `Shows`, `Episodes`, `Artists`, `Albums`, `Tracks`            |
+| `studio`               | Text to change Studio.                                         | `Movies`, `Shows`                                                       |
+| `summary`              | Text to change Summary.                                        | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
+| `tagline`              | Text to change Tagline.                                        | `Movies`, `Shows`                                                       |
+| `title`                | Text to change Title.                                          | `Movies`, `Shows`, `Seasons`, `Episodes`, `Tracks`                      |
 | `track`                | Text to change Track.                                          | `Tracks`                                                                |
-| `disc`                 | Text to change Disc.                                           | `Tracks`                                                                |
-| `original_artist`      | Text to change Original Artist.                                | `Tracks`                                                                |
+| `user_rating`          | Number to change User Rating.                                  | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
 
 1. Requires Plex Pass
 
@@ -503,43 +506,43 @@ You can add `.remove` to any tag attribute to only remove those tags i.e. `genre
 You can add `.sync` to any tag attribute to sync all tags vs just appending the new ones i.e. `genre.sync`.
 
 | Attribute        | <div style="width:440px">Allowed Values</div>            | Item Types                                                              |
-|:-----------------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| `director`       | List or comma-separated text of each Director Tag.       | `Movies`, `Episodes`                                                    |
-| `country`        | List or comma-separated text of each Country Tag.        | `Movies`                                                                |
-| `genre`          | List or comma-separated text of each Genre Tag.          | `Movies`, `Shows`, `Artists`, `Albums`                                  |
-| `writer`         | List or comma-separated text of each Writer Tag.         | `Movies`, `Episodes`                                                    |
-| `producer`       | List or comma-separated text of each Producer Tag.       | `Movies`                                                                |
+| :--------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
 | `collection`     | List or comma-separated text of each Collection Tag.     | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
-| `label`          | List or comma-separated text of each Label Tag.          | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
-| `style`          | List or comma-separated text of each Style Tag.          | `Artists`, `Albums`                                                     |
-| `mood`           | List or comma-separated text of each Mood Tag.           | `Artists`, `Albums`, `Tracks`                                           |
+| `country`        | List or comma-separated text of each Country Tag.        | `Movies`                                                                |
 | `country`        | List or comma-separated text of each Country Tag.        | `Artists`                                                               |
+| `director`       | List or comma-separated text of each Director Tag.       | `Movies`, `Episodes`                                                    |
+| `genre`          | List or comma-separated text of each Genre Tag.          | `Movies`, `Shows`, `Artists`, `Albums`                                  |
+| `label`          | List or comma-separated text of each Label Tag.          | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
+| `mood`           | List or comma-separated text of each Mood Tag.           | `Artists`, `Albums`, `Tracks`                                           |
+| `producer`       | List or comma-separated text of each Producer Tag.       | `Movies`                                                                |
 | `similar_artist` | List or comma-separated text of each Similar Artist Tag. | `Artists`                                                               |
+| `style`          | List or comma-separated text of each Style Tag.          | `Artists`, `Albums`                                                     |
+| `writer`         | List or comma-separated text of each Writer Tag.         | `Movies`, `Episodes`                                                    |
 
 ### Image Attributes
 
 | Attribute         | <div style="width:365px">Allowed Values</div>    | Item Types                                                    |
-|:------------------|:-------------------------------------------------|:--------------------------------------------------------------|
-| `url_poster`      | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| :---------------- | :----------------------------------------------- | :------------------------------------------------------------ |
+| `file_background` | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `file_poster`     | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_background`  | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
-| `file_background` | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `url_poster`      | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 
 ### Advanced Attributes
 
 | <div style="width:200px">Attribute</div> | Allowed Values                                                                                                                                                                                                                                                                                                                                                                                                                                                            | <div style="width:110px">Item Types</div> |
-|:-----------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|
+| :--------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------- |
+| `album_sorting`                          | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`manual`</td><td>Manually selected</td></tr><tr><td>`foreign`</td><td>Shown with foreign audio</td></tr><tr><td>`always`</td><td>Always enabled</td></tr></tbody></table>                                                                                                                                                                                                     | `Artists`                                 |
+| `audio_language`<sup>**1**</sup>             | `default`, `en`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                 | `Shows`, `Seasons`                        |
+| `credits_detection`<sup>**1**</sup>          | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`disabled`</td><td>Disabled</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                                         | `Movies`, `Shows`                         |
+| `delete_episodes`                        | <table class="clearTable"><tbody><tr><td>`never`</td><td>Never</td></tr><tr><td>`day`</td><td>After a day</td></tr><tr><td>`week`</td><td>After a week</td></tr><tr><td>`refresh`</td><td>On next refresh</td></tr></tbody></table>                                                                                                                                                                                                                                       | `Shows`                                   |
+| `episode_ordering`                       | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`tmdb_aired`</td><td>The Movie Database (Aired)</td></tr><tr><td>`tvdb_aired`</td><td>TheTVDb (Aired)</td></tr><tr><td>`tvdb_dvd`</td><td>TheTVDb (DVD)</td></tr><tr><td>`tvdb_absolute`</td><td>TheTVDb (Absolute)</td></tr></tbody></table>                                                                                                                                 | `Shows`                                   |
 | `episode_sorting`                        | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`oldest`</td><td>Oldest first</td></tr><tr><td>`newest`</td><td>Newest first</td></tr></tbody></table>                                                                                                                                                                                                                                                                        | `Shows`                                   |
 | `keep_episodes`                          | <table class="clearTable"><tbody><tr><td>`all`</td><td>All episodes</td></tr><tr><td>`5_latest`</td><td>5 latest episodes</td></tr><tr><td>`3_latest`</td><td>3 latest episodes</td></tr><tr><td>`latest`</td><td>Latest episodes</td></tr><tr><td>`past_3`</td><td>Episodes added in the past 3 days</td></tr><tr><td>`past_7`</td><td>Episodes added in the past 7 days</td></tr><tr><td>`past_30`</td><td>Episodes added in the past 30 days</td></tr></tbody></table> | `Shows`                                   |
-| `delete_episodes`                        | <table class="clearTable"><tbody><tr><td>`never`</td><td>Never</td></tr><tr><td>`day`</td><td>After a day</td></tr><tr><td>`week`</td><td>After a week</td></tr><tr><td>`refresh`</td><td>On next refresh</td></tr></tbody></table>                                                                                                                                                                                                                                       | `Shows`                                   |
+| `metadata_language`<sup>**1**</sup>          | `default`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                       | `Movies`, `Shows`                         |
 | `season_display`                         | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`show`</td><td>Show</td></tr><tr><td>`hide`</td><td>Hide</td></tr></tbody></table>                                                                                                                                                                                                                                                                                            | `Shows`                                   |
-| `episode_ordering`                       | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`tmdb_aired`</td><td>The Movie Database (Aired)</td></tr><tr><td>`tvdb_aired`</td><td>TheTVDb (Aired)</td></tr><tr><td>`tvdb_dvd`</td><td>TheTVDb (DVD)</td></tr><tr><td>`tvdb_absolute`</td><td>TheTVDb (Absolute)</td></tr></tbody></table>                                                                                                                                 | `Shows`                                   |
-| `metadata_language`<sup>1</sup>          | `default`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                       | `Movies`, `Shows`                         |
-| `use_original_title`<sup>1</sup>         | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Movies`, `Shows`                         |
-| `credits_detection`<sup>1</sup>          | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`disabled`</td><td>Disabled</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                                         | `Movies`, `Shows`                         |
-| `audio_language`<sup>1</sup>             | `default`, `en`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                 | `Shows`, `Seasons`                        |
-| `subtitle_language`<sup>1</sup>          | `default`, `en`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                 | `Shows`, `Seasons`                        |
-| `subtitle_mode`<sup>1</sup>              | <table class="clearTable"><tbody><tr><td>`default`</td><td>Account default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Shows`, `Seasons`                        |
-| `album_sorting`                          | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`manual`</td><td>Manually selected</td></tr><tr><td>`foreign`</td><td>Shown with foreign audio</td></tr><tr><td>`always`</td><td>Always enabled</td></tr></tbody></table>                                                                                                                                                                                                     | `Artists`                                 |
+| `subtitle_language`<sup>**1**</sup>          | `default`, `en`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                 | `Shows`, `Seasons`                        |
+| `subtitle_mode`<sup>**1**</sup>              | <table class="clearTable"><tbody><tr><td>`default`</td><td>Account default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Shows`, `Seasons`                        |
+| `use_original_title`<sup>**1**</sup>         | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Movies`, `Shows`                         |
 
 1. Must be using the **New Plex Movie Agent** or the **New Plex TV Agent**

@@ -9,15 +9,6 @@ external_templates:
   default: templates
   template_variables:
     collection_section: "125"
-    
-translations:
-  default: translations
-  
-templates:
-  aspect:
-    template:
-    url_poster: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/aspect/<<mapping_name>>.jpg
-    summary: A collection of media items with the aspect ratio of <<mapping_name>>.
 
 collections:
   Aspect Ratio Collections:
@@ -26,76 +17,38 @@ collections:
         separator: aspect
         key_name: Aspect Ratio
         translation_key: separator
-    
-  1.33:
-    plex_all: true
-    name: 1.33 - Academy Aperture
+
+dynamic_collections:
+  Aspect:
+    type: custom
+    data:
+      "1.33": 1.33 - Academy Aperture
+      "1.65": 1.65 - Early Widescreen
+      "1.66": 1.66 - European Widescreen
+      "1.78": 1.78 - Widescreen TV
+      "1.85": 1.85 - American Widescreen
+      "2.2": 2.2 - 70mm Frame
+      "2.35": 2.35 - Anamorphic Projection
+      "2.77": 2.77 - Cinerama
+    title_format: <<key_name>>
     template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 1.32
-      aspect.lt: 1.34
-  1.65:
-    plex_all: true
-    name: 1.65 - Early Widescreen
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 1.64
-      aspect.lt: 1.66
-  1.66:
-    plex_all: true
-    name: 1.66 - European Widescreen
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 1.65
-      aspect.lt: 1.67
-  1.78:
-    plex_all: true
-    name: 1.78 - Widescreen TV
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 1.77
-      aspect.lt: 1.79
-  1.85:
-    plex_all: true
-    name: 1.85 - American Widescreen
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 1.84
-      aspect.lt: 1.86
-  2.2:
-    plex_all: true
-    name: 2.2 - 70mm Frame
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 2.1
-      aspect.lt: 2.3
-  2.35:
-    plex_all: true
-    name: 2.35 - Anamorphic Projection
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 2.34
-      aspect.lt: 2.36
-  2.77:
-    plex_all: true
-    name: 2.77 - Cinerama
-    template:
-      - name: aspect
-      - name: shared
-    filters:
-      aspect.gt: 2.76
-      aspect.lt: 2.78
+      - filter
+      - shared
+    template_variables:
+      filter_term:
+        default: aspect
+      filter_value:
+        "1.33": 1.33
+        "1.65": 1.65
+        "1.66": 1.66
+        "1.78": 1.78
+        "1.85": 1.85
+        "2.2": 2.2
+        "2.35": 2.35
+        "2.77": 2.77
+      image:
+        default: aspect/<<key>>
+      translation_key:
+        default: aspect
+      dynamic:
+        default: true

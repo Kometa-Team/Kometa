@@ -15,13 +15,17 @@ templates:
         conditions:
         # check1
           - key: arrow
-            value: https://www.imdb.com/list/ls547852883/
+            value: https://www.imdb.com/list/ls566667558/
           - key: clonewars
             value: https://www.imdb.com/list/ls544963772/
           - key: dcau
             value: https://www.imdb.com/list/ls566357882/
+          - key: mcu
+            value: https://www.imdb.com/list/ls539646485/
           - key: starwars
             value: https://www.imdb.com/list/ls501373412/
+          - key: startrek
+            value: https://www.imdb.com/list/ls547463722/
           - key: xmen
             value: https://www.imdb.com/list/ls567618635/
         # check2
@@ -36,12 +40,8 @@ templates:
         # check3
           - key: dragonball
             value: https://mdblist.com/lists/k0meta/external/46559
-          - key: mcu
-            value: https://mdblist.com/lists/k0meta/external/46496
           - key: pokemon
             value: https://mdblist.com/lists/k0meta/external/46555
-          - key: startrek
-            value: https://mdblist.com/lists/k0meta/external/46548
         # check4
       mdblist_list:
         conditions:
@@ -130,7 +130,7 @@ playlists:
       key: startrek
     template:
       - name: playlist
-        summary_startrek: All Star Trek canon in chronological order, as found on thestartrekchronologyproject.blogspot.com. Includes animated series. Will be updated with new shows as they come out. Does not include Kelvinverse movies.
+        summary_startrek: All Star Trek canon in chronological order.
       - name: arr
 
   Star Wars (Timeline Order):

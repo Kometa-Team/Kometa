@@ -175,8 +175,10 @@ templates:
       - tmdb_person
       - tmdb_person_offset
       - tmdb_birthday
+      - tmdb_deathday
     tmdb_person: <<tmdb_person>>
     tmdb_birthday: <<tmdb_birthday>>
+    tmdb_deathday: <<tmdb_deathday>>
     tmdb_person_offset: <<tmdb_person_offset_<<key>>>>
     delete_not_scheduled: true
     url_poster: <<url_poster_<<key>>>>
@@ -214,8 +216,10 @@ templates:
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
       limit_<<key>>: <<limit>>
+      filter_value: <<value>>
     optional:
       - limit
+      - filter_term2
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -224,7 +228,8 @@ templates:
     sync_mode: <<sync_mode_<<key>>>>
     plex_all: true
     filters:
-      <<filter_term>>: <<value>>
+      <<filter_term>>: <<filter_value>>
+      <<filter_term2>>: <<filter_value2>>
 
   mdb_smart:
     default:

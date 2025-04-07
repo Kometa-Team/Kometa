@@ -1,5 +1,4 @@
-Files define the structure and format for creating Collections, Overlays, Playlists, and Metadata Edits within your 
-libraries.
+Files define the structure and format for creating Collections, Overlays, Playlists, and Metadata Edits within your libraries.
 
 Files are modular and when properly leveraged, they not only facilitate the management of your library's collections and 
 metadata but also serve as a crucial backup resource in case a restore is necessary.
@@ -35,15 +34,14 @@ These are the File types that can be utilized against Plex servers:
 
     Within the above example, Kometa will:
 
-    * First, look within the root of the Kometa directory (also known as `config/`) for a collection file named 
-    `TVShows.yml`. If this file does not exist, Kometa will skip the entry and move to the next one in the list.
+    * First, look within the root of the Kometa directory (also known as `config/`) for a Collection File named `TVShows.yml`. If this file does not exist, 
+    Kometa will skip the entry and move to the next one in the list.
 
-    * Then, look within the root of the Kometa directory (also known as `config/`) for a directory called `TV Shows`, and 
-    then load any collection files within that directory.
+    * Then, look within the root of the Kometa directory (also known as `config/`) for a directory called `TV Shows`, and then load any collection files within that directory.
 
-    * Then, look in the [defaults folder](https://github.com/Kometa-Team/Kometa/tree/master/defaults) within 
-    the local Kometa folder [or docker container] for a file called `imdb.yml`.
+    * Then, look in the [Defaults folder](https://github.com/Kometa-Team/Kometa/tree/master/defaults) within the local Kometa folder
+      [or docker container] for a file called `imdb.yml`.
 
     * Then, look within the Custom Defined Repo for a file called `overlays.yml`.
 
-    * Finally, load the playlist file located at `https://somewhere.com/Playlists.yml`
+    * Finally, load the playlist file located at `https://somewhere.com/Playlists.yml`.

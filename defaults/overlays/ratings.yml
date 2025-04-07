@@ -92,6 +92,10 @@ templates:
         default: true
         conditions:
           - image_level: Top
+            rating<<rating_num>>_image: rt_popcorn
+            library_type: show
+            value: false
+          - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, mdb, tmdb, trakt, mal, star]
             value: false
           - image_level: Top

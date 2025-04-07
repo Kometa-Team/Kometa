@@ -1,10 +1,13 @@
 ---
 search:
   boost: 4
+hide:
+  - toc
 ---
 # FAQ & Knowledge Base
 
-This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our [Discord Server](https://kometa.wiki/en/latest/discord/).
+This page aims to provide knowledge based on combined user experience, and to answer the frequent questions that we are asked in our 
+[Discord Server](https://kometa.wiki/en/latest/discord/).
 
 If you have a question that is not answered here, try entering some keywords into the search bar above, or join our [Discord Server](https://kometa.wiki/en/latest/discord/).
 
@@ -14,9 +17,11 @@ This section aims to answer the most commonly asked questions that users have.
 
 ### Kometa Versions & Updating
 
-The commands here should work in any terminal on the respective platforms, but that can't be guaranteed. If you know shortcuts for some of these things, go ahead and use them. For example, in many terminals, `cd ~/Kometa` is the same as `cd /Users/YOUR_USERNAME/Kometa`.  
+The commands here should work in any terminal on the respective platforms, but that can't be guaranteed. If you know shortcuts for some of these things, go ahead and use them. 
+For example, in many terminals, `cd ~/Kometa` is the same as `cd /Users/YOUR_USERNAME/Kometa`. 
 
-Your Kometa installation may not be located at the paths referenced below. These are the paths used in the walkthroughs in this documentation, so if you installed it somewhere else you will have to change the path[s] to reflect your system and the choices you made during installation.
+Your Kometa installation may not be located at the paths referenced below. These are the paths used in the walkthroughs in this documentation, 
+so if you installed it somewhere else you will have to change the path[s] to reflect your system and the choices you made during installation.
 
 ??? question "How do I update to the latest version of Kometa?"
 
@@ -36,7 +41,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     
     === ":fontawesome-brands-apple: macOS"
@@ -55,7 +61,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -74,7 +81,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -108,7 +116,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -127,7 +136,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -147,7 +157,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -155,7 +166,8 @@ Your Kometa installation may not be located at the paths referenced below. These
 
             docker pull kometateam/kometa:develop
 
-        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:develop`.
+        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], changing the image in the docker command or 
+        the `docker-compose.yml` to `kometateam/kometa:develop`.
 
         If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
 
@@ -179,7 +191,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -198,7 +211,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -218,7 +232,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -226,7 +241,8 @@ Your Kometa installation may not be located at the paths referenced below. These
 
             docker pull kometateam/kometa:nightly
 
-        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:nightly`.
+        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], 
+        changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:nightly`.
 
         If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
 
@@ -249,7 +265,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-apple: macOS"
     
@@ -268,7 +285,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-windows: Windows"
     
@@ -288,7 +306,8 @@ Your Kometa installation may not be located at the paths referenced below. These
             git stash
             git stash clear
 
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
+        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
+        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
 
     === ":fontawesome-brands-docker: Docker"
     
@@ -296,7 +315,8 @@ Your Kometa installation may not be located at the paths referenced below. These
 
             docker pull kometateam/kometa:latest
 
-        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:latest`.
+        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], 
+        changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:latest`.
 
         If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
 
@@ -304,18 +324,25 @@ Your Kometa installation may not be located at the paths referenced below. These
 
 ??? question "Any tips on increasing Kometa performance?"
 
-    Use Kometa Caching where possible, this allows Kometa to temporarily store commonly-used information so that it can be retrieved more efficiently. There are [multiple things](https://kometa.wiki/en/latest/search.html?q=cache&check_keywords=yes&area=default) that can be cached within Kometa.
+    Use Kometa Caching where possible, this allows Kometa to temporarily store commonly-used information so that it can be retrieved more efficiently. 
+    There are [multiple things](./?q=cache&check_keywords=yes&area=default) that can be cached within Kometa.
     
-    Run Kometa after PLEX Scheduled Tasks, as Plex's API tends to be slower at responding whilst it is performing the tasks. By default, Kometa runs at 5AM to avoid the 3-5am window that Plex suggests for Scheduled Tasks.
+    Run Kometa after PLEX Scheduled Tasks, as Plex's API tends to be slower at responding whilst it is performing the tasks. 
+    By default, Kometa runs at 5AM to avoid the 3-5am window that Plex suggests for Scheduled Tasks.
     
-    For users who are more technically advanced and happy to risk manipulating the Plex database, considering altering the [PRAGMA_CACHE settings](https://www.reddit.com/r/PleX/comments/ic3cjr/anyone_try_giving_sqlite3_more_cache_to_help/) within Plex.
+    For users who are more technically advanced and happy to risk manipulating the Plex database, considering altering the 
+    [PRAGMA_CACHE settings](https://www.reddit.com/r/PleX/comments/ic3cjr/anyone_try_giving_sqlite3_more_cache_to_help/) within Plex.
     
-    **Note:** you MUST use the version of sqlite3 tool that comes with your running version of PLEX or you will mess up your PLEX DB beyond repair. See [this article](https://support.plex.tv/articles/repair-a-corrupted-database/) on how to find the proper version for your setup.
+    **Note:** you MUST use the version of sqlite3 tool that comes with your running version of PLEX or you will mess up your PLEX DB beyond repair. 
+    See [this article](https://support.plex.tv/articles/repair-a-corrupted-database/) on how to find the proper version for your setup.
 
 
 ??? question "Why does my Kometa run take so long to complete?"
 
-    Every time an item (media, collection, overlay) needs to be updated, Kometa needs to send the request to Plex, and then receive confirmation back from Plex that the action has been completed. This can take anywhere from seconds to minutes depending on when Plex provides a response. Given that the typical run can update hundreds or even thousands of items, this can quickly add up to a lot of time. If "Mass Update" operations are used, then every single item in the library needs to go through this process, which can be lengthy. 
+    Every time an item (media, collection, overlay) needs to be updated, Kometa needs to send the request to Plex, and then receive confirmation back from Plex 
+    that the action has been completed. This can take anywhere from seconds to minutes depending on when Plex provides a response. Given that the typical run can 
+    update hundreds or even thousands of items, this can quickly add up to a lot of time. If "Mass Update" operations are used, then every single item in the library
+    needs to go through this process, which can be lengthy. 
     
     Overlays can be particularly cumbersome as Kometa needs to perform the following actions for each of the items that need to have an overlay applied:
 
@@ -327,14 +354,18 @@ Your Kometa installation may not be located at the paths referenced below. These
         - Tell Plex to apply new image to the item
         - Wait for Plex to respond confirming that the change has been made
 
-    The above two points can be greatly exacerbated if Kometa has to update every episode within a Show library rather than just the Shows themselves, as there can often be hundreds of thousands of episodes to be updated with mass operations or overlays.
+    The above two points can be greatly exacerbated if Kometa has to update every episode within a Show library rather than just the Shows themselves, 
+    as there can often be hundreds of thousands of episodes to be updated with mass operations or overlays.
 
-    Additionally, some collections require a lot of computing resources to determine the critera of the collections that are to be made. This is commonly seen in the Defaults files for Actor/Director/Producer/Writer which need to get the crew information for each of the movies/shows within your library, and then calculate which ones appear the most to find out which are the most popular. The larger your library, the longer this process will take.
+    Additionally, some collections require a lot of computing resources to determine the critera of the collections that are to be made. This is commonly seen in the Defaults 
+    files for Actor/Director/Producer/Writer which need to get the crew information for each of the movies/shows within your library, and then calculate which ones appear the
+    most to find out which are the most popular. The larger your library, the longer this process will take.
 
 
 ??? question "Can I schedule library operations and/or overlays to happen at a different time than collections?"
 
-    Yes, the recommended approach is to set up a new library for the Operations/Overlays, mapping it back to the original library, and then scheduling the library, as outlined below
+    Yes, the recommended approach is to set up a new library for the Operations/Overlays, mapping it back to the original library, 
+    and then scheduling the library, as outlined below
     
     ```yaml
     libraries:
@@ -351,16 +382,15 @@ Your Kometa installation may not be located at the paths referenced below. These
 
 ??? question "Why doesn't Kometa let me enter my authentication information for Trakt/MAL?"
 
-    Kometa needs to run in an interactive mode which allows the user to enter information (such as the Trakt/MAL PIN) as part of the authentication process. This can prove troublesome in some environments, particularly NAS.
+    Kometa needs to run in an interactive mode which allows the user to enter information (such as the Trakt/MAL PIN) as part of the authentication process. 
+    This can prove troublesome in some environments, particularly NAS.
     
-    Chazlarson has developed an online tool which will allow you to perform the authentication of both Trakt and MAL outside of Kometa, and will then provide you the completed code block to paste into your config.yml.
+    Chazlarson has developed an online tool which will allow you to perform the authentication of both Trakt and MAL outside of Kometa, 
+    and will then provide you the completed code block to paste into your config.yml.
     
     The scripts can be found here. Click the green play button, wait a little bit, then follow the prompts. 
 
-    [MyAnimeList Authenticator](https://replit.com/@chazlarson/MALAuth)
-
-    [Trakt Authenticator](https://replit.com/@chazlarson/TraktAuth)
-
+    [Trakt & MyAnimeList Authentication](../../config/authentication)
 
 ??? question "Why am I seeing "(500) Internal Server Error" in my log files?"
 
@@ -368,9 +398,11 @@ Your Kometa installation may not be located at the paths referenced below. These
     
     There could be any number of reasons why this happens and it depends on what server Kometa is talking to although it's most likely coming from your Plex Server.
     
-    Most of the time these errors need to be resolved by changing something specific to your set up but some do come up that can be fixed (i.e. Plex throws one if you upload a photo larger than 10 MB)
+    Most of the time these errors need to be resolved by changing something specific to your set up but some do come up that can be fixed 
+    (i.e. Plex throws one if you upload a photo larger than 10 MB)
     
-    Many Appbox Setups will throw this error when too many requests are sent, or if the central metadata repository is not properly configured to allow users to upload custom posters.
+    Many Appbox Setups will throw this error when too many requests are sent, or if the central metadata repository 
+    is not properly configured to allow users to upload custom posters.
     
     Take a look at the following logs:
 
@@ -394,7 +426,8 @@ With the release of Kometa 1.20, several changes have been made. Please read the
 
     The attributes `metadata_path` and `overlay_path` are now legacy, and will likely produce an error `metadata attribute is required` when running Kometa.
 
-    We have new attributes: `collection_files`, `overlay_files` and `metadata_files` which you can read more about on the [Libraries Attributes page](../config/libraries.md#attributes)
+    We have new attributes: `collection_files`, `overlay_files` and `metadata_files` which you can read more about on the 
+    [Libraries Attributes page](../config/libraries.md#attributes)
 
     Whilst this error can be ignored, we strongly advise you to move over to the new attributes, which can be done following this guidance:
 
@@ -402,7 +435,7 @@ With the release of Kometa 1.20, several changes have been made. Please read the
     
     :fontawesome-solid-2: If your YAML file creates overlays or is a Kometa Defaults Overlay File then it belongs under `overlay_files`
     
-    :fontawesome-solid-3: If your YAML file edits item metadata ([see this example](../files/metadata.md/#__tabbed_1_1)) then it belongs under `metadata_files`
+    :fontawesome-solid-3: If your YAML file edits item metadata ([see this example](../files/metadata.md/#movies)) then it belongs under `metadata_files`
     
     If your file creates collections AND edits item metadata, then it should go in both `collection_files` and `metadata_files`
     
@@ -425,18 +458,19 @@ With the release of Kometa 1.20, several changes have been made. Please read the
           - default: audio_codec #(6)!
     ```
 
-    1.  This attribute used to be `metadata_path` and defines files that will relate to Collections
-    2.  These files are placed within `collection_files` because they define how Collections are built/maintained.
-    3.  This attribute used to be `metadata_path` and defines files that will relate to Metadata Edits
-    4.  These files are placed within `metadata_files` because they define Metadata Edits rather than collections.
-    5.  This attribute used to be `overlay_path` and defines files that will relate to Overlays
-    6.  These files are placed within `overlay_files` because they define how Overlays are built/maintained.
+    1. This attribute used to be `metadata_path` and defines files that will relate to Collections
+    2. These files are placed within `collection_files` because they define how Collections are built/maintained.
+    3. This attribute used to be `metadata_path` and defines files that will relate to Metadata Edits
+    4. These files are placed within `metadata_files` because they define Metadata Edits rather than collections.
+    5. This attribute used to be `overlay_path` and defines files that will relate to Overlays
+    6. These files are placed within `overlay_files` because they define how Overlays are built/maintained.
 
 ??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (click to expand).<a class="headerlink" href="#overlay-library-attributes" title="Permanent link">¶</a>"
 
     <div id="overlay-library-attributes" />
 
-    The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes and are called at the library level rather than within `overlay_path`.
+    The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes
+    and are called at the library level rather than within `overlay_path`.
 
     This change has been made to make these attributes consistent with other attributes of a similar nature.
 
@@ -453,20 +487,22 @@ With the release of Kometa 1.20, several changes have been made. Please read the
           - default: audio_codec
     ```
 
-    1.  We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/imagemaid.md)
-    2.  This is purely an example, you do not need to specify `reset_overlays` or any of these attributes unless you specifically need to use them.
+    1. We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/imagemaid.md)
+    2. This is purely an example, you do not need to specify `reset_overlays` or any of these attributes unless you specifically need to use them.
 
 ??? blank "`imdb_list` no longer works for Title or Keyword search URLs (click to expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
 
     <div id="imdb-search" />
 
-    As a result of IMDb changing their back-end code, `imdb_list` can no longer be used for URLs which start with `https://www.imdb.com/search/title/` or `https://www.imdb.com/search/keyword/`
+    As a result of IMDb changing their back-end code, `imdb_list` can no longer be used for URLs which start with 
+    `https://www.imdb.com/search/title/` or `https://www.imdb.com/search/keyword/`
 
     All URLs used with `imdb_list` **must** start with `https://www.imdb.com/list/`
 
-    We have introduced the [IMDb Search Builder](../files/builders/imdb.md#imdb-search) which replaces the functionality that `search/title/` and `search/keyword/` used to provide.
+    We have introduced the [IMDb Search Builder](../files/builders/imdb.md#imdb-search) which replaces the functionality that 
+    `search/title/` and `search/keyword/` used to provide.
 
-    As an example, the `imdb_search` builder for `https://www.imdb.com/search/keyword/?keywords=christmas-movie` would be:
+    As an example, the `imdb_search` Builder for `https://www.imdb.com/search/keyword/?keywords=christmas-movie` would be:
 
     ```yaml
     collections:
@@ -475,7 +511,7 @@ With the release of Kometa 1.20, several changes have been made. Please read the
           keyword: christmas movie
     ```
 
-    And the `imdb_search` builder for `https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_special,video&num_votes=100,&keywords=spy,espionage` would be:
+    And the `imdb_search` Builder for `https://www.imdb.com/search/title/?title_type=feature,tv_movie,tv_special,video&num_votes=100,&keywords=spy,espionage` would be:
 
     ```yaml
     collections:
@@ -499,4 +535,5 @@ With the release of Kometa 1.20, several changes have been made. Please read the
 
     The Kometa Default file `other_award` is now deprecated and will no longer function.
 
-    Individual Kometa Default files have been introduced for several Awards, see the [Awards List](../defaults/collection_list.md#award-collections) for more information on the new options.
+    Individual Kometa Default files have been introduced for several Awards, see the [Awards List](../defaults/collections.md#award-collections)
+    for more information on the new options.

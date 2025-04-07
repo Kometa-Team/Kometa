@@ -1,9 +1,12 @@
+---
+hide:
+  - toc
+---
 # Tautulli Attributes
 
-Configuring [Tautulli](https://tautulli.com/) is optional but can allow you to create Collections based on Tautulli's 
-Watch Statistics.
+Configuring [Tautulli](https://tautulli.com/) is optional but can allow you to create Collections based on Tautulli's Watch Statistics.
 
-A `tautulli` mapping can be either in the root of the config file as global mapping for all libraries, or you can  specify the `tautulli` mapping individually per library.
+A `tautulli` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `tautulli` mapping individually per library.
 
 Below is a `tautulli` mapping example and the full set of attributes:
 
@@ -13,14 +16,14 @@ tautulli:
   apikey: ################################
 ```
 
-| Attribute | Allowed Values                                        | Default |                  Required                  |
-|:----------|:------------------------------------------------------|:--------|:------------------------------------------:|
-| `url`     | Tautulli URL<br>**Example:** http://192.168.1.12:8659 | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `apikey`  | Tautulli API Key                                      | N/A     | :fontawesome-solid-circle-check:{ .green } |
+| Attribute | Description               | Allowed Values (default in **bold**)                                    |                  Required                   |
+|:----------|:--------------------------|:------------------------------------------------------------------------|:-------------------------------------------:|
+| `url`     | Tautulli URL.             | Any valid URL<br><strong>Example:</strong> `http://192.168.1.12:8659`   | :fontawesome-solid-circle-check:{ .green }  |
+| `apikey`  | Tautulli API key.         | Any valid key or leave **blank**                                        | :fontawesome-solid-circle-check:{ .green }  |
 
 ???+ tip
     
-    The apikey can be found by going to Tautulli > Settings > Web Interface > API > API Key
+    The apikey can be found by going to Tautulli > Settings > Web Interface > API > API Key.
 
 # Other examples
 

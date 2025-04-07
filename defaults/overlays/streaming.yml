@@ -13,6 +13,7 @@ external_templates:
     default:
       horizontal_align: left
       vertical_align: bottom
+      style: color
     conditionals:
       vertical_offset:
         default: 15
@@ -42,7 +43,7 @@ external_templates:
             git_<<key>>.exists: false
             repo.exists: false
             repo_<<key>>.exists: false
-            value: streaming/<<overlay_name>>
+            value: streaming/<<style>>/<<overlay_name>>
     back_color: "#00000099"
     back_width: 305
     back_height: 105
@@ -99,16 +100,16 @@ templates:
       allowed_streaming:
         conditions:
           - originals_only: true
-            tmdb_key: [103, 1759, 151, 230, 283, 510, 39, 37, 188]
+            tmdb_key: [103, 1759, 41, 2300, 230, 283, 510, 39, 37, 188]
             value: False
           - region.not: GB
-            tmdb_key: [103, 151, 39]
+            tmdb_key: [103, 41, 2300, 39]
             value: False
           - region.not: CA
             tmdb_key: [230]
             value: False
           - region: CA
-            tmdb_key: [1899, 37]
+            tmdb_key: [1899]
             value: False
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     tmdb_discover:
@@ -120,15 +121,15 @@ templates:
 overlays:
 
   Netflix:
-    variables: {key: netflix, tmdb_key: 8, weight: 160}
+    variables: {key: netflix, tmdb_key: 8|175, weight: 160}
     template: [name: standard, name: mdb_streaming]
 
-  Prime:
+  Prime Video:
     variables: {key: amazon, tmdb_key: 9, weight: 150}
     template: [name: standard, name: mdb_streaming]
 
   Disney:
-    variables: {key: disney, tmdb_key: 337, weight: 140}
+    variables: {key: disney, tmdb_key: 337|508, weight: 140}
     template: [name: standard, name: mdb_streaming]
 
   Max:
@@ -140,14 +141,14 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   YouTube:
-    variables: {key: youtube, tmdb_key: 188, weight: 110}
+    variables: {key: youtube, tmdb_key: 188|508|235, weight: 110}
     template: [name: standard, name: mdb_streaming]
 
   Hulu:
     variables: {key: hulu, tmdb_key: 15, weight: 100}
     template: [name: standard, name: mdb_streaming]
 
-  Paramount:
+  Paramount+:
     variables: {key: paramount, tmdb_key: 531|1770, weight: 90}
     template: [name: standard, name: mdb_streaming]
 
@@ -156,15 +157,11 @@ overlays:
     template: [name: standard, name: mdb_streaming]
 
   Peacock:
-    variables: {key: peacock, tmdb_key: 387, weight: 70}
-    template: [name: standard, name: mdb_streaming]
-
-  Showtime:
-    variables: {key: showtime, tmdb_key: 531|1770, weight: 60}
+    variables: {key: peacock, tmdb_key: 386|387, weight: 70}
     template: [name: standard, name: mdb_streaming]
 
   discovery+:
-    variables: {key: discovery, tmdb_key: 510, weight: 58, allowed_libraries: show}
+    variables: {key: discovery, tmdb_key: 524|584, weight: 58, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
 
   Crave:
@@ -175,12 +172,12 @@ overlays:
     variables: {key: now, tmdb_key: 39, weight: 50}
     template: [name: standard, name: mdb_streaming]
 
-  All 4:
-    variables: {key: all4, tmdb_key: 103, weight: 40}
+  Channel 4:
+    variables: {key: channel4, tmdb_key: 103, weight: 40}
     template: [name: standard, name: mdb_streaming]
 
-  britbox:
-    variables: {key: britbox, tmdb_key: 151, weight: 30}
+  ITVX:
+    variables: {key: itvx, tmdb_key: 41|2300, weight: 30}
     template: [name: standard, name: mdb_streaming]
 
   BET+:

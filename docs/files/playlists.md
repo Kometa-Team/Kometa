@@ -1,6 +1,7 @@
 ---
 hide:
   - tags
+  - toc
 tags:
   - libraries
   - sync_to_users
@@ -37,15 +38,15 @@ location mapped as `config` in my setup.
     playlists: #(1)!
       Marvel Cinematic Universe Chronological Order:
         sync_mode: sync
-        libraries: Movies, TV Shows  #(2)!
-        sync_to_users: User1, someone@somewhere.com, User3  #(3)!
+        libraries: Movies, TV Shows #(2)!
+        sync_to_users: User1, someone@somewhere.com, User3 #(3)!
         trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
         summary: Marvel Cinematic Universe In Chronological Order
     ```
 
-    1.  This must appear once and **only once** in any Playlist file
-    2.  These libraries must exist in your Plex library
-    3.  Leave this blank if you only only want the Playlist to sync to the server owner's account
+    1. This must appear once and **only once** in any Playlist file
+    2. These libraries must exist in your Plex library
+    3. Leave this blank if you only only want the Playlist to sync to the server owner's account
 
 This file would then be defined in my `config.yml` file as a `playlist_files` item:
 
@@ -68,9 +69,9 @@ This file would then be defined in my `config.yml` file as a `playlist_files` it
       - file: config/MyPlaylists.yml #(2)!
     ```
 
-    1.  Note that Playlist files are not called within the `libraries` section, they are defined at the root identation 
+    1. Note that Playlist files are not called within the `libraries` section, they are defined at the root identation 
     as you can see here
-    2.  `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
+    2. `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
 ## Playlist Attributes
 
@@ -78,11 +79,11 @@ Kometa can automatically build and update playlists defined within the `playlist
 
 These are the attributes which can be utilized within the Playlist File:
 
-| Attribute                                               | Description                                                                                                             |
-|:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| [`templates`](templates.md)                             | contains definitions of templates that can be leveraged by multiple playlists                                           |
+| Attribute                            | Description                                                                                                             |
+| :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+| [`playlists`](#playlist-attributes)  | contains definitions of playlists you wish to add to the server                                                         |
+| [`templates`](templates.md)          | contains definitions of templates that can be leveraged by multiple playlists                                           |
 | [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple playlists |
-| [`playlists`](#playlist-attributes)                     | contains definitions of playlists you wish to add to the server                                                         |
 
 * `playlists` is required in order to run the Playlist File.
 * You can find example Playlist Files in the 
@@ -92,7 +93,7 @@ These are the attributes which can be utilized within the Playlist File:
 
 
 Each playlist requires its own section within the `playlists` attribute and unlike collections, playlists can only be 
-built using one Builder as their ordering is inherited from the builder; it is not possible to combine builders.
+built using one Builder as their ordering is inherited from the Builder; it is not possible to combine builders.
 
 ```yaml
 playlists:
@@ -116,11 +117,11 @@ There are multiple types of attributes that can be utilized within a playlist:
 ### Special Playlist Attributes
 
 | Attribute         | Description                                                                                                                                                                                                                                                                                                       |                  Required                  |
-|:------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|
+| :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------: |
+| `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `exclude_users`   | Determine which Users will be excluded from having the playlist synced.<br>This will override the global [`playlist_excude_users` Setting](../config/settings.md).<br>**Options:** Comma-separated string or list of users, `all` for every user who has server access, or leave blank for just the server owner. |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `libraries`       | Determine which libraries the playlist will be built from.<br>**Options:** Comma-separated string or list of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/overview.md).                                                                          | :fontawesome-solid-circle-check:{ .green } |
 | `sync_to_users`   | Determine which Users have the playlist synced.<br>This will override the global [`playlist_sync_to_users` Setting](../config/settings.md).<br>**Options:** Comma-separated string or list of users, `all` for every user who has server access, or leave blank for just the server owner.                        |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `exclude_users`   | Determine which Users will be excluded from having the playlist synced.<br>This will override the global [`playlist_excude_users` Setting](../config/settings.md).<br>**Options:** Comma-separated string or list of users, `all` for every user who has server access, or leave blank for just the server owner. |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 * Any defined playlist will be always be visible by The Plex Media Server owner, so it doesn't need to be defined within `sync_to_users`.
 

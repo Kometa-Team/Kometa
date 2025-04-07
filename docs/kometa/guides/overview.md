@@ -1,6 +1,11 @@
+---
+hide:
+  - toc
+---
 # Kometa Guides, Explanations & Recipes
 
-This page outlines the explanations, guides and recipes that will help you understand certain aspects of Kometa that may not be easily understood without expanded context or examples that would be difficult to provide in the standard wiki pages.
+This page outlines the explanations, guides and recipes that will help you understand certain aspects of Kometa that 
+may not be easily understood without expanded context or examples that would be difficult to provide in the standard wiki pages.
 
 Special credit to [Chazlarson](https://github.com/chazlarson) for the time and effort he has spent developing a lot of these guides.
 
@@ -8,12 +13,12 @@ Special credit to [Chazlarson](https://github.com/chazlarson) for the time and e
 
 These guides will walk you through installing Kometa on your system.
 
-- [Local (Win/Mac/Linux)](../install/local.md)
-- [Docker](../install/docker.md)
-- [unRAID](../install/unraid.md)
-- [Kubernetes](../install/kubernetes.md)
-- [QNAP](../install/qnap.md)
-- [Synology](../install/synology.md)
+- [Local (Win/Mac/Linux)](../install/walkthroughs/local.md)
+- [Docker](../install/walkthroughs/docker.md)
+- [unRAID](../install/walkthroughs/unraid.md)
+- [Kubernetes](../install/walkthroughs/kubernetes.md)
+- [QNAP](../install/walkthroughs/qnap.md)
+- [Synology](../install/walkthroughs/synology.md)
 
 ## Explanations
 
@@ -99,7 +104,7 @@ A lot of these guides are stored on Google Drive as using the traditional wiki p
 
 This YouTube video has been created by one of our community members to showcase some of the things that Kometa can do for you. 
 
-Caveat: it is very long, and the author has their own ideas as to what is "required".  For example, this video begins with setting up a third-party script that is not required to use Kometa.
+Caveat: it is very long, and the author has their own ideas as to what is "required". For example, this video begins with setting up a third-party script that is not required to use Kometa.
 
-<iframe width="840" height="472" src="https://www.youtube.com/embed/nTfCUtKWTYI?si=PUvELjmqFUu4p9yk" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="840" height="472" src="https://www.youtube.com/embed/O8aKqCCvrsU?si=b_eSozovIwao7VO9" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 

@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # OMDb Attributes
 
 Configuring [OMDb](https://www.omdbapi.com/) is optional but can allow you to mass edit metadata using IMDb.
@@ -10,10 +14,10 @@ omdb:
   cache_expiration: 60
 ```
 
-| Attribute          | Allowed Values                                                             | Default |                  Required                  |
-|:-------------------|:---------------------------------------------------------------------------|:--------|:------------------------------------------:|
-| `apikey`           | OMDb API Key                                                               | N/A     | :fontawesome-solid-circle-check:{ .green } |
-| `cache_expiration` | Number of days before each cache mapping expires and has to be re-cached.  | 60      |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Attribute          | Description                                                             | Allowed Values (default in **bold**)          |                   Required                   |
+|:-------------------|:------------------------------------------------------------------------|:----------------------------------------------|:--------------------------------------------:|
+| `apikey`           | OMDb API key.                                                           | Any valid key or leave **blank**              |  :fontawesome-solid-circle-check:{ .green }  |
+| `cache_expiration` | Days before each cache mapping expires and must be re-cached.           | Integer, e.g. **`60`**                        | :fontawesome-solid-circle-xmark:{ .red }     |
 
 ???+ tip
 

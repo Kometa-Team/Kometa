@@ -1874,92 +1874,135 @@
                 },
                 "mass_genre_update": {
                     "anyOf": [
-                        {
-                            "type": "string",
-                            "enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]
-                        },
-                        {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items":
-                            {
-                                "anyOf": [
-                                    {"enum": ["tmdb","tvdb","imdb","omdb","anidb","anidb_3_0","anidb_2_5","anidb_2_0","anidb_1_5","anidb_1_0","anidb_0_5","mal","lock","unlock","remove","reset"]}
+                    {
+                        "type": "string",
+                        "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"]
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                        "anyOf": [
+                                { "type": "string", "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"] },
+                                { "type": "array", "items": { "type": "string" } }
                                 ]
                             }
                         }
                     ]
                 },
                 "mass_content_rating_update": {
-                    "anyOf": [
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "anyOf": [
                         {
-                            "type": "string",
-                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]
-                        },
+                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
                         {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items":
-                            {
-                                "anyOf": [
-                                    {"enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]}
-                                ]
-                            }
+                            "pattern": ".*"
                         }
-                    ]
+                        ]
+                    }
                 },
                 "mass_original_title_update": {
-                    "type": "string",
-                    "enum": ["anidb","anidb_official","mal","mal_english","mal_japanese","lock","unlock","remove","reset"]
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "anyOf": [
+                        {
+                            "enum": ["anidb", "anidb_official", "mal","mal_english", "mal_japanese","lock", "unlock", "remove", "reset"]
+                        },
+                        {
+                            "pattern": ".*"
+                        }
+                        ]
+                    }
                 },
                 "mass_studio_update": {
                     "anyOf": [
-                        {
-                            "type": "string",
-                            "enum": ["anidb","mal","tmdb","lock","unlock","remove","reset"]
-                        },
-                        {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items":
+                    {
+                        "type": "string",
+                        "enum": ["anidb", "mal", "tmdb", "lock", "unlock", "remove", "reset"]
+                    },
+                    {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                            "anyOf": [
                             {
-                                "anyOf": [
-                                    {"enum": ["anidb","mal","tmdb","lock","unlock","remove","reset"]}
+                                "type": "string",
+                                "enum": ["anidb", "mal", "tmdb", "lock", "unlock", "remove", "reset"]
+                            },
+                            {
+                                "type": "string"
+                            }
                                 ]
                             }
                         }
                     ]
                 },
                 "mass_originally_available_update": {
-                    "anyOf": [
-                        {
-                            "type": "string",
-                            "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
-                        },
-                        {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items":
-                            {
-                                "anyOf": [
-                                    {"enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]}
+                        "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                                },
+                                {
+                                    "type": "string",
+                                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                                },
+                                {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "items": {
+                                    "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                                    }
                                 ]
                             }
                         }
                     ]
                 },
                 "mass_added_at_update": {
-                    "type": "string",
-                    "enum": ["tmdb","tvdb","omdb","mdb","anidb","mal","lock","unlock","remove","reset"]
-                },
-                "mass_audience_rating_update": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                            "anyOf": [
+                            {
+                                "type": "string",
+                                "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "mass_audience_rating_update": {
                     "anyOf": [
                         {
                             "type": "number"
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -1967,7 +2010,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -1981,7 +2024,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -1989,7 +2032,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2003,7 +2046,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2011,7 +2054,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","trakt_user","omdb","mdb","mdb_average","mdb_imdb","mdb_metacritic","mdb_metacriticuser","mdb_trakt","mdb_tomatoes","mdb_tomatoesaudience","mdb_tmdb","mdb_letterboxd","mdb_myanimelist","anidb_rating","anidb_average","anidb_score","mal","lock","unlock","remove","reset"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2025,7 +2068,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2033,7 +2076,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2047,7 +2090,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2055,7 +2098,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2069,7 +2112,7 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["tmdb","imdb","lock","remove","reset","unlock"]
+                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
                         },
                         {
                             "type": "array",
@@ -2077,7 +2120,7 @@
                             "items":
                             {
                                 "anyOf": [
-                                    {"enum": ["tmdb","imdb","lock","remove","reset","unlock"]},
+                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
                                     {"type": "number"}
                                 ]
                             }
@@ -2085,12 +2128,45 @@
                     ]
                 },
                 "mass_poster_update": {
-                    "type": "string",
-                    "enum": ["tmdb","plex","lock","unlock"]
+                    "type": "object",
+                    "properties": {
+                    "source": {
+                        "type": "string",
+                        "enum": ["tmdb", "plex", "lock", "unlock"]
+                    },
+                        "seasons": {
+                        "type": "boolean"
+                    },
+                        "episodes": {
+                        "type": "boolean"
+                    },
+                        "ignore_locked": {
+                        "type": "boolean"
+                    },
+                        "ignore_overlays": {
+                        "type": "boolean"
+                    }
+                    },
+                    "additionalProperties": false
                 },
                 "mass_background_update": {
-                    "type": "string",
-                    "enum": ["tmdb","plex","lock","unlock"]
+                    "type": "object",
+                    "properties": {
+                    "source": {
+                        "type": "string",
+                        "enum": ["tmdb", "plex", "lock", "unlock"]
+                    },
+                        "seasons": {
+                        "type": "boolean"
+                    },
+                        "episodes": {
+                        "type": "boolean"
+                    },
+                        "ignore_locked": {
+                        "type": "boolean"
+                    }
+                    },
+                    "additionalProperties": false
                 },
                 "mass_imdb_parental_labels": {
                     "type": "string",
@@ -2100,8 +2176,18 @@
                     "type": "string",
                     "enum": ["default","hide","hide_items","show_items"]
                 },
-                "radarr_remove_by_tag": { "type": "string" },
-                "sonarr_remove_by_tag": { "type": "string" },
+                "radarr_remove_by_tag": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sonarr_remove_by_tag": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "delete_collections": {
                     "type": "object",
                     "properties": {

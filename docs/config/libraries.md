@@ -1,17 +1,16 @@
 ---
 search:
   boost: 5 
+hide:
+  - toc
 ---
-
 # Library Attributes
 
-Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants
-Kometa to act on.
+Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants Kometa to act on.
 
-Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or 
-"execute the following Collection Definition files". These attributes can be specified individually per library, or can 
-be inherited from the global value if it has been set. If an attribute is specified at both the library and global 
-level, then the library level attribute will take priority.
+Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or "execute the following Collection Definition files". 
+These attributes can be specified individually per library, or can be inherited from the global value if it has been set. 
+If an attribute is specified at both the library and global level, then the library level attribute will take priority.
 
 ## Attributes
 
@@ -23,18 +22,17 @@ The available attributes for each library are as follows:
 
     Each library that the user wants Kometa to interact with must be documented with a library attribute. 
 
-    A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name 
-    that correlates with a library of the same name within the Plex Media Server.
+    A library attribute is represented by the mapping name (i.e. `Movies` or `TV Shows`), this must have a unique name that correlates with a 
+    library of the same name within the Plex Media Server.
     
-    In the situation that two servers are being connected to which both have libraries of the same name, the 
-    `library_name` attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping 
-    name can be made into a placeholder. This is showcased below:
+    In the situation that two servers are being connected to which both have libraries of the same name, the `library_name` attribute can be utilized to specify the real 
+    Library Name, whilst the library attribute's mapping name can be made into a placeholder. This is showcased below:
 
     <hr style="margin: 0px;">
     
     **Attribute:** `library_name`
     
-    **Accepted Values:** Library Name
+    **Accepted Values:** Library Name.
 
     **Default Value:** Base Attribute Name
 
@@ -56,15 +54,13 @@ The available attributes for each library are as follows:
           token: ####################
         ```
         
-        * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server 
-        (**http://192.168.1.12:32400**) which is defined using the global `plex` mapping. `"Movies02"` will use the plex
-        server **http://192.168.1.35:32400** which is defined under its `plex` mapping over the global mapping.
+        * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (**http://192.168.1.12:32400**) which is defined using the global 
+          `plex` mapping. `"Movies02"` will use the plex server **http://192.168.1.35:32400** which is defined under its `plex` mapping over the global mapping.
 
 ??? blank "`collection_files` - Used to define [Collection Files](../files/collections.md).<a class="headerlink" href="#collection-files" title="Permanent link">¶</a>"
 
-    <div id="collection-files" />The `collection_files` attribute is used to define 
-    [Collection Files](../files/collections.md) by specifying the path type and path of the files that will be executed 
-    against the parent library. See [File Blocks](files.md) for how to define them.
+    <div id="collection-files" />The `collection_files` attribute is used to define [Collection Files](../files/collections.md) by specifying 
+    the path type and path of the files that will be executed against the parent library. See [File Blocks](files.md) for how to define them.
 
     <hr style="margin: 0px;">
     
@@ -85,9 +81,8 @@ The available attributes for each library are as follows:
               - default: network
         ```
 
-        By default, when `collection_files` is missing Kometa will look within the root Kometa directory for a 
-        collection file called `<MAPPING_NAME>.yml`. In the example below, Kometa will look for a file named 
-        `TV Shows.yml`.
+        By default, when `collection_files` is missing Kometa will look within the root Kometa directory for a Collection File called 
+        `<MAPPING_NAME>.yml`. In the example below, Kometa will look for a file named `TV Shows.yml`.
         
         ```yaml
         libraries:
@@ -102,9 +97,8 @@ The available attributes for each library are as follows:
 
     ???+ tip
     
-        As of Kometa 1.20.0 "Metadata Files" refers to YAML files which refers to managing the metadata of 
-        items [movies, shows, music] within your library, and "Collection Files" refers to YAML files which define 
-        Collections.
+        As of Kometa 1.20.0 "Metadata Files" refers to YAML files which refers to managing the metadata of items [movies, shows, music] 
+        within your library, and "Collection Files" refers to YAML files which define Collections.
     
         In previous version of Kometa, "Metadata Files" could mean either of the above.
 
@@ -112,7 +106,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `metadata_files`
     
-    **Accepted Values:** Location of [Metadata Files](../files/metadata.md)
+    **Accepted Values:** Location of [Metadata Files](../files/metadata.md).
 
     **Default Value:** `None`
 
@@ -127,15 +121,14 @@ The available attributes for each library are as follows:
 
 ??? blank "`overlay_files` - Used to define [Overlay Files](../files/overlays.md).<a class="headerlink" href="#overlay-files" title="Permanent link">¶</a>"
 
-    <div id="overlay-files" />The `overlay_files` attribute is used to define [Overlay Files](../files/overlays.md) by 
-    specifying the path type and path of the files that will be executed against the parent library. See 
-    [File Blocks](files.md) for how to define them.
+    <div id="overlay-files" />The `overlay_files` attribute is used to define [Overlay Files](../files/overlays.md) by specifying the path 
+    type and path of the files that will be executed against the parent library. See [File Blocks](files.md) for how to define them.
 
     <hr style="margin: 0px;">
     
     **Attribute:** `overlay_files`
     
-    **Accepted Values:** Location of [Overlay Files](../files/overlays.md)
+    **Accepted Values:** Location of [Overlay Files](../files/overlays.md).
 
     **Default Value:** `None`
 
@@ -152,22 +145,19 @@ The available attributes for each library are as follows:
 
 ??? blank "`report_path` - Location to save the YAML Report file for a library.<a class="headerlink" href="#report-path" title="Permanent link">¶</a>"
 
-    <div id="report-path" />The `report_path` attribute is used to define where to save the YAML Report file. This file 
-    is used to store information about what media is added, removed, filtered, and missing from the Plex library 
-    compared to what is expected from the Collection, Metadata, Overlay or Playlist file.
+    <div id="report-path" />The `report_path` attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, 
+    removed, filtered, and missing from the Plex library compared to what is expected from the Collection, Metadata, Overlay or Playlist file.
     
-    If your Collection file creates a collection with `Movie 1`, `Movie 2` and `Movie 3` but your Plex library only has 
-    `Movie 1` and `Movie 3`, then the missing YAML file will be updated to inform the user that `Movie 2` was missing 
-    from the library.
+    If your Collection File creates a collection with `Movie 1`, `Movie 2` and `Movie 3` but your Plex library only has `Movie 1` and `Movie 3`, 
+    then the missing YAML file will be updated to inform the user that `Movie 2` was missing from the library.
     
     <hr style="margin: 0px;">
     
     **Attribute:** `report_path`
     
-    **Accepted Values:** Location to save the YAML Report file
+    **Accepted Values:** Location to save the YAML Report file.
 
-    **Default Value:** `/config/<<MAPPING_NAME>>_report.yml` where `<<MAPPING_NAME>>` is the name of the library 
-    attribute
+    **Default Value:** `/config/<<MAPPING_NAME>>_report.yml` (Where `<<MAPPING_NAME>>` is the name of the library attribute.)
 
     ???+ example "Example"
         
@@ -193,8 +183,8 @@ The available attributes for each library are as follows:
 
 ??? blank "`template_variables` - Used to define [Custom Template Variables](../files/templates.md#template-variables) for every file in a library.<a class="headerlink" href="#template-variables" title="Permanent link">¶</a>"
 
-    <div id="template-variables" />Passes all given [Template Variables](../files/templates.md#template-variables) to 
-    every template in every Collection, Metadata, and Overlay file run.
+    <div id="template-variables" />Passes all given [Template Variables](../files/templates.md#template-variables) 
+    to every template in every Collection, Metadata, and Overlay File run.
     
     <hr style="margin: 0px;">
     
@@ -225,7 +215,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `schedule`
     
-    **Accepted Values:** Any [schedule option](schedule.md)
+    **Accepted Values:** Any [schedule option](schedule.md).
 
     **Default Value:** `daily`
 
@@ -249,7 +239,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `operations`
     
-    **Accepted Values:** Any [Library Operation](operations.md)
+    **Accepted Values:** Any [Library Operation](operations.md).
 
     **Default Value:** `None`
 
@@ -269,10 +259,10 @@ The available attributes for each library are as follows:
 
     <div id="remove-overlays" />Used to remove overlays from this library only. 
 
-    Kometa will aim to use the Original Posters backup that it created in the "overlays" folder to restore from, and will be unable to remove the overlays if this backup no longer exists. Kometa will also remove the `Overlay` label from the items in Plex.
+    Kometa will aim to use the Original Posters backup that it created in the "overlays" folder to restore from, and will be unable to remove the overlays if this backup no longer exists. 
+    Kometa will also remove the `Overlay` label from the items in Plex.
 
     The result of setting `remove_overlays` is your Plex library should no longer have any Overlays applied by Kometa.
-    
 
     ???+ warning "Proceed with Caution"
 
@@ -283,7 +273,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `remove_overlays`
     
-    **Accepted Values:** `true` or `false`
+    **Accepted Values:** `true` or `false`.
 
     **Default Value:** `false`
 
@@ -303,12 +293,11 @@ The available attributes for each library are as follows:
 
     <div id="reapply-overlays" />Used to reapply overlays from this library only. This will reapply overlays to every item in your library.
 
-    Note that this is typically NEVER required.  Kometa will automatically update overlays as needed as part of a regular overlay run.
+    Note that this is typically NEVER required. Kometa will automatically update overlays as needed as part of a regular overlay run.
 
     ???+ warning "Proceed with Caution"
 
-        When set to `true`, this will reapply all overlays on each run even if there is no need to do so, which will result in 
-        [image bloat](../kometa/scripts/imagemaid.md).
+        When set to `true`, this will reapply all overlays on each run even if there is no need to do so, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
         If you think you need to use this setting, please think hard about why you have that impression, as you are almost certainly mistaken.
 
@@ -318,7 +307,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `reapply_overlays`
     
-    **Accepted Values:** `true` or `false`
+    **Accepted Values:** `true` or `false`.
 
     **Default Value:** `false`
 
@@ -344,16 +333,16 @@ The available attributes for each library are as follows:
     
     ???+ warning "Proceed with Caution"
 
-        This will reset all posters to the desired source on each run and will reapply 
-        all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
+        This will reset all posters to the desired source on each run and will reapply all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
-        Additionally, any image obtained from this setting will take priority over any image you set using an Asset Directory. If you use Asset Directories, you shouldn't really be using this setting as the Asset Directory should be the single source of truth for what the "base" image is.
+        Additionally, any image obtained from this setting will take priority over any image you set using an Asset Directory. If you use Asset Directories, 
+        you shouldn't really be using this setting as the Asset Directory should be the single source of truth for what the "base" image is.
 
     <hr style="margin: 0px;">
     
     **Attribute:** `reset_overlays`
     
-    **Accepted Values:** `plex` or `tmdb`
+    **Accepted Values:** `plex` or `tmdb`.
 
     **Default Value:** `None`
 
@@ -371,15 +360,14 @@ The available attributes for each library are as follows:
 
 ??? blank "`schedule_overlays` - Used to schedule overlays.<a class="headerlink" href="#schedule-overlays" title="Permanent link">¶</a>"
 
-    <div id="schedule-overlays" />Used to schedule overlays to run when desired. Overlays are applied all at once in a 
-    batch therefore you cannot schedule individual Overlay Files, as any unscheduled overlay file will be removed each 
-    time Kometa is run.
+    <div id="schedule-overlays" />Used to schedule overlays to run when desired. Overlays are applied all at once in a batch therefore you
+    cannot schedule individual Overlay Files, as any unscheduled Overlay File will be removed each time Kometa is run.
 
     <hr style="margin: 0px;">
     
     **Attribute:** `schedule_overlays`
     
-    **Accepted Values:** [Any Schedule Option](schedule.md)
+    **Accepted Values:** [Any Schedule Option](schedule.md).
 
     **Default Value:** `daily`
 

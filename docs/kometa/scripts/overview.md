@@ -1,3 +1,7 @@
+---
+hide:
+  - toc
+---
 # Companion Scripts
 
 Each Companion Script is a separate project that has its own Docker container and GitHub Repository.

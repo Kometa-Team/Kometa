@@ -47,7 +47,7 @@ ignored_details = [
     "delete_not_scheduled", "tmdb_person", "build_collection", "collection_order", "builder_level", "overlay", "kometa_poster",
     "validate_builders", "libraries", "sync_to_users", "exclude_users", "collection_name", "playlist_name", "name", "limit",
     "blank_collection", "allowed_library_types", "run_definition", "delete_playlist", "ignore_blank_results", "only_run_on_create",
-    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday"
+    "delete_collections_named", "tmdb_person_offset", "append_label", "key_name", "translation_key", "translation_prefix", "tmdb_birthday", "tmdb_deathday"
 ]
 details = [
     "ignore_ids", "ignore_imdb_ids", "server_preroll", "changes_webhooks", "collection_filtering", "collection_mode", "url_theme",
@@ -786,8 +786,25 @@ class CollectionBuilder:
                 "this_month": util.parse(self.Type, "this_month", parsed_birthday, datatype="bool", methods=parsed_methods, default=False)
             }
 
+        self.tmdb_deathday = None
+        if "tmdb_deathday" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: tmdb_deathday")
+            logger.debug(f"Value: {data[methods['tmdb_deathday']]}")
+            if not self.data[methods["tmdb_deathday"]]:
+                raise Failed(f"{self.Type} Error: tmdb_deathday attribute is blank")
+            parsed_deathday = util.parse(self.Type, "tmdb_deathday", self.data, datatype="dict", methods=methods)
+            parsed_methods = {m.lower(): m for m in parsed_deathday}
+            self.tmdb_deathday = {
+                "before": util.parse(self.Type, "before", parsed_deathday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "after": util.parse(self.Type, "after", parsed_deathday, datatype="int", methods=parsed_methods, minimum=0, default=0),
+                "this_month": util.parse(self.Type, "this_month", parsed_deathday, datatype="bool", methods=parsed_methods, default=False)
+            }
+
+
         first_person = None
         self.tmdb_person_birthday = None
+        self.tmdb_person_deathday = None
         if "tmdb_person" in methods:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
@@ -816,6 +833,8 @@ class CollectionBuilder:
                             self.posters["tmdb_person"] = person.profile_url
                         if person.birthday and not self.tmdb_person_birthday:
                             self.tmdb_person_birthday = person.birthday
+                        if person.deathday and not self.tmdb_person_deathday:
+                            self.tmdb_person_deathday = person.deathday
                     except Failed as e:
                         if str(e).startswith("TMDb Error"):
                             logger.error(e)
@@ -831,6 +850,8 @@ class CollectionBuilder:
                                         self.posters["tmdb_person"] = results[result_index].profile_url
                                     if results[result_index].birthday and not self.tmdb_person_birthday:
                                         self.tmdb_person_birthday = results[result_index].birthday
+                                    if results[result_index].deathday and not self.tmdb_person_deathday:
+                                        self.tmdb_person_deathday = results[result_index].deathday
                             except Failed as ee:
                                 logger.error(ee)
                 if len(valid_names) > 0:
@@ -838,49 +859,52 @@ class CollectionBuilder:
                 else:
                     raise Failed(f"{self.Type} Error: No valid TMDb Person IDs in {self.data[methods['tmdb_person']]}")
 
-        if self.tmdb_birthday:
-            if "tmdb_person" not in methods:
-                raise NotScheduled("Skipped because tmdb_person is required when using tmdb_birthday")
-            if not self.tmdb_person_birthday:
-                raise NotScheduled(f"Skipped because No Birthday was found for {first_person}")
-            now = datetime(self.current_time.year, self.current_time.month, self.current_time.day)
+        for attr in ["tmdb_birthday", "tmdb_deathday"]:
+            tmdb_day = getattr(self, attr)
+            tmdb_person_day = getattr(self, attr.replace("_", "_person_"))
+            if tmdb_day:
+                if "tmdb_person" not in methods:
+                    raise NotScheduled(f"Skipped because tmdb_person is required when using {attr}")
+                if not tmdb_person_day:
+                    raise NotScheduled(f"Skipped because No {attr[5:]} was found for {first_person}")
+                now = datetime(self.current_time.year, self.current_time.month, self.current_time.day)
 
-            try:
-                delta = datetime(now.year, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-            except ValueError:
-                delta = datetime(now.year, self.tmdb_person_birthday.month, 28)
+                try:
+                    delta = datetime(now.year, tmdb_person_day.month, tmdb_person_day.day)
+                except ValueError:
+                    delta = datetime(now.year, tmdb_person_day.month, 28)
 
-            before_delta = delta
-            after_delta = delta
-            if delta < now:
-                try:
-                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-                except ValueError:
-                    before_delta = datetime(now.year + 1, self.tmdb_person_birthday.month, 28)
-            elif delta > now:
-                try:
-                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, self.tmdb_person_birthday.day)
-                except ValueError:
-                    after_delta = datetime(now.year - 1, self.tmdb_person_birthday.month, 28)
-            days_after = (now - after_delta).days
-            days_before = (before_delta - now).days
-            msg = ""
-            if self.tmdb_birthday["this_month"]:
-                if now.month != self.tmdb_person_birthday.month:
-                    msg = f"Skipped because Birthday Month: {self.tmdb_person_birthday.month} is not {now.month}"
-            elif days_before > self.tmdb_birthday["before"] and days_after > self.tmdb_birthday["after"]:
-                msg = f"Skipped because days until {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_before} > {self.tmdb_birthday['before']} and days after {self.tmdb_person_birthday.month}/{self.tmdb_person_birthday.day}: {days_after} > {self.tmdb_birthday['after']}"
-            if msg:
-                suffix = ""
-                if self.details["delete_not_scheduled"]:
+                before_delta = delta
+                after_delta = delta
+                if delta < now:
                     try:
-                        self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
-                        logger.info(self.delete())
-                        self.deleted = True
-                        suffix = f" and was deleted"
-                    except Failed:
-                        suffix = f" and could not be found to delete"
-                raise NotScheduled(f"{msg}{suffix}")
+                        before_delta = datetime(now.year + 1, tmdb_person_day.month, tmdb_person_day.day)
+                    except ValueError:
+                        before_delta = datetime(now.year + 1, tmdb_person_day.month, 28)
+                elif delta > now:
+                    try:
+                        after_delta = datetime(now.year - 1, tmdb_person_day.month, tmdb_person_day.day)
+                    except ValueError:
+                        after_delta = datetime(now.year - 1, tmdb_person_day.month, 28)
+                days_after = (now - after_delta).days
+                days_before = (before_delta - now).days
+                msg = ""
+                if tmdb_day["this_month"]:
+                    if now.month != tmdb_person_day.month:
+                        msg = f"Skipped because {attr[5:]} Month: {tmdb_person_day.month} is not {now.month}"
+                elif days_before > tmdb_day["before"] and days_after > tmdb_day["after"]:
+                    msg = f"Skipped because days until {tmdb_person_day.month}/{tmdb_person_day.day}: {days_before} > {tmdb_day['before']} and days after {tmdb_person_day.month}/{tmdb_person_day.day}: {days_after} > {tmdb_day['after']}"
+                if msg:
+                    suffix = ""
+                    if self.details["delete_not_scheduled"]:
+                        try:
+                            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+                            logger.info(self.delete())
+                            self.deleted = True
+                            suffix = f" and was deleted"
+                        except Failed:
+                            suffix = f" and could not be found to delete"
+                    raise NotScheduled(f"{msg}{suffix}")
 
         self.smart_url = None
         self.smart_type_key = None
@@ -1477,11 +1501,11 @@ class CollectionBuilder:
 
     def _icheckmovies(self, method_name, method_data):
         if method_name.startswith("icheckmovies_list"):
-            icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data, self.language)
+            icheckmovies_lists = self.config.ICheckMovies.validate_icheckmovies_lists(method_data)
             for icheckmovies_list in icheckmovies_lists:
                 self.builders.append(("icheckmovies_list", icheckmovies_list))
             if method_name.endswith("_details"):
-                self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0], self.language)
+                self.summaries[method_name] = self.config.ICheckMovies.get_list_description(icheckmovies_lists[0])
 
     def _imdb(self, method_name, method_data):
         if method_name == "imdb_id":
@@ -1513,11 +1537,27 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: imdb_award event_year attribute is blank")
                 if og_year in ["all", "latest"]:
                     event_year = og_year
-                elif not isinstance(og_year, list) and "-" in str(og_year) and len(str(og_year)) > 7:
+                elif not isinstance(og_year, list) and "-" in str(og_year)[1:] and (len(str(og_year)) > 6 or str(og_year).startswith("-") or "--" in str(og_year)):
                     try:
+                        first_neg = False
+                        second_neg = False
+                        if str(og_year)[0] == "-":
+                            first_neg = True
+                            og_year = str(og_year)[1:]
+                        if "--" in str(og_year):
+                            second_neg = True
+                            og_year = str(og_year).replace("--", "-")
                         min_year, max_year = og_year.split("-")
-                        min_year = int(min_year)
-                        max_year = int(max_year) if max_year != "current" else None
+                        if first_neg:
+                            min_year = self.current_year - int(min_year)
+                        else:
+                            min_year = int(min_year)
+                        if second_neg:
+                            max_year = self.current_year - int(max_year)
+                        elif max_year == "current":
+                            max_year = None
+                        else:
+                            max_year = int(max_year)
                         event_year = []
                         for option in year_options:
                             check = int(option.split("-")[0] if "-" in option else option)
@@ -1525,6 +1565,10 @@ class CollectionBuilder:
                                 event_year.append(option)
                     except ValueError:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
+                elif str(og_year).startswith("-"):
+                    event_year = str(self.current_year + int(og_year))
+                    if event_year not in year_options:
+                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year}. Event Options: [{', '.join(year_options)}]")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
                 if (event_year == "all" or len(event_year) > 1) and not git_event:
@@ -1905,7 +1949,7 @@ class CollectionBuilder:
                             except ValueError:
                                 raise Failed(f"{self.Type} Error: {method_name} range_data attribute invalid: {og_data}")
                         else:
-                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + util.lower_months)
+                            _v = util.parse(self.Type, "range_data", dict_data, methods=dict_methods, parent=method_name, default="current", options=["current"] + [k for k in util.lower_months])
                             final["range_data"] = chart_date.month if _v == "current" else util.lower_months[_v]
                     elif final["range"] == "quarterly":
                         if str(og_data).startswith("current-"):
@@ -2214,7 +2258,7 @@ class CollectionBuilder:
         elif "imdb" in method:
             ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
         elif "icheckmovies" in method:
-            ids = self.config.ICheckMovies.get_imdb_ids(method, value, self.language)
+            ids = self.config.ICheckMovies.get_imdb_ids(method, value)
         elif "letterboxd" in method:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "reciperr" in method or "stevenlu" in method:

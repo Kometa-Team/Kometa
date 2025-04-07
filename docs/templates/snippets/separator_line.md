@@ -1,0 +1,1 @@
+| `SEPARATOR Collections` | `separator` | [Separator Collection](./../../defaults/separators.md) to denote the Section of Collections. |

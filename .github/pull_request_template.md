@@ -18,11 +18,11 @@
     Type X in the brackets of any relevant option, for example:
     - [X] Bug Fix (non-breaking change which fixes an issue)
 -->
-- [] Bug Fix (non-breaking change which fixes an issue)
-- [] Feature/Tweak (non-breaking change which adds new functionality or enhances existing functionality)
-- [] Breaking Change (fix or feature that would break any existing functionality for users)
-- [] Documentation Update
-- [] Other 
+- [ ] Bug Fix (non-breaking change which fixes an issue)
+- [ ] Feature/Tweak (non-breaking change which adds new functionality or enhances existing functionality)
+- [ ] Breaking Change (fix or feature that would break any existing functionality for users)
+- [ ] Documentation Update
+- [ ] Other 
 
 ## Description
 
@@ -48,8 +48,8 @@ _Please replace this line with a meaningful description of your PR. What does it
     Type X in the brackets of any relevant option, for example:
     - [X] Yes
 -->
-- [] Yes
-- [] No
+- [ ] Yes
+- [ ] No
 
 ## Have you updated the CHANGELOG?
 
@@ -59,5 +59,5 @@ _Please replace this line with a meaningful description of your PR. What does it
     Type X in the brackets of any relevant option, for example:
     - [X] Ye
 -->
-- [] Yes
-- [] No
+- [ ] Yes
+- [ ] No
