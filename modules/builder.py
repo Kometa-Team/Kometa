@@ -3971,6 +3971,7 @@ class CollectionBuilder:
                 else:
                     raise Failed(str(e))
             items = self.library.fetchItems(search_data[2])
+        total_items = len(items)
         previous = None
         sort_edit = False
         for i, item in enumerate(items, 0):
@@ -3978,7 +3979,7 @@ class CollectionBuilder:
                 if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
                     text = f"after {util.item_title(previous)}" if previous else "to the beginning"
                     self.library.moveItem(self.obj, item, previous)
-                    logger.info(f"Moving {util.item_title(item)} {text}")
+                    logger.info(f"({i + 1}/{total_items}) Moving {util.item_title(item)} {text}")
                     sort_edit = True
                 previous = item
             except Failed:

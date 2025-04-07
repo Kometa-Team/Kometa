@@ -86,13 +86,10 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0])), 1):
-                # item_title = self.library.get_item_sort_title(item, atr="title")
-                # emby_item = self.library.get_native_emby_item(item.ratingKey)
+            total_keys = len(key_to_overlays)
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
+                # item_title = self.library.get_item_display_title(item)
                 emby_item = self.library.EmbyServer.get_item(item.ratingKey)
-                # 'ProductionLocations' = {list: 1} ['United States of America']
-                #  0 = {str} 'United States of America'
-
                 emby_images = self.library.EmbyServer.get_item_images(item.ratingKey)
                 emby_poster = None
                 emby_thumb = None
@@ -106,7 +103,7 @@ class Overlays:
 
                 item_title = emby_item.get("Name",'')
                 try:
-                    logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
+                    logger.ghost(f"Overlaying: ({i}/{total_keys}) {item_title}")
                     image_compare = None
                     overlay_compare = None
                     poster = None
