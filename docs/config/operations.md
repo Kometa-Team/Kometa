@@ -114,7 +114,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_genre_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
 
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb for Genres.</td></tr>
@@ -133,7 +133,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
       <tr><td>`unlock`</td><td>Unlock all Genre Field.</td></tr>
       <tr><td>`remove`</td><td>Remove all Genres and Lock all Field.</td></tr>
       <tr><td>`reset`</td><td>Remove all Genres and Unlock all Field.</td></tr>
-      <tr><td colspan="2">List of Strings for Genres. (<code>["String 1", "String 2"]</code>)</td></tr>
+      <tr><td colspan="2">List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Strings for Genres. (<code>["String 1", "String 2"]</code>)</td></tr>
     </table>
 
     ???+ example "Example"
@@ -158,7 +158,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_content_rating_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
     
     ???+ tip "Note on `mdb` sources"
 
@@ -203,7 +203,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_original_title_update`
     
-    **Accepted Values:** Source or List of sources to use in that order
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles.</td></tr>
@@ -240,7 +240,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_studio_update`
     
-    **Accepted Values:** Source or List of sources to use in that order
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
     
     <table class="clearTable">
       <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio.</td></tr>
@@ -279,7 +279,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_originally_available_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
 
     ???+ tip "Note on `mdb` sources"
 
@@ -324,7 +324,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_added_at_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
 
     ???+ tip "Note on `mdb` sources"
 
@@ -377,7 +377,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
 
     ???+ tip "Note on `mdb` sources"
 
@@ -456,7 +456,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     **Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
     
-    **Accepted Values:** Source or List of sources to use in that order.
+    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
     
     <table class="clearTable">
       <tr><td>`imdb`</td><td>Use IMDb Rating.</td></tr>
@@ -892,7 +892,7 @@ For example, MDBList's free tier is limited [at time of writing] to 1000 API req
     
     <table class="clearTable">
       <tr><td>`path`</td><td>Path to where the metadata will be saved/maintained.<br>**Default:** `<<library_name>>_Metadata_Backup.yml in your config folder`<br>**Values:** Path to Metadata File.</td></tr>
-      <tr><td>`exclude`</td><td>Exclude all listed attributes from being saved in the Collection File.<br>**Values:** `Comma-separated string or list of attributes`.</td></tr>
+      <tr><td>`exclude`</td><td>Exclude all listed attributes from being saved in the Collection File.<br>**Values:** `Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of attributes`.</td></tr>
       <tr><td>`sync_tags`</td><td>All Tag Attributes will have the `.sync` option and blank attribute will be added to sync.<br>**Default:** `false`<br>**Values:** `true` or `false`.</td></tr>
       <tr><td>`add_blank_entries`</td><td>Will add a line for entries that have no metadata changes.<br>**Default:** `true`<br>**Values:** `true` or `false`.</td></tr>
     </table>

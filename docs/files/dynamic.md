@@ -162,7 +162,7 @@ by this dynamic collection.
     
     **Attribute:** `exclude`
     
-    **Accepted Values:** List of keys
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keys
 
     ???+ example "Example"
         
@@ -189,7 +189,7 @@ by this dynamic collection.
     **Attribute:** `addons`
     
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` and the value is a
-    list of `dynamic keys` to combine.
+    list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of `dynamic keys` to combine.
 
     ???+ example "Example"
         
@@ -213,7 +213,7 @@ by this dynamic collection.
 
     Each template is passed a few Template Variables you can use.
 
-    * `value`: The list of keys and addons
+    * `value`: The list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keys and addons
 
     * `key`: The dynamic key
 
@@ -223,7 +223,7 @@ by this dynamic collection.
     
     **Attribute:** `template`
     
-    **Accepted Values:** Name of template or list of templates to use 
+    **Accepted Values:** Name of template or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of templates to use 
 
     ???+ example "Example"
 
@@ -566,21 +566,21 @@ by this dynamic collection.
 
     Each template is passed a few Template Variables you can use.
 
-    * `value`: The list of keys and addons
+    * `value`: The list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keys and addons
 
     * `key`: The dynamic key
 
     * `key_name`: The key after `key_name_override`, `remove_prefix`, or `remove_suffix` are run on it.
 
-    * `included_keys`: The list of included keys
+    * `included_keys`: The list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of included keys
 
-    * `used_keys`: The list of all keys used (included_keys and their addon keys)
+    * `used_keys`: The list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of all keys used (included_keys and their addon keys)
 
     <hr style="margin: 0px;">
     
     **Attribute:** `other_template`
     
-    **Accepted Values:** Name of template or list of templates to use for the other collection only
+    **Accepted Values:** Name of template or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of templates to use for the other collection only
 
     ???+ example "Example"
 

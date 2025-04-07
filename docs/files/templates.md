@@ -52,7 +52,7 @@ In addition, templates also have a few special attributes that they can use:
 ??? blank "`default` - Sets what Template Variables default to.<a class="headerlink" href="#default" title="Permanent link">¶</a>"
 
     <div id="default" />The `default` attribute allows default values for Template Variables which will be used if they're not 
-    specified in the call. You need to provide a list of variables and the value that variable should get if not told differently when the template is referenced. See the tooltips below.
+    specified in the call. You need to provide a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of variables and the value that variable should get if not told differently when the template is referenced. See the tooltips below.
 
     **A variable cannot be default if it is a conditional variable.**
 
@@ -140,7 +140,7 @@ In addition, templates also have a few special attributes that they can use:
 
     |  Attribute   | Description                                                                                                                                                                                                                                                      |
     |:------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `conditions` | A list of condition blocks where if all conditions are met then the variable will be the `value` specified in that condition block. Once all conditions in a block are met, that `value` will be used and no other blocks will be run.<br>**This attribute is required** |
+    | `conditions` | A list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of condition blocks where if all conditions are met then the variable will be the `value` specified in that condition block. Once all conditions in a block are met, that `value` will be used and no other blocks will be run.<br>**This attribute is required** |
     |  `default`   | The default value for when no condition block is met. If default is not specified the variable becomes an optional variable.<br>**This attribute is optional**                                                                                                         |
     
     #### Condition Blocks

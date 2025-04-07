@@ -79,7 +79,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** Any Directory or List of Directories.
+    **Accepted Values:** Any Directory or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Directories.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
@@ -606,7 +606,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Playlist
     
-    **Accepted Values:** `all`, list of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
+    **Accepted Values:** `all`, list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
 
     ???+ example "Example"
         

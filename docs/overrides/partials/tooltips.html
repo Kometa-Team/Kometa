@@ -1,7 +1,8 @@
 <!-- overrides/partials/tooltips.html -->
 
 <div id="tippy-overlays-1" style="display:none;">
-    These services do not store season or episode-level ratings, using these options will allow show ratings to be applied at the season or episode level.
+    These services do not store season or episode-level ratings, using these options will allow show ratings to be
+    applied at the season or episode level.
 </div>
 
 <div id="tippy-yaml-lists" style="display:none;"><h3>YAML Lists Explained</h3>
@@ -18,34 +19,43 @@
 </div>
 
 <div id="tippy-yaml-dictionaries" style="display:none;"><h3>YAML Dictionaries Explained</h3>
-    <p>Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation,
-or new dictionaries can be created at the same level by resolving the previous one.</p>
+    <p>Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing
+        the indentation,
+        or new dictionaries can be created at the same level by resolving the previous one.</p>
     <pre><code class="yaml">cache: true<br>cache_expiration: 60</code></pre>
-    <p>The "keys" are <code>cache</code> and <code>cache_expiration</code> and the "values" are <code>true</code> and <code>60</code> respectively.</p>
+    <p>The "keys" are <code>cache</code> and <code>cache_expiration</code> and the "values" are <code>true</code> and
+        <code>60</code> respectively.</p>
 </div>
 
 <div id="tippy-score-filters" style="display:none;">
-    You can use multiple score filters but the number will have to match every filter. All unrated items are considered to have a 0 rating.
+    You can use multiple score filters but the number will have to match every filter. All unrated items are considered
+    to have a 0 rating.
 </div>
 
 <div id="tippy-letterboxd-filters-1" style="display:none;">
-    These filters only work if the URL is to the List View of the Letterboxd list (i.e. it should have <code>/detail/</code> in the URL) or to an account's Reviews (i.e. it should have <code>/USERNAME/films/reviews/</code> in the URL).
+    These filters only work if the URL is to the List View of the Letterboxd list (i.e. it should have
+    <code>/detail/</code> in the URL) or to an account's Reviews (i.e. it should have
+    <code>/USERNAME/films/reviews/</code> in the URL).
 </div>
 
 <div id="tippy-letterboxd-filters-2" style="display:none;">
-    This filter only works if the URL is to the List View of the Letterboxd list (i.e. it should have <code>/detail/</code> in the URL).
+    This filter only works if the URL is to the List View of the Letterboxd list (i.e. it should have
+    <code>/detail/</code> in the URL).
 </div>
 
 <div id="tippy-metadata-1" style="display:none;">
-    When <code>title</code> is not provided and the mapping name was not specified as an ID, the default behaviour is to use the mapping name as <code>title</code> for matching.
+    When <code>title</code> is not provided and the mapping name was not specified as an ID, the default behaviour is to
+    use the mapping name as <code>title</code> for matching.
 </div>
 
 <div id="tippy-metadata-2" style="display:none;">
-    When <code>mapping_id</code> is not provided and the mapping name was specified as an ID, the default behaviour is to use the mapping name as <code>mapping_id</code> for matching.
+    When <code>mapping_id</code> is not provided and the mapping name was specified as an ID, the default behaviour is
+    to use the mapping name as <code>mapping_id</code> for matching.
 </div>
 
 <div id="tippy-metadata-3" style="display:none;">
-    When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will check the movie's filepath for <code>{edition-...}</code> to determine what the edition is.
+    When the server does not have a Plex Pass then the Edition Field is not accessible. In this scenario, Kometa will
+    check the movie's filepath for <code>{edition-...}</code> to determine what the edition is.
 </div>
 
 
@@ -58,11 +68,13 @@ or new dictionaries can be created at the same level by resolving the previous o
 </div>
 
 <div id="tippy-defaults-key" style="display:none;">
-    Each default has a <code>key</code> that when calling to effect a specific collection/overlay you must replace <code>&lt;&lt;key&gt;&gt;</code> with when calling.
+    Each default has a <code>key</code> that when calling to effect a specific collection/overlay you must replace
+    <code>&lt;&lt;key&gt;&gt;</code> with when calling.
 </div>
 
 <div id="tippy-plex-search-1" style="display:none;">
-    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
+    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a
+    <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
 </div>
 
 <div id="tippy-item-updates-1" style="display:none;">
@@ -74,55 +86,68 @@ or new dictionaries can be created at the same level by resolving the previous o
 </div>
 
 <div id="tippy-filters-boolean-1" style="display:none;">
-    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the <a href="settings.md">default percent</a>.
+    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the
+    <a href="settings.md">default percent</a>.
 </div>
 
 <div id="tippy-filters-date-1" style="display:none;">
-    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code> modifiers.
+    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code>
+    modifiers.
 </div>
 
 <div id="tippy-filters-number-1" style="display:none;">
-    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
+    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a
+    <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
 </div>
 
 <div id="tippy-filters-number-2" style="display:none;">
-    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code> modifiers.
+    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code>
+    modifiers.
 </div>
 
 <div id="tippy-filters-number-3" style="display:none;">
-    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the <a href="settings.md">default percent</a>.
+    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the
+    <a href="settings.md">default percent</a>.
 </div>
 
 <div id="tippy-filters-number-4" style="display:none;">
-    The actual numbers are pulled from the <a href="https://github.com/Kometa-Team/Mediastingers">Mediastingers</a> Repo.
+    The actual numbers are pulled from the <a href="https://github.com/Kometa-Team/Mediastingers">Mediastingers</a>
+    Repo.
 </div>
 
 <div id="tippy-filters-string-1" style="display:none;">
-    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code> modifiers.
+    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code>
+    modifiers.
 </div>
 
 <div id="tippy-filters-string-2" style="display:none;">
-    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the <a href="settings.md">default percent</a>.
+    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the
+    <a href="settings.md">default percent</a>.
 </div>
 
 <div id="tippy-filters-tag-1" style="display:none;">
-    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
+    You can use <code>current_year</code> to have Kometa use the current year's value. This can be combined with a
+    <code>-#</code> at the end to subtract that number of years. i.e. <code>current_year-2</code>
 </div>
 
 <div id="tippy-filters-tag-2" style="display:none;">
-    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the <a href="settings.md">default percent</a>.
+    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the
+    <a href="settings.md">default percent</a>.
 </div>
 
 <div id="tippy-filters-tag-3" style="display:none;">
-    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code> modifiers.
+    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code>
+    modifiers.
 </div>
 
 <div id="tippy-filter-special-1" style="display:none;">
-    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the <a href="settings.md">default percent</a>.
+    Filters using the special <code>episodes</code>/<code>tracks</code> <a href="#special-filters">filter</a> with the
+    <a href="settings.md">default percent</a>.
 </div>
 
 <div id="tippy-filter-special-2" style="display:none;">
-    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code> modifiers.
+    Also filters out missing movies/shows from being added to Radarr/Sonarr. These values also cannot use the <code>count</code>
+    modifiers.
 </div>
 
 <div id="tippy-filter-special-3" style="display:none;">
@@ -138,7 +163,8 @@ or new dictionaries can be created at the same level by resolving the previous o
 </div>
 
 <div id="tippy-overlay-list-3" style="display:none;">
-    Editions overlay is designed to use the Editions field within Plex (which requires Plex Pass to use) or the <a href="../../https://trash-guides.info/">TRaSH Guides</a> filename naming scheme
+    Editions overlay is designed to use the Editions field within Plex (which requires Plex Pass to use) or the <a
+        href="../../https://trash-guides.info/">TRaSH Guides</a> filename naming scheme
 </div>
 
 <div id="tippy-overlay-list-4" style="display:none;">
@@ -146,7 +172,9 @@ or new dictionaries can be created at the same level by resolving the previous o
 </div>
 
 <div id="tippy-overlay-list-5" style="display:none;">
-    While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.
+    While these overlays can technically be applied at this level, they were not designed for it. For example, a show's
+    season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since
+    only Movies and Shows are rated by Common Sense.
 </div>
 
 <div id="tippy-collection-list-1" style="display:none;">
@@ -158,7 +186,8 @@ or new dictionaries can be created at the same level by resolving the previous o
 </div>
 
 <div id="tippy-operations-1" style="display:none;">
-    The field will be locked if a previous <code>mass_poster_update</code> or <code>mass_background_update</code> was run, or if an Overlay has been applied.
+    The field will be locked if a previous <code>mass_poster_update</code> or <code>mass_background_update</code> was
+    run, or if an Overlay has been applied.
 </div>
 
 <div id="tippy-operations-2" style="display:none;">

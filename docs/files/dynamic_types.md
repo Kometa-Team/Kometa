@@ -248,7 +248,7 @@ requirements of creating the collection.
         
         <div id="letterboxd-user-lists-username" />This determines which Usernames are scanned. 
 
-        **Allowed Values:** Username or list of Usernames
+        **Allowed Values:** Username or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Usernames
 
     ??? blank "`sort_by` - Determines the sort that the lists are returned.<a class="headerlink" href="#letterboxd-user-lists-sort-by" title="Permanent link">¶</a>"
         
@@ -305,7 +305,7 @@ requirements of creating the collection.
     
     **`type` Value:** `trakt_user_lists`
 
-    **`data` Value:** List of Trakt Users (Use `me` to reference the authenticated user)
+    **`data` Value:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Trakt Users (Use `me` to reference the authenticated user)
 
     **Valid Library Types:** Movies and Shows
     
@@ -383,7 +383,7 @@ requirements of creating the collection.
     
     **`type` Value:** `trakt_people_list`
 
-    **`data` Value:** List of Trakt URLs
+    **`data` Value:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Trakt URLs
 
     **Valid Library Types:** Movies and Shows
     
