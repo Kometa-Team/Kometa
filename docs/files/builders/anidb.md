@@ -18,7 +18,7 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
 
     Finds the anime specified by the AniDB ID.
     
-    The expected input is an AniDB ID or AniDB Anime URL. Multiple values are supported as either a list or a comma-separated string.
+    The expected input is an AniDB ID or AniDB Anime URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
     
     ### Example AniDB ID Builder(s)
 
@@ -47,7 +47,7 @@ You can find anime using the features of [AniDB.net](https://anidb.net/) (AniDB)
     
     To see the relation graph of an anime use: `https://anidb.net/anime/<ANIDB_ID>/relation/graph` but replace `<ANIDB_ID>` with the AniDB ID you want to see therelations for.
     
-    **Value:** The expected input is an AniDB ID, AniDB Anime URL, or AniDB Anime Relation URL. Multiple values are supported as either a list or a comma-separated string.
+    **Value:** The expected input is an AniDB ID, AniDB Anime URL, or AniDB Anime Relation URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
     
     ### Example AniDB Relation Builder(s)
 

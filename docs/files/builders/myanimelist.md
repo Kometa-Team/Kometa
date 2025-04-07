@@ -251,7 +251,7 @@ You can find anime using the features of [MyAnimeList.net](https://myanimelist.n
 
     Gets the anime specified by the MyAnimeList ID.
     
-    The expected input is a MyAnimeList ID. Multiple values are supported as either a list or a comma-separated string.
+    The expected input is a MyAnimeList ID. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
     ### Example MyAnimeList ID Builder(s)
 

@@ -28,8 +28,6 @@ These collections are applied by calling the below paths into the `collection_fi
 
 === "Charts"
 
-    <div class="annotate" markdown>
-
     | Default                                       | Path              | Example Collections                        | Allowed Media       |
     |:----------------------------------------------|:------------------|:-------------------------------------------|:--------------------|
     | [Chart Separator](../../chart/separator)      | `separator_chart` | Chart Collections                          | `Movies`<br>`Shows` |
@@ -38,15 +36,10 @@ These collections are applied by calling the below paths into the `collection_fi
     | [IMDb Charts](../../chart/imdb)               | `imdb`            | IMDb Popular, IMDb Top 250                 | `Movies`<br>`Shows` |
     | [Letterboxd Charts](../../chart/letterboxd)   | `letterboxd`      | Letterboxd Top 250, Top 250 Most Fans      | `Movies`            |
     | [MyAnimeList Charts](../../chart/myanimelist) | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated | `Movies`<br>`Shows` |
-    | [Tautulli Charts](../../chart/tautulli)(1)    | `tautulli`        | Plex Popular, Plex Watched                 | `Movies`<br>`Shows` |
+    | [Tautulli Charts](../../chart/tautulli) :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-1" }    | `tautulli`        | Plex Popular, Plex Watched                 | `Movies`<br>`Shows` |
     | [TMDb Charts](../../chart/tmdb)               | `tmdb`            | TMDb Popular, TMDb Airing Today            | `Movies`<br>`Shows` |
-    | [Trakt Charts](../../chart/trakt)(2)          | `trakt`           | Trakt Popular, Trakt Trending              | `Movies`<br>`Shows` |
+    | [Trakt Charts](../../chart/trakt) :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-2" }          | `trakt`           | Trakt Popular, Trakt Trending              | `Movies`<br>`Shows` |
     | [Other Charts](../../chart/other)             | `other_chart`     | AniDB Popular, Common Sense Selection      | `Movies`<br>`Shows` |
-
-    </div>
-
-    1.  Requires [Tautulli Authentication](../../../config/tautulli)<br>
-    2.  Requires [Trakt Authentication](../../../config/trakt)
 
 === "Content"
 

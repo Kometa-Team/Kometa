@@ -16,7 +16,7 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
     
     Finds every item in a [TVDb List](https://www.thetvdb.com/lists) or [TVDb UserList](https://www.thetvdb.com/lists/custom)
     
-    The expected input is a TVDb List URL or TVDb UserList URL. Multiple values are supported as either a list or a 
+    The expected input is a TVDb List URL or TVDb UserList URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a 
     comma-separated string.
     
     The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
@@ -58,7 +58,7 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
     
     Finds the show specified
     
-    The expected input is a TVDb Series ID or TVDb Series URL. Multiple values are supported as either a list or a 
+    The expected input is a TVDb Series ID or TVDb Series URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a 
     comma-separated string.
 
     ???+ tip "Details Builder"
@@ -94,7 +94,7 @@ You can find items using the features of [TheTVDb.com](https://www.thetvdb.com/)
 
     Finds the movie specified
     
-    The expected input is a TVDb Movie ID or TVDb Movie URL. Multiple values are supported as either a list or a 
+    The expected input is a TVDb Movie ID or TVDb Movie URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a 
     comma-separated string.
 
     ???+ tip "Details Builder"

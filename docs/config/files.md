@@ -157,7 +157,7 @@ You can have some control of the files from inside your Configuration file by us
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) of values specified by each particular file.
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of values specified by each particular file.
 
     **Default Value:** `None`
 

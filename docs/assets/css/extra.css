@@ -860,3 +860,18 @@ code {
 .md-typeset pre>code {
 	scrollbar-color: #03a37a #0000;
 }
+
+div[id*="tippy"] h1,
+div[id*="tippy"] h2,
+div[id*="tippy"] h3,
+div[id*="tippy"] h4,
+div[id*="tippy"] h5,
+div[id*="tippy"] h6 {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+[data-tooltip][data-tooltip-id*="tippy"] {
+  color: rgb(4 181 181);
+}
+

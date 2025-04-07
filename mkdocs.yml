@@ -114,10 +114,11 @@ markdown_extensions:
       toc_depth: 3
 extra_css:
   - assets/css/extra.css
-
+  - https://unpkg.com/tippy.js@6/dist/tippy.css
 extra_javascript:
   - assets/js/extra.js
-
+  - https://unpkg.com/@popperjs/core@2
+  - https://unpkg.com/tippy.js@6
 hooks:
   - docs/hooks/copyright.py
 
