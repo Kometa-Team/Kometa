@@ -261,7 +261,22 @@ class Trakt:
 
     def list_description(self, data):
         try:
-            return self._request(urlparse(data).path)["description"]
+            if "/official/" in data:
+                path = urlparse(data).path.replace("/official/", "/")
+
+                list = self._request(path)
+                list_id = list.get("ids", {}).get("trakt")
+
+                if not list_id:
+                    raise Failed(f"Trakt Error: Could not extract ID for official list {data}")
+
+                metadata = self._request(f"/lists/{list_id}")
+                return metadata.get("description", "")
+
+            else:
+                # Regular user list
+                return self._request(urlparse(data).path)["description"]
+
         except Failed:
             raise Failed(data)
 
