@@ -84,6 +84,10 @@ dynamic_collections:
       "46296": Spartacus
       "41956": Death in Paradise
       "108978": Reacher
+      "60585": Bosch
+      "3476": Inspector Morse
+      "61511": Father Brown (2013)
+      "41956": Death in Paradise (2011)
     template:
       - tmdbshow
     addons:
@@ -111,3 +115,8 @@ dynamic_collections:
       46296: 240459 # Spartacus: House of Ashur
       41956: [205072, 244978] # Beyond Paradise, Return to Paradise
       108978: 273207 # Neagley
+      60585: 153657 # Bosch: Legacy
+      3476: [44264, 2343] # Inspector Morse, Endeavour, Lewis
+      61511: 157282 # Sister Boniface Mysteries (2022)
+      41956: [205072, 244978] # Beyond Paradise (2023), Return to Paradise (2025)
+      
