@@ -188,7 +188,7 @@ by this dynamic collection.
     
     **Attribute:** `addons`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` and the value is a
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` and the value is a
     list of `dynamic keys` to combine.
 
     ???+ example "Example"
@@ -262,8 +262,8 @@ by this dynamic collection.
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the Template Variable and the value 
-    is another [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` of the collection you want 
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the Template Variable and the value 
+    is another Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` of the collection you want 
     change the Template Variable for and the value is the new value for the Template Variable.
 
     ???+ example "Example"
@@ -302,7 +302,7 @@ by this dynamic collection.
     
     **Attribute:** `remove_suffix`
     
-    **Accepted Values:** List or comma-separated string of suffixes to remove
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of suffixes to remove
 
     ???+ example "Example"
 
@@ -323,7 +323,7 @@ by this dynamic collection.
     
     **Attribute:** `remove_prefix`
     
-    **Accepted Values:** List or comma-separated string of prefixes to remove
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of prefixes to remove
 
     ???+ example "Example"
 
@@ -376,7 +376,7 @@ by this dynamic collection.
     
     **Attribute:** `key_name_override`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the key name you want to change and 
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the key name you want to change and 
     the value is what to change that key name to. 
 
     ???+ example "Example"
@@ -404,7 +404,7 @@ by this dynamic collection.
     
     **Attribute:** `title_override`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) where the key is the `dynamic key` you want to change 
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` you want to change 
     and the value is what to change the title to. 
 
     ???+ example "Example"

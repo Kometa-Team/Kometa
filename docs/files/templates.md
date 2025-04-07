@@ -211,7 +211,7 @@ In addition, templates also have a few special attributes that they can use:
 
 ??? blank "`move_prefix` - List of prefixes to move to the end of the collection/playlist name for sorting.<a class="headerlink" href="#move-prefix" title="Permanent link">¶</a>"
 
-    <div id="move-prefix" />The `move_prefix` attribute can be used to specify a list or comma-separated string of 
+    <div id="move-prefix" />The `move_prefix` attribute can be used to specify a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of 
     prefixes to move to the end of the collection/playlist name for sorting. This changes the Template Variables
     `collection_sort`, `playlist_sort`, and `mapping_sort`.
 

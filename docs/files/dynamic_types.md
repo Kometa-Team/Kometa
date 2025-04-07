@@ -166,7 +166,7 @@ requirements of creating the collection.
     
     **`type` Value:** `imdb_awards`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`event_id` - Determines the [IMDb Event](https://www.imdb.com/event/) used.<a class="headerlink" href="#imdb-awards-event-id" title="Permanent link">¶</a>"
         
@@ -242,7 +242,7 @@ requirements of creating the collection.
     
     **`type` Value:** `letterboxd_user_lists`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`username` - Determines the Usernames to scan for lists.<a class="headerlink" href="#letterboxd-user-lists-username" title="Permanent link">¶</a>"
         
@@ -421,7 +421,7 @@ requirements of creating the collection.
     
     **`type` Value:** `actor`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" acting credits per item.<a class="headerlink" href="#actor-depth" title="Permanent link">¶</a>"
         
@@ -504,7 +504,7 @@ requirements of creating the collection.
     
     **`type` Value:** `director`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" directing credits per item.<a class="headerlink" href="#director-depth" title="Permanent link">¶</a>"
         
@@ -587,7 +587,7 @@ requirements of creating the collection.
     
     **`type` Value:** `writer`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" writing credits per item.<a class="headerlink" href="#writer-depth" title="Permanent link">¶</a>"
         
@@ -670,7 +670,7 @@ requirements of creating the collection.
     
     **`type` Value:** `producer`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" producing credits per item.<a class="headerlink" href="#producer-depth" title="Permanent link">¶</a>"
         
@@ -1474,7 +1474,7 @@ requirements of creating the collection.
     
     **`type` Value:** `number`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) of Attributes
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`starting` - Determines the starting number.<a class="headerlink" href="#number-starting" title="Permanent link">¶</a>"
         
@@ -1550,7 +1550,7 @@ requirements of creating the collection.
     
     **`type` Value:** `custom`
 
-    **`data` Value:** [Dictionary](../kometa/yaml.md#dictionaries) with the keys being the `dynamic key` and the values 
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } with the keys being the `dynamic key` and the values 
     being the `key name`
 
     **Valid Library Types:** Movies, Shows, Music, and Video

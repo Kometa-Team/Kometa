@@ -309,7 +309,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
     
         Finds every item in the TMDb collection.
 
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         ### Example TMDb Collection Builder(s)
 
@@ -336,7 +336,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds every item in the TMDb List.
         
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
         and in a specific order. 
@@ -365,7 +365,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds the movie specified.
         
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         ### Example TMDb Movie Builder(s)
 
@@ -391,7 +391,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds the show specified.
         
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         ### Example TMDb Show Builder(s)
 
@@ -417,7 +417,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
         
         Finds every movie from the TMDb company's movie list.
         
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         ### Example TMDb Company Builder(s)
 
@@ -433,7 +433,7 @@ You can find items using the features of [TheMovieDb.org](https://www.themoviedb
 
         Finds every item from the TMDb network's movie/show list.
         
-        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list or a comma-separated string.
+        This Builder is expected to have the full URL to the item or the TMDb ID of the item. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
         ### Example TMDb Network Builder(s)
 
