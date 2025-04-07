@@ -23,7 +23,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_domestic`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         
@@ -74,7 +74,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_international`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         
@@ -124,7 +124,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_world`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         
@@ -158,7 +158,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_all_time`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         
@@ -196,7 +196,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_never`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         
@@ -235,7 +235,7 @@ You can find items using the lists on [boxofficemojo.com](https://www.boxofficem
     
     **Builder Attribute:** `mojo_record`  
 
-    **Builder Value:** [Dictionary](../../kometa/yaml.md#dictionaries) of Attributes
+    **Builder Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
     
     === "Builder Attributes"
         

@@ -31,7 +31,7 @@ You can find items in your Plex using the features of [Radarr](https://radarr.vi
     
     Gets Movies from Radarr based on their tags. 
     
-    Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated string. 
+    Set the attribute to the tag you want to search for. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string. 
 
     ### Example Radarr Taglist Builder(s)
     

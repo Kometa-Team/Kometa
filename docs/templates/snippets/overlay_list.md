@@ -15,18 +15,12 @@ These overlays are applied by calling the below paths into the `overlay_files` [
 
 === "Content"
 
-    <div class="annotate" markdown>
-
     | Default                                     | Path           | Example Overlays                                 | Allowed Media                     |
     |:--------------------------------------------|:---------------|:-------------------------------------------------|:----------------------------------|
     | [Episode Info](../../overlays/episode_info) | `episode_info` | "S01E01", "S02E09"                               | `Episodes`                        |
     | [Mediastinger](../../overlays/mediastinger) | `mediastinger` | Mediastinger Logo for After/During Credit Scenes | `Movies`<br>`Shows`               |
-    | [Ratings](../../overlays/ratings)(1)        | `ratings`      | IMDb Audience Rating, Metacritic Critic Rating   | `Movies`<br>`Shows`<br>`Episodes` |
+    | [Ratings](../../overlays/ratings) :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-1" }        | `ratings`      | IMDb Audience Rating, Metacritic Critic Rating   | `Movies`<br>`Shows`<br>`Episodes` |
     | [Status](../../overlays/status)             | `status`       | Airing, Returning, Canceled, Ended               | `Shows`                           |
-
-    </div>
-
-    1.  Requires Template Variables to function
 
 === "Content Ratings"
 
@@ -40,31 +34,18 @@ These overlays are applied by calling the below paths into the `overlay_files` [
     | [NZ Content Ratings](../../overlays/content_rating_nz)               | `content_rating_nz`       | G, PG, M, R13, RP13, R15, R16, RP16, R18, RP18, R, NR | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes` |
     | [Common Sense Age Rating](../../overlays/commonsense)                | `commonsense`             | 1+, 2+, 3+, 4+, ..., 17+, 18+, NR                     | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes` |
 
-
-
 === "Media"
-
-    <div class="annotate" markdown>
 
     | Default                                                        | Path             | Example Overlays                                                          | Allowed Media                                        |
     |:---------------------------------------------------------------|:-----------------|:--------------------------------------------------------------------------|:-----------------------------------------------------|
-    | [Aspect Ratio](../../overlays/aspect)(1)                       | `aspect`         | "1.33","1.78"                                                             | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
-    | [Audio Codec](../../overlays/audio_codec)(2)                   | `audio_codec`    | Dolby Atmos logo, DTS logo                                                | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
+    | [Aspect Ratio](../../overlays/aspect) | `aspect`         | "1.33","1.78"                                                             | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
+    | [Audio Codec](../../overlays/audio_codec):material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-2" }                   | `audio_codec`    | Dolby Atmos logo, DTS logo                                                | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
     | [Audio/Subtitle Language Count](../../overlays/language_count) | `language_count` | Dual-Audio, Multi-Audio, Dual-Subtitle, Multi-Subtitle                    | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
     | [Audio/Subtitle Language Flags](../../overlays/languages)      | `languages`      | Flags Based on the Audio/Subtitles a file has                             | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
-    | [Resolution/Editions](../../overlays/resolution)(3)            | `resolution`     | 4K Dolby Vision logo, 720P logo, "Director's Cut", "Criterion Collection" | `Movies`<br>`Shows`<br>`Episodes`                    |
+    | [Resolution/Editions](../../overlays/resolution) :material-numeric-3-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-3" } | `resolution`     | 4K Dolby Vision logo, 720P logo, "Director's Cut", "Criterion Collection" | `Movies`<br>`Shows`<br>`Episodes`                    |
     | [Runtimes](../../overlays/runtimes)                            | `runtimes`       | "Runtime: 1h 30m"                                                         | `Movies`<br>`Shows`<br>`Episodes`                    |
     | [Versions](../../overlays/versions)                            | `versions`       | Multiple Versions logo                                                    | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes`       |
-    | [Video Format](../../overlays/video_format)(4)                 | `video_format`   | "REMUX", "HDTV"                                                           | `Movies`<br>`Shows`(5)<br>`Seasons`(6)<br>`Episodes` |
-
-    </div>
-
-    1. Designed to use the [TRaSH Guides](../../https://trash-guides.info/) filename naming scheme  
-    2. Designed to use the [TRaSH Guides](../../https://trash-guides.info/) filename naming scheme  
-    3. Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the [TRaSH Guides](../../https://trash-guides.info/) filename naming scheme  
-    4. Designed to use the [TRaSH Guides](../../https://trash-guides.info/) filename naming scheme  
-    5. While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.  
-    6. While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.  
+    | [Video Format](../../overlays/video_format) :material-numeric-4-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-4" } | `video_format`   | "REMUX", "HDTV"                                                           | `Movies`<br>`Shows` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-5" }<br>`Seasons` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-5" }<br>`Episodes` |
 
 === "Production"
 
@@ -75,14 +56,7 @@ These overlays are applied by calling the below paths into the `overlay_files` [
     | [Studio](../../overlays/studio)       | `studio`    | "Warner Bros. Pictures", "Amblin Entertainment" | `Movies`<br>`Shows`<br>`Seasons`<br>`Episodes` |
 
 === "Utility"
-
-    <div class="annotate" markdown>
     
     | Default                                   | Path          | Example Overlays   | Allowed Media                                        |
     |:------------------------------------------|:--------------|:-------------------|:-----------------------------------------------------|
-    | [Direct Play](../../overlays/direct_play) | `direct_play` | "Direct Play Only" | `Movies`<br>`Shows`(1)<br>`Seasons`(2)<br>`Episodes` |
-
-    </div>
-
-    1. While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies and Shows are rated by Common Sense.  
-    2. While these overlays can technically be applied at this level, they were not designed for it. For example, a show's season cannot have a resolution since it is not a video file, and an episode cannot have a Common Sense rating since only Movies
+    | [Direct Play](../../overlays/direct_play) | `direct_play` | "Direct Play Only" | `Movies`<br>`Shows` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-5" }<br>`Seasons` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-5" }<br>`Episodes` |
