@@ -14,7 +14,7 @@ You can find items using the lists on [ICheckMovies.com](https://www.icheckmovie
 
 Finds every movie in the ICheckMovies List.
 
-The expected input is a ICheckMovies List URL. Multiple values are supported as either a list or a comma-separated string.
+The expected input is a ICheckMovies List URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
 

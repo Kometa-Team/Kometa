@@ -190,7 +190,7 @@ The available attributes for each library are as follows:
     
     **Attribute:** `template_variables`
     
-    **Accepted Values:** [Dictionary](../kometa/yaml.md#dictionaries) of values specified by each particular file.
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of values specified by each particular file.
 
     **Default Value:** `None`
 

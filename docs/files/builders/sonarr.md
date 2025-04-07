@@ -31,7 +31,7 @@ You can find items in your Plex using the features of [Sonarr](https://sonarr.tv
 
     Gets Series from Sonarr based on their tags. 
     
-    Set the attribute to the tag you want to search for. Multiple values are supported as either a list or a comma-separated 
+    Set the attribute to the tag you want to search for. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated 
     string. 
 
     ### Example Sonarr Taglist Builder(s)
