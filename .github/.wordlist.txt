@@ -328,6 +328,7 @@ th
 themoviedb
 theposterdb
 thetvdb
+tippy
 tmdb
 tmdb's
 tmdbapi
@@ -337,6 +338,7 @@ toc
 todo
 tomatoesaudience
 tomatometer
+tooltip
 tooltips
 trakt
 trakt's

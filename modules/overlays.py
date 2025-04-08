@@ -82,10 +82,12 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
+            total_keys = len(key_to_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
+
                 try:
-                    logger.ghost(f"Overlaying: {i}/{len(key_to_overlays)} {item_title}")
+                    logger.ghost(f"Overlaying: ({i}/{total_keys}) {item_title}")
                     image_compare = None
                     overlay_compare = None
                     poster = None
@@ -198,7 +200,7 @@ class Overlays:
                                 logger.error(e)
                     else:
                         new_backup = item.posterUrl
-                    logger.info(f"\n{item_title}")
+                    logger.info(f"\n({i}/{len(key_to_overlays)}) {item_title}")
                     if new_backup:
                         try:
                             has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))

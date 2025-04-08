@@ -61,7 +61,7 @@ The scheduling options are:
           mass_critic_rating_update: tmdb
     ```
     
-    1. If you run Kometa on any day apart from Sunday,\n this library will not be processed at all
+    1. If you run Kometa on any day apart from Sunday, this library will not be processed at all
 
 ??? blank "Scheduling Collection, Playlist, and Metadata Files<a class="headerlink" href="#schedule-files" title="Permanent link">¶</a>"
     
