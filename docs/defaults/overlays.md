@@ -82,7 +82,6 @@ libraries:
         overlay_files:
           - default: resolution                                                # 1
           - default: audio_codec                                               # 2
-          - default: mediastinger                                              # 3
           - default: ratings                                                   # 4, 5, 6
             template_variables:           
               rating1: user                                                    # 4 as this is user and mass_user_rating_update: mdb_tomatoes

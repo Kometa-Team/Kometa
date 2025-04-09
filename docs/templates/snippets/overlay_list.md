@@ -18,7 +18,7 @@ These overlays are applied by calling the below paths into the `overlay_files` [
     | Default                                     | Path           | Example Overlays                                 | Allowed Media                     |
     |:--------------------------------------------|:---------------|:-------------------------------------------------|:----------------------------------|
     | [Episode Info](../../overlays/episode_info) | `episode_info` | "S01E01", "S02E09"                               | `Episodes`                        |
-    | [Mediastinger](../../overlays/mediastinger) | `mediastinger` | Mediastinger Logo for After/During Credit Scenes | `Movies`<br>`Shows`               |
+    | [Mediastinger](../../overlays/mediastinger) | `mediastinger` | Mediastinger Logo for After/During Credit Scenes | `Movies`               |
     | [Ratings](../../overlays/ratings) :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlay-list-1" }        | `ratings`      | IMDb Audience Rating, Metacritic Critic Rating   | `Movies`<br>`Shows`<br>`Episodes` |
     | [Status](../../overlays/status)             | `status`       | Airing, Returning, Canceled, Ended               | `Shows`                           |
 
