@@ -6,6 +6,7 @@ Update tenacity requirement to 9.1.2
 # Important Changes
 
 # New Features
+- Add argument to prepend a string to the logfilename `--log-filename-prepend movies`
 
 # Docs
 
