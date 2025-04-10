@@ -33,7 +33,7 @@ def log_namer(default_name):
 
 
 class MyLogger:
-    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests):
+    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests, log_filename_prepend=""):
         self.logger_name = logger_name
         self.default_dir = default_dir
         self.screen_width = screen_width
@@ -43,8 +43,9 @@ class MyLogger:
         self.log_requests = log_requests
         self.ignore_ghost = ignore_ghost
         self.log_dir = os.path.join(default_dir, LOG_DIR)
+        self.log_filename_prepend = log_filename_prepend+"_" if log_filename_prepend else ""
         self.playlists_dir = os.path.join(self.log_dir, PLAYLIST_DIR)
-        self.main_log = os.path.join(self.log_dir, MAIN_LOG)
+        self.main_log = os.path.join(self.log_dir, self.log_filename_prepend+MAIN_LOG)
         self.main_handler = None
         self.save_errors = False
         self.saved_errors = []
@@ -54,7 +55,7 @@ class MyLogger:
         self.playlists_handler = None
         self.secrets = []
         self.spacing = 0
-        self.playlists_log = os.path.join(self.playlists_dir, PLAYLISTS_LOG)
+        self.playlists_log = os.path.join(self.playlists_dir, self.log_filename_prepend+PLAYLISTS_LOG)
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir, exist_ok=True)
         self._logger = logging.getLogger(None if self.log_requests else self.logger_name)
@@ -120,7 +121,7 @@ class MyLogger:
         os.makedirs(collection_dir, exist_ok=True)
         if library_key not in self.collection_handlers:
             self.collection_handlers[library_key] = {}
-        self.collection_handlers[library_key][collection_key] = self._get_handler(os.path.join(collection_dir, COLLECTION_LOG))
+        self.collection_handlers[library_key][collection_key] = self._get_handler(os.path.join(collection_dir, self.log_filename_prepend+COLLECTION_LOG))
         self._logger.addHandler(self.collection_handlers[library_key][collection_key])
 
     def remove_collection_handler(self, library_key, collection_key):
@@ -130,7 +131,7 @@ class MyLogger:
     def add_playlist_handler(self, playlist_key):
         playlist_dir = os.path.join(self.playlists_dir, playlist_key)
         os.makedirs(playlist_dir, exist_ok=True)
-        self.playlist_handlers[playlist_key] = self._get_handler(os.path.join(playlist_dir, PLAYLIST_LOG))
+        self.playlist_handlers[playlist_key] = self._get_handler(os.path.join(playlist_dir, self.log_filename_prepend+PLAYLIST_LOG))
         self._logger.addHandler(self.playlist_handlers[playlist_key])
 
     def remove_playlist_handler(self, playlist_key):

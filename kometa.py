@@ -50,6 +50,7 @@ arguments = {
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
+    "log-filename-prepend": {"args": ["lfp", "log-filename-prepend"], "type": "str", "default": "", "help": "Prepend to the log filename"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -214,7 +215,7 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
 
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
-                  run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
+                  run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"], run_args["log-filename-prepend"])
 
 from modules import util
 util.logger = logger
