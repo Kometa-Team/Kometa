@@ -10,6 +10,9 @@ hide:
 
 The meta.log file can be found within the `logs` folder of your Kometa config folder [right next to `config.yml`].
 
+You can prepend something to the logfile name with the argument `--log-filename-prepend movies` and the log filename will be `movies_meta.log`.      
+This will be necessary if you want to run multiple kometa instances simultaneously.
+
 `meta.log` is the most recent run of Kometa.
 
 As new log files are created, the old ones get a numeric suffix added: `meta-1.log`. **The most recent is always the one without a number at the end.**

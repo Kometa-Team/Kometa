@@ -438,6 +438,36 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --overlays-only
             ```
 
+??? blank "Log filename prepend&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lfp`/`--log-filename-prepend`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_FILENAME_PREPEND`<a class="headerlink" href="#log-filename-prepend" title="Permanent link">¶</a>"
+
+    <div id="log-filename-prepend" />Prepend a string to the log filename. 
+    Usefull if you want to run multiple instances of Kometa at the same time, 
+    or if you want to have a different log filename for each run.
+    Without this, the log is locked to the first instance of Kometa that runs, and all other instances will fail to write to the log file.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:**  `-lfp` or `--log-filename-prepend` (ex. `--log-filename-prepend movies`)
+
+    **Environment Variable:** `KOMETA_LOG_FILENAME_PREPEND` (ex. `KOMETA_LOG_FILENAME_PREPEND=movies`)
+    
+    !!! example
+        === "Local Environment"
+            ```
+            # movies_meta.log
+            python kometa.py --log-filename-prepend movies --run-libraries "Movies"
+
+            # series_meta.log
+            python kometa.py --log-filename-prepend series --run-libraries "Series"
+            ```
+        === "Docker Environment"
+            ```
+            # movies_meta.log
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --log-filename-prepend movies --run-libraries "Movies"
+            # series_meta.log
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa ---log-filename-prepend series --run-libraries "Series"
+            ```
+
 ??? blank "Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS`<a class="headerlink" href="#run-collections" title="Permanent link">¶</a>"
 
     <div id="run-collections" />Perform an [immediate run](#run) to run only the named collections, bypassing the time to run flag.
