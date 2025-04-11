@@ -28,8 +28,10 @@ def fmt_filter(record):
 _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
 
 def log_namer(default_name):
-    base, ext, num = default_name.split(".")
-    return f"{base}-{num}.{ext}"
+    log_path = os.path.dirname(default_name)
+    log_file = os.path.basename(default_name)
+    base, ext, num = log_file.split(".")
+    return f"{log_path}/{base}-{num}.{ext}"
 
 
 class MyLogger:
