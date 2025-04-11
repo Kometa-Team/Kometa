@@ -363,6 +363,7 @@ url
 urls
 userlist
 utills
+ValueError
 vecteezy
 venv
 visualstudio
