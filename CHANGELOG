@@ -1,5 +1,5 @@
 # Requirements Update (requirements will need to be reinstalled)
-Update pillow requirement to 11.2.0
+Update pillow requirement to 11.2.1
 Update lxml requirement to 5.3.2
 Update tenacity requirement to 9.1.2
 
