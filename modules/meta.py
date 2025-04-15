@@ -2323,7 +2323,7 @@ class OverlayFile(DataFile):
                                 break
                         if not condition_found:
                             defaults[con_key] = con_value["default"]
-                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict):
+                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict) and not queue_position:
                     dynamic_settings = {
                         "initial_vertical_align": None, "initial_horizontal_align": None, "surround": False,
                         "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
