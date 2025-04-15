@@ -259,26 +259,21 @@ class Trakt:
             return lookup[0][media_type]["ids"][to_source]
         raise Failed(f"Trakt Error: No {to_source.upper().replace('B', 'b')} ID found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
 
-    def list_description(self, data):
+    def list_description(self, list_url):
+        if "/official/" in list_url:
+            try:
+                data = self._request(urlparse(list_url).path.replace("/official/", "/"))
+            except Failed:
+                raise Failed(list_url)
+            if "ids" not in data or "trakt" not in data["ids"] or not data["ids"]["trakt"]:
+                raise Failed(f"Trakt Error: Could not extract ID for official list {list_url}")
+            path = f"/lists/{data['ids']['trakt']}"
+        else:
+            path = urlparse(list_url).path
         try:
-            if "/official/" in data:
-                path = urlparse(data).path.replace("/official/", "/")
-
-                list = self._request(path)
-                list_id = list.get("ids", {}).get("trakt")
-
-                if not list_id:
-                    raise Failed(f"Trakt Error: Could not extract ID for official list {data}")
-
-                metadata = self._request(f"/lists/{list_id}")
-                return metadata.get("description", "")
-
-            else:
-                # Regular user list
-                return self._request(urlparse(data).path)["description"]
-
+            return self._request(path)["description"]
         except Failed:
-            raise Failed(data)
+            raise Failed(list_url)
 
     def _parse(self, items, typeless=False, item_type=None, trakt_ids=False, ignore_other=False):
         ids = []
