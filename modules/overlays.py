@@ -200,7 +200,8 @@ class Overlays:
                                 logger.error(e)
                     else:
                         new_backup = item.posterUrl
-                    logger.info(f"\n({i}/{len(key_to_overlays)}) {item_title}")
+                    logger.info("")
+                    logger.info(f"({i}/{len(key_to_overlays)}) {item_title}")
                     if new_backup:
                         try:
                             has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))

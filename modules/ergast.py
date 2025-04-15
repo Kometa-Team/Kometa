@@ -4,7 +4,7 @@ from modules.util import Failed
 
 logger = util.logger
 
-base_url = "http://ergast.com/api/f1/"
+base_url = "https://api.jolpi.ca/ergast/f1/"
 
 translations = {
     "nl": {
@@ -68,12 +68,22 @@ names = {
 }
 
 class Race:
-    def __init__(self, data, language):
+    def __init__(self, data, language, round_prefix, shorten_gp):
         self._data = data
         self._language = language
+        self._round_prefix = round_prefix
+        self._shorten_gp = shorten_gp
         self.season = util.check_num(self._data["season"], is_int=True)
         self.round = util.check_num(self._data["round"], is_int=True)
         self.name = self._data["raceName"]
+        if self._language:
+            self.title = f"GP {self.name.replace(' Grand Prix', '')}" if shorten_gp else self.name
+            for eng_value, trans_value in translations[self._language].items():
+                self.title = self.title.replace(eng_value, trans_value)
+        else:
+            self.title = self.name.replace("Grand Prix", "GP") if shorten_gp else self.name
+        if round_prefix:
+            self.title = f"{self.round:02} - {self.title}"
         try:
             self.date = datetime.strptime(self._data["date"], "%Y-%m-%d")
         except (ValueError, TypeError):
@@ -82,16 +92,8 @@ class Race:
     def __str__(self):
         return f"Season {self.season} Round {self.round}: {self.name}"
 
-    def format_name(self, round_prefix, shorten_gp):
-        if self._language:
-            output = f"GP {self.name.replace(' Grand Prix', '')}" if shorten_gp else self.name
-            for eng_value, trans_value in translations[self._language].items():
-                output = output.replace(eng_value, trans_value)
-        else:
-            output = self.name.replace("Grand Prix", "GP") if shorten_gp else self.name
-        if round_prefix:
-            output = f"{self.round:02} - {output}"
-        return output
+    def __repr__(self):
+        return self.__str__()
 
     def session_info(self, title, sprint_weekend):
         title = title.lower()
@@ -146,6 +148,7 @@ class Race:
             output = "Ted's Race Notebook"
         else:
             output = "Race"
+
         if "2160" in title or "4K" in title:
             output = f"{output} (4K)"
 
@@ -168,15 +171,15 @@ class Ergast:
         self.requests = requests
         self.cache = cache
 
-    def get_races(self, year, language, ignore_cache=False):
+    def get_races(self, year, language, round_prefix, shorten_gp, ignore_cache=False):
         expired = None
         if self.cache and not ignore_cache:
             race_list, expired = self.cache.query_ergast(year, self.cache.expiration)
             if race_list and expired is False:
-                return [Race(r, language) for r in race_list]
+                return [Race(r, language, round_prefix, shorten_gp) for r in race_list]
         response = self.requests.get(f"{base_url}{year}.json")
         if response.status_code < 400:
-            races = [Race(r, language) for r in response.json()["MRData"]["RaceTable"]["Races"]]
+            races = [Race(r, language, round_prefix, shorten_gp) for r in response.json()["MRData"]["RaceTable"]["Races"]]
             if self.cache and not ignore_cache:
                 self.cache.update_ergast(expired, year, races, self.cache.expiration)
             return races
