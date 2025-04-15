@@ -293,13 +293,7 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         pass
 
-    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, is_poster=True, is_background=False, image_name=None):
-        image_type = "poster"
-        if not is_poster:
-            if is_background:
-                image_type = "background"
-            else:
-                image_type = "logo"
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:
             image_name = image_type
         if images:
@@ -321,12 +315,12 @@ class Library(ABC):
                             return images["asset_directory"]
                         else:
                             try:
-                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, is_poster=is_poster, filename=image_name)
+                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, image_type=image_type, filename=image_name)
                             except Failed as e:
                                 logger.error(e)
                     if attr in ["asset_directory", f"pmm_{image_type}"]:
                         return images[attr]
-                    return ImageData(attr, images[attr], is_poster=is_poster, is_background=is_background, is_url=attr != f"file_{image_type}")
+                    return ImageData(attr, images[attr], image_type=image_type, is_url=attr != f"file_{image_type}")
 
     @abstractmethod
     def reload(self, item, force=False):

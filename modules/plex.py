@@ -1358,9 +1358,9 @@ class Plex(Library):
             logger.warning(e)
         poster = self.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
         background = self.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
-                                     is_poster=False, is_background=True, image_name=f"{image_name}_background" if image_name else image_name)
+                                     image_type="background", image_name=f"{image_name}_background" if image_name else image_name)
         logo = self.pick_image(title, logos, self.prioritize_assets, self.download_url_assets, asset_location,
-                                     is_poster=False, is_background=False, image_name=f"{image_name}_logo" if image_name else image_name)
+                               image_type="logo", image_name=f"{image_name}_logo" if image_name else image_name)
         updated = False
         if poster or background or logo:
             pu, bu, lu = self.upload_images(item, poster=poster, background=background, logo=logo, overlay=True)
@@ -1518,11 +1518,11 @@ class Plex(Library):
 
         background_matches = util.glob_filter(background_filter)
         if len(background_matches) > 0:
-            background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, is_poster=False, is_background=True, is_url=False)
+            background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
 
         logo_matches = util.glob_filter(logo_filter)
         if len(logo_matches) > 0:
-            logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, is_poster=False, is_url=False)
+            logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
 
         if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
@@ -1537,7 +1537,7 @@ class Plex(Library):
                         elif not background and _w > _h:
                             new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
                             os.rename(file, new_path)
-                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, is_poster=False, is_background=True, is_url=False)
+                            background = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, image_type="background", is_url=False)
                         if poster and background:
                             break
                     except OSError:
