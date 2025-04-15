@@ -6,14 +6,20 @@ from PIL import Image, ImageFont, ImageDraw, ImageColor
 logger = util.logger
 
 class ImageData:
-    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True, compare=None):
+    def __init__(self, attribute, location, prefix="", is_poster=True, is_background=False, is_url=True, compare=None):
         self.attribute = attribute
         self.location = location
         self.prefix = prefix
         self.is_poster = is_poster
+        self.is_background = is_background
         self.is_url = is_url
         self.compare = compare if compare else location if is_url else os.stat(location).st_size
-        self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
+        image_type = "poster"
+        if is_background:
+            image_type = "background"
+        elif not is_poster:
+            image_type = "logo"
+        self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):
         return str(self.__dict__)
