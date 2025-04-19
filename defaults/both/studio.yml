@@ -28,9 +28,9 @@ dynamic_collections:
     template_variables:
       search_term:
         default: studio.is
-      search_term2:
+      search_term_secondary:
         20th Century Studios: studio
-      search_value2:
+      search_value_secondary:
         20th Century Studios: 20th Century
       image:
         default: studio/<<key_encoded>>

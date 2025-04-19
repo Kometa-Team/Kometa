@@ -197,8 +197,18 @@ templates:
       limit_<<key>>: <<limit>>
       search_value: <<value>>
     optional:
-      - search_term2
-      - search_value2
+      - search_term_any1
+      - search_term_any2
+      - search_term_any3
+      - search_term_any4
+      - search_term_any5
+      - search_term_all1
+      - search_term_all2
+      - search_term_all3
+      - search_term_all4
+      - search_term_all5
+      - search_term_secondary
+      - search_value_secondary
       - limit
       - type
     smart_filter:
@@ -207,7 +217,18 @@ templates:
       type: <<type>>
       any:
         <<search_term>>: <<search_value>>
-        <<search_term2>>: <<search_value2>>
+        <<search_term_secondary>>: <<search_value_secondary>>
+        <<search_term_any1>>: <<search_value_any1>>
+        <<search_term_any2>>: <<search_value_any2>>
+        <<search_term_any3>>: <<search_value_any3>>
+        <<search_term_any4>>: <<search_value_any4>>
+        <<search_term_any5>>: <<search_value_any5>>
+        all:
+          <<search_term_all1>>: <<search_value_all1>>
+          <<search_term_all2>>: <<search_value_all2>>
+          <<search_term_all3>>: <<search_value_all3>>
+          <<search_term_all4>>: <<search_value_all4>>
+          <<search_term_all5>>: <<search_value_all5>>
 
   filter:
     default:
@@ -219,7 +240,11 @@ templates:
       filter_value: <<value>>
     optional:
       - limit
+      - filter_term1
       - filter_term2
+      - filter_term3
+      - filter_term4
+      - filter_term5
     smart_label:
       sort_by: <<sort_by_<<key>>>>
       limit: <<limit_<<key>>>>
@@ -229,7 +254,11 @@ templates:
     plex_all: true
     filters:
       <<filter_term>>: <<filter_value>>
+      <<filter_term1>>: <<filter_value1>>
       <<filter_term2>>: <<filter_value2>>
+      <<filter_term3>>: <<filter_value3>>
+      <<filter_term4>>: <<filter_value4>>
+      <<filter_term5>>: <<filter_value5>>
 
   mdb_smart:
     default:
