@@ -499,7 +499,7 @@ The available attributes for each library are as follows:
               root_folder_path: /data/media/movies/bill
               quality_profile: Bestest
               add_existing: true
-              sonarr_path: /data/media/movies/bill
+              radarr_path: /data/media/movies/bill
               plex_path: /mnt/unionfs/movies/bill
         ...
         radarr:
