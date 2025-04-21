@@ -5,7 +5,7 @@ lxml==5.3.2
 num2words==0.5.14
 pathvalidate==3.2.3
 pillow==11.2.1
-PlexAPI==4.16.1
+PlexAPI==4.17.0
 psutil==7.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
