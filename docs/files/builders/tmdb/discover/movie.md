@@ -11,8 +11,8 @@ and in a specific order.
  
 ???+ important 
 
-    Note that a number of filters support being comma (,) or pipe (|) separated. Comma's are treated like an AND query 
-    while pipe's are treated like an OR. This allows for quite complex filtering depending on your desired results.
+    Note that a number of filters support being comma (,) or pipe (|) separated. Commas are treated like an AND query 
+    while pipes are treated like an OR. This allows for quite complex filtering depending on your desired results.
 
 ## Value Types
 
