@@ -297,8 +297,8 @@
 | `limit_anidb` | **Description:** Changes the Builder Limit of the AniDB Popular Collection.<br>**Default:** `30`<br>**Values:** Number greater than 0 |
 <!--limit_anidb-->
 <!--sort_by-->
-| `sort_by` | **Description:** Changes the Smart Filter Sort for all collections in a Defaults File.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex.md#sort-options) |
-| `sort_by_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex.md#sort-options) |
+| `sort_by` | **Description:** Changes the Smart Filter Sort for all collections in a Defaults File.<br>**Default:** `release.desc`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex/sort-options.md) |
+| `sort_by_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes the Smart Filter Sort of the [key's](#collection_section) collection.<br>**Default:** `sort_by`<br>**Values:** [Any `smart_filter` Sort Option](../../files/builders/plex/sort-options.md) |
 <!--sort_by-->
 <!--resolution-style-->
 | `style` | **Description:** Controls the visual theme of the collections created.<br>**Default:** `default`<br>**Values:** `default` or `standards` |
