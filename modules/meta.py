@@ -2188,7 +2188,7 @@ class MetadataFile(DataFile):
                 else:
                     logger.error(f"{self.type_str} Error: f1_language must be a language code Kometa has a translation for. Options: {ergast.translations}")
             logger.info(f"Setting {item.title} of {self.type_str} to F1 Season {f1_season}")
-            races = self.config.Ergast.get_races(f1_season, f1_language)
+            races = self.config.Ergast.get_races(f1_season, f1_language, round_prefix, shorten_gp)
             race_lookup = {r.round: r for r in races}
             logger.trace(race_lookup)
             for season in item.seasons():
@@ -2201,11 +2201,10 @@ class MetadataFile(DataFile):
                         break
                 if season.seasonNumber in race_lookup:
                     race = race_lookup[season.seasonNumber]
-                    title = race.format_name(round_prefix, shorten_gp)
                     updated = False
-                    add_edit("title", season, value=title)
-                    finish_edit(season, f"Season: {title}")
-                    _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=title,
+                    add_edit("title", season, value=race.title)
+                    finish_edit(season, f"Season: {race.title}")
+                    _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=race.title,
                                                          image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
                     if ups:
                         updated = True
@@ -2323,7 +2322,7 @@ class OverlayFile(DataFile):
                                 break
                         if not condition_found:
                             defaults[con_key] = con_value["default"]
-                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict):
+                if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict) and not queue_position:
                     dynamic_settings = {
                         "initial_vertical_align": None, "initial_horizontal_align": None, "surround": False,
                         "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
