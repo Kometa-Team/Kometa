@@ -6,7 +6,7 @@ hide:
 
 Smart Filters allow Kometa to create Smart Collections. The results of this builder are dynamic and do not require Kometa to re-run in order to update, instead they will update automatically as the data within your Plex Library updates (i.e. if new media is added)
 
-Smart Filter Bulders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
+Smart Filter Builders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
 
 ???+ important
 
