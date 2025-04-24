@@ -257,7 +257,7 @@ The available setting attributes which can be set at each level are outlined bel
       <tr><td>`release`</td><td>Order Collection by Release Dates.</td></tr>
       <tr><td>`alpha`</td><td>Order Collection Alphabetically.</td></tr>
       <tr><td>`custom`</td><td>Order Collection Via the Builder Order.</td></tr>
-      <tr><td colspan="2">[Any `plex_search` sort option](../files/builders/plex.md#sort-options).</td></tr>
+      <tr><td colspan="2">[Any `plex_search` sort option](../files/builders/plex/sort-options.md).</td></tr>
     </table>
 
     **Default Value:** `None`

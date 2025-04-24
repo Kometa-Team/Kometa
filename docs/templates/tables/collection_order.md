@@ -8,7 +8,7 @@
     </tr><tr>
         <td>`custom`</td><td>Order Collection Via the Builder Order</td>
     </tr><tr>
-        <td>[Any `plex_search` Sort Option](../../files/builders/plex.md#sort-options)</td>
+        <td>[Any `plex_search` Sort Option](../../files/builders/plex/sort-options.md)</td>
         <td>Order Collection by any `plex_search` Sort Option</td>
     </tr>
 </table>

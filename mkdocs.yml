@@ -172,7 +172,7 @@ nav:
         - Library Operations: config/operations.md
       - CONNECTIONS:
         - REQUIRED CONNECTIONS:
-          - Plex: config/plex.md
+          - Plex: config/overview.md
           - TMDb: config/tmdb.md
         - OPTIONAL CONNECTIONS:
           - Tautulli: config/tautulli.md
@@ -317,23 +317,128 @@ nav:
       - DEFINITION ATTRIBUTES:
         - Builders:
           - Overview: files/builders/overview.md
-          - Plex Builders: files/builders/plex.md
-          - TMDb Builders: files/builders/tmdb.md
-          - TVDb Builders: files/builders/tvdb.md
-          - IMDb Builders: files/builders/imdb.md
-          - Trakt Builders: files/builders/trakt.md
-          - Tautulli Builders: files/builders/tautulli.md
-          - Radarr Builders: files/builders/radarr.md
-          - Sonarr Builders: files/builders/sonarr.md
-          - MDBList Builders: files/builders/mdblist.md
-          - Letterboxd Builders: files/builders/letterboxd.md
-          - ICheckMovies Builders: files/builders/icheckmovies.md
-          - BoxOfficeMojo Builders: files/builders/mojo.md
-          - Reciperr Builders: files/builders/reciperr.md
-          - StevenLu Builders: files/builders/stevenlu.md
-          - AniDB Builders: files/builders/anidb.md
-          - AniList Builders: files/builders/anilist.md
-          - MyAnimeList Builders: files/builders/myanimelist.md
+          - Plex:
+              - Overview: files/builders/plex/overview.md
+              - Smart Filter: files/builders/plex/smart-filter.md
+              - All: files/builders/plex/all.md
+              - Collectionless: files/builders/plex/collectionless.md
+              - Pilots: files/builders/plex/pilots.md.md
+              - Search: files/builders/plex/search.md
+              - Watchlist: files/builders/plex/watchlist.md
+          - TMDb:
+              - Overview: files/builders/tmdb/overview.md
+              - Standard:
+                  - Collection: files/builders/tmdb/collection.md
+                  - Company: files/builders/tmdb/company.md
+                  - Keyword: files/builders/tmdb/keyword.md
+                  - List: files/builders/tmdb/list.md
+                  - Movie: files/builders/tmdb/movie.md
+                  - Network: files/builders/tmdb/network.md
+                  - Show: files/builders/tmdb/show.md
+              - Chart:
+                  - Airing Today: files/builders/tmdb/airing-today.md
+                  - Now Playing: files/builders/tmdb/now-playing.md
+                  - On The Air: files/builders/tmdb/on-the-air.md
+                  - Popular: files/builders/tmdb/popular.md
+                  - Top Rated: files/builders/tmdb/top-rated.md
+                  - Trending Daily: files/builders/tmdb/trending-daily.md
+                  - Trending Weekly: files/builders/tmdb/trending-weekly.md
+                  - Upcoming: files/builders/tmdb/upcoming.md
+              - Discover:
+                  - Movie: files/builders/tmdb/discover/movie.md
+                  - Show: files/builders/tmdb/discover/show.md
+              - People:
+                  - Actor: files/builders/tmdb/actor.md
+                  - Crew: files/builders/tmdb/crew.md
+                  - Director: files/builders/tmdb/director.md
+                  - Producer: files/builders/tmdb/producer.md
+                  - Writer: files/builders/tmdb/writer.md
+          - TVDb:
+                - Overview: files/builders/tvdb/overview.md
+                - List: files/builders/tvdb/list.md
+                - Movie: files/builders/tvdb/movie.md
+                - Show: files/builders/tvdb/show.md
+          - IMDb:
+              - Overview: files/builders/imdb/overview.md
+              - Award: files/builders/imdb/award.md
+              - Chart: files/builders/imdb/chart.md
+              - ID: files/builders/imdb/id.md
+              - List: files/builders/imdb/list.md
+              - Search: files/builders/imdb/search.md
+              - Watchlist: files/builders/imdb/watchlist.md
+          - Trakt:
+              - Overview: files/builders/trakt/overview.md
+              - Box Office: files/builders/trakt/box-office.md
+              - Chart: files/builders/trakt/chart.md
+              - List: files/builders/trakt/list.md
+              - Recommendations: files/builders/trakt/recommendations.md
+              - UserList: files/builders/trakt/userlist.md
+          - Tautulli:
+              - Overview: files/builders/tautulli/overview.md
+              - Popular: files/builders/tautulli/popular.md
+              - Watched: files/builders/tautulli/watched.md
+          - Radarr:
+              - Overview: files/builders/radarr/overview.md
+              - All: files/builders/radarr/all.md
+              - Taglist: files/builders/radarr/taglist.md
+          - Sonarr:
+              - Overview: files/builders/sonarr/overview.md
+              - All: files/builders/sonarr/all.md
+              - Taglist: files/builders/sonarr/taglist.md
+          - MDBList:
+              - Overview: files/builders/mdblist/overview.md
+              - List: files/builders/mdblist/list.md
+          - Letterboxd:
+              - Overview: files/builders/letterboxd/overview.md
+              - List: files/builders/letterboxd/list.md
+          - ICheckMovies:
+              - Overview: files/builders/icheckmovies/overview.md
+              - List: files/builders/icheckmovies/list.md
+          - BoxOfficeMojo:
+              - Overview: files/builders/boxofficemojo/overview.md
+              - All Time: files/builders/boxofficemojo/all-time.md
+              - Domestic: files/builders/boxofficemojo/domestic.md
+              - International: files/builders/boxofficemojo/international.md
+              - Never Hit: files/builders/boxofficemojo/never.md
+              - Other Records: files/builders/boxofficemojo/record.md
+              - Worldwide: files/builders/boxofficemojo/world.md
+          - Reciperr:
+              - Overview: files/builders/reciperr/overview.md
+              - List: files/builders/reciperr/list.md
+          - StevenLu:
+              - Overview: files/builders/stevenlu/overview.md
+              - Popular: files/builders/stevenlu/popular.md
+          - AniDB:
+              - Overview: files/builders/anidb/overview.md
+              - ID: files/builders/anidb/id.md
+              - Popular: files/builders/anidb/popular.md
+              - Relation: files/builders/anidb/relation.md
+              - Tag: files/builders/anidb/tag.md
+          - AniList:
+            - Overview: files/builders/anilist/overview.md
+            - ID: files/builders/anilist/id.md
+            - Popular: files/builders/anilist/popular.md
+            - Relations: files/builders/anilist/relations.md
+            - Search: files/builders/anilist/search.md
+            - Studio: files/builders/anilist/studio.md
+            - Top Rated: files/builders/anilist/top_rated.md
+            - Trending: files/builders/anilist/trending.md
+            - Userlist: files/builders/anilist/userlist.md
+          - MyAnimeList:
+              - Overview: files/builders/myanimelist/overview.md
+              - All: files/builders/myanimelist/all.md
+              - Favorite: files/builders/myanimelist/favorite.md
+              - ID: files/builders/myanimelist/id.md
+              - Movie: files/builders/myanimelist/movie.md
+              - OVA: files/builders/myanimelist/ova.md
+              - Popular: files/builders/myanimelist/popular.md
+              - Search: files/builders/myanimelist/search.md
+              - Season: files/builders/myanimelist/season.md
+              - Special: files/builders/myanimelist/special.md
+              - Suggested: files/builders/myanimelist/suggested.md
+              - TV: files/builders/myanimelist/tv.md
+              - Upcoming: files/builders/myanimelist/upcoming.md
+              - UserList: files/builders/myanimelist/userlist.md
         - Filters: files/filters.md
         - Definition Settings: files/settings.md
         - Radarr/Sonarr Settings: files/arr.md
