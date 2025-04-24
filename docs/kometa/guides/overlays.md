@@ -177,7 +177,7 @@ Kometa uses this label as discussed earlier to determine which items already hav
 
 #### 3e. Kometa caches a description of the overlays it just applied to the item to use next time in step 3a above
 
-Last, when an overlay is successfully applied, Kometa caches [in its own database] a record indicating which overlays were applied.  It usees this cache on each run to decide if the overlays on the current run differ from the last run, as dicussed above in step 3a.
+Last, when an overlay is successfully applied, Kometa caches [in its own database] a record indicating which overlays were applied.  It uses this cache on each run to decide if the overlays on the current run differ from the last run, as dicussed above in step 3a.
 
 ## Overlay Success in Logs
 
