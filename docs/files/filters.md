@@ -95,7 +95,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
 
 ???+ warning
     
-    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](builders/plex.md#smart-label), [Plex Search](builders/plex.md#plex-search) or another [Builder](overview.md) if possible.
+    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](builders/plex.md#smart-label), [Plex Search](builders/plex/search) or another [Builder](overview.md) if possible.
 
 ## Filter Options
 

@@ -16,8 +16,8 @@ Builders use third-party services to source items to be added to the collection.
 
     ??? quicklink "Popular Builders"
 
-        - [:simple-plex: Smart Filter](plex.md#smart-filter) - Create a Smart Collection based on the filter parameters provided.
-        - [:simple-plex: Plex Search](plex.md#plex-search) - Create a Collection based on items within the Plex library.
+        - [:simple-plex: Smart Filter](plex/smart-filter.md) - Create a Smart Collection based on the filter parameters provided.
+        - [:simple-plex: Plex Search](plex/search) - Create a Collection based on items within the Plex library.
 
 
 !!! builder

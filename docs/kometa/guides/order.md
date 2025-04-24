@@ -399,7 +399,7 @@ Manual collections can utilize the `sort_by` attribute to define the sorting.
           limit: 50
     ```
 
-The Sort Orders available for "Manual" collections are outlined on the **[Manual Plex Builder](../../files/builders/plex.md)** page.
+The Sort Orders available for "Manual" collections are outlined on the **[Plex Sort Options](../../files/builders/plex/sort-options.md)** page.
 
 ??? tip
     
@@ -444,7 +444,7 @@ if you have a Smart Label collection, you can pass the `sort_by` value you want 
         smart_label: audience_rating.desc
     ```
 
-The Sort Orders available for "Smart" collections are outlined on the **[Plex Builder](../../files/builders/plex.md)** page.
+The Sort Orders available for "Smart" collections are outlined on the **[Plex Sort Options](../../files/builders/plex/sort-options.md)** page.
 
 ??? tip
     
