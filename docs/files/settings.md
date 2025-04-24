@@ -89,12 +89,12 @@ All the following attributes serve various functions as how the definition funct
 
 ## Smart Label Definitions
 
-Smart Labels are a process that Kometa uses to build [Smart Collections](builders/plex.md#understanding-smart-vs-manual-collections) using non-Plex builders.
+Smart Labels are a process that Kometa uses to build [Smart Collections](builders/plex/overview.md#understanding-smart-vs-manual-collections) using non-Plex builders.
 
 Instead of building a Manual (also known as Dumb or non-Smart) Collection with items from third-party builders, 
 Kometa applies a label to every item that is discovered by the builder.
 
-This label is then used as part of a [Smart Filter Builder](builders/plex.md#smart-filter-builder) to create a Smart Collection showing any item that has that label.
+This label is then used as part of a [Smart Filter Builder](builders/plex/smart-filter.md) to create a Smart Collection showing any item that has that label.
 
 The result is a Smart Collection which only updates when the specific label is added/removed from items within Plex (either by the user or Kometa adding or remove the label).
 
@@ -146,7 +146,7 @@ but the Smart Filter now includes two new criteria; that the item must be unplay
 ### Smart Labels & Plex Collectionless 
 
 Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect Manual collections. 
-As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex.md#plex-collectionless). 
+As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex/collectionless). 
 
 For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are Manual collections, 
 Plex will handle the visibility correctly across grouped collections.
@@ -156,7 +156,7 @@ A good rule of thumb is: each item in your library should belong to no more than
 
 The only downside of using smart collections is that they are unable to be sorted by `custom` (which uses the order of the original builder). 
 In order to have a custom ordered Marvel Cinematic Universe Collection  with the show/hide of the collection to work correctly you will have to use
-[Plex Collectionless](builders/plex.md#plex-collectionless).
+[Plex Collectionless](builders/plex/collectionless).
 
 ## Default Percent Example
 
