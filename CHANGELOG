@@ -1,11 +1,14 @@
 # Requirements Update (requirements will need to be reinstalled)
 Update pillow requirement to 11.2.1
-Update lxml requirement to 5.3.2
+Update plexapi requirement from 4.16.1 to 4.17.0
+Update lxml requirement to 5.4.0
+Update setuptools requirement to 79.0.1
 Update tenacity requirement to 9.1.2
 
 # Important Changes
 
 # New Features
+Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
 
 # Docs
 

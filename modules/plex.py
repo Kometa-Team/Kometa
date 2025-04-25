@@ -48,6 +48,7 @@ search_translation = {
     "episode_last_played": "episode.lastViewedAt",
     "unplayed": "unwatched",
     "episode_unplayed": "episode.unwatched",
+    "dovi": "dovi",
     "subtitle_language": "subtitleLanguage",
     "audio_language": "audioLanguage",
     "progress": "inProgress",
@@ -286,7 +287,7 @@ show_only_searches = [
     "episode_critic_rating.gt", "episode_critic_rating.gte", "episode_critic_rating.lt", "episode_critic_rating.lte", "episode_critic_rating.rated",
     "episode_audience_rating.gt", "episode_audience_rating.gte", "episode_audience_rating.lt", "episode_audience_rating.lte", "episode_audience_rating.rated",
     "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
+    "unplayed_episodes", "episode_unplayed", "dovi", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
 ]
 string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
