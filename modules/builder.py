@@ -3593,7 +3593,7 @@ class CollectionBuilder:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                asset_poster, asset_background, _, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
                     self.posters["asset_directory"] = asset_poster
                 if asset_background:

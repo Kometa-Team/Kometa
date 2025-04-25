@@ -694,7 +694,7 @@ class Overlays:
     def remove_overlay(self, item, item_title, label, locations):
         #todo: delete overlay png from Emby plugin folder
         try:
-            poster, _, _, _ = self.library.find_item_assets(item)
+            poster, _, _, _, _ = self.library.find_item_assets(item)
         except Failed:
             poster = None
         is_url = False

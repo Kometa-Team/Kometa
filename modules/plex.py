@@ -2478,7 +2478,7 @@ class Plex(Library):
         if style_data and "url_logo" in style_data and style_data["url_logo"]:
             logos["style_data"] = style_data["url_logo"]
         try:
-            asset_poster, asset_background, item_dir, folder_name, asset_logo = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
+            asset_poster, asset_background, asset_logo, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:
@@ -2503,7 +2503,7 @@ class Plex(Library):
         item_dir = None
         name = None
         try:
-            poster, background, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
+            poster, background, _, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             if "Overlay" not in current_labels:
                 if poster or background:
                     self.upload_images(item, poster=poster, background=background)
@@ -2521,7 +2521,7 @@ class Plex(Library):
             found_episode = False
             for season in self.query(item.seasons):
                 try:
-                    season_poster, season_background, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    season_poster, season_background, _, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if season_poster:
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber > 0:
@@ -2534,7 +2534,7 @@ class Plex(Library):
                 for episode in self.query(season.episodes):
                     try:
                         if episode.seasonEpisode:
-                            episode_poster, episode_background, _, _, episode_logo = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                            episode_poster, episode_background, _, _, _, episode_logo = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background or episode_logo:
                                 found_episode = True
                                 # if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
@@ -2553,7 +2553,7 @@ class Plex(Library):
             found_album = False
             for album in self.query(item.albums):
                 try:
-                    album_poster, album_background, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    album_poster, album_background, _, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
                     elif self.show_missing_season_assets:
@@ -2681,7 +2681,7 @@ class Plex(Library):
                     except OSError:
                         logger.error(f"Asset Error: Failed to open image: {file}")
 
-        return poster, background, item_asset_directory, folder_name, logo
+        return poster, background, logo, item_asset_directory, folder_name
 
     def get_ids(self, item):
         tmdb_id = None
