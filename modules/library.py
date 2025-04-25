@@ -200,7 +200,7 @@ class Library(ABC):
                     logger.info("")
                     logger.separator(f"Skipping {e} Image File")
 
-    def upload_images(self, item, poster=None, background=None, overlay=False):
+    def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
         poster_uploaded = False
         if poster is not None:
             try:
@@ -234,13 +234,31 @@ class Library(ABC):
             except Failed:
                 logger.stacktrace()
                 logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
+
+        logo_uploaded = False
+        if logo is not None:
+            try:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_logos")
+                if not image_compare or str(logo.compare) != str(image_compare):
+                    logo_uploaded = self._upload_image(item, logo)
+                    logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
+                elif self.show_asset_not_needed:
+                    logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except Failed:
+                logger.stacktrace()
+                logger.error(f"Metadata: {logo.attribute} failed to update {logo.message}")
+
         if self.config.Cache:
             if poster_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
             if background_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", "", background.compare)
+            if logo_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_logos", "", logo.compare)
 
-        return poster_uploaded, background_uploaded
+        return poster_uploaded, background_uploaded, logo_uploaded
 
     def get_id_from_maps(self, key):
         key = int(key)
@@ -275,8 +293,7 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         pass
 
-    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, is_poster=True, image_name=None):
-        image_type = "poster" if is_poster else "background"
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:
             image_name = image_type
         if images:
@@ -298,12 +315,12 @@ class Library(ABC):
                             return images["asset_directory"]
                         else:
                             try:
-                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, is_poster=is_poster, filename=image_name)
+                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, image_type=image_type, filename=image_name)
                             except Failed as e:
                                 logger.error(e)
                     if attr in ["asset_directory", f"pmm_{image_type}"]:
                         return images[attr]
-                    return ImageData(attr, images[attr], is_poster=is_poster, is_url=attr != f"file_{image_type}")
+                    return ImageData(attr, images[attr], image_type=image_type, is_url=attr != f"file_{image_type}")
 
     @abstractmethod
     def reload(self, item, force=False):

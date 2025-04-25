@@ -3516,7 +3516,7 @@ class CollectionBuilder:
                 self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
 
         self.collection_poster = self.library.pick_image(self.obj.title, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
-        self.collection_background = self.library.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
+        self.collection_background = self.library.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, image_type="background")
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -3525,7 +3525,7 @@ class CollectionBuilder:
             self.collection_poster = self.collection_poster.save(item_vars)
 
         if self.collection_poster or self.collection_background:
-            pu, bu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
+            pu, bu, lu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
             if pu or bu:
                 updated_details.append("Image")
 

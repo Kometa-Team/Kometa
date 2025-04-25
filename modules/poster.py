@@ -6,14 +6,16 @@ from PIL import Image, ImageFont, ImageDraw, ImageColor
 logger = util.logger
 
 class ImageData:
-    def __init__(self, attribute, location, prefix="", is_poster=True, is_url=True, compare=None):
+    def __init__(self, attribute, location, prefix="", image_type="poster", is_url=True, compare=None):
         self.attribute = attribute
         self.location = location
         self.prefix = prefix
-        self.is_poster = is_poster
+        self.is_poster = image_type == "poster"
+        self.is_background = image_type == "background"
+        self.is_logo = image_type == "logo"
         self.is_url = is_url
         self.compare = compare if compare else location if is_url else os.stat(location).st_size
-        self.message = f"{prefix}{'poster' if is_poster else 'background'} to [{'URL' if is_url else 'File'}] {location}"
+        self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):
         return str(self.__dict__)
@@ -392,5 +394,5 @@ class KometaImage(ImageBase):
 
         pmm_image.save(image_path)
 
-        return ImageData(self.image_attr, image_path, is_url=False, compare=self.get_compare_string())
+        return ImageData(self.image_attr, image_path, is_url=False, image_type="poster", compare=self.get_compare_string())
 

@@ -90,7 +90,7 @@ class Requests:
             import urllib3
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def download_image(self, title, image_url, download_directory, session=None, is_poster=True, filename=None):
+    def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
         response = self.get_image(image_url, session=session)
         new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
         if response.headers["Content-Type"] == "image/jpeg":
@@ -101,7 +101,7 @@ class Requests:
             new_image += ".png"
         with open(new_image, "wb") as handler:
             handler.write(response.content)
-        return ImageData("asset_directory", new_image, prefix=f"{title}'s ", is_poster=is_poster, is_url=False)
+        return ImageData("asset_directory", new_image, prefix=f"{title}'s ", image_type=image_type, is_url=False)
 
     def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False):
         return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty)

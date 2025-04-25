@@ -6,6 +6,7 @@ Update tenacity requirement to 9.1.2
 # Important Changes
 
 # New Features
+Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
 
 # Docs
 
