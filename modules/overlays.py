@@ -153,7 +153,7 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster, background, item_dir, name = self.library.find_item_assets(item)
+                        poster, background, _, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
                             if (isinstance(item, Episode) and self.library.show_missing_episode_assets) or \
                                     (isinstance(item, Season) and self.library.show_missing_season_assets) or \
@@ -689,7 +689,7 @@ class Overlays:
 
     def remove_overlay(self, item, item_title, label, locations):
         try:
-            poster, _, _, _ = self.library.find_item_assets(item)
+            poster, _, _, _, _ = self.library.find_item_assets(item)
         except Failed:
             poster = None
         is_url = False
