@@ -36,7 +36,8 @@
         | `artist_unmatched`  | Is Artist's Unmatched  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `album_unmatched`   | Is Album's Unmatched   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_trash`       | Is Track Trashed       |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-        
+        | `dovi`              | Has Dolby Vision       | :fontawesome-solid-circle-check:{ .green }    | :fontawesome-solid-circle-check:{ .green }    | :fontawesome-solid-circle-xmark:{ .red } |
+
     === "Date Filters"
         
         Date filters can be used with either no modifier or with `.not`, `.before`, or `.after`.
