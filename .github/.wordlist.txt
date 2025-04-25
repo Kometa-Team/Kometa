@@ -71,6 +71,7 @@ deva
 diiivoy
 diiivoycolor
 dir
+dicussed
 diskstation
 disneytoon
 dk
@@ -364,6 +365,7 @@ uri
 url
 urls
 userlist
+uses
 utills
 ValueError
 vecteezy
