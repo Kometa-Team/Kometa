@@ -893,6 +893,14 @@ class Cache:
                             location TEXT)"""
                         )
                         cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
+                        cursor.execute(
                             f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
