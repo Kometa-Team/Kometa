@@ -510,8 +510,10 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | :---------------- | :----------------------------------------------- | :------------------------------------------------------------ |
 | `file_background` | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `file_poster`     | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `file_logo`       | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`                      | 
 | `url_background`  | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_poster`      | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `url_logo`        | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`                      |
 
 ### Advanced Attributes
 
