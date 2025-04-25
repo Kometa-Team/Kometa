@@ -71,6 +71,7 @@ deva
 diiivoy
 diiivoycolor
 dir
+dicussed
 diskstation
 disneytoon
 dk
@@ -149,6 +150,7 @@ jinja
 jkirkcaldy
 johnfawkes
 jonnywong
+joost
 jpeg
 jpg
 json
@@ -363,6 +365,7 @@ uri
 url
 urls
 userlist
+uses
 utills
 ValueError
 vecteezy

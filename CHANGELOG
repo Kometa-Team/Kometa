@@ -8,9 +8,11 @@ Update tenacity requirement to 9.1.2
 # Important Changes
 
 # New Features
+Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
 Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
 
 # Docs
+Adds overlay guide
 
 # Defaults
 [Franchise] Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva. Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
