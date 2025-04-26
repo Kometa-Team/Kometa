@@ -45,7 +45,7 @@ hide:
     end='<!--file-header-->'
 %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "episode_info"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Episode Info Overlays"

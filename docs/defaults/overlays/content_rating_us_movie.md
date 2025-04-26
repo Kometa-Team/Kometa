@@ -60,7 +60,7 @@ hide:
         rewrite-relative-urls=false
     %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "content_rating_us_movie"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "US Movie Content Rating Overlays"
