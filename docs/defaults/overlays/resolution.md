@@ -106,7 +106,7 @@ This is not something you can enable or disable independently; it's an internal 
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "resolution", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "resolution", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
     ```yaml

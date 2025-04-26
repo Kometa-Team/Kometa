@@ -41,7 +41,7 @@ Some logic is applied to allow for regional streaming service lists to be availa
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "streaming", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "streaming", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
     ```yaml

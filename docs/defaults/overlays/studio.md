@@ -21,7 +21,7 @@ Below is a screenshot of the alternative Bigger (`bigger`) style which can be se
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "studio", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "studio", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
     ```yaml

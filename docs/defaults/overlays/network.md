@@ -15,7 +15,7 @@ hide:
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"styles/CODE_NAME": "overlays/network"}' exclude-tags='logo' %}
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "network", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "network", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|show|episode|season' 
 %}
     ```yaml

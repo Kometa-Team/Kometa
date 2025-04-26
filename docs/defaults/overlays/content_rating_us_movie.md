@@ -25,7 +25,7 @@ hide:
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "content_rating_us_movie", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "content_rating_us_movie", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie' 
 %}
     ```yaml
