@@ -19,7 +19,7 @@ hide:
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "status", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "status", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|show'
 %}
     ```yaml

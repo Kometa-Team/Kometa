@@ -32,7 +32,7 @@ hide:
 {% include-markdown "./../../templates/snippets/standard_style.md" replace='{"CODE_NAME": "audio_codec"}' %}
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "audio_codec", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "audio_codec", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
     ```yaml
