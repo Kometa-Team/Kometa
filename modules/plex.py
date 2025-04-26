@@ -2534,7 +2534,7 @@ class Plex(Library):
                 for episode in self.query(season.episodes):
                     try:
                         if episode.seasonEpisode:
-                            episode_poster, episode_background, _, _, _, episode_logo = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                            episode_poster, episode_background, episode_logo, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background or episode_logo:
                                 found_episode = True
                                 # if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
@@ -2644,7 +2644,7 @@ class Plex(Library):
                         logger.warning(f"Asset Warning: Asset Directory Not Found and Created: {item_asset_directory}")
                     else:
                         raise Failed(f"Asset Warning: Unable to find asset folder: '{folder_name}'")
-                return None, None, item_asset_directory, folder_name
+                return None, None, None, item_asset_directory, folder_name
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")

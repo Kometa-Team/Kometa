@@ -1178,7 +1178,7 @@ class Operations:
                 logger.info("")
                 for col in unconfigured_collections:
                     try:
-                        poster, background, item_dir, _, name = self.library.find_item_assets(col)
+                        poster, background, _, item_dir, name = self.library.find_item_assets(col)
                         if poster or background:
                             self.library.upload_images(col, poster=poster, background=background)
                         elif self.library.show_missing_assets:
