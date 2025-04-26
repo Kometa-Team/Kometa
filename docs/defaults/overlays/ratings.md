@@ -23,7 +23,7 @@ Recommendations: Use the [Mass * Rating Update Library Operation](../../config/o
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "ratngs", "collection_files": "overlay_files", "collections:": "overlays:"}' 
+    replace='{"CODE_NAME": "ratings", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|ratings|movie|show|episode' 
 %}
     ```yaml
