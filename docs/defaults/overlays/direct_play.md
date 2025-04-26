@@ -48,7 +48,7 @@ hide:
         rewrite-relative-urls=false
     %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "direct_play"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Direct Play Overlays"
