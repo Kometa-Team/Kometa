@@ -110,8 +110,8 @@ Recommendations: Use the [Mass * Rating Update Library Operation](../../config/o
        rewrite-relative-urls=false
     %}
 
-{% 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "ratings"}' %}
+{% 
     replace-tags='{
         "title-sub": "These variables can be prepended with `rating1_`, `rating2_`, or `rating3_` to change that attribute on each rating individually.",
         "notes-sub": "**IMPORTANT**: To amend `horizontal_offset` and `vertical_offset` you **must** prepend the variable with `rating1_`, `rating2_`, or `rating3_`."
