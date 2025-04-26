@@ -11,25 +11,25 @@
     libraries:
       Movies:
         overlay_files:
-          - default: resolution
+          - default: CODE_NAME
             template_variables:
               horizontal_align: left
               horizontal_offset: 247
               vertical_align: bottom
               vertical_offset: 40%
     ```
-    That would place the resolution overlay 247 pixels in from the left edge of the poster, and 40% of the way up from the bottom.
+    That would place the CODE_NAME overlay 247 pixels in from the left edge of the poster, and 40% of the way up from the bottom.
     
     ```yaml
     libraries:
       Movies:
         overlay_files:
-          - default: resolution
+          - default: CODE_NAME
             template_variables:
               back_width: 198
               back_height: 47
     ```
-    That would set the resolution overlay background to 198 pixels wide by 47 pixels high.
+    That would set the CODE_NAME overlay background to 198 pixels wide by 47 pixels high.
     
     Color values should be wrapped in quotes in the YAML, as the `#` denotes a comment in YAML and if left unquoted will prevent the value from being seen by Kometa.
     
