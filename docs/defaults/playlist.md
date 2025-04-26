@@ -27,7 +27,7 @@ use the `libraries` template variable which is outlined in the [Template Variabl
 
 ## Config
 
-The below YAML in your config.yml will create the collections:
+The below YAML in your config.yml will create the playlists:
 
 ```yaml
 playlist_files:
