@@ -412,17 +412,6 @@ class IMDb:
             self._watchlist_hash = self.requests.get(watchlist_hash_url).text.strip()
         return self._watchlist_hash
 
-    @property
-    def git_events_validation(self):
-        if self._git_events_validation is None:
-            self._git_events_validation = self.requests.get_yaml(f"{git_base}/event_validation.yml").data
-        return self._git_events_validation
-
-    def git_event(self, event_id):
-        if event_id not in self._git_events:
-            self._git_events[event_id] = self.requests.get_yaml(f"{git_base}/events/{event_id}.yml").data
-        return self._git_events[event_id]
-
     def validate_imdb(self, err_type, method, imdb_dicts):
         valid_lists = []
         main = "list_id" if method == "imdb_list" else "user_id"
@@ -478,20 +467,6 @@ class IMDb:
 
             valid_lists.append(new_dict)
         return valid_lists
-
-    def get_event_years(self, event_id):
-        if event_id in self.git_events_validation:
-            return True, self.git_events_validation[event_id]["years"]
-        if event_id not in self._web_event_validation:
-            self._web_event_validation[event_id] = []
-            for year_data in self._request(f"{base_url}/event/{event_id}", page_props=True)["historyEventEditions"]:
-                extra = '' if year_data["instanceWithinYear"] == 1 else f"-{year_data['instanceWithinYear']}"
-                self._web_event_validation[event_id].append(f"{year_data['year']}{extra}")
-        return False, self._web_event_validation[event_id]
-
-    def get_award_names(self, event_id, event_year):
-        event_data = self.get_event_data(event_id, event_year)
-        return [a for a in event_data], [c for _, cd in event_data.items() for c in cd]
 
     def _json_operation(self, list_type):
         if list_type == "search":
@@ -658,33 +633,6 @@ class IMDb:
                 raise Failed("Internal IMDB PersistedQuery Error")
             logger.error(f"Response: {response_json}")
             raise
-
-    def _award(self, data):
-        final_list = []
-
-        if data["event_id"] in self.git_events_validation:
-            if data["event_year"] == "all":
-                event_years = self.git_events_validation[data["event_id"]]["years"]
-            elif data["event_year"] == "latest":
-                event_years = self.git_events_validation[data["event_id"]]["years"][:1]
-            else:
-                event_years = data["event_year"]
-        elif data["event_year"] == "latest":
-            event_years = self.get_event_years(data["event_id"])[:1]
-        else:
-            event_years = data["event_year"][:1]
-
-        for event_year in event_years:
-            event_data = self.get_event_data(data["event_id"], event_year)
-            for award, categories in event_data[event_year].items():
-                if data["award_filter"] and award not in data["award_filter"]:
-                    continue
-                for cat in categories:
-                    if data["category_filter"] and cat not in data["category_filter"]:
-                        continue
-                    final_list.extend(categories[cat]["winner" if data["winning"] else "nominee"])
-
-        return final_list
 
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
@@ -860,6 +808,31 @@ class IMDb:
 
     # Award Methods
 
+    @property
+    def git_events_validation(self):
+        if self._git_events_validation is None:
+            self._git_events_validation = self.requests.get_yaml(f"{git_base}/event_validation.yml").data
+        return self._git_events_validation
+
+    def git_event(self, event_id):
+        if event_id not in self._git_events:
+            self._git_events[event_id] = self.requests.get_yaml(f"{git_base}/events/{event_id}.yml").data
+        return self._git_events[event_id]
+
+    def get_event_years(self, event_id):
+        if event_id in self.git_events_validation:
+            return True, self.git_events_validation[event_id]["years"]
+        if event_id not in self._web_event_validation:
+            self._web_event_validation[event_id] = []
+            for year_data in self._request(f"{base_url}/event/{event_id}", page_props=True)["historyEventEditions"]:
+                extra = '' if year_data["instanceWithinYear"] == 1 else f"-{year_data['instanceWithinYear']}"
+                self._web_event_validation[event_id].append(f"{year_data['year']}{extra}")
+        return False, self._web_event_validation[event_id]
+
+    def get_award_names(self, event_id, event_year):
+        event_data = self.get_event_data(event_id, event_year)
+        return [a for a in event_data], [c for _, cd in event_data.items() for c in cd]
+
     def get_event_data(self, event_id, event_year):
         if event_id in self.git_events_validation:
             return self.git_event(event_id)[event_year]
@@ -900,3 +873,30 @@ class IMDb:
                                 award_data[award_name][cat_name]["winner"].append(w)
             self._web_events[event_id][event_year] = award_data
         return self._web_events[event_id][event_year]
+
+    def _award(self, data):
+        final_list = []
+
+        if data["event_id"] in self.git_events_validation:
+            if data["event_year"] == "all":
+                event_years = self.git_events_validation[data["event_id"]]["years"]
+            elif data["event_year"] == "latest":
+                event_years = self.git_events_validation[data["event_id"]]["years"][:1]
+            else:
+                event_years = data["event_year"]
+        elif data["event_year"] == "latest":
+            event_years = self.get_event_years(data["event_id"])[:1]
+        else:
+            event_years = data["event_year"][:1]
+
+        for event_year in event_years:
+            event_data = self.get_event_data(data["event_id"], event_year)
+            for award, categories in event_data[event_year].items():
+                if data["award_filter"] and award not in data["award_filter"]:
+                    continue
+                for cat in categories:
+                    if data["category_filter"] and cat not in data["category_filter"]:
+                        continue
+                    final_list.extend(categories[cat]["winner" if data["winning"] else "nominee"])
+
+        return final_list
