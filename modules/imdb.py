@@ -829,9 +829,18 @@ class IMDb:
                 self._web_event_validation[event_id].append(f"{year_data['year']}{extra}")
         return False, self._web_event_validation[event_id]
 
-    def get_award_names(self, event_id, event_year):
-        event_data = self.get_event_data(event_id, event_year)
-        return [a for a in event_data], [c for _, cd in event_data.items() for c in cd]
+    def get_event_names(self, event_id, event_years):
+        award_names = []
+        category_names = []
+        for event_year in event_years:
+            event_data = self.get_event_data(event_id, event_year)
+            for award_name, categories in event_data.items():
+                if award_name and award_name not in award_names:
+                    award_names.append(award_name)
+                for category_name in categories:
+                    if category_name and category_name not in category_names:
+                        category_names.append(category_name)
+        return award_names, category_names
 
     def get_event_data(self, event_id, event_year):
         if event_id in self.git_events_validation:
@@ -871,6 +880,8 @@ class IMDb:
                         for w in winners:
                             if w not in award_data[award_name][cat_name]["winner"]:
                                 award_data[award_name][cat_name]["winner"].append(w)
+            if event_id not in self._web_events:
+                self._web_events[event_id] = {}
             self._web_events[event_id][event_year] = award_data
         return self._web_events[event_id][event_year]
 

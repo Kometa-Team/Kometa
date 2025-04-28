@@ -1587,19 +1587,17 @@ class CollectionBuilder:
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
-                    award_names, category_names = self.config.IMDb.get_award_names(event_id, year_options[0] if event_year == "latest" else event_year[0])
-                    lower_award = {a.lower(): a for a in award_names if a}
+                    award_names, category_names = self.config.IMDb.get_event_names(event_id, year_options[:1] if event_year == "latest" else year_options if event_year == "all" else event_year)
                     for award_filter in award_filters:
-                        if award_filter in lower_award:
-                            final_awards.append(lower_award[award_filter])
+                        if award_filter in award_names:
+                            final_awards.append(award_names[award_filter])
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in lower_award.items()])}]")
-                    lower_category = {c.lower(): c for c in category_names if c}
+                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
                     for category_filter in category_filters:
-                        if category_filter in lower_category:
-                            final_category.append(lower_category[category_filter])
+                        if category_filter in category_names:
+                            final_category.append(category_names[category_filter])
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in lower_category.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
                 self.builders.append((method_name, {
                     "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
                     "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
