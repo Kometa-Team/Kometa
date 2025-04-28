@@ -902,7 +902,7 @@ class IMDb:
 
         for event_year in event_years:
             event_data = self.get_event_data(data["event_id"], event_year)
-            for award, categories in event_data[event_year].items():
+            for award, categories in event_data.items():
                 if data["award_filter"] and award not in data["award_filter"]:
                     continue
                 for cat in categories:
