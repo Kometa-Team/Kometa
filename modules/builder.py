@@ -1567,13 +1567,13 @@ class CollectionBuilder:
                     except ValueError:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
                 elif str(og_year).startswith("-"):
-                    event_year = str(self.current_year + int(og_year))
-                    if event_year not in year_options:
-                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year}. Event Options: [{', '.join(year_options)}]")
+                    event_year = [str(self.current_year + int(og_year))]
+                    if event_year[0] not in year_options:
+                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year[0]}. Event Options: [{', '.join(year_options)}]")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
                 if (event_year == "all" or len(event_year) > 1) and not git_event:
-                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
+                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.git_events_validation])}]")
                 award_filters = []
                 if "award_filter" in dict_methods:
                     if not dict_data[dict_methods["award_filter"]]:
@@ -1587,7 +1587,7 @@ class CollectionBuilder:
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
-                    award_names, category_names = self.config.IMDb.get_award_names(event_id, year_options[0] if event_year == "latest" else event_year)
+                    award_names, category_names = self.config.IMDb.get_award_names(event_id, year_options[0] if event_year == "latest" else event_year[0])
                     lower_award = {a.lower(): a for a in award_names if a}
                     for award_filter in award_filters:
                         if award_filter in lower_award:
