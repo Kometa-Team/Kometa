@@ -1,28 +1,19 @@
+import base64
+import json
 import os
 import re
 import time
 import urllib.parse
-from cProfile import label
-from dbm import error
-
-import emby_client
-import requests
-import base64
-import json
 from xml.etree.ElementTree import Element
 
-from gitdb.const import NULL_BYTE
-from plexapi.base import PlexObjectT
-#bugs: razzie + berlinale year no poster
-
+import requests
 from plexapi.collection import Collection
-from plexapi.utils import PLEXOBJECTS
 from plexapi.video import Show, Movie, Episode
-from pydantic.v1.datetime_parse import time_expr
-from tenacity import retry_unless_exception_type
 
 from modules.logs import ERROR, WARNING
 from modules.util import Failed
+
+# bugs: razzie + berlinale year no poster
 
 # todo: add person link to collection with type while doing the edits / summary ?
 
@@ -280,8 +271,6 @@ class Audio:
 class EmbyConfig:
     X_EMBY_CONTAINER_SIZE = 50  # Definiere die Standardgröße für die Anzahl der Elemente
 
-import embyapi
-from emby_client.rest import ApiException
 
 class EmbyServer:
 
@@ -326,14 +315,14 @@ class EmbyServer:
         # self.cache_filenames()
 
         # Configure API key authorization: apikeyauth
-        configuration = emby_client.Configuration()
-        configuration.api_key['api_key'] = api_key
+        # configuration = emby_client.Configuration()
+        # configuration.api_key['api_key'] = api_key
 
         # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
         # configuration.api_key_prefix['api_key'] = 'Bearer'
 
         # create an instance of the API class
-        client = emby_client.ApiClient(configuration)
+        # client = emby_client.ApiClient(configuration)
 
     def get_people(self, library_id: str, role: str):
         endpoint = f"/emby/Persons?ParentId={library_id}&PersonTypes={role}&api_key={self.api_key}"
@@ -377,7 +366,7 @@ class EmbyServer:
         # self.media_by_resolution = {}
         # Durchsuche die filenames nach Auflösungen und Editionen
         for file_key, file_name in self.file_names.items():
-            from modules import builder, util
+            from modules import util
             logger = util.logger
             # logger.info(f"file name: {file_name}")
             # Suche nach Auflösungen
@@ -1778,7 +1767,7 @@ class EmbyServer:
         # db_tags = ",".join(new_tags)
 
 
-        return self.__update_item(item_id, {"Tags": new_tags, "TagItems": new_tags})
+        return self.__update_item(item_id, {"Tags": new_tags, "TagItems": new_tags}, item)
 
 
     def remove_tags(self, item_id, tags):
@@ -1796,12 +1785,14 @@ class EmbyServer:
                 new_tags.append(tag_item.get('Name'))
 
 
-        return self.__update_item(item_id, {"Tags": new_tags, "TagItems": new_tags})
+        return self.__update_item(item_id, {"Tags": new_tags, "TagItems": new_tags}, item)
 
     def update_item(self, item_id, data):
         self.__update_item(item_id,data)
-    def __update_item(self, item_id, data):
-        item = self.get_item(item_id)
+
+    def __update_item(self, item_id, data, item = None):
+        if not item:
+            item = self.get_item(item_id)
         if item is None:
             return None
         if "ForcedSortName" in data and "SortName" not in item["LockedFields"]:
