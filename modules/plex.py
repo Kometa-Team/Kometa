@@ -592,6 +592,7 @@ class Plex(Library):
         self.emby_users = []
         self._all_items = []
         self._emby_all_items = []
+        self._emby_all_items_native = []
         self._account = None
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
@@ -1103,10 +1104,13 @@ class Plex(Library):
             list: A list of all items.
         """
         # print(builder_level)
-        if not native and load and builder_level in [None, "show", "artist", "movie"]:
-            self._emby_all_items = []
-        if not native and self._emby_all_items and builder_level in [None, "show", "artist", "movie"]:
+        # if not native and load and builder_level in [None, "show", "artist", "movie"]:
+        #     self._emby_all_items = []
+        #     self._emby_all_items_native = []
+        if not native and self._emby_all_items: # and builder_level in [None, "show", "artist", "movie"]:
             return self._emby_all_items
+        if native and self._emby_all_items_native: # and builder_level in [None, "show", "artist", "movie"]:
+            return self._emby_all_items_native
 
         # builder_type = builder_level.lower() if builder_level else self.Plex.TYPE
 
@@ -1162,6 +1166,7 @@ class Plex(Library):
         self.EmbyServer.cache_filenames(items_data)
 
         print(f"Loaded {len(items_data)} {builder_level.capitalize()}s")
+        self._emby_all_items_native = items_data
         if native:
             # for item in items_data:
             #     for people in item.get("People", []):
@@ -1177,11 +1182,10 @@ class Plex(Library):
             #             tmdb_id = prov_ids.get('Tmdb', None)
             #             if tmdb_id:
             #                 people['tmdb_id'] = tmdb_id
-
             return items_data
         plex_items= self.EmbyServer.convert_emby_to_plex(items_data)
-        if builder_level in [None, "show", "artist", "movie"]:
-            self._emby_all_items = plex_items
+        # if builder_level in [None, "show", "artist", "movie"]:
+        self._emby_all_items = plex_items
         return plex_items
 
     def get_all_native(self, builder_level=None, load = False):

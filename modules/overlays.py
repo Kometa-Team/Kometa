@@ -86,7 +86,7 @@ class Overlays:
                     raise Failed
                 return _trakt_ratings
 
-            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_sort_title(io[1][0])), 1):
+            for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0])), 1):
                 # item_title = self.library.get_item_sort_title(item, atr="title")
                 # emby_item = self.library.get_native_emby_item(item.ratingKey)
                 emby_item = self.library.EmbyServer.get_item(item.ratingKey)
