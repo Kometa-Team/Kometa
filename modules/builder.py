@@ -1626,13 +1626,13 @@ class CollectionBuilder:
                     except ValueError:
                         raise Failed(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
                 elif str(og_year).startswith("-"):
-                    event_year = str(self.current_year + int(og_year))
-                    if event_year not in year_options:
-                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year}. Event Options: [{', '.join(year_options)}]")
+                    event_year = [str(self.current_year + int(og_year))]
+                    if event_year[0] not in year_options:
+                        raise Failed(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year[0]}. Event Options: [{', '.join(year_options)}]")
                 else:
                     event_year = util.parse(self.Type, "event_year", og_year, parent=method_name, datatype="strlist", options=year_options)
                 if (event_year == "all" or len(event_year) > 1) and not git_event:
-                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.events_validation])}]")
+                    raise Failed(f"{self.Type} Error: Only specific events work when using multiple years. Event Options: [{', '.join([k for k in self.config.IMDb.git_events_validation])}]")
                 award_filters = []
                 if "award_filter" in dict_methods:
                     if not dict_data[dict_methods["award_filter"]]:
@@ -1646,19 +1646,17 @@ class CollectionBuilder:
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
-                    award_names, category_names = self.config.IMDb.get_award_names(event_id, year_options[0] if event_year == "latest" else event_year)
-                    lower_award = {a.lower(): a for a in award_names if a}
+                    award_names, category_names = self.config.IMDb.get_event_names(event_id, year_options[:1] if event_year == "latest" else year_options if event_year == "all" else event_year)
                     for award_filter in award_filters:
-                        if award_filter in lower_award:
-                            final_awards.append(lower_award[award_filter])
+                        if award_filter in award_names:
+                            final_awards.append(award_names[award_filter])
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in lower_award.items()])}]")
-                    lower_category = {c.lower(): c for c in category_names if c}
+                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
                     for category_filter in category_filters:
-                        if category_filter in lower_category:
-                            final_category.append(lower_category[category_filter])
+                        if category_filter in category_names:
+                            final_category.append(category_names[category_filter])
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in lower_category.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
                 self.builders.append((method_name, {
                     "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
                     "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
