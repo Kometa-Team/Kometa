@@ -234,7 +234,7 @@ In addition, templates also have a few special attributes that they can use:
               name: Movies
               tmdb_id: 86311
           Iron Man:
-    1        template:
+            template:
               name: Movies
               tmdb_id: 131292
         ```
