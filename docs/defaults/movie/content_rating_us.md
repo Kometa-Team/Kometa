@@ -18,11 +18,10 @@ hide:
     }'
     replace-tags='{
         "title-sub": "**[This file has a Show Library Counterpart.](./../../../../show/content_rating_us)**",
-        "image": "![](../../../../assets/images/defaults/content_rating_us_movie.png)"
+        "image": "![](../../../../assets/images/defaults/posters/content_rating_us_movie.png)"
     }'
     rewrite-relative-urls=false
 %}
-
     === "Default `include`"
     
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
