@@ -2,17 +2,29 @@
 hide:
   - toc
 ---
+
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
         "COLLECTION": "Collectionless", 
         "CODE_NAME": "collectionless",
-        "LIBRARY_TYPE": "Movie, Show",
-        "DESCRIPTION": "create a [Collectionless collection](../../files/builders/plex/collectionless) to help Show/Hide Movies/Shows properly in your library"
+        "LIBRARY_TYPE": "Movie, Show", 
+        "DESCRIPTION": "create a [Collectionless collection](../../files/builders/plex/collectionless.md) to help Show/Hide Movies/Shows properly in your library"
     }'
     rewrite-relative-urls=false
-    end="<!--rec-sub-->"
+    end="<!--image-->"
 %}
+
+{%
+    include-markdown "./../../templates/defaults/base/collection/header.md"
+    replace='{
+        "CODE_NAME": "collectionless",
+        "LIBRARY_TYPE": "Movie, Show"
+    }'
+    start="<!--image-->"
+    end="<!--recs-->"
+%}
+
 
 Requirements: 
 
