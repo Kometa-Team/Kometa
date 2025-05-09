@@ -1590,12 +1590,12 @@ class CollectionBuilder:
                     award_names, category_names = self.config.IMDb.get_event_names(event_id, year_options[:1] if event_year == "latest" else year_options if event_year == "all" else event_year)
                     for award_filter in award_filters:
                         if award_filter in award_names:
-                            final_awards.append(award_names[award_filter])
+                            final_awards.append(award_filter)
                         else:
                             raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
                     for category_filter in category_filters:
                         if category_filter in category_names:
-                            final_category.append(category_names[category_filter])
+                            final_category.append(category_filter)
                         else:
                             raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
                 self.builders.append((method_name, {
