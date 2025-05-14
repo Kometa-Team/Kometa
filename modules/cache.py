@@ -334,14 +334,6 @@ class Cache:
                         data TEXT
                     )"""
                 )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS service_settings (
-                        service TEXT,
-                        setting TEXT,
-                        value TEXT,
-                        PRIMARY KEY (service, setting)
-                    )"""
-                )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute(f"SELECT DISTINCT library FROM image_map")
@@ -1199,26 +1191,3 @@ class Cache:
             logger.error(f"Error type: {type(e)}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
-
-    def get_service_setting(self, service, setting):
-        """Get a service-specific setting from the database"""
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"SELECT value FROM service_settings WHERE service = ? AND setting = ?", (service, setting))
-                result = cursor.fetchone()
-                return result[0] if result else None
-        except Exception as e:
-            logger.error(f"Failed to get setting {setting} for {service}: {e}")
-            return None
-
-    def set_service_setting(self, service, setting, value):
-        """Store a service-specific setting in the database"""
-        try:
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(f"INSERT OR REPLACE INTO service_settings (service, setting, value) VALUES (?, ?, ?)", 
-                             (service, setting, value))
-                conn.commit()
-        except Exception as e:
-            logger.error(f"Failed to set setting {setting} for {service}: {e}")
