@@ -137,13 +137,13 @@ class Trakt:
         """Get authorization data either from config file or database"""
         if self.store_in_db and self.cache:
             auth_data = self.cache.get_authorization("trakt")
-            logger.debug(f"Retrieved authorization from database: {auth_data}")
+            logger.debug(f"Retrieved authorization from database")
             return auth_data
         else:
             yaml = self.requests.file_yaml(self.config_path)
             if "trakt" in yaml.data and "authorization" in yaml.data["trakt"]:
                 auth_data = yaml.data["trakt"]["authorization"]
-                logger.debug(f"Retrieved authorization from config: {auth_data}")
+                logger.debug(f"Retrieved authorization from config")
                 return auth_data
             return None
 
@@ -211,14 +211,9 @@ class Trakt:
 
     def _save(self, authorization):
         """Save authorization data either to config file or database"""
-        logger.debug(f"Attempting to save Trakt authorization")
-        logger.debug(f"Authorization data type: {type(authorization)}")
-        logger.debug(f"Authorization data: {authorization}")
-        
         if not authorization:
             logger.debug("No authorization data to save")
             return False
-            
         if self.store_in_db and self.cache:
             logger.debug("Storing authorization in database")
             self.cache.set_authorization("trakt", authorization)
@@ -229,22 +224,24 @@ class Trakt:
                 yaml.data["trakt"] = {}
             yaml.data["trakt"]["authorization"] = authorization
             yaml.save()
-            
         if self._check(authorization):
             if self.authorization != authorization and not self.read_only:
-                logger.debug("Updating authorization in config file")
-                yaml = self.requests.file_yaml(self.config_path)
-                yaml.data["trakt"]["pin"] = None
-                yaml.data["trakt"]["authorization"] = {
-                    "access_token": authorization["access_token"],
-                    "token_type": authorization["token_type"],
-                    "expires_in": authorization["expires_in"],
-                    "refresh_token": authorization["refresh_token"],
-                    "scope": authorization["scope"],
-                    "created_at": authorization["created_at"]
-                }
-                logger.info(f"Saving authorization information to {self.config_path}")
-                yaml.save()
+                if not self.store_in_db:
+                    yaml = self.requests.file_yaml(self.config_path)
+                    yaml.data["trakt"]["pin"] = None
+                    yaml.data["trakt"]["authorization"] = {
+                        "access_token": authorization["access_token"],
+                        "token_type": authorization["token_type"],
+                        "expires_in": authorization["expires_in"],
+                        "refresh_token": authorization["refresh_token"],
+                        "scope": authorization["scope"],
+                        "created_at": authorization["created_at"]
+                    }
+                    yaml.save()
+                else:
+                    yaml = self.requests.file_yaml(self.config_path)
+                    yaml.data["trakt"]["pin"] = None
+                    yaml.save()
                 self.authorization = authorization
             return True
         return False
