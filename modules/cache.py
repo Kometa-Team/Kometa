@@ -1180,17 +1180,11 @@ class Cache:
     def set_authorization(self, service, data):
         """Store authorization data for a service in the database"""
         try:
-            logger.debug(f"Attempting to store authorization for {service}")
-            logger.debug(f"Authorization data type: {type(data)}")
-            logger.debug(f"Authorization data: {data}")
-            
-            # Convert data to string if it's not already
             if data is None:
                 data = "null"
             elif not isinstance(data, str):
                 try:
                     data = json.dumps(data)
-                    logger.debug("Successfully converted data to JSON string")
                 except Exception as e:
                     logger.error(f"Failed to convert data to JSON string: {e}")
                     return
@@ -1199,7 +1193,7 @@ class Cache:
                 cursor = conn.cursor()
                 cursor.execute(f"INSERT OR REPLACE INTO authorization (service, data) VALUES (?, ?)", (service, data))
                 conn.commit()
-                logger.debug(f"Successfully stored authorization for {service}")
+                logger.debug(f"Successfully stored authorization for {service} in database.")
         except Exception as e:
             logger.error(f"Failed to set authorization for {service}: {e}")
             logger.error(f"Error type: {type(e)}")

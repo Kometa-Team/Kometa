@@ -212,13 +212,10 @@ class Trakt:
     def _save(self, authorization):
         """Save authorization data either to config file or database"""
         if not authorization:
-            logger.debug("No authorization data to save")
             return False
         if self.store_in_db and self.cache:
-            logger.debug("Storing authorization in database")
             self.cache.set_authorization("trakt", authorization)
         else:
-            logger.debug("Storing authorization in config file")
             yaml = self.requests.file_yaml(self.config_path)
             if "trakt" not in yaml.data:
                 yaml.data["trakt"] = {}
