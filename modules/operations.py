@@ -1014,9 +1014,11 @@ class Operations:
             _size = len(content_edits.items())
             for i, (new_rating, rating_keys) in enumerate(sorted(content_edits.items()), 1):
                 logger.info(get_batch_info(i, _size, "contentRating", len(rating_keys), display_value=new_rating))
-                self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
-                self.library.Plex.editContentRating(new_rating)
-                self.library.Plex.saveMultiEdits()
+                self.library.EmbyServer.multiEditField(self.library.load_list_from_cache(rating_keys), "contentRating",new_rating)
+
+                # self.library.Plex.batchMultiEdits(self.library.load_list_from_cache(rating_keys))
+                # self.library.Plex.editContentRating(new_rating)
+                # self.library.Plex.saveMultiEdits()
 
             _size = len(studio_edits.items())
             for i, (new_studio, rating_keys) in enumerate(sorted(studio_edits.items()), 1):

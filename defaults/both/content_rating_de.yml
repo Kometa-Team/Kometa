@@ -74,6 +74,7 @@ dynamic_collections:
         - no/A
         - no/5
         - no/05
+        - FSK-0
       6:
         - de/6
         - gb/9+
@@ -98,6 +99,7 @@ dynamic_collections:
         - no/09
         - no/10
         - no/11
+        - FSK-6
       12:
         - de/12
         - gb/12
@@ -111,6 +113,7 @@ dynamic_collections:
         - PG-13 - Teens 13 or older
         - PG-13
         - no/15
+        - FSK-12
       16:
         - de/16
         - no/16
@@ -120,6 +123,7 @@ dynamic_collections:
         - R
         - 17
         - M/PG
+        - FSK-16
       18:
         - de/18
         - gb/18
@@ -132,6 +136,7 @@ dynamic_collections:
         - NC-17
         - R+ - Mild Nudity
         - Rx - Hentai
+        - FSK-18
       BPjM:
         - de/BPjM Restricted
         - BPjM Restricted

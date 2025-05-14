@@ -24,108 +24,6 @@ from modules.util import Failed
 # https://docs.mdblist.com/docs/api
 
 
-
-my_label_db = {}
-
-file_path_kometa = "config/smartlabels_kometa.json"
-def load_labels_from_file(file_path):
-    """
-    Load labels from a JSON file.
-
-    Args:
-        file_path (str): Path to the JSON file.
-
-    Returns:
-        dict: Dictionary of labels with media IDs as keys.
-    """
-    try:
-        with open(file_path, "r") as file:
-            labels = json.load(file)
-        print(f"Labels successfully loaded from {file_path}.")
-        return labels
-    except FileNotFoundError:
-        print(f"File not found: {file_path}. Returning empty labels.")
-        return {}
-    except Exception as e:
-        print(f"Error loading labels from file: {e}")
-        return {}
-
-kometa_labels = load_labels_from_file(file_path_kometa)
-
-
-def save_labels_to_file(file_path, labels):
-    """
-    Save labels to a JSON file.
-
-    Args:
-        file_path (str): Path to the JSON file.
-        labels (dict): Dictionary of labels with media IDs as keys.
-
-    Returns:
-        None
-    """
-    try:
-        with open(file_path, "w") as file:
-            json.dump(labels, file, indent=4)
-        print(f"Labels successfully saved to {file_path}.")
-    except Exception as e:
-        print(f"Error saving labels to file: {e}")
-
-
-
-def add_label(labels, rating_key, label):
-    """
-    Add a label to a specific media item.
-
-    Args:
-        labels (dict): Current labels dictionary.
-        rating_key (str): Media ID.
-        label (str): Label to add.
-
-    Returns:
-        dict: Updated labels dictionary.
-    """
-    if rating_key not in labels:
-        labels[rating_key] = []
-    if label not in labels[rating_key]:
-        labels[rating_key].append(label)
-    return labels
-
-def remove_label(labels, rating_key, label):
-    """
-    Remove a label from a specific media item.
-
-    Args:
-        labels (dict): Current labels dictionary.
-        rating_key (str): Media ID.
-        label (str): Label to remove.
-
-    Returns:
-        dict: Updated labels dictionary.
-    """
-    if rating_key in labels and label in labels[rating_key]:
-        labels[rating_key].remove(label)
-        if not labels[rating_key]:  # Remove the key if no labels remain
-            del labels[rating_key]
-    return labels
-
-def get_labels(rating_key):
-    """
-    Retrieve labels for a specific media item.
-
-    Args:
-        labels (dict): Current labels dictionary.
-        rating_key (str): Media ID.
-
-    Returns:
-        list: List of labels for the media item.
-    """
-
-    return kometa_labels.get(rating_key, [])
-
-
-# Lade vorhandene Labels oder initialisiere eine leere Sammlung
-
 class PlexMedia:
     def __init__(self, name, server_id, item_id, runtime_ticks, provider_ids, media_type, image_tags,
                  backdrop_image_tags):
@@ -336,7 +234,13 @@ class EmbyServer:
         response = requests.get(url, headers=self.headers)
         return response.json().get("Items", [])
 
-        # https://.com:18096/emby/Persons?ParentId=887044&PersonTypes=director&api_key=1a0798043dc549a5ace4f9a216980308
+    def get_official_age_ratings(self, library_id: str):
+        endpoint = f"/emby/OfficialRatings?Recursive=True&ParentId={library_id}&api_key={self.api_key}"
+        url = self.emby_server_url + endpoint
+        response = requests.get(url, headers=self.headers)
+        return response.json().get("Items", [])
+
+
     def get_resolutions(self):
         """
         Fetches years for all items in the database and caches the results.
@@ -2312,8 +2216,6 @@ class EmbyServer:
         if search_all:
             for item in all_items:
                 found_tags.append(item.get("Name"))
-            for _, tags in kometa_labels.items():
-                found_tags += tags
         else:
             if len(all_items) > 0:
                 for tag_item in all_items[0].get("TagItems", []):
@@ -2384,8 +2286,6 @@ class EmbyServer:
         if search_all:
             for item in all_items:
                 found_tags.append(item.get("Name"))
-            for _, tags in kometa_labels.items():
-                found_tags += tags
         else:
             if len(all_items) > 0:
                 for tag_item in all_items[0].get("GenreItems", []):
@@ -2448,8 +2348,6 @@ class EmbyServer:
             if str(item.get("Name",'')).startswith('📡'):
                 continue
             all_studios.append(item.get("Name"))
-        for _, tags in kometa_labels.items():
-            all_studios += tags
 
 
         all_studios= sorted(set(all_studios))
@@ -2508,8 +2406,6 @@ class EmbyServer:
             if not str(item.get("Name",'')).startswith('📡'):
                 continue
             all_studios.append(str(item.get("Name", ''))[2:])
-        for _, tags in kometa_labels.items():
-            all_studios += tags
 
 
         all_studios= sorted(set(all_studios))
@@ -2617,9 +2513,12 @@ class EmbyServer:
                 changes["CriticRating"] = float(new_value)*10
                 item.rating = new_value
                 # self.__update_item(item_id,{"CriticRating": new_value})
-            elif field_attr == "userRating": # I don't care what this field is intended for
+            elif field_attr == "userRating": # ToDo: use ProviderId instead of age rating
                 changes["CustomRating"] = new_value
                 item.userRating = new_value
+            elif field_attr == "contentRating":
+                changes["OfficialRating"] = new_value
+                item.contentRating = new_value # item update still needed?
             elif field_attr == "studio":
                 # id = self.get
 
@@ -2645,7 +2544,7 @@ class EmbyServer:
                 # self.__update_item(item_id,{"CustomRating": new_value})
             self.__update_item(item_id,changes)
 
-        if field_attr in ["audienceRating","rating","userRating","studio"]:
+        if field_attr in ["audienceRating","rating","userRating","studio","contentRating"]:
             # CustomRating ?
             return
 

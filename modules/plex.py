@@ -881,6 +881,11 @@ class Plex(Library):
                             emby_query_params['Genres'].append(value_decoded)
                     elif key_decoded == 'limit':
                         emby_query_params['Limit'] = value_decoded
+                    elif key_decoded == 'show.contentRating' or key_decoded == 'contentRating':
+                        if "OfficialRatings" not in emby_query_params:
+                            emby_query_params['OfficialRatings'] = [value_decoded]
+                        else:
+                            emby_query_params['OfficialRatings'].append(value_decoded)
                     elif key_decoded in ['label', 'show.label']:
                         # Handle multiple labels
                         icon = '📺' if self.type == 'Show' else '🎥'
@@ -1007,6 +1012,8 @@ class Plex(Library):
             emby_query_params['PersonIds'] = ','.join(emby_query_params['PersonIds'])
         if 'PersonTypes' in emby_query_params:
             emby_query_params['PersonTypes'] = ','.join(set(emby_query_params['PersonTypes']))
+        if 'OfficialRatings' in emby_query_params:
+            emby_query_params['OfficialRatings'] = '|'.join(set(emby_query_params['OfficialRatings']))
 
 
         # Set 'Years' parameter if years_list is not empty
@@ -1637,6 +1644,16 @@ class Plex(Library):
                 # Create a FilterChoiceEmby object
                 filter_choice = FilterChoiceEmby(key=key, title=title)
                 emby_items.append(filter_choice)
+            return emby_items
+        elif my_search in ['contentRating']:
+            content_ratings = self.EmbyServer.get_official_age_ratings(self.Emby.get("Id"))
+
+            for rating in content_ratings:
+                key = rating.get("Name")
+                if key:
+                    # Create a FilterChoiceEmby object
+                    filter_choice = FilterChoiceEmby(key=key, title=key)
+                    emby_items.append(filter_choice)
             return emby_items
         elif my_search in ['label', 'show.label']:
             labels = self.EmbyServer.get_emby_item_tags(self, self.Emby.get("Id"), search_all=True)
@@ -2307,6 +2324,8 @@ class Plex(Library):
                 _item_tags = self.EmbyServer.get_emby_item_tags(obj,self.Emby.get("Id"), from_cache=False)
             elif attr == "genre":
                 _item_tags = self.EmbyServer.get_emby_item_genres(obj,self.Emby.get("Id"), from_cache=False)
+            else:
+                pass
 
             _add = [t for t in _add_tags + _sync_tags if t not in _item_tags]
             _remove = [t for t in _item_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]

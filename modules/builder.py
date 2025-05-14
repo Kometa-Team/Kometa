@@ -3880,7 +3880,7 @@ class CollectionBuilder:
 
 
             # save_labels_to_file(file_path_kometa, kometa_labels)
-            logger.info(f"Labels updated in JSON for Collection ID {collection_id}")
+            # logger.info(f"Labels updated in JSON for Collection ID {collection_id}")
             updated_details.append("Tag")
 
         asset_location = None
