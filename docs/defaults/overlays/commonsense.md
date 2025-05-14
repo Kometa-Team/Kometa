@@ -6,7 +6,7 @@ hide:
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
         "OVERLAY_NAME": "Common Sense Age Rating", 
-        "CODE_NAME": "audio_codec",
+        "CODE_NAME": "commonsense",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the Common Sense Age Rating on each item within your library"
     }'
