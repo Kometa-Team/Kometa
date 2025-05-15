@@ -88,12 +88,17 @@ class MyAnimeList:
         self.localhost_url = params["localhost_url"]
         self.config_path = params["config_path"]
         self.expiration = params["cache_expiration"]
-        self.authorization = params["authorization"]
-        logger.secret(self.client_secret)
+        self.store_in_db = params.get("store_authorization_in_db", False)
+        self.cache = None
+        if self.store_in_db:
+            from modules.cache import Cache
+            self.cache = Cache(self.config_path, 60)
         try:
+            logger.secret(self.client_secret)
+            self.authorization = self._get_authorization()
             if not self._save(self.authorization):
                 if not self._refresh():
-                    self._authorization()
+                    self._authorize()
         except Exception:
             logger.stacktrace()
             raise Failed("MyAnimeList Error: Failed to Connect")
@@ -122,30 +127,63 @@ class MyAnimeList:
         return self._studios
 
     def _authorization(self):
+        """Get authorization data either from config file or database"""
+        if self.store_in_db and self.cache:
+            return self.cache.get_authorization("mal")
+        else:
+            yaml = self.requests.file_yaml(self.config_path)
+            if "mal" in yaml.data and "authorization" in yaml.data["mal"]:
+                return yaml.data["mal"]["authorization"]
+            return None
+
+    def _get_authorization(self):
+        """Get authorization data either from config file or database"""
+        if self.store_in_db and self.cache:
+            auth_data = self.cache.get_authorization("mal")
+            logger.debug(f"Retrieved authorization from database")
+            return auth_data
+        else:
+            yaml = self.requests.file_yaml(self.config_path)
+            if "mal" in yaml.data and "authorization" in yaml.data["mal"]:
+                auth_data = yaml.data["mal"]["authorization"]
+                logger.debug(f"Retrieved authorization from config")
+                return auth_data
+            return None
+
+    def _authorize(self):
         if self.localhost_url:
-            code_verifier = uni_code_verifier
+            self.code_verifier = uni_code_verifier
             url = self.localhost_url
         else:
-            code_verifier = secrets.token_urlsafe(100)[:128]
-            url = f"{urls['oauth_authorize']}?response_type=code&client_id={self.client_id}&code_challenge={code_verifier}"
+            # self.code_verifier = secrets.token_urlsafe(100)[:128]
+            self.code_verifier = uni_code_verifier
+            url = (
+                f"{urls['oauth_authorize']}?response_type=code"
+                f"&client_id={self.client_id}"
+                f"&code_challenge={self.code_verifier}"
+            )
             logger.info("")
             logger.info(f"Navigate to: {url}")
             logger.info("")
             logger.info("Login and click the Allow option. You will then be redirected to a localhost")
             logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
             webbrowser.open(url, new=2)
-            try:                                url = util.logger_input("URL").strip()
-            except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
-            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
+            try:
+                url = util.logger_input("URL").strip()
+            except TimeoutExpired:
+                raise Failed("Input Timeout: URL required.")
+            if not url:
+                raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
         match = re.search("code=([^&]+)", str(url))
         if not match:
+            logger.error(f"Could not find 'code' in URL: {url}")
             raise Failed("MyAnimeList Error: Invalid URL")
         code = match.group(1)
         data = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "code": code,
-            "code_verifier": code_verifier,
+            "code_verifier": self.code_verifier,
             "grant_type": "authorization_code"
         }
         new_authorization = self._oauth(data)
@@ -176,19 +214,35 @@ class MyAnimeList:
         return False
 
     def _save(self, authorization):
-        if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
+        """Save authorization data either to config file or database"""
+        if not authorization:
+            return False
+        if self.store_in_db and self.cache:
+            self.cache.set_authorization("mal", authorization)
+        else:
+            yaml = self.requests.file_yaml(self.config_path)
+            if "mal" not in yaml.data:
+                yaml.data["mal"] = {}
+            yaml.data["mal"]["authorization"] = authorization
+            yaml.save()
+        if self._check(authorization):
             if self.authorization != authorization and not self.read_only:
-                yaml = self.requests.file_yaml(self.config_path)
-                yaml.data["mal"]["authorization"] = {
-                    "access_token": authorization["access_token"],
-                    "token_type": authorization["token_type"],
-                    "expires_in": authorization["expires_in"],
-                    "refresh_token": authorization["refresh_token"]
-                }
-                logger.info(f"Saving authorization information to {self.config_path}")
-                yaml.save()
-                logger.secret(authorization["access_token"])
-            self.authorization = authorization
+                if not self.store_in_db:
+                    yaml = self.requests.file_yaml(self.config_path)
+                    yaml.data["mal"]["authorization"] = {
+                        "access_token": authorization["access_token"],
+                        "token_type": authorization["token_type"],
+                        "expires_in": authorization["expires_in"],
+                        "refresh_token": authorization["refresh_token"],
+                        "scope": authorization["scope"],
+                        "created_at": authorization["created_at"]
+                    }
+                    yaml.save()
+                else:
+                    yaml = self.requests.file_yaml(self.config_path)
+                    yaml.data["mal"]["localhost_url"] = None
+                    yaml.save()
+                self.authorization = authorization
             return True
         return False
 
@@ -328,3 +382,15 @@ class MyAnimeList:
         logger.debug(f"{len(mal_ids)} MyAnimeList IDs Found")
         logger.trace(f"IDs: {mal_ids}")
         return mal_ids
+
+    def save_authorization(self, authorization_data):
+        """Save authorization data to the database if store_authorization_in_db is enabled."""
+        if self.config.general["store_authorization_in_db"]:
+            self.config.Cache.set_authorization("trakt", authorization_data)
+        else:
+            # Update the config file as before
+            config_yaml = self.config.Requests.file_yaml(self.config.config_path)
+            if "trakt" not in config_yaml.data:
+                config_yaml.data["trakt"] = {}
+            config_yaml.data["trakt"]["authorization"] = authorization_data
+            config_yaml.save()

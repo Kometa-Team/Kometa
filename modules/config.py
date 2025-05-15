@@ -730,14 +730,19 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
-                    self.MyAnimeList = MyAnimeList(self.Requests, self.Cache, self.read_only, {
+                    mal_config = {
                         "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
                         "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                         "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                         "config_path": self.config_path,
-                        "authorization": self.data["mal"]["authorization"] if "authorization" in self.data["mal"] else None
-                    })
+                        "store_authorization_in_db": self.general["store_authorization_in_db"]
+                    }
+                    if self.general["store_authorization_in_db"]:
+                        mal_config["authorization"] = self.Cache.get_authorization("mal")
+                    else:
+                        mal_config["authorization"] = self.data["mal"].get("authorization")
+                    self.MyAnimeList = MyAnimeList(self.Requests, self.Cache, self.read_only, mal_config)
                 except Failed as e:
                     if str(e).endswith("is blank"):
                         logger.warning(e)
