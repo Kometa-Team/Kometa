@@ -10,6 +10,7 @@ Update tenacity requirement to 9.1.2
 # New Features
 Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
 Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
+Added `store_authorization_in_db` setting to store Trakt and MAL authorization in the database instead of the config file **credit to @ChuckNoxis**
 
 # Docs
 Adds overlay guide
