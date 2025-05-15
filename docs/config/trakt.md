@@ -33,6 +33,10 @@ trakt:
 
 *All other attributes will be filled in by Kometa as part of the authentication process**
 
+???+ warning
+
+    If the option store_authorization_in_db is set to true, the `authorization` block will be stored in the database instead of the config file.
+
 ## Trakt Authentication
 
 To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:

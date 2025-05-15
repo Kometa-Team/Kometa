@@ -29,6 +29,10 @@ mal:
 
 *All other attributes will be filled in by Kometa as part of the authentication process**
 
+???+ warning
+
+    If the option store_authorization_in_db is set to true, the `authorization` block will be stored in the database instead of the config file and the `localhost_url` will be cleared once the authentication is successful.
+
 ## MyAnimeList Authentication
 
 To connect to MyAnimeList.net you must create a MyAnimeList application and supply Kometa the `client id` and `client secret` provided, please do the following:
