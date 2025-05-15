@@ -977,15 +977,15 @@ The available setting attributes which can be set at each level are outlined bel
           show_unfiltered: true
         ```
 
-??? blank "`store_authorization_in_db` - Used to store Trakt/MAL authorization tokens in the database.<a class="headerlink" href="#store-authorization-in-db" title="Permanent link">¶</a>"
+??? blank "`store_authorization_in_cache` - Used to store Trakt/MAL authorization tokens in the cache.<a class="headerlink" href="#store-authorization-in-cache" title="Permanent link">¶</a>"
 
-    <div id="store-authorization-in-db" />Store Trakt/MAL authorization token in the database instead of the config file.
+    <div id="store-authorization-in-cache" />Store Trakt/MAL authorization token in the cache instead of the config file.
     This option prevents the modification of the authorization block in trakt and mal config file.
     This is useful if you are using a public git repository and do not want to share your authorization tokens with others.
 
     <hr style="margin: 0px;">
     
-    **Attribute:** `store_authorization_in_db`
+    **Attribute:** `store_authorization_in_cache`
 
     **Levels with this Attribute:** Global/Library
     
@@ -997,7 +997,7 @@ The available setting attributes which can be set at each level are outlined bel
         
         ```yaml
         settings:
-          store_authorization_in_db: true
+          store_authorization_in_cache: true
         ```
 
 ??? blank "`show_unmanaged` - Used to show collections not managed by Kometa.<a class="headerlink" href="#show-unmanaged" title="Permanent link">¶</a>"

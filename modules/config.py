@@ -474,7 +474,7 @@ class ConfigFile:
             "run_order": check_for_attribute(self.data, "run_order", parent="settings", var_type="lower_list", test_list=run_order_options, default=["operations", "metadata", "collections", "overlays"]),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
-            "store_authorization_in_db": check_for_attribute(self.data, "store_authorization_in_db", parent="settings", var_type="bool", default=False),
+            "store_authorization_in_cache": check_for_attribute(self.data, "store_authorization_in_cache", parent="settings", var_type="bool", default=False),
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
@@ -706,10 +706,10 @@ class ConfigFile:
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
                         "pin": check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
                         "config_path": self.config_path,
-                        "store_authorization_in_db": self.general["store_authorization_in_db"]
+                        "store_authorization_in_cache": self.general["store_authorization_in_cache"]
                     }
                     
-                    if self.general["store_authorization_in_db"]:
+                    if self.general["store_authorization_in_cache"]:
                         trakt_config["authorization"] = self.Cache.get_authorization("trakt")
                     else:
                         trakt_config["authorization"] = self.data["trakt"].get("authorization")
@@ -736,9 +736,9 @@ class ConfigFile:
                         "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                         "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                         "config_path": self.config_path,
-                        "store_authorization_in_db": self.general["store_authorization_in_db"]
+                        "store_authorization_in_cache": self.general["store_authorization_in_cache"]
                     }
-                    if self.general["store_authorization_in_db"]:
+                    if self.general["store_authorization_in_cache"]:
                         mal_config["authorization"] = self.Cache.get_authorization("mal")
                     else:
                         mal_config["authorization"] = self.data["mal"].get("authorization")

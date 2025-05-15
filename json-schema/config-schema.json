@@ -664,7 +664,7 @@
                     "minimum": 1,
                     "description": "Used to control how long data is cached for.\nSet the number of days before each cache mapping expires and has to be re-cached. An integer greater than 0 in days"
                 },
-                "store_authorization_in_db": {
+                "store_authorization_in_cache": {
                     "description": "Used to store Trakt/MAL authorization tokens in the cache database.\nStore the authorization tokens for each API in the cache database. This is used to prevent configuration file constant modifications.",
                     "type": "boolean"
                 },

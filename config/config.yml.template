@@ -60,7 +60,7 @@ settings:
   - overlays
   cache: true
   cache_expiration: 60
-  store_authorization_in_db: false
+  store_authorization_in_cache: false
   asset_directory:
   - config/assets
   asset_folders: true

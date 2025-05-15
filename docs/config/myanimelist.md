@@ -31,7 +31,7 @@ mal:
 
 ???+ warning
 
-    If the option store_authorization_in_db is set to true, the `authorization` block will be stored in the database instead of the config file and the `localhost_url` will be cleared once the authentication is successful.
+    If the option store_authorization_in_cache is set to true, the `authorization` block will be stored in the cache instead of the config file and the `localhost_url` will be cleared once the authentication is successful.
 
 ## MyAnimeList Authentication
 

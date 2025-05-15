@@ -44,7 +44,7 @@ class Trakt:
         self.client_secret = params["client_secret"]
         self.pin = params["pin"]
         self.config_path = params["config_path"]
-        self.store_in_db = params.get("store_authorization_in_db", False)
+        self.store_in_db = params.get("store_authorization_in_cache", False)
         self.cache = None
         if self.store_in_db:
             from modules.cache import Cache
@@ -612,8 +612,8 @@ class Trakt:
             raise Failed(f"Trakt Error: Method {method} not supported")
 
     def save_authorization(self, authorization_data):
-        """Save authorization data to the database if store_authorization_in_db is enabled."""
-        if self.config.general["store_authorization_in_db"]:
+        """Save authorization data to the database if store_authorization_in_cache is enabled."""
+        if self.config.general["store_authorization_in_cache"]:
             self.config.Cache.set_authorization("trakt", authorization_data)
         else:
             # Update the config file as before

@@ -88,7 +88,7 @@ class MyAnimeList:
         self.localhost_url = params["localhost_url"]
         self.config_path = params["config_path"]
         self.expiration = params["cache_expiration"]
-        self.store_in_db = params.get("store_authorization_in_db", False)
+        self.store_in_db = params.get("store_authorization_in_cache", False)
         self.cache = None
         if self.store_in_db:
             from modules.cache import Cache
@@ -384,8 +384,8 @@ class MyAnimeList:
         return mal_ids
 
     def save_authorization(self, authorization_data):
-        """Save authorization data to the database if store_authorization_in_db is enabled."""
-        if self.config.general["store_authorization_in_db"]:
+        """Save authorization data to the database if store_authorization_in_cache is enabled."""
+        if self.config.general["store_authorization_in_cache"]:
             self.config.Cache.set_authorization("trakt", authorization_data)
         else:
             # Update the config file as before
