@@ -85,7 +85,7 @@ This guide provides step-by-step instructions to install Kometa on TrueNAS Scale
 
 #### Step 5: Run Kometa
 
-This is an optional step you can perform if you want to fire off a run right this second to verify that things are working.  Whether or not you do this, Kometa will wake up tomorrow at 5AM to process the config [assuming you used the compase YAML just above].
+This is an optional step you can perform if you want to fire off a run right this second to verify that things are working.  Whether or not you do this, Kometa will wake up tomorrow at 5AM to process the config [assuming you used the docker-compose YAML just above].
 
 1. Return to the TrueNAS Scale SSH session.
 2. Execute the following command to force an immediate library refresh based on your `config.yml`:
