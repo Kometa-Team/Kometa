@@ -89,7 +89,7 @@ This guide provides step-by-step instructions to install Kometa on TrueNAS Scale
 2. Execute the following command to force an immediate library refresh based on your `config.yml`:
 
     ```
-    sudo docker run --rm -it -v "/mnt/YOUR-STORAGE-POOL/YOUR-DATASET/kometa/config:/config:rw" kometateam/kometa --run --config /config/config.yml
+    sudo docker run --rm -it -v "/mnt/YOUR-STORAGE-POOL/YOUR-DATASET/kometa/config:/config:rw" kometateam/kometa --run
     ```
 
 #### Step 6: Verify and Expand
