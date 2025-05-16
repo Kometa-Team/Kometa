@@ -60,7 +60,7 @@ This guide provides step-by-step instructions to install Kometa on TrueNAS Scale
 
 1. In the TrueNAS web interface, go to Apps > Discover Apps.
 2. Click the three-dot menu and select **Install via YAML**.
-3. In the YAML window, set the container name to `kometa` and use the following template, editing the timezone, volume mapping, and UID/GID as needed:
+3. In the YAML window, set the container name to `kometa` and use the following docker-compose template, editing the timezone, volume mapping, and UID/GID as needed:
 
     ```yaml
     services:
@@ -85,6 +85,8 @@ This guide provides step-by-step instructions to install Kometa on TrueNAS Scale
 
 #### Step 5: Run Kometa
 
+This is an optional step you can perform if you want to fire off a run right this second to verify that things are working.  Whether or not you do this, Kometa will wake up tomorrow at 5AM to process the config [assuming you used the compase YAML just above].
+
 1. Return to the TrueNAS Scale SSH session.
 2. Execute the following command to force an immediate library refresh based on your `config.yml`:
 
@@ -92,6 +94,8 @@ This guide provides step-by-step instructions to install Kometa on TrueNAS Scale
     sudo docker run --rm -it -v "/mnt/YOUR-STORAGE-POOL/YOUR-DATASET/kometa/config:/config:rw" kometateam/kometa --run
     ```
 
+    Of course, replace `YOUR-STORAGE-POOL/YOUR-DATASET` to suit your specific setup.
+   
 #### Step 6: Verify and Expand
 
 1. Check your Plex library for updated collections.
