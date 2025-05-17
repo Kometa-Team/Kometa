@@ -1,5 +1,6 @@
 aac
 accessmodes
+ACL
 addon
 addons
 adlib
@@ -106,6 +107,7 @@ fribb
 fsk
 galician
 generalizable
+GID
 github
 githubusercontent
 gitpython
@@ -314,7 +316,9 @@ spartacus
 ssl
 stevenlu
 stevenlu's
+stonecutter
 subprocess
+sudo
 sundance
 sv
 sxxeyy
@@ -349,13 +353,16 @@ transcoded
 transcoding
 trash
 truehd
+TrueNAS
 ttf
 tutin
 tv
 tvdb
 tw
+TZ
 ua
 ui
+UID
 uncompress
 unionfs
 unmanaged
