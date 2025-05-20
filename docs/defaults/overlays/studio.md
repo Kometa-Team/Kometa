@@ -7,7 +7,7 @@ hide:
     replace='{
         "OVERLAY_NAME": "Studio", 
         "CODE_NAME": "studio",
-        "OVERLAY_LEVEL": "Movie, Show",
+        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the show studio on each item within your library"
     }'
     end='<!--rec-sub-->'
