@@ -36,8 +36,8 @@ hide:
     replace='{
         "HORIZONTAL_OFFSET": "`15`/`235`",
         "HORIZONTAL_ALIGN": "`right`/`center`",
-        "VERTICAL_OFFSET": "`1050`/`15`",
-        "VERTICAL_ALIGN": "`top`",
+        "VERTICAL_OFFSET": "`335`/`270`",
+        "VERTICAL_ALIGN": "`bottom`",
         "BACK_COLOR": "`#00000099`",
         "BACK_RADIUS": "`30`",
         "BACK_WIDTH": "`105`",
