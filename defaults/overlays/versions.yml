@@ -10,24 +10,27 @@ external_templates:
   default: templates
   template_variables:
     default:
-      vertical_align: top
+      horizontal_align: right
+      vertical_align: bottom
     conditionals:
       horizontal_align:
         default: right
         conditions:
           - builder_level: episode
-            value: center
+            value: right
           - builder_level: episode
-            value: center
+            value: right
       vertical_offset:
         default: 15
         conditions:
           - vertical_align.exists: false
             builder_level.not: episode
-            value: 1060
+            value: 335
           - vertical_align.exists: false
             builder_level.not: episode
-            value: 1060
+            value: 335
+          - vertical_align.exists: false
+            value: 270
           - vertical_align: center
             value: 0
           - vertical_align: top
