@@ -59,7 +59,7 @@ tags:
 
 # Filters
 
-Filters allow for you to filter every item added to the collection/overlay/playlist from every Builder using the `filters` attribute. 
+Filters allow for you to filter every item added to the collection/overlay/playlist from every Builder using the `filters` attribute.
 
 ## Using Filters
 
@@ -75,7 +75,7 @@ filters:
 
 Anything that doesn't have both the Genre `Action` and the Country `Germany` will be ignored.
 
-Multiple Filter Sets can be given as a list. With multiple sets only one of the sets must pass for the item to not be ignored. 
+Multiple Filter Sets can be given as a list. With multiple sets only one of the sets must pass for the item to not be ignored.
 
 ```yaml
 filters:
@@ -87,22 +87,22 @@ filters:
 
 Anything that doesn't have either both the Genre `Action` and the Country `Germany` or the Genre `Comedy` and the Country `France` will be ignored.
 
-All filter options are listed below. 
+All filter options are listed below.
 
 To display items filtered out add `show_filtered: true` to the definition. To display items that make it through the filters add `show_unfiltered: true` to the definition.
 
 You can use the `plex_all: true` Builder to filter from your entire library.
 
 ???+ warning
-    
-    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](builders/plex.md#smart-label), [Plex Search](builders/plex/search) or another [Builder](overview.md) if possible.
+
+    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](../files/settings.md#smart-label-definitions), [Plex Search](../files/builders/plex/search.md) or another [Builder](overview.md) if possible.
 
 ## Filter Options
 
 === "Boolean Filters"
-    
+
     **Modifiers:** No Modifier
-    
+
     ### Boolean Filter Attributes
 
     | Boolean Filters       | Description                                                                                              | Allowed Media                                                              |
@@ -114,7 +114,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | `has_stinger`         | Matches every item that has a [media stinger](http://www.mediastinger.com/) (After/During Credits Scene) | `Movies`                                                                   |
 
     #### Examples
-    
+
     ```yaml
     collections:
      Movies with Mediastingers:
@@ -129,14 +129,14 @@ You can use the `plex_all: true` Builder to filter from your entire library.
        filters:
          has_edition: true
     ```
-    
+
 
 === "Date Filters"
 
     **Modifiers:** No Modifier, `.not`, `.before`, `.after`, or `.regex`
-    
+
     Date filters can **NOT** take multiple values.
-    
+
     ### Date Filter Attributes
 
     | Date Filters                     | Description                                                                    | Allowed Media                                                              |
@@ -147,9 +147,9 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | `last_episode_aired` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-filters-date-1" }          | Uses the last episode aired date to match                                      | `Shows`                                                                    |
     | `last_played`                    | Uses the date last played attribute to match                                   | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks` |
     | `release`                        | Uses the release date attribute (originally available) to match                | `Movies`<br>`Shows`<br>`Episodes`<br>`Albums`                                    |
- 
+
     ???+ tip "Date Filter Modifiers"
-        
+
         | Date Modifier | Description                                                           | Format                                                                     |
         | :------------ | :-------------------------------------------------------------------- | :------------------------------------------------------------------------- |
         | No Modifier   | Matches every item where the date attribute is in the last X days     | **Format:** number of days<br>e.g. `30`                                    |
@@ -159,7 +159,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
         | `.regex`      | Matches every item where the attribute matches the regex given        | N/A                                                                        |
 
     #### Examples
-    
+
     ```yaml
     collections:
      Summer 2020 Movies:
@@ -177,13 +177,13 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     ```
 
 === "Number Filters"
-    
+
     **Modifiers:** No Modifier, `.not`, `.gt`, `.gte`, `.lt`, or `.lte`
-    
+
     Number filters can **NOT** take multiple values.
-    
+
     ### Number Filter Attributes
-    
+
     | Number Filters         | Description                                                                                                                                                                   | Allowed Media                                                                              |
     | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
     | aspect :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }           | Uses the aspect attribute to match<br>minimum: 0.0                                                                                                                          | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                           |
@@ -202,7 +202,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | width :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }            | Uses the width attribute to match<br>minimum: 0                                                                                                                             | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                           |
     | year :material-numeric-3-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-1" }              | Uses the year attribute to match<br>minimum: 1                                                                                                                              | Movies<br>Shows<br>Seasons,<br>Episodes<br>Albums<br>Tracks                            |
     ???+ tip "Number Filter Modifiers"
-    
+
         | Number Modifier | Description                                                                                | Format                                            |
         | :-------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------ |
         | No Modifier     | Matches every item where the number attribute is equal to the given number                 | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
@@ -211,9 +211,9 @@ You can use the `plex_all: true` Builder to filter from your entire library.
         | `.lt`           | Matches every item where the number attribute is less than the given number                | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
         | `.lte`          | Matches every item where the number attribute is less than or equal to the given number    | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
         | `.not`          | Matches every item where the number attribute is not equal to the given number             | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-    
+
     #### Examples
-        
+
     ```yaml
     collections:
      9.0 Movies:
@@ -236,7 +236,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
 === "String Filters"
 
     **Modifiers:** No Modifier, `.not`, `.is`, `.isnot`, `.begins`, `.ends`, or `.regex`
-    
+
     String filters can take multiple values **only as a list**.
 
     ### String Filter Attributes
@@ -261,7 +261,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
 
 
     ???+ tip "String Filter Modifiers"
-    
+
         | String Modifier | Description                                                                    |
         | :-------------- | :----------------------------------------------------------------------------- |
         | No Modifier     | Matches every item where the attribute contains the given string               |
@@ -293,7 +293,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     **Modifiers:** No Modifier, `.not`, `.regex`, `.count_lt`, `.count_lte`, `.count_gt`, or `.count_gte`
 
     Tag filters can take multiple values as a **list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string**.
-    
+
     ### Tag Filter Attributes
 
     | Tag Filters            | Description                                                                                                                                     | Allowed Media                                                              |
@@ -319,7 +319,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | `year` :material-numeric-9-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-1" }              | Uses the year tag to match                                                                                                                      | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Albums`<br>`Tracks`            |
 
     ???+ tip "Tag Filter Modifiers"
-    
+
         | Tag Modifier | Description                                                                               |
         | :----------- | :---------------------------------------------------------------------------------------- |
         | No Modifier  | Matches every item where the attribute matches the given string                           |
@@ -331,7 +331,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
         | `.regex`     | Matches every item where one value of this attribute matches the regex.                   |
 
     #### Examples
-    
+
     ```yaml
     collections:
      Daniel Craig only James Bonds:
@@ -354,7 +354,7 @@ You can use the `plex_all: true` Builder to filter from your entire library.
 === "Special Filters"
 
     Special Filters each have their own set of rules for how they're used.
-    
+
     ### Attribute
 
     | Special Filters                                      | Description                                                                                                                                                                                                                                                                                              | Allowed Media                           |
@@ -368,9 +368,9 @@ You can use the `plex_all: true` Builder to filter from your entire library.
     | `tmdb_status` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }<br>`tmdb_status.not` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }             | Uses TMDb Status to match<br>**Values:** `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`                                                                                                                                                                                              | `Shows`                                 |
     | `tmdb_type` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }<br>`tmdb_type.not` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }                 | Uses TMDb Type to match<br>**Values:** `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`                                                                                                                                                                    | `Shows`                                 |
     | `tracks`                                             | Uses the item's tracks attributes to match<br>Use the `percentage` attribute given a number between 0-100 to determine the percentage of an item's tracks that must match the sub-filter.                                                                                                                | `Artists`<br>`Albums`                     |
- 
+
     #### Examples
-    
+
     ```yaml
     collections:
      Shows That Finished Too Soon:
