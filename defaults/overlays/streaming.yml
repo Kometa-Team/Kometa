@@ -187,3 +187,7 @@ overlays:
   hayu:
     variables: {key: hayu, tmdb_key: 223, weight: 10, allowed_libraries: show}
     template: [name: standard, name: mdb_streaming]
+
+  tubi:
+    variables: {key: hayu, tmdb_key: 73, weight: 5}
+    template: [name: standard, name: mdb_streaming]
