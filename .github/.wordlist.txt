@@ -355,6 +355,7 @@ trash
 truehd
 TrueNAS
 ttf
+tubi
 tutin
 tv
 tvdb
