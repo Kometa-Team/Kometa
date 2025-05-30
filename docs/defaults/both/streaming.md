@@ -30,6 +30,7 @@ hide:
 | `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.     |
 | `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video. |
 | `YouTube Movies/Shows`     | `youtube`     | Collection of Movies/Shows Streaming on YouTube.     |
+| `tubi Movies/Shows`        | `tubi`        | Collection of Movies/Shows Streaming on tubi.        |
 
 ## Regional Variants
 
