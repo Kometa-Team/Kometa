@@ -28,6 +28,7 @@ hide:
 | ITVX        | `itvx`        | `30`  |
 | BET+        | `bet`         | `20`  |
 | hayu        | `hayu`        | `10`  |
+| tubi        | `tubi`        | `5`   |
 
 ## Regional Variants
 

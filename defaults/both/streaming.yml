@@ -120,6 +120,7 @@ dynamic_collections:
       peacock: Peacock
       amazon: Prime Video
       youtube: YouTube
+      tubi: tubi
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - streaming
@@ -147,6 +148,7 @@ dynamic_collections:
         amazon: 9
         showtime: 37
         youtube: 188
+        tubi: 73
       originals_only:
         default: false
       allowed_libraries:
