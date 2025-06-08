@@ -74,7 +74,7 @@ overlays:
   r15:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/MA15+, M, TVMA, TV-MA"}
+      - {name: cr_nz, rating: "au/MA15+, 15, M, TVMA, TV-MA"}
 
   r16:
     template:
