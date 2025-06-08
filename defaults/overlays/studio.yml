@@ -665,7 +665,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Amazon Studios:
-    template: [name: standard, {name: studios, search: [Amazon, Amazon Studios]}]
+    template: [name: standard, {name: studios, search: [Amazon, Amazon Studios, Prime Video]}]
 
   Amblin Entertainment:
     template: [name: standard, {name: studios, search: [Amblin Entertainment, Amblin Television]}]
@@ -1123,6 +1123,9 @@ overlays:
   Matt Tolmach Productions:
     template: [name: standard, name: studios]
 
+  Max:
+    template: [name: standard, {name: studios, search: [HBO Max]}]
+
   Maximum Effort:
     template: [name: standard, name: studios]
 
@@ -1481,7 +1484,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Walt Disney Pictures:
-    template: [name: standard, {name: studios, search: [Disney, Walt Disney Pictures]}]
+    template: [name: standard, {name: studios, search: [Disney+, Disney, Walt Disney Pictures]}]
 
   Walt Disney Productions:
     template: [name: standard, name: studios]
