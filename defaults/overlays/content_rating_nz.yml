@@ -59,47 +59,47 @@ overlays:
   m:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
-  
+      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, 12"}
+
   r13:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+      - {name: cr_nz, rating: "13, PG-13 - Teens 13 or older, PG-13"}
 
   rp13:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/M, de/12, gb/12, 12, no/12, gb/15, gb/14+, TV-14, 12, 13, 14, 15, PG-13 - Teens 13 or older, PG-13, no/15"}
+      - {name: cr_nz, rating: "gb/14+, TV-14, 14"}
 
   r15:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+      - {name: cr_nz, rating: "au/MA15+, 15, M, TVMA, TV-MA"}
 
   r16:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+      - {name: cr_nz, rating: "de/16, no/16, 16"}
 
   rp16:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+      - {name: cr_nz, rating: "A-17, 17"}
 
   r:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
+      - {name: cr_nz, rating: "18, R, R - 17+ (violence & profanity), no/18, NC-17, R+ - Mild Nudity, Rx - Hentai"}
 
   r18:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+      - {name: cr_nz, rating: "de/18, gb/18, gb/R18, R18"}
 
   rp18:
     template:
       - name: standard
-      - {name: cr_nz, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted"}
+      - {name: cr_nz, rating: "au/X 18+, gb/X, X, de/BPjM Restricted, BPjM Restricted"}
 
   nr:
     template:
