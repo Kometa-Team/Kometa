@@ -2309,6 +2309,10 @@
                 "back_radius": { "type": "integer", "exclusiveMinimum": 0 },
                 "back_width": { "type": "integer", "exclusiveMinimum": 0 },
                 "builder_level": { "type": "string", "enum": ["show","season","episode"] },
+                    "color": {
+                        "type": "boolean",
+                        "description": "Toggles color styling for applicable overlays like content ratings."
+                    },
                 "file": { "type": "string" },
                 "final_name": { "type": "string" },
                 "flag_alignment": { "type": "string", "enum": ["left","right"] },
