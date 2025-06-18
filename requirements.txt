@@ -3,15 +3,15 @@ cloudscraper==1.2.71
 GitPython==3.1.44
 lxml==5.4.0
 num2words==0.5.14
-pathvalidate==3.2.3
+pathvalidate==3.3.1
 pillow==11.2.1
 PlexAPI==4.17.0
 psutil==7.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pywin32==310; sys_platform == 'win32'
-requests==2.32.3
-ruamel.yaml==0.18.12
+requests==2.32.4
+ruamel.yaml==0.18.14
 schedule==1.2.2
 setuptools==80.9.0
 tenacity==9.1.2
