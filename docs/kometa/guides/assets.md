@@ -141,10 +141,13 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     |:---------------------------------|:---------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                 |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`             |
+    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext`                   |
     | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`               |
     | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`    |
+    | Season logo                      | `<path_to_assets>/ASSET_NAME/Season##_logo.ext`          |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                 |
     | Episode background               | `<path_to_assets>/ASSET_NAME/S##E##_background.ext`      |
+    | Episode logo                     | `<path_to_assets>/ASSET_NAME/S##E##_logo.ext`            |
 
 === "ASSET_FOLDERS=False"
 
@@ -152,10 +155,13 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     |:---------------------------------|:---------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                        |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`             |
+    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`                   |
     | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`               |
     | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext`    |
+    | Season logo                      | `<path_to_assets>/ASSET_NAME_Season##_logo.ext`          |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                 |
     | Episode background               | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`      |
+    | Episode logo                     | `<path_to_assets>/ASSET_NAME_S##E##_logo.ext`            |
 
 ## Determining the "Asset Name"
 
