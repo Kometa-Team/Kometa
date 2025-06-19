@@ -50,18 +50,18 @@ external_templates:
             size: big
             value: 290
           - size: big
-            value: 250
+            value: 216
           - three_characters: true
             value: 230
       height:
         conditions:
           - size: big
-            value: 100
+            value: 60
       final_font_size:
         default: 50
         conditions:
           - size: big
-            value: 100
+            value: 70
     default:
       style: round
       country: <<key>>
@@ -113,7 +113,7 @@ queues:
           conditions:
             - group_alignment: vertical
               size: big
-              value: 101
+              value: 61
             - group_alignment: vertical
               value: 61
         horizontal_spacing:
@@ -121,7 +121,7 @@ queues:
           conditions:
             - group_alignment: horizontal
               size: big
-              value: 251
+              value: 217
             - group_alignment: horizontal
               value: 191
         surround:
