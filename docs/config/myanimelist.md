@@ -27,7 +27,11 @@ mal:
 | `localhost_url` | Redirect URL used for authorization flow.  | Valid localhost URL or leave **blank**       | :fontawesome-solid-circle-xmark:{ .red }     |
 
 
-*All other attributes will be filled in by Kometa as part of the authentication process**
+*All other attributes will be filled in by Kometa as part of the authentication process*
+
+### Important Note on "Authentication Process":
+
+The MyAniemeList authentication process is interactive; Kometa will display a URL in the console output and then wait for you to visit that URL in order to grant access and then paste in some additional information.  In order for this to happen you need to run Kometa in an interactive mode, which can be fussy in some contexts [like docker on a NAS].  For this reason, it is far simpler to use the form down below to perform these steps; it does all the same steps, but takes them out of the Kometa script execution.  The form will produce a complete authentication block as shown above ready for you to copy-paste into your `config.yml`.
 
 ## MyAnimeList Authentication
 
