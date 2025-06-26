@@ -32,3 +32,4 @@ Fixed an issue where `trakt_list_details` would not find a list's summary if it 
 Fixed an issue where log file paths with >2 periods would cause a ValueError
 Fixed an issue with IMDb Awards
 Restored image language settings after change in base image
+Fixed an issue with IMDb List and Watchlist
