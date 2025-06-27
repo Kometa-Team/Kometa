@@ -43,6 +43,7 @@ bw
 cappella
 cd
 chazlarson
+chucknoxis
 cloudscraper
 cn
 codec
