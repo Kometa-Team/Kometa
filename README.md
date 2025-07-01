@@ -4,7 +4,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic)](https://github.com/Kometa-Team/Kometa/releases)
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/kometateam/kometa)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic)](https://hub.docker.com/r/kometateam/kometa)
-[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/develop)
+[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/commits/develop)
 [![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/nightly)
 
 [![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://kometa.wiki/en/latest/discord/)
@@ -126,7 +126,7 @@ So, if you're not comfortable with technical issues, it's best to stick with the
 ### Develop Branch
 
 <!--develop-start-->
-[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/develop)
+[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/commits/develop)
 
 The [develop](https://github.com/Kometa-Team/Kometa/tree/develop) branch has the most updated **documented** fixes and enhancements to Kometa. 
 This version is tested and documented to some degree, but it is still an active Develop branch, so there may be rough edges.
