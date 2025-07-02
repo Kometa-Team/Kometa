@@ -4,7 +4,7 @@ GitPython==3.1.44
 lxml==5.4.0
 num2words==0.5.14
 pathvalidate==3.3.1
-pillow==11.2.1
+pillow==11.3.0
 PlexAPI==4.17.0
 psutil==7.0.0
 python-dateutil==2.9.0.post0
