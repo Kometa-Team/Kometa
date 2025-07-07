@@ -69,7 +69,7 @@ hide:
 
     === "Universe Collections"
         
-        The Universe collections are based on either Trakt lists or MDB lists.
+        The Universe collections are based on either Trakt lists, MDB lists or IMDB lists.
 
     === "Default `data`"
     
@@ -103,6 +103,18 @@ hide:
     include-markdown "../../../defaults/both/universe.yml" 
     comments=false
     start="mdblist_url:\n"
+    end="trakt_url:"
+  %}
+        ```
+        
+    === "Default `trakt_url`"
+
+        {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
+        mdblist_url: 
+  {%    
+    include-markdown "../../../defaults/both/universe.yml" 
+    comments=false
+    start="trakt_url:\n"
     end="image:"
   %}
         ```
