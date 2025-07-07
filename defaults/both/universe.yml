@@ -98,7 +98,6 @@ dynamic_collections:
         arrow: https://www.imdb.com/list/ls566667558/
         avp: https://www.imdb.com/list/ls543971628/
         dcu: https://www.imdb.com/list/ls524274984/
-        mcu: https://www.imdb.com/list/ls539646485/
         star: https://www.imdb.com/list/ls501373412/
         trek: https://www.imdb.com/list/ls547463722/
         xmen: https://www.imdb.com/list/ls567618635/
@@ -111,6 +110,8 @@ dynamic_collections:
         rocky: https://mdblist.com/lists/k0meta/external/9248
         askew: https://mdblist.com/lists/k0meta/external/15362
         wizard: https://mdblist.com/lists/k0meta/external/23683
+      trakt_url:
+        mcu: https://trakt.tv/users/johnfawkes/lists/mcu
       image:
         default: universe/<<key>>
       delete_collections_named:
