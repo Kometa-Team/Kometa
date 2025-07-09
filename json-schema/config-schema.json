@@ -78,8 +78,13 @@
                 "db_cache": {
                     "description": "Sets DB Cache value for this Plex server in MB",
                     "oneOf": [
-                    { "type": "integer" },
-                    { "type": "string", "pattern": "^$" }
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^$"
+                        }
                     ]
                 },
                 "clean_bundles": {
@@ -128,8 +133,13 @@
                 "db_cache": {
                     "description": "Sets DB Cache value for this Plex server in MB",
                     "oneOf": [
-                    { "type": "integer" },
-                    { "type": "string", "pattern": "^$" }
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^$"
+                        }
                     ]
                 },
                 "clean_bundles": {
@@ -158,31 +168,452 @@
                     "description": "API Key to connect to TMDb; REQUIRED for the script to run"
                 },
                 "language": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "enum": [
-                        "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
-                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
-                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
-                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
-                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
-                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
-                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
-                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
-                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
-                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
-                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
-                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
-                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
-                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
-                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
-                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
-                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                        "",
+                        "aa",
+                        "ab",
+                        "ae",
+                        "af",
+                        "ak",
+                        "am",
+                        "an",
+                        "ar",
+                        "as",
+                        "av",
+                        "ay",
+                        "az",
+                        "ba",
+                        "be",
+                        "bg",
+                        "bi",
+                        "bm",
+                        "bn",
+                        "bo",
+                        "br",
+                        "bs",
+                        "ca",
+                        "ce",
+                        "ch",
+                        "co",
+                        "cr",
+                        "cs",
+                        "cu",
+                        "cv",
+                        "cy",
+                        "da",
+                        "de",
+                        "dv",
+                        "dz",
+                        "ee",
+                        "el",
+                        "en",
+                        "eo",
+                        "es",
+                        "et",
+                        "eu",
+                        "fa",
+                        "ff",
+                        "fi",
+                        "fj",
+                        "fo",
+                        "fr",
+                        "fy",
+                        "ga",
+                        "gd",
+                        "gl",
+                        "gn",
+                        "gu",
+                        "gv",
+                        "ha",
+                        "he",
+                        "hi",
+                        "ho",
+                        "hr",
+                        "ht",
+                        "hu",
+                        "hy",
+                        "hz",
+                        "ia",
+                        "id",
+                        "ie",
+                        "ig",
+                        "ii",
+                        "ik",
+                        "io",
+                        "is",
+                        "it",
+                        "iu",
+                        "ja",
+                        "jv",
+                        "ka",
+                        "kg",
+                        "ki",
+                        "kj",
+                        "kk",
+                        "kl",
+                        "km",
+                        "kn",
+                        "ko",
+                        "kr",
+                        "ks",
+                        "ku",
+                        "kv",
+                        "kw",
+                        "ky",
+                        "la",
+                        "lb",
+                        "lg",
+                        "li",
+                        "ln",
+                        "lo",
+                        "lt",
+                        "lu",
+                        "lv",
+                        "mg",
+                        "mh",
+                        "mi",
+                        "mk",
+                        "ml",
+                        "mn",
+                        "mr",
+                        "ms",
+                        "mt",
+                        "my",
+                        "na",
+                        "nb",
+                        "nd",
+                        "ne",
+                        "ng",
+                        "nl",
+                        "nn",
+                        "no",
+                        "nr",
+                        "nv",
+                        "ny",
+                        "oc",
+                        "oj",
+                        "om",
+                        "or",
+                        "os",
+                        "pa",
+                        "pi",
+                        "pl",
+                        "ps",
+                        "pt",
+                        "qu",
+                        "rm",
+                        "rn",
+                        "ro",
+                        "ru",
+                        "rw",
+                        "sa",
+                        "sc",
+                        "sd",
+                        "se",
+                        "sg",
+                        "si",
+                        "sk",
+                        "sl",
+                        "sm",
+                        "sn",
+                        "so",
+                        "sq",
+                        "sr",
+                        "ss",
+                        "st",
+                        "su",
+                        "sv",
+                        "sw",
+                        "ta",
+                        "te",
+                        "tg",
+                        "th",
+                        "ti",
+                        "tk",
+                        "tl",
+                        "tn",
+                        "to",
+                        "tr",
+                        "ts",
+                        "tt",
+                        "tw",
+                        "ty",
+                        "ug",
+                        "uk",
+                        "ur",
+                        "uz",
+                        "ve",
+                        "vi",
+                        "vo",
+                        "wa",
+                        "wo",
+                        "xh",
+                        "yi",
+                        "yo",
+                        "za",
+                        "zh",
+                        "zu"
                     ],
                     "description": "This field can be either null or a valid ISO 639 language code."
                 },
                 "region": {
                     "type": "string",
-                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"],
+                    "enum": [
+                        "",
+                        "AD",
+                        "AE",
+                        "AF",
+                        "AG",
+                        "AI",
+                        "AL",
+                        "AM",
+                        "AO",
+                        "AQ",
+                        "AR",
+                        "AS",
+                        "AT",
+                        "AU",
+                        "AW",
+                        "AX",
+                        "AZ",
+                        "BA",
+                        "BB",
+                        "BD",
+                        "BE",
+                        "BF",
+                        "BG",
+                        "BH",
+                        "BI",
+                        "BJ",
+                        "BL",
+                        "BM",
+                        "BN",
+                        "BO",
+                        "BQ",
+                        "BR",
+                        "BS",
+                        "BT",
+                        "BV",
+                        "BW",
+                        "BY",
+                        "BZ",
+                        "CA",
+                        "CC",
+                        "CD",
+                        "CF",
+                        "CG",
+                        "CH",
+                        "CI",
+                        "CK",
+                        "CL",
+                        "CM",
+                        "CN",
+                        "CO",
+                        "CR",
+                        "CU",
+                        "CV",
+                        "CW",
+                        "CX",
+                        "CY",
+                        "CZ",
+                        "DE",
+                        "DJ",
+                        "DK",
+                        "DM",
+                        "DO",
+                        "DZ",
+                        "EC",
+                        "EE",
+                        "EG",
+                        "EH",
+                        "ER",
+                        "ES",
+                        "ET",
+                        "FI",
+                        "FJ",
+                        "FK",
+                        "FM",
+                        "FO",
+                        "FR",
+                        "GA",
+                        "GB",
+                        "GD",
+                        "GE",
+                        "GF",
+                        "GG",
+                        "GH",
+                        "GI",
+                        "GL",
+                        "GM",
+                        "GN",
+                        "GP",
+                        "GQ",
+                        "GR",
+                        "GS",
+                        "GT",
+                        "GU",
+                        "GW",
+                        "GY",
+                        "HK",
+                        "HM",
+                        "HN",
+                        "HR",
+                        "HT",
+                        "HU",
+                        "ID",
+                        "IE",
+                        "IL",
+                        "IM",
+                        "IN",
+                        "IO",
+                        "IQ",
+                        "IR",
+                        "IS",
+                        "IT",
+                        "JE",
+                        "JM",
+                        "JO",
+                        "JP",
+                        "KE",
+                        "KG",
+                        "KH",
+                        "KI",
+                        "KM",
+                        "KN",
+                        "KP",
+                        "KR",
+                        "KW",
+                        "KY",
+                        "KZ",
+                        "LA",
+                        "LB",
+                        "LC",
+                        "LI",
+                        "LK",
+                        "LR",
+                        "LS",
+                        "LT",
+                        "LU",
+                        "LV",
+                        "LY",
+                        "MA",
+                        "MC",
+                        "MD",
+                        "ME",
+                        "MF",
+                        "MG",
+                        "MH",
+                        "MK",
+                        "ML",
+                        "MM",
+                        "MN",
+                        "MO",
+                        "MP",
+                        "MQ",
+                        "MR",
+                        "MS",
+                        "MT",
+                        "MU",
+                        "MV",
+                        "MW",
+                        "MX",
+                        "MY",
+                        "MZ",
+                        "NA",
+                        "NC",
+                        "NE",
+                        "NF",
+                        "NG",
+                        "NI",
+                        "NL",
+                        "NO",
+                        "NP",
+                        "NR",
+                        "NU",
+                        "NZ",
+                        "OM",
+                        "PA",
+                        "PE",
+                        "PF",
+                        "PG",
+                        "PH",
+                        "PK",
+                        "PL",
+                        "PM",
+                        "PN",
+                        "PR",
+                        "PS",
+                        "PT",
+                        "PW",
+                        "PY",
+                        "QA",
+                        "RE",
+                        "RO",
+                        "RS",
+                        "RU",
+                        "RW",
+                        "SA",
+                        "SB",
+                        "SC",
+                        "SD",
+                        "SE",
+                        "SG",
+                        "SH",
+                        "SI",
+                        "SJ",
+                        "SK",
+                        "SL",
+                        "SM",
+                        "SN",
+                        "SO",
+                        "SR",
+                        "SS",
+                        "ST",
+                        "SV",
+                        "SX",
+                        "SY",
+                        "SZ",
+                        "TC",
+                        "TD",
+                        "TF",
+                        "TG",
+                        "TH",
+                        "TJ",
+                        "TK",
+                        "TL",
+                        "TM",
+                        "TN",
+                        "TO",
+                        "TR",
+                        "TT",
+                        "TV",
+                        "TW",
+                        "TZ",
+                        "UA",
+                        "UG",
+                        "UM",
+                        "US",
+                        "UY",
+                        "UZ",
+                        "VA",
+                        "VC",
+                        "VE",
+                        "VG",
+                        "VI",
+                        "VN",
+                        "VU",
+                        "WF",
+                        "WS",
+                        "YE",
+                        "YT",
+                        "ZA",
+                        "ZM",
+                        "ZW"
+                    ],
                     "description": "This field can be either null or a valid ISO 3166-1 Code."
                 },
                 "cache_expiration": {
@@ -220,26 +651,43 @@
             "additionalProperties": false,
             "properties": {
                 "error": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "version": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "run_start": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "run_end": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "changes": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "delete": {
-                    "type": ["string", "null"]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
-            "required": [
-            ],
+            "required": [],
             "title": "webhooks"
         },
         "omdb-api": {
@@ -343,25 +791,195 @@
                     "minimum": 1
                 },
                 "language": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "enum": [
-                        "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
-                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
-                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
-                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
-                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
-                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
-                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
-                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
-                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
-                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
-                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
-                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
-                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
-                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
-                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
-                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
-                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                        "",
+                        "aa",
+                        "ab",
+                        "ae",
+                        "af",
+                        "ak",
+                        "am",
+                        "an",
+                        "ar",
+                        "as",
+                        "av",
+                        "ay",
+                        "az",
+                        "ba",
+                        "be",
+                        "bg",
+                        "bi",
+                        "bm",
+                        "bn",
+                        "bo",
+                        "br",
+                        "bs",
+                        "ca",
+                        "ce",
+                        "ch",
+                        "co",
+                        "cr",
+                        "cs",
+                        "cu",
+                        "cv",
+                        "cy",
+                        "da",
+                        "de",
+                        "dv",
+                        "dz",
+                        "ee",
+                        "el",
+                        "en",
+                        "eo",
+                        "es",
+                        "et",
+                        "eu",
+                        "fa",
+                        "ff",
+                        "fi",
+                        "fj",
+                        "fo",
+                        "fr",
+                        "fy",
+                        "ga",
+                        "gd",
+                        "gl",
+                        "gn",
+                        "gu",
+                        "gv",
+                        "ha",
+                        "he",
+                        "hi",
+                        "ho",
+                        "hr",
+                        "ht",
+                        "hu",
+                        "hy",
+                        "hz",
+                        "ia",
+                        "id",
+                        "ie",
+                        "ig",
+                        "ii",
+                        "ik",
+                        "io",
+                        "is",
+                        "it",
+                        "iu",
+                        "ja",
+                        "jv",
+                        "ka",
+                        "kg",
+                        "ki",
+                        "kj",
+                        "kk",
+                        "kl",
+                        "km",
+                        "kn",
+                        "ko",
+                        "kr",
+                        "ks",
+                        "ku",
+                        "kv",
+                        "kw",
+                        "ky",
+                        "la",
+                        "lb",
+                        "lg",
+                        "li",
+                        "ln",
+                        "lo",
+                        "lt",
+                        "lu",
+                        "lv",
+                        "mg",
+                        "mh",
+                        "mi",
+                        "mk",
+                        "ml",
+                        "mn",
+                        "mr",
+                        "ms",
+                        "mt",
+                        "my",
+                        "na",
+                        "nb",
+                        "nd",
+                        "ne",
+                        "ng",
+                        "nl",
+                        "nn",
+                        "no",
+                        "nr",
+                        "nv",
+                        "ny",
+                        "oc",
+                        "oj",
+                        "om",
+                        "or",
+                        "os",
+                        "pa",
+                        "pi",
+                        "pl",
+                        "ps",
+                        "pt",
+                        "qu",
+                        "rm",
+                        "rn",
+                        "ro",
+                        "ru",
+                        "rw",
+                        "sa",
+                        "sc",
+                        "sd",
+                        "se",
+                        "sg",
+                        "si",
+                        "sk",
+                        "sl",
+                        "sm",
+                        "sn",
+                        "so",
+                        "sq",
+                        "sr",
+                        "ss",
+                        "st",
+                        "su",
+                        "sv",
+                        "sw",
+                        "ta",
+                        "te",
+                        "tg",
+                        "th",
+                        "ti",
+                        "tk",
+                        "tl",
+                        "tn",
+                        "to",
+                        "tr",
+                        "ts",
+                        "tt",
+                        "tw",
+                        "ty",
+                        "ug",
+                        "uk",
+                        "ur",
+                        "uz",
+                        "ve",
+                        "vi",
+                        "vo",
+                        "wa",
+                        "wo",
+                        "xh",
+                        "yi",
+                        "yo",
+                        "za",
+                        "zh",
+                        "zu"
                     ],
                     "description": "This field can be either null or a valid ISO 639 language code."
                 },
@@ -421,7 +1039,16 @@
                 },
                 "monitor": {
                     "type": "string",
-                    "enum": ["all","future","missing","existing","pilot","first","latest","none"]
+                    "enum": [
+                        "all",
+                        "future",
+                        "missing",
+                        "existing",
+                        "pilot",
+                        "first",
+                        "latest",
+                        "none"
+                    ]
                 },
                 "monitor_existing": {
                     "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
@@ -435,16 +1062,29 @@
                 },
                 "series_type": {
                     "type": "string",
-                    "enum": ["standard","daily","anime"]
+                    "enum": [
+                        "standard",
+                        "daily",
+                        "anime"
+                    ]
                 },
                 "tag": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "sonarr_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "plex_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -454,7 +1094,10 @@
                 "root_folder_path"
             ],
             "dependentRequired": {
-                "add_existing": ["sonarr_path", "plex_path"]
+                "add_existing": [
+                    "sonarr_path",
+                    "plex_path"
+                ]
             },
             "title": "sonarr"
         },
@@ -496,7 +1139,16 @@
                 },
                 "monitor": {
                     "type": "string",
-                    "enum": ["all","future","missing","existing","pilot","first","latest","none"]
+                    "enum": [
+                        "all",
+                        "future",
+                        "missing",
+                        "existing",
+                        "pilot",
+                        "first",
+                        "latest",
+                        "none"
+                    ]
                 },
                 "monitor_existing": {
                     "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
@@ -510,21 +1162,37 @@
                 },
                 "series_type": {
                     "type": "string",
-                    "enum": ["standard","daily","anime"]
+                    "enum": [
+                        "standard",
+                        "daily",
+                        "anime"
+                    ]
                 },
                 "tag": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "sonarr_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "plex_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [],
             "dependentRequired": {
-                "add_existing": ["sonarr_path", "plex_path"]
+                "add_existing": [
+                    "sonarr_path",
+                    "plex_path"
+                ]
             },
             "title": "sonarr"
         },
@@ -569,16 +1237,30 @@
                 },
                 "availability": {
                     "type": "string",
-                    "enum": ["announced","cinemas","released","db"]
+                    "enum": [
+                        "announced",
+                        "cinemas",
+                        "released",
+                        "db"
+                    ]
                 },
                 "tag": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "radarr_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "plex_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -588,7 +1270,10 @@
                 "root_folder_path"
             ],
             "dependentRequired": {
-                "add_existing": ["radarr_path", "plex_path"]
+                "add_existing": [
+                    "radarr_path",
+                    "plex_path"
+                ]
             },
             "title": "radarr"
         },
@@ -633,21 +1318,38 @@
                 },
                 "availability": {
                     "type": "string",
-                    "enum": ["announced","cinemas","released","db"]
+                    "enum": [
+                        "announced",
+                        "cinemas",
+                        "released",
+                        "db"
+                    ]
                 },
                 "tag": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "radarr_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "plex_path": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [],
             "dependentRequired": {
-                "add_existing": ["radarr_path", "plex_path"]
+                "add_existing": [
+                    "radarr_path",
+                    "plex_path"
+                ]
             },
             "title": "radarr"
         },
@@ -666,13 +1368,30 @@
                 },
                 "run_order": {
                     "description": "Used to specify the run order of the library components.\nSpecify the run order of the library components [Library Operations, Collection Files and Overlay Files]",
-                    "type": "array", "uniqueItems": true, "items": {"enum": ["operations", "metadata", "collections", "overlays"]}
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "enum": [
+                            "operations",
+                            "metadata",
+                            "collections",
+                            "overlays"
+                        ]
+                    }
                 },
                 "asset_directory": {
                     "description": "Used to define where local assets are located.\nSpecify the directories where assets (posters, backgrounds, etc) are located.",
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "asset_folders": {
@@ -714,7 +1433,10 @@
                 },
                 "sync_mode": {
                     "description": "Used to set the sync_mode for collections and playlists.\nSets the sync_mode for collections and playlists. Setting the sync_mode directly in a collection or playlist definition will override the sync_mode for that definition.",
-                    "enum": ["sync", "append"]
+                    "enum": [
+                        "sync",
+                        "append"
+                    ]
                 },
                 "minimum_items": {
                     "description": "Used to control minimum items requires to build a collection/playlist.\nSet the minimum number of items that must be found in order to build or update a collection/playlist.",
@@ -723,18 +1445,46 @@
                 },
                 "default_collection_order": {
                     "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by Kometa unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "enum": [
-                        "added.asc", "added.desc", "alpha", "audience_rating.asc",
-                        "audience_rating.desc", "bitrate.asc", "bitrate.desc",
-                        "content_rating.asc", "content_rating.desc", "critic_rating.asc",
-                        "critic_rating.desc", "custom", "duration.asc", "duration.desc",
-                        "originally_available.asc", "originally_available.desc",
-                        "plays.asc", "plays.desc", "progress.asc", "progress.desc",
-                        "random", "release", "release.asc", "release.desc",
-                        "resolution.asc", "resolution.desc", "title.asc", "title.desc",
-                        "user_rating.asc", "user_rating.desc", "viewed.asc", "viewed.desc",
-                        "year.asc", "year.desc", null
+                        "added.asc",
+                        "added.desc",
+                        "alpha",
+                        "audience_rating.asc",
+                        "audience_rating.desc",
+                        "bitrate.asc",
+                        "bitrate.desc",
+                        "content_rating.asc",
+                        "content_rating.desc",
+                        "critic_rating.asc",
+                        "critic_rating.desc",
+                        "custom",
+                        "duration.asc",
+                        "duration.desc",
+                        "originally_available.asc",
+                        "originally_available.desc",
+                        "plays.asc",
+                        "plays.desc",
+                        "progress.asc",
+                        "progress.desc",
+                        "random",
+                        "release",
+                        "release.asc",
+                        "release.desc",
+                        "resolution.asc",
+                        "resolution.desc",
+                        "title.asc",
+                        "title.desc",
+                        "user_rating.asc",
+                        "user_rating.desc",
+                        "viewed.asc",
+                        "viewed.desc",
+                        "year.asc",
+                        "year.desc",
+                        null
                     ]
                 },
                 "delete_below_minimum": {
@@ -791,27 +1541,195 @@
                     "type": "boolean"
                 },
                 "tvdb_language": {
-                    "type": ["string", "null"],
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "enum": [
-                        "aar", "abk", "afr", "aka", "alb", "amh", "ara", "arg", "arm", "asm",
-                        "ava", "ave", "aym", "aze", "bak", "bam", "bel", "ben", "bih", "bis",
-                        "bod", "bos", "bre", "bul", "cat", "cha", "che", "chi", "chu", "chv",
-                        "cor", "cos", "cre", "ces", "dan", "deu", "div", "dzo", "ell", "eng",
-                        "epo", "est", "eus", "ewe", "fao", "fas", "fij", "fin", "fra", "fry",
-                        "ful", "gla", "gle", "glg", "glv", "grn", "guj", "hat", "hau", "heb",
-                        "her", "hin", "hmo", "hrv", "hun", "hye", "ibo", "ido", "iii", "iku",
-                        "ile", "ina", "ind", "ipk", "isl", "ita", "jav", "jpn", "kal", "kan",
-                        "kas", "kat", "kau", "kaz", "khm", "kik", "kin", "kir", "kom", "kon",
-                        "kor", "kua", "kur", "lao", "lat", "lav", "lim", "lin", "lit", "ltz",
-                        "lub", "lug", "mah", "mal", "mar", "mkd", "mlg", "mlt", "mon", "mri",
-                        "msa", "mya", "nau", "nav", "nbl", "nde", "ndo", "nep", "nld", "nno",
-                        "nob", "nor", "nya", "oci", "oji", "ori", "orm", "oss", "pan", "pli",
-                        "pol", "por", "pus", "que", "roh", "ron", "run", "rus", "sag", "san",
-                        "sin", "slk", "slv", "sme", "smo", "sna", "snd", "som", "sot", "spa",
-                        "srd", "srp", "ssw", "sun", "swa", "swe", "tah", "tam", "tat", "tel",
-                        "tgk", "tgl", "tha", "tir", "ton", "tsn", "tso", "tuk", "tur", "twi",
-                        "uig", "ukr", "urd", "uzb", "ven", "vie", "vol", "wln", "wol", "xho",
-                        "yid", "yor", "zha", "zho", "zul"
+                        "",
+                        "aar",
+                        "abk",
+                        "afr",
+                        "aka",
+                        "alb",
+                        "amh",
+                        "ara",
+                        "arg",
+                        "arm",
+                        "asm",
+                        "ava",
+                        "ave",
+                        "aym",
+                        "aze",
+                        "bak",
+                        "bam",
+                        "baq",
+                        "bel",
+                        "ben",
+                        "bis",
+                        "bos",
+                        "bre",
+                        "bul",
+                        "bur",
+                        "cat",
+                        "cha",
+                        "che",
+                        "chi",
+                        "chu",
+                        "chv",
+                        "cor",
+                        "cos",
+                        "cre",
+                        "cze",
+                        "dan",
+                        "div",
+                        "dut",
+                        "dzo",
+                        "eng",
+                        "epo",
+                        "est",
+                        "ewe",
+                        "fao",
+                        "fij",
+                        "fin",
+                        "fre",
+                        "fry",
+                        "ful",
+                        "geo",
+                        "ger",
+                        "gla",
+                        "gle",
+                        "glg",
+                        "glv",
+                        "gre",
+                        "grn",
+                        "guj",
+                        "hat",
+                        "hau",
+                        "heb",
+                        "her",
+                        "hin",
+                        "hmo",
+                        "hrv",
+                        "hun",
+                        "ibo",
+                        "ice",
+                        "ido",
+                        "iii",
+                        "iku",
+                        "ile",
+                        "ina",
+                        "ind",
+                        "ipk",
+                        "ita",
+                        "jav",
+                        "jpn",
+                        "kal",
+                        "kan",
+                        "kas",
+                        "kau",
+                        "kaz",
+                        "khm",
+                        "kik",
+                        "kin",
+                        "kir",
+                        "kom",
+                        "kon",
+                        "kor",
+                        "kua",
+                        "kur",
+                        "lao",
+                        "lat",
+                        "lav",
+                        "lim",
+                        "lin",
+                        "lit",
+                        "ltz",
+                        "lub",
+                        "lug",
+                        "mac",
+                        "mah",
+                        "mal",
+                        "mao",
+                        "mar",
+                        "may",
+                        "mlg",
+                        "mlt",
+                        "mon",
+                        "nau",
+                        "nav",
+                        "nbl",
+                        "nde",
+                        "ndo",
+                        "nep",
+                        "nno",
+                        "nob",
+                        "nor",
+                        "nya",
+                        "oci",
+                        "oji",
+                        "ori",
+                        "orm",
+                        "oss",
+                        "pan",
+                        "per",
+                        "pli",
+                        "pol",
+                        "por",
+                        "pus",
+                        "que",
+                        "roh",
+                        "rum",
+                        "run",
+                        "rus",
+                        "sag",
+                        "san",
+                        "sin",
+                        "slo",
+                        "slv",
+                        "sme",
+                        "smo",
+                        "sna",
+                        "snd",
+                        "som",
+                        "sot",
+                        "spa",
+                        "srd",
+                        "srp",
+                        "ssw",
+                        "sun",
+                        "swa",
+                        "swe",
+                        "tah",
+                        "tam",
+                        "tat",
+                        "tel",
+                        "tgk",
+                        "tgl",
+                        "tha",
+                        "tib",
+                        "tir",
+                        "ton",
+                        "tsn",
+                        "tso",
+                        "tuk",
+                        "tur",
+                        "twi",
+                        "uig",
+                        "ukr",
+                        "urd",
+                        "uzb",
+                        "ven",
+                        "vie",
+                        "vol",
+                        "wel",
+                        "wln",
+                        "wol",
+                        "xho",
+                        "yid",
+                        "yor",
+                        "zha",
+                        "zul"
                     ],
                     "description": "Specify the language to query TVDb in.\nThis field can be either null or a valid ISO 639-2 language code."
                 },
@@ -867,7 +1785,9 @@
                     "anyOf": [
                         {
                             "type": "string",
-                            "enum": ["all"]
+                            "enum": [
+                                "all"
+                            ]
                         },
                         {
                             "type": "array",
@@ -925,7 +1845,12 @@
                 },
                 "overlay_artwork_filetype": {
                     "description": "Used to control the filetype used with overlay images.",
-                    "enum": ["jpg", "png", "webp_lossy", "webp_lossless"]
+                    "enum": [
+                        "jpg",
+                        "png",
+                        "webp_lossy",
+                        "webp_lossless"
+                    ]
                 },
                 "overlay_artwork_quality": {
                     "description": "Used to control the JPG or Lossy WEBP quality used with overlay images.",
@@ -934,8 +1859,7 @@
                     "maximum": 100
                 }
             },
-            "required": [
-            ],
+            "required": [],
             "title": "settings"
         },
         "mal-api": {
@@ -966,7 +1890,10 @@
                     "type": "string"
                 },
                 "pin": {
-                    "type": [ "string", "null" ]
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -981,15 +1908,81 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","letterboxd","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                    "enum": [
+                        "actor",
+                        "anilist",
+                        "aspect",
+                        "audio_language",
+                        "bafta",
+                        "based",
+                        "basic",
+                        "berlinale",
+                        "cannes",
+                        "cesar",
+                        "choice",
+                        "collectionless",
+                        "content_rating_au",
+                        "content_rating_cs",
+                        "content_rating_de",
+                        "content_rating_nz",
+                        "content_rating_mal",
+                        "content_rating_uk",
+                        "content_rating_us",
+                        "continent",
+                        "country",
+                        "decade",
+                        "director",
+                        "emmy",
+                        "flixpatrol",
+                        "franchise",
+                        "genre",
+                        "golden",
+                        "imdb",
+                        "letterboxd",
+                        "myanimelist",
+                        "network",
+                        "nfr",
+                        "oscars",
+                        "other_chart",
+                        "pca",
+                        "producer",
+                        "razzie",
+                        "region",
+                        "resolution",
+                        "sag",
+                        "seasonal",
+                        "separator_award",
+                        "separator_chart",
+                        "spirit",
+                        "streaming",
+                        "studio",
+                        "subtitle_language",
+                        "sundance",
+                        "tautulli",
+                        "tiff",
+                        "tmdb",
+                        "trakt",
+                        "universe",
+                        "venice",
+                        "writer",
+                        "year"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1006,15 +1999,81 @@
             "properties": {
                 "default": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","letterboxd","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                    "enum": [
+                        "actor",
+                        "anilist",
+                        "aspect",
+                        "audio_language",
+                        "bafta",
+                        "based",
+                        "basic",
+                        "berlinale",
+                        "cannes",
+                        "cesar",
+                        "choice",
+                        "collectionless",
+                        "content_rating_au",
+                        "content_rating_cs",
+                        "content_rating_de",
+                        "content_rating_nz",
+                        "content_rating_mal",
+                        "content_rating_uk",
+                        "content_rating_us",
+                        "continent",
+                        "country",
+                        "decade",
+                        "director",
+                        "emmy",
+                        "flixpatrol",
+                        "franchise",
+                        "genre",
+                        "golden",
+                        "imdb",
+                        "letterboxd",
+                        "myanimelist",
+                        "network",
+                        "nfr",
+                        "oscars",
+                        "other_chart",
+                        "pca",
+                        "producer",
+                        "razzie",
+                        "region",
+                        "resolution",
+                        "sag",
+                        "seasonal",
+                        "separator_award",
+                        "separator_chart",
+                        "spirit",
+                        "streaming",
+                        "studio",
+                        "subtitle_language",
+                        "sundance",
+                        "tautulli",
+                        "tiff",
+                        "tmdb",
+                        "trakt",
+                        "universe",
+                        "venice",
+                        "writer",
+                        "year"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1031,7 +2090,33 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
+                    "enum": [
+                        "aspect",
+                        "audio_codec",
+                        "commonsense",
+                        "content_rating_au",
+                        "content_rating_de",
+                        "content_rating_nz",
+                        "content_rating_uk",
+                        "content_rating_us_movie",
+                        "content_rating_us_show",
+                        "direct_play",
+                        "episode_info",
+                        "language_count",
+                        "flixpatrol",
+                        "languages",
+                        "mediastinger",
+                        "network",
+                        "ratings",
+                        "resolution",
+                        "ribbon",
+                        "runtimes",
+                        "status",
+                        "streaming",
+                        "studio",
+                        "versions",
+                        "video_format"
+                    ]
                 },
                 "remove_overlays": {
                     "type": "boolean"
@@ -1044,15 +2129,26 @@
                 },
                 "reset_overlays": {
                     "type": "string",
-                    "enum": ["tmdb","plex"]
+                    "enum": [
+                        "tmdb",
+                        "plex"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1069,7 +2165,33 @@
             "properties": {
                 "default": {
                     "type": "string",
-                    "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
+                    "enum": [
+                        "aspect",
+                        "audio_codec",
+                        "commonsense",
+                        "content_rating_au",
+                        "content_rating_de",
+                        "content_rating_nz",
+                        "content_rating_uk",
+                        "content_rating_us_movie",
+                        "content_rating_us_show",
+                        "direct_play",
+                        "episode_info",
+                        "language_count",
+                        "flixpatrol",
+                        "languages",
+                        "mediastinger",
+                        "network",
+                        "ratings",
+                        "resolution",
+                        "ribbon",
+                        "runtimes",
+                        "status",
+                        "streaming",
+                        "studio",
+                        "versions",
+                        "video_format"
+                    ]
                 },
                 "remove_overlays": {
                     "type": "boolean"
@@ -1082,23 +2204,33 @@
                 },
                 "reset_overlays": {
                     "type": "string",
-                    "enum": ["tmdb","plex"]
+                    "enum": [
+                        "tmdb",
+                        "plex"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
                     "$ref": "#/definitions/template-variables-overlays"
                 }
             },
-            "required": [
-            ]
+            "required": []
         },
         "legacy-default-playlist-path": {
             "type": "object",
@@ -1106,15 +2238,25 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["playlist"]
+                    "enum": [
+                        "playlist"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1131,15 +2273,25 @@
             "properties": {
                 "default": {
                     "type": "string",
-                    "enum": ["playlist"]
+                    "enum": [
+                        "playlist"
+                    ]
                 },
                 "schedule": {
                     "type": "string"
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1162,8 +2314,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 }
             },
@@ -1183,8 +2343,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1207,8 +2375,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1231,8 +2407,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1255,8 +2439,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 }
             },
@@ -1278,8 +2470,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 }
             },
@@ -1301,8 +2501,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1327,8 +2535,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1353,8 +2569,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1377,8 +2601,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 }
             },
@@ -1398,8 +2630,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1422,8 +2662,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1446,8 +2694,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1470,8 +2726,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 }
             },
@@ -1491,8 +2755,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1515,8 +2787,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1539,8 +2819,16 @@
                 },
                 "asset_directory": {
                     "oneOf": [
-                        { "type": "string"},
-                        { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     ]
                 },
                 "template_variables": {
@@ -1624,15 +2912,29 @@
                         "reset_overlays": {
                             "description": "Used to reset overlays from this library only. This will reset overlays to every item in your library to your source choice. This will use the reset image when overlaying items in your library.\nThis will reset all posters to the desired source on each run and will reapply all overlays on each run, which will result in image bloat.",
                             "type": "string",
-                            "enum": ["tmdb","plex"]
+                            "enum": [
+                                "tmdb",
+                                "plex"
+                            ]
                         },
                         "run_order": {
-                            "type": "array", "uniqueItems": true, "items": {"type": "string",
-                            "enum": ["collections","metadata","operations","overlays"] }
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "collections",
+                                    "metadata",
+                                    "operations",
+                                    "overlays"
+                                ]
+                            }
                         }
                     }
                 },
-                "^schedule_.*$": { "type": "string" }
+                "^schedule_.*$": {
+                    "type": "string"
+                }
             }
         },
         "metadata-files": {
@@ -1643,13 +2945,17 @@
                 "anyOf": [
                     {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/repo-path"
                     }
                 ]
@@ -1707,7 +3013,8 @@
                     {
                         "$ref": "#/definitions/legacy-default-overlay-path",
                         "deprecated": true
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/kometa-default-overlay-path"
                     },
                     {
@@ -1750,7 +3057,8 @@
                     {
                         "$ref": "#/definitions/legacy-default-collection-path",
                         "deprecated": true
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/kometa-default-collection-path"
                     },
                     {
@@ -1793,25 +3101,35 @@
                     {
                         "$ref": "#/definitions/legacy-default-overlay-path",
                         "deprecated": true
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/kometa-default-overlay-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/file-path-overlay-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/url-path-overlay-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/git-path-overlay-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/repo-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/repo-path-overlay-with-template-variables"
                     }
                 ]
@@ -1826,25 +3144,35 @@
                     {
                         "$ref": "#/definitions/legacy-default-playlist-path",
                         "deprecated": true
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/kometa-default-playlist-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/file-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/file-path-playlist-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/folder-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/url-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/url-path-playlist-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/git-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/git-path-playlist-with-template-variables"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/repo-path"
-                    }, {
+                    },
+                    {
                         "$ref": "#/definitions/repo-path-playlist-with-template-variables"
                     }
                 ]
@@ -1874,16 +3202,58 @@
                 },
                 "mass_genre_update": {
                     "anyOf": [
-                    {
-                        "type": "string",
-                        "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"]
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                        "anyOf": [
-                                { "type": "string", "enum": ["tmdb", "tvdb", "imdb", "omdb", "anidb", "anidb_3_0", "anidb_2_5", "anidb_2_0", "anidb_1_5", "anidb_1_0", "anidb_0_5", "mal", "lock", "unlock", "remove", "reset"] },
-                                { "type": "array", "items": { "type": "string" } }
+                        {
+                            "type": "string",
+                            "enum": [
+                                "tmdb",
+                                "tvdb",
+                                "imdb",
+                                "omdb",
+                                "anidb",
+                                "anidb_3_0",
+                                "anidb_2_5",
+                                "anidb_2_0",
+                                "anidb_1_5",
+                                "anidb_1_0",
+                                "anidb_0_5",
+                                "mal",
+                                "lock",
+                                "unlock",
+                                "remove",
+                                "reset"
+                            ]
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "tmdb",
+                                            "tvdb",
+                                            "imdb",
+                                            "omdb",
+                                            "anidb",
+                                            "anidb_3_0",
+                                            "anidb_2_5",
+                                            "anidb_2_0",
+                                            "anidb_1_5",
+                                            "anidb_1_0",
+                                            "anidb_0_5",
+                                            "mal",
+                                            "lock",
+                                            "unlock",
+                                            "remove",
+                                            "reset"
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
                                 ]
                             }
                         }
@@ -1894,11 +3264,22 @@
                     "items": {
                         "type": "string",
                         "anyOf": [
-                        {
-                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
-                        {
-                            "pattern": ".*"
-                        }
+                            {
+                                "enum": [
+                                    "mdb",
+                                    "mdb_commonsense",
+                                    "mdb_commonsense0",
+                                    "omdb",
+                                    "mal",
+                                    "lock",
+                                    "unlock",
+                                    "remove",
+                                    "reset"
+                                ]
+                            },
+                            {
+                                "pattern": ".*"
+                            }
                         ]
                     }
                 },
@@ -1907,56 +3288,106 @@
                     "items": {
                         "type": "string",
                         "anyOf": [
-                        {
-                            "enum": ["anidb", "anidb_official", "mal","mal_english", "mal_japanese","lock", "unlock", "remove", "reset"]
-                        },
-                        {
-                            "pattern": ".*"
-                        }
+                            {
+                                "enum": [
+                                    "anidb",
+                                    "anidb_official",
+                                    "mal",
+                                    "mal_english",
+                                    "mal_japanese",
+                                    "lock",
+                                    "unlock",
+                                    "remove",
+                                    "reset"
+                                ]
+                            },
+                            {
+                                "pattern": ".*"
+                            }
                         ]
                     }
                 },
                 "mass_studio_update": {
                     "anyOf": [
-                    {
-                        "type": "string",
-                        "enum": ["anidb", "mal", "tmdb", "lock", "unlock", "remove", "reset"]
-                    },
-                    {
-                        "type": "array",
-                        "uniqueItems": true,
-                        "items": {
-                            "anyOf": [
-                            {
-                                "type": "string",
-                                "enum": ["anidb", "mal", "tmdb", "lock", "unlock", "remove", "reset"]
-                            },
-                            {
-                                "type": "string"
-                            }
+                        {
+                            "type": "string",
+                            "enum": [
+                                "anidb",
+                                "mal",
+                                "tmdb",
+                                "lock",
+                                "unlock",
+                                "remove",
+                                "reset"
+                            ]
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "anidb",
+                                            "mal",
+                                            "tmdb",
+                                            "lock",
+                                            "unlock",
+                                            "remove",
+                                            "reset"
+                                        ]
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
                                 ]
                             }
                         }
                     ]
                 },
                 "mass_originally_available_update": {
-                        "anyOf": [
-                                {
-                                    "type": "string",
-                                    "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
-                                },
-                                {
-                                    "type": "string",
-                                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                                },
-                                {
-                                "type": "array",
-                                "uniqueItems": true,
-                                "items": {
-                                    "anyOf": [
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "tmdb",
+                                "tvdb",
+                                "omdb",
+                                "mdb",
+                                "mdb_digital",
+                                "anidb",
+                                "mal",
+                                "lock",
+                                "unlock",
+                                "remove",
+                                "reset"
+                            ]
+                        },
+                        {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                                        "enum": [
+                                            "tmdb",
+                                            "tvdb",
+                                            "omdb",
+                                            "mdb",
+                                            "mdb_digital",
+                                            "anidb",
+                                            "mal",
+                                            "lock",
+                                            "unlock",
+                                            "remove",
+                                            "reset"
+                                        ]
                                     },
                                     {
                                         "type": "string",
@@ -1971,47 +3402,136 @@
                     "anyOf": [
                         {
                             "type": "string",
-                            "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
+                            "enum": [
+                                "tmdb",
+                                "tvdb",
+                                "omdb",
+                                "mdb",
+                                "mdb_digital",
+                                "anidb",
+                                "mal",
+                                "lock",
+                                "unlock",
+                                "remove",
+                                "reset"
+                            ]
                         },
                         {
                             "type": "string",
                             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                         },
                         {
-                        "type": "array",
-                        "uniqueItems": true,
-                        "items": {
-                            "anyOf": [
-                            {
-                                "type": "string",
-                                "enum": ["tmdb", "tvdb", "omdb", "mdb", "mdb_digital", "anidb", "mal", "lock", "unlock", "remove", "reset"]
-                            },
-                            {
-                                "type": "string",
-                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "enum": [
+                                            "tmdb",
+                                            "tvdb",
+                                            "omdb",
+                                            "mdb",
+                                            "mdb_digital",
+                                            "anidb",
+                                            "mal",
+                                            "lock",
+                                            "unlock",
+                                            "remove",
+                                            "reset"
+                                        ]
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                                    }
+                                ]
                             }
-                        ]
-                    }
-                }
-            ]
-        },
-        "mass_audience_rating_update": {
+                        }
+                    ]
+                },
+                "mass_audience_rating_update": {
                     "anyOf": [
                         {
                             "type": "number"
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2024,16 +3544,81 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2046,16 +3631,81 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2068,16 +3718,81 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2090,16 +3805,81 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2112,16 +3892,81 @@
                         },
                         {
                             "type": "string",
-                            "enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]
+                            "enum": [
+                                "anidb_average",
+                                "anidb_rating",
+                                "anidb_score",
+                                "imdb",
+                                "lock",
+                                "mal",
+                                "mdb",
+                                "mdb_average",
+                                "mdb_imdb",
+                                "mdb_letterboxd",
+                                "mdb_metacritic",
+                                "mdb_metacriticuser",
+                                "mdb_myanimelist",
+                                "mdb_tomatoes",
+                                "mdb_tomatoesaudience",
+                                "mdb_tmdb",
+                                "mdb_trakt",
+                                "omdb",
+                                "omdb_metascore",
+                                "omdb_tomatoes",
+                                "plex_imdb",
+                                "plex_tmdb",
+                                "plex_tomatoes",
+                                "plex_tomatoesaudience",
+                                "remove",
+                                "reset",
+                                "tmdb",
+                                "trakt",
+                                "trakt_user",
+                                "unlock"
+                            ]
                         },
                         {
                             "type": "array",
                             "uniqueItems": true,
-                            "items":
-                            {
+                            "items": {
                                 "anyOf": [
-                                    {"enum": ["anidb_average", "anidb_rating", "anidb_score", "imdb", "lock", "mal", "mdb", "mdb_average", "mdb_imdb", "mdb_letterboxd", "mdb_metacritic", "mdb_metacriticuser", "mdb_myanimelist", "mdb_tomatoes", "mdb_tomatoesaudience", "mdb_tmdb", "mdb_trakt", "omdb", "omdb_metascore", "omdb_tomatoes", "plex_imdb", "plex_tmdb", "plex_tomatoes", "plex_tomatoesaudience", "remove", "reset", "tmdb", "trakt", "trakt_user", "unlock"]},
-                                    {"type": "number"}
+                                    {
+                                        "enum": [
+                                            "anidb_average",
+                                            "anidb_rating",
+                                            "anidb_score",
+                                            "imdb",
+                                            "lock",
+                                            "mal",
+                                            "mdb",
+                                            "mdb_average",
+                                            "mdb_imdb",
+                                            "mdb_letterboxd",
+                                            "mdb_metacritic",
+                                            "mdb_metacriticuser",
+                                            "mdb_myanimelist",
+                                            "mdb_tomatoes",
+                                            "mdb_tomatoesaudience",
+                                            "mdb_tmdb",
+                                            "mdb_trakt",
+                                            "omdb",
+                                            "omdb_metascore",
+                                            "omdb_tomatoes",
+                                            "plex_imdb",
+                                            "plex_tmdb",
+                                            "plex_tomatoes",
+                                            "plex_tomatoesaudience",
+                                            "remove",
+                                            "reset",
+                                            "tmdb",
+                                            "trakt",
+                                            "trakt_user",
+                                            "unlock"
+                                        ]
+                                    },
+                                    {
+                                        "type": "number"
+                                    }
                                 ]
                             }
                         }
@@ -2130,51 +3975,71 @@
                 "mass_poster_update": {
                     "type": "object",
                     "properties": {
-                    "source": {
-                        "type": "string",
-                        "enum": ["tmdb", "plex", "lock", "unlock"]
-                    },
+                        "source": {
+                            "type": "string",
+                            "enum": [
+                                "tmdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                            ]
+                        },
                         "seasons": {
-                        "type": "boolean"
-                    },
+                            "type": "boolean"
+                        },
                         "episodes": {
-                        "type": "boolean"
-                    },
+                            "type": "boolean"
+                        },
                         "ignore_locked": {
-                        "type": "boolean"
-                    },
+                            "type": "boolean"
+                        },
                         "ignore_overlays": {
-                        "type": "boolean"
-                    }
+                            "type": "boolean"
+                        }
                     },
                     "additionalProperties": false
                 },
                 "mass_background_update": {
                     "type": "object",
                     "properties": {
-                    "source": {
-                        "type": "string",
-                        "enum": ["tmdb", "plex", "lock", "unlock"]
-                    },
+                        "source": {
+                            "type": "string",
+                            "enum": [
+                                "tmdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                            ]
+                        },
                         "seasons": {
-                        "type": "boolean"
-                    },
+                            "type": "boolean"
+                        },
                         "episodes": {
-                        "type": "boolean"
-                    },
+                            "type": "boolean"
+                        },
                         "ignore_locked": {
-                        "type": "boolean"
-                    }
+                            "type": "boolean"
+                        }
                     },
                     "additionalProperties": false
                 },
                 "mass_imdb_parental_labels": {
                     "type": "string",
-                    "enum": ["none","mild","moderate","severe"]
+                    "enum": [
+                        "none",
+                        "mild",
+                        "moderate",
+                        "severe"
+                    ]
                 },
                 "mass_collection_mode": {
                     "type": "string",
-                    "enum": ["default","hide","hide_items","show_items"]
+                    "enum": [
+                        "default",
+                        "hide",
+                        "hide_items",
+                        "show_items"
+                    ]
                 },
                 "radarr_remove_by_tag": {
                     "type": "array",
@@ -2191,10 +4056,18 @@
                 "delete_collections": {
                     "type": "object",
                     "properties": {
-                        "configured": { "type": "boolean" },
-                        "managed": { "type": "boolean" },
-                        "less": { "type": "integer" },
-                        "ignore_empty_smart_collections": { "type": "boolean" }
+                        "configured": {
+                            "type": "boolean"
+                        },
+                        "managed": {
+                            "type": "boolean"
+                        },
+                        "less": {
+                            "type": "integer"
+                        },
+                        "ignore_empty_smart_collections": {
+                            "type": "boolean"
+                        }
                     },
                     "required": []
                 },
@@ -2202,7 +4075,13 @@
                     "type": "object",
                     "properties": {},
                     "patternProperties": {
-                        "^.*$": { "type": ["string", "null"], "pattern": "^.*$" }
+                        "^.*$": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "pattern": "^.*$"
+                        }
                     },
                     "required": []
                 },
@@ -2210,22 +4089,42 @@
                     "type": "object",
                     "properties": {},
                     "patternProperties": {
-                        "^.*$": { "type": ["string", "null"], "pattern": "^.*$" }
+                        "^.*$": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "pattern": "^.*$"
+                        }
                     },
                     "required": []
                 },
                 "metadata_backup": {
                     "type": "object",
                     "properties": {
-                        "path": { "type": "string" },
+                        "path": {
+                            "type": "string"
+                        },
                         "exclude": {
                             "oneOf": [
-                                { "type": "string"},
-                                { "type": "array", "uniqueItems": true, "items": {"type": "string" }}
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "uniqueItems": true,
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
                             ]
                         },
-                        "sync_tags": { "type": "boolean" },
-                        "add_blank_entries": { "type": "boolean" }
+                        "sync_tags": {
+                            "type": "boolean"
+                        },
+                        "add_blank_entries": {
+                            "type": "boolean"
+                        }
                     },
                     "required": []
                 }
@@ -2233,30 +4132,70 @@
             "required": [],
             "dependentRequired": {},
             "title": "operations"
-            },
+        },
         "template-variables-library": {
             "type": "object",
             "properties": {
-            "sep_style": {
-                "description": "Multiple styles are available for Separators, to match Plex's 'categories' feature.",
-                "type": "string",
-                "enum": ["amethyst", "aqua", "blue", "forest", "fuchsia", "gold", "gray", "green", "navy", "ocean", "olive", "orchid", "orig", "pink", "plum", "purple", "red", "rust", "salmon", "sand", "stb", "tan"]
-            },
-            "collection_mode": {
-                "description": "Controls the collection mode of all collections in a Defaults file.",
-                "type": "string",
-                "enum": ["default", "hide", "hide_items", "show_items"]
-            },
-            "language": {
-                "description": "Set the language of Collection Names and Summaries that Kometa has been translated to with weblate",
-                "type": "string",
-                "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv"]
-            },
-            "placeholder_imdb_id": {
-                "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
-                "type": "string",
-                "pattern": "^tt\\d{7,8}$"
-            }
+                "sep_style": {
+                    "description": "Multiple styles are available for Separators, to match Plex's 'categories' feature.",
+                    "type": "string",
+                    "enum": [
+                        "amethyst",
+                        "aqua",
+                        "blue",
+                        "forest",
+                        "fuchsia",
+                        "gold",
+                        "gray",
+                        "green",
+                        "navy",
+                        "ocean",
+                        "olive",
+                        "orchid",
+                        "orig",
+                        "pink",
+                        "plum",
+                        "purple",
+                        "red",
+                        "rust",
+                        "salmon",
+                        "sand",
+                        "stb",
+                        "tan"
+                    ]
+                },
+                "collection_mode": {
+                    "description": "Controls the collection mode of all collections in a Defaults file.",
+                    "type": "string",
+                    "enum": [
+                        "default",
+                        "hide",
+                        "hide_items",
+                        "show_items"
+                    ]
+                },
+                "language": {
+                    "description": "Set the language of Collection Names and Summaries that Kometa has been translated to with weblate",
+                    "type": "string",
+                    "enum": [
+                        "en",
+                        "fr",
+                        "ar",
+                        "da",
+                        "nl",
+                        "de",
+                        "it",
+                        "pt-br",
+                        "nb-no",
+                        "es",
+                        "sv"
+                    ]
+                },
+                "placeholder_imdb_id": {
+                    "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
+                    "type": "string",
+                    "pattern": "^tt\\d{7,8}$"
+                }
             },
             "required": [],
             "title": "template_variables"
@@ -2269,25 +4208,58 @@
                     "properties": {
                         "starting": {
                             "oneOf": [
-                                { "type": "integer", "minimum": 0 },
-                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
+                                {
+                                    "type": "integer",
+                                    "minimum": 0
+                                },
+                                {
+                                    "type": "string",
+                                    "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                                }
                             ]
                         },
                         "ending": {
                             "oneOf": [
-                                { "type": "integer", "minimum": 1 },
-                                { "type": "string", "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$" }
+                                {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                {
+                                    "type": "string",
+                                    "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                                }
                             ]
                         },
-                        "increment": { "type": "integer", "minimum": 0 },
-                        "depth": { "type": "integer", "minimum": 1 },
-                        "limit": { "type": "integer", "minimum": 1 }
+                        "increment": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
                     },
                     "additionalProperties": false
                 },
                 "style": {
                     "type": "string",
-                    "enum": ["color", "white", "bw", "diiivoy", "diiivoycolor", "rainier", "signature", "orig", "transparent", "default", "standards"]
+                    "enum": [
+                        "color",
+                        "white",
+                        "bw",
+                        "diiivoy",
+                        "diiivoycolor",
+                        "rainier",
+                        "signature",
+                        "orig",
+                        "transparent",
+                        "default",
+                        "standards"
+                    ]
                 }
             },
             "required": [],
@@ -2298,136 +4270,885 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "addon_offset": { "type": "integer", "exclusiveMinimum": 0 },
-                "addon_position": { "type": "string", "enum": ["left","top","bottom","right"] },
-                "back_align": { "type": "string", "enum": ["left","right","center","top","bottom"] },
-                "back_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "back_height": { "type": "integer", "exclusiveMinimum": 0 },
-                "back_line_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "back_line_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "back_padding": { "type": "integer", "exclusiveMinimum": 0 },
-                "back_radius": { "type": "integer", "exclusiveMinimum": 0 },
-                "back_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "builder_level": { "type": "string", "enum": ["show","season","episode"] },
-                    "color": {
-                        "type": "boolean",
-                        "description": "Toggles color styling for applicable overlays like content ratings."
-                    },
-                "file": { "type": "string" },
-                "final_name": { "type": "string" },
-                "flag_alignment": { "type": "string", "enum": ["left","right"] },
-                "font_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "font_size": { "type": "integer", "exclusiveMinimum": 0 },
-                "font_style": { "type": "string", "enum": ["Any","Italic","Normal","Oblique"] },
-                "font": { "type": "string" },
-                "git": { "type": "string" },
-                "group_alignment": { "type": "string", "enum": ["horizontal","vertical"] },
-                "hide_text": { "type": "boolean" },
-                "horizontal_align": { "type": "string", "enum": ["left","center","right"] },
-                "horizontal_offset": { "type": ["string", "integer"] },
-                "horizontal_position": { "type": "string", "enum": ["left","left2","center","center_left","center_right","right","right2"] },
-                "horizontal_spacing": { "type": "integer" },
-                "initial_horizontal_align": { "type": "string", "enum": ["left","center","right"] },
-                "initial_horizontal_offset": { "type": "integer" },
-                "initial_vertical_align": { "type": "string", "enum": ["top","center","bottom"] },
-                "initial_vertical_offset": { "type": "integer" },
-                "languages": { "type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z]{2}$" }},
-                "last": { "type": "integer", "exclusiveMinimum": 0 },
-                "limit": { "type": "integer", "exclusiveMinimum": 0 },
-                "location": { "type": "string", "enum": ["world","albania","argentina","armenia","australia","austria","azerbaijan","bahamas","bahrain","bangladesh","belarus","belgium","belize","benin","bolivia","bosnia_and_herzegovina","botswana","brazil","bulgaria","burkina_faso","cambodia","canada","chile","colombia","costa_rica","croatia","cyprus","czech_republic","denmark","dominican_republic","ecuador","egypt","estonia","finland","france","gabon","germany","ghana","greece","guatemala","guinea_bissau","haiti","honduras","hong_kong","hungary","iceland","india","indonesia","ireland","israel","italy","ivory_coast","jamaica","japan","jordan","kazakhstan","kenya","kuwait","kyrgyzstan","laos","latvia","lebanon","lithuania","luxembourg","malaysia","maldives","mali","malta","mexico","moldova","mongolia","montenegro","morocco","mozambique","namibia","netherlands","new_zealand","nicaragua","niger","nigeria","north_macedonia","norway","oman","pakistan","panama","papua_new_guinea","paraguay","peru","philippines","poland","portugal","qatar","romania","russia","rwanda","salvador","saudi_arabia","senegal","serbia","singapore","slovakia","slovenia","south_africa","south_korea","spain","sri_lanka","sweden","switzerland","taiwan","tajikistan","tanzania","thailand","togo","trinidad_and_tobago","turkey","turkmenistan","uganda","ukraine","united_arab_emirates","united_kingdom","united_states","uruguay","uzbekistan","venezuela","vietnam","zambia","zimbabwe"] },
-                "minimum": { "type": "integer"},
-                "offset": { "type": "integer", "minimum": 0 },
-                "originals_only": { "description": "Changes Streaming Service overlays to only apply to original content produced by the service.\nNote: Cannot be used with region, and only produces overlays for amazon, appletv, disney, max, hulu, netflix, paramount, peacock", "type": "boolean" },
-                "overlay_limit": { "description": "Choose the number of overlay this queue displays.\nDefault: 3\nValues: 1, 2, 3, 4, or 5", "type": "integer", "minimum": 1, "maximum": 5 },
-                "position": { "type": "string", "enum": ["left","right"] },
-                "post_nr_text": { "description": "Choose the text after the 'nr' key for the Overlay.\nValues: Any String", "type": "string" },
-                "post_text": { "description": "Choose the text after the key for the Overlay.\nDefault: +\nValues: Any String", "type": "string" },
-                "pre_nr_text": { "description": "Choose the text before the 'nr' key for the Overlay.\nValues: Any String","type": "string" },
-                "pre_text": { "description": "Choose the text before the key for the Overlay.\nValues: Any String", "type": "string" },
-                "rating_alignment": { "type": "string", "enum": ["vertical", "horizontal"] },
-                "rating1": { "type": "string", "enum": ["critic", "audience", "user"] },
-                "rating1_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
-                "rating1_font": { "type": "string" },
-                "rating1_font_size": { "type": "integer", "minimum": 1 },
-                "rating2": { "type": "string", "enum": ["critic", "audience", "user"] },
-                "rating2_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
-                "rating2_font": { "type": "string" },
-                "rating2_font_size": { "type": "integer", "minimum": 1 },
-                "rating3": { "type": "string", "enum": ["critic", "audience", "user"] },
-                "rating3_image": { "type": "string", "enum": ["anidb", "imdb", "letterboxd", "tmdb", "metacritic", "rt_popcorn", "rt_tomato", "trakt", "mal", "mdb", "star"] },
-                "rating3_font": { "type": "string" },
-                "rating3_font_size": { "type": "integer", "minimum": 1 },
-                "region": { "type": "string", "enum": ["us", "uk", "ca", "da", "de", "es", "fr", "it", "pt-br"] },
-                "remove_overlays": { "type": "boolean" },
-                "reapply_overlays": { "type": "boolean" },
-                "reset_overlays": { "type": "string", "enum": ["tmdb", "plex"] },
-                "repo": { "type": "string" },
-                "scale_height": { "type": ["string", "integer"], "exclusiveMinimum": 1 },
-                "scale_width": { "type": ["string", "integer"], "exclusiveMinimum": 1 },
-                "size": { "type": "string", "enum": ["small", "big"] },
-                "stroke_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "stroke_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray", "color", "white"] },
-                "text": { "type": "string" },
-                "time_window": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
-                "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
-                "use_edition": { "type": "boolean" },
-                "use_lowercase": { "type": "boolean" },
-                "use_resolution": { "type": "boolean" },
-                "use_subtitles": { "type": "boolean" },
-                "vertical_align": { "type": "string", "enum": ["top","center","bottom"] },
-                "vertical_offset": { "type": ["string", "integer"] },
-                "vertical_position": { "type": "string", "enum": ["top","top2","top3","center","center_top","center_bottom","bottom","bottom2","bottom3"] },
-                "vertical_spacing": { "type": "integer" }
+                "addon_offset": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "addon_position": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "top",
+                        "bottom",
+                        "right"
+                    ]
+                },
+                "back_align": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right",
+                        "center",
+                        "top",
+                        "bottom"
+                    ]
+                },
+                "back_color": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "back_height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "back_line_color": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "back_line_width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "back_padding": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "back_radius": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "back_width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "builder_level": {
+                    "type": "string",
+                    "enum": [
+                        "show",
+                        "season",
+                        "episode"
+                    ]
+                },
+                "color": {
+                    "type": "boolean",
+                    "description": "Toggles color styling for applicable overlays like content ratings."
+                },
+                "file": {
+                    "type": "string"
+                },
+                "final_name": {
+                    "type": "string"
+                },
+                "flag_alignment": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right"
+                    ]
+                },
+                "font_color": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "font_size": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "font_style": {
+                    "type": "string",
+                    "enum": [
+                        "Any",
+                        "Italic",
+                        "Normal",
+                        "Oblique"
+                    ]
+                },
+                "font": {
+                    "type": "string"
+                },
+                "git": {
+                    "type": "string"
+                },
+                "group_alignment": {
+                    "type": "string",
+                    "enum": [
+                        "horizontal",
+                        "vertical"
+                    ]
+                },
+                "hide_text": {
+                    "type": "boolean"
+                },
+                "horizontal_align": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ]
+                },
+                "horizontal_offset": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ]
+                },
+                "horizontal_position": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "left2",
+                        "center",
+                        "center_left",
+                        "center_right",
+                        "right",
+                        "right2"
+                    ]
+                },
+                "horizontal_spacing": {
+                    "type": "integer"
+                },
+                "initial_horizontal_align": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ]
+                },
+                "initial_horizontal_offset": {
+                    "type": "integer"
+                },
+                "initial_vertical_align": {
+                    "type": "string",
+                    "enum": [
+                        "top",
+                        "center",
+                        "bottom"
+                    ]
+                },
+                "initial_vertical_offset": {
+                    "type": "integer"
+                },
+                "languages": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z]{2}$"
+                    }
+                },
+                "last": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "limit": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "location": {
+                    "type": "string",
+                    "enum": [
+                        "world",
+                        "albania",
+                        "argentina",
+                        "armenia",
+                        "australia",
+                        "austria",
+                        "azerbaijan",
+                        "bahamas",
+                        "bahrain",
+                        "bangladesh",
+                        "belarus",
+                        "belgium",
+                        "belize",
+                        "benin",
+                        "bolivia",
+                        "bosnia_and_herzegovina",
+                        "botswana",
+                        "brazil",
+                        "bulgaria",
+                        "burkina_faso",
+                        "cambodia",
+                        "canada",
+                        "chile",
+                        "colombia",
+                        "costa_rica",
+                        "croatia",
+                        "cyprus",
+                        "czech_republic",
+                        "denmark",
+                        "dominican_republic",
+                        "ecuador",
+                        "egypt",
+                        "estonia",
+                        "finland",
+                        "france",
+                        "gabon",
+                        "germany",
+                        "ghana",
+                        "greece",
+                        "guatemala",
+                        "guinea_bissau",
+                        "haiti",
+                        "honduras",
+                        "hong_kong",
+                        "hungary",
+                        "iceland",
+                        "india",
+                        "indonesia",
+                        "ireland",
+                        "israel",
+                        "italy",
+                        "ivory_coast",
+                        "jamaica",
+                        "japan",
+                        "jordan",
+                        "kazakhstan",
+                        "kenya",
+                        "kuwait",
+                        "kyrgyzstan",
+                        "laos",
+                        "latvia",
+                        "lebanon",
+                        "lithuania",
+                        "luxembourg",
+                        "malaysia",
+                        "maldives",
+                        "mali",
+                        "malta",
+                        "mexico",
+                        "moldova",
+                        "mongolia",
+                        "montenegro",
+                        "morocco",
+                        "mozambique",
+                        "namibia",
+                        "netherlands",
+                        "new_zealand",
+                        "nicaragua",
+                        "niger",
+                        "nigeria",
+                        "north_macedonia",
+                        "norway",
+                        "oman",
+                        "pakistan",
+                        "panama",
+                        "papua_new_guinea",
+                        "paraguay",
+                        "peru",
+                        "philippines",
+                        "poland",
+                        "portugal",
+                        "qatar",
+                        "romania",
+                        "russia",
+                        "rwanda",
+                        "salvador",
+                        "saudi_arabia",
+                        "senegal",
+                        "serbia",
+                        "singapore",
+                        "slovakia",
+                        "slovenia",
+                        "south_africa",
+                        "south_korea",
+                        "spain",
+                        "sri_lanka",
+                        "sweden",
+                        "switzerland",
+                        "taiwan",
+                        "tajikistan",
+                        "tanzania",
+                        "thailand",
+                        "togo",
+                        "trinidad_and_tobago",
+                        "turkey",
+                        "turkmenistan",
+                        "uganda",
+                        "ukraine",
+                        "united_arab_emirates",
+                        "united_kingdom",
+                        "united_states",
+                        "uruguay",
+                        "uzbekistan",
+                        "venezuela",
+                        "vietnam",
+                        "zambia",
+                        "zimbabwe"
+                    ]
+                },
+                "minimum": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "originals_only": {
+                    "description": "Changes Streaming Service overlays to only apply to original content produced by the service.\nNote: Cannot be used with region, and only produces overlays for amazon, appletv, disney, max, hulu, netflix, paramount, peacock",
+                    "type": "boolean"
+                },
+                "overlay_limit": {
+                    "description": "Choose the number of overlay this queue displays.\nDefault: 3\nValues: 1, 2, 3, 4, or 5",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                },
+                "position": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right"
+                    ]
+                },
+                "post_nr_text": {
+                    "description": "Choose the text after the 'nr' key for the Overlay.\nValues: Any String",
+                    "type": "string"
+                },
+                "post_text": {
+                    "description": "Choose the text after the key for the Overlay.\nDefault: +\nValues: Any String",
+                    "type": "string"
+                },
+                "pre_nr_text": {
+                    "description": "Choose the text before the 'nr' key for the Overlay.\nValues: Any String",
+                    "type": "string"
+                },
+                "pre_text": {
+                    "description": "Choose the text before the key for the Overlay.\nValues: Any String",
+                    "type": "string"
+                },
+                "rating_alignment": {
+                    "type": "string",
+                    "enum": [
+                        "vertical",
+                        "horizontal"
+                    ]
+                },
+                "rating1": {
+                    "type": "string",
+                    "enum": [
+                        "critic",
+                        "audience",
+                        "user"
+                    ]
+                },
+                "rating1_image": {
+                    "type": "string",
+                    "enum": [
+                        "anidb",
+                        "imdb",
+                        "letterboxd",
+                        "tmdb",
+                        "metacritic",
+                        "rt_popcorn",
+                        "rt_tomato",
+                        "trakt",
+                        "mal",
+                        "mdb",
+                        "star"
+                    ]
+                },
+                "rating1_font": {
+                    "type": "string"
+                },
+                "rating1_font_size": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "rating2": {
+                    "type": "string",
+                    "enum": [
+                        "critic",
+                        "audience",
+                        "user"
+                    ]
+                },
+                "rating2_image": {
+                    "type": "string",
+                    "enum": [
+                        "anidb",
+                        "imdb",
+                        "letterboxd",
+                        "tmdb",
+                        "metacritic",
+                        "rt_popcorn",
+                        "rt_tomato",
+                        "trakt",
+                        "mal",
+                        "mdb",
+                        "star"
+                    ]
+                },
+                "rating2_font": {
+                    "type": "string"
+                },
+                "rating2_font_size": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "rating3": {
+                    "type": "string",
+                    "enum": [
+                        "critic",
+                        "audience",
+                        "user"
+                    ]
+                },
+                "rating3_image": {
+                    "type": "string",
+                    "enum": [
+                        "anidb",
+                        "imdb",
+                        "letterboxd",
+                        "tmdb",
+                        "metacritic",
+                        "rt_popcorn",
+                        "rt_tomato",
+                        "trakt",
+                        "mal",
+                        "mdb",
+                        "star"
+                    ]
+                },
+                "rating3_font": {
+                    "type": "string"
+                },
+                "rating3_font_size": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "region": {
+                    "type": "string",
+                    "enum": [
+                        "us",
+                        "uk",
+                        "ca",
+                        "da",
+                        "de",
+                        "es",
+                        "fr",
+                        "it",
+                        "pt-br"
+                    ]
+                },
+                "remove_overlays": {
+                    "type": "boolean"
+                },
+                "reapply_overlays": {
+                    "type": "boolean"
+                },
+                "reset_overlays": {
+                    "type": "string",
+                    "enum": [
+                        "tmdb",
+                        "plex"
+                    ]
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "scale_height": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "exclusiveMinimum": 1
+                },
+                "scale_width": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "exclusiveMinimum": 1
+                },
+                "size": {
+                    "type": "string",
+                    "enum": [
+                        "small",
+                        "big"
+                    ]
+                },
+                "stroke_color": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "stroke_width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "style": {
+                    "type": "string",
+                    "enum": [
+                        "compact",
+                        "standard",
+                        "bigger",
+                        "round",
+                        "square",
+                        "half",
+                        "red",
+                        "black",
+                        "yellow",
+                        "gray",
+                        "color",
+                        "white"
+                    ]
+                },
+                "text": {
+                    "type": "string"
+                },
+                "time_window": {
+                    "type": "string",
+                    "enum": [
+                        "today",
+                        "yesterday",
+                        "this_week",
+                        "last_week",
+                        "this_month",
+                        "last_month",
+                        "this_year",
+                        "last_year"
+                    ]
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?)://"
+                },
+                "use_edition": {
+                    "type": "boolean"
+                },
+                "use_lowercase": {
+                    "type": "boolean"
+                },
+                "use_resolution": {
+                    "type": "boolean"
+                },
+                "use_subtitles": {
+                    "type": "boolean"
+                },
+                "vertical_align": {
+                    "type": "string",
+                    "enum": [
+                        "top",
+                        "center",
+                        "bottom"
+                    ]
+                },
+                "vertical_offset": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ]
+                },
+                "vertical_position": {
+                    "type": "string",
+                    "enum": [
+                        "top",
+                        "top2",
+                        "top3",
+                        "center",
+                        "center_top",
+                        "center_bottom",
+                        "bottom",
+                        "bottom2",
+                        "bottom3"
+                    ]
+                },
+                "vertical_spacing": {
+                    "type": "integer"
+                }
             },
             "patternProperties": {
-                "^country_.*$": { "type": "string", "pattern": "^[A-Z]{2}$" },
-                "^file_.*$": { "type": "string" },
-                "^git_.*$": { "type": "string" },
-                "^limit_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^location_.*$": { "type": "string", "enum": ["world","albania","argentina","armenia","australia","austria","azerbaijan","bahamas","bahrain","bangladesh","belarus","belgium","belize","benin","bolivia","bosnia_and_herzegovina","botswana","brazil","bulgaria","burkina_faso","cambodia","canada","chile","colombia","costa_rica","croatia","cyprus","czech_republic","denmark","dominican_republic","ecuador","egypt","estonia","finland","france","gabon","germany","ghana","greece","guatemala","guinea_bissau","haiti","honduras","hong_kong","hungary","iceland","india","indonesia","ireland","israel","italy","ivory_coast","jamaica","japan","jordan","kazakhstan","kenya","kuwait","kyrgyzstan","laos","latvia","lebanon","lithuania","luxembourg","malaysia","maldives","mali","malta","mexico","moldova","mongolia","montenegro","morocco","mozambique","namibia","netherlands","new_zealand","nicaragua","niger","nigeria","north_macedonia","norway","oman","pakistan","panama","papua_new_guinea","paraguay","peru","philippines","poland","portugal","qatar","romania","russia","rwanda","salvador","saudi_arabia","senegal","serbia","singapore","slovakia","slovenia","south_africa","south_korea","spain","sri_lanka","sweden","switzerland","taiwan","tajikistan","tanzania","thailand","togo","trinidad_and_tobago","turkey","turkmenistan","uganda","ukraine","united_arab_emirates","united_kingdom","united_states","uruguay","uzbekistan","venezuela","vietnam","zambia","zimbabwe"] },
-                "^rating\\d+_.*$": { "type": "string" },
-                "^regex_.*$": { "type": "string" },
-                "^repo_.*$": { "type": "string" },
-                "^text_.*$": { "type": "string" },
-                "^time_window_.*$": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
-                "^url_.*$": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
-                "^use_.*$": { "type": "boolean" },
-                "^weight_.*$": { "type": "integer" },
-                "^font_.*$": { "type": "string" },
-                "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "^font_size_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^font_style_.*$": { "type": "string", "enum": ["Any","Italic","Normal","Oblique"] },
-                "^horizontal_align_.*$": { "type": "string", "enum": ["left","center","right"] },
-                "^horizontal_offset_.*$": { "type": ["string", "integer"], "minimum": 0 },
-                "^vertical_align_.*$": { "type": "string", "enum": ["top","center","bottom"] },
-                "^vertical_offset_.*$": { "type": ["string", "integer"], "minimum": 0 },
-                "^stroke_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "^stroke_width_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_align_.*$": { "type": "string", "enum": ["left","right","center","top","bottom"] },
-                "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "^back_height_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_line_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
-                "^back_line_width_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_padding_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_radius_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_width_.*$": { "type": "integer", "exclusiveMinimum": 0 }
+                "^country_.*$": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
+                },
+                "^file_.*$": {
+                    "type": "string"
+                },
+                "^git_.*$": {
+                    "type": "string"
+                },
+                "^limit_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^location_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "world",
+                        "albania",
+                        "argentina",
+                        "armenia",
+                        "australia",
+                        "austria",
+                        "azerbaijan",
+                        "bahamas",
+                        "bahrain",
+                        "bangladesh",
+                        "belarus",
+                        "belgium",
+                        "belize",
+                        "benin",
+                        "bolivia",
+                        "bosnia_and_herzegovina",
+                        "botswana",
+                        "brazil",
+                        "bulgaria",
+                        "burkina_faso",
+                        "cambodia",
+                        "canada",
+                        "chile",
+                        "colombia",
+                        "costa_rica",
+                        "croatia",
+                        "cyprus",
+                        "czech_republic",
+                        "denmark",
+                        "dominican_republic",
+                        "ecuador",
+                        "egypt",
+                        "estonia",
+                        "finland",
+                        "france",
+                        "gabon",
+                        "germany",
+                        "ghana",
+                        "greece",
+                        "guatemala",
+                        "guinea_bissau",
+                        "haiti",
+                        "honduras",
+                        "hong_kong",
+                        "hungary",
+                        "iceland",
+                        "india",
+                        "indonesia",
+                        "ireland",
+                        "israel",
+                        "italy",
+                        "ivory_coast",
+                        "jamaica",
+                        "japan",
+                        "jordan",
+                        "kazakhstan",
+                        "kenya",
+                        "kuwait",
+                        "kyrgyzstan",
+                        "laos",
+                        "latvia",
+                        "lebanon",
+                        "lithuania",
+                        "luxembourg",
+                        "malaysia",
+                        "maldives",
+                        "mali",
+                        "malta",
+                        "mexico",
+                        "moldova",
+                        "mongolia",
+                        "montenegro",
+                        "morocco",
+                        "mozambique",
+                        "namibia",
+                        "netherlands",
+                        "new_zealand",
+                        "nicaragua",
+                        "niger",
+                        "nigeria",
+                        "north_macedonia",
+                        "norway",
+                        "oman",
+                        "pakistan",
+                        "panama",
+                        "papua_new_guinea",
+                        "paraguay",
+                        "peru",
+                        "philippines",
+                        "poland",
+                        "portugal",
+                        "qatar",
+                        "romania",
+                        "russia",
+                        "rwanda",
+                        "salvador",
+                        "saudi_arabia",
+                        "senegal",
+                        "serbia",
+                        "singapore",
+                        "slovakia",
+                        "slovenia",
+                        "south_africa",
+                        "south_korea",
+                        "spain",
+                        "sri_lanka",
+                        "sweden",
+                        "switzerland",
+                        "taiwan",
+                        "tajikistan",
+                        "tanzania",
+                        "thailand",
+                        "togo",
+                        "trinidad_and_tobago",
+                        "turkey",
+                        "turkmenistan",
+                        "uganda",
+                        "ukraine",
+                        "united_arab_emirates",
+                        "united_kingdom",
+                        "united_states",
+                        "uruguay",
+                        "uzbekistan",
+                        "venezuela",
+                        "vietnam",
+                        "zambia",
+                        "zimbabwe"
+                    ]
+                },
+                "^rating\\d+_.*$": {
+                    "type": "string"
+                },
+                "^regex_.*$": {
+                    "type": "string"
+                },
+                "^repo_.*$": {
+                    "type": "string"
+                },
+                "^text_.*$": {
+                    "type": "string"
+                },
+                "^time_window_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "today",
+                        "yesterday",
+                        "this_week",
+                        "last_week",
+                        "this_month",
+                        "last_month",
+                        "this_year",
+                        "last_year"
+                    ]
+                },
+                "^url_.*$": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^(https?)://"
+                },
+                "^use_.*$": {
+                    "type": "boolean"
+                },
+                "^weight_.*$": {
+                    "type": "integer"
+                },
+                "^font_.*$": {
+                    "type": "string"
+                },
+                "^font_color_.*$": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "^font_size_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^font_style_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "Any",
+                        "Italic",
+                        "Normal",
+                        "Oblique"
+                    ]
+                },
+                "^horizontal_align_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ]
+                },
+                "^horizontal_offset_.*$": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "minimum": 0
+                },
+                "^vertical_align_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "top",
+                        "center",
+                        "bottom"
+                    ]
+                },
+                "^vertical_offset_.*$": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "minimum": 0
+                },
+                "^stroke_color_.*$": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "^stroke_width_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^back_align_.*$": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right",
+                        "center",
+                        "top",
+                        "bottom"
+                    ]
+                },
+                "^back_color_.*$": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "^back_height_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^back_line_color_.*$": {
+                    "type": "string",
+                    "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+                },
+                "^back_line_width_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^back_padding_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^back_radius_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "^back_width_.*$": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                }
             },
-            "required": [
-            ],
-            "dependentRequired": {
-            },
+            "required": [],
+            "dependentRequired": {},
             "title": "template_variables"
         },
         "template-variables-playlists": {
             "type": "array",
             "additionalProperties": true,
-            "properties": {
-            },
-            "required": [
-            ],
-            "dependentRequired": {
-            },
+            "properties": {},
+            "required": [],
+            "dependentRequired": {},
             "title": "template_variables"
         }
     }
