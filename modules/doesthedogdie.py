@@ -1,9 +1,12 @@
-import requests
-import json
 from modules import util
+
 logger = util.logger
 
-class DogDieChecker:
+base_url = "https://www.doesthedogdie.com/"
+search_url = f"{base_url}dddsearch"
+media_url = f"{base_url}media/"
+
+class DoesTheDogDie:
 
     topics = [
         {"id":153,"category_id":2,"label":"a dog dies","does_name":"Does the dog die","slug":"does-the-dog-die"},
@@ -244,13 +247,16 @@ class DogDieChecker:
     
     topic_map = {topic['slug']: topic for topic in topics}
     category_map = {category['name']: category for category in categories}
-    
-    def __init__(self, config, api_key):
-        self.dtdd_api_key = api_key
-        self.config = config
-        self.api_headers = {'Accept': 'application/json', 'X-API-KEY': self.dtdd_api_key}
-        self.base_search_url = "https://www.doesthedogdie.com/dddsearch"
-        self.base_media_url = "https://www.doesthedogdie.com/media"
+
+    def __init__(self, requests, cache, params):
+        self.requests = requests
+        self.cache = cache
+        self.apikey = params["apikey"]
+        self.headers = {'Accept': 'application/json', 'X-API-KEY': self.apikey}
+
+    def _request(self, imdb_id):
+        dtdd_id = self.requests.get_json(search_url, params={"imdb": imdb_id}, headers=self.headers)["items"][0]["id"]
+        return self.requests.get_json(f"{media_url}{dtdd_id}", headers=self.headers)
 
     @classmethod
     def get_topic_id_by_slug(cls, slug):
@@ -279,46 +285,9 @@ class DogDieChecker:
     @classmethod
     def get_topic_ids_by_category_id(cls, category_id):
         return [topic["id"] for topic in cls.topics if topic["category_id"] == category_id]
-        
-    def _get_response(self, url, params=None):
-        response = requests.get(url, params=params, headers=self.api_headers)
-        return response
 
-    def search_movie(self, movie_name, year=None, topic_ids=[], strict_search_mode=False):
-        search_params = {'q': movie_name}
-        if year:
-            search_params['year'] = year
-        response = self._get_response(self.base_search_url, params=search_params)
-        if response.status_code == 200:
-            search_results = response.json()
-            movie_id = self._extract_movie_id(search_results, movie_name, year, strict_search_mode)
-            if movie_id:
-                movie_info = self._get_movie_info(movie_id)
-                topic_labels = self._get_topic_labels(movie_info, topic_ids)
-                return topic_labels
-        return []
-
-    def _extract_movie_id(self, search_results, movie_name, year=None, strict_search_mode=False):
-        filtered_results = [result for result in search_results.get('items', []) if result.get('name').lower() == movie_name.lower()]
-        if year:
-            filtered_results = [result for result in filtered_results if str(result.get('releaseYear')) == str(year)]
-        if filtered_results:
-            return filtered_results[0].get('id')
-        elif search_results.get('items'):
-            # If no exact match found for the year, return the ID of the first item
-            if strict_search_mode:
-                logger.info("Does the Dog.. Strict search is enabled and no match for both movie title " + movie_name + " and year " + str(year) + " so returning None")
-            else:
-                return search_results['items'][0].get('id')
-        return None
-
-    def _get_movie_info(self, movie_id):
-        movie_url = f"{self.base_media_url}/{movie_id}"
-        response = self._get_response(movie_url)
-        if response.status_code == 200:
-            movie_info = response.json()
-            return movie_info
-        return None
+    def search_movie(self, imdb_id, topic_ids=None):
+        return self._get_topic_labels(self._request(imdb_id), topic_ids=topic_ids)
 
     def _get_topic_labels(self, movie_info, topic_ids=None):
         topic_labels = []

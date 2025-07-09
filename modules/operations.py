@@ -173,15 +173,10 @@ class Operations:
                                         for topic_id in topic_ids:
                                             topics_to_warn_on.append(topic_id)
                                     else:
-                                        logger.warn("Does The Dog... category " + category_name + " returned no topics.")
+                                        logger.warning("Does The Dog... category " + category_name + " returned no topics.")
                                 else:
-                                    logger.warn("Does The Dog... category " + category_name + " not found.")
-                        dog_warning_labels = self.config.DogDieChecker.search_movie(
-                            item.title,
-                            item.year,
-                            topics_to_warn_on,
-                            self.library.mass_does_the_dog_labels["strict_search"]
-                        )
+                                    logger.warning("Does The Dog... category " + category_name + " not found.")
+                        dog_warning_labels = self.config.DogDieChecker.search_movie(imdb_id, topic_ids=topics_to_warn_on)
                         add_labels = [la for la in dog_warning_labels if la not in current_labels]
                         remove_labels = [la for la in current_labels if la in self.config.DogDieChecker.get_all_labels() and la not in dog_warning_labels]
                         for label_list, edit_type in [(add_labels, "add"), (remove_labels, "remove")]:

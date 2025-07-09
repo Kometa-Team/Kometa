@@ -5,10 +5,10 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.doesthedogdie import DoesTheDogDie
 from modules.ergast import Ergast
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
-from modules.doesthedogdie import DogDieChecker
 from modules.github import GitHub
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
@@ -53,11 +53,6 @@ imdb_label_options = {
     "mild": "Add IMDb Parental Labels for Mild, Moderate, or Severe",
     "moderate": "Add IMDb Parental Labels for Moderate or Severe",
     "severe": "Add IMDb Parental Labels for Severe"
-}
-dtdd_label_options = {
-    "dog": "Does the dog die",
-    "default": "Default trigger warnings",
-    "all": "Label all triggers (almost 200)"
 }
 mass_genre_options = {
     "lock": "Lock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
@@ -152,9 +147,10 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_imdb_parental_labels": imdb_label_options,
-    "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options, "mass_does_the_dog_labels": "dict",
-    "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
-    "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
+    "mass_does_the_dog_labels": "dict", "mass_originally_available_update": mass_available_options,
+    "mass_added_at_update": mass_available_options, "mass_collection_mode": "mass_collection_mode",
+    "mass_poster_update": "dict", "mass_background_update": "dict", "metadata_backup": "dict",
+    "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
 
 class ConfigFile:
@@ -724,6 +720,24 @@ class ConfigFile:
 
             logger.separator()
 
+            self.DoesTheDogDie = None
+            if "doesthedogdie" in self.data:
+                logger.info("Connecting to DoesTheDogDie...")
+                try:
+                    self.DoesTheDogDie = DoesTheDogDie(self.Requests, {
+                        "apikey": check_for_attribute(self.data, "apikey", parent="doesthedogdie", throw=True),
+                    })
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"DoesTheDogDie Connection {'Failed' if self.OMDb is None else 'Successful'}")
+            else:
+                logger.info("omdb attribute not found")
+
+            logger.separator()
+
             self.MyAnimeList = None
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
@@ -800,12 +814,6 @@ class ConfigFile:
                     except NotScheduled as e:
                         logger.info("")
                         logger.separator(f"Skipping {e} Playlist File")
-
-            self.general["doesthedogdie"] = {
-                "apikey": check_for_attribute(self.data, "apikey", parent="doesthedogdie", default_is_none=True)
-            }
-            if self.general["doesthedogdie"]["apikey"]:
-                self.DogDieChecker = DogDieChecker(self, self.general["doesthedogdie"]["apikey"])
 
             self.TVDb = TVDb(self.Requests, self.Cache, self.general["tvdb_language"], self.general["cache_expiration"])
             self.IMDb = IMDb(self.Requests, self.Cache, self.default_dir)
