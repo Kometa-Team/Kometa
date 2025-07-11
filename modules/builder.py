@@ -2307,7 +2307,7 @@ class CollectionBuilder:
                                     found = True
                                     rating_keys = pl_library.imdb_map[input_id]
                                     break
-                            if not found and (self.builder_level == "episode" or self.playlist or self.do_missing):
+                            if not found:
                                 try:
                                     _id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
                                     if tmdb_type == "episode" and (self.builder_level == "episode" or self.playlist):
