@@ -2307,7 +2307,7 @@ class CollectionBuilder:
                                     found = True
                                     rating_keys = pl_library.imdb_map[input_id]
                                     break
-                            if not found and (self.builder_level == "episode" or self.playlist or self.do_missing):
+                            if not found:
                                 try:
                                     _id, tmdb_type = self.config.Convert.imdb_to_tmdb(input_id, fail=True)
                                     if tmdb_type == "episode" and (self.builder_level == "episode" or self.playlist):
@@ -2343,14 +2343,22 @@ class CollectionBuilder:
                                             self.missing_shows.append(tvdb_id)
                                     elif tmdb_type == "movie" and self.do_missing and _id not in self.missing_movies:
                                         self.missing_movies.append(_id)
-                                    elif tmdb_type in ["show", "episode"] and self.do_missing:
+                                    elif tmdb_type in ["show", "episode"]:
                                         if tmdb_type == "episode":
                                             tmdb_id, _, _ = _id.split("_")
                                         else:
                                             tmdb_id = _id
                                         tvdb_id = self.config.Convert.tmdb_to_tvdb(tmdb_id, fail=True)
-                                        if tvdb_id not in self.missing_shows:
-                                            self.missing_shows.append(tvdb_id)
+                                        if tvdb_id not in self.ignore_ids:
+                                            found_keys = None
+                                            for pl_library in self.libraries:
+                                                if tvdb_id in pl_library.show_map:
+                                                    found_keys = pl_library.show_map[tvdb_id]
+                                                    break
+                                            if found_keys:
+                                                rating_keys = found_keys
+                                            elif self.do_missing and tvdb_id not in self.missing_shows:
+                                                self.missing_shows.append(tvdb_id)
                                 except Failed as e:
                                     logger.warning(e)
                                     continue
