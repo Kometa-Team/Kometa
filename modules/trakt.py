@@ -42,11 +42,12 @@ class Trakt:
         self.read_only = read_only
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
+        self.force_refresh = params["force_refresh"]
         self.pin = params["pin"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
-        if not self._save(self.authorization):
+        if self.force_refresh or not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
         self._slugs = None
