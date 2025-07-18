@@ -226,6 +226,7 @@ class Trakt:
             if pages == 1 and "X-Pagination-Page-Count" in response.headers and not params:
                 pages = int(response.headers["X-Pagination-Page-Count"])
             if response.status_code >= 400:
+                logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
             response_json = response.json()
             logger.trace(f"Headers: {response.headers}")
