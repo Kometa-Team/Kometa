@@ -233,14 +233,15 @@ class Trakt:
             if response.status_code >= 400:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
-            response_json = response.json()
-            logger.trace(f"Headers: {response.headers}")
-            logger.trace(f"Response: {response_json}")
-            if isinstance(response_json, dict):
-                return response_json
             else:
-                output_json.extend(response_json)
-            current += 1
+                response_json = response.json()
+                logger.trace(f"Headers: {response.headers}")
+                logger.trace(f"Response: {response_json}")
+                if isinstance(response_json, dict):
+                    return response_json
+                else:
+                    output_json.extend(response_json)
+                current += 1
         return output_json
 
     def user_ratings(self, is_movie):
