@@ -8,13 +8,14 @@ hide:
         "OVERLAY_NAME": "Audio/Subtitle Language Flag", 
         "CODE_NAME": "languages",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay of a flag and [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) based on the 
+        "DESCRIPTION": "an overlay of a flag and [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) or [ISO 639-2 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) based on the 
 audio/subtitle languages available on each item within your library"
     }'
     replace-tags='{"rec-sub": "Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme."}'
 %}
 | English           | `en`  | `610` | `us` | :fontawesome-solid-circle-check:{ .green } |
 | German            | `de`  | `600` | `de` | :fontawesome-solid-circle-check:{ .green } |
+| Swiss German      | `gsw` | `595` | `ch` | :fontawesome-solid-circle-check:{ .green } |
 | French            | `fr`  | `590` | `fr` | :fontawesome-solid-circle-check:{ .green } |
 | Spanish           | `es`  | `580` | `es` | :fontawesome-solid-circle-check:{ .green } |
 | Portuguese        | `pt`  | `570` | `pt` | :fontawesome-solid-circle-check:{ .green } |
