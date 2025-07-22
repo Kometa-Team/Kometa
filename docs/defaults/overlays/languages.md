@@ -15,6 +15,7 @@ audio/subtitle languages available on each item within your library"
 %}
 | English           | `en`  | `610` | `us` | :fontawesome-solid-circle-check:{ .green } |
 | German            | `de`  | `600` | `de` | :fontawesome-solid-circle-check:{ .green } |
+| Swiss German      | `gsw` | `595` | `ch` | :fontawesome-solid-circle-check:{ .green } |
 | French            | `fr`  | `590` | `fr` | :fontawesome-solid-circle-check:{ .green } |
 | Spanish           | `es`  | `580` | `es` | :fontawesome-solid-circle-check:{ .green } |
 | Portuguese        | `pt`  | `570` | `pt` | :fontawesome-solid-circle-check:{ .green } |
