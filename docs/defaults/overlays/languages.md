@@ -8,7 +8,7 @@ hide:
         "OVERLAY_NAME": "Audio/Subtitle Language Flag", 
         "CODE_NAME": "languages",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay of a flag and [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) based on the 
+        "DESCRIPTION": "an overlay of a flag and [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) or [ISO 639-2 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) based on the 
 audio/subtitle languages available on each item within your library"
     }'
     replace-tags='{"rec-sub": "Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme."}'
