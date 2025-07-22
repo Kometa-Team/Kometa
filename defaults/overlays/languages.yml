@@ -207,6 +207,10 @@ overlays:
     variables: {key: de, text: DE, weight: 600}
     template: [name: flags, name: standard]
 
+  swiss-german:
+    variables: {key: gsw, text: GSW, weight: 595, country: ch}
+    template: [name: flags, name: standard]
+
   french:
     variables: {key: fr, text: FR, weight: 590}
     template: [name: flags, name: standard]
