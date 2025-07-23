@@ -16,8 +16,8 @@ Builders use third-party services to source items to be added to the collection.
 
     ??? quicklink "Popular Builders"
 
-        - [:simple-plex: Smart Filter](plex.md#smart-filter) - Create a Smart Collection based on the filter parameters provided.
-        - [:simple-plex: Plex Search](plex.md#plex-search) - Create a Collection based on items within the Plex library.
+        - [:simple-plex: Smart Filter](plex/smart-filter.md) - Create a Smart Collection based on the filter parameters provided.
+        - [:simple-plex: Plex Search](plex/search) - Create a Collection based on items within the Plex library.
 
 
 !!! builder
@@ -88,7 +88,7 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:material-television-guide: TVDb Show](tvdb.md#tvdb-show) - Grabs the specified series.
         - [:material-television-guide: TVDb Movie](tvdb.md#tvdb-movie) - Gets the specified movies.
-        - [:material-television-guide: TVDb List](tvdb.md#tvdb-list) - Gets every item in a TVDb List or TVDb UserList.
+        - [:material-television-guide: TVDb List](tvdb.md#tvdb-list) - Gets every item in a TVDb list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or TVDb UserList.
 
 !!! builder
 

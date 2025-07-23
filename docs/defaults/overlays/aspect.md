@@ -22,7 +22,7 @@ hide:
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "aspect", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "aspect", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
     ```yaml
@@ -78,7 +78,7 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "aspect"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Aspect Overlays"

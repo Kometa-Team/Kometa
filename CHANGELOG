@@ -1,100 +1,36 @@
 # Requirements Update (requirements will need to be reinstalled)
-Add pywin32 requirement at 308 (windows only)
-Add cloudscraper requirement at 1.2.71
-Update gitpython requirement to 3.1.44
-Update lxml requirement to 5.3.1
-Update num2words requirement to 0.5.14
-Update pathvalidate requirement to 3.2.3
-Update pillow requirement to 11.1.0
-Update plexapi requirement to 4.16.1
-Update psutil requirement to 7.0.0
-Update python-dotenv requirement to 1.1.0
-Update pywin32 requirement to 310
-Update ruamel-yaml requirement to 0.18.9
-Update setuptools requirement to 78.1.0
-Update tmdbapis requirement to 1.2.28
+Update lxml requirement to 5.4.0
+Update pathvalidate requirement to 3.3.1
+Update pillow requirement to 11.2.1
+Update plexapi requirement from 4.16.1 to 4.17.0
+Update requests requirement to 2.32.4
+Update ruamel-yaml requirement to 0.18.14
+Update setuptools requirement to 80.9.0
+Update tenacity requirement to 9.1.2
 
 # Important Changes
-Python 3.8 is no longer supported. The minimum version of Python required is now 3.9.
 
 # New Features
-Added the `character` search option to the `imdb_search` builder
-Added ability to use Show-level ratings at the season and episode level for Overlays if the original source does not provide ratings at the season or episode level. This is accomplished using (Special Text Variables)[https://kometa.wiki/en/latest/files/overlays/#special-text-variables] but is not yet available for the `Ratings` Defaults file.
-Add `show_unfiltered` setting to display items which make it through a filter
-Allow `sync_to_trakt_list` on episode-level collections
-Logic added to Kometa to create `config.yml` if it does not exist from the `config.yml.template` file. If the template file cannot be found, Kometa will attempt to download it from GitHub.
-When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
-When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
-Added `date` option for schedules
-Added the `--low-priority/-lp` (`KOMETA_LOW_PRIORITY`) command line argument option to run the process at a lower priority. **credit to @planetrocky**
-Added `trakt`, `omdb_metascore`, `omdb_tomatoes` ratings sources for mass operations.
-Added `trakt` ratings source for mass episode operations.
-Added GitHub token validation during config validation.
-Added `plex` ratings source for mass operations.
-Add recently-added ratings sources to special-text overlays.
-Added IMDb Interests (sub-genres) to `imdb_search` builder
-Allow `server_preroll` to accept a list
-Changed default `overlay_artwork_filetype` to `webp_lossy` and `overlay_artwork_quality` to 90
-Added `ntfy` as a notification option
-Added `scale_width` and `scale_height` overlay options.
-Added `tmdb_deathday` **credit to @Kevin2kkelly**
+Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
+Added support for updating logos via the asset directories as well **credit to @Joost1991**
+Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
+IMDb episodes found in a list for a show collection will now add that episode's show to the collection
 
 # Docs
-Added "getting started" page
-Added page to describe all the YAML files
-Updated Synology page for DSM 7.2 and added a disclaimer about what it covers
-Added "undoing changes" page
-Added more detail to the "sorting" page
+Adds overlay guide
+Adds TrueNAS walkthrough
+Adds notes on Github tokens
+Adds screenshot of UNRaid Console menu
 
 # Defaults
-Fixed incorrect content rating mappings in various Default files
-Fixes an issue where Prime Video overlays/collections would not be built when the `watch_region` is set to AU or NL
-Fixes an issue where Rotten Tomatoes Verified Hot wasn't working
-Updates `Alien vs Predator` and `X-Men` lists to new lists which include most recent releases
-Adds `style` template variable for Streaming and Chart defaults, allowing user to choose color or white logos for collection posters
-Added `Paramount+ with Showtime` to both `Paramount+` and `Showtime` for Networks and Streaming, any existing weighting is unchanged.
-Added Aymara language with Bolivian flag to audio/subtitle overlay languages (credit to popeadam)
-Added `size` setting to languages overlay to double the overlay size.
-Added `hide_text` setting to languages overlay to only show the flags and hide the country text.
-Added `openmatte` edition to default resolution overlay.
-Added `Metacritic Must See Movies` to `other_chart`.
-Moved several `universe` and `playlist` default lists away from Trakt and over to IMDb and MDBList
-Removed default emojis from `seasonal` due to Plex issue with emojis and updated some lists
-Removed BritBox and replaced with ITVX in `streaming` following service shutdown 
+[Franchise] Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva. Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
+[Universe] Change the DC Animated Universe list to a mdblist
 
 # Bug Fixes
-Fixed the `cast` search option for the `imdb_search` builder
-Fixes #2258 `imdb_list` sort was not being parsed correctly
-Fixes `letterboxd_list` rating filter to use a 1-10 rating vs 1-100 to reflect how letterboxd ratings work on their website
-Fixes #2274 Enhance handling of smart collections in deletion
-Fixed the `ids_to_anidb` lookup for anime movies and shows
-Fixes an issue where episode overlays sometimes wouldn't be added
-Fixes an issue with IMDb Parental Labels not working
-Fixes an issue where OMDb returned `N/A` as the content rating
-Fixes an issue where `plex_collectionless` doesn't work if the item was added to a collection in the same run
-Adds a page that discusses the different YAML files and what they do.
-Modifies default value presentation for default metadata files.
-Fixes an issue causing IMDB collection to fail due to duplicate keys
-Removed Blog from the Navigation due to lack of time for updating/maintaining it
-Fixes #2354 by updating version of tmdbapi dependency
-Added Start Time, Finished and Run Time to Summary of run.
-Fixed an issue where custom repositories would not work correctly if the URL did not end in a trailing `/` character.
-Kometa will now check for `.yaml` extension in filenames if `.yml` is not found and vice-versa
-Log files will now follow the naming convention of `kometa.log`, `kometa-1.log` (previous run), `kometa-2.log (2 runs ago) etc.
-Kometa will no longer automatically sync playlists to all users if you do not specify who you want to sync them to. Only the server admin will receive playlists unless otherwise specified using `sync_to_users` or `playlist_sync_to_users`
-Fixes #2385 `tmdb_person` would pass an integer if the name started with an integer (i.e. `50 Cent` would pass `50` which resolved to `Catherine Deneuve`)
-Fixes an issue where `show_missing` would display missing movies against show libraries (closes #2351)
-Fixed an OMDb API issue where API key would intermittently be treated as invalid
-Fixed an issue where Kometa would try to upload and cache images larger than Plex allows (10mb is the upper limit)
-Fixes an issue where `use_subtitles` would ignore `flag_alignment: left`
-Fixed typo `radarr_tag_list` instead of `radarr_taglist` in `builder` module causing `Collection Error: radarr_taglist attribute is blank`
-Fixed NoneError when using a blank `radarr_taglist` or `sonarr_taglist`.
-Fixes an issue with boolean filter matching.
-Fixes an issue where the decade default collection names were incorrect.
-Fixes the playlist default to automatically work with a supplied list.
-Remove an unnecessary request to Plex while processing overlays.
-Fixes issue with ICheckMovies parsing.
-Fixes issue with Letterboxd parsing.
-Fixes issue with the `mojo_domestic` BoxOfficeMojo Builder.
-Fixes an issue updating Trakt User Ratings when the show doesn't exist on TVDb.
-Fixes #2560 count display issue
+
+Fixed an issue where Playlists could not add to both Radarr and Sonarr in a single run
+Fixed an issue where `trakt_list_details` would not find a list's summary if it was an "official" Trakt list
+Fixed an issue where log file paths with >2 periods would cause a ValueError
+Fixed an issue with IMDb Awards
+Restored image language settings after change in base image
+Fixed an issue with IMDb List and Watchlist

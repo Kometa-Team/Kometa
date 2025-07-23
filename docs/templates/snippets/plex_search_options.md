@@ -36,7 +36,8 @@
         | `artist_unmatched`  | Is Artist's Unmatched  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `album_unmatched`   | Is Album's Unmatched   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_trash`       | Is Track Trashed       |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-        
+        | `dovi`              | Has Dolby Vision       | :fontawesome-solid-circle-check:{ .green }    | :fontawesome-solid-circle-check:{ .green }    | :fontawesome-solid-circle-xmark:{ .red } |
+
     === "Date Filters"
         
         Date filters can be used with either no modifier or with `.not`, `.before`, or `.after`.
@@ -90,10 +91,10 @@
         | `audience_rating`          | Uses the audience rating attribute to match<br>**Range:** `0.0` - `10.0`                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `user_rating`              | Uses the user rating attribute to match<br>**Range:** `0.0` - `10.0`                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `episode_user_rating`      | Uses the user rating attribute of the show's episodes to match<br>**Range:** `0.0` - `10.0` |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `year`<sup>**1**</sup>         | Uses the year attribute to match<br>**Minimum:** `0`                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `episode_year`<sup>**1**</sup> | Uses the Episode's year attribute to match<br> **Minimum:** `0`                             |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `album_year`<sup>**1**</sup>   | Uses the Album's year attribute to match<br>**Minimum:** `0`                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-        | `album_decade`<sup>**1**</sup> | Uses the Album's decade attribute to match<br>**Minimum:** `0`                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+        | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }        | Uses the year attribute to match<br>**Minimum:** `0`                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `episode_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }| Uses the Episode's year attribute to match<br> **Minimum:** `0`                             |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `album_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }  | Uses the Album's year attribute to match<br>**Minimum:** `0`                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+        | `album_decade` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }| Uses the Album's decade attribute to match<br>**Minimum:** `0`                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `album_plays`              | Uses the Album's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_plays`              | Uses the Track's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_skips`              | Uses the Track's skips attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
@@ -102,9 +103,6 @@
         | `album_critic_rating`      | Uses the Album's critic rating attribute to match<br>**Range:** `0.0` - `10.0`              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_user_rating`        | Uses the Track's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         
-        <sup>**1**</sup> You can use `current_year` to have Kometa use the current years value. This can be combined with a 
-        `-#` at the end to subtract that number of years. i.e. `current_year-2`
-
         ???+ tip "Number Filter Modifiers"
         
             | Number Modifier | Description                                                                                                                                             | Plex Web UI Display |
@@ -152,7 +150,7 @@
         Tag filters can be used with either no modifier or with `.not` except for `decade` and `resolution` which can only be 
         used with no modifier.
         
-        Tag filter can take multiple values as a **list or a comma-separated string**.
+        Tag filter can take multiple values as a **list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string**.
          
         #### Tag Filter Attributes
         
@@ -166,7 +164,7 @@
         | `episode_collection`       | Uses the collection tags to match for episode collections                   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `content_rating`           | Uses the content rating tags to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `country`                  | Uses the country tags to match                                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `decade`<sup>**1**</sup>       | Uses the year tag to match the decade                                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `decade` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }      | Uses the year tag to match the decade                                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `director`                 | Uses the director tags to match                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `genre`                    | Uses the genre tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `label`                    | Uses the label tags to match for top level collections                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -177,8 +175,8 @@
         | `resolution`               | Uses the resolution tags to match                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `subtitle_language`        | Uses the subtitle language tags to match                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `writer`                   | Uses the writer tags to match                                               | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `year`<sup>**1**</sup>         | Uses the year tag to match                                                  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-        | `episode_year`<sup>**1**</sup> | Uses the year tag to match                                                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }        | Uses the year tag to match                                                  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `episode_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }| Uses the year tag to match                                                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `artist_genre`             | Uses the Artist's Genre attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `artist_collection`        | Uses the Artist's Collection attribute to match                             |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `artist_country`           | Uses the Artist's Country attribute to match                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
@@ -197,7 +195,7 @@
         | `track_source`             | Uses the Track's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         | `track_label`              | Uses the Track's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
         
-        <sup>**1**</sup> You can use `current_year` to have Kometa use the current years value. This can be combined with a 
+        :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }You can use `current_year` to have Kometa use the current years value. This can be combined with a 
         `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
         ???+ tip "Tag Filter Modifiers" 

@@ -1,5 +1,6 @@
 aac
 accessmodes
+ACL
 addon
 addons
 adlib
@@ -32,6 +33,7 @@ bitrateh
 bitratel
 boing
 boolean
+bosch
 boxofficemojo
 bpjm
 britbox
@@ -62,6 +64,7 @@ césar
 d'or
 dbader
 de
+death
 deathday
 deneuve
 desc
@@ -69,6 +72,7 @@ deva
 diiivoy
 diiivoycolor
 dir
+dicussed
 diskstation
 disneytoon
 dk
@@ -103,6 +107,7 @@ fribb
 fsk
 galician
 generalizable
+GID
 github
 githubusercontent
 gitpython
@@ -147,6 +152,7 @@ jinja
 jkirkcaldy
 johnfawkes
 jonnywong
+joost
 jpeg
 jpg
 json
@@ -214,6 +220,7 @@ mza
 namespace
 nas
 natively
+ncis
 nfr
 nitsua
 nl
@@ -235,6 +242,7 @@ oscar
 osx
 ozzy
 palme
+paradise
 pathing
 pathvalidate
 pca
@@ -268,6 +276,7 @@ radarr
 rainbowindent
 razzie
 razzies
+reacher
 readme
 readwriteonce
 realtime
@@ -288,6 +297,7 @@ runtimeh
 runtimem
 runtimes
 rw
+sandler
 schemas
 sci-fi
 scifi
@@ -302,10 +312,13 @@ skywalker
 sohjiro
 sohjiro's
 sonarr
+spartacus
 ssl
 stevenlu
 stevenlu's
+stonecutter
 subprocess
+sudo
 sundance
 sv
 sxxeyy
@@ -322,6 +335,7 @@ th
 themoviedb
 theposterdb
 thetvdb
+tippy
 tmdb
 tmdb's
 tmdbapi
@@ -331,6 +345,7 @@ toc
 todo
 tomatoesaudience
 tomatometer
+tooltip
 tooltips
 trakt
 trakt's
@@ -338,13 +353,17 @@ transcoded
 transcoding
 trash
 truehd
+TrueNAS
 ttf
+tubi
 tutin
 tv
 tvdb
 tw
+TZ
 ua
 ui
+UID
 uncompress
 unionfs
 unmanaged
@@ -354,7 +373,9 @@ uri
 url
 urls
 userlist
+uses
 utills
+ValueError
 vecteezy
 venv
 visualstudio
@@ -387,4 +408,5 @@ yozoraxcii
 yyyy
 zap
 zeroqi
+ziva
 zh

@@ -25,7 +25,7 @@ hide:
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "content_rating_us_show", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "content_rating_us_show", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|show|episode|season' 
 %}
     ```yaml
@@ -69,7 +69,7 @@ hide:
         rewrite-relative-urls=false
     %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "content_rating_us_show"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "US Show Content Rating Overlays"

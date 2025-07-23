@@ -7,7 +7,7 @@ hide:
     replace='{
         "OVERLAY_NAME": "Studio", 
         "CODE_NAME": "studio",
-        "OVERLAY_LEVEL": "Movie, Show",
+        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the show studio on each item within your library"
     }'
     end='<!--rec-sub-->'
@@ -21,7 +21,7 @@ Below is a screenshot of the alternative Bigger (`bigger`) style which can be se
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "studio", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "studio", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
     ```yaml
@@ -80,7 +80,7 @@ Below is a screenshot of the alternative Bigger (`bigger`) style which can be se
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "studio"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Studio Overlays"

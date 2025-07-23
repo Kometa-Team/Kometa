@@ -15,7 +15,7 @@ jobs:
         run: echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
 
       - name: Create App Token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
@@ -50,8 +50,8 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }}: ${{ vars.TEXT_COPYRIGHT }}"
-          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
+          title: "${{ vars.NAME }}: ${{ vars.TEXT_COPYRIGHT }}"
+          url: https://github.com/Kometa-Team/${{ vars.NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}
           avatar_url: ${{ vars.BOT_IMAGE }}

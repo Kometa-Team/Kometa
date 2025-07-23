@@ -14,7 +14,7 @@ hide:
 %}
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "episode_info", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "episode_info", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|episode' 
 %}
     ```yaml
@@ -45,7 +45,7 @@ hide:
     end='<!--file-header-->'
 %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "episode_info"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Episode Info Overlays"

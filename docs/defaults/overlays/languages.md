@@ -117,7 +117,7 @@ audio/subtitle languages available on each item within your library"
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "languages", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "languages", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
     ```yaml
@@ -162,7 +162,7 @@ audio/subtitle languages available on each item within your library"
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "languages"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Audio/Subtitle Language Flag Overlays"

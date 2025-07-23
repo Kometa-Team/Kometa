@@ -128,9 +128,10 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
+            total_items = len(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
-                logger.info(f"Processing: {i}/{len(items)} {item.title}")
+                logger.info(f"({i}/{total_items}) {item.title}")
                 try:
                     item = self.library.reload(item)
                 except Failed as e:
@@ -151,7 +152,7 @@ class Operations:
                     if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
                         new_title = re.sub(" \\(\\w+\\)$", "", item.title)
                         item.editTitle(new_title)
-                        item_edits += f"\nUpdated Title: {item.title[:25]:<25} | {new_title}"
+                        item_edits += f"Updated Title: {item.title[:25]:<25} | {new_title}"
 
                 if self.library.mass_imdb_parental_labels:
                     try:
@@ -168,7 +169,7 @@ class Operations:
                                     if label not in label_edits[edit_type]:
                                         label_edits[edit_type][label] = []
                                     label_edits[edit_type][label].append(item.ratingKey)
-                                item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
+                                item_edits += f"{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
                 if item.locations:
@@ -347,24 +348,24 @@ class Operations:
                                     if item_attr not in remove_edits:
                                         remove_edits[item_attr] = []
                                     remove_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Remove {name_display[item_attr]} (Batched)"
                                 elif item_attr not in locked_fields:
                                     if item_attr not in lock_edits:
                                         lock_edits[item_attr] = []
                                     lock_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nLock {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Lock {name_display[item_attr]} (Batched)"
                                 break
                             elif option in ["unlock", "reset"]:
                                 if option == "reset" and current:
                                     if item_attr not in reset_edits:
                                         reset_edits[item_attr] = []
                                     reset_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Reset {name_display[item_attr]} (Batched)"
                                 elif item_attr in locked_fields:
                                     if item_attr not in unlock_edits:
                                         unlock_edits[item_attr] = []
                                     unlock_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Unlock {name_display[item_attr]} (Batched)"
                                 break
                             else:
                                 try:
@@ -437,7 +438,7 @@ class Operations:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)
-                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                        item_edits += f"Update {name_display[item_attr]} (Batched) | {found_rating}"
                                     break
                                 except Failed:
                                     continue
@@ -492,7 +493,7 @@ class Operations:
                                 if g not in genre_edits[edit_type]:
                                     genre_edits[edit_type][g] = []
                                 genre_edits[edit_type][g].append(item.ratingKey)
-                            item_edits += f"\n{edit_type.capitalize()} Genres (Batched) | {', '.join(genre_list)}"
+                            item_edits += f"{edit_type.capitalize()} Genres (Batched) | {', '.join(genre_list)}"
                     if extra_option in ["unlock", "reset"] and ("genre" in locked_fields or _add or _remove):
                         if "genre" not in unlock_edits:
                             unlock_edits["genre"] = []
@@ -578,7 +579,7 @@ class Operations:
                         if new_rating not in content_edits:
                             content_edits[new_rating] = []
                         content_edits[new_rating].append(item.ratingKey)
-                        item_edits += f"\nUpdate Content Rating (Batched) | {new_rating}"
+                        item_edits += f"Update Content Rating (Batched) | {new_rating}"
                         do_lock = False
 
                     if extra_option == "lock" or do_lock:
@@ -638,7 +639,7 @@ class Operations:
                                     raise Failed
                                 if str(current_original) != str(new_original_title):
                                     item.editOriginalTitle(new_original_title)
-                                    item_edits += f"\nUpdated Original Title | {new_original_title}"
+                                    item_edits += f"Updated Original Title | {new_original_title}"
                                 break
                             except Failed:
                                 continue
@@ -687,7 +688,7 @@ class Operations:
                                     if new_studio not in studio_edits:
                                         studio_edits[new_studio] = []
                                     studio_edits[new_studio].append(item.ratingKey)
-                                    item_edits += f"\nUpdate Studio (Batched) | {new_studio}"
+                                    item_edits += f"Update Studio (Batched) | {new_studio}"
                                 break
                             except Failed:
                                 continue
@@ -706,24 +707,24 @@ class Operations:
                                     if item_attr not in remove_edits:
                                         remove_edits[item_attr] = []
                                     remove_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Remove {name_display[item_attr]} (Batched)"
                                 elif item_attr not in locked_fields:
                                     if item_attr not in lock_edits:
                                         lock_edits[item_attr] = []
                                     lock_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nLock {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Lock {name_display[item_attr]} (Batched)"
                                 break
                             elif option in ["unlock", "reset"]:
                                 if option == "reset" and current:
                                     if item_attr not in reset_edits:
                                         reset_edits[item_attr] = []
                                     reset_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Reset {name_display[item_attr]} (Batched)"
                                 elif item_attr in locked_fields:
                                     if item_attr not in unlock_edits:
                                         unlock_edits[item_attr] = []
                                     unlock_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                    item_edits += f"Unlock {name_display[item_attr]} (Batched)"
                                 break
                             else:
                                 try:
@@ -751,21 +752,21 @@ class Operations:
                                         if new_date not in date_edits[item_attr]:
                                             date_edits[item_attr][new_date] = []
                                         date_edits[item_attr][new_date].append(item.ratingKey)
-                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {new_date}"
+                                        item_edits += f"Update {name_display[item_attr]} (Batched) | {new_date}"
                                     break
                                 except Failed:
                                     continue
 
                 if len(item_edits) > 0:
-                    logger.info(f"Item Edits{item_edits}")
+                    logger.info(f"{item_edits}")
                 else:
                     logger.info("No Item Edits")
 
                 if self.library.mass_poster_update or self.library.mass_background_update:
                     try:
-                        new_poster, new_background, item_dir, name = self.library.find_item_assets(item)
+                        new_poster, new_background, logo, item_dir, name = self.library.find_item_assets(item)
                     except Failed:
-                        new_poster, new_background, item_dir, name = None, None, None, None
+                        new_poster, new_background, logo, item_dir, name = None, None, None, None, None
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
@@ -820,7 +821,7 @@ class Operations:
                             if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or \
                                     (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
                                 try:
-                                    season_poster, season_background, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                                    season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                                 except Failed:
                                     season_poster = None
                                     season_background = None
@@ -849,7 +850,7 @@ class Operations:
                                         logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
                                         continue
                                     try:
-                                        episode_poster, episode_background, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                                        episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                     except Failed:
                                         episode_poster = None
                                         episode_background = None
@@ -875,7 +876,7 @@ class Operations:
                         ep = self.library.reload(ep)
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")
-                        logger.info(f"Processing {item_title}")
+                        logger.info(f"{item_title}")
                         item_edits = ""
 
                         for attribute, item_attr in episode_ops:
@@ -887,24 +888,24 @@ class Operations:
                                             if item_attr not in ep_remove_edits:
                                                 ep_remove_edits[item_attr] = []
                                             ep_remove_edits[item_attr].append(ep)
-                                            item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
+                                            item_edits += f"Remove {name_display[item_attr]} (Batched)"
                                         elif item_attr not in locked_fields:
                                             if item_attr not in ep_lock_edits:
                                                 ep_lock_edits[item_attr] = []
                                             ep_lock_edits[item_attr].append(ep)
-                                            item_edits += f"\nLock {name_display[item_attr]} (Batched)"
+                                            item_edits += f"Lock {name_display[item_attr]} (Batched)"
                                         break
                                     elif option in ["unlock", "reset"]:
                                         if option == "reset" and current:
                                             if item_attr not in ep_reset_edits:
                                                 ep_reset_edits[item_attr] = []
                                             ep_reset_edits[item_attr].append(ep)
-                                            item_edits += f"\nReset {name_display[item_attr]} (Batched)"
+                                            item_edits += f"Reset {name_display[item_attr]} (Batched)"
                                         elif item_attr in locked_fields:
                                             if item_attr not in ep_unlock_edits:
                                                 ep_unlock_edits[item_attr] = []
                                             ep_unlock_edits[item_attr].append(ep)
-                                            item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
+                                            item_edits += f"Unlock {name_display[item_attr]} (Batched)"
                                         break
                                     else:
                                         try:
@@ -934,20 +935,20 @@ class Operations:
                                                 except ValueError:
                                                     pass
                                             if not found_rating:
-                                                logger.info(f"No {option} {name_display[item_attr]} Found")
+                                                logger.info(f"  No {option} {name_display[item_attr]} Found")
                                                 raise Failed
                                             found_rating = f"{float(found_rating):.1f}"
                                             if str(current) != found_rating:
                                                 if found_rating not in ep_rating_edits[item_attr]:
                                                     ep_rating_edits[item_attr][found_rating] = []
                                                 ep_rating_edits[item_attr][found_rating].append(ep)
-                                                item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                                item_edits += f"Update {name_display[item_attr]} (Batched) | {found_rating}"
                                             break
                                         except Failed:
                                             continue
 
                         if len(item_edits) > 0:
-                            logger.info(f"Item Edits:{item_edits}")
+                            logger.info(f"{item_edits}")
 
             logger.info("")
             logger.separator("Batch Updates", space=False, border=False)
@@ -1173,7 +1174,7 @@ class Operations:
                 logger.info("")
                 for col in unconfigured_collections:
                     try:
-                        poster, background, item_dir, name = self.library.find_item_assets(col)
+                        poster, background, _, item_dir, name = self.library.find_item_assets(col)
                         if poster or background:
                             self.library.upload_images(col, poster=poster, background=background)
                         elif self.library.show_missing_assets:
@@ -1220,6 +1221,7 @@ class Operations:
                     if "year" in mv:
                         special_names[f"{mv['title']} ({mv['year']})"] = mk
             items = self.library.get_all(load=True)
+            total_items = len(items)
             titles = []
             year_titles = []
             for item in items:
@@ -1227,7 +1229,7 @@ class Operations:
                 if isinstance(item, (Movie, Show)):
                     year_titles.append(f"{item.title} ({item.year})")
             for i, item in enumerate(items, 1):
-                logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
+                logger.ghost(f"({i}/{total_items}) {item.title}")
                 map_key, attrs = self.library.get_locked_attributes(item, titles, year_titles)
                 if map_key in special_names:
                     map_key = special_names[map_key]

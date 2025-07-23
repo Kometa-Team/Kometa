@@ -19,7 +19,7 @@ hide:
     }'
     replace-tags='{
         "title-sub": "**[This file has a Movie Library Counterpart.](./../../../../movie/content_rating_us)**",
-        "image": "![](../../../../assets/images/defaults/content_rating_us_show.png)"
+        "image": "![](../../../../assets/images/defaults/posters/content_rating_us_show.png)"
     }'
     rewrite-relative-urls=false
 %}

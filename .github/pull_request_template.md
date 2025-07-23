@@ -32,10 +32,10 @@ _Please replace this line with a meaningful description of your PR. What does it
 
 <!--
     For pull requests that relate or close an issue, please include them below. 
-    We like to follow [Github's guidance on linking issues to pull requests](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
+    We like to follow [GitHub's guidance on linking issues to pull requests](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue).
 
     For example having the text: "closes #1234" would connect the current pull request to issue 1234.
-    And when the merged pull request reaches the master branch, Github will automatically close the issue.
+    And when the merged pull request reaches the master branch, GitHub will automatically close the issue.
 -->
 - Related Issue #
 - Closes #
@@ -57,7 +57,7 @@ _Please replace this line with a meaningful description of your PR. What does it
     Any PR that goes beyond a minor tweak (i.e. replacing a value, fixing a typo) should have a CHANGELOG entry.
     We may ask you to update the CHANGELOG if you haven't done so.
     Type X in the brackets of any relevant option, for example:
-    - [X] Ye
+    - [X] Yes
 -->
 - [ ] Yes
 - [ ] No

@@ -22,7 +22,7 @@ to without any visible impact to the user (other than the Plex libraries and pla
 This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
 
 **You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like. 
-That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../config/schedule.md)**
+That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../config/schedule)**
 
 IMPORTANT: Every time you see `/path/to/` below, it's a placeholder for the path to that directory on *your* system. 
 You will need to change that to the relevant path on your machine. The same goes for things like `YOUR_USERNAME`.
@@ -40,8 +40,8 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     When running Kometa within docker, the session will resume after a system reboot (assuming Docker is set to start at system startup, 
     which is the default) and Kometa will run in the background at all times.
     
-    There's a [Docker Walkthrough](../install/docker.md) with more detailed instructions on setting up Kometa within docker. The simplest command to facilitate a docker run is:
-    
+    There's a [Docker Walkthrough](../../install/walkthroughs/docker) with more detailed instructions on setting up Kometa within docker. The simplest command to facilitate a docker run is:
+
     ```
     docker run -d \
       --restart=unless-stopped \
@@ -62,11 +62,11 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running, 
     Kometa will not begin the run until the scheduled time.
     
-    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../environmental.md#times)
+    Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../../environmental#times)
 
 === "Windows Task Scheduler"
     
-    Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](../install/local.md) and/or do not want to run Kometa within docker.
+    Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) and/or do not want to run Kometa within docker.
     
     Windows Task Scheduler allows the user to run commands and services at scheduled times and intervals.
     
@@ -76,8 +76,8 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     
     These will be explained further down this page.
     
-    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../install/local.md) which includes setting up the 
-    [virtual environment](../install/local.md#setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live 
+    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) which includes setting up the 
+    [virtual environment](../../install/walkthroughs/local#setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live 
     environment (such as usernames, installation directories).
     
     ### Background Run Scheduled Task
@@ -87,7 +87,7 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     
     This is the recommended approach as it allows the user additional control over how and when Kometa processes.
     
-    If you don't specify a time, the script will run at 5AM each day. You can change this with the [time-to-run](../environmental.md#times) runtime flag.
+    If you don't specify a time, the script will run at 5AM each day. You can change this with the [time-to-run](../../environmental#times) runtime flag.
 
     ??? abstract "Background Run Scheduled Task"
     
@@ -272,8 +272,6 @@ not required or specifically endorsed beyond "Here's a thing that the author use
        </plist>
        ```
 
-       A useful tool to generate these plist files is [https://zerolaunched.herokuapp.com/](https://zerolaunched.herokuapp.com/)
-    
        Save this file as `com.YOUR_USERNAME.kometa.plist` in `~/Library/LaunchAgents`.
 
     2. Load and start the agent 🚀
@@ -332,7 +330,7 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     
        Change `/path/to/kometa` to reflect where you've installed Kometa.
     
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/local.md)
+       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
     
        Save and close the file.
     
@@ -371,10 +369,10 @@ not required or specifically endorsed beyond "Here's a thing that the author use
 
        This is an example, which does nothing but run the script immediately. If you want to add additional flags you can do so.
 
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/local.md)
+       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
     
     2. Open the system crontab for editing:
-    
+
           ```bash
           sudo crontab -e
           ```

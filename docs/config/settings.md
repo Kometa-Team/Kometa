@@ -79,7 +79,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** Any Directory or List of Directories.
+    **Accepted Values:** Any Directory or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Directories.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
@@ -257,7 +257,7 @@ The available setting attributes which can be set at each level are outlined bel
       <tr><td>`release`</td><td>Order Collection by Release Dates.</td></tr>
       <tr><td>`alpha`</td><td>Order Collection Alphabetically.</td></tr>
       <tr><td>`custom`</td><td>Order Collection Via the Builder Order.</td></tr>
-      <tr><td colspan="2">[Any `plex_search` sort option](../files/builders/plex.md#sort-options).</td></tr>
+      <tr><td colspan="2">[Any `plex_search` sort option](../files/builders/plex/sort-options.md).</td></tr>
     </table>
 
     **Default Value:** `None`
@@ -372,7 +372,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`ignore_ids` - List of TMDb/TVDb IDs to ignore.<a class="headerlink" href="#ignore-ids" title="Permanent link">¶</a>"
 
-    <div id="ignore-ids" />Set a list or comma-separated string of TMDb/TVDb IDs to ignore in all collections.
+    <div id="ignore-ids" />Set a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of TMDb/TVDb IDs to ignore in all collections.
     
     ???+ note
     
@@ -384,7 +384,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library/Collection/Playlist
     
-    **Accepted Values:** List or comma-separated string of TMDb/TVDb IDs.
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of TMDb/TVDb IDs.
 
     **Default Value:** `None`
 
@@ -398,7 +398,7 @@ The available setting attributes which can be set at each level are outlined bel
 
 ??? blank "`ignore_imdb_ids` - List of IMDb IDs to ignore.<a class="headerlink" href="#ignore-imdb-ids" title="Permanent link">¶</a>"
 
-    <div id="ignore-imdb-ids" />Set a list or comma-separated string of IMDb IDs to ignore in all collections.
+    <div id="ignore-imdb-ids" />Set a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of IMDb IDs to ignore in all collections.
     
     ???+ note
     
@@ -410,7 +410,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library/Collection/Playlist
     
-    **Accepted Values:** List or comma-separated string of IMDb IDs.
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of IMDb IDs.
 
     **Default Value:** `None`
 
@@ -606,7 +606,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Playlist
     
-    **Accepted Values:** `all`, list of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
+    **Accepted Values:** `all`, list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
 
     ???+ example "Example"
         
@@ -722,7 +722,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
     
-    **Accepted Values:** List or comma-separated string which must include `operations`, `metadata` and `overlays` in any order.
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string which must include `operations`, `metadata` and `overlays` in any order.
 
     **Default Value:** `operations,metadata,collections,overlays`
 

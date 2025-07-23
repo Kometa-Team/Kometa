@@ -965,6 +965,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  tubi:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
   Turner Classic Movies:
     variables: { weight: 10}
     template: [name: standard, name: networks]

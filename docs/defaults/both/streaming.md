@@ -30,16 +30,17 @@ hide:
 | `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.     |
 | `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video. |
 | `YouTube Movies/Shows`     | `youtube`     | Collection of Movies/Shows Streaming on YouTube.     |
+| `tubi Movies/Shows`        | `tubi`        | Collection of Movies/Shows Streaming on tubi.        |
 
 ## Regional Variants
 
 Some logic is applied for specific regions to prevent collections appearing which do not exist in said region.
 
-| Region           | Key                               | Description                                                                                                                                |
-|:-----------------|:----------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `CA`             | `max`, `showtime`                 | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
-| any besides `CA` | `crave`                           | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
-| any besides `GB` | `all4`, `channel4`, `hayu`, `now` | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
+| Region           | Key                         | Description                                                                                                                                |
+|:-----------------|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `CA`             | `max`, `showtime`           | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
+| any besides `CA` | `crave`                     | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
+| any besides `GB` | `channel4`, `itvx`, `now`   | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "streaming"}' include-tags='all|movie|show' %}

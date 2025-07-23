@@ -6,7 +6,7 @@ hide:
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
         "OVERLAY_NAME": "Common Sense Age Rating", 
-        "CODE_NAME": "audio_codec",
+        "CODE_NAME": "commonsense",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the Common Sense Age Rating on each item within your library"
     }'
@@ -38,7 +38,7 @@ hide:
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "commonsense", "collection_files": "overlay_files"}' 
+    replace='{"CODE_NAME": "commonsense", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
     ```yaml
@@ -75,7 +75,7 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "commonsense"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Common Sense Age Rating Overlays"
