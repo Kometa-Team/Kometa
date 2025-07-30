@@ -21,9 +21,9 @@ hide:
 | `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.         |
 | `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.     |
 | `Hayu Shows`               | `hayu`        | Collection of Shows Streaming on Hulu.               |
+| `HBO Max Movies/Shows`     | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.     |
 | `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.        |
 | `ITVX Movies/Shows`        | `itvx`        | Collection of Movies/Shows Streaming on ITVX.        |
-| `Max Movies/Shows`         | `max`         | Collection of Movies/Shows Streaming on Max.         |
 | `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.     |
 | `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.         |
 | `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.  |
@@ -38,7 +38,7 @@ Some logic is applied for specific regions to prevent collections appearing whic
 
 | Region           | Key                         | Description                                                                                                                                |
 |:-----------------|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `CA`             | `max`, `showtime`           | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
+| `CA`             | `hbomax`, `showtime`        | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
 | any besides `CA` | `crave`                     | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
 | any besides `GB` | `channel4`, `itvx`, `now`   | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
 
