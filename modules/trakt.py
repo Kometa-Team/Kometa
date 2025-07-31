@@ -42,11 +42,12 @@ class Trakt:
         self.read_only = read_only
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
+        self.force_refresh = params["force_refresh"]
         self.pin = params["pin"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
         logger.secret(self.client_secret)
-        if not self._save(self.authorization):
+        if self.force_refresh is True or not self._save(self.authorization):
             if not self._refresh():
                 self._authorization()
         self._slugs = None
@@ -225,16 +226,22 @@ class Trakt:
                 response = self.requests.get(f"{base_url}{url}", headers=headers, params=params)
             if pages == 1 and "X-Pagination-Page-Count" in response.headers and not params:
                 pages = int(response.headers["X-Pagination-Page-Count"])
+            if response.status_code == 401:
+                if not self._refresh():
+                    logger.debug(f"Trakt token refresh failure")
+                    raise Failed(f"({response.status_code}) {response.reason}")
             if response.status_code >= 400:
+                logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
-            response_json = response.json()
-            logger.trace(f"Headers: {response.headers}")
-            logger.trace(f"Response: {response_json}")
-            if isinstance(response_json, dict):
-                return response_json
             else:
-                output_json.extend(response_json)
-            current += 1
+                response_json = response.json()
+                logger.trace(f"Headers: {response.headers}")
+                logger.trace(f"Response: {response_json}")
+                if isinstance(response_json, dict):
+                    return response_json
+                else:
+                    output_json.extend(response_json)
+                current += 1
         return output_json
 
     def user_ratings(self, is_movie):
