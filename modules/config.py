@@ -100,8 +100,8 @@ mass_episode_rating_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "plex_tmdb": "Use TMDB Rating through Plex",
     "plex_imdb": "Use IMDB Rating through Plex",
-    "tmdb": "Use TMDb Rating", 
-    "imdb": "Use IMDb Rating", 
+    "tmdb": "Use TMDb Rating",
+    "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating"
 }
 mass_rating_options = {
@@ -704,6 +704,7 @@ class ConfigFile:
                         "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
                         "pin":  check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
+                        "force_refresh":  check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
                         "config_path": self.config_path,
                         "authorization": self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None
                     })
