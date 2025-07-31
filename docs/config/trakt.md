@@ -15,6 +15,7 @@ trakt:
   client_id: 1a2b3c4d5e6f7g8h9i
   client_secret: 1a12b23c34d45e56f6
   pin:
+  force_refresh: false
   authorization:
     access_token: 4cc355t0k3nh3r3
     token_type: Bearer
@@ -29,6 +30,7 @@ trakt:
 | `client_id`      | Trakt application client ID.          | Any valid ID or leave **blank**              | :fontawesome-solid-circle-check:{ .green } |
 | `client_secret`  | Trakt application client secret.      | Any valid secret or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
 | `pin`            | Trakt PIN.                            | PIN string or leave **blank**                | :fontawesome-solid-circle-xmark:{ .red }   |
+| `force_refresh`  | Refresh credentials on every run      | 'true' or 'false'                            | :fontawesome-solid-circle-xmark:{ .red }   |
 
 
 *All other attributes will be filled in by Kometa as part of the authentication process*
