@@ -127,6 +127,8 @@ dynamic_collections:
       - shared
       - arr
     template_variables:
+      delete_collections_named:
+        HBO Max: Max
       image:
         default: streaming/<<style>>/<<key_name_encoded>>
       tmdb_key:
