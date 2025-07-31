@@ -132,8 +132,8 @@ overlays:
     variables: {key: disney, tmdb_key: 337|508, weight: 140}
     template: [name: standard, name: mdb_streaming]
 
-  Max:
-    variables: {key: max, tmdb_key: 1899, weight: 130}
+  HBO-Max:
+    variables: {key: hbomax, tmdb_key: 1899, weight: 130}
     template: [name: standard, name: mdb_streaming]
 
   Crunchyroll:

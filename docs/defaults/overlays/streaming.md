@@ -14,7 +14,7 @@ hide:
 | Netflix     | `netflix`     | `160` |
 | Prime Video | `amazon`      | `150` |
 | Disney+     | `disney`      | `140` |
-| Max         | `max`         | `130` |
+| HBO Max     | `hbomax`      | `130` |
 | Crunchyroll | `Crunchyroll` | `120` |
 | YouTube     | `youtube`     | `110` |
 | Hulu        | `hulu`        | `100` |
@@ -38,7 +38,7 @@ Some logic is applied to allow for regional streaming service lists to be availa
 |:-----------------|:----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | any besides `GB` | `channel4`, `itvx`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
 | any besides `CA` | `crave`                           | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
-| `CA`             | `max`, `showtime`                 | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| `CA`             | `hbomax`, `showtime`              | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
