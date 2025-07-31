@@ -1,15 +1,15 @@
 arrapi==1.4.13
 cloudscraper==1.2.71
-GitPython==3.1.44
-lxml==5.4.0
+GitPython==3.1.45
+lxml==6.0.0
 num2words==0.5.14
 pathvalidate==3.3.1
-pillow==11.2.1
+pillow==11.3.0
 PlexAPI==4.17.0
 psutil==7.0.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.1.0
-pywin32==310; sys_platform == 'win32'
+python-dotenv==1.1.1
+pywin32==311; sys_platform == 'win32'
 requests==2.32.4
 ruamel.yaml==0.18.14
 schedule==1.2.2
