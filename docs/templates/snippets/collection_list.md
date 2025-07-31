@@ -94,7 +94,7 @@ These collections are applied by calling the below paths into the `collection_fi
     | Default                           | Path        | Example Collections                      | Allowed Media       |
     |:----------------------------------|:------------|:-----------------------------------------|:--------------------|
     | [Networks](../../show/network)    | `network`   | Disney Channel, Lifetime                 | `Shows`             |
-    | [Streaming](../../both/streaming) | `streaming` | Disney+ Movies, Max Shows                | `Movies`<br>`Shows` |
+    | [Streaming](../../both/streaming) | `streaming` | Disney+ Movies, HBO Max Shows            | `Movies`<br>`Shows` |
     | [Studios](../../both/studio)      | `studio`    | DreamWorks Studios, Walt Disney Pictures | `Movies`<br>`Shows` |
 
 === "Time"

@@ -1587,7 +1587,7 @@ requirements of creating the collection.
               bet: BET+
               itvx: ITVX
               disney: Disney+
-              max: Max
+              hbo-max: HBO Max
               hulu: Hulu
               netflix: Netflix
               now: NOW
