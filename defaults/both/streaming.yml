@@ -127,8 +127,6 @@ dynamic_collections:
       - shared
       - arr
     template_variables:
-      delete_collections_named:
-        HBO Max: Max
       image:
         default: streaming/<<style>>/<<key_name_encoded>>
       tmdb_key:
@@ -139,10 +137,10 @@ dynamic_collections:
         crunchyroll: 283
         discovery: 510
         disney: 337
-        itvx: 41|2300
-        max: 1899
+        hbomax: 1899
         hayu: 223
         hulu: 15
+        itvx: 41|2300
         netflix: 8
         now: 39
         paramount: 531|1770
@@ -173,3 +171,6 @@ dynamic_collections:
         itvx:
           - BritBox Movies
           - BritBox Shows
+        hbomax:
+          - Max Movies
+          - Max Shows
