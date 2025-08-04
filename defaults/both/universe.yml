@@ -118,3 +118,5 @@ dynamic_collections:
         default: universe/<<key>>
       delete_collections_named:
         dcu: DC Extended Universe
+        mummy: The Mummy Universe
+        conjuring: The Conjuring Universe
