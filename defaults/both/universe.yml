@@ -70,6 +70,7 @@ dynamic_collections:
       avp: Alien / Predator
       arrow: Arrowverse
       askew: View Askewniverse
+      conjuring: The Conjuring Universe
       dca: DC Animated Universe
       dcu: DC Universe
       fast: Fast & Furious
@@ -90,6 +91,7 @@ dynamic_collections:
     template_variables:
       allowed_libraries:
         avp: movie
+        conjuring: movie
         wizard: movie
         fast: movie
         rocky: movie
@@ -103,6 +105,7 @@ dynamic_collections:
         trek: https://www.imdb.com/list/ls547463722/
         xmen: https://www.imdb.com/list/ls567618635/
       mdblist_url:
+        conjuring: https://mdblist.com/lists/exoduso/the-conjuring-universe-4i5i1p4qag
         dca: https://mdblist.com/lists/johnfawkes/dca
         fast: https://mdblist.com/lists/k0meta/external/9246
         marvel: https://mdblist.com/lists/k0meta/external/15110
