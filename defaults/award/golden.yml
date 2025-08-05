@@ -36,10 +36,7 @@ collections:
         - best motion picture - musical
         - best motion picture - musical or comedy
         - best motion picture - non-english language
-        - best motion picture, animated
-        - best motion picture, drama
         - best motion picture, musical or comedy
-        - best motion picture, non-english language
       winning: true
 
   Golden Globes Best Director Winners:
@@ -59,7 +56,6 @@ collections:
       category_filter:
         - best director
         - best director - motion picture
-        - best director, motion picture
       winning: true
     
 dynamic_collections:
