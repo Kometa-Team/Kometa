@@ -44,6 +44,10 @@ Several of these operations use data from external sources such as MDBList. Some
 Your entire library may not be able to be updated in a single run on a free tier; you may need to make multiple runs over some number of days. 
 For example, MDBList's free tier is limited [at time of writing] to 1000 API requests daily. Changes in external site paid/free status and limits are not under Kometa's control.
 
+## A Note on Mass Operations
+
+Several of these operations perform **mass** updates; these are just that, **mass** updates.  Except as shown below, they cannot be filtered to operate on only a subset of the items in your library.
+
 ## Operation Attributes
 
 ###### Assets For All
