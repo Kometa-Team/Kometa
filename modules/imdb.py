@@ -539,7 +539,7 @@ class IMDb:
                     input_list.extend([event_options[a] if a in event_options else {"eventId": a} for a in data["event"]])
                 if "event.winning" in data:
                     for a in data["event.winning"]:
-                        award_dict = event_options[a] if a in event_options else {"eventId": a}
+                        award_dict = event_options[a].copy() if a in event_options else {"eventId": a}
                         award_dict["winnerFilter"] = "WINNER_ONLY"
                         input_list.append(award_dict)
                 out["awardConstraint"] = {"allEventNominations": input_list}
