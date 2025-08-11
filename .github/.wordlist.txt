@@ -365,6 +365,7 @@ ua
 ui
 UID
 uncompress
+unconfigured
 unionfs
 unmanaged
 unplayed
