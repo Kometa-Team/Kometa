@@ -1887,6 +1887,9 @@
                 "assets_for_all": {
                     "type": "boolean"
                 },
+                "assets_for_all_collections": {
+                    "type": "boolean"
+                },
                 "update_blank_track_titles": {
                     "type": "boolean"
                 },
