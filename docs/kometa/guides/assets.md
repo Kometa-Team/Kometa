@@ -12,7 +12,7 @@ The Image Asset Directories can be used to update the posters and backgrounds of
 
 It is a folder containing artwork (posters and/or backgrounds) that is *typically* entirely separate to your media directories.
 
-The only connection an asset directory has with your media directories is that the name of the folder your movie or series is in is the "asset name". 
+The only connection an asset directory has with your media directories is that the name of the folder your movie or series is in is the "asset name".
 Kometa uses that "asset name" as the **key** to find the artwork in the asset directory.
 
 Media directory:
@@ -40,13 +40,13 @@ OR without asset folders
                            ^^^^^^^^^^^^^^^^ "asset name" used as lookup key
 ```
 
-You **can** use your media directories as the asset directories (if for example you like to keep your artwork next to your media files), but this is not typical, nor is it required. 
+You **can** use your media directories as the asset directories (if for example you like to keep your artwork next to your media files), but this is not typical, nor is it required.
 
 Kometa does not require direct access to your media directories in normal use, and it is typically run remote from the Plex server, which is why the asset directory is *typically* entirely separate.
 
 ## Requirements and configuration
 
-If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own. 
+If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own.
 The name that Kometa will use to look up the asset poster for a movie is the folder that the movie file is located in *on disk*, and each movie/show needs to have a unique asset name.
 
 In other words, this works:
@@ -69,7 +69,7 @@ If your movies and shows are not in individual folders, setting art using the as
 
 You can specify your asset folders under the `settings` attribute `asset_directory`:
 
-???+ important 
+???+ important
 
     Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
@@ -102,13 +102,14 @@ Assets can be applied to collections [managed or unmanaged], playlists, and medi
 
 Managed Collection and Playlist assets are applied whenever that collection/playlist is run.
 You do not have to specifically enable assets for these items; Kometa will always search for and apply them.
- 
-Item [movie/show/etc] assets and Unmanaged Collections assets have to be specifically enabled before Kometa will search for and apply them. Do this by enabling the `assets_for_all` Library Operation:
+
+Item [movie/show/etc] assets and Unmanaged Collections assets have to be specifically enabled before Kometa will search for and apply them. Do this by enabling the `assets_for_all` and/or `assets_for_all_collections` Library Operations:
 
 ```yaml
 Movies:
   operations:
     assets_for_all: true
+    assets_for_all_collections: true
 ```
 
 If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
@@ -120,18 +121,18 @@ settings:
 
 ## Asset interaction with overlays
 
-If a media item has an asset associated with it, that asset image is taken as the source of truth for what artwork the item should have, 
-and the overlay pipeline will no longer download and back up the base artwork from Plex. Using the Asset Directory to assign custom art is 
+If a media item has an asset associated with it, that asset image is taken as the source of truth for what artwork the item should have,
+and the overlay pipeline will no longer download and back up the base artwork from Plex. Using the Asset Directory to assign custom art is
 the simplest and safest way to ensure that the overlay pipeline doesn't unexpectedly overwrite your custom artwork in Plex.
 
 ## Asset Naming
 
-The table below shows the asset folder path structures that will be searched for. There are two options for how Kometa looks at the files inside your Asset Directories. Choose an option with 
+The table below shows the asset folder path structures that will be searched for. There are two options for how Kometa looks at the files inside your Asset Directories. Choose an option with
 the [`asset_folders` Setting Attribute](../../config/settings.md). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
 Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
-???+ important 
+???+ important
 
     The below table assumes that your assets are stored within the directory mapped to `config` in your Kometa environment.
 
@@ -243,7 +244,7 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
         config/assets/The Expanse (2015) {tvdb-280619}.ext
         config/assets/The Expanse (2015) {tvdb-280619}_background.ext
         ```
- 
+
 ## Season and Episode numbers
 
 === "Seasons"
@@ -299,7 +300,7 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 * Replace `.ext` with the image extension
 
 * When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
- 
+
 * You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md).
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
