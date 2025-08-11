@@ -20,6 +20,7 @@ Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6
 IMDb episodes found in a list for a show collection will now add that episode's show to the collection
 Adds `force_refresh` Trakt setting; this tells Kometa to refresh the token on every run without checking it first
 Adds a log of the response from Trakt which triggers the "No Valid Lists" error.
+Adds `assets_for_all_collections` library operation; this tells Kometa to add asset artwork to unmanaged and unconfigured collections
 
 # Docs
 Adds overlay guide

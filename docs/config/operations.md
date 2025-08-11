@@ -74,6 +74,28 @@ Several of these operations perform **mass** updates; these are just that, **mas
               assets_for_all: false
         ```
 
+###### Assets For All Collections
+
+??? blank "`assets_for_all_collections` - Used to search the asset directories for images for all unmanaged and/or unconfigured in the library.<a class="headerlink" href="#assets-for-all-collections" title="Permanent link">¶</a>"
+
+    <div id="assets-for-all-collections" />Enabling this Operation tells Kometa
+    to search the asset directories for images for unmanaged and unconfigured collections in the library.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `assets_for_all_collections`
+
+    **Accepted Values:** `true` or `false`.
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              assets_for_all_collections: false
+        ```
+
 ###### Delete Collections
 
 ??? blank "`delete_collections` - Deletes collections based on a set of given attribute.<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
