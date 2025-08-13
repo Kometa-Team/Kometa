@@ -26,7 +26,7 @@ jobs:
           exit 1
 
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
@@ -90,7 +90,7 @@ jobs:
           private-key: ${{ secrets.APP_TOKEN }}
 
       - name: Check Out Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.PAT }}
           ref: ${{ github.event.pull_request.head.ref }}
