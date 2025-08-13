@@ -163,7 +163,7 @@ class Requests:
                 logger.exorcise()
 
     def get_scrape_html(self, url):
-        html.fromstring(self.scraper.get(url).content)
+        return html.fromstring(self.scraper.get(url).content)
 
     def get_html(self, url, headers=None, params=None, header=None, language=None):
         return html.fromstring(self.get(url, headers=headers, params=params, header=header, language=language).content)

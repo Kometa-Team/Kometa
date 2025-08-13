@@ -260,7 +260,7 @@ class BoxOfficeMojo:
                 imdb_id = None
                 expired = None
                 if self.cache:
-                    imdb_id, expired = self.cache.query_letterboxd_map(item)
+                    imdb_id, expired = self.cache.query_mojo_map(item)
                 if not imdb_id or expired is not False:
                     try:
                         imdb_id = self._imdb(item)
@@ -268,7 +268,7 @@ class BoxOfficeMojo:
                         logger.error(e)
                         continue
                     if self.cache:
-                        self.cache.update_letterboxd_map(expired, item, imdb_id)
+                        self.cache.update_mojo_map(expired, item, imdb_id)
             ids.append((imdb_id, "imdb"))
         logger.info(f"Processed {total_items} IMDb IDs")
         return ids
