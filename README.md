@@ -1,19 +1,19 @@
 # <img src="https://kometa.wiki/en/nightly/assets/images/icons/logo-full.png" alt="Kometa">
 
 <!--shield-start-->
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic)](https://github.com/Kometa-Team/Kometa/releases)
-[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/kometateam/kometa)
-[![Docker Pulls](https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic)](https://hub.docker.com/r/kometateam/kometa)
-[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/develop)
-[![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/nightly)
+<a href="https://github.com/Kometa-Team/Kometa/releases"><img src="https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic" alt="GitHub release (latest by date)"></a>
+<a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic" alt="Docker Image Version"></a>
+<a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic" alt="Docker Pulls"></a>
+<a href="https://github.com/Kometa-Team/Kometa/tree/develop"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic" alt="Commits in Develop"></a>
+<a href="https://github.com/Kometa-Team/Kometa/tree/nightly"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic" alt="Commits in Nightly"></a>
 
-[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://kometa.wiki/en/latest/discord/)
-[![Reddit](https://img.shields.io/badge/%2Fr%2Fkometa-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c)](https://www.reddit.com/r/kometa/)
-[![Wiki](https://img.shields.io/readthedocs/kometa?color=%2300bc8c&style=plastic)](https://kometa.wiki)
-[![Translations](https://img.shields.io/weblate/progress/kometa?color=00bc8c&server=https%3A%2F%2Ftranslations.kometa.wiki&style=plastic)](https://translations.kometa.wiki/projects/kometa/#languages)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
-[![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
-[![Feature Requests](https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic)](https://features.kometa.wiki/)
+<a href="https://kometa.wiki/en/latest/discord/"><img src="https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic" alt="Discord"></a>
+<a href="https://www.reddit.com/r/kometa/"><img src="https://img.shields.io/badge/%2Fr%2Fkometa-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c" alt="Reddit"></a>
+<a href="https://kometa.wiki"><img src="https://img.shields.io/readthedocs/kometa?color=%2300bc8c&style=plastic" alt="Wiki"></a>
+<a href="https://translations.kometa.wiki/projects/kometa/#languages"><img src="https://img.shields.io/weblate/progress/kometa?color=00bc8c&server=https%3A%2F%2Ftranslations.kometa.wiki&style=plastic" alt="Translations"></a>
+<a href="https://github.com/sponsors/meisnate12"><img src="https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic" alt="GitHub Sponsors"></a>
+<a href="https://github.com/sponsors/meisnate12"><img src="https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic" alt="Sponsor or Donate"></a>
+<a href="https://features.kometa.wiki/"><img src="https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic" alt="Feature Requests"></a>
 <!--shield-end-->
 <!--intro-start-->
 Kometa is a powerful tool designed to give you complete control over your media libraries. With Kometa, you can take your customization to the next level, 
