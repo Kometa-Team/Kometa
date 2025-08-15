@@ -7,6 +7,8 @@
 <a href="https://github.com/Kometa-Team/Kometa/tree/develop"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic" alt="Commits in Develop"></a>
 <a href="https://github.com/Kometa-Team/Kometa/tree/nightly"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic" alt="Commits in Nightly"></a>
 
+<br>
+
 <a href="https://kometa.wiki/en/latest/discord/"><img src="https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic" alt="Discord"></a>
 <a href="https://www.reddit.com/r/kometa/"><img src="https://img.shields.io/badge/%2Fr%2Fkometa-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c" alt="Reddit"></a>
 <a href="https://kometa.wiki"><img src="https://img.shields.io/readthedocs/kometa?color=%2300bc8c&style=plastic" alt="Wiki"></a>
