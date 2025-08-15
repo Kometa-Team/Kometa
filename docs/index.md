@@ -15,7 +15,7 @@ hide:
 
 
 <div class="centered">
-  <img src="assets/images/icons/logo-full.png" alt="Logo">
+  <img src="assets/images/icons/logo-full.png" alt="Logo" style="padding-bottom: 1.5rem;">
 </div>
 
 <div class="centered">
