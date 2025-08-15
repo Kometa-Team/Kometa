@@ -15,9 +15,9 @@ If Kometa cannot find the `config.yml` at the default location, it will attempt 
 Kometa will attempt to download a copy from the GitHub repository in line with the user's current branch. 
 If this also fails, the user will have to download the Configuration Template File from  the above link and manually rename it to `config.yml`.
 
-## Is there a GUI?
+## Quickstart Web UI
 
-Yes! The team at Kometa have developed a tool called [Quickstart](../kometa/scripts/quickstart.md) which is a guided Web UI that helps you create a Configuration File for use with Kometa.
+The team at Kometa have developed a tool called [Quickstart](../kometa/scripts/quickstart.md) which is a guided Web UI that helps you create a Configuration File for use with Kometa.
 
 ## Connectors
 
