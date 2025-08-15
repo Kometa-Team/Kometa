@@ -1,42 +1,17 @@
 # Requirements Update (requirements will need to be reinstalled)
-Update gitpython requirement to 3.1.45
-Update lxml requirement to 6.0.0
-Update pathvalidate requirement to 3.3.1
-Update pillow requirement to 11.3.0
-Update plexapi requirement to 4.17.0
-Update python-dotenv requirement to 1.1.1
-Update pywin32 requirement to 311
-Update requests requirement to 2.32.4
-Update ruamel-yaml requirement to 0.18.14
-Update setuptools requirement to 80.9.0
-Update tenacity requirement to 9.1.2
+None
 
 # Important Changes
-
+None
 # New Features
-Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
-Added support for updating logos via the asset directories as well **credit to @Joost1991**
-Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
-IMDb episodes found in a list for a show collection will now add that episode's show to the collection
-Adds `force_refresh` Trakt setting; this tells Kometa to refresh the token on every run without checking it first
-Adds a log of the response from Trakt which triggers the "No Valid Lists" error.
-Adds `assets_for_all_collections` library operation; this tells Kometa to add asset artwork to unmanaged and unconfigured collections
+None
 
 # Docs
-Adds overlay guide
-Adds TrueNAS walkthrough
-Adds notes on Github tokens
-Adds screenshot of UNRaid Console menu
+Fixed an issue where the home page logo and shield images appeared as raw text
+Fixed an issue where the builder overview page had multiple dead links
 
 # Defaults
-[Franchise] Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva. Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
-[Universe] Change the DC Animated Universe list to a mdblist
+None
 
 # Bug Fixes
-
-Fixed an issue where Playlists could not add to both Radarr and Sonarr in a single run
-Fixed an issue where `trakt_list_details` would not find a list's summary if it was an "official" Trakt list
-Fixed an issue where log file paths with >2 periods would cause a ValueError
-Fixed an issue with IMDb Awards
-Restored image language settings after change in base image
-Fixed an issue with IMDb List and Watchlist
+None
