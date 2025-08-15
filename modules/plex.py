@@ -1095,6 +1095,24 @@ class Plex(Library):
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
+    def _watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, **kwargs):
+        params = {
+            'includeCollections': 1,
+            'includeExternalMedia': 1
+        }
+
+        if not filter:
+            filter = 'all'
+        if sort:
+            params['sort'] = sort
+        if libtype:
+            params['type'] = plexapi.utils.searchType(libtype)
+
+        params.update(kwargs)
+
+        key = f'{self.account.DISCOVER}/library/sections/watchlist/{filter}{plexapi.utils.joinArgs(params)}'
+        return self.account._toOnlineMetadata(self.account.fetchItems(key, maxresults=maxresults), **kwargs)
+
     def get_watchlist(self, sort=None, is_playlist=False):
         if is_playlist:
             libtype = None
@@ -1102,7 +1120,7 @@ class Plex(Library):
             libtype = "movie"
         else:
             libtype = "show"
-        watchlist = self.account.watchlist(sort=watchlist_sorts[sort], libtype=libtype)
+        watchlist = self._watchlist(sort=watchlist_sorts[sort], libtype=libtype)
         ids = []
         for item in watchlist:
             tmdb_id = []
