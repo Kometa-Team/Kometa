@@ -11,24 +11,25 @@ hide:
         "DESCRIPTION": "an overlay based on the streaming service the file is found on for each item within your library"
     }'
 %}
-| Netflix     | `netflix`     | `160` |
-| Prime Video | `amazon`      | `150` |
-| Disney+     | `disney`      | `140` |
-| HBO Max     | `hbomax`      | `130` |
-| Crunchyroll | `Crunchyroll` | `120` |
-| YouTube     | `youtube`     | `110` |
-| Hulu        | `hulu`        | `100` |
-| Paramount+  | `paramount`   | `90`  |
-| AppleTV     | `appletv`     | `80`  |
-| Peacock     | `peacock`     | `70`  |
-| discovery+  | `discovery`   | `58`  |
-| Crave       | `crave`       | `55`  |
-| NOW         | `now`         | `50`  |
-| Channel 4   | `channel4`    | `40`  |
-| ITVX        | `itvx`        | `30`  |
-| BET+        | `bet`         | `20`  |
-| hayu        | `hayu`        | `10`  |
-| tubi        | `tubi`        | `5`   |
+| Netflix         | `netflix`         | `160` |
+| Prime Video     | `amazon`          | `150` |
+| Disney+         | `disney`          | `140` |
+| HBO Max         | `hbomax`          | `130` |
+| Crunchyroll     | `Crunchyroll`     | `120` |
+| Movistar Plus+  | `Movistar Plus+`  | `115` |
+| YouTube         | `youtube`         | `110` |
+| Hulu            | `hulu`            | `100` |
+| Paramount+      | `paramount`       | `90`  |
+| AppleTV         | `appletv`         | `80`  |
+| Peacock         | `peacock`         | `70`  |
+| discovery+      | `discovery`       | `58`  |
+| Crave           | `crave`           | `55`  |
+| NOW             | `now`             | `50`  |
+| Channel 4       | `channel4`        | `40`  |
+| ITVX            | `itvx`            | `30`  |
+| BET+            | `bet`             | `20`  |
+| hayu            | `hayu`            | `10`  |
+| tubi            | `tubi`            | `5`   |
 
 ## Regional Variants
 

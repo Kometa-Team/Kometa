@@ -114,6 +114,7 @@ dynamic_collections:
       hbomax: HBO Max
       hayu: hayu
       hulu: Hulu
+      movistar: Movistar Plus+
       netflix: Netflix
       now: NOW
       paramount: Paramount+
@@ -141,6 +142,7 @@ dynamic_collections:
         hayu: 223
         hulu: 15
         itvx: 41|2300
+        movistar: 149|339|2241
         netflix: 8
         now: 39
         paramount: 531|1770

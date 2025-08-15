@@ -13,24 +13,25 @@ hide:
     }'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Streaming"}' %}
-| `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.   |
-| `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.        |
-| `Channel 4 Movies/Shows`   | `channel4`    | Collection of Movies/Shows Streaming on Channel 4.   |
-| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.       |
-| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.        |
-| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.         |
-| `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.     |
-| `Hayu Shows`               | `hayu`        | Collection of Shows Streaming on Hulu.               |
-| `HBO Max Movies/Shows`     | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.     |
-| `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.        |
-| `ITVX Movies/Shows`        | `itvx`        | Collection of Movies/Shows Streaming on ITVX.        |
-| `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.     |
-| `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.         |
-| `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.  |
-| `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.     |
-| `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video. |
-| `YouTube Movies/Shows`     | `youtube`     | Collection of Movies/Shows Streaming on YouTube.     |
-| `tubi Movies/Shows`        | `tubi`        | Collection of Movies/Shows Streaming on tubi.        |
+| `Apple TV+ Movies/Shows`      | `appletv`        | Collection of Movies/Shows Streaming on Apple TV+.      |
+| `BET+ Movies/Shows`           | `bet`            | Collection of Movies/Shows Streaming on BET+.           |
+| `Channel 4 Movies/Shows`      | `channel4`       | Collection of Movies/Shows Streaming on Channel 4.      |
+| `Crave Movies/Shows`          | `crave`          | Collection of Movies/Shows Streaming on Crave.          |
+| `Crunchyroll Shows`           | `crunchyroll`    | Collection of Shows Streaming on Crunchyroll.           |
+| `discovery+ Shows`            | `discovery`      | Collection of Shows Streaming on discovery+.            |
+| `Disney+ Movies/Shows`        | `disney`         | Collection of Movies/Shows Streaming on Disney+.        |
+| `Hayu Shows`                  | `hayu`           | Collection of Shows Streaming on Hulu.                  |
+| `HBO Max Movies/Shows`        | `hbomax`         | Collection of Movies/Shows Streaming on HBO Max.        |
+| `Hulu Movies/Shows`           | `hulu`           | Collection of Movies/Shows Streaming on Hulu.           |
+| `ITVX Movies/Shows`           | `itvx`           | Collection of Movies/Shows Streaming on ITVX.           |
+| `Movistar Plus+ Movies/Shows` | `Movistar Plus+` | Collection of Movies/Shows Streaming on Movistar Plus+. |
+| `Netflix Movies/Shows`        | `netflix`        | Collection of Movies/Shows Streaming on Netflix.        |
+| `NOW Movies/Shows`            | `now`            | Collection of Movies/Shows Streaming on NOW.            |
+| `Paramount+ Movies/Shows`     | `paramount`      | Collection of Movies/Shows Streaming on Paramount+.     |
+| `Peacock Movies/Shows`        | `peacock`        | Collection of Movies/Shows Streaming on Peacock.        |
+| `Prime Video Movies/Shows`    | `amazon`         | Collection of Movies/Shows Streaming on Prime Video.    |
+| `YouTube Movies/Shows`        | `youtube`        | Collection of Movies/Shows Streaming on YouTube.        |
+| `tubi Movies/Shows`           | `tubi`           | Collection of Movies/Shows Streaming on tubi.           |
 
 ## Regional Variants
 
