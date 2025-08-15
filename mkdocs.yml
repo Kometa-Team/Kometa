@@ -157,6 +157,7 @@ nav:
         - Switching from PMM to Kometa: kometa/guides/rebrand.md
     - Companion Scripts: &scripts
         - Overview: kometa/scripts/overview.md
+        - Quickstart: kometa/scripts/quickstart.md
         - ImageMaid: kometa/scripts/imagemaid.md
         - Kometa Overlay Reset: kometa/scripts/overlay-reset.md
   - USEFUL LINKS: &links
