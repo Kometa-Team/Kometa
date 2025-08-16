@@ -16,7 +16,7 @@ hide:
 | Disney+         | `disney`          | `140` |
 | HBO Max         | `hbomax`          | `130` |
 | Crunchyroll     | `Crunchyroll`     | `120` |
-| Movistar Plus+  | `Movistar Plus+`  | `115` |
+| Movistar Plus+  | `movistar`        | `115` |
 | YouTube         | `youtube`         | `110` |
 | Hulu            | `hulu`            | `100` |
 | Paramount+      | `paramount`       | `90`  |

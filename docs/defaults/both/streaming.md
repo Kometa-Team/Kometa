@@ -24,25 +24,25 @@ hide:
 | `HBO Max Movies/Shows`        | `hbomax`         | Collection of Movies/Shows Streaming on HBO Max.        |
 | `Hulu Movies/Shows`           | `hulu`           | Collection of Movies/Shows Streaming on Hulu.           |
 | `ITVX Movies/Shows`           | `itvx`           | Collection of Movies/Shows Streaming on ITVX.           |
-| `Movistar Plus+ Movies/Shows` | `Movistar Plus+` | Collection of Movies/Shows Streaming on Movistar Plus+. |
+| `Movistar Plus+ Movies/Shows` | `movistar`       | Collection of Movies/Shows Streaming on Movistar Plus+. |
 | `Netflix Movies/Shows`        | `netflix`        | Collection of Movies/Shows Streaming on Netflix.        |
 | `NOW Movies/Shows`            | `now`            | Collection of Movies/Shows Streaming on NOW.            |
 | `Paramount+ Movies/Shows`     | `paramount`      | Collection of Movies/Shows Streaming on Paramount+.     |
 | `Peacock Movies/Shows`        | `peacock`        | Collection of Movies/Shows Streaming on Peacock.        |
 | `Prime Video Movies/Shows`    | `amazon`         | Collection of Movies/Shows Streaming on Prime Video.    |
+| `Tubi Movies/Shows`           | `tubi`           | Collection of Movies/Shows Streaming on Tubi.           |
 | `YouTube Movies/Shows`        | `youtube`        | Collection of Movies/Shows Streaming on YouTube.        |
-| `tubi Movies/Shows`           | `tubi`           | Collection of Movies/Shows Streaming on tubi.           |
 
 ## Regional Variants
 
 Some logic is applied for specific regions to prevent collections appearing which do not exist in said region.
 
-| Region           | Key                         | Description                                                                                                                                |
-|:-----------------|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `CA`             | `hbomax`, `showtime`        | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
-| any besides `CA` | `crave`                     | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
-| any besides `GB` | `channel4`, `itvx`, `now`   | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
-| any besides `ES` | `Movistar Plus+`            | This collection will not be created if the region is not `ES` as this streaming services are ES-focused.                                   |
+| Region           | Key                       | Description                                                                                                                                |
+|:-----------------|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `CA`             | `hbomax`, `showtime`      | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
+| any besides `CA` | `crave`                   | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
+| any besides `GB` | `channel4`, `itvx`, `now` | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
+| any besides `ES` | `movistar`                | These collections will not be created if the region is not ES as this streaming service is Spain-focused.                                  |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "streaming"}' include-tags='all|movie|show' %}
