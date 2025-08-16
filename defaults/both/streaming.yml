@@ -59,6 +59,9 @@ templates:
           - region.not: GB
             tmdb_key: [103, 41, 2300, 39]
             value: False
+          - region.not: ES
+            tmdb_key: [149, 339, 2241]
+            value: False
           - region.not: CA
             tmdb_key: [230]
             value: False
@@ -114,6 +117,7 @@ dynamic_collections:
       hbomax: HBO Max
       hayu: hayu
       hulu: Hulu
+      movistar: Movistar Plus+
       netflix: Netflix
       now: NOW
       paramount: Paramount+
@@ -141,6 +145,7 @@ dynamic_collections:
         hayu: 223
         hulu: 15
         itvx: 41|2300
+        movistar: 149|339|2241
         netflix: 8
         now: 39
         paramount: 531|1770
