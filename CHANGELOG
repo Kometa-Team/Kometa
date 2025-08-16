@@ -1,17 +1,19 @@
 # Requirements Update (requirements will need to be reinstalled)
-None
+Updated arrapi requirement to 1.4.14
+
 
 # Important Changes
-None
+
+
 # New Features
-None
+
 
 # Docs
 Fixed an issue where the home page logo and shield images appeared as raw text
 Fixed an issue where the builder overview page had multiple dead links
 
+
 # Defaults
-None
+
 
 # Bug Fixes
-None
