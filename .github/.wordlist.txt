@@ -207,6 +207,7 @@ mojo
 mojo's
 monetization
 mossi
+movistar
 mpaa
 mx
 myanimelist
@@ -256,6 +257,7 @@ plex's
 plexapi
 plexcollection
 plexposters
+plus+
 png
 pokémon
 popeadam
