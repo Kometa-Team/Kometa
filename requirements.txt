@@ -1,4 +1,4 @@
-arrapi==1.4.13
+arrapi==1.4.14
 cloudscraper==1.2.71
 GitPython==3.1.45
 lxml==6.0.0
