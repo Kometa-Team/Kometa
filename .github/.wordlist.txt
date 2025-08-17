@@ -6,6 +6,7 @@ addons
 adlib
 afi's
 amblin
+amc
 analytics
 anidb
 anidb's
