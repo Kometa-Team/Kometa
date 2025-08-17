@@ -17,6 +17,7 @@ hide:
 | HBO Max         | `hbomax`          | `130` |
 | Crunchyroll     | `Crunchyroll`     | `120` |
 | Movistar Plus+  | `movistar`        | `115` |
+| Atres Player    | `atresplayer`     | `113` |
 | YouTube         | `youtube`         | `110` |
 | Hulu            | `hulu`            | `100` |
 | Paramount+      | `paramount`       | `90`  |

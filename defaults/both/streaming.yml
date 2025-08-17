@@ -60,7 +60,7 @@ templates:
             tmdb_key: [103, 41, 2300, 39]
             value: False
           - region.not: ES
-            tmdb_key: [149, 339, 2241]
+            tmdb_key: [149, 339, 2241, 62, 2162]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -118,6 +118,7 @@ dynamic_collections:
       hayu: hayu
       hulu: Hulu
       movistar: Movistar Plus+
+      atresplayer: Atres Player
       netflix: Netflix
       now: NOW
       paramount: Paramount+
@@ -154,6 +155,7 @@ dynamic_collections:
         showtime: 37
         youtube: 188
         tubi: 73
+        atresplayer: 62|2162
       originals_only:
         default: false
       allowed_libraries:

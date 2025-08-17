@@ -153,6 +153,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Atres Player:
+      variables: { weight: 10 }
+      template: [ name: standard, name: networks ]
+
   Atresplayer Premium:
     variables: { weight: 10}
     template: [name: standard, name: networks]

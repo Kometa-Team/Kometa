@@ -142,7 +142,11 @@ overlays:
 
   Movistar Plus+:
     variables: {key: movistar, tmdb_key: 149|339|2241, weight: 115}
-    template: [name: standard, name: mdb_streaming]    
+    template: [name: standard, name: mdb_streaming]
+
+  Atres Player:
+    variables: { key: atresplayer, tmdb_key: 62|2162, weight: 113 }
+    template: [ name: standard, name: mdb_streaming ]
 
   YouTube:
     variables: {key: youtube, tmdb_key: 188|508|235, weight: 110}
