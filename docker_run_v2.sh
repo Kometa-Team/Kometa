@@ -13,7 +13,8 @@ MOVIE_SERIALS_LIBRARY="Movie Serials"
 MUSIC_LIBRARY="Musik - Live"
 SERIES_LIBRARY="Serien"
 
-LIBRARIES=("$MOVIE_LIBRARY" "$MOVIE_UHD_LIBRARY" "$MOVIE_SERIALS_LIBRARY" "$MUSIC_LIBRARY" "$SERIES_LIBRARY")
+
+LIBRARIES=("$MOVIE_LIBRARY" "$MOVIE_UHD_LIBRARY" "$MOVIE_SERIALS_LIBRARY" "$MUSIC_LIBRARY" "$SERIES_LIBRARY" "")
 
 # Function to run Kometa for all libraries
 run_all() {
@@ -87,19 +88,19 @@ while true; do
         4) run_complete "$MOVIE_SERIALS_LIBRARY" ;;
         5) run_complete "$MUSIC_LIBRARY" ;;
         6) run_complete "$SERIES_LIBRARY" ;;
-        7) 
+        7)
             lib=$(select_library)
             [ -n "$lib" ] && update_posters "$lib"
             ;;
-        8) 
+        8)
             lib=$(select_library)
             [ -n "$lib" ] && update_collection "$lib"
             ;;
-        9) 
+        9)
             lib=$(select_library)
             [ -n "$lib" ] && update_metadata "$lib"
             ;;
-        10) 
+        10)
             lib=$(select_library)
             [ -n "$lib" ] && do_operations "$lib"
             ;;

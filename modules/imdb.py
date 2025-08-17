@@ -621,6 +621,7 @@ class IMDb:
                 out["lsConst"] = data["list_id"]
             else:
                 out["urConst"] = data["user_id"]
+            out["isInPace"] = False
             out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)

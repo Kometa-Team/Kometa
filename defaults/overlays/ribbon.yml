@@ -20,6 +20,8 @@ external_templates:
             value: black
           - style: red
             value: red
+          - style: mixed
+            value: mixed
       default:
         conditions:
           - file.exists: false

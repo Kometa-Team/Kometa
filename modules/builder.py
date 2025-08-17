@@ -2642,7 +2642,7 @@ class CollectionBuilder:
                 raise Failed(f"{self.Type} Error: validate attribute must be either true or false")
             validate = plex_filter[filter_alias["validate"]]
             filter_details += f"Validate: {validate}\n"
-
+        
         def _filter(filter_dict, is_all=True, level=1):
             output = ""
             display_out = f"\n{'  ' * level}Match {'all' if is_all else 'any'} of the following:"

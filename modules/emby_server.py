@@ -175,6 +175,7 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, library_name = None):
 
         # ToDo: Merge the cache
+        self.people_lib_cache = {}
         self.emby_genres = None
         self.cached_plex_objects = {}
         self.all_tags = None
@@ -223,10 +224,14 @@ class EmbyServer:
         # client = emby_client.ApiClient(configuration)
 
     def get_people(self, library_id: str, role: str):
+        if f"{library_id}-{role}" in self.people_lib_cache.keys():
+            return self.people_lib_cache[f"{library_id}-{role}"]
         endpoint = f"/emby/Persons?ParentId={library_id}&PersonTypes={role}&api_key={self.api_key}"
         url = self.emby_server_url + endpoint
         response = requests.get(url, headers=self.headers)
-        return response.json().get("Items", [])
+        items = response.json().get("Items", [])
+        self.people_lib_cache[f"{library_id}-{role}"] = items
+        return items
 
     def get_years(self, library_id: str):
         endpoint = f"/emby/Years?Recursive=True&ParentId={library_id}&api_key={self.api_key}"
@@ -2345,8 +2350,9 @@ class EmbyServer:
         all_items = item_details.get('Items',[])
 
         for item in all_items:
-            if str(item.get("Name",'')).startswith('📡'):
-                continue
+            # TODO: Use Emby Studio for Studios and Networks. Too much work with auto updates.
+            # if str(item.get("Name",'')).startswith('📡'):
+            #     continue
             all_studios.append(item.get("Name"))
 
 
@@ -2403,9 +2409,11 @@ class EmbyServer:
         all_items = item_details.get('Items',[])
 
         for item in all_items:
-            if not str(item.get("Name",'')).startswith('📡'):
-                continue
-            all_studios.append(str(item.get("Name", ''))[2:])
+            # TODO: Use Emby Studio for Studios and Networks. Too much work with auto updates.
+            # if not str(item.get("Name",'')).startswith('📡'):
+            #     continue
+            # all_studios.append(str(item.get("Name", ''))[2:])
+            all_studios.append(str(item.get("Name", '')))
 
 
         all_studios= sorted(set(all_studios))

@@ -21,20 +21,20 @@ libraries:                           # This is called out once within the config
   Movies:                            # These are names of libraries in your Plex
     remove_overlays: false           # Set this to true to remove all overlays
     collection_files:
-    - default: basic               # This is a file within Kometa's defaults folder
-    - default: imdb                # This is a file within Kometa's defaults folder
+    - default: basic                 # This is a file within Kometa's defaults folder
+    - default: imdb                  # This is a file within Kometa's defaults folder
     # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-    - default: ribbon              # This is a file within Kometa's defaults folder
+    - default: ribbon                # This is a file within Kometa's defaults folder
     # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
     remove_overlays: false           # Set this to true to remove all overlays
     collection_files:
-    - default: basic               # This is a file within Kometa's defaults folder
-    - default: imdb                # This is a file within Kometa's defaults folder
+    - default: basic                 # This is a file within Kometa's defaults folder
+    - default: imdb                  # This is a file within Kometa's defaults folder
     # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-    - default: ribbon              # This is a file within Kometa's defaults folder
+    - default: ribbon                # This is a file within Kometa's defaults folder
     # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
     collection_files:
@@ -93,7 +93,7 @@ settings:
   playlist_report: false
   verify_ssl: true
   custom_repo:
-  overlay_artwork_filetype: webp_lossy # must be PNG for Emby
+  overlay_artwork_filetype: webp_lossy
   overlay_artwork_quality: 90
 webhooks:                            # Can be individually specified per library as well
   changes:

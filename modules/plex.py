@@ -845,10 +845,13 @@ class Plex(Library):
                         else:
                             emby_query_params['Studios']= [value_decoded]
                     elif key_decoded in ['show.network']: # todo add newtwork here for later
+                        # TODO: Use Emby Studio for Studios and Networks. Too much work with auto updates.
                         if "Studios" in emby_query_params:
-                            emby_query_params["Studios"].append(f"📡 {value_decoded}")
+                            # emby_query_params["Studios"].append(f"📡 {value_decoded}")
+                            emby_query_params["Studios"].append(f"{value_decoded}")
                         else:
-                            emby_query_params['Studios']= [f"📡 {value_decoded}"]
+                            # emby_query_params['Studios']= [f"📡 {value_decoded}"]
+                            emby_query_params['Studios']= [f"{value_decoded}"]
                     elif key_decoded == 'country':
 
                         if 'Ids' not in emby_query_params:
@@ -1129,7 +1132,7 @@ class Plex(Library):
 
         items = []
         start_index = 0
-        limit = 100
+        limit = 250
         total_record_count = 1
         include_item_types = []
         # print(builder_type)
@@ -1849,12 +1852,14 @@ class Plex(Library):
                 if smart_label_collection:
                     if add:
                         # add / remove collection tag/label
+                        # ToDo: Remove the tags for smart label collections
+                        # if False:
                         for item in _items:
-                            # Füge ein Label hinzu (JSON-basiert)
+                            # Füge ein Label hinzu
                             self.EmbyServer.add_tags(item.ratingKey,[collection])
 
-                            # add_label(kometa_labels, item.ratingKey, collection)
-                            # save_labels_to_file(file_path_kometa, kometa_labels)
+                                # add_label(kometa_labels, item.ratingKey, collection)
+                                # save_labels_to_file(file_path_kometa, kometa_labels)
                         self.EmbyServer.add_remove_plex_object_from_collection(collection, _items, 'add')
 
 
@@ -1899,6 +1904,7 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_check(self, label):
+
         # print(f"Smart Label: {label}")
         tags = self.EmbyServer.get_emby_item_tags(self, self.Emby.get("Id"), search_all=True,from_cache=False)
         #
