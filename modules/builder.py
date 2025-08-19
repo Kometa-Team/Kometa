@@ -1656,7 +1656,11 @@ class CollectionBuilder:
                         if category_filter in category_names:
                             final_category.append(category_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
+                            raise Failed(
+                                f"{self.Type} Error: imdb_award category_filter attribute invalid: "
+                                f"{category_filter} must be in [{', '.join(category_names)}]"
+                            )
+                            # raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
                 self.builders.append((method_name, {
                     "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
                     "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
@@ -3313,8 +3317,7 @@ class CollectionBuilder:
         tvdb_paths = []
         for item in self.items:
             # item = self.library.reload(item)
-            # current_labels = [la.tag for la in self.library.item_labels(item)]
-            current_labels = self.library.item_labels(item)
+            current_labels = [la.tag for la in self.library.item_labels(item)]
             # todo: check for file, no overlay in tags
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
@@ -3646,8 +3649,6 @@ class CollectionBuilder:
             self.library.upload_theme(self.obj, filepath=self.file_theme)
         return updated_details
 
-    import requests
-
     def update_details_emby_with_labels_in_json(self):
         """
         Aktualisiert die Details einer Sammlung in Emby, wobei Tags/Labels über JSON (`kometa_labels`) bearbeitet werden,
@@ -3897,7 +3898,9 @@ class CollectionBuilder:
                 if self.details["name_mapping"]:                    name_mapping = self.details["name_mapping"]
                 else:                                               logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                asset_poster, asset_background, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                # return poster, background, logo, item_asset_directory, folder_name
+
+                asset_poster, asset_background, logo, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
                     self.posters["asset_directory"] = asset_poster
                 if asset_background:

@@ -1,5 +1,4 @@
 import os
-import plexapi
 import re
 import time
 from datetime import datetime, timedelta
@@ -15,7 +14,6 @@ from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Role, FilterChoice
 from plexapi.playlist import Playlist
-from plexapi.server import PlexServer
 from plexapi.video import Movie, Show, Season, Episode
 from requests.exceptions import ConnectionError, ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
@@ -457,62 +455,60 @@ watchlist_sorts = {
 
 MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
 
-class Plex(Library):
+class Emby(Library):
     def __init__(self, config, params):
         super().__init__(config, params)
 
         self.filter_items_cache = {}
-        self.plex = params["plex"]
-        self.url = self.plex["url"] # todo also used in webhooks for image retrieval
+        # self.plex = params["plex"]
         self.emby = params["emby"]
-        self.emby_server_url = self.emby["url"]
+        # self.url = self.plex["url"] # todo also used in webhooks for image retrieval
+        self.url = self.emby["url"] # was selfemby_server_url
         self.session = self.config.Requests.session # init?
-        if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
+        if self.emby["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
             self.session = self.config.Requests.create_session(verify_ssl=False)
-        if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
+        if self.emby["verify_ssl"] is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
             self.session = self.config.Requests.create_session()
-        self.token = self.plex["token"]
         self.emby_api_key = self.emby["api_key"]
         self.emby_user_id = self.emby["user_id"]
         self.overlay_destination_folder = self.emby["overlay_destination_folder"]
-        self.timeout = self.plex["timeout"]
+        self.timeout = 60 # self.plex["timeout"]
         logger.secret(self.url)
-        logger.secret(self.token)
+        logger.secret(self.emby_api_key)
         self.EmbyServer = None
         try:
-            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
             self.EmbyServer = EmbyServer(self.emby_server_url, self.emby_user_id, self.emby_api_key,params["name"])
-            plexapi.server.TIMEOUT = self.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
-            logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
-            logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
-            srv_settings = self.PlexServer.settings
-            try:
-                db_cache = srv_settings.get("DatabaseCacheSize")
-                logger.info(f"Plex DB cache setting: {db_cache.value} MB")
-                if self.plex["db_cache"] and self.plex["db_cache"] != db_cache.value:
-                    db_cache.set(self.plex["db_cache"])
-                    self.PlexServer.settings.save()
-                    logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
-            except NotFound:
-                logger.info(f"Plex DB cache setting: Unknown")
-            try:
-                chl_num = srv_settings.get("butlerUpdateChannel").value
-                if chl_num == "16":
-                    uc_str = f"Public update channel."
-                elif chl_num == "8":
-                    uc_str = f"PlexPass update channel."
-                else:
-                    uc_str = f"Unknown update channel: {chl_num}."
-            except NotFound:
-                uc_str = f"Unknown update channel."
-            logger.info(f"PlexPass: {self.PlexServer.myPlexSubscription} on {uc_str}")
-            try:
-                logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
-            except NotFound:
-                logger.info("Scheduled maintenance times could not be found")
+            logger.info(f"Connected to server {self.EmbyServer.friendlyName} version {self.EmbyServer.version}")
+            logger.info(f"Running on {self.EmbyServer.platform}")
+            # logger.info(f"Running on {self.EmbyServer.platform} version {self.EmbyServer.platformVersion}")
+            # srv_settings = self.EmbyServer.settings
+            # try:
+            #     db_cache = srv_settings.get("DatabaseCacheSize")
+            #     logger.info(f"Plex DB cache setting: {db_cache.value} MB")
+            #     if self.plex["db_cache"] and self.plex["db_cache"] != db_cache.value:
+            #         db_cache.set(self.plex["db_cache"])
+            #         self.EmbyServer.settings.save()
+            #         logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
+            # except NotFound:
+            #     logger.info(f"Plex DB cache setting: Unknown")
+            # try:
+            #     chl_num = srv_settings.get("butlerUpdateChannel").value
+            #     if chl_num == "16":
+            #         uc_str = f"Public update channel."
+            #     elif chl_num == "8":
+            #         uc_str = f"PlexPass update channel."
+            #     else:
+            #         uc_str = f"Unknown update channel: {chl_num}."
+            # except NotFound:
+            #     uc_str = f"Unknown update channel."
+            # logger.info(f"PlexPass: {self.EmbyServer.myPlexSubscription} on {uc_str}")
+            # try:
+            #     logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
+            # except NotFound:
+            #     logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
@@ -526,23 +522,15 @@ class Plex(Library):
             logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
             raise Failed("Plex Error: Plex URL is probably invalid")
-        self.Plex = None
-        library_names = []
-        for s in self.PlexServer.library.sections():
-            library_names.append(s.title)
-            #emby, just use first lib as dummy
-            # if s.title == params["name"]:
-            self.Plex = s
-            break
 
         self.Emby = None
 
-        emby_library_names = []
+        library_names = []
         # print(params)
         self.lib_type = None
         for s in self.EmbyServer.get_libraries():
             # print(s)
-            emby_library_names.append(s["Name"])
+            library_names.append(s["Name"])
             if s["CollectionType"] == 'tvshows':
                 self.lib_type = "show"
             elif s["CollectionType"] == 'movies':
@@ -554,7 +542,7 @@ class Plex(Library):
                 break
         # print(emby_library_names)
         if not self.Emby:
-            raise Failed(f"Emby Error: Emby Library '{params['name']}' not found. Options: {emby_library_names}")
+            raise Failed(f"Emby Error: Emby Library '{params['name']}' not found. Options: {library_names}")
         # --------------
 
         # if not self.Plex:
@@ -588,28 +576,20 @@ class Plex(Library):
 
         # print(f"EMBY Library type: {self.type}")
         # print(self.type)
-        self.plex_pass = self.PlexServer.myPlexSubscription
+        # self.plex_pass = self.PlexServer.myPlexSubscription
         self._users = []
         self.emby_users = []
         self._all_items = []
         self._emby_all_items = []
         self._emby_all_items_native = []
         self._account = None
-        self.agent = self.Plex.agent
-        self.scanner = self.Plex.scanner
-        source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)
+        # self.agent = self.Plex.agent
+        # self.scanner = self.Plex.scanner
+        # source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)
         # Todo
-        # print(f"Checkie: {source_setting}")
-        # Checkie: <Setting:ratingsSource:rottentomatoes>
-        # Checkie: <Setting:ratingsSource:imdb>
-        # Checkie: <Setting:ratingsSource:themoviedb>
-        self.ratings_source = source_setting.enumValues[source_setting.value] if source_setting else "N/A"
 
-        # self.is_movie = self.type == "Movie"
-        # self.is_show = self.type == "Show"
-        # self.is_music = self.type == "Artist"
-        # self.is_other = self.agent == "com.plexapp.agents.none"
-
+        # self.ratings_source = source_setting.enumValues[source_setting.value] if source_setting else "N/A"
+        self.ratings_source = "N/A"
         self.is_movie = self.emby_type == "Movie"
         self.is_show = self.emby_type == "Show"
         self.is_music = self.emby_type == "Artist"
@@ -624,21 +604,21 @@ class Plex(Library):
 
         logger.info(f"Connected to library {params['name']}")
         logger.info(f"Type: {self.type}")
-        logger.info(f"Agent: {self.agent}")
-        logger.info(f"Scanner: {self.scanner}")
+        # logger.info(f"Agent: {self.agent}")
+        # logger.info(f"Scanner: {self.scanner}")
         logger.info(f"Ratings Source: {self.ratings_source}")
 
     def notify(self, text, collection=None, critical=True):
-        self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
+        self.config.notify(text, server=self.EmbyServer.friendlyName, library=self.name, collection=collection, critical=critical)
         # pass
 
     def notify_delete(self, message):
-        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+        self.config.notify_delete(message, server=self.EmbyServer.friendlyName, library=self.name)
         # pass
 
     def set_server_preroll(self, preroll):
-        self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
-        self.PlexServer.settings.save()
+        self.EmbyServer.settings.get('cinemaTrailersPrerollID').set(preroll)
+        self.EmbyServer.settings.save()
         # pass
 
     # not needed, refer to fetchItems
@@ -718,7 +698,6 @@ class Plex(Library):
         # print("-------------")
         item = self.EmbyServer.get_item(data)
         return self.EmbyServer.convert_emby_to_plex([item])[0]
-        return self.PlexServer.fetchItem(data)
 
     # @retry(stop=stop_after_attempt(6), wait=wait_fixed(10),
     #        retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
@@ -1247,6 +1226,7 @@ class Plex(Library):
         return results
 
     def upload_theme(self, collection, url=None, filepath=None):
+        raise Failed("Function upload_theme not implemented")
         # todo should be file based
         key = f"/library/metadata/{collection.ratingKey}/themes"
         if url:
@@ -1256,7 +1236,7 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def create_playlist(self, name, items):
-        return self.PlexServer.createPlaylist(name, items=items)
+        return self.EmbyServer.createPlaylist(name, items=items)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def moveItem(self, obj, item, after):
@@ -1535,11 +1515,6 @@ class Plex(Library):
 
         return self.EmbyServer.get_actor_id(name)
 
-        results = self.Plex.hubSearch(name)
-        for result in results:
-            if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
-                return result.id
-
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
@@ -1581,51 +1556,6 @@ class Plex(Library):
             my_search = tag
         else:
              my_search = tag.filter
-
-        # tag: <FilteringFilter:/library/sections/8/:Labels>
-        # items = {MediaContainer: 10} [<FilterChoice:284998:Overlay>, <FilterChoice:310126:Kometa>, <FilterChoice:310132:National-Film-Regist>, <FilterChoice:310150...-on-a-True-Stor>, <FilterChoice:310159:🎖Veteran's-Day-Movie>, <FilterChoice:310161:Seasonal>, <FilterChoice:310165:Top-Actors>
-        #  TAG = {str} 'MediaContainer'
-        #  TYPE = {NoneType} None
-        #  allowSync = {int} 0
-        #  augmentationKey = {NoneType} None
-        #  identifier = {str} 'com.plexapp.plugins.library'
-        #  key = {NoneType} None
-        #  librarySectionID = {NoneType} None
-        #  librarySectionTitle = {NoneType} None
-        #  librarySectionUUID = {NoneType} None
-        #  mediaTagPrefix = {str} '/system/bundle/media/flags/'
-        #  mediaTagVersion = {str} '1727455477'
-        #  offset = {NoneType} None
-        #  size = {int} 10
-        #  totalSize = {NoneType} None
-        #  00 = {FilterChoice} <FilterChoice:284998:Overlay>
-        #   TAG = {str} 'Directory'
-        #   TYPE = {NoneType} None
-        #   fastKey = {str} '/library/sections/8/all?label=284998'
-        #   key = {str} '284998'
-        #   thumb = {NoneType} None
-        #   title = {str} 'Overlay'
-        #   type = {NoneType} None
-        #  01 = {FilterChoice} <FilterChoice:310126:Kometa>
-        #   TAG = {str} 'Directory'
-        #   TYPE = {NoneType} None
-        #   fastKey = {str} '/library/sections/8/all?label=310126'
-        #   key = {str} '310126'
-        #   thumb = {NoneType} None
-        #   title = {str} 'Kometa'
-        #   type = {NoneType} None
-
-
-        # my_items = self.EmbyServer.get_collections_filter_choices()
-
-        # tag = {FilteringFilter} <FilteringFilter:/library/sections/8/:Actor>
-        #  TAG = {str} 'Filter'
-        #  TYPE = {NoneType} None
-        #  filter = {str} 'actor'
-        #  filterType = {str} 'string'
-        #  key = {str} '/library/sections/8/actor'
-        #  title = {str} 'Actor'
-        #  type = {str} 'filter'
 
 
 
@@ -1779,41 +1709,13 @@ class Plex(Library):
 
         raise Failed(f"Not implemented Emby search FilterChoice {tag}")
 
-        items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
 
-        #     {
-        #       "Name": "Wolfgang Petersen",
-        #       "ServerId": "37de8e11ee0748bea8d2080a13984949",
-        #       "Id": "61041",
-        #       "Type": "Person",
-        #       "ImageTags": {
-        #         "Primary": "ca733b3b975daa618201765a10805fe7"
-        #       },
-        #       "BackdropImageTags": []
-        #     }
-
-        # items_filter = object[FilterChoice]()
-        # key: '/library/sections/8/label'
-        # Plex:
-        #         for elem in data:
-        #             if self._checkAttrs(elem, **kwargs):
-        #                 item = self._buildItemOrNone(elem, cls, initpath)
-        #                 if item is not None:
-        #                     items.append(item)
-        #         return items
-
-        if tag.key.endswith("/collection?type=4"): # no idea
-            keys = [k.key for k in items]
-            keys.extend([k.key for k in self.Plex.findItems(self.Plex._server.query(f"{tag.key[:-1]}3"), FilterChoice)])
-            items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]
-        return items
-
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
-    def _query(self, key, post=False, put=False):
-        if post:                method = self.Plex._server._session.post
-        elif put:               method = self.Plex._server._session.put
-        else:                   method = None
-        return self.Plex._server.query(key, method=method)
+    # @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    # def _query(self, key, post=False, put=False):
+    #     if post:                method = self.Plex._server._session.post
+    #     elif put:               method = self.Plex._server._session.put
+    #     else:                   method = None
+    #     return self.Plex._server.query(key, method=method)
 
     @property
     def users(self):
@@ -1938,13 +1840,6 @@ class Plex(Library):
         if label in tags:
             return True
         logger.trace(f"Label not found in Emby. Options: {tags}")
-        return False
-
-        labels = [la.title for la in self.get_tags("label")] # noqa
-        labels += self.EmbyServer.get_emby_countries(self.Emby.get("Id"))
-        if label in labels:
-            return True
-        logger.trace(f"Label not found in Plex. Options: {labels}")
         return False
 
     def test_smart_filter(self, uri_args):
@@ -2097,19 +1992,19 @@ class Plex(Library):
 
     def get_playlist(self, title):
         try:
-            return self.PlexServer.playlist(title)
+            return self.EmbyServer.playlist(title)
         except NotFound:
-            raise Failed(f"Plex Error: Playlist {title} not found")
+            raise Failed(f"Emby Error: Playlist {title} not found")
 
     def get_playlist_from_users(self, playlist_title):
         for user in self.users:
             try:
-                for playlist in self.PlexServer.switchUser(user).playlists():
+                for playlist in self.EmbyServer.switchUser(user).playlists():
                     if isinstance(playlist, Playlist) and playlist.title == playlist_title:
                         return playlist
             except ConnectionError:
                 pass
-        raise Failed(f"Plex Error: Playlist {playlist_title} not found")
+        raise Failed(f"Emby Error: Playlist {playlist_title} not found")
 
     def get_collection(self, data, force_search=False, debug=True):
         if isinstance(data, Collection):
@@ -2127,22 +2022,6 @@ class Plex(Library):
 
             # Rest fails
             raise Failed(f"Emby Error: Collection {data} not found")
-            if col_id:
-                my_cols = self.EmbyServer.get_boxset_by_title(str(data))
-            # print(my_cols)
-            if len(my_cols) > 0:
-                return  my_cols[0]
-
-            if debug:
-                logger.debug("")
-                for d in my_cols:
-                    logger.debug(f"Found: {d.title}")
-                logger.debug(f"Looking for: {data}")
-
-            # return empty list
-            # return None
-            raise Failed(f"Emby Error: Collection {data} not found")
-
 
 
     def validate_collections(self, collections):
@@ -2214,26 +2093,26 @@ class Plex(Library):
     def get_rating_keys(self, method, data, is_playlist=False):
         items = []
         if method == "plex_all":
-            logger.info(f"Processing Plex All {data.capitalize()}s")
+            logger.info(f"Processing Emby All {data.capitalize()}s")
             items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":
-            logger.info(f"Processing Plex Watchlist")
+            logger.info(f"Processing Emby Watchlist")
             return self.get_watchlist(sort=data, is_playlist=is_playlist)
         elif method == "plex_pilots":
-            logger.info(f"Processing Plex Pilot {data.capitalize()}s")
+            logger.info(f"Processing Emby Pilot {data.capitalize()}s")
             items = []
             for item in self.get_all():
                 try:
                     items.append(item.episode(season=1, episode=1))
                 except NotFound:
-                    logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
+                    logger.warning(f"Emby Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
             logger.info(f"Processing {data[1]}")
             logger.trace(data[2])
             items = self.fetchItems(data[2])
         elif method == "plex_collectionless":
             good_collections = []
-            logger.info(f"Processing Plex Collectionless")
+            logger.info(f"Processing Emby Collectionless")
             logger.info("")
             for col in self.get_all_collections():
                 keep_collection = True
@@ -2272,7 +2151,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
             return[]
-            raise Failed("Plex Error: No Items found in Plex")
+            raise Failed("Emby Error: No Items found in Emby")
         return [(item.ratingKey, "ratingKey") for item in items]
 
     def get_collection_items(self, collection, smart_label_collection):
@@ -2518,6 +2397,7 @@ class Plex(Library):
             poster, background, logo, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             if "Overlay" not in current_labels:
                 if poster or background or logo:
+                    #TodO: Emby integration
                     self.upload_images(item, poster=poster, background=background, logo=logo)
                 elif self.show_missing_assets:
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
@@ -2696,9 +2576,6 @@ class Plex(Library):
         return poster, background, logo, item_asset_directory, folder_name
 
     def get_ids(self, item):
-        tmdb_id = None
-        tvdb_id = None
-        imdb_id = None
 
         provider_ids = self.EmbyServer.get_provider_ids(item)
         emby_imdb_id = provider_ids[0]
@@ -2707,17 +2584,6 @@ class Plex(Library):
 
         return emby_tmdb_id, emby_tvdb_id, emby_imdb_id
 
-
-        if self.config.Cache:
-            t_id, i_id, guid_media_type, _ = self.config.Cache.query_guid_map(item.guid)
-            if t_id:
-                if "movie" in guid_media_type:
-                    tmdb_id = t_id[0]
-                else:
-                    tvdb_id = t_id[0]
-            if i_id:
-                imdb_id = i_id[0]
-            return tmdb_id, tvdb_id, imdb_id
 
     def get_ratings(self, item):
         ratings = {

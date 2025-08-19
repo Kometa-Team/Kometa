@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 import os
 import re
@@ -200,6 +201,9 @@ class EmbyServer:
         self.seconds_between_requests = 0.05
         # get system info to see if it works
         self.system_info = self.get_system_info()
+        self.friendlyName = self.system_info.get("ServerName", "")
+        self.version = self.system_info.get("Version", "")
+        self.platform = self.system_info.get("OperatingSystemDisplayName", "")
         self.session = requests.Session()
         self.year_cache = {}
         self.library_id = None
@@ -1413,6 +1417,159 @@ class EmbyServer:
             )
             return False
 
+    import os, hashlib, requests
+
+    def set_image_smart(
+            self,
+            item_id: str,
+            image_path: str,
+            image_type: str = "Primary",
+            provider_name: str = "MDBList Collection Creator script",
+    ) -> bool:
+        """
+        Setzt ein Bild nur dann, wenn es sich vom bereits in Emby hinterlegten Bild unterscheidet.
+        Vergleicht zuerst Content-Length & Content-Type (schnell), danach optional per SHA-256 Hash.
+        Nutzt einen kleinen In-Memory-Cache, gebunden an den Emby-ImageTag.
+
+        Rückgabe:
+          True  -> Bild gesetzt ODER übersprungen (identisch)
+          False -> harter Fehler beim Setzen
+        """
+        # --- kleiner Cache auf dem Objekt (einmalig angelegt) ---
+        if not hasattr(self, "_image_hash_cache"):
+            self._image_hash_cache = {}  # key: (item_id, image_type, image_tag) -> sha256_hex
+
+        # --- Content-Type Mapping nur für lokale Dateien ---
+        ext_to_ct = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".tbn": "image/jpeg",
+            ".webp": "image/webp",
+        }
+
+        def sha256_stream(iterable):
+            h = hashlib.sha256()
+            for chunk in iterable:
+                if chunk:
+                    h.update(chunk)
+            return h.hexdigest()
+
+        # 1) aktuelle Bildgröße/-typ aus Emby (HEAD auf Originalbild)
+        cur_url = (
+            f"{self.emby_server_url}/emby/Items/{item_id}/Images/{image_type}"
+            f"?EnableImageEnhancers=false&Format=original"
+        )
+        try:
+            cur_head = requests.head(
+                cur_url,
+                headers={"X-Emby-Token": self.api_key},
+                timeout=10,
+                allow_redirects=True,
+            )
+            if not cur_head.ok:
+                cur_size, cur_ct = None, None
+            else:
+                cur_size = int(cur_head.headers.get("Content-Length", "0") or "0") or None
+                cur_ct = cur_head.headers.get("Content-Type")
+        except Exception:
+            cur_size, cur_ct = None, None
+
+        # Wenn kein aktuelles Bild ermittelbar -> direkt setzen
+        if cur_size is None:
+            if image_path.startswith("http"):
+                return self.__set_remote_image(item_id, image_path, image_type, provider_name)
+            else:
+                return self.__upload_image(item_id, image_path, image_type)
+
+        # 2) Kandidat: Größe & Typ bestimmen (ohne großen Download)
+        if image_path.startswith("http"):
+            try:
+                cand_head = requests.head(image_path, timeout=10, allow_redirects=True)
+                if cand_head.ok:
+                    cand_size = int(cand_head.headers.get("Content-Length", "0") or "0") or None
+                    cand_ct = cand_head.headers.get("Content-Type")
+                else:
+                    cand_size, cand_ct = None, None
+            except Exception:
+                cand_size, cand_ct = None, None
+        else:
+            try:
+                cand_size = os.path.getsize(image_path)
+            except Exception:
+                cand_size = None
+            ext = os.path.splitext(image_path)[1].lower()
+            cand_ct = ext_to_ct.get(ext)
+
+        # 3) Schnelle Entscheidung: Größe/Typ verschieden -> setzen
+        if (cand_size is None) or (cand_size != cur_size) or (cur_ct and cand_ct and cur_ct != cand_ct):
+            if image_path.startswith("http"):
+                return self.__set_remote_image(item_id, image_path, image_type, provider_name)
+            else:
+                return self.__upload_image(item_id, image_path, image_type)
+
+        # 4) Größe & Typ gleich -> Hash-Vergleich (mit Tag-gebundenem Cache)
+        #    a) ImageTag holen (billig)
+        image_tag = None
+        try:
+            meta = requests.get(
+                f"{self.emby_server_url}/emby/Items/{item_id}",
+                params={"Fields": "PrimaryImageTag,ImageTags", "api_key": self.api_key},
+                timeout=10,
+            )
+            if meta.ok:
+                d = meta.json()
+                if image_type.lower() == "primary":
+                    image_tag = d.get("PrimaryImageTag")
+                else:
+                    tags = d.get("ImageTags") or {}
+                    image_tag = tags.get(image_type) or tags.get(image_type.capitalize())
+        except Exception:
+            pass
+
+        cache_key = (item_id, image_type, image_tag)
+        cur_hash = self._image_hash_cache.get(cache_key)
+
+        #    b) aktuellen Hash ggf. streamend berechnen
+        if cur_hash is None:
+            try:
+                r = requests.get(
+                    cur_url,
+                    headers={"X-Emby-Token": self.api_key},
+                    stream=True,
+                    timeout=30,
+                )
+                if r.ok:
+                    cur_hash = sha256_stream(r.iter_content(131072))
+                    if image_tag:
+                        self._image_hash_cache[cache_key] = cur_hash
+            except Exception:
+                cur_hash = None
+
+        #    c) Kandidaten-Hash bestimmen
+        if image_path.startswith("http"):
+            try:
+                r = requests.get(image_path, stream=True, timeout=30)
+                cand_hash = sha256_stream(r.iter_content(131072)) if r.ok else None
+            except Exception:
+                cand_hash = None
+        else:
+            try:
+                with open(image_path, "rb") as f:
+                    cand_hash = sha256_stream(iter(lambda: f.read(131072), b""))
+            except Exception:
+                cand_hash = None
+
+        # 5) Gleich? -> Skip; sonst setzen
+        if cur_hash and cand_hash and cur_hash == cand_hash:
+            print(f"Skip: identisches {image_type}-Bild für Item {item_id}.")
+            return True
+
+        if image_path.startswith("http"):
+            return self.__set_remote_image(item_id, image_path, image_type, provider_name)
+        else:
+            return self.__upload_image(item_id, image_path, image_type)
+
     def set_image(
         self,
         item_id,
@@ -1501,11 +1658,18 @@ class EmbyServer:
             print(f"Error: Image file not found: {image_path}")
             return False
 
-        allowed_types = [".jpg", ".jpeg", ".png", ".tbn"]
-        if not any(image_path.lower().endswith(ext) for ext in allowed_types):
-            print(
-                f"Unsupported image format. Must be one of: {', '.join(allowed_types)}"
-            )
+
+        ext_to_content_type = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".tbn": "image/jpeg",  # .tbn ist technisch JPEG
+            ".webp": "image/webp",
+        }
+
+        ext = os.path.splitext(image_path)[1].lower()
+        if ext not in ext_to_content_type:
+            print(f"Unsupported image format. Must be one of: {', '.join(ext_to_content_type.keys())}")
             return False
 
         try:
