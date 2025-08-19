@@ -217,23 +217,28 @@ class Cache:
                     tvdb_id INTEGER,
                     expiration_date TEXT)"""
                 )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS tvdb_data5 (
+                        key INTEGER PRIMARY KEY,
+                        tvdb_id INTEGER,
+                        type TEXT,
+                        title TEXT,
+                        status TEXT,
+                        summary TEXT,
+                        poster_url TEXT,
+                        background_url TEXT,
+                        release_date TEXT,
+                        genres TEXT,
+                        -- neu:
+                        networks TEXT,
+                        production TEXT,
+                        studio TEXT,
+                        expiration_date TEXT,
+                        UNIQUE(tvdb_id, type)
+                    )"""
+                )
+                self._upgrade_tvdb_4_to_5(cursor)
 
-                self._ensure_tvdb_data4_schema(cursor)
-
-                # cursor.execute(
-                #     """CREATE TABLE IF NOT EXISTS tvdb_data4 (
-                #     key INTEGER PRIMARY KEY,
-                #     tvdb_id INTEGER UNIQUE,
-                #     type TEXT,
-                #     title TEXT,
-                #     status TEXT,
-                #     summary TEXT,
-                #     poster_url TEXT,
-                #     background_url TEXT,
-                #     release_date TEXT,
-                #     genres TEXT,
-                #     expiration_date TEXT)"""
-                # )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tvdb_map (
                     key INTEGER PRIMARY KEY,
@@ -769,6 +774,10 @@ class Cache:
                     expiration_date.strftime("%Y-%m-%d"), obj.tmdb_id, obj.season_number, obj.episode_number
                 ))
 
+    def _tvdb_type(self, is_movie: bool) -> str:
+        return "movie" if is_movie else "show"
+
+
     def query_tvdb(self, tvdb_id, is_movie, expiration):
         tvdb_dict = {}
         expired = None
@@ -777,7 +786,7 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(
-                    "SELECT * FROM tvdb_data4 WHERE tvdb_id = ? AND type = ?",
+                    "SELECT * FROM tvdb_data5 WHERE tvdb_id = ? AND type = ?",
                     (tvdb_id, media_type)
                 )
                 row = cursor.fetchone()
@@ -792,12 +801,14 @@ class Cache:
                     tvdb_dict["release_date"] = datetime.strptime(row["release_date"], "%Y-%m-%d") if row[
                         "release_date"] else None
                     tvdb_dict["genres"] = row["genres"] or ""
+                    # neu:
+                    tvdb_dict["networks"] = row["networks"] or ""
+                    tvdb_dict["production"] = row["production"] or ""
+                    tvdb_dict["studio"] = row["studio"] or ""
+
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     expired = (datetime.now() - datetime_object).days > expiration
         return tvdb_dict, expired
-
-    def _tvdb_type(self, is_movie: bool) -> str:
-        return "movie" if is_movie else "show"
 
     def update_tvdb(self, expired, obj, expiration):
         media_type = self._tvdb_type(obj.is_movie)
@@ -807,20 +818,28 @@ class Cache:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
                 cursor.execute(
-                    "INSERT OR IGNORE INTO tvdb_data4(tvdb_id, type) VALUES(?, ?)",
+                    "INSERT OR IGNORE INTO tvdb_data5(tvdb_id, type) VALUES(?, ?)",
                     (obj.tvdb_id, media_type)
                 )
                 update_sql = (
-                    "UPDATE tvdb_data4 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, "
-                    "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
+                    "UPDATE tvdb_data5 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, "
+                    "release_date = ?, genres = ?, networks = ?, production = ?, studio = ?, expiration_date = ? "
+                    "WHERE tvdb_id = ? AND type = ?"
                 )
                 tvdb_date = (
                     f"{obj.release_date.year:04d}-{obj.release_date.month:02d}-{obj.release_date.day:02d}"
-                    if obj.release_date else None
+                    if getattr(obj, 'release_date', None) else None
                 )
+                # optional: falls die Attribute fehlen, leer schreiben
+                networks = getattr(obj, "networks", "")
+                production = getattr(obj, "production", "")
+                studio = getattr(obj, "studio", "")
+
                 cursor.execute(update_sql, (
-                    obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, tvdb_date,
-                    "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"),
+                    obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url,
+                    tvdb_date, "|".join(obj.genres),
+                    networks, production, studio,
+                    expiration_date.strftime("%Y-%m-%d"),
                     obj.tvdb_id, media_type
                 ))
 
@@ -1159,56 +1178,24 @@ class Cache:
                 sql = f"UPDATE testing SET value1 = ?, value2 = ?, success = ? WHERE name = ?"
                 cursor.execute(sql, (value1, value2, success, name))
 
-    def _ensure_tvdb_data4_schema(self, cursor):
+    def _upgrade_tvdb_4_to_5(self, cursor):
         """
-        Stellt sicher, dass tvdb_data4 eine kombinierte Eindeutigkeit (tvdb_id, type) nutzt.
-        Migriert Alt-Tabellen, in denen tvdb_id UNIQUE war.
+        Migrates tvdb_data4 -> tvdb_data5 und vereinheitlicht das Schema:
+        - fügt networks, production, studio hinzu
+        - stellt UNIQUE(tvdb_id, type) sicher
+        - übernimmt ggf. vorhandene Daten aus einer alten tvdb_data5-Version
         """
-        # 1) Basistabelle anlegen (ohne UNIQUE auf tvdb_id)
+
+        def _table_exists(name: str) -> bool:
+            cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,))
+            return cursor.fetchone() is not None
+
+        if not _table_exists("tvdb_data4"):
+            return
+
+        # Zieltabelle als NEU bauen (finales Schema)
         cursor.execute(
-            """CREATE TABLE IF NOT EXISTS tvdb_data4 (
-            key INTEGER PRIMARY KEY,
-            tvdb_id INTEGER,
-            type TEXT,
-            title TEXT,
-            status TEXT,
-            summary TEXT,
-            poster_url TEXT,
-            background_url TEXT,
-            release_date TEXT,
-            genres TEXT,
-            expiration_date TEXT)"""
-        )
-
-        # 2) Prüfe bestehende Indizes
-        cursor.execute("PRAGMA index_list(tvdb_data4)")
-        idx_rows = cursor.fetchall()
-
-        def _cols_for_index(idx_name: str):
-            try:
-                cursor.execute(f"PRAGMA index_info({idx_name})")
-                rows = cursor.fetchall()
-                return [r["name"] if isinstance(r, sqlite3.Row) else r[2] for r in rows]
-            except sqlite3.OperationalError:
-                return []
-
-        has_composite_uq = False
-        has_single_tvdb_uq = False
-        for idx in idx_rows:
-            idx_name = idx["name"] if isinstance(idx, sqlite3.Row) else idx[1]
-            is_unique = idx["unique"] if isinstance(idx, sqlite3.Row) else idx[2]
-            if not is_unique:
-                continue
-            cols = _cols_for_index(idx_name)
-            if cols == ["tvdb_id", "type"]:
-                has_composite_uq = True
-            if cols == ["tvdb_id"]:
-                has_single_tvdb_uq = True
-
-        # 3) Migration, falls alter UNIQUE(tvdb_id) existiert
-        if has_single_tvdb_uq:
-            cursor.execute(
-                """CREATE TABLE IF NOT EXISTS tvdb_data5 (
+            """CREATE TABLE IF NOT EXISTS tvdb_data5_new (
                 key INTEGER PRIMARY KEY,
                 tvdb_id INTEGER,
                 type TEXT,
@@ -1219,18 +1206,48 @@ class Cache:
                 background_url TEXT,
                 release_date TEXT,
                 genres TEXT,
-                expiration_date TEXT)"""
-            )
-            cursor.execute(
-                "INSERT OR IGNORE INTO tvdb_data5 "
-                "(tvdb_id, type, title, status, summary, poster_url, background_url, release_date, genres, expiration_date) "
-                "SELECT tvdb_id, type, title, status, summary, poster_url, background_url, release_date, genres, expiration_date "
-                "FROM tvdb_data4"
-            )
-            cursor.execute("DROP TABLE tvdb_data4")
-            cursor.execute("ALTER TABLE tvdb_data5 RENAME TO tvdb_data4")
-            has_composite_uq = False  # Index danach neu setzen
+                networks TEXT,
+                production TEXT,
+                studio TEXT,
+                expiration_date TEXT,
+                UNIQUE(tvdb_id, type)
+            )"""
+        )
 
-        # 4) Kombinierten Unique-Index sicherstellen
-        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS tvdb_data4_tvdb_type_uq ON tvdb_data4(tvdb_id, type)")
+        # 1) Aus evtl. vorhandener "alter" tvdb_data5 übernehmen
+        if _table_exists("tvdb_data4"):
+            try:
+                # Falls alte tvdb_data5 die drei Spalten bereits hat
+                cursor.execute(
+                    """INSERT OR IGNORE INTO tvdb_data5_new
+                       (tvdb_id, type, title, status, summary, poster_url, background_url,
+                        release_date, genres, networks, production, studio, expiration_date)
+                       SELECT tvdb_id, type, title, status, summary, poster_url, background_url,
+                              release_date, genres, networks, production, studio, expiration_date
+                       FROM tvdb_data4"""
+                )
+            except sqlite3.OperationalError:
+                # Alte tvdb_data5 ohne die drei Spalten
+                cursor.execute(
+                    """INSERT OR IGNORE INTO tvdb_data5_new
+                       (tvdb_id, type, title, status, summary, poster_url, background_url,
+                        release_date, genres, expiration_date)
+                       SELECT tvdb_id, type, title, status, summary, poster_url, background_url,
+                              release_date, genres, expiration_date
+                       FROM tvdb_data4"""
+                )
+
+        # 3) Alt durch Neu ersetzen (atomic im gleichen Connection-Kontext)
+        if _table_exists("tvdb_data5"):
+            cursor.execute("DROP TABLE tvdb_data5")
+        cursor.execute("ALTER TABLE tvdb_data5_new RENAME TO tvdb_data5")
+
+        # 4) tvdb_data4 nach erfolgreicher Migration entfernen
+        if _table_exists("tvdb_data4"):
+            cursor.execute("DROP TABLE tvdb_data4")
+
+        try:
+            logger.info("tvdb_data: Upgrade auf v5 abgeschlossen.")
+        except Exception:
+            pass
 

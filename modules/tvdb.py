@@ -47,10 +47,15 @@ class TVDbObj:
         self.tvdb_id = tvdb_id
         self.is_movie = is_movie
         self.ignore_cache = ignore_cache
+
         expired = None
         data = None
+
+        # 1) Aus Cache laden (liefert dict) – enthält bereits networks/production/studio als Strings
         if self._tvdb.cache and not ignore_cache:
             data, expired = self._tvdb.cache.query_tvdb(tvdb_id, is_movie, self._tvdb.expiration)
+
+        # 2) Wenn Cache leer/expired -> Seite abrufen (liefert HTML/DOM)
         if expired or not data:
             item_url = f"{urls['movie_id' if is_movie else 'series_id']}{tvdb_id}"
             try:
@@ -58,26 +63,37 @@ class TVDbObj:
             except Failed:
                 raise Failed(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
 
+        # kleine Hilfen
         def parse_page(xpath, is_list=False):
             parse_results = data.xpath(xpath)
             if len(parse_results) > 0:
-                parse_results = [r.strip() for r in parse_results if len(r) > 0]
-            return parse_results if is_list else parse_results[0] if len(parse_results) > 0 else None
+                parse_results = [r.strip() for r in parse_results if isinstance(r, str) and len(r.strip()) > 0]
+            return parse_results if is_list else (parse_results[0] if len(parse_results) > 0 else None)
 
         def parse_title_summary(lang=None):
             place = "//div[@class='change_translation_text' and "
             place += f"@data-language='{lang}']" if lang else "not(@style='display:none')]"
             return parse_page(f"{place}/@data-title"), parse_page(f"{place}/p/text()[normalize-space()]")
 
+        # 3) Daten auswerten
         if isinstance(data, dict):
-            self.title = data["title"]
-            self.summary = data["summary"]
-            self.poster_url = data["poster_url"]
-            self.background_url = data["background_url"]
-            self.release_date = data["release_date"]
-            self.status = data["status"]
-            self.genres = data["genres"].split("|")
+            # Aus dem Cache (query_tvdb) – liefert Strings mit |-Separator
+            self.title = data.get("title", "")
+            self.summary = data.get("summary", "")
+            self.poster_url = data.get("poster_url", "")
+            self.background_url = data.get("background_url", "")
+            self.release_date = data.get("release_date")  # bereits datetime oder None
+            self.status = data.get("status", "")
+            self.genres = data.get("genres", "")
+            self.genres = self.genres.split("|") if self.genres else []
+
+            # neu: direkt als String aus DB (evtl. leer)
+            self.networks = data.get("networks", "") or ""
+            self.production = data.get("production", "") or ""
+            self.studio = data.get("studio", "") or ""
+
         else:
+            # HTML/DOM scrapen
             self.title, self.summary = parse_title_summary(lang=self._tvdb.language)
             if not self.title and self._tvdb.language in language_translation:
                 self.title, self.summary = parse_title_summary(lang=language_translation[self._tvdb.language])
@@ -88,19 +104,40 @@ class TVDbObj:
 
             self.poster_url = parse_page("//div[@id='artwork-posters']/div/div/a/@href")
             self.background_url = parse_page("//div[@id='artwork-backgrounds']/div/div/a/@href")
+
             if is_movie:
                 released = parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]")
             else:
                 released = parse_page("//strong[text()='First Aired']/parent::li/span/text()[normalize-space()]")
 
             try:
-                self.release_date = datetime.strptime(released, "%B %d, %Y") if released else released # noqa
+                self.release_date = datetime.strptime(released, "%B %d, %Y") if released else released  # noqa
             except ValueError:
                 self.release_date = None
+
             self.status = parse_page("//strong[text()='Status']/parent::li/span/text()[normalize-space()]")
+            self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True) or []
 
-            self.genres = parse_page("//strong[text()='Genres']/parent::li/span/a/text()[normalize-space()]", is_list=True)
+            # neu: Networks / Production / Studio extrahieren
+            networks_list = [] if is_movie else (
+                parse_page("//strong[(text()='Network' or text()='Networks')]/parent::li/span/a/text()[normalize-space()]",
+                           is_list=True) or []
+            )
+            production_list = parse_page(
+                "//strong[(text()='Production Company' or text()='Production Companies')]/parent::li/span/a/text()[normalize-space()]",
+                is_list=True
+            ) or []
+            studio_list = parse_page(
+                "//strong[(text()='Studio' or text()='Studios')]/parent::li/span/a/text()[normalize-space()]",
+                is_list=True
+            ) or []
 
+            # Als Strings mit |-Separator ablegen (wie bei genres in der DB)
+            self.networks = "|".join(networks_list) if networks_list else ""
+            self.production = "|".join(production_list) if production_list else ""
+            self.studio = "|".join(studio_list) if studio_list else ""
+
+        # 4) Cache aktualisieren (schreibt auch networks/production/studio in tvdb_data5)
         if self._tvdb.cache and not ignore_cache:
             self._tvdb.cache.update_tvdb(expired, self, self._tvdb.expiration)
 
