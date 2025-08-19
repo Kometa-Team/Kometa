@@ -719,7 +719,7 @@ class Operations:
                                         remove_edits[item_attr] = []
                                     remove_edits[item_attr].append(item.ratingKey)
                                     item_edits += f" - " if item_edits != "" else ""
-                                    item_edits += f"Remove {name_display[item_attr]} (Batched)"
+                                    item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
                                 elif item_attr not in locked_fields:
                                     if item_attr not in lock_edits:
                                         lock_edits[item_attr] = []
@@ -731,12 +731,12 @@ class Operations:
                                     if item_attr not in reset_edits:
                                         reset_edits[item_attr] = []
                                     reset_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"Reset {name_display[item_attr]} (Batched)"
+                                    item_edits += f"\nReset {name_display[item_attr]} (Batched)"
                                 elif item_attr in locked_fields:
                                     if item_attr not in unlock_edits:
                                         unlock_edits[item_attr] = []
                                     unlock_edits[item_attr].append(item.ratingKey)
-                                    item_edits += f"Unlock {name_display[item_attr]} (Batched)"
+                                    item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
                                 break
                             else:
                                 try:
@@ -901,7 +901,7 @@ class Operations:
                                                 ep_remove_edits[item_attr] = []
                                             ep_remove_edits[item_attr].append(ep)
                                             item_edits += f" - " if item_edits != "" else ""
-                                            item_edits += f"Remove {name_display[item_attr]} (Batched)"
+                                            item_edits += f"\nRemove {name_display[item_attr]} (Batched)"
                                         elif item_attr not in locked_fields:
                                             if item_attr not in ep_lock_edits:
                                                 ep_lock_edits[item_attr] = []
@@ -913,12 +913,12 @@ class Operations:
                                             if item_attr not in ep_reset_edits:
                                                 ep_reset_edits[item_attr] = []
                                             ep_reset_edits[item_attr].append(ep)
-                                            item_edits += f"Reset {name_display[item_attr]} (Batched)"
+                                            item_edits += f"\nReset {name_display[item_attr]} (Batched)"
                                         elif item_attr in locked_fields:
                                             if item_attr not in ep_unlock_edits:
                                                 ep_unlock_edits[item_attr] = []
                                             ep_unlock_edits[item_attr].append(ep)
-                                            item_edits += f"Unlock {name_display[item_attr]} (Batched)"
+                                            item_edits += f"\nUnlock {name_display[item_attr]} (Batched)"
                                         break
                                     else:
                                         try:

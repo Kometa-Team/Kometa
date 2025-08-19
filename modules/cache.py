@@ -217,20 +217,23 @@ class Cache:
                     tvdb_id INTEGER,
                     expiration_date TEXT)"""
                 )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tvdb_data4 (
-                    key INTEGER PRIMARY KEY,
-                    tvdb_id INTEGER UNIQUE,
-                    type TEXT,
-                    title TEXT,
-                    status TEXT,
-                    summary TEXT,
-                    poster_url TEXT,
-                    background_url TEXT,
-                    release_date TEXT,
-                    genres TEXT,
-                    expiration_date TEXT)"""
-                )
+
+                self._ensure_tvdb_data4_schema(cursor)
+
+                # cursor.execute(
+                #     """CREATE TABLE IF NOT EXISTS tvdb_data4 (
+                #     key INTEGER PRIMARY KEY,
+                #     tvdb_id INTEGER UNIQUE,
+                #     type TEXT,
+                #     title TEXT,
+                #     status TEXT,
+                #     summary TEXT,
+                #     poster_url TEXT,
+                #     background_url TEXT,
+                #     release_date TEXT,
+                #     genres TEXT,
+                #     expiration_date TEXT)"""
+                # )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tvdb_map (
                     key INTEGER PRIMARY KEY,
@@ -331,6 +334,7 @@ class Cache:
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
                                 self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], overlay=row["overlay"])
                     cursor.execute("DROP TABLE IF EXISTS image_map")
+
 
     def query_guid_map(self, plex_guid):
         id_to_return = None
@@ -768,38 +772,56 @@ class Cache:
     def query_tvdb(self, tvdb_id, is_movie, expiration):
         tvdb_dict = {}
         expired = None
+        media_type = self._tvdb_type(is_movie)
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tvdb_data4 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                cursor.execute(
+                    "SELECT * FROM tvdb_data4 WHERE tvdb_id = ? AND type = ?",
+                    (tvdb_id, media_type)
+                )
                 row = cursor.fetchone()
                 if row:
                     tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
-                    tvdb_dict["type"] = row["type"] if row["type"] else ""
-                    tvdb_dict["title"] = row["title"] if row["title"] else ""
-                    tvdb_dict["status"] = row["status"] if row["status"] else ""
-                    tvdb_dict["summary"] = row["summary"] if row["summary"] else ""
-                    tvdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
-                    tvdb_dict["background_url"] = row["background_url"] if row["background_url"] else ""
-                    tvdb_dict["release_date"] = datetime.strptime(row["release_date"], "%Y-%m-%d") if row["release_date"] else None
-                    tvdb_dict["genres"] = row["genres"] if row["genres"] else ""
+                    tvdb_dict["type"] = row["type"] or ""
+                    tvdb_dict["title"] = row["title"] or ""
+                    tvdb_dict["status"] = row["status"] or ""
+                    tvdb_dict["summary"] = row["summary"] or ""
+                    tvdb_dict["poster_url"] = row["poster_url"] or ""
+                    tvdb_dict["background_url"] = row["background_url"] or ""
+                    tvdb_dict["release_date"] = datetime.strptime(row["release_date"], "%Y-%m-%d") if row[
+                        "release_date"] else None
+                    tvdb_dict["genres"] = row["genres"] or ""
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    time_between_insertion = datetime.now() - datetime_object
-                    expired = time_between_insertion.days > expiration
+                    expired = (datetime.now() - datetime_object).days > expiration
         return tvdb_dict, expired
 
+    def _tvdb_type(self, is_movie: bool) -> str:
+        return "movie" if is_movie else "show"
+
     def update_tvdb(self, expired, obj, expiration):
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+        media_type = self._tvdb_type(obj.is_movie)
+        expiration_date = datetime.now() if expired is True else (
+                    datetime.now() - timedelta(days=random.randint(1, expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tvdb_data4(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
-                update_sql = "UPDATE tvdb_data4 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, " \
-                             "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
-                tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
+                cursor.execute(
+                    "INSERT OR IGNORE INTO tvdb_data4(tvdb_id, type) VALUES(?, ?)",
+                    (obj.tvdb_id, media_type)
+                )
+                update_sql = (
+                    "UPDATE tvdb_data4 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, "
+                    "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
+                )
+                tvdb_date = (
+                    f"{obj.release_date.year:04d}-{obj.release_date.month:02d}-{obj.release_date.day:02d}"
+                    if obj.release_date else None
+                )
                 cursor.execute(update_sql, (
-                    obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, tvdb_date, "|".join(obj.genres),
-                    expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"
+                    obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, tvdb_date,
+                    "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"),
+                    obj.tvdb_id, media_type
                 ))
 
     def query_tvdb_map(self, tvdb_url, expiration):
@@ -1136,3 +1158,79 @@ class Cache:
                 cursor.execute(f"INSERT OR IGNORE INTO testing(name) VALUES(?)", (name,))
                 sql = f"UPDATE testing SET value1 = ?, value2 = ?, success = ? WHERE name = ?"
                 cursor.execute(sql, (value1, value2, success, name))
+
+    def _ensure_tvdb_data4_schema(self, cursor):
+        """
+        Stellt sicher, dass tvdb_data4 eine kombinierte Eindeutigkeit (tvdb_id, type) nutzt.
+        Migriert Alt-Tabellen, in denen tvdb_id UNIQUE war.
+        """
+        # 1) Basistabelle anlegen (ohne UNIQUE auf tvdb_id)
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS tvdb_data4 (
+            key INTEGER PRIMARY KEY,
+            tvdb_id INTEGER,
+            type TEXT,
+            title TEXT,
+            status TEXT,
+            summary TEXT,
+            poster_url TEXT,
+            background_url TEXT,
+            release_date TEXT,
+            genres TEXT,
+            expiration_date TEXT)"""
+        )
+
+        # 2) Prüfe bestehende Indizes
+        cursor.execute("PRAGMA index_list(tvdb_data4)")
+        idx_rows = cursor.fetchall()
+
+        def _cols_for_index(idx_name: str):
+            try:
+                cursor.execute(f"PRAGMA index_info({idx_name})")
+                rows = cursor.fetchall()
+                return [r["name"] if isinstance(r, sqlite3.Row) else r[2] for r in rows]
+            except sqlite3.OperationalError:
+                return []
+
+        has_composite_uq = False
+        has_single_tvdb_uq = False
+        for idx in idx_rows:
+            idx_name = idx["name"] if isinstance(idx, sqlite3.Row) else idx[1]
+            is_unique = idx["unique"] if isinstance(idx, sqlite3.Row) else idx[2]
+            if not is_unique:
+                continue
+            cols = _cols_for_index(idx_name)
+            if cols == ["tvdb_id", "type"]:
+                has_composite_uq = True
+            if cols == ["tvdb_id"]:
+                has_single_tvdb_uq = True
+
+        # 3) Migration, falls alter UNIQUE(tvdb_id) existiert
+        if has_single_tvdb_uq:
+            cursor.execute(
+                """CREATE TABLE IF NOT EXISTS tvdb_data5 (
+                key INTEGER PRIMARY KEY,
+                tvdb_id INTEGER,
+                type TEXT,
+                title TEXT,
+                status TEXT,
+                summary TEXT,
+                poster_url TEXT,
+                background_url TEXT,
+                release_date TEXT,
+                genres TEXT,
+                expiration_date TEXT)"""
+            )
+            cursor.execute(
+                "INSERT OR IGNORE INTO tvdb_data5 "
+                "(tvdb_id, type, title, status, summary, poster_url, background_url, release_date, genres, expiration_date) "
+                "SELECT tvdb_id, type, title, status, summary, poster_url, background_url, release_date, genres, expiration_date "
+                "FROM tvdb_data4"
+            )
+            cursor.execute("DROP TABLE tvdb_data4")
+            cursor.execute("ALTER TABLE tvdb_data5 RENAME TO tvdb_data4")
+            has_composite_uq = False  # Index danach neu setzen
+
+        # 4) Kombinierten Unique-Index sicherstellen
+        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS tvdb_data4_tvdb_type_uq ON tvdb_data4(tvdb_id, type)")
+
