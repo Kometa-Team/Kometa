@@ -43,7 +43,7 @@ Some logic is applied for specific regions to prevent collections appearing whic
 | `CA`             | `hbomax`, `showtime`      | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
 | any besides `CA` | `crave`                   | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
 | any besides `GB` | `channel4`, `itvx`, `now` | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
-| any besides `ES` | `movistar`, `atresplayer` | These collections will not be created if the region is not `ES` as this streaming service is Spain-focused.                                |
+| any besides `ES` | `movistar`, `atresplayer` | These collections will not be created if the region is not `ES` as these streaming services are Spain-focused.                             |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "streaming"}' include-tags='all|movie|show' %}
