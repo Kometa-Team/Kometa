@@ -40,6 +40,7 @@ Some logic is applied to allow for regional streaming service lists to be availa
 | any besides `GB` | `channel4`, `itvx`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
 | any besides `CA` | `crave`                           | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
 | `CA`             | `hbomax`, `showtime`              | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| any besides `ES` | `movistar`                        | These collections will not be created if the region is not `ES` as this streaming service is Spain-focused.                         |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
