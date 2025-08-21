@@ -7,7 +7,7 @@ Updated requests requirement to 2.32.5
 
 
 # New Features
-
+Adds `|` as a preferredc delimiter for run times.
 
 # Docs
 Fixed an issue where the home page logo and shield images appeared as raw text
