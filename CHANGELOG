@@ -19,4 +19,4 @@ Add Movistar Plus + as streaming service
 
 
 # Bug Fixes
-Fixes 2765; apparent letterboxd change
+Fixed Letterboxd list functionality by adding support for 'posteritem' class in XPath selector (fixes #2765)
