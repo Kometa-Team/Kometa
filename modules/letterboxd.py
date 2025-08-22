@@ -28,7 +28,7 @@ class Letterboxd:
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         response = self._request(list_url, language)
-        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
+        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail') or contains(@class, 'posteritem')]/div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-target-link")
