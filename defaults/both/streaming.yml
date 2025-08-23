@@ -60,7 +60,7 @@ templates:
             tmdb_key: [103, 41, 2300, 39]
             value: False
           - region.not: ES
-            tmdb_key: [149, 339, 2241, 62, 2162]
+            tmdb_key: [149, 339, 2241, 62, 2162, 63]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -125,6 +125,7 @@ dynamic_collections:
       peacock: Peacock
       amazon: Prime Video
       amc: AMC+
+      filmin: Filmin
       youtube: YouTube
       tubi: tubi
     title_format: <<key_name>> <<library_typeU>>s
@@ -154,6 +155,7 @@ dynamic_collections:
         peacock: 387
         amazon: 9
         amc: 528|1854
+        filmin: 63
         showtime: 37
         youtube: 188
         tubi: 73

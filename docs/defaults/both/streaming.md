@@ -22,6 +22,7 @@ hide:
 | `Crunchyroll Shows`           | `crunchyroll`    | Collection of Shows Streaming on Crunchyroll.           |
 | `discovery+ Shows`            | `discovery`      | Collection of Shows Streaming on discovery+.            |
 | `Disney+ Movies/Shows`        | `disney`         | Collection of Movies/Shows Streaming on Disney+.        |
+| `Filmin Movies/Shows`         | `filmin`         | Collection of Movies/Shows Streaming on Filmin.         |
 | `Hayu Shows`                  | `hayu`           | Collection of Shows Streaming on Hulu.                  |
 | `HBO Max Movies/Shows`        | `hbomax`         | Collection of Movies/Shows Streaming on HBO Max.        |
 | `Hulu Movies/Shows`           | `hulu`           | Collection of Movies/Shows Streaming on Hulu.           |
@@ -39,12 +40,12 @@ hide:
 
 Some logic is applied for specific regions to prevent collections appearing which do not exist in said region.
 
-| Region           | Key                       | Description                                                                                                                                |
-|:-----------------|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `CA`             | `hbomax`, `showtime`      | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
-| any besides `CA` | `crave`                   | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
-| any besides `GB` | `channel4`, `itvx`, `now` | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
-| any besides `ES` | `movistar`, `atresplayer` | These collections will not be created if the region is not `ES` as these streaming services are Spain-focused.                             |
+| Region           | Key                                  | Description                                                                                                                                |
+|:-----------------|:-------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `CA`             | `hbomax`, `showtime`                 | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
+| any besides `CA` | `crave`                              | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
+| any besides `GB` | `channel4`, `itvx`, `now`            | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
+| any besides `ES` | `movistar`, `atresplayer`, `filmin`  | These collections will not be created if the region is not `ES` as these streaming services are Spain-focused.                             |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "streaming"}' include-tags='all|movie|show' %}
