@@ -2869,7 +2869,7 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False)
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
+            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, person_list=final_values)
             valid_list = []
             for fvalue in final_values:
                 if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
@@ -2885,7 +2885,7 @@ class CollectionBuilder:
                             else:
                                 valid_list.append(actor_id)
                     if not actor_id:
-                        error = f"Plex Error: {attribute}: {fvalue} not found"
+                        error = f"Emby Error: {attribute}: {fvalue} not found"
                         if self.details["show_options"]:
                             error += f"\nOptions: {names}"
                         if validate:

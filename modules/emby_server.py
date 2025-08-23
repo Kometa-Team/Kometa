@@ -248,14 +248,78 @@ class EmbyServer:
         # create an instance of the API class
         # client = emby_client.ApiClient(configuration)
 
-    def get_people(self, library_id: str, role: str):
-        if f"{library_id}-{role}" in self.people_lib_cache.keys():
-            return self.people_lib_cache[f"{library_id}-{role}"]
-        endpoint = f"/emby/Persons?ParentId={library_id}&PersonTypes={role}&Fields=ProviderIds&api_key={self.api_key}"
-        url = self.emby_server_url + endpoint
-        response = requests.get(url, headers=self.headers)
-        items = response.json().get("Items", [])
-        self.people_lib_cache[f"{library_id}-{role}"] = items
+    def get_people(self, library_id: str, role: str, person_list=None):
+        """
+        Liefert Personen aus Emby:
+          - Ohne person_list: komplette (gecachte) Liste für library+role.
+          - Mit person_list (Liste von Namen/Suchbegriffen): gezielte Suchen, dedupliziert per Id.
+        Caching-Keys:
+          - Voll:   "{library_id}-{role}-ALL"
+          - Gezielt:"{library_id}-{role}-{search.lower()}"
+        """
+        base_url = self.emby_server_url + "/emby/Persons"
+
+        # Gezielt: nur die gesuchten Personen abfragen
+        if person_list:
+            results_by_id = {}
+            for term in person_list:
+                if term is None:
+                    continue
+                search = str(term).strip()
+                if not search:
+                    continue
+
+                cache_key = f"{library_id}-{role}-{search.lower()}"
+                if cache_key in self.people_lib_cache:
+                    for it in self.people_lib_cache[cache_key]:
+                        if it and it.get("Id"):
+                            results_by_id[it["Id"]] = it
+                    continue
+
+                params = {
+                    "ParentId": library_id,
+                    "PersonTypes": role,
+                    "Fields": "ProviderIds,ImageTags",
+                    "SearchTerm": search,
+                    "api_key": self.api_key,
+                }
+                try:
+                    r = requests.get(base_url, headers=self.headers, params=params, timeout=20)
+                    r.raise_for_status()
+                    items = r.json().get("Items", [])
+                except Exception:
+                    items = []
+
+                # Exakte Namens-Treffer bevorzugen
+                exact = [p for p in items if (p.get("Name") or "").strip().lower() == search.lower()]
+                ordered = exact or items
+
+                self.people_lib_cache[cache_key] = ordered
+                for it in ordered:
+                    if it and it.get("Id"):
+                        results_by_id[it["Id"]] = it
+
+            return list(results_by_id.values())
+
+        # Vollständige Liste (Legacy) mit Cache
+        cache_key = f"{library_id}-{role}-ALL"
+        if cache_key in self.people_lib_cache:
+            return self.people_lib_cache[cache_key]
+
+        params = {
+            "ParentId": library_id,
+            "PersonTypes": role,
+            "Fields": "ProviderIds,ImageTags",
+            "api_key": self.api_key,
+        }
+        try:
+            r = requests.get(base_url, headers=self.headers, params=params, timeout=60)
+            r.raise_for_status()
+            items = r.json().get("Items", [])
+        except Exception:
+            items = []
+
+        self.people_lib_cache[cache_key] = items
         return items
 
     def get_years(self, library_id: str):

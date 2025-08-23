@@ -1541,7 +1541,7 @@ class Plex(Library):
             if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
                 return result.id
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False):
+    def get_search_choices(self, search_name, title=True, name_pairs=False, person_list = None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
@@ -1549,7 +1549,7 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            tags_iter = self.get_tags(final_search)
+            tags_iter = self.get_tags(final_search, person_list)
             total = len(tags_iter)
             from tqdm.auto import tqdm
             for choice in tqdm(tags_iter, total=total, desc=f"Lade Tags {search_name}", unit="Tag", dynamic_ncols=True):
@@ -1566,7 +1566,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(60), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
-    def get_tags(self, tag):
+    def get_tags(self, tag, person_list=None):
         if isinstance(tag, str):
             match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', tag)
             if not match:
@@ -1748,7 +1748,8 @@ class Plex(Library):
         #  type = {NoneType} None
 
         elif my_search in ["actor", "director","writer", "producer", "composer"]:
-            emby_people = self.EmbyServer.get_people(self.Emby.get("Id"), my_search)
+
+            emby_people = self.EmbyServer.get_people(self.Emby.get("Id"), my_search, person_list)
 
             for person in emby_people:
                 key = person.get('Id')
