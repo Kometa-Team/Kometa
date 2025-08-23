@@ -14,6 +14,9 @@ from plexapi.video import Show, Movie, Episode
 from modules.logs import ERROR, WARNING
 from modules.util import Failed
 
+import emby_client
+from emby_client.rest import ApiException
+
 # bugs: razzie + berlinale year no poster
 
 # todo: add person link to collection with type while doing the edits / summary ?
@@ -177,6 +180,8 @@ class EmbyServer:
 
         # ToDo: Merge the cache
         self.people_lib_cache = {}
+        self.item_cache: dict[int, dict] = {}
+        self.dirty_items: set[int] = set()   # statt Liste        self.people_lib_cache = {}
         self.emby_genres = None
         self.cached_plex_objects = {}
         self.all_tags = None
@@ -215,6 +220,18 @@ class EmbyServer:
                     print(s)
                     break
 
+        # configuration = emby_client.Configuration()
+        # configuration.api_key['api_key'] = self.api_key
+        # configuration.host = self.emby_server_url
+        # Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+        # configuration.api_key_prefix['api_key'] = 'Bearer'
+
+        # create an instance of the API class
+        # client = emby_client.ApiClient(configuration)
+        # activity_log_service = emby_client.ActivityLogServiceApi(client)
+        # activity_log_service.
+        # my_test = emby_client.api.user_library_service_api
+        # pass
         # self.cache_filenames()
 
         # Configure API key authorization: apikeyauth
@@ -363,7 +380,7 @@ class EmbyServer:
 
     def get_emby_countries(self, library_id):
         """
-        Fetches years for all items in the database and caches the results.
+        Fetches countries for all items in the database and caches the results.
         """
         if self.production_countries:
             return self.production_countries
@@ -450,6 +467,7 @@ class EmbyServer:
             return None
 
     def update_collection_display_order(self, collection_id, sort_order):
+        # BUG: There's only one sorting field per item in Emby, while Plex suppoorts individual sortings by collection. So return, do nithing.
         # PremiereDate, SortName
         # c0e0098d2c574fbee1ee5505dc68f5bd
         return
@@ -804,7 +822,7 @@ class EmbyServer:
         return self.convert_emby_to_plex(all_results)
 
 
-    def get_boxsets_from_library(self, title=None, library_id= None, label = None) ->[Collection]:
+    def get_boxsets_from_library(self, title=None, library_id= None, label = None, native = False) ->[Collection]:
         """
         Retrieve all boxsets from the library with CollectionType 'boxsets'.
         Optionally, filter boxsets by a specific title.
@@ -827,9 +845,10 @@ class EmbyServer:
 
         # if library_id:
 
+        if not library_id:
+            library_id = self.library_id
 
-
-        my_search = f"{self.emby_server_url}/Users/{self.user_id}/Items?Recursive=true{search_title}{search_tag}{get_fields}&ParentId={self.library_id}&IncludeItemTypes=BoxSet&api_key={self.api_key}"
+        my_search = f"{self.emby_server_url}/Users/{self.user_id}/Items?Recursive=true{search_title}{search_tag}{get_fields}&ParentId={library_id}&IncludeItemTypes=BoxSet&api_key={self.api_key}"
         # my_search = f"{self.emby_server_url}/Items?Recursive=true&SearchTerm={title}&IncludeItemTypes=BoxSets&api_key={self.api_key}"
 
         title_response = requests.get(
@@ -846,7 +865,7 @@ class EmbyServer:
         #             self.delete_collection(title.get("Id"),is_id=True)
         #             my_return.remove(title)
 
-        plex_collections = self.convert_emby_to_plex(my_return)
+        plex_collections = self.convert_emby_to_plex(my_return, native)
         return plex_collections
 
                 # print(f"Title not found in collections: {title}")
@@ -1122,11 +1141,39 @@ class EmbyServer:
         response.raise_for_status()
         return response.json()
 
-    def get_item(self, item_id) -> dict:
+    def invalidate_item(self, item_id: int) -> None:
+        """Von außen aufrufen, wenn du ein Item (z.B. Genres) geändert hast."""
+        self.dirty_items.add(item_id)
+        self.item_cache.pop(item_id, None)
+
+    def _resolve_item_id(self, plex_object) -> int:
+        # ratingKey auf Plex-Objekten
+        if hasattr(plex_object, "ratingKey"):
+            return int(getattr(plex_object, "ratingKey"))
+
+        # direkte ID (int) oder als String
+        if isinstance(plex_object, int):
+            return plex_object
+        if isinstance(plex_object, str):
+            return int(plex_object.strip())
+
+        # Korrekt: echten Exception-Typ werfen, NICHT WARNING (logging-level int)
+        raise Failed(f"Cannot resolve Emby item id from type={type(plex_object).__name__}: {plex_object!r}")
+
+    def get_item(self, item_id: int | str, *, force_refresh: bool = False) -> dict | None:
+        item_id = int(item_id)
+        if not force_refresh and item_id in self.item_cache and item_id not in self.dirty_items:
+            return self.item_cache[item_id]
+
         endpoint = f"/emby/users/{self.user_id}/items/{item_id}?api_key={self.api_key}"
         url = self.emby_server_url + endpoint
         try:
-            return requests.get(url, headers=self.headers).json()
+            resp = requests.get(url, headers=self.headers)
+            resp.raise_for_status()
+            data = resp.json()
+            self.item_cache[item_id] = data
+            self.dirty_items.discard(item_id)  # wieder „sauber“
+            return data
         except Exception as e:
             print(f"Error occurred while getting item: {e}. URL: {url}.")
             return None
@@ -1704,10 +1751,11 @@ class EmbyServer:
             return False
 
     # Konvertierungsfunktion, um Emby-Daten in Plex-Klassenobjekte zu konvertieren
-    def convert_emby_to_plex(self, emby_data_list):
+    def convert_emby_to_plex(self, emby_data_list, use_native_emby = False):
         plex_objects = []
         if not emby_data_list or len(emby_data_list) == 0:
             return []
+
         # emby_data_list = sorted(set(emby_data_list))
         for item in emby_data_list:
             # print(item)
@@ -1797,10 +1845,10 @@ class EmbyServer:
                     plex_object=Episode(data)
                 elif media_type == "BoxSet":
                     new_col = Collection(data)
-
-                    allitems = self.get_items_in_boxset(new_col.ratingKey)
-                    new_col._items = allitems
-                    new_col.childCount= len((allitems))
+                    if not use_native_emby:
+                        allitems = self.get_items_in_boxset(new_col.ratingKey)
+                        new_col._items = allitems
+                        new_col.childCount= len((allitems))
 
                     plex_object=new_col
 
@@ -1810,7 +1858,8 @@ class EmbyServer:
                     print(f"error converting Emby object")
                     continue
                 plex_object.locations = [item.get("Path", [])]
-                self.cached_plex_objects[item.get("Id")] = plex_object
+                if not use_native_emby:
+                    self.cached_plex_objects[item.get("Id")] = plex_object
 
             plex_objects.append(plex_object)
             # else:
@@ -1882,6 +1931,7 @@ class EmbyServer:
             #     f"Updated item {item_id} with {data}. Waiting {self.seconds_between_requests} seconds."
             # )
             time.sleep(self.seconds_between_requests)
+            self.invalidate_item(item_id)
             return response
         except Exception as e:
             print(f"Error occurred while updating item: {e}")
@@ -2324,309 +2374,251 @@ class EmbyServer:
             print(f"Error removing BoxSet with ID '{collection_id}': {e}")
             return False
 
-
-    def get_emby_item_tags(self, plex_object, library_id="", search_all= False,from_cache=True):
-        """
-        Retrieve and print all tags for an Emby item based on a Plex object.
-
-        Args:
-            plex_object: The Plex object containing the 'ratingKey' that maps to the Emby 'Id'.
-
-        Returns:
-            list: A list of tags for the Emby item.
-        """
-
-        if from_cache and search_all and self.all_tags:
-            return self.all_tags
-
-        emby_item_id = None
-        from modules.plex import Plex
-
-        if hasattr(plex_object, 'ratingKey'):
-            emby_item_id = plex_object.ratingKey
-        elif isinstance(plex_object, str) or isinstance(plex_object, int):
-            emby_item_id = plex_object
-        elif isinstance(plex_object, Plex):
-            pass
-            # if not called properly, retrieve all the lib tags
-            search_all= True
-        else:
-            raise WARNING(f"Emby item tag object is not configured {plex_object}")
-            # print(f"error - no plex object: {plex_object}")
-            return []
-        ids = ""
-        parent_id = ""
-        if search_all:
-            my_url = f"{self.emby_server_url}/emby/Tags?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
-        elif emby_item_id:
-            my_url = f"{self.emby_server_url}/emby/Items?Fields=Tags&Ids={emby_item_id}&api_key={self.api_key}"
-            # ids = f"Ids={emby_item_id}&"
-        else:
-            raise Failed("Plex object not specified for tag search.")
-            # parent_id= f"ParentId={library_id}&"
-        # # Make a request to get the Emby item details
-        response = requests.get(my_url)
-
-        # response = requests.get(
-        #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"
-        # )
-
-
-        # tags empty for collections
-        if response.status_code != 200:
-            raise Failed(
-                f"Failed to retrieve item details for ID {emby_item_id}. "
-                f"Response: {response.status_code} - {response.text}"
-            )
-
-        found_tags = []
-        item_details = response.json()
-        all_items = item_details.get('Items',[])
-        if search_all:
-            for item in all_items:
-                found_tags.append(item.get("Name"))
-        else:
-            if len(all_items) > 0:
-                for tag_item in all_items[0].get("TagItems", []):
-                    found_tags.append(tag_item.get('Name'))
-            # if str(emby_item_id) in kometa_labels:
-            #     all_tags.extend(kometa_labels[str(emby_item_id)])
-
-        if search_all:
-            self.all_tags= sorted(set(found_tags))
-            return self.all_tags
-        return sorted(set(found_tags))
-
-    def get_emby_item_genres(self, plex_object, library_id="", search_all= False,from_cache=True):
-        """
-        Retrieve and print all tags for an Emby item based on a Plex object.
-
-        Args:
-            plex_object: The Plex object containing the 'ratingKey' that maps to the Emby 'Id'.
-
-        Returns:
-            list: A list of tags for the Emby item.
-        """
-
-
-        emby_item_id = None
-        from modules.plex import Plex
-
-        if hasattr(plex_object, 'ratingKey'):
-            emby_item_id = plex_object.ratingKey
-        elif isinstance(plex_object, str) or isinstance(plex_object, int):
-            emby_item_id = plex_object
-        elif isinstance(plex_object, Plex):
-            pass
-            # if not called properly, retrieve all the lib tags
-            search_all= True
-        else:
-            raise WARNING(f"Emby item genre object is not configured {plex_object}")
-            # print(f"error - no plex object: {plex_object}")
-            return []
-        ids = ""
-        parent_id = ""
-        if search_all:
-            my_url = f"{self.emby_server_url}/emby/Genres?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
-        elif emby_item_id:
-            my_url = f"{self.emby_server_url}/emby/Items?Fields=Genres&Ids={emby_item_id}&api_key={self.api_key}"
-            # ids = f"Ids={emby_item_id}&"
-        else:
-            raise Failed("Plex object not specified for tag search.")
-            # parent_id= f"ParentId={library_id}&"
-        # # Make a request to get the Emby item details
-        response = requests.get(my_url)
-
-        # response = requests.get(
-        #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"
-        # )
-
-
-        # tags empty for collections
-        if response.status_code != 200:
-            raise Failed(
-                f"Failed to retrieve item details for ID {emby_item_id}. "
-                f"Response: {response.status_code} - {response.text}"
-            )
-
-        found_tags = []
-        item_details = response.json()
-        all_items = item_details.get('Items',[])
-        if search_all:
-            for item in all_items:
-                found_tags.append(item.get("Name"))
-        else:
-            if len(all_items) > 0:
-                for tag_item in all_items[0].get("GenreItems", []):
-                    found_tags.append(tag_item.get('Name'))
-            # if str(emby_item_id) in kometa_labels:
-            #     all_tags.extend(kometa_labels[str(emby_item_id)])
-
-        return sorted(set(found_tags))
-
-    def get_emby_studios(self, plex_object, library_id):
-        """
-        Retrieve and print all tags for an Emby item based on a Plex object.
-
-        Args:
-            plex_object: The Plex object containing the 'ratingKey' that maps to the Emby 'Id'.
-
-        Returns:
-            list: A list of tags for the Emby item.
-        """
-        emby_item_id = None
-        from modules.plex import Plex
-
-        if hasattr(plex_object, 'ratingKey'):
-            emby_item_id = plex_object.ratingKey
-        elif isinstance(plex_object, str) or isinstance(plex_object, int):
-            emby_item_id = plex_object
-        elif isinstance(plex_object, Plex):
-            pass
-            # if not called properly, retrieve all the lib tags
-            search_all= True
-        else:
-            raise WARNING(f"Emby item tag object is not configured {plex_object}")
-            # print(f"error - no plex object: {plex_object}")
-            return []
-        ids = ""
-        parent_id = ""
-
-        my_url = f"{self.emby_server_url}/emby/Studios?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
-
-        # # Make a request to get the Emby item details
-        response = requests.get(my_url)
-
-        # response = requests.get(
-        #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"
-        # )
-
-
-        # tags empty for collections
-        if response.status_code != 200:
-            raise Failed(
-                f"Failed to retrieve item details for ID {emby_item_id}. "
-                f"Response: {response.status_code} - {response.text}"
-            )
-
-        all_studios = []
-        item_details = response.json()
-        all_items = item_details.get('Items',[])
-
-        for item in all_items:
-            # TODO: Use Emby Studio for Studios and Networks. Too much work with auto updates.
-            # if str(item.get("Name",'')).startswith('📡'):
-            #     continue
-            all_studios.append(item.get("Name"))
-
-
-        all_studios= sorted(set(all_studios))
-        return all_studios
-
-    def get_emby_networks(self, plex_object, library_id):
-        """
-        Retrieve and print all tags for an Emby item based on a Plex object.
-
-        Args:
-            plex_object: The Plex object containing the 'ratingKey' that maps to the Emby 'Id'.
-
-        Returns:
-            list: A list of tags for the Emby item.
-        """
-        emby_item_id = None
-        from modules.plex import Plex
-
-        if hasattr(plex_object, 'ratingKey'):
-            emby_item_id = plex_object.ratingKey
-        elif isinstance(plex_object, str) or isinstance(plex_object, int):
-            emby_item_id = plex_object
-        elif isinstance(plex_object, Plex):
-            pass
-            # if not called properly, retrieve all the lib tags
-            search_all= True
-        else:
-            raise WARNING(f"Emby item tag object is not configured {plex_object}")
-            # print(f"error - no plex object: {plex_object}")
-            return []
-        ids = ""
-        parent_id = ""
-
-        my_url = f"{self.emby_server_url}/emby/Studios?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
-
-        # # Make a request to get the Emby item details
-        response = requests.get(my_url)
-
-        # response = requests.get(
-        #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"
-        # )
-
-
-        # tags empty for collections
-        if response.status_code != 200:
-            raise Failed(
-                f"Failed to retrieve item details for ID {emby_item_id}. "
-                f"Response: {response.status_code} - {response.text}"
-            )
-
-        all_studios = []
-        item_details = response.json()
-        all_items = item_details.get('Items',[])
-
-        for item in all_items:
-            # TODO: Use Emby Studio for Studios and Networks. Too much work with auto updates.
-            # if not str(item.get("Name",'')).startswith('📡'):
-            #     continue
-            # all_studios.append(str(item.get("Name", ''))[2:])
-            all_studios.append(str(item.get("Name", '')))
-
-
-        all_studios= sorted(set(all_studios))
-        return all_studios
-
-    def get_library_studios(self, name = None):
-
-        if not self.studio_list:
-            my_url = f"{self.emby_server_url}/emby/Studios?ParentId={self.library_id}&api_key={self.api_key}"
-            response = requests.get(my_url)
-
-            # response = requests.get(
-            #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"
-            # )
-
-            # tags empty for collections
-            if response.status_code != 200:
+    def get_emby_item_tags(self, plex_object, library_id: str = "", search_all: bool = False,
+                           from_cache: bool = True) -> list[str]:
+        # Item-spezifisch (häufigster Fall)
+        if not search_all:
+            item_id = self._resolve_item_id(plex_object)
+            item = self.get_item(item_id, force_refresh=(item_id in self.dirty_items))
+            if not item:
                 return []
-                raise Failed(
-                    f"Failed to retrieve item details for ID {self.library_id}. "
-                    f"Response: {response.status_code} - {response.text}"
-                )
+            # Emby liefert entweder "Tags": ["A","B"] oder "TagItems": [{"Name":"A"}, ...]
+            if isinstance(item.get("Tags"), list):
+                tags = {t for t in item["Tags"] if t}
+            else:
+                tags = {ti.get("Name") for ti in (item.get("TagItems") or []) if ti.get("Name")}
+            return sorted(tags)
 
-            all_studios = []
-            item_details = response.json()
-            all_items = item_details.get('Items', [])
+        # Library-weit: erst versuchen, aus bereits gecachten Items zu aggregieren
+        agg = set()
+        for cached in self.item_cache.values():
+            if library_id and str(cached.get("LibraryId") or cached.get("ParentId") or "") != str(library_id):
+                continue
+            if isinstance(cached.get("Tags"), list):
+                agg.update({t for t in cached["Tags"] if t})
+            else:
+                agg.update({ti.get("Name") for ti in (cached.get("TagItems") or []) if ti.get("Name")})
+        if agg:
+            return sorted(agg)
 
-            for item in all_items:
-                all_studios.append(item.get("Name"))
-            self.studio_list = sorted(set(all_studios))
+        # Fallback: einmaliger API-Call (falls nichts im Cache bekannt ist)
+        url = f"{self.emby_server_url}/emby/Tags?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
+        data = requests.get(url, headers=self.headers).json()
+        return sorted({it.get("Name") for it in data.get("Items", []) if it.get("Name")})
 
+    def get_emby_item_genres(self, plex_object, library_id: str = "", search_all: bool = False,
+                             from_cache: bool = True) -> list[str]:
+        if not search_all:
+            item_id = self._resolve_item_id(plex_object)
+            item = self.get_item(item_id, force_refresh=(item_id in self.dirty_items))
+            if not item:
+                return []
+            # "Genres": ["Comedy"] oder "GenreItems": [{"Name":"Comedy"}]
+            if isinstance(item.get("Genres"), list):
+                genres = {g for g in item["Genres"] if g}
+            else:
+                genres = {gi.get("Name") for gi in (item.get("GenreItems") or []) if gi.get("Name")}
+            return sorted(genres)
+
+        agg = set()
+        for cached in self.item_cache.values():
+            if library_id and str(cached.get("LibraryId") or cached.get("ParentId") or "") != str(library_id):
+                continue
+            if isinstance(cached.get("Genres"), list):
+                agg.update({g for g in cached["Genres"] if g})
+            else:
+                agg.update({gi.get("Name") for gi in (cached.get("GenreItems") or []) if gi.get("Name")})
+        if agg:
+            return sorted(agg)
+
+        url = f"{self.emby_server_url}/emby/Genres?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
+        data = requests.get(url, headers=self.headers).json()
+        return sorted({it.get("Name") for it in data.get("Items", []) if it.get("Name")})
+
+    def _resolve_item_id_safe(self, plex_object):
+        """Nutzt deine Helferfunktion, wenn vorhanden; einfacher Fallback sonst."""
+        if hasattr(plex_object, "ratingKey"):
+            return plex_object.ratingKey
+        elif isinstance(plex_object, int):
+            return str(plex_object)
+        elif isinstance(plex_object, str):
+            return str(plex_object)
+
+        return None
+        # if isinstance(plex_object, Plex):
+        #     return None  # bedeutet: Library-weit arbeiten
+        # raise WARNING(f"Emby item object is not configured {plex_object!r}")
+
+    def _studios_from_item_cached(self,item: dict) -> list[str]:
+        """Extrahiert Studio-Namen robust aus einem gecachten Emby-Item."""
+        studios = item.get("Studios") or []
+        out = []
+        if isinstance(studios, list):
+            for s in studios:
+                if isinstance(s, dict):
+                    n = s.get("Name") or s.get("name")
+                    if n: out.append(str(n).strip())
+                elif isinstance(s, str):
+                    n = s.strip()
+                    if n: out.append(n)
+        elif isinstance(studios, str):
+            out.extend([p.strip() for p in studios.split(",") if p.strip()])
+        return out
+
+    def get_emby_studios(self, plex_object, library_id) -> list[str]:
+        """
+        Studios für ein Item (oder – wenn kein Item angegeben – für die ganze Library).
+        Primär aus self.item_cache; API-Fallback nur wenn nötig.
+        """
+        studios = set()
+        item_id = self._resolve_item_id_safe(plex_object)
+
+        # 1) Item-spezifisch
+        if item_id:
+            item = self.item_cache.get(str(item_id)) or self.get_item(item_id)
+            if not item:
+                return []
+            for s in self._studios_from_item_cached(item):
+                # TODO: Wenn du später Networks via Unicode '📡' trennen willst,
+                #       und Studios OHNE dieses Präfix behalten möchtest:
+                # if s.startswith('📡'):
+                #     continue
+                studios.add(s)
+            return sorted(studios)
+
+        # 2) Aggregiert aus Cache (optional nach Library gefiltert)
+        for it in self.item_cache.values():
+            if library_id and str(it.get("LibraryId") or it.get("ParentId") or "") != str(library_id):
+                continue
+            for s in self._studios_from_item_cached(it):
+                # TODO: Unicode-Trennung siehe oben:
+                # if s.startswith('📡'):
+                #     continue
+                studios.add(s)
+
+        if studios:
+            return sorted(studios)
+
+        # 3) Fallback: Studios-Endpunkt
+        url = f"{self.emby_server_url}/emby/Studios?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise Failed(
+                f"Failed to retrieve studios for library {library_id}. "
+                f"Response: {response.status_code} - {response.text}"
+            )
+
+        for item in response.json().get("Items", []):
+            name = str(item.get("Name", "")).strip()
+            if not name:
+                continue
+            # TODO: Unicode-Trennung (Studios ohne '📡'):
+            # if name.startswith('📡'):
+            #     continue
+            studios.add(name)
+
+        return sorted(studios)
+
+    def get_emby_networks(self, plex_object, library_id: str):
+        """
+        Gibt 'Networks' zurück – aktuell identisch zu Emby-Studios (später per Unicode trennbar).
+        Nutzt primär den Runtime-Cache (self.item_cache); API-Fallback nur wenn nötig.
+        """
+        nets = set()
+        item_id = self._resolve_item_id_safe(plex_object)
+
+        # 1) Item-spezifisch
+        if item_id:
+            item = self.item_cache.get(str(item_id)) or self.get_item(item_id)
+            if not item:
+                return []
+            for n in self._studios_from_item_cached(item):
+                # TODO: Unicode-Trennung aktivieren, wenn du echte Networks separierst:
+                # if not n.startswith('📡'):
+                #     continue
+                # n = n[2:]
+                nets.add(n)
+            return sorted(nets)
+
+        # 2) Aggregiert aus Cache (optional nach Library gefiltert)
+        for it in self.item_cache.values():
+            if library_id and str(it.get("LibraryId") or it.get("ParentId") or "") != str(library_id):
+                continue
+            for n in self._studios_from_item_cached(it):
+                # TODO: Unicode-Trennung aktivieren, wenn du echte Networks separierst:
+                # if not n.startswith('📡'):
+                #     continue
+                # n = n[2:]
+                nets.add(n)
+
+        if nets:
+            return sorted(nets)
+
+        # 3) Fallback auf Studios-Endpunkt, falls Cache leer
+        url = f"{self.emby_server_url}/emby/Studios?Recursive=true&ParentId={library_id}&api_key={self.api_key}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise Failed(f"Failed to retrieve studios for library {library_id}. "
+                         f"Response: {response.status_code} - {response.text}")
+        for item in response.json().get("Items", []):
+            name = str(item.get("Name", "")).strip()
+            if not name:
+                continue
+            # TODO: Unicode-Trennung aktivieren, wenn du echte Networks separierst:
+            # if not name.startswith('📡'):
+            #     continue
+            # name = name[2:]
+            nets.add(name)
+
+        return sorted(nets)
+
+    def get_library_studios(self, name: str | list[str] | None = None) -> list[str]:
+        """
+        Studios der aktuellen Library.
+        - Primär aus self.item_cache (schnell), sonst API-Fallback.
+        - Wenn 'name' gesetzt ist, wird die Schnittmenge (Treffer) zurückgegeben.
+        """
+        if not getattr(self, "studio_list", None):
+            studios = set()
+            # 1) Aus Cache
+            for it in self.item_cache.values():
+                if str(it.get("LibraryId") or it.get("ParentId") or "") != str(self.library_id):
+                    continue
+                for s in self._studios_from_item_cached(it):
+                    # Hinweis: Hier KEINE Trennung – dies sind „Studios“,
+                    # Unicode-Filter wäre nur für „Networks“ sinnvoll:
+                    # if s.startswith('📡'):
+                    #     continue
+                    studios.add(s)
+
+            # 2) Fallback API
+            if not studios:
+                url = f"{self.emby_server_url}/emby/Studios?ParentId={self.library_id}&api_key={self.api_key}"
+                response = requests.get(url, headers=self.headers)
+                if response.status_code != 200:
+                    raise Failed(f"Failed to retrieve studios for library {self.library_id}. "
+                                 f"Response: {response.status_code} - {response.text}")
+                for item in response.json().get("Items", []):
+                    n = str(item.get("Name", "")).strip()
+                    if n:
+                        # Unicode-Logik hier bewusst auskommentiert (nur Networks):
+                        # if n.startswith('📡'):
+                        #     continue
+                        studios.add(n)
+
+            self.studio_list = sorted(studios)
+
+        # Filter nach 'name' (validiere und gib nur gefundene zurück)
         if name:
-            if isinstance(name,str):
-                if name in self.studio_list:
-                    return self.studio_list
-                else:
-                    if re.search(",", name):
-                        names = name.split(',')
-                        for n in names:
-                            if n in self.studio_list:
-                                return self.studio_list
-        return []
+            haystack = set(self.studio_list)
+            if isinstance(name, str):
+                wanted = {p.strip() for p in name.split(",") if p.strip()}
+            else:
+                wanted = {str(p).strip() for p in name if str(p).strip()}
+            hits = sorted(haystack & wanted)
+            return hits
 
         return self.studio_list
-
-
-
-        # # Make a request to get the Emby item details
-
 
     def multiEditRatings(self, rating_edits):
         """
@@ -2729,10 +2721,5 @@ class EmbyServer:
 
     def editItemTitle(self, ratingKey, new_title):
         raise Warning(f"editItemTitle not implemented for {ratingKey} - {new_title}")
-
-
-
-
-
 
 

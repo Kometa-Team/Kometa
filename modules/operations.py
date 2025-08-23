@@ -140,11 +140,33 @@ class Operations:
                 #     logger.error(e)
                 #     continue
 
+                # Debugging
+                import time
+                _timer0 = time.perf_counter()
+                time_now = lambda: int((time.perf_counter() - _timer0) * 1000)  # ms seit Start
+
+                def time_reset():
+                    """Startpunkt neu setzen (optional)."""
+                    global _timer0
+                    _timer0 = time.perf_counter()
+
+                def tick(label: str, min_ms: int = 0):
+                    """Schneller Log-Helfer (optional)."""
+                    ms = time_now()
+                    if ms >= min_ms:
+                        try:
+                            logger.info(f"[TIMER] {label}: +{ms} ms")
+                        except Exception:
+                            print(f"[TIMER] {label}: +{ms} ms")
+                # Debugging end
+
                 emby_item = self.library.EmbyServer.get_item(
                     item.ratingKey) if self.library.label_operations or self.library.mass_genre_update or self.library.genre_mapper else None
                 current_labels = [la.tag for la in
                                   self.library.item_labels(item)] if self.library.label_operations else []
                 item_genres = (emby_item.get("Genres", []) if emby_item else [])
+
+                # tick("Received Emby item", min_ms=5)
 
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
@@ -152,6 +174,7 @@ class Operations:
                 locked_fields = [f.name for f in item.fields if f.locked]
 
                 tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
+                # tick("Fetched ids", min_ms=5)
 
                 item_edits = ""
 
@@ -244,7 +267,7 @@ class Operations:
                         _tvdb_obj = False
                         if tvdb_id:
                             try:
-                                _tvdb_obj = self.config.TVDb.get_tvdb_obj(tvdb_id, is_movie=self.library.is_movie)
+                                _tvdb_obj = self.config.TVDb.get_tvdb_obj_from_id(tvdb_id, is_movie=self.library.is_movie)
                             except Failed as err:
                                 logger.error(str(err))
                         else:
@@ -343,6 +366,7 @@ class Operations:
                     if not _mal_obj:
                         raise Failed
                     return _mal_obj
+
 
                 for attribute, item_attr in [
                     (self.library.mass_audience_rating_update, "audienceRating"),
@@ -456,6 +480,7 @@ class Operations:
                 if self.library.mass_genre_update or self.library.genre_mapper:
                     new_genres = []
                     extra_option = None
+                    # tick("Begin genre update", min_ms=5)
                     if self.library.mass_genre_update:
                         for option in self.library.mass_genre_update:
                             if option in ["lock", "unlock", "remove", "reset"]:
@@ -482,6 +507,7 @@ class Operations:
                                 break
                             except Failed:
                                 continue
+                    # tick("Genres received", min_ms=5)
 
                     # item_genres = [g.tag for g in item.genres]
                     # item_genres = self.library.EmbyServer.get_item(item.ratingKey).get("Genres", [])
@@ -501,8 +527,6 @@ class Operations:
                     _remove = list(set(item_genres) - set(new_genres))
 
                     # Update genres without batch, as not supported in Emby
-                    if len(_add) > 0 or len(_remove) >0:
-                        self.library.EmbyServer.set_genres(item.ratingKey, new_genres)
 
                     for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
                         if genre_list:
@@ -524,6 +548,12 @@ class Operations:
                         lock_edits["genre"].append(item.ratingKey)
                         item_edits += "" if item_edits == "" else "\n"
                         item_edits += "Lock Genre (Batched)"
+
+                    if new_genres != item_genres:
+                        self.library.EmbyServer.set_genres(item.ratingKey, new_genres)
+                        # tick("Emby genres updated", min_ms=5)
+
+                # tick("Mass genre updated", min_ms=5)
 
                 if self.library.mass_content_rating_update or self.library.content_rating_mapper:
                     new_rating = None
@@ -617,6 +647,7 @@ class Operations:
                         unlock_edits["contentRating"].append(item.ratingKey)
                         item_edits += "" if item_edits == "" else "\n"
                         item_edits += "Unlock Content Rating (Batched)"
+                # tick("Rating updated", min_ms=5)
 
                 if self.library.mass_original_title_update:
                     current_original = item.originalTitle
@@ -718,6 +749,7 @@ class Operations:
                                 break
                             except Failed:
                                 continue
+                # tick("Studio updated", min_ms=5)
 
                 for attribute, item_attr in [
                     (self.library.mass_originally_available_update, "originallyAvailableAt"),
@@ -783,6 +815,7 @@ class Operations:
                                     break
                                 except Failed:
                                     continue
+                # tick("Finished", min_ms=5)
 
                 if len(item_edits) > 0:
                     logger.info(f"{item_edits}")
@@ -1203,7 +1236,7 @@ class Operations:
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 col = self.library.reload(col, force=True) # no reload with Emby
-                labels = current_labels# [la.tag for la in self.library.item_labels(col)]
+                labels = [la.tag for la in self.library.item_labels(col)]
 
                 if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:

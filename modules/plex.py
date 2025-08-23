@@ -645,7 +645,8 @@ class Plex(Library):
     def get_all_collections(self, label=None):
 
         lib_id = self.Emby.get("Id")
-        return self.EmbyServer.get_boxsets_from_library(library_id = lib_id, label=label)
+        return self.EmbyServer.get_boxsets_from_library(library_id = lib_id, label=label, native=True)
+
         args = "?type=18"
         if label:
             label_id = next((c.key for c in self.get_tags("label") if c.title == label), None) # noqa
@@ -1642,7 +1643,7 @@ class Plex(Library):
                 filter_choice = FilterChoiceEmby(key=key, title=title)
                 emby_items.append(filter_choice)
             return emby_items
-        if my_search in ['network', 'show.network']: # todo: differentiate between studio & network?
+        elif my_search in ['network', 'show.network']: # todo: differentiate between studio & network?
             labels = self.EmbyServer.get_emby_networks(self, self.Emby.get("Id"))
 
             for label in labels:

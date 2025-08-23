@@ -3623,7 +3623,7 @@ class CollectionBuilder:
 
         # use the original name for the poster instead of self.obj.title
         self.collection_poster = self.library.pick_image(self.original_name, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
-        self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
+        self.collection_background = self.library.pick_image(self.obj.title, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, image_type="background")
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -3921,7 +3921,7 @@ class CollectionBuilder:
 
         # use original name for the poster
         self.collection_poster = self.library.pick_image(self.original_name, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
-        self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, is_poster=False)
+        self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, image_type="background")
 
 
         # Bilder (Poster/Backdrop) aktualisieren

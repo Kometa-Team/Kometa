@@ -25,23 +25,59 @@ class Letterboxd:
         return response.xpath(xpath) if xpath else response
 
     def _parse_page(self, list_url, language):
-        if "ajax" not in list_url:
-            list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
+        # Ajax nur für /films/-Browsen erzwingen; Listen-URLs so lassen
+        if "/films/" in list_url and "/ajax/" not in list_url:
+            list_url = list_url.replace("/films/", "/films/ajax/", 1)
+
         response = self._request(list_url, language)
-        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
+
+        # Alle Film-Knoten einsammeln – funktioniert für Ajax, Grid & Detail
+        film_nodes = response.xpath("//div[@data-film-id]")
         items = []
-        for letterboxd_id in letterboxd_ids:
-            slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-target-link")
-            comments = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
-            ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
-            years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
+
+        for node in film_nodes:
+            letterboxd_id = node.get("data-film-id")
+
+            # Slug/Link: bevorzugt data-target-link, sonst data-item-link
+            slug = node.get("data-target-link") or node.get("data-item-link") or None
+
+            # Versuche Detail-Infos aus der umgebenden <li> (falls vorhanden)
+            li = node.xpath("./ancestor::li[1]")
+            comment = None
             rating = None
-            if ratings:
-                match = re.search("rated-(\\d+)", ratings[0])
-                if match:
-                    rating = int(match.group(1))
-            items.append((letterboxd_id, slugs[0], int(years[0]) if years else None, comments[0] if comments else None, rating))
-        next_url = response.xpath("//a[@class='next']/@href")
+            year = None
+
+            if li:
+                li = li[0]
+                # Kommentar (nur in Detail-Ansicht vorhanden)
+                comment = (li.xpath(".//div[@class='film-detail-content']/div/p/text()") or [None])[0]
+
+                # Sterneklasse -> Zahl extrahieren (rated-8, rated-9, …)
+                rating_cls = \
+                (li.xpath(".//div[@class='film-detail-content']//span[contains(@class,'rating')]/@class") or [None])[0]
+                if rating_cls:
+                    m = re.search(r"rated-(\d+)", rating_cls)
+                    if m:
+                        rating = int(m.group(1))
+
+                # Jahr aus Detail-Ansicht
+                year_txt = (li.xpath(".//div[@class='film-detail-content']/h2/small/a/text()") or [None])[0]
+                if year_txt and year_txt.isdigit():
+                    year = int(year_txt)
+
+            # Fallback: Jahr aus data-item-full-display-name "Title (YYYY)"
+            if year is None:
+                full = node.get("data-item-full-display-name") or ""
+                m = re.search(r"\((\d{4})\)", full)
+                if m:
+                    year = int(m.group(1))
+
+            items.append((letterboxd_id, slug, year, comment, rating))
+
+        # Nächste Seite: <a class="next">… oder <link rel="next" …>
+        next_url = (response.xpath("//a[contains(@class,'next')]/@href")
+                    or response.xpath("//link[@rel='next']/@href"))
+
         return items, next_url
 
     def _parse_list(self, list_url, limit, language):

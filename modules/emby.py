@@ -704,7 +704,7 @@ class Emby(Library):
 
     def fetchItems(self, uri_args):
         """
-        Fetch items from Plex or Emby based on the provided URI arguments.
+        Fetch items from  Emby based on the provided URI arguments.
         Supports decade-based filtering for Emby and correctly handles episodes.
         """
         is_show= False

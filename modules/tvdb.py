@@ -137,9 +137,9 @@ class TVDbObj:
             self.production = "|".join(production_list) if production_list else ""
             self.studio = "|".join(studio_list) if studio_list else ""
 
-        # 4) Cache aktualisieren (schreibt auch networks/production/studio in tvdb_data5)
-        if self._tvdb.cache and not ignore_cache:
-            self._tvdb.cache.update_tvdb(expired, self, self._tvdb.expiration)
+            # 4) Cache aktualisieren (schreibt auch networks/production/studio in tvdb_data5)
+            if self._tvdb.cache and not ignore_cache:
+                self._tvdb.cache.update_tvdb(expired, self, self._tvdb.expiration)
 
 class TVDb:
     def __init__(self, requests, cache, tvdb_language, expiration):
@@ -150,6 +150,10 @@ class TVDb:
 
     def get_tvdb_obj(self, tvdb_url, is_movie=False):
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
+        return TVDbObj(self, tvdb_id, is_movie=is_movie)
+
+    def get_tvdb_obj_from_id(self, tvdb_id, is_movie=False):
+        # tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
