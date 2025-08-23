@@ -20,6 +20,7 @@ hide:
 | YouTube         | `youtube`         | `110` |
 | Hulu            | `hulu`            | `100` |
 | Paramount+      | `paramount`       | `90`  |
+| AMC+            | `amc`             | `85`  |
 | AppleTV         | `appletv`         | `80`  |
 | Peacock         | `peacock`         | `70`  |
 | discovery+      | `discovery`       | `58`  |
