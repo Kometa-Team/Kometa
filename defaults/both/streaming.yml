@@ -39,7 +39,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: [CA, AU, NL]
+          - region: [CA, AU, NL, ES]
             tmdb_key: [9]
             value: 119
 
@@ -124,6 +124,7 @@ dynamic_collections:
       paramount: Paramount+
       peacock: Peacock
       amazon: Prime Video
+      amc: AMC+
       youtube: YouTube
       tubi: tubi
     title_format: <<key_name>> <<library_typeU>>s
@@ -152,6 +153,7 @@ dynamic_collections:
         paramount: 531|1770
         peacock: 387
         amazon: 9
+        amc: 528|1854
         showtime: 37
         youtube: 188
         tubi: 73

@@ -15,6 +15,7 @@ hide:
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Streaming"}' %}
 | `Apple TV+ Movies/Shows`      | `appletv`        | Collection of Movies/Shows Streaming on Apple TV+.      |
 | `Atres Player Movies/Shows`   | `atresplayer`    | Collection of Movies/Shows Streaming on Atres Player.   |
+| `AMC+ Movies/Shows`           | `amc`            | Collection of Movies/Shows Streaming on AMC+.           |
 | `BET+ Movies/Shows`           | `bet`            | Collection of Movies/Shows Streaming on BET+.           |
 | `Channel 4 Movies/Shows`      | `channel4`       | Collection of Movies/Shows Streaming on Channel 4.      |
 | `Crave Movies/Shows`          | `crave`          | Collection of Movies/Shows Streaming on Crave.          |

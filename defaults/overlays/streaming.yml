@@ -94,7 +94,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: [CA, AU, NL]
+          - region: [CA, AU, NL, ES]
             tmdb_key: [9]
             value: 119
       allowed_streaming:
@@ -104,6 +104,9 @@ templates:
             value: False
           - region.not: GB
             tmdb_key: [103, 41, 2300, 39]
+            value: False
+          - region.not: ES
+            tmdb_key: [149, 339, 2241]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -159,6 +162,10 @@ overlays:
   Paramount+:
     variables: {key: paramount, tmdb_key: 531|1770, weight: 90}
     template: [name: standard, name: mdb_streaming]
+
+  AMC+:
+      variables: { key: amc, tmdb_key: 528|1854, weight: 85 }
+      template: [ name: standard, name: mdb_streaming ]
 
   AppleTV:
     variables: {key: appletv, tmdb_key: 350, weight: 80}
