@@ -32,17 +32,18 @@ hide:
 | BET+            | `bet`             | `20`  |
 | hayu            | `hayu`            | `10`  |
 | tubi            | `tubi`            | `5`   |
+| filmin          | `filmin`          | `5`   |
 
 ## Regional Variants
 
 Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
 
-| Region           | Key                               | Description                                                                                                                         |
-|:-----------------|:----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| any besides `GB` | `channel4`, `itvx`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
-| any besides `CA` | `crave`                           | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
-| `CA`             | `hbomax`, `showtime`              | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
-| any besides `ES` | `movistar`                        | These collections will not be created if the region is not `ES` as this streaming service is Spain-focused.                         |
+| Region           | Key                                 | Description                                                                                                                         |
+|:-----------------|:------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| any besides `GB` | `channel4`, `itvx`, `hayu`, `now`   | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `CA` | `crave`                             | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
+| `CA`             | `hbomax`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| any besides `ES` | `movistar`, `atresplayer`, `filmin` | These collections will not be created if the region is not `es` as these streaming services are Spain-focused.                      |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
