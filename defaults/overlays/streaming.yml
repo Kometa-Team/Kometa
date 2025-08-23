@@ -106,7 +106,7 @@ templates:
             tmdb_key: [103, 41, 2300, 39]
             value: False
           - region.not: ES
-            tmdb_key: [149, 339, 2241]
+            tmdb_key: [149, 339, 2241, 62, 2162, 63]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -206,3 +206,7 @@ overlays:
   tubi:
     variables: {key: tubi, tmdb_key: 73, weight: 5}
     template: [name: standard, name: mdb_streaming]
+
+  Filmin:
+    variables: { key: filmin, tmdb_key: 63, weight: 5 }
+    template: [ name: standard, name: mdb_streaming ]
