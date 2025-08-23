@@ -159,6 +159,10 @@ overlays:
     variables: {key: paramount, tmdb_key: 531|1770, weight: 90}
     template: [name: standard, name: mdb_streaming]
 
+  AMC+:
+      variables: { key: amc, tmdb_key: 528|1854, weight: 85 }
+      template: [ name: standard, name: mdb_streaming ]
+
   AppleTV:
     variables: {key: appletv, tmdb_key: 350, weight: 80}
     template: [name: standard, name: mdb_streaming]
