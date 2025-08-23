@@ -143,6 +143,28 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [int(value)]
 
+def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
+    if split is True:               split = "|"
+    if data is None:                return None if return_none else []
+    elif isinstance(data, list):    list_data = data
+    elif isinstance(data, dict):    return [data]
+    elif split is False:            list_data = [str(data)]
+    else:
+        list_data = [s.strip() for s in str(data).split(split)]
+        if len(list_data) == 1:
+            split = ","
+            list_data = [s.strip() for s in str(data).split(split)]
+
+    def get_str(input_data):
+        return str(input_data).strip() if trim else str(input_data)
+
+    if lower is True:               return [get_str(d).lower() for d in list_data]
+    elif upper is True:             return [get_str(d).upper() for d in list_data]
+    elif int_list is True:
+        try:                            return [int(get_str(d)) for d in list_data]
+        except ValueError:              return []
+    else:                           return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+
 def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
     if split is True:               split = ","
     if data is None:                return None if return_none else []

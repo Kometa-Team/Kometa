@@ -1167,7 +1167,7 @@ if __name__ == "__main__":
         if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"]:
             process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
-            times_to_run = util.get_list(run_args["times"])
+            times_to_run = util.get_list_bar_then_comma(run_args["times"])
             valid_times = []
             for time_to_run in times_to_run:
                 try:
