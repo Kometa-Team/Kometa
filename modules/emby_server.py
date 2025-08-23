@@ -13,6 +13,9 @@ from plexapi.video import Show, Movie, Episode
 
 from modules.logs import ERROR, WARNING
 from modules.util import Failed
+from modules import util
+
+logger = util.logger
 
 import emby_client
 from emby_client.rest import ApiException
@@ -179,6 +182,7 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, library_name = None):
 
         # ToDo: Merge the cache
+        self._image_hash_cache = {}
         self.people_lib_cache = {}
         self.item_cache: dict[int, dict] = {}
         self.dirty_items: set[int] = set()   # statt Liste        self.people_lib_cache = {}
@@ -217,7 +221,7 @@ class EmbyServer:
             for s in self.get_libraries():
                 if s["Name"] == library_name:
                     self.library_id = s['Id']
-                    print(s)
+                    # print(s)
                     break
 
         # configuration = emby_client.Configuration()
@@ -247,7 +251,7 @@ class EmbyServer:
     def get_people(self, library_id: str, role: str):
         if f"{library_id}-{role}" in self.people_lib_cache.keys():
             return self.people_lib_cache[f"{library_id}-{role}"]
-        endpoint = f"/emby/Persons?ParentId={library_id}&PersonTypes={role}&api_key={self.api_key}"
+        endpoint = f"/emby/Persons?ParentId={library_id}&PersonTypes={role}&Fields=ProviderIds&api_key={self.api_key}"
         url = self.emby_server_url + endpoint
         response = requests.get(url, headers=self.headers)
         items = response.json().get("Items", [])
@@ -374,7 +378,7 @@ class EmbyServer:
 
                 # print(f"Resolution cache populated with {len(self.production_countries)} entries.")
             except requests.exceptions.RequestException as e:
-                print(f"Failed to fetch all resolutions: {e}")
+                logger.error(f"Failed to fetch all resolutions: {e}")
             # self.production_countries = allcountries
             # return self.production_countries
 
@@ -408,11 +412,12 @@ class EmbyServer:
             # Konvertiere das Set zurück in eine (sortierte) Liste
             self.production_countries = sorted(unique_countries)
 
-            print(f"Country cache populated with {len(self.production_countries)} entries.")
+            logger.info(f"Country cache populated with {len(self.production_countries)} entries.")
         except requests.exceptions.RequestException as e:
-            print(f"Failed to fetch all countries: {e}")
+            logger.error(f"Failed to fetch all countries: {e}")
         # self.production_countries = allcountries
         return self.production_countries
+
     def get_emby_genres(self, library_id):
         """
         Fetches years for all items in the database and caches the results.
@@ -438,9 +443,9 @@ class EmbyServer:
             # Konvertiere das Set zurück in eine (sortierte) Liste
             # self.emby_genres = sorted(production_countries)
 
-            print(f"Genre cache populated with {len(self.emby_genres)} entries.")
+            logger.info(f"Genre cache populated with {len(self.emby_genres)} entries.")
         except requests.exceptions.RequestException as e:
-            print(f"Failed to fetch all genres: {e}")
+            logger.error(f"Failed to fetch all genres: {e}")
         # self.production_countries = allcountries
         return self.emby_genres
 
@@ -451,7 +456,7 @@ class EmbyServer:
             response = requests.get(url, headers=self.headers)
             return response.json()
         except Exception as e:
-            print(
+            logger.error(
                 f"Error occurred while getting Emby system info, check your configuration. Check your Emby url and port, user ID and API key: {e}"
             )
             raise SystemExit
@@ -463,7 +468,7 @@ class EmbyServer:
         try:
             return user_list_response.json()
         except Exception as e:
-            print(f"Error occurred while getting users: {e}")
+            logger.error(f"Error occurred while getting users: {e}")
             return None
 
     def update_collection_display_order(self, collection_id, sort_order):
@@ -512,11 +517,11 @@ class EmbyServer:
                     return result.get("Id")
 
             # If no matching actor is found
-            print(f"Actor not found: {name}")
+            logger.info(f"Actor not found: {name}")
             return None
 
         except requests.exceptions.RequestException as e:
-            print(f"Error occurred while searching for actor: {e}")
+            logger.error(f"Error occurred while searching for actor: {e}")
             return None
     #added
 
@@ -536,7 +541,7 @@ class EmbyServer:
         if parent_id:
             items = self.get_items(params={"ParentId": parent_id},include_item_types = [f"{builder_type.capitalize()}"] )
         else:
-            print(initpath)
+            # print(initpath)
             items = self.get_items()
 
         # If `cls` is specified, filter items by type (e.g., 'Movie', 'Series')
@@ -884,7 +889,7 @@ class EmbyServer:
 
         plex_collections = self.convert_emby_to_plex(collection_items)
 
-        print(f"111 Retrieved and converted {len(collection_items)} boxsets from library '{library_id}'.")
+        logger.info(f"EmbyServer retrieved and converted {len(collection_items)} boxsets from library '{library_id}'.")
 
         return plex_collections
 
@@ -901,7 +906,7 @@ class EmbyServer:
 
         plex_collections = self.convert_emby_to_plex(collections_with_items)
 
-        print(f"Retrieved and converted {len(plex_collections)} boxsets from library '{library_id}'.")
+        logger.info(f"Retrieved and converted {len(plex_collections)} boxsets from library '{library_id}'.")
 
         return plex_collections
 
@@ -941,7 +946,7 @@ class EmbyServer:
         # Schritt 6: Konvertiere die Boxsets zu Plex-kompatiblen Objekten
         plex_collections = self.convert_emby_to_plex(items)
 
-        print(f"Retrieved and converted {len(plex_collections)} boxsets from library '{library_id}'.")
+        logger.info(f"Retrieved and converted {len(plex_collections)} boxsets from library '{library_id}'.")
 
         return plex_collections
 
@@ -960,7 +965,7 @@ class EmbyServer:
             list: A list of items (dictionaries) from the collection, with the year added to each item.
         """
         if collection_id is None:
-            print("Collection ID is None. Cannot fetch items.")
+            logger.error("Collection ID is None. Cannot fetch items.")
             return []
 
         if include == "Show":
@@ -993,7 +998,7 @@ class EmbyServer:
                 start_index += batch_size
 
             except:# requests.exceptions.RequestException as e:
-                print(f"Error occurred while getting items in collection ID {collection_id}.")
+                logger.error(f"Error occurred while getting items in collection ID {collection_id}.")
                 # print(f"Error occurred while getting items in collection ID {collection_id}: {e}")
                 return []
                 break
@@ -1018,7 +1023,7 @@ class EmbyServer:
             bool: True if the collection is created successfully, False otherwise.
         """
         if not item_ids:
-            print("Can't create collection, no items to add to it.")
+            logger.error("Can't create collection, no items to add to it.")
             return None
 
         try:
@@ -1033,13 +1038,13 @@ class EmbyServer:
             )
 
             if response.status_code != 200:
-                print(f"create_collection: Error creating {collection_name}, response: {response.text}")
+                logger.error(f"create_collection: Error creating {collection_name}, response: {response.text}")
                 return None
 
             # Parse the response to get the collection ID
             data = response.json()
             collection_id = data.get('Id')
-            print(f"Successfully created collection {collection_name}")
+            logger.info(f"Successfully created collection {collection_name}")
 
             # Process remaining items in batches of 100
             batch_size = 100
@@ -1051,7 +1056,7 @@ class EmbyServer:
                 )
 
                 if batch_response.status_code != 204:
-                    print(
+                    logger.error(
                         f"Error adding batch {i // batch_size + 1} to collection {collection_name}, response: {batch_response.text}")
 
             # Lock the collection if specified
@@ -1064,7 +1069,7 @@ class EmbyServer:
             time.sleep(1)  # Add a short delay to avoid API rate limits
             return collection_id
         except Exception as e:
-            print(f"Collection creation failed. - {e}")
+            logger.error(f"Collection creation failed. - {e}")
 
     def create_smart_collection(self, title, smart_type, my_items, ignore_blank_results, parent_id):
         """
@@ -1087,7 +1092,7 @@ class EmbyServer:
 
 
         if len(my_items) == 0:
-            print(f"No items found matching the criteria.")
+            logger.info(f"No items found matching the criteria.")
             if not ignore_blank_results:
                 return None
         else:
@@ -1175,7 +1180,7 @@ class EmbyServer:
             self.dirty_items.discard(item_id)  # wieder „sauber“
             return data
         except Exception as e:
-            print(f"Error occurred while getting item: {e}. URL: {url}.")
+            logger.error(f"Error occurred while getting item: {e}. URL: {url}.")
             return None
 
     def get_item_images(self, item_id) -> dict:
@@ -1184,7 +1189,7 @@ class EmbyServer:
         try:
             return requests.get(url, headers=self.headers).json()
         except Exception as e:
-            print(f"Error occurred while getting item image: {e}. URL: {url}.")
+            logger.error(f"Error occurred while getting item image: {e}. URL: {url}.")
             return None
 
     def set_item_property(self, item_id, property_name, property_value):
@@ -1221,7 +1226,7 @@ class EmbyServer:
         )
         time.sleep(self.seconds_between_requests)
         if response.status_code != 204:
-            print(f"Error refreshing item {item_id}, response: {response}")
+            logger.error(f"Error refreshing item {item_id}, response: {response}")
             return False
         return True
 
@@ -1320,7 +1325,7 @@ class EmbyServer:
                 try:
                     response_data = response.json()
                 except Exception as e:
-                    print(
+                    logger.error(
                         f"Error getting items using URL {url} params {query_params} with response {response.content}. Error: {e}"
                     )
                     return None
@@ -1347,7 +1352,7 @@ class EmbyServer:
                 # Sortiere basierend auf dem SortBy-Schlüssel
                 filtered_results.sort(key=lambda item: item.get(sort_key, 0), reverse=reverse_order)
             except Exception as e:
-                print(f"Error during sorting by {sort_key}: {e}")
+                logger.error(f"Error during sorting by {sort_key}: {e}")
                 raise Failed(f"Sorting failed for key: {sort_key}")
         if (
                 "MaxCriticRating" in query_params or "MaxCommunityRating" in query_params or "MaxCustomRating" in query_params or
@@ -1416,7 +1421,7 @@ class EmbyServer:
                 limit = int(query_params["Limit"])
                 filtered_results = filtered_results[:limit]
             except ValueError:
-                print(f"Invalid Limit value: {query_params['Limit']}")
+                logger.error(f"Invalid Limit value: {query_params['Limit']}")
                 raise Failed(f"Invalid Limit value: {query_params['Limit']}")
         return filtered_results
 
@@ -1437,7 +1442,7 @@ class EmbyServer:
         if response.status_code == 200:
             return True
         else:
-            print(
+            logger.error(
                 f"Error marking item {item_id} as played for user {user_id}: {response.content}"
             )
             return False
@@ -1459,7 +1464,7 @@ class EmbyServer:
         if response.status_code == 200:
             return True
         else:
-            print(
+            logger.error(
                 f"Error marking item {item_id} as a favorite for user {user_id}: {response.content}"
             )
             return False
@@ -1479,8 +1484,8 @@ class EmbyServer:
         Nutzt einen kleinen In-Memory-Cache, gebunden an den Emby-ImageTag.
 
         Rückgabe:
-          True  -> Bild gesetzt ODER übersprungen (identisch)
-          False -> harter Fehler beim Setzen
+          True  -> Bild gesetzt
+          False -> harter Fehler beim Setzen ODER übersprungen (identisch)
         """
         # --- kleiner Cache auf dem Objekt (einmalig angelegt) ---
         if not hasattr(self, "_image_hash_cache"):
@@ -1529,18 +1534,66 @@ class EmbyServer:
             else:
                 return self.__upload_image(item_id, image_path, image_type)
 
-        # 2) Kandidat: Größe & Typ bestimmen (ohne großen Download)
+        # 2) Kandidat: Größe & Typ bestimmen (robust für Hosts ohne HEAD)
         if image_path.startswith("http"):
+            import re
+            cand_size, cand_ct = None, None
+
+            sess = getattr(self, "_http_session", None)
+            if sess is None:
+                sess = requests.Session()
+                self._http_session = sess
+
+            headers = {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0 Safari/537.36"
+                ),
+                "Accept": "image/*,*/*;q=0.8",
+            }
+            if "theposterdb.com" in image_path:
+                headers["Referer"] = "https://theposterdb.com/"
+
+            # 2a) HEAD versuchen
             try:
-                cand_head = requests.head(image_path, timeout=10, allow_redirects=True)
-                if cand_head.ok:
-                    cand_size = int(cand_head.headers.get("Content-Length", "0") or "0") or None
-                    cand_ct = cand_head.headers.get("Content-Type")
-                else:
-                    cand_size, cand_ct = None, None
+                r = sess.head(image_path, timeout=10, allow_redirects=True, headers=headers)
+                if r.ok:
+                    cl = r.headers.get("Content-Length")
+                    if cl and cl.isdigit():
+                        cand_size = int(cl)
+                    cand_ct = r.headers.get("Content-Type")
+                r.close()
             except Exception:
-                cand_size, cand_ct = None, None
+                pass
+
+            # 2b) Fallback: GET mit Range (1 Byte)
+            if cand_size is None or not cand_ct:
+                try:
+                    r = sess.get(
+                        image_path,
+                        headers={**headers, "Range": "bytes=0-0"},
+                        timeout=10,
+                        allow_redirects=True,
+                        stream=True,
+                    )
+                    if r.status_code in (200, 206):
+                        if not cand_ct:
+                            cand_ct = r.headers.get("Content-Type")
+                        cr = r.headers.get("Content-Range")  # z.B. "bytes 0-0/123456"
+                        if cr:
+                            m = re.search(r"/(\d+)$", cr)
+                            if m:
+                                cand_size = int(m.group(1))
+                        else:
+                            cl = r.headers.get("Content-Length")
+                            if cl and cl.isdigit():
+                                cand_size = int(cl)
+                    r.close()
+                except Exception:
+                    pass
         else:
+            # (lokale Datei wie gehabt)
             try:
                 cand_size = os.path.getsize(image_path)
             except Exception:
@@ -1593,11 +1646,35 @@ class EmbyServer:
             except Exception:
                 cur_hash = None
 
-        #    c) Kandidaten-Hash bestimmen
+        #    c) Kandidaten-Hash bestimmen (mit gleichen Headers wie oben)
+        cand_hash = None
         if image_path.startswith("http"):
+            sess = getattr(self, "_http_session", None)
+            if sess is None:
+                sess = requests.Session()
+                self._http_session = sess
+
+            headers = {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0 Safari/537.36"
+                ),
+                "Accept": "image/*,*/*;q=0.8",
+            }
+            if "theposterdb.com" in image_path:
+                headers["Referer"] = "https://theposterdb.com/"
+
             try:
-                r = requests.get(image_path, stream=True, timeout=30)
-                cand_hash = sha256_stream(r.iter_content(131072)) if r.ok else None
+                with sess.get(
+                        image_path,
+                        headers=headers,
+                        timeout=30,
+                        allow_redirects=True,
+                        stream=True,
+                ) as r:
+                    if r.ok:
+                        cand_hash = sha256_stream(r.iter_content(131072))
             except Exception:
                 cand_hash = None
         else:
@@ -1609,8 +1686,8 @@ class EmbyServer:
 
         # 5) Gleich? -> Skip; sonst setzen
         if cur_hash and cand_hash and cur_hash == cand_hash:
-            print(f"Skip: identisches {image_type}-Bild für Item {item_id}.")
-            return True
+            # logger(f"Skip: identisches {image_type}-Bild für Item {item_id}.")
+            return False
 
         if image_path.startswith("http"):
             return self.__set_remote_image(item_id, image_path, image_type, provider_name)
@@ -1681,11 +1758,11 @@ class EmbyServer:
             if response.status_code == 204:
                 return True
             else:
-                print(f"Error setting image for item {item_id}, response: {response}")
+                logger.error(f"Error setting image for item {item_id}, response: {response}")
                 return False
 
         except Exception as e:
-            print(f"Exception occurred while downloading image: {str(e)}")
+            logger.error(f"Exception occurred while downloading image: {str(e)}")
             return False
 
     def __upload_image(self, item_id, image_path, image_type="Primary"):
@@ -1702,7 +1779,7 @@ class EmbyServer:
         """
 
         if not os.path.exists(image_path):
-            print(f"Error: Image file not found: {image_path}")
+            logger.error(f"Error: Image file not found: {image_path}")
             return False
 
 
@@ -1716,7 +1793,7 @@ class EmbyServer:
 
         ext = os.path.splitext(image_path)[1].lower()
         if ext not in ext_to_content_type:
-            print(f"Unsupported image format. Must be one of: {', '.join(ext_to_content_type.keys())}")
+            logger.error(f"Unsupported image format. Must be one of: {', '.join(ext_to_content_type.keys())}")
             return False
 
         try:
@@ -1743,11 +1820,11 @@ class EmbyServer:
             if response.status_code == 204:
                 return True
             else:
-                print(f"Error uploading image for item {item_id}, response: {response}")
+                logger.error(f"Error uploading image for item {item_id}, response: {response}")
                 return False
 
         except Exception as e:
-            print(f"Exception occurred while uploading image: {str(e)}")
+            logger.error(f"Exception occurred while uploading image: {str(e)}")
             return False
 
     # Konvertierungsfunktion, um Emby-Daten in Plex-Klassenobjekte zu konvertieren
@@ -1760,7 +1837,7 @@ class EmbyServer:
         for item in emby_data_list:
             # print(item)
             if item is None:
-                print("Item is None")
+                logger.info("Item is None")
                 continue
             if item.get("Id") in self.cached_plex_objects:
                 plex_object = self.cached_plex_objects[item.get("Id")]
@@ -1855,7 +1932,7 @@ class EmbyServer:
                 elif media_type == "Audio":
                     plex_object=Audio(data)
                 else:
-                    print(f"error converting Emby object")
+                    logger.error(f"error converting Emby object")
                     continue
                 plex_object.locations = [item.get("Path", [])]
                 if not use_native_emby:
@@ -1934,7 +2011,7 @@ class EmbyServer:
             self.invalidate_item(item_id)
             return response
         except Exception as e:
-            print(f"Error occurred while updating item: {e}")
+            logger.error(f"Error occurred while updating item: {e}")
             return None
 
     def __add_remove_from_collection(
@@ -1953,7 +2030,7 @@ class EmbyServer:
         batch_size = self.api_batch_size
         num_batches = (len(item_ids) + batch_size - 1) // batch_size
 
-        print(
+        logger.info(
             f"Processing {collection_name} with '{operation}' in {num_batches} batches"
         )
 
@@ -1961,7 +2038,7 @@ class EmbyServer:
             start_index = i * batch_size
             end_index = min((i + 1) * batch_size, len(item_ids))
             batch_item_ids = item_ids[start_index:end_index]
-            print(".", end="", flush=True)
+            # print(".", end="", flush=True)
 
             if operation == "add":
                 response = requests.post(
@@ -1973,7 +2050,7 @@ class EmbyServer:
                 )
 
             if response.status_code != 204:
-                print(
+                logger.error(
                     f"Error processing collection with operation '{operation}', response: {response}"
                 )
                 return affected_count
@@ -1981,8 +2058,8 @@ class EmbyServer:
             affected_count += len(batch_item_ids)
             time.sleep(self.seconds_between_requests)
 
-        print()
-        print(f"Finished '{operation}' with {len(item_ids)} items in {collection_name}")
+        # print()
+        logger.info(f"Finished '{operation}' with {len(item_ids)} items in {collection_name}")
 
         return affected_count
 
@@ -2005,7 +2082,7 @@ class EmbyServer:
         batch_size = self.api_batch_size
         num_batches = (len(item_ids) + batch_size - 1) // batch_size
 
-        print(
+        logger.info(
             f"Processing {collection_name} with '{operation}' in {num_batches} batches"
         )
 
@@ -2013,7 +2090,7 @@ class EmbyServer:
             start_index = i * batch_size
             end_index = min((i + 1) * batch_size, len(item_ids))
             batch_item_ids = item_ids[start_index:end_index]
-            print(".", end="", flush=True)
+            # print(".", end="", flush=True)
 
             if operation == "add":
                 response = requests.post(
@@ -2025,7 +2102,7 @@ class EmbyServer:
                 )
 
             if response.status_code != 204:
-                print(
+                logger.error(
                     f"Error processing collection with operation '{operation}', response: {response}"
                 )
                 return affected_count
@@ -2033,8 +2110,8 @@ class EmbyServer:
             affected_count += len(batch_item_ids)
             time.sleep(self.seconds_between_requests)
 
-        print()
-        print(f"Finished '{operation}' with {len(item_ids)} items in {collection_name}")
+        # print()
+        logger.info(f"Finished '{operation}' with {len(item_ids)} items in {collection_name}")
 
         return affected_count
 
@@ -2047,7 +2124,7 @@ class EmbyServer:
         headers = { 'accept': '*/*'}
         response = requests.post(delete_url, headers=headers)
         if response.status_code == 204:
-            print(f'Successfully deleted collection with ID "{collection_id}"')
+            logger.info(f'Successfully deleted collection with ID "{collection_id}"')
         else:
 
             # response = requests.get(f"{self.emby_server_url}/Items?Recursive=true&ParentId={collection_id}", headers=self.headers)
@@ -2066,10 +2143,10 @@ class EmbyServer:
 
                 # Optional: Überprüfe die Antwort und logge den Status
                 if response.status_code == 204:
-                    print(f"Batch {i // batch_size + 1}: Erfolgreich gelöscht")
+                    logger.ghost(f"Batch {i // batch_size + 1}: Erfolgreich gelöscht")
                 else:
-                    print(f"Batch {i // batch_size + 1}: Fehler beim Löschen - {response.status_code}")
-                    print("Antwort:", response.text)            # all_ids = [item.get("Id") for item in all_items]
+                    logger.ghost(f"Batch {i // batch_size + 1}: Fehler beim Löschen - {response.status_code} - {response.text}")
+                                # all_ids = [item.get("Id") for item in all_items]
             # print(f'Error deleting collection with ID "{collection_id}": {response.text}')
     # def remove_tags_from_collection(
     #         self, collection_name: str, tags_to_remove: list
@@ -2363,15 +2440,15 @@ class EmbyServer:
             )
 
             if response.status_code == 204:
-                print(f"BoxSet with ID '{collection_id}' successfully removed.")
+                logger.info(f"BoxSet with ID '{collection_id}' successfully removed.")
                 return True
             else:
-                print(
+                logger.error(
                     f"Failed to remove BoxSet with ID '{collection_id}'. Response: {response.status_code} - {response.text}")
                 return False
 
         except Exception as e:
-            print(f"Error removing BoxSet with ID '{collection_id}': {e}")
+            logger.error(f"Error removing BoxSet with ID '{collection_id}': {e}")
             return False
 
     def get_emby_item_tags(self, plex_object, library_id: str = "", search_all: bool = False,
@@ -2648,7 +2725,7 @@ class EmbyServer:
         # Wende die Updates an
         for item_id, rating_data in update_items.items():
             # Führe das Update für das Item aus
-            print(".", end="", flush=True)
+            # print(".", end="", flush=True)
             updates = {}
             if "CommunityRating" in rating_data:
                 updates["CommunityRating"] = rating_data["CommunityRating"]

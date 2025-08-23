@@ -1130,7 +1130,7 @@ class Plex(Library):
         if not builder_level:
             builder_level = self.type.lower()
 
-        print(f"Loading All {builder_level.capitalize()}s from Library: {self.Emby.get('Name')}")
+        logger.info(f"Loading All {builder_level.capitalize()}s from Library: {self.Emby.get('Name')}")
 
         items = []
         start_index = 0
@@ -1172,12 +1172,12 @@ class Plex(Library):
             items_data += data.get("Items", [])
             total_record_count = data.get("TotalRecordCount", 0)
             start_index += limit
-            print(
+            logger.ghost(
                 f"Loaded: {start_index if start_index < total_record_count else total_record_count}/{total_record_count}")
 
         self.EmbyServer.cache_filenames(items_data)
 
-        print(f"Loaded {len(items_data)} {builder_level.capitalize()}s")
+        logger.info(f"Loaded {len(items_data)} {builder_level.capitalize()}s from Emby")
         self._emby_all_items_native = items_data
         if native:
             # for item in items_data:
@@ -1506,10 +1506,10 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa")
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa")
         # if url:
         #     item.uploadPoster(url=image)
         # else:
@@ -1518,18 +1518,18 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="Backdrop")
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="Backdrop")
             # item.uploadArt(filepath=image)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="ClearLogo")
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="ClearLogo")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_actor_id(self, name):
@@ -1549,7 +1549,11 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            for choice in self.get_tags(final_search):
+            tags_iter = self.get_tags(final_search)
+            total = len(tags_iter)
+            from tqdm.auto import tqdm
+            for choice in tqdm(tags_iter, total=total, desc=f"Lade Tags {search_name}", unit="Tag", dynamic_ncols=True):
+
                 if choice.title not in names:
                     names.append((choice.title, choice.key) if name_pairs else choice.title)
                 choices[choice.title] = choice.title if use_title else choice.key

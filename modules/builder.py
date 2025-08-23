@@ -3750,19 +3750,27 @@ class CollectionBuilder:
                     new_sort_title = new_sort_title.replace("<<title>>", title)
                 else:
                     parts = new_sort_title.split("_", 1)
-                    expected_prefix = f"{self.icon}{self.library.name} " # entsricht '📺 Serien '
+                    # expected_prefix = f"{self.icon}{self.library.name} " # entsricht '📺 Serien '
 
-                    if len(parts) > 1 and not parts[1].startswith(expected_prefix) and not parts[1][1:].startswith(f"!{expected_prefix}"):
-                        # Ergänzen, falls der gewünschte Prefix nicht vorhanden ist
-                        new_sort_title = f"{parts[0]}_{expected_prefix}{parts[1]}"
-                    # elif len(parts) == 1:  # Kein Unterstrich vorhanden, einfach anhängen
-                    #     new_sort_title = f"{new_sort_title}_{expected_prefix}"
+                    # new_sort_title = f"{expected_prefix}_{new_sort_title}"
+                    if False: # OLD
+                        if len(parts) > 1 and not parts[1].startswith(expected_prefix) and not parts[1][1:].startswith(f"!{expected_prefix}"):
+                            # Ergänzen, falls der gewünschte Prefix nicht vorhanden ist
+                            new_sort_title = f"{parts[0]}_{expected_prefix}{parts[1]}"
+                        # elif len(parts) == 1:  # Kein Unterstrich vorhanden, einfach anhängen
+                        #     new_sort_title = f"{new_sort_title}_{expected_prefix}"
 
                 if new_sort_title.endswith(" !"):
                     new_sort_title = new_sort_title[:-2]
 
+                expected_prefix = f"{self.icon}{self.library.name} " # entsricht '📺 Serien '
+
+                # Put the library name in front for better sorting of Emnby collections
+                new_sort_title = f"{expected_prefix}_{new_sort_title.replace(f"{self.icon}{self.library.name} ", "")}"
+
                 # append icon for filtering the libraries
-                new_sort_title = f"{self.icon}{new_sort_title}"
+                if False:  # OLD
+                    new_sort_title = f"{self.icon}{new_sort_title}"
 
                 if new_sort_title != sort_title:
                     batch_display += f"\nSort Title | {new_sort_title}"
@@ -3772,22 +3780,6 @@ class CollectionBuilder:
                 new_properties["ForcedSortName"] = new_sort_title
                 # embyserver.set_item_property(self.obj.ratingKey, "ForcedSortName", new_sort_title)
 
-                # url = f"{emby_server_url}/Items/{self.obj['Id']}?api_key={emby_api_key}"
-                #
-                # # JSON-Payload mit dem neuen Sort Name
-                # payload = {
-                #     "SortName": sort_title
-                # }
-                #
-                # # Führe die POST-Anfrage durch
-                # response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload)
-                #
-                # # Überprüfe den Statuscode und protokolliere die Ergebnisse
-                # if response.status_code == 204:
-                #     logger.info(f"Sort Title updated to: {sort_title}")
-                #     updated_details.append("Metadata")
-                # else:
-                #     logger.warning(f"Failed to update Sort Title: {response.text}")
 
             # todo add content rating
             # if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
@@ -3927,13 +3919,13 @@ class CollectionBuilder:
         # Bilder (Poster/Backdrop) aktualisieren
         if self.collection_poster:
             my_emby = self.library.EmbyServer
-            uploaded_poster = my_emby.set_image(self.obj.ratingKey, self.collection_poster.location)
+            uploaded_poster = my_emby.set_image_smart(self.obj.ratingKey, self.collection_poster.location)
 
             if uploaded_poster:
                 logger.info(f"Poster updated: {self.collection_poster.location}")
                 updated_details.append("Image")
             else:
-                logger.warning(f"Failed to update Backdrop: {response.text}")
+                logger.warning(f"Poster not updated.")
 
             # url = f"{self.library.server_url}/Items/{self.obj['Id']}/Images/Primary"
             # files = {"image": open(self.collection_poster, "rb")}
@@ -3945,7 +3937,7 @@ class CollectionBuilder:
             #     logger.warning(f"Failed to update Poster: {response.text}")
 
         if self.collection_background and not "BackdropImageTags" in self.library.EmbyServer.get_item(self.obj.ratingKey) :
-            uploaded = self.library.EmbyServer.set_image(self.obj.ratingKey,self.collection_background.location, image_type="Backdrop")#.emby_server_url}/Items/{self.obj.ratingKey}/Images/Backdrop"
+            uploaded = self.library.EmbyServer.set_image_smart(self.obj.ratingKey,self.collection_background.location, image_type="Backdrop")#.emby_server_url}/Items/{self.obj.ratingKey}/Images/Backdrop"
             # files = {"image": open(self.collection_background, "rb")}
             # response = requests.post(url, headers=headers, files=files)
             if uploaded:

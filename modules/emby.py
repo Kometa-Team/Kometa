@@ -1485,10 +1485,10 @@ class Emby(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa")
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa")
         # if url:
         #     item.uploadPoster(url=image)
         # else:
@@ -1497,18 +1497,18 @@ class Emby(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="Backdrop")
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="Backdrop")
             # item.uploadArt(filepath=image)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image(item.ratingKey, url, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="ClearLogo")
         else:
-            self.EmbyServer.set_image(item.ratingKey, image, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="ClearLogo")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_actor_id(self, name):
