@@ -21,6 +21,7 @@ appletv
 arrapi
 arrowverse
 atmos
+atres
 avenir
 bafta
 bambara
@@ -253,6 +254,7 @@ persistentvolumeclaim
 pgid
 pkkid
 planetrocky
+player
 plex
 plex's
 plexapi
