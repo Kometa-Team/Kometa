@@ -19,4 +19,4 @@ Add Movistar Plus + as streaming service
 
 
 # Bug Fixes
-
+Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
