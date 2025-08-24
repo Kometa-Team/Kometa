@@ -602,8 +602,22 @@ class IMDb:
         response_json = self._graph_request(json_obj)
         try:
             step = "list" if list_type == "list" else "predefinedList"
-            if response_json["data"][step]:
-                search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+            if (
+                isinstance(response_json, dict)
+                and "data" in response_json
+                and isinstance(response_json["data"], dict)
+                and step in response_json["data"]
+                and response_json["data"][step]
+                and (
+                    (is_list and "titleListItemSearch" in response_json["data"][step])
+                    or (not is_list and "advancedTitleSearch" in response_json["data"])
+                )
+            ):
+                search_data = (
+                    response_json["data"][step]["titleListItemSearch"]
+                    if is_list
+                    else response_json["data"]["advancedTitleSearch"]
+                )
                 total = search_data["total"]
                 limit = data["limit"]
                 if limit < 1 or total < limit:
