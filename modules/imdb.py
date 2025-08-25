@@ -44,36 +44,36 @@ chart_urls = {
 }
 
 imdb_search_attributes = [
-    "limit", 
-    "sort_by", 
-    "title", 
-    "type", "type.not", 
+    "limit",
+    "sort_by",
+    "title",
+    "type", "type.not",
     "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte", 
+    "votes.gte", "votes.lte",
     "genre", "genre.any", "genre.not",
     "interests", "interests.any", "interests.not",
     "topic", "topic.any", "topic.not",
-    "alternate_version", "alternate_version.any", "alternate_version.not", 
-    "crazy_credit", "crazy_credit.any", "crazy_credit.not", 
+    "alternate_version", "alternate_version.any", "alternate_version.not",
+    "crazy_credit", "crazy_credit.any", "crazy_credit.not",
     "location", "location.any", "location.not",
-    "goof", "goof.any", "goof.not", 
-    "plot", "plot.any", "plot.not", 
-    "quote", "quote.any", "quote.not", 
+    "goof", "goof.any", "goof.not",
+    "plot", "plot.any", "plot.not",
+    "quote", "quote.any", "quote.not",
     "soundtrack", "soundtrack.any", "soundtrack.not",
-    "trivia", "trivia.any", "trivia.not", 
-    "event", "event.winning", 
-    "imdb_top", "imdb_bottom", 
-    "company", 
+    "trivia", "trivia.any", "trivia.not",
+    "event", "event.winning",
+    "imdb_top", "imdb_bottom",
+    "company",
     "content_rating",
-    "country", "country.any", "country.not", "country.origin", 
-    "keyword", "keyword.any", "keyword.not", 
-    "series", "series.not", 
-    "list", "list.any", "list.not", 
-    "language", "language.any", "language.not", "language.primary", 
+    "country", "country.any", "country.not", "country.origin",
+    "keyword", "keyword.any", "keyword.not",
+    "series", "series.not",
+    "list", "list.any", "list.not",
+    "language", "language.any", "language.not", "language.primary",
     "popularity.gte", "popularity.lte",
     "character",
-    "cast", "cast.any", "cast.not", 
-    "runtime.gte", "runtime.lte", 
+    "cast", "cast.any", "cast.not",
+    "runtime.gte", "runtime.lte",
     "adult",
 ]
 sort_by_options = {
@@ -602,33 +602,63 @@ class IMDb:
         response_json = self._graph_request(json_obj)
         try:
             step = "list" if list_type == "list" else "predefinedList"
-            search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
-            total = search_data["total"]
-            limit = data["limit"]
-            if limit < 1 or total < limit:
-                limit = total
-            remainder = limit % item_count
-            if remainder == 0:
-                remainder = item_count
-            num_of_pages = math.ceil(int(limit) / item_count)
-            end_cursor = search_data["pageInfo"]["endCursor"]
-            imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
-            if num_of_pages > 1:
-                for i in range(2, num_of_pages + 1):
-                    start_num = (i - 1) * item_count + 1
-                    logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
-                    json_obj["variables"]["after"] = end_cursor
-                    response_json = self._graph_request(json_obj)
-                    search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
-                    end_cursor = search_data["pageInfo"]["endCursor"]
-                    ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
-                    if i == num_of_pages:
-                        ids_found = ids_found[:remainder]
-                    imdb_ids.extend(ids_found)
+            if (
+                isinstance(response_json, dict)
+                and "data" in response_json
+                and isinstance(response_json["data"], dict)
+                and step in response_json["data"]
+                and response_json["data"][step]
+                and (
+                    (is_list and "titleListItemSearch" in response_json["data"][step])
+                    or (not is_list and "advancedTitleSearch" in response_json["data"])
+                )
+            ):
+                search_data = (
+                    response_json["data"][step]["titleListItemSearch"]
+                    if is_list
+                    else response_json["data"]["advancedTitleSearch"]
+                )
+                total = search_data["total"]
+                limit = data["limit"]
+                if limit < 1 or total < limit:
+                    limit = total
+                remainder = limit % item_count
+                if remainder == 0:
+                    remainder = item_count
+                num_of_pages = math.ceil(int(limit) / item_count)
+                end_cursor = search_data["pageInfo"]["endCursor"]
+                imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
+                if num_of_pages > 1:
+                    for i in range(2, num_of_pages + 1):
+                        start_num = (i - 1) * item_count + 1
+                        logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+                        json_obj["variables"]["after"] = end_cursor
+                        response_json = self._graph_request(json_obj)
+                        if (
+                            isinstance(response_json, dict)
+                            and "data" in response_json
+                            and isinstance(response_json["data"], dict)
+                            and step in response_json["data"]
+                            and response_json["data"][step]
+                            and (
+                                (is_list and "titleListItemSearch" in response_json["data"][step])
+                                or (not is_list and "advancedTitleSearch" in response_json["data"])
+                            )
+                        ):
+                            search_data = (
+                                response_json["data"][step]["titleListItemSearch"]
+                                if is_list
+                                else response_json["data"]["advancedTitleSearch"]
+                            )
+                            end_cursor = search_data["pageInfo"]["endCursor"]
+                            ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
+                            if i == num_of_pages:
+                                ids_found = ids_found[:remainder]
+                            imdb_ids.extend(ids_found)
             logger.exorcise()
             if len(imdb_ids) > 0:
                 return imdb_ids
-            raise Failed("IMDb Error: No IMDb IDs Found")
+            raise Failed("IMDb Error: No IMDb IDs Found - A typical cause of this is using a private list")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
                 raise Failed("Internal IMDB PersistedQuery Error")
