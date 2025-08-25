@@ -26,6 +26,7 @@ collections:
       event_id: ev0000631
       event_year: all
       award_filter: grand jury prize
+      category_filter: dramatic
       winning: true
 
 dynamic_collections:
