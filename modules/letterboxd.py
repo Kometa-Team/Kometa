@@ -28,12 +28,12 @@ class Letterboxd:
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         response = self._request(list_url, language)
-        letterboxd_ids = response.xpath("//li[contains(@class, 'poster-container') or contains(@class, 'film-detail')]/div/@data-film-id")
+        letterboxd_ids = response.xpath("//*[self::li or self::div][contains(@class, 'poster-container') or contains(@class, 'film-detail') or contains(@class, 'posteritem')  or contains(@class, 'griditem') or contains(@class, 'listitem')]//div/@data-film-id")
         items = []
         for letterboxd_id in letterboxd_ids:
             slugs = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/@data-target-link")
             comments = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/div/p/text()")
-            ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']//span[contains(@class, 'rating')]/@class")
+            ratings = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::article//div[@class='body']//span[contains(@class, 'rating')]/@class")
             years = response.xpath(f"//div[@data-film-id='{letterboxd_id}']/parent::li/div[@class='film-detail-content']/h2/small/a/text()")
             rating = None
             if ratings:
