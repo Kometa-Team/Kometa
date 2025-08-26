@@ -19,6 +19,7 @@ from modules.ntfy import Ntfy
 from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
+from modules.jellyfin import Jellyfin
 from modules.radarr import Radarr
 from modules.sonarr import Sonarr
 from modules.reciperr import Reciperr
@@ -827,6 +828,14 @@ class ConfigFile:
                     else:
                         self.general["plex"][attr] = False
                         logger.warning(str(e).replace("Error", "Warning"))
+                        
+            self.general["jellyfin"] = {
+                "url": check_for_attribute(self.data, "url", parent="jellyfin", var_type="url", default_is_none=True),
+                "token": check_for_attribute(self.data, "token", parent="jellyfin", default_is_none=True),
+                "timeout": check_for_attribute(self.data, "timeout", parent="jellyfin", var_type="int", default=60),
+                "verify_ssl": check_for_attribute(self.data, "verify_ssl", parent="jellyfin", var_type="bool", default_is_none=True)
+            }
+            
             self.general["radarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="radarr", default_is_none=True),
@@ -1208,7 +1217,7 @@ class ConfigFile:
                 except Failed as e:
                     logger.error(e)
 
-                try:
+                try: 
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)
                     params["plex"] = {
@@ -1250,6 +1259,37 @@ class ConfigFile:
                     logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
+                
+                try:
+                    logger.info("")
+                    logger.separator("Jellyfin Configuration", space=False, border=False)
+                    params["jellyfin"] = {
+                        "url": check_for_attribute(lib, "url", parent="jellyfin", var_type="url", default=self.general["jellyfin"]["url"], req_default=True, save=False),
+                        "token": check_for_attribute(lib, "token", parent="jellyfin", default=self.general["jellyfin"]["token"], req_default=True, save=False),
+                        "timeout": check_for_attribute(lib, "timeout", parent="jellyfin", var_type="int", default=self.general["jellyfin"]["timeout"], save=False),
+                        "verify_ssl": check_for_attribute(lib, "verify_ssl", parent="jellyfin", var_type="bool", default=self.general["jellyfin"]["verify_ssl"], default_is_none=True, save=False)
+                    }
+
+                    if params["jellyfin"]["url"].lower() == "env":
+                        params["jellyfin"]["url"] = self.env_jellyfin_url
+                    if params["jellyfin"]["token"].lower() == "env":
+                        params["jellyfin"]["token"] = self.env_jellyfin_token
+                    library = Jellyfin(self, params)
+                    logger.info("")
+                    logger.info(f"{display_name} Library Connection Successful")
+                    logger.info("")
+                    logger.separator("Scanning Files", space=False, border=False)
+                    library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
+                    if not library.collection_files and not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
+                        raise Failed("Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
+                except Failed as e:
+                    logger.stacktrace()
+                    logger.error(e)
+                    logger.info("")
+                    logger.info(f"{display_name} Library Connection Failed")
+                
+                if 'plex' not in lib and 'jellyfin' not in lib:
+                    logger.error("Config Error: No media server specified. Please specify either plex or jellyfin in the library configuration.")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
