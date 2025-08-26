@@ -13,6 +13,12 @@ plex:                              # Can be individually specified per library a
   empty_trash: false
   optimize: false
   verify_ssl: true
+jellyfin:                          # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.13:8096    # Enter Jellyfin URL (REQUIRED);
+  token:                           # Enter Jellyfin Token (REQUIRED)
+  timeout: 60
+  optimize: false
+  verify_ssl: true
 tmdb:
   apikey:                          # Enter TMDb API Key (REQUIRED)
   cache_expiration: 60
