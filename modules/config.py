@@ -1288,7 +1288,7 @@ class ConfigFile:
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
                 
-                if 'plex' not in lib and 'jellyfin' not in lib:
+                if 'plex' not in params and 'jellyfin' not in params:
                     logger.error("Config Error: No media server specified. Please specify either plex or jellyfin in the library configuration.")
                     continue
 
