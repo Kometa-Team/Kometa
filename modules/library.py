@@ -432,12 +432,7 @@ class Library(ABC):
         pass
 
     def map_guids(self, items):
-        total = len(items) if hasattr(items, '__len__') else None
-        # from tqdm.auto import tqdm
-        # pbar = tqdm(items, total=total, desc="Verarbeite Items", unit="Item", dynamic_ncols=True)
-        # for i, item in enumerate(pbar, start=1):
         for i, item in enumerate(items, 1):
-            # pbar.set_postfix(item=item.name) # .name is wrong
             if isinstance(item, tuple):
                 # logger.ghost(f"Processing: {i}/{len(items)}")
                 key, guid = item

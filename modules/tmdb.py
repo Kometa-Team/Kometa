@@ -1,4 +1,6 @@
 import re
+from typing import Any
+
 from modules import util
 from modules.util import Failed
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
@@ -104,15 +106,46 @@ class TMDBObj:
 
 
 class TMDbMovie(TMDBObj):
+
     def __init__(self, tmdb, tmdb_id, ignore_cache=False):
         super().__init__(tmdb, tmdb_id, ignore_cache=ignore_cache)
         expired = None
         data = None
+        refreshed=False
         if self._tmdb.cache and not ignore_cache:
             data, expired = self._tmdb.cache.query_tmdb_movie(tmdb_id, self._tmdb.expiration)
         if expired or not data:
             data = self.load_movie()
+            refreshed=True
         super()._load(data)
+
+        self.cast = []
+        self.crew =[]
+
+        if isinstance(data, dict):
+            self.cast = data.get("cast")
+            self.crew = data.get("crew")
+        else: # tmdb object
+            all_cast = data.cast
+            all_crew = data.crew
+            if all_cast:
+                for actor_entry in all_cast:
+                    self.cast.append({
+                        "person_id": actor_entry.person_id,
+                        "name": actor_entry.name,
+                        "character": actor_entry.character
+                    })
+            if all_crew:
+                for member in all_crew:
+                    self.crew.append({
+                        "person_id": member.person_id,
+                        "name": member.name,
+                        "job": member.job,
+                        "department": member.department,
+                    })
+
+        if self.crew:
+            pass
 
         self.original_title = data["original_title"] if isinstance(data, dict) else data.original_title
         self.release_date = data["release_date"] if isinstance(data, dict) else data.release_date
@@ -120,7 +153,7 @@ class TMDbMovie(TMDBObj):
         self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
         self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
 
-        if self._tmdb.cache and not ignore_cache:
+        if refreshed and self._tmdb.cache and not ignore_cache:
             self._tmdb.cache.update_tmdb_movie(expired, self, self._tmdb.expiration)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))

@@ -3660,7 +3660,6 @@ class CollectionBuilder:
         logger.info("")
 
         embyserver = self.library.EmbyServer
-        headers = embyserver.headers
 
         if "summary" in self.summaries:                     summary = ("summary", self.summaries["summary"])
         elif "translation" in self.summaries:               summary = ("translation", self.summaries["translation"])
@@ -3763,7 +3762,7 @@ class CollectionBuilder:
                 if new_sort_title.endswith(" !"):
                     new_sort_title = new_sort_title[:-2]
 
-                expected_prefix = f"{self.icon}{self.library.name} " # entsricht '📺 Serien '
+                expected_prefix = f"{self.icon}{self.library.name}" # entsricht '📺 Serien '
 
                 # Put the library name in front for better sorting of Emnby collections
                 new_sort_title = f"{expected_prefix}_{new_sort_title.replace(f"{self.icon}{self.library.name} ", "")}"

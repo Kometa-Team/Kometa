@@ -1323,6 +1323,10 @@ class MetadataFile(DataFile):
                         logger.debug(f"Test: {test}")
                         logger.debug(f"Sync: {sync}")
                         logger.debug(f"Include: {include}")
+
+                        if other_name:
+                            other_name = other_name.replace("<<library_typeU>>", library.type)
+
                         logger.debug(f"Other Name: {other_name}")
                         logger.debug(f"All Keys: {all_keys.keys()}")
                         if not auto_list:

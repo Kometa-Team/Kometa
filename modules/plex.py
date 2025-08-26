@@ -483,7 +483,7 @@ class Plex(Library):
         self.EmbyServer = None
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
-            self.EmbyServer = EmbyServer(self.emby_server_url, self.emby_user_id, self.emby_api_key,params["name"])
+            self.EmbyServer = EmbyServer(self.emby_server_url, self.emby_user_id, self.emby_api_key,config, params["name"])
             plexapi.server.TIMEOUT = self.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -1550,9 +1550,7 @@ class Plex(Library):
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
             tags_iter = self.get_tags(final_search, person_list)
-            total = len(tags_iter)
-            from tqdm.auto import tqdm
-            for choice in tqdm(tags_iter, total=total, desc=f"Lade Tags {search_name}", unit="Tag", dynamic_ncols=True):
+            for choice in tags_iter:
 
                 if choice.title not in names:
                     names.append((choice.title, choice.key) if name_pairs else choice.title)

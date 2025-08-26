@@ -161,7 +161,8 @@ class Operations:
                 # Debugging end
 
                 emby_item = self.library.EmbyServer.get_item(
-                    item.ratingKey) if self.library.label_operations or self.library.mass_genre_update or self.library.genre_mapper else None
+                    item.ratingKey) if True or self.library.label_operations or self.library.mass_genre_update or self.library.genre_mapper else None
+
                 current_labels = [la.tag for la in
                                   self.library.item_labels(item)] if self.library.label_operations else []
                 item_genres = (emby_item.get("Genres", []) if emby_item else [])
@@ -281,39 +282,39 @@ class Operations:
                     nonlocal _mdb_obj
                     if _mdb_obj is None:
                         _mdb_obj = False
-                        if self.config.MDBList.limit is False:
-                            if self.library.is_show and tvdb_id:
-                                try:
-                                    _mdb_obj = self.config.MDBList.get_series(tvdb_id)
-                                except LimitReached as err:
-                                    logger.debug(err)
-                                except Failed as err:
-                                    logger.error(str(err))
-                                except Exception:
-                                    logger.trace(f"TVDb ID: {tvdb_id}")
-                                    raise
-                            if self.library.is_movie and tmdb_id:
-                                try:
-                                    _mdb_obj = self.config.MDBList.get_movie(tmdb_id)
-                                except LimitReached as err:
-                                    logger.debug(err)
-                                except Failed as err:
-                                    logger.error(str(err))
-                                except Exception:
-                                    logger.trace(f"TMDb ID: {tmdb_id}")
-                                    raise
-                            if imdb_id and not _mdb_obj:
-                                try:
-                                    _mdb_obj = self.config.MDBList.get_imdb(imdb_id)
-                                except LimitReached as err:
-                                    logger.debug(err)
-                                except Failed as err:
-                                    logger.error(str(err))
-                                except Exception:
-                                    logger.trace(f"IMDb ID: {imdb_id}")
-                                    raise
-                            if not _mdb_obj:
-                                logger.warning(f"No MdbItem for {item.title} (Guid: {item.guid})")
+                        # if self.config.MDBList.limit is False:
+                        if self.library.is_show and tvdb_id:
+                            try:
+                                _mdb_obj = self.config.MDBList.get_series(tvdb_id)
+                            except LimitReached as err:
+                                logger.debug(err)
+                            except Failed as err:
+                                logger.error(str(err))
+                            except Exception:
+                                logger.trace(f"TVDb ID: {tvdb_id}")
+                                raise
+                        if self.library.is_movie and tmdb_id:
+                            try:
+                                _mdb_obj = self.config.MDBList.get_movie(tmdb_id)
+                            except LimitReached as err:
+                                logger.debug(err)
+                            except Failed as err:
+                                logger.error(str(err))
+                            except Exception:
+                                logger.trace(f"TMDb ID: {tmdb_id}")
+                                raise
+                        if imdb_id and not _mdb_obj:
+                            try:
+                                _mdb_obj = self.config.MDBList.get_imdb(imdb_id)
+                            except LimitReached as err:
+                                logger.debug(err)
+                            except Failed as err:
+                                logger.error(str(err))
+                            except Exception:
+                                logger.trace(f"IMDb ID: {imdb_id}")
+                                raise
+                        if not _mdb_obj:
+                            logger.warning(f"No MdbItem for {item.title} (Guid: {item.guid})")
                     if not _mdb_obj:
                         raise Failed
                     return _mdb_obj
@@ -477,7 +478,27 @@ class Operations:
                                 except Failed:
                                     continue
 
+                if self.library.is_movie and tmdb_id: # mass_cast_and_crew_update
+                    try:
+                        tmdb_item = tmdb_obj()
+                    except Failed:
+                        tmdb_item = None
+
+                    if tmdb_item:
+                        my_cast = tmdb_item.cast
+                        my_crew = tmdb_item.crew
+                        if tmdb_id == "2487":
+                            pass
+                        if my_cast:
+                            try:
+                                has_edits, people_edits = self.library.EmbyServer.sync_people(self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
+                                if has_edits:
+                                    item_edits += people_edits
+                            except:
+                                pass
+
                 if self.library.mass_genre_update or self.library.genre_mapper:
+
                     new_genres = []
                     extra_option = None
                     # tick("Begin genre update", min_ms=5)

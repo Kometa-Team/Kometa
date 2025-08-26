@@ -150,6 +150,8 @@ class MDBList:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
+        if self.limit:
+            raise Failed
         logger.trace(f"ID: {key}")
         mdb = MDbObj(self._request(api_url, params=params))
         if self.cache and not ignore_cache:

@@ -18,6 +18,7 @@ from modules import util
 logger = util.logger
 
 import emby_client
+import unicodedata
 from emby_client.rest import ApiException
 
 # bugs: razzie + berlinale year no poster
@@ -179,9 +180,12 @@ class EmbyConfig:
 
 class EmbyServer:
 
-    def __init__(self, server_url, user_id, api_key, library_name = None):
+    def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self.config = config
+        self._roman_name_cache = {}  # key: tmdb_person_id(str) -> latin_name(str)|None
+        self.people_cache = {}
         self._image_hash_cache = {}
         self.people_lib_cache = {}
         self.item_cache: dict[int, dict] = {}
@@ -248,79 +252,132 @@ class EmbyServer:
         # create an instance of the API class
         # client = emby_client.ApiClient(configuration)
 
-    def get_people(self, library_id: str, role: str, person_list=None):
-        """
-        Liefert Personen aus Emby:
-          - Ohne person_list: komplette (gecachte) Liste für library+role.
-          - Mit person_list (Liste von Namen/Suchbegriffen): gezielte Suchen, dedupliziert per Id.
-        Caching-Keys:
-          - Voll:   "{library_id}-{role}-ALL"
-          - Gezielt:"{library_id}-{role}-{search.lower()}"
-        """
-        base_url = self.emby_server_url + "/emby/Persons"
+    from deepdiff import DeepDiff
 
-        # Gezielt: nur die gesuchten Personen abfragen
-        if person_list:
-            results_by_id = {}
-            for term in person_list:
-                if term is None:
-                    continue
-                search = str(term).strip()
-                if not search:
-                    continue
+    # -------------------------------------------------------------
+    # Nutzt DEINE bestehende get_people() – nichts Neues erfunden.
+    # Fügt nur die fehlenden Bausteine zusammen & integriert library_id.
+    # -------------------------------------------------------------
 
-                cache_key = f"{library_id}-{role}-{search.lower()}"
-                if cache_key in self.people_lib_cache:
-                    for it in self.people_lib_cache[cache_key]:
-                        if it and it.get("Id"):
-                            results_by_id[it["Id"]] = it
-                    continue
-
-                params = {
-                    "ParentId": library_id,
-                    "PersonTypes": role,
-                    "Fields": "ProviderIds,ImageTags",
-                    "SearchTerm": search,
-                    "api_key": self.api_key,
-                }
-                try:
-                    r = requests.get(base_url, headers=self.headers, params=params, timeout=20)
-                    r.raise_for_status()
-                    items = r.json().get("Items", [])
-                except Exception:
-                    items = []
-
-                # Exakte Namens-Treffer bevorzugen
-                exact = [p for p in items if (p.get("Name") or "").strip().lower() == search.lower()]
-                ordered = exact or items
-
-                self.people_lib_cache[cache_key] = ordered
-                for it in ordered:
-                    if it and it.get("Id"):
-                        results_by_id[it["Id"]] = it
-
-            return list(results_by_id.values())
-
-        # Vollständige Liste (Legacy) mit Cache
-        cache_key = f"{library_id}-{role}-ALL"
-        if cache_key in self.people_lib_cache:
-            return self.people_lib_cache[cache_key]
-
-        params = {
-            "ParentId": library_id,
-            "PersonTypes": role,
-            "Fields": "ProviderIds,ImageTags",
-            "api_key": self.api_key,
+    def _normalize_person(self, p: dict) -> dict:
+        # Vergleichsrelevante Felder; PrimaryImageTag etc. ignorieren
+        out = {
+            "Id": str(p.get("Id")) if p.get("Id") is not None else None,
+            "Name": p.get("Name"),
+            "Type": p.get("Type"),
         }
-        try:
-            r = requests.get(base_url, headers=self.headers, params=params, timeout=60)
-            r.raise_for_status()
-            items = r.json().get("Items", [])
-        except Exception:
-            items = []
+        if p.get("Type") == "Actor" and p.get("Role"):
+            out["Role"] = p["Role"]
+        return out
 
-        self.people_lib_cache[cache_key] = items
-        return items
+    def _lists_equal_ordered(self, a: list[dict], b: list[dict]) -> bool:
+        # Order-sensitiver Vergleich
+        if len(a) != len(b):
+            return False
+        for x, y in zip(a, b):
+            if self._normalize_person(x) != self._normalize_person(y):
+                return False
+        return True
+
+    def _resolve_person_fast(self, people_index, role: str, provider: str, tmdb_id, person_name: str):
+        """
+        Verwendet NUR den vorgewärmten Index (keine HTTP-Calls).
+        Rückgabe: (emby_id, linked_bool)
+        - linked_bool True, wenn wir im Person-Objekt eine fehlende ProviderId ergänzen mussten
+          (nur intern markiert; hier KEIN Update-POST – das machst du weiterhin wo du willst).
+        """
+        prov = (provider or "Tmdb")
+        tmdb_id_str = str(tmdb_id)
+        buckets = people_index.get(role) or {}
+        by_tmdb = buckets.get("by_tmdb", {})
+        by_name = buckets.get("by_name", {})
+
+        # 1) TMDb-Treffer?
+        if tmdb_id_str in by_tmdb:
+            person = by_tmdb[tmdb_id_str]
+            return person.get("Id"), False
+
+        # 2) Name-Treffer?
+        name_l = (person_name or "").strip().lower()
+        person = by_name.get(name_l)
+        if person and person.get("Id"):
+            # ProviderIds lokal „ergänzen“ (kein Netz-Call hier)
+            prov_ids = person.get("ProviderIds") or {}
+            if (prov not in prov_ids) or (str(prov_ids.get(prov)) != tmdb_id_str):
+                prov_ids[prov] = tmdb_id_str
+                person["ProviderIds"] = prov_ids
+                # In-Index auch per tmdb map auffindbar machen
+                by_tmdb[tmdb_id_str] = person
+                return person["Id"], True
+            return person["Id"], False
+
+        # 3) Nichts gefunden
+        return None, False
+
+    def _pkey(self, p: dict):
+        """Eindeutiger Schlüssel je Person/Typ für Vergleich."""
+        return (str(p.get("Id")) if p.get("Id") is not None else None, p.get("Type"))
+
+    def _pname(self, p: dict):
+        """Anzeigeformat Name (inkl. Rolle bei Actors)."""
+        t = p.get("Type")
+        n = p.get("Name") or "?"
+        if t == "Actor" and p.get("Role"):
+            return f"{n} (Actor: {p['Role']})"
+        return f"{n} ({t})" if t else n
+
+    def summarize_people_changes(self, current_people: list[dict], desired_people: list[dict],
+                                 reorder_preview_max: int = 6) -> str:
+        """Schöner Klartext-Diff für Cast & Crew (inkl. Order-Check)."""
+        cur_map = {self._pkey(p): p for p in current_people if p.get("Id") and p.get("Type")}
+        des_map = {self._pkey(p): p for p in desired_people if p.get("Id") and p.get("Type")}
+
+        # Adds & Removes
+        added_keys = [k for k in des_map.keys() if k not in cur_map]
+        removed_keys = [k for k in cur_map.keys() if k not in des_map]
+
+        added = [self._pname(des_map[k]) for k in added_keys]
+        removed = [self._pname(cur_map[k]) for k in removed_keys]
+
+        # Updates (Name/Role)
+        updates = []
+        for k in set(cur_map.keys()).intersection(des_map.keys()):
+            cur = cur_map[k];
+            des = des_map[k]
+            if (cur.get("Name") or "") != (des.get("Name") or ""):
+                updates.append(f"Name: {cur.get('Name') or '?'} → {des.get('Name') or '?'} ({des.get('Type')})")
+            if des.get("Type") == "Actor":
+                cur_role = cur.get("Role") or ""
+                des_role = des.get("Role") or ""
+                if cur_role != des_role:
+                    person = des.get("Name") or cur.get("Name") or "?"
+                    updates.append(f"Role: {person}: {cur_role or '—'} → {des_role or '—'}")
+
+        # Reorder nur wenn keine Adds/Removes
+        reordered_list = []
+        if not added_keys and not removed_keys:
+            cur_order = [self._pkey(p) for p in current_people if self._pkey(p) in des_map]
+            des_order = [self._pkey(p) for p in desired_people if self._pkey(p) in cur_map]
+            if cur_order != des_order:
+                des_index = {k: i for i, k in enumerate(des_order)}
+                moved = [k for i, k in enumerate(cur_order) if des_index.get(k) is not None and des_index[k] != i]
+                names = [self._pname(des_map[k]) for k in moved]
+                if len(names) > reorder_preview_max:
+                    names = names[:reorder_preview_max] + [f"… +{len(moved) - reorder_preview_max} more"]
+                reordered_list = names
+
+        parts = []
+        if added:
+            parts.append("+ " + ", ".join(added))
+        if removed:
+            parts.append("- " + ", ".join(removed))
+        if updates:
+            parts.append("~ " + "; ".join(updates))
+        if reordered_list:
+            parts.append("↔ Reordered: " + ", ".join(reordered_list))
+
+        return " | ".join(parts) if parts else "no changes"
+
 
     def get_years(self, library_id: str):
         endpoint = f"/emby/Years?Recursive=True&ParentId={library_id}&api_key={self.api_key}"
@@ -2051,18 +2108,31 @@ class EmbyServer:
         return self.__update_item(item_id, {"Tags": new_tags, "TagItems": new_tags}, item)
 
     def update_item(self, item_id, data):
-        self.__update_item(item_id,data)
+        return self.__update_item(item_id,data)
 
     def __update_item(self, item_id, data, item = None):
         if not item:
             item = self.get_item(item_id)
         if item is None:
             return None
-        if "ForcedSortName" in data and "SortName" not in item["LockedFields"]:
-            # If adding "ForcedSortName" to data, we must have "SortName" in LockedFields
-            # see https://emby.media/community/index.php?/topic/108814-itemupdateservice-cannot-change-the-sortname-and-forcedsortname/
-            item["LockedFields"].append("SortName")
+
+        if "LockedFields" not in item:
+            item["LockedFields"] = []
+
+        if "ForcedSortName" in data:
+            item["ForcedSortName"] = data["ForcedSortName"]
+            item["SortName"] = data["ForcedSortName"]
+
+            if "SortName" not in item["LockedFields"]:
+                item["LockedFields"].append("SortName")
+
+        unchanged = all(item.get(k) == v for k, v in data.items())
+        if unchanged:
+            return None
+
         item.update(data)
+
+
         update_item_url = (
             f"{self.emby_server_url}/emby/Items/{item_id}?api_key={self.api_key}"
         )
@@ -2863,4 +2933,617 @@ class EmbyServer:
     def editItemTitle(self, ratingKey, new_title):
         raise Warning(f"editItemTitle not implemented for {ratingKey} - {new_title}")
 
+    # ==== Session einmalig bereitstellen (falls nicht vorhanden) ====
+    def _ensure_http_session(self):
+        if not hasattr(self, "_http_session") or self._http_session is None:
+            s = requests.Session()
+            try:
+                from requests.adapters import HTTPAdapter
+                from urllib3.util.retry import Retry
+                retry = Retry(total=3, backoff_factor=0.3, status_forcelist=(429, 500, 502, 503, 504))
+                s.mount("http://", HTTPAdapter(max_retries=retry, pool_connections=20, pool_maxsize=40))
+                s.mount("https://", HTTPAdapter(max_retries=retry, pool_connections=20, pool_maxsize=40))
+            except Exception:
+                pass
+            self._http_session = s
 
+    # ==== Leichte Normalisierung statt DeepDiff ====
+    def _normalize_people_for_compare(self, people_list):
+        """
+        Vergleicht nur die Felder, die für die Gleichheit relevant sind – in Ordnung (Order zählt).
+        Ignoriert 'PrimaryImageTag' und sonstige irrelevante Felder.
+        """
+        norm = []
+        for p in people_list or []:
+            norm.append((
+                str(p.get("Id") if p.get("Id") is not None else p.get("Name", "")).strip().casefold(),
+                (p.get("Name") or "").strip().casefold(),
+                p.get("Type") or "",
+                (p.get("Role") or "").strip()
+            ))
+        return norm
+
+    # ==== zentraler Personen-Index je Library+Rolle ====
+    def _build_people_index(self, library_id: str, role: str):
+        """
+        Baut (und cached) einen Index für die Komplettriege der Personen einer Library+Rolle.
+        Maps:
+          - by_id[str(Id)] -> person-dict
+          - by_name[name.casefold()] -> list[person-dict] (für exakte Namensmatches)
+          - by_provider[(prov_case, tmdb_id_str)] -> person-dict
+        """
+        if not hasattr(self, "people_index"):
+            self.people_index = {}  # key: f"{library_id}-{role}" -> dicts
+
+        key = f"{library_id}-{role}"
+        if key in self.people_index:
+            return self.people_index[key]
+
+        # Vollständige Liste einmal ziehen (mit Session & Keep-Alive)
+        self._ensure_http_session()
+        base_url = self.emby_server_url + "/emby/Persons"
+        params = {
+            "ParentId": library_id,
+            "PersonTypes": role,
+            "Fields": "ProviderIds,ImageTags",
+            "api_key": self.api_key,
+        }
+        try:
+            r = self._http_session.get(base_url, headers=self.headers, params=params, timeout=60)
+            r.raise_for_status()
+            items = r.json().get("Items", [])
+        except Exception:
+            items = []
+
+        by_id, by_name, by_provider = {}, {}, {}
+        for it in items:
+            pid = it.get("Id")
+            if pid:
+                by_id[str(pid)] = it
+            name = (it.get("Name") or "").strip()
+            if name:
+                by_name.setdefault(name.casefold(), []).append(it)
+            prov = it.get("ProviderIds") or {}
+            for k, v in prov.items():
+                if v is None:
+                    continue
+                by_provider[(str(k).casefold(), str(v))] = it
+
+        idx = {"by_id": by_id, "by_name": by_name, "by_provider": by_provider, "all": items}
+        self.people_index[key] = idx
+        return idx
+
+    # ==== get_people: nutzt Index & gezielte Suche, aber macht keine Duplikat-Requests mehr ====
+    def get_people(self, library_id: str, role: str, person_list=None):
+        """
+        - Ohne person_list: komplette (gecachte) Liste via Index (ein Request pro Library+Rolle).
+        - Mit person_list: exakte Namensmatches aus dem Index, fällt bei Bedarf auf minimale Such-Requests zurück
+          (nur wenn wirklich keine Namens-Treffer im Index existieren).
+        Cached zusätzlich: self.people_lib_cache[term.lower()]
+        """
+        if not hasattr(self, "people_lib_cache"):
+            self.people_lib_cache = {}
+
+        idx = self._build_people_index(library_id, role)
+
+        # Vollständige Liste
+        if not person_list:
+            return idx["all"]
+
+        results_by_id = {}
+        for term in person_list:
+            if not term:
+                continue
+            search = str(term).strip()
+            if not search:
+                continue
+            ck = search.lower()
+
+            # 1) Cache für gezielte Suchliste?
+            if ck in self.people_lib_cache:
+                for it in self.people_lib_cache[ck]:
+                    if it and it.get("Id"):
+                        results_by_id[it["Id"]] = it
+                continue
+
+            # 2) Exaktes Namensmatch aus dem Index (0 Requests)
+            exact = idx["by_name"].get(ck, [])
+            if exact:
+                ordered = exact  # exakte Treffer bevorzugen
+                self.people_lib_cache[ck] = ordered
+                for it in ordered:
+                    if it and it.get("Id"):
+                        results_by_id[it["Id"]] = it
+                continue
+
+            # 3) Fallback: einmalige Emby-Suche mit SearchTerm
+            self._ensure_http_session()
+            base_url = self.emby_server_url + "/emby/Persons"
+            params = {
+                "ParentId": library_id,
+                "PersonTypes": role,
+                "Fields": "ProviderIds,ImageTags",
+                "SearchTerm": search,
+                "api_key": self.api_key,
+            }
+            try:
+                r = self._http_session.get(base_url, headers=self.headers, params=params, timeout=20)
+                r.raise_for_status()
+                items = r.json().get("Items", [])
+            except Exception:
+                items = []
+
+            # Exakte Namens-Treffer bevorzugen
+            exact = [p for p in items if (p.get("Name") or "").strip().lower() == ck]
+            ordered = exact or items
+
+            # lokalen Index NICHT überschreiben; aber Suchcache füllen
+            self.people_lib_cache[ck] = ordered
+            for it in ordered:
+                if it and it.get("Id"):
+                    results_by_id[it["Id"]] = it
+
+        return list(results_by_id.values())
+
+
+    def get_person_info_via_library(self, library_id: str, role: str, provider: str, tmdb_id: int | str,
+                                    person_name: str):
+        """
+        STRIKTE Disambiguierung für Massenlauf:
+          1) exakte Provider-ID im Index? -> sofortiger Treffer
+          2) exakter Name im Index und EIN eindeutiger Kandidat -> Treffer
+          3) mehrere gleichnamige Kandidaten:
+             - behalte nur Kandidaten OHNE abweichende ProviderId (falls vorhanden)
+             - wenn danach EIN Kandidat übrig bleibt -> Treffer
+             - sonst: KEIN Auto-Link (Platzhalter verwenden)
+        Liefert (emby_person_id, linked_bool[=müsste ProviderId gesetzt/ergänzt werden]) oder (None, False).
+        """
+        prov = (provider or "Tmdb")
+        prov_key = prov.casefold()
+        tmdb_id_str = str(tmdb_id)
+        cache_key = f"{prov}-{tmdb_id_str}"
+
+        def _cand_has_provider(person: dict, prov_key: str, ext_id: str) -> bool:
+            pids = person.get("ProviderIds") or {}
+            return (pids.get(prov_key) == ext_id) or (pids.get(prov_key.capitalize()) == ext_id)
+
+        def _dedupe_by_id(items):
+            seen, out = set(), []
+            for it in items or []:
+                pid = it.get("Id")
+                if pid and pid not in seen:
+                    seen.add(pid);
+                    out.append(it)
+            return out
+
+        # schneller Pos/Neg-Cache
+        if hasattr(self, "people_cache") and cache_key in self.people_cache:
+            emby_id = self.people_cache[cache_key]
+            return (emby_id, False) if emby_id else (None, False)
+
+        # Index für die Rolle laden
+        idx = self._build_people_index(library_id, role)
+
+        # 1) Provider-First (perfekt disambiguiert)
+        byprov = idx["by_provider"].get((prov_key, tmdb_id_str))
+        if byprov and byprov.get("Id"):
+            if hasattr(self, "people_cache"):
+                self.people_cache[cache_key] = byprov["Id"]
+            # Provider ist schon korrekt -> kein Änderungsbedarf
+            return byprov["Id"], False
+
+        # 2) Exakter Namensmatch (nur eindeutige Treffer akzeptieren)
+        name_l = (person_name or "").strip().casefold()
+        candidates = _dedupe_by_id(idx["by_name"].get(name_l, []))
+
+        if len(candidates) == 1:
+            # genau ein Kandidat -> ok
+            person = candidates[0]
+            person_id = person.get("Id")
+            if not person_id:
+                if hasattr(self, "people_cache"):
+                    self.people_cache[cache_key] = None
+                return None, False
+
+            # Prüfe, ob ProviderIds ergänzt werden müssten
+            will_change = not _cand_has_provider(person, prov_key, tmdb_id_str)
+            if hasattr(self, "people_cache"):
+                self.people_cache[cache_key] = person_id
+            return person_id, will_change
+
+        if len(candidates) > 1:
+            # 3) Mehrdeutigkeit entschärfen:
+            #    Schließe Kandidaten aus, die bereits eine ABWEICHENDE ProviderId für diesen Provider tragen.
+            filtered = []
+            for p in candidates:
+                pids = p.get("ProviderIds") or {}
+                # Wenn es bereits eine Tmdb-Id gibt, die NICHT zu tmdb_id_str passt -> Kandidat verwerfen
+                if prov in pids or prov_key in pids:
+                    if _cand_has_provider(p, prov_key, tmdb_id_str):
+                        filtered.append(p)  # passt exakt
+                    # sonst raus
+                else:
+                    # keine Tmdb verknüpft -> neutral (behalten)
+                    filtered.append(p)
+
+            filtered = _dedupe_by_id(filtered)
+
+            if len(filtered) == 1:
+                person = filtered[0]
+                person_id = person.get("Id")
+                will_change = not _cand_has_provider(person, prov_key, tmdb_id_str)
+                if hasattr(self, "people_cache"):
+                    self.people_cache[cache_key] = person_id
+                return person_id, will_change
+
+            # weiterhin mehrdeutig -> sicher bleiben, NICHT auto-linken
+            if hasattr(self, "people_cache"):
+                self.people_cache[cache_key] = None
+            return None, False
+
+        # 4) Gar kein Namensmatch -> kein Auto-Link
+        if hasattr(self, "people_cache"):
+            self.people_cache[cache_key] = None
+        return None, False
+
+    # ==== build_emby_people_from_tmdb: unverändert in Logik, aber ohne unnötige Requests ====
+    def build_emby_people_from_tmdb(self, library_id: str, my_cast, my_crew, provider: str = "tmdb"):
+        if not library_id:
+            library_id = self.library_id
+
+        def map_job(job: str):
+            jl = (job or "").strip().lower()
+            if jl == "director":
+                return "Director"
+            if jl in {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "story", "comic book"}:
+                return "Writer"
+            if jl in ["composer", "original music composer"]:
+                return "Composer"
+            if jl == "producer":
+                return "Producer"
+            return None
+
+        def key_for(emby_id, name, etype):
+            return (("id", str(emby_id)) if emby_id else ("name", (name or "").casefold()), etype)
+
+        per_key = {}
+        ordered_cast = []
+        crew_buckets = {"Director": [], "Writer": [], "Composer": [], "Producer": []}
+
+        # --- Cast ---
+        for c in (my_cast or []):
+            tmdb_id = c.get("person_id")
+            name = c.get("name")
+            role = c.get("character") or None
+            if not tmdb_id or not name:
+                continue
+
+            emby_id, _ = self.get_person_info_via_library(library_id, "Actor", provider, tmdb_id, name)
+
+            if not emby_id:
+                k_name = key_for(None, name, "Actor")
+                if k_name not in per_key:
+                    entry = {"Id": name, "Name": name, "Type": "Actor"}
+                    if role:
+                        entry["Role"] = role
+                    per_key[k_name] = entry
+                    ordered_cast.append(entry)
+                else:
+                    if role and "Role" not in per_key[k_name]:
+                        per_key[k_name]["Role"] = role
+                continue
+
+            if emby_id:
+                try:
+                    self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
+                except Exception:
+                    pass
+
+            k_id = key_for(emby_id, name, "Actor")
+            k_name = key_for(None, name, "Actor")
+            if k_name in per_key:
+                entry = per_key.pop(k_name)
+                entry["Id"] = str(emby_id)
+                per_key[k_id] = entry
+            elif k_id not in per_key:
+                entry = {"Id": str(emby_id), "Name": name, "Type": "Actor"}
+                if role:
+                    entry["Role"] = role
+                per_key[k_id] = entry
+                ordered_cast.append(entry)
+            else:
+                if role and "Role" not in per_key[k_id]:
+                    per_key[k_id]["Role"] = role
+
+        # --- Crew ---
+        for m in (my_crew or []):
+            tmdb_id = m.get("person_id")
+            name = m.get("name")
+            etype = map_job(m.get("job"))
+            if not tmdb_id or not name or not etype:
+                continue
+
+            emby_id, _ = self.get_person_info_via_library(library_id, etype, provider, tmdb_id, name)
+
+            if emby_id:
+                try:
+                    self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
+                except Exception:
+                    pass
+
+            if not emby_id:
+                k_name = key_for(None, name, etype)
+                if k_name not in per_key:
+                    entry = {"Id": name, "Name": name, "Type": etype}
+                    per_key[k_name] = entry
+                    crew_buckets[etype].append(entry)
+                continue
+
+            k_id = key_for(emby_id, name, etype)
+            k_name = key_for(None, name, etype)
+            if k_name in per_key:
+                entry = per_key.pop(k_name)
+                entry["Id"] = str(emby_id)
+                per_key[k_id] = entry
+            elif k_id not in per_key:
+                entry = {"Id": str(emby_id), "Name": name, "Type": etype}
+                per_key[k_id] = entry
+                crew_buckets[etype].append(entry)
+
+        desired = []
+        desired.extend(ordered_cast)
+        for t in ["Director", "Writer", "Producer", "Composer"]:
+            desired.extend(crew_buckets[t])
+        return desired
+
+    import unicodedata
+
+    # --- Helfer: Akzente entfernen (für SortName o.ä.) ---
+    def _strip_accents(self, s: str) -> str:
+        if not s:
+            return s
+        return "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
+
+    def _compute_sort_name(self, name: str) -> str:
+        # einfache, robuste Sortierform: akzentfrei
+        return self._strip_accents(name or "").strip()
+
+    # --- Helfer: Vergleichssignatur ohne Name (nur Id/Type/Role & Reihenfolge) ---
+    def _people_signature_no_name(self, people_list):
+        return [
+            (
+                str(p.get("Id") or ""),
+                p.get("Type") or "",
+                (p.get("Role") or None)
+            )
+            for p in (people_list or [])
+        ]
+
+    # --- Helfer: Finde reine Namens-Abweichungen (mapping über Id) ---
+    def _collect_person_name_fixes(self, current_people, desired_people):
+        desired_by_id = {
+            str(p.get("Id")): (p.get("Name") or "")
+            for p in (desired_people or [])
+            if p.get("Id") is not None
+        }
+        fixes = []  # [(person_id:str, desired_name:str)]
+        for p in (current_people or []):
+            pid = str(p.get("Id") or "")
+            if not pid or pid not in desired_by_id:
+                continue
+            cur_name = p.get("Name") or ""
+            des_name = desired_by_id[pid]
+            if des_name and cur_name != des_name:
+                fixes.append((pid, des_name))
+        return fixes
+
+    # --- Helfer: Person direkt korrigieren (verwendet deine update_item) ---
+    def _update_person_name_if_needed(self, person_id: str, desired_name: str):
+        # Optional: einmal pro Lauf fixen
+        if not hasattr(self, "_person_name_fix_cache"):
+            self._person_name_fix_cache = set()
+        if person_id in self._person_name_fix_cache:
+            return None
+
+        payload = {
+            "Name": desired_name,
+            # sinnvolle Sortierung ohne Akzente
+            "ForcedSortName": self._compute_sort_name(desired_name),
+        }
+        resp = self.update_item(person_id, payload)
+        self._person_name_fix_cache.add(person_id)
+        return resp
+
+    # --- NEU: sync_people ignoriert Namensunterschiede für den Film
+    def sync_people(self, library_id: str, emby_item: dict, my_cast: list, my_crew: list):
+        item_edits = ""
+        current_people = emby_item.get("People", []) or []
+        desired_people = self.build_emby_people_from_tmdb(library_id, my_cast, my_crew, provider="Tmdb")
+
+        # 1) Struktureller Vergleich ohne Name
+        cur_sig = self._people_signature_no_name(current_people)
+        des_sig = self._people_signature_no_name(desired_people)
+
+        if cur_sig == des_sig:
+            # 2) Nur Namen weichen ab -> Personen korrigieren, Film nicht anfassen
+            fixes = self._collect_person_name_fixes(current_people, desired_people)
+            if fixes:
+                fixed = []
+                for pid, new_name in fixes:
+                    r = self._update_person_name_if_needed(pid, new_name)
+                    if r is not None:
+                        fixed.append(new_name)
+                if fixed:
+                    item_edits = f"Update People | fixed {len(fixed)} person name(s) centrally - [{", ".join(fixed)}]"
+                    return True, item_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
+            return False, item_edits  # wirklich nichts zu tun
+
+        # 3) Es gibt echte Unterschiede (Id/Type/Role oder Reihenfolge) -> Film-Item aktualisieren
+        #    (Namen bleiben Teil der gewünschten Liste, aber Emby speichert sie ohnehin zentral)
+        #        -> hier bewusst KEIN DeepDiff nötig, einfacher Compare reicht
+        #        -> optional kurze Summary
+        def to_keylist(lst):
+            return [f"{p.get('Type', '?')}:{p.get('Id', '?')}:{p.get('Role') or ''}" for p in lst]
+
+        prev = set(to_keylist(current_people))
+        nxt = set(to_keylist(desired_people))
+        added = sorted(list(nxt - prev))
+        removed = sorted(list(prev - nxt))
+        change_bits = []
+        if added:
+            change_bits.append(f"+{len(added)}")
+        if removed:
+            change_bits.append(f"-{len(removed)}")
+        if not change_bits and cur_sig != des_sig:
+            change_bits.append("reorder")
+        change_summary = " / ".join(change_bits) if change_bits else "update"
+
+        item_edits = f"Update People | {change_summary}"
+        self.update_item(emby_item["Id"], {"People": desired_people})
+        return True, item_edits
+
+    import re
+    import unicodedata
+
+    # --- Zeichentests / Normalisierung ---
+    def _is_latin_string(self, s: str) -> bool:
+        if not s:
+            return False
+        # akzeptiere Basis- und erweiterte Latin-Blocks + übliche Satzzeichen/Leerzeichen
+        return all(
+            (('LATIN' in unicodedata.name(ch, '')) or not ch.isalpha())
+            for ch in s
+        )
+
+    def _ascii_sort(self, s: str) -> str:
+        return self._strip_accents(s or '').strip()
+
+    # --- TMDb: helper, robust gegen fehlende Felder ---
+    def _tmdb_person_translated_name_en(self, person_id: int | str) -> str | None:
+        """
+        Holt /person/{id}/translations und gibt data.name für 'en' oder 'en-US' zurück, falls vorhanden.
+        """
+        try:
+            # tmdbapis RAW-V3: person_get_translations
+            my_tmdb= self.config.TMDb
+            data = my_tmdb.API3.person_get_translations(int(person_id))
+            trs = (data or {}).get("translations") or []
+            # erst en-US, dann en
+            for pref in ("en-US", "en"):
+                for t in trs:
+                    if (t.get("iso_639_1") == "en" and (t.get("iso_3166_1") in (None, "", "US"))) or \
+                            (f'{t.get("iso_639_1", "")}-{t.get("iso_3166_1", "")}' == pref):
+                        name = ((t.get("data") or {}).get("name") or "").strip()
+                        if name:
+                            return name
+            # generisch: irgendeine englische Übersetzung
+            for t in trs:
+                if t.get("iso_639_1") == "en":
+                    name = ((t.get("data") or {}).get("name") or "").strip()
+                    if name:
+                        return name
+        except Exception:
+            pass
+        return None
+
+    def _tmdb_person_alias_latin(self, person_id: int | str) -> str | None:
+        """
+        Holt /person/{id} (Details) und wählt einen latinischen Alias aus also_known_as.
+        """
+        try:
+            # RAW-V3: person_get_details; language hier egal, Name/Aliase sind nicht lokalisiert
+            my_tmdb= self.config.TMDb
+            p = my_tmdb.API3.person_get_details(int(person_id))
+            aliases = (p or {}).get("also_known_as") or []
+            for alias in aliases:
+                a = (alias or "").strip()
+                if a and self._is_latin_string(self, a):
+                    return a
+        except Exception:
+            pass
+        return None
+
+    def _romanize_local(self, name: str) -> str:
+        """
+        Letzter Fallback: lokale Transliteration (optional).
+        """
+        try:
+            from unidecode import unidecode
+            r = unidecode(name or "").strip()
+            return r if r else name
+        except Exception:
+            # notfalls Akzente nur strippen
+            return self._strip_accents(name or "").strip()
+
+
+    def get_romanized_person_name(self, tmdb_person_id: int | str, original_name: str) -> str | None:
+        """
+        Liefert eine latinische Schreibweise für die Person oder None, wenn nichts Brauchbares gefunden wurde.
+        Reihenfolge: translations(en) -> alias -> local translit.
+        """
+        key = str(tmdb_person_id)
+        if key in self._roman_name_cache:
+            return self._roman_name_cache[key]
+
+        if self._is_latin_string(original_name or ""):
+            self._roman_name_cache[key] = original_name
+            return original_name
+
+        # 1) Übersetzung (en)
+        name = None
+        # name = self._tmdb_person_translated_name_en(tmdb_person_id)
+        if not name:
+            pass
+            # 2) Alias
+            # name = self._tmdb_person_alias_latin(tmdb_person_id)
+        if not name:
+            # 3) Lokale Transliteration (optional)
+            name = self._romanize_local(original_name or "")
+
+        # Validieren: wirklich latinisch?
+        if name and self._is_latin_string(name):
+            self._roman_name_cache[key] = name
+            return name
+
+        self._roman_name_cache[key] = None
+        return None
+
+    # --- Anwenden beim Personen-Fix (zentraler Emby-Person-Datensatz) ---
+    def ensure_person_latin_name(self, emby_person_id: str, tmdb_person_id: int | str, current_name: str):
+        """
+        Sorgt dafür, dass der zentrale Emby-Personendatensatz einen latinischen Namen hat.
+        Setzt zusätzlich ForcedSortName (akzentfrei), damit die Sortierung stimmt.
+        """
+        return current_name
+
+        # if tmdb_person_id == 21909 or current_name == "鄭伊健":
+        #     # Identitäten zeigen (rein zu Debug-Zwecken)
+        #     print("old_name:", repr(old_name))
+        #     print("current_name:", repr(current_name))
+        #     pass
+        latin = self.get_romanized_person_name(tmdb_person_id, current_name)
+
+        # if tmdb_person_id == 21909 or current_name == "鄭伊健":
+        # print(f"Item {tmdb_person_id} - {current_name} - {latin}")
+
+        if not latin or latin == current_name:
+            # print(f"Is None or not equal: {tmdb_person_id} - {current_name} - {latin}")
+            return None  # nichts zu tun
+
+        # --- Debug VOR ascii_sort, damit du etwas siehst, falls ascii_sort crasht ---
+        # print(f"About to rename: tmdb={tmdb_person_id} emby={emby_person_id} '{current_name}' -> '{latin}'")
+
+        # --- Hart absichern: ascii_sort kann crashen ---
+        try:
+            forced = self._ascii_sort(latin)
+        except Exception as e:
+            print(f"[ascii_sort ERROR] tmdb={tmdb_person_id} latin={latin!r} err={e!r}")
+            forced = latin  # Fallback: notfalls identisch vergeben
+
+        payload = {
+            "Name": latin,
+            "ForcedSortName": forced,
+        }
+        changed_name = f"{current_name}' → '{latin}"
+        print(f"Changed person name '{current_name}' to '{latin}'")
+        return self.update_item(emby_person_id, payload)
