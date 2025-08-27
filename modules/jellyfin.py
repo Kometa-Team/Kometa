@@ -14,6 +14,10 @@ from xml.etree.ElementTree import ParseError
 
 logger = util.logger
 
+builder_type_items = {
+    "movies": "movie"
+}
+
 class JellyfinAPI(API):
     def __init__(self, client, *args, **kwargs):
         super().__init__(client, *args, **kwargs)
@@ -105,12 +109,48 @@ class Jellyfin(Library):
         self.is_music = self.type == "music"
         self.is_playlist = self.type == "playlists"
         self.is_other = self.type == "boxsets"
+        
+        self._all_items = []
 
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
+    
+    @property    
+    def library_item_uid_name(self) -> str:
+        return 'Id'
+    
+    @property
+    def library_item_title_name(self) -> str:
+        return 'Name'
+    
+    @property
+    def library_external_id_name(self) -> str:
+        return 'ProviderIds'
         
-    def get_all(self, builder_level=None, load=False):
-        raise NotImplementedError("Jellyfin get_all method not implemented yet")
+    def get_all(self, builder_level=None, load=False):        
+        if load and builder_level in [None, "movies"]:
+            self._all_items = []
+        if self._all_items and builder_level in [None, "movies"]:
+            return self._all_items
+        builder_level = self.type
+        
+        logger.info(f"Loading All {builder_level.capitalize()} from Library: {self.name}")
+        
+        params = {
+            'IncludeItemTypes': builder_type_items[builder_level],
+            'Fields': 'ProviderIds,Path',
+            'Recursive': 'true',
+            'StartIndex': 0,
+            'Limit': 100000
+        }
+
+        results = self.api.items(params=params)['Items']
+
+        logger.info(f"Loaded {len(results)} {builder_level.capitalize()}")
+
+        if builder_level in [None, "movie"]:
+            self._all_items = results
+        return results
     
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")

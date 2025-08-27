@@ -598,6 +598,18 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def fetchItems(self, uri_args):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
+    
+    @property    
+    def library_item_uid_name(self) -> str:
+        return 'ratingKey'
+    
+    @property
+    def library_item_title_name(self) -> str:
+        return 'title'
+    
+    @property
+    def library_external_id_name(self) -> str:
+        return 'guid'
 
     def get_all(self, builder_level=None, load=False):
         if load and builder_level in [None, "show", "artist", "movie"]:

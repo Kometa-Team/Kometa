@@ -352,6 +352,31 @@ class Library(ABC):
     @abstractmethod
     def item_posters(self, item, providers=None):
         pass
+    
+    @property
+    @abstractmethod
+    def library_item_uid_name(self) -> str:
+        """ 
+            The attribute name for the unique ID of an item in the library
+            (e.g., 'ratingKey' for Plex, 'Id' for Jellyfin).
+        """
+        pass
+    
+    @property
+    @abstractmethod
+    def library_item_title_name(self) -> str:
+        """
+            Get the title of an item in the library.
+        """
+        pass
+    
+    @property
+    @abstractmethod
+    def library_external_id_name(self) -> str:
+        """
+            Get the external ID of an item in the library.
+        """
+        pass
 
     @abstractmethod
     def get_all(self, builder_level=None, load=False):
@@ -405,22 +430,27 @@ class Library(ABC):
         logger.info("")
         items = self.get_all()
         for item in items:
-            self.cached_items[item.ratingKey] = (item, False)
+            self.cached_items[self.library_item_uid_name] = (item, False)
         return items
 
     def map_guids(self, items):
+        """ DEPRECATED: Use map_external_id instead. """
+        self.map_external_id(items)
+
+    def map_external_id(self, items):
+        """ Map the external IDs (IMDB, TMDB and etc) of the items to their respective keys. """
         for i, item in enumerate(items, 1):
             if isinstance(item, tuple):
                 logger.ghost(f"Processing: {i}/{len(items)}")
-                key, guid = item
+                key, external_id = item
             else:
-                logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
-                key = item.ratingKey
-                guid = item.guid
+                logger.ghost(f"Processing: {i}/{len(items)} {item[self.library_item_title_name]}")
+                key = item[self.library_item_uid_name]
+                external_id = item[self.library_external_id_name]
             if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
                 if isinstance(item, tuple):
-                    item_type, check_id = self.config.Convert.scan_guid(guid)
-                    id_type, main_id, imdb_id, _ = self.config.Convert.ids_from_cache(key, guid, item_type, check_id, self)
+                    item_type, check_id = self.config.Convert.scan_guid(external_id)
+                    id_type, main_id, imdb_id, _ = self.config.Convert.ids_from_cache(key, external_id, item_type, check_id, self)
                 else:
                     id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
                 if main_id:
