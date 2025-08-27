@@ -24,14 +24,19 @@ class JellyfinAPI(API):
 
 class Jellyfin(Library):
     def __init__(self, config, params):
+        """ Initializes Jellyfin Object 
+        
+        Args:
+            config (modules.config.ConfigFile): Config object
+            params (dict): Dictionary of Jellyfin parameters
+        """
         super().__init__(config, params)
         self.jellyfin = params["jellyfin"]
         self.url = self.jellyfin["url"]
-        self.optimize = params["jellyfin"]["optimize"]
         self.session = self.config.Requests.session
         
         # some api methods require a user context, so we store the user here
-        self.user = params["jellyfin"]["user"]
+        self.user_id = self.jellyfin["user_id"]
 
         if self.jellyfin["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Jellyfin connection")
@@ -46,7 +51,7 @@ class Jellyfin(Library):
         self.client = JellyfinClient()
         self.client.jellyfin = JellyfinAPI(self.client.http)
         self.client.config.data["auth.ssl"] = self.jellyfin["verify_ssl"]
-        self.client.config.data["auth.user_id"] = self.user
+        self.client.config.data["auth.user_id"] = self.user_id
         self.client.config.data["http.timeout"] = self.timeout
 
         logger.info(self.url)
