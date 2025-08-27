@@ -3334,7 +3334,7 @@ class EmbyServer:
             cur_name = p.get("Name") or ""
             des_name = desired_by_id[pid]
             if des_name and cur_name != des_name:
-                fixes.append((pid, des_name))
+                fixes.append((pid, cur_name, des_name))
         return fixes
 
     # --- Helfer: Person direkt korrigieren (verwendet deine update_item) ---
@@ -3369,10 +3369,10 @@ class EmbyServer:
             fixes = self._collect_person_name_fixes(current_people, desired_people)
             if fixes:
                 fixed = []
-                for pid, new_name in fixes:
+                for pid, cur_name, new_name in fixes:
                     r = self._update_person_name_if_needed(pid, new_name)
                     if r is not None:
-                        fixed.append(new_name)
+                        fixed.append(f"'{pid}' {cur_name} → {new_name}")
                 if fixed:
                     item_edits = f"Update People | fixed {len(fixed)} person name(s) centrally - [{", ".join(fixed)}]"
                     return True, item_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
@@ -3385,18 +3385,67 @@ class EmbyServer:
         def to_keylist(lst):
             return [f"{p.get('Type', '?')}:{p.get('Id', '?')}:{p.get('Role') or ''}" for p in lst]
 
-        prev = set(to_keylist(current_people))
-        nxt = set(to_keylist(desired_people))
-        added = sorted(list(nxt - prev))
-        removed = sorted(list(prev - nxt))
-        change_bits = []
-        if added:
-            change_bits.append(f"+{len(added)}")
-        if removed:
-            change_bits.append(f"-{len(removed)}")
-        if not change_bits and cur_sig != des_sig:
-            change_bits.append("reorder")
-        change_summary = " / ".join(change_bits) if change_bits else "update"
+        # ----- nicer summary (Type-aware, name if single change) -----
+        def _pkey(p):
+            # struktureller Schlüssel: Type, Id, Role
+            return (p.get("Type") or "", str(p.get("Id") or ""), p.get("Role") or None)
+
+        def _fmt_name(p):
+            n = p.get("Name") or f"#{p.get('Id')}"
+            r = p.get("Role")
+            return f"{n} as {r}" if r else n
+
+        # Karten für schnellen Zugriff
+        prev_map = {_pkey(p): p for p in (current_people or [])}
+        next_map = {_pkey(p): p for p in (desired_people or [])}
+
+        added_keys = list(next_map.keys() - prev_map.keys())
+        removed_keys = list(prev_map.keys() - next_map.keys())
+
+        added_people = [next_map[k] for k in added_keys]
+        removed_people = [prev_map[k] for k in removed_keys]
+
+        # hübsche Zählung pro Type
+        from collections import Counter
+        order = {"Actor": 0, "Director": 1, "Writer": 2, "Producer": 3, "Composer": 4}
+        add_cnt = Counter(p.get("Type") or "Other" for p in added_people)
+        rem_cnt = Counter(p.get("Type") or "Other" for p in removed_people)
+
+        def _fmt_counts(cnt):
+            return ", ".join(f"{t}×{cnt[t]}" for t in sorted(cnt, key=lambda t: order.get(t, 99)))
+
+        change_summary = ""
+
+        # Falls genau eine Person betroffen ist: Name zeigen
+        total_changes = len(added_people) + len(removed_people)
+        if total_changes == 1:
+            if added_people:
+                p = added_people[0]
+                change_summary = f"Added {p.get('Type')}: {_fmt_name(p)}"
+            else:
+                p = removed_people[0]
+                change_summary = f"Removed {p.get('Type')}: {_fmt_name(p)}"
+        # Falls genau ein Add & ein Remove und gleiche Type/Role -> als „Replaced … A → B“ darstellen
+        elif len(added_people) == 1 and len(removed_people) == 1:
+            a, r = added_people[0], removed_people[0]
+            if (a.get("Type"), a.get("Role")) == (r.get("Type"), r.get("Role")):
+                role_txt = f" ({a.get('Role')})" if a.get('Role') else ""
+                change_summary = f"Replaced {a.get('Type')}{role_txt}: {_fmt_name(r)} → {_fmt_name(a)}"
+            else:
+                parts = []
+                if add_cnt: parts.append("+" + _fmt_counts(add_cnt))
+                if rem_cnt: parts.append("-" + _fmt_counts(rem_cnt))
+                change_summary = " / ".join(parts)
+        else:
+            parts = []
+            if add_cnt: parts.append("+" + _fmt_counts(add_cnt))
+            if rem_cnt: parts.append("-" + _fmt_counts(rem_cnt))
+            # nur Reorder?
+            cur_sig = [_pkey(p) for p in (current_people or [])]
+            des_sig = [_pkey(p) for p in (desired_people or [])]
+            if not parts and cur_sig != des_sig:
+                parts.append("reorder")
+            change_summary = " / ".join(parts) if parts else "update"
 
         item_edits = f"Update People | {change_summary}"
         self.update_item(emby_item["Id"], {"People": desired_people})

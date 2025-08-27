@@ -1653,8 +1653,9 @@ class CollectionBuilder:
                         else:
                             raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
                     for category_filter in category_filters:
-                        if category_filter in category_names:
+                        if category_filter in category_names or category_filter.replace(", ", " - ") in category_names:
                             final_category.append(category_filter)
+
                         else:
                             raise Failed(
                                 f"{self.Type} Error: imdb_award category_filter attribute invalid: "

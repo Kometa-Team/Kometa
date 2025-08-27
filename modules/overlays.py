@@ -150,6 +150,7 @@ class Overlays:
 
                     if self.cache:
                         for over_name in over_names:
+                            current_overlay = properties[over_name]  # <--- WICHTIG
                             if properties[over_name].name.startswith("text"):
                                 for cache_key, cache_value in self.cache.query_overlay_special_text(item.ratingKey).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
@@ -172,7 +173,7 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster = ImageData("asset_directory", emby_poster.get("Path"), compare=os.stat(my_overlay_path).st_size if has_overlay else "")
+                        poster = ImageData("asset_directory", emby_poster.get("Path"), is_url=False, compare=os.stat(my_overlay_path).st_size if has_overlay else "")
                         # background = ImageData("asset_directory", emby_thumb.get("Path"), compare=emby_item.get("ImageTags").get("Thumb"))
                         item_dir = os.path.dirname(emby_poster.get("Path"))
                         name = str(item_dir).split('\\')[-1]
@@ -201,9 +202,9 @@ class Overlays:
 
                     if self.library.reapply_overlays or overlay_change or changed_image:
                         try:
-                            if not self.library.reapply_overlays:
+                            if not self.library.reapply_overlays and changed_image:
                                 logger.trace("  Overlay Reason: New image detected")
-                            elif not self.library.reapply_overlays and overlay_change:
+                            if overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
 
                             # canvas_width = emby_poster.get('Width', 0)
@@ -664,26 +665,35 @@ class Overlays:
                 key_to_overlays[over_key][1].append(overlay_name)
 
         for over_key, (item, over_names) in key_to_overlays.items():
-            group_status = {}
-            for over_name in over_names:
-                for suppress_name in properties[over_name].suppress:
-                    if suppress_name in over_names:
-                        key_to_overlays[over_key][1].remove(suppress_name)
-            for over_name in over_names:
-                for overlay_group, group_names in overlay_groups.items():
-                    if over_name in group_names:
-                        if overlay_group not in group_status:
-                            group_status[overlay_group] = []
-                        group_status[overlay_group].append(over_name)
-            for gk, gv in group_status.items():
-                if len(gv) > 1:
-                    final = None
-                    for v in gv:
-                        if final is None or overlay_groups[gk][v] > overlay_groups[gk][final]:
-                            final = v
-                    for v in gv:
-                        if final != v:
-                            key_to_overlays[over_key][1].remove(v)
+            original = list(over_names)  # Order beibehalten
+
+            # -------- 1) SUPPRESS robust anwenden (keine In-Place-Removals) --------
+            present = set(original)
+            to_remove = set()
+            for n in original:
+                # alle suppress-Ziele von n, die tatsächlich in der Liste sind
+                for s in properties[n].suppress:
+                    if s in present:
+                        to_remove.add(s)
+
+            after_suppress = [n for n in original if n not in to_remove]
+
+            # -------- 2) GROUP-Auswahl: je Gruppe nur den mit größtem Gewicht --------
+            # overlay_groups: { group_name: {overlay_name: weight, ...}, ... }
+            drop_from_groups = set()
+            for group_name, weights in overlay_groups.items():
+                # Kandidaten dieser Gruppe, die noch in der Liste sind (Order bleibt erhalten)
+                candidates = [n for n in after_suppress if n in weights]
+                if len(candidates) > 1:
+                    # Gewinner nach höchstem Gewicht
+                    best = max(candidates, key=lambda n: weights[n])
+                    # alle anderen Kandidaten dieser Gruppe fallen raus
+                    drop_from_groups.update(n for n in candidates if n != best)
+
+            final_over_names = [n for n in after_suppress if n not in drop_from_groups]
+
+            # zurückschreiben
+            key_to_overlays[over_key] = (item, final_over_names)
         return key_to_overlays, properties
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
@@ -709,7 +719,7 @@ class Overlays:
                 poster_location = self.library.item_posters(item)
             except Failed:
                 pass
-        if poster_location:
+        if False and poster_location:
             self.library.upload_poster(item, poster_location, url=is_url)
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             for loc in locations:
