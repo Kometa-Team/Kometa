@@ -1,4 +1,4 @@
-import os, re, time
+import os, re, time, jmespath
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -22,6 +22,14 @@ class JellyfinAPI(API):
         """Override to get system info"""
         return self._get("System/Info")
 
+    def get_system_configuration(self):
+        """Override to get system configuration"""
+        return self._get("System/Configuration")
+    
+    def get_libraries(self):
+        """Get libraries"""
+        return jmespath.search("Items", self.get_views())
+
 class Jellyfin(Library):
     def __init__(self, config, params):
         """ Initializes Jellyfin Object 
@@ -34,6 +42,11 @@ class Jellyfin(Library):
         self.jellyfin = params["jellyfin"]
         self.url = self.jellyfin["url"]
         self.session = self.config.Requests.session
+        
+        # not used by jellyfin
+        self.clean_bundles = False
+        self.empty_trash = False
+        self.optimize = False
         
         # some api methods require a user context, so we store the user here
         self.user_id = self.jellyfin["user_id"]
@@ -53,6 +66,9 @@ class Jellyfin(Library):
         self.client.config.data["auth.ssl"] = self.jellyfin["verify_ssl"]
         self.client.config.data["auth.user_id"] = self.user_id
         self.client.config.data["http.timeout"] = self.timeout
+        
+        # just a clean shortcut
+        self.api = self.client.jellyfin
 
         logger.info(self.url)
         logger.secret(self.token)
@@ -62,7 +78,7 @@ class Jellyfin(Library):
                 discover=False
             )
 
-            system_info = self.client.jellyfin.get_system_info()
+            system_info = self.api.get_system_info()
             self._server_version = system_info.get("Version")
             self._server_name = system_info.get("ServerName")
 
@@ -72,6 +88,30 @@ class Jellyfin(Library):
             logger.stacktrace()
             raise Failed(f"Jellyfin Error: {e}")
         
+        library = None
+        library_names = []
+        for item in self.api.get_libraries():
+            library_names.append(item["Name"])
+            if item["Name"].lower() == self.name.lower():
+                library = item
+                break
+        if library is None:
+            raise Failed(f"Jellyfin Library '{params['name']}' not found. Options: {library_names}")
+
+        self.type = library["CollectionType"].lower()
+
+        self.is_movie = self.type == "movies"
+        self.is_show = self.type == "tvshows"
+        self.is_music = self.type == "music"
+        self.is_playlist = self.type == "playlists"
+        self.is_other = self.type == "boxsets"
+
+    def notify(self, text, collection=None, critical=True):
+        self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
+        
+    def get_all(self, builder_level=None, load=False):
+        raise NotImplementedError("Jellyfin get_all method not implemented yet")
+    
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
         
@@ -93,9 +133,6 @@ class Jellyfin(Library):
     def item_posters(self, item):
         raise NotImplementedError("Jellyfin item_posters method not implemented yet")
     
-    def notify(self, message, title=None, level="info", sound=False):
-        raise NotImplementedError("Jellyfin notify method not implemented yet")
-    
     def notify_delete(self, message_id):
         raise NotImplementedError("Jellyfin notify_delete method not implemented yet")
     
@@ -104,6 +141,3 @@ class Jellyfin(Library):
     
     def upload_poster(self, item, image, tmdb=None, title=None):
         raise NotImplementedError("Jellyfin upload_poster method not implemented yet")
-
-    def get_all(self, lib, media_type, include_collections=False):
-        raise NotImplementedError("Jellyfin get_all_items method not implemented yet")
