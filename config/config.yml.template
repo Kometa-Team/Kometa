@@ -17,7 +17,6 @@ jellyfin:                          # Can be individually specified per library a
   url: http://192.168.1.13:8096    # Enter Jellyfin URL (REQUIRED);
   token:                           # Enter Jellyfin Token (REQUIRED)
   timeout: 60
-  optimize: false
   verify_ssl: true
 tmdb:
   apikey:                          # Enter TMDb API Key (REQUIRED)
