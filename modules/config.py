@@ -1340,11 +1340,11 @@ class ConfigFile:
                         raise Exception("JELLYFIN_DISABLED")
 
                     params["jellyfin"] = {
-                        "url": check_for_attribute(lib, "url", parent="jellyfin", var_type="url", default=self.general["jellyfin"]["url"], req_default=True, save=False),
-                        "token": check_for_attribute(lib, "token", parent="jellyfin", default=self.general["jellyfin"]["token"], req_default=True, save=False),
-                        "user_id": check_for_attribute(lib, "user_id", parent="jellyfin", default=self.general["jellyfin"]["user_id"], req_default=True, save=False),
-                        "timeout": check_for_attribute(lib, "timeout", parent="jellyfin", var_type="int", default=self.general["jellyfin"]["timeout"], save=False),
-                        "verify_ssl": check_for_attribute(lib, "verify_ssl", parent="jellyfin", var_type="bool", default=self.general["jellyfin"]["verify_ssl"], default_is_none=True, save=False)
+                        "url": check_url(lib, "jellyfin.url", default=self.general["jellyfin"]["url"], req_default=True, save=False),
+                        "token": check_attr(lib, "jellyfin.token", default=self.general["jellyfin"]["token"], req_default=True, save=False),
+                        "user_id": check_attr(lib, "jellyfin.user_id", default=self.general["jellyfin"]["user_id"], req_default=True, save=False),
+                        "timeout": check_int(lib, "jellyfin.timeout", default=self.general["jellyfin"]["timeout"], save=False),
+                        "verify_ssl": check_bool(lib, "jellyfin.verify_ssl", default=self.general["jellyfin"]["verify_ssl"], default_is_none=True, save=False)
                     }
 
                     if params["jellyfin"]["url"].lower() == "env":
