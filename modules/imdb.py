@@ -602,22 +602,16 @@ class IMDb:
         response_json = self._graph_request(json_obj)
         try:
             step = "list" if list_type == "list" else "predefinedList"
-            if (
-                isinstance(response_json, dict)
-                and "data" in response_json
-                and isinstance(response_json["data"], dict)
-                and step in response_json["data"]
-                and response_json["data"][step]
-                and (
-                    (is_list and "titleListItemSearch" in response_json["data"][step])
-                    or (not is_list and "advancedTitleSearch" in response_json["data"])
-                )
-            ):
-                search_data = (
-                    response_json["data"][step]["titleListItemSearch"]
-                    if is_list
-                    else response_json["data"]["advancedTitleSearch"]
-                )
+            response_data = response_json.get("data", {})
+            response_errors = response_json.get("errors", [])
+            if len(response_errors) > 0:
+                IMDB_message = f"IMDb Error: [first of {len(response_errors)}] {response_errors[0]['message']}"
+                if response_errors[0]['message'].startswith('FORBIDDEN'):
+                    IMDB_message = "Access is forbidden. A typical cause is trying to access a private list."
+                logger.error(IMDB_message)
+                return imdb_ids
+            else:
+                search_data = response_data[step]["titleListItemSearch"] if is_list else response_data["advancedTitleSearch"]
                 total = search_data["total"]
                 limit = data["limit"]
                 if limit < 1 or total < limit:
@@ -634,31 +628,16 @@ class IMDb:
                         logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
                         json_obj["variables"]["after"] = end_cursor
                         response_json = self._graph_request(json_obj)
-                        if (
-                            isinstance(response_json, dict)
-                            and "data" in response_json
-                            and isinstance(response_json["data"], dict)
-                            and step in response_json["data"]
-                            and response_json["data"][step]
-                            and (
-                                (is_list and "titleListItemSearch" in response_json["data"][step])
-                                or (not is_list and "advancedTitleSearch" in response_json["data"])
-                            )
-                        ):
-                            search_data = (
-                                response_json["data"][step]["titleListItemSearch"]
-                                if is_list
-                                else response_json["data"]["advancedTitleSearch"]
-                            )
-                            end_cursor = search_data["pageInfo"]["endCursor"]
-                            ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
-                            if i == num_of_pages:
-                                ids_found = ids_found[:remainder]
-                            imdb_ids.extend(ids_found)
-            logger.exorcise()
-            if len(imdb_ids) > 0:
-                return imdb_ids
-            raise Failed("IMDb Error: No IMDb IDs Found - A typical cause of this is using a private list")
+                        search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+                        end_cursor = search_data["pageInfo"]["endCursor"]
+                        ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
+                        if i == num_of_pages:
+                            ids_found = ids_found[:remainder]
+                        imdb_ids.extend(ids_found)
+                logger.exorcise()
+                if len(imdb_ids) > 0:
+                    return imdb_ids
+                raise Failed("IMDb Error: No IMDb IDs Found")
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
                 raise Failed("Internal IMDB PersistedQuery Error")
