@@ -637,12 +637,16 @@ class IMDb:
                 logger.exorcise()
                 if len(imdb_ids) > 0:
                     return imdb_ids
-                raise Failed("IMDb Error: No IMDb IDs Found")
+                logger.error("IMDb Error: No IMDb IDs Found")
+                return imdb_ids
         except KeyError:
             if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
                 raise Failed("Internal IMDB PersistedQuery Error")
             logger.error(f"Response: {response_json}")
             raise
+        except:
+            logger.error(f"IMDB Error: {response_json['errors'][0]['message']}")
+            raise Failed(f"IMDB Error: {response_json['errors'][0]['message']}")
 
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
