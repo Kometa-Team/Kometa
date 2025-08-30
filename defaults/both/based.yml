@@ -22,18 +22,16 @@ dynamic_collections:
   Based:
     type: custom
     data:
-      books: Book
-      comics: Comic
-      true_story: True Story
-      video_games: Video Game
+      Book: based on book, based on novel
+      Comic: based on comic, based on comic book
+      True Story: based on true story
+      Video Game: based on video game
     title_format: Based on a <<key_name>>
     template:
-      - mdb_smart
+      - based
       - shared
       - arr
     template_variables:
-      mdblist_list:
-        default: https://mdblist.com/lists/k0meta/based_on_<<key>>_<<library_type>>s
       image:
         default: based/<<key_name_encoded>>
       translation_key:

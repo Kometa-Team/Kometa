@@ -166,6 +166,24 @@ templates:
       category_filter: <<category_filter>>
       winning: <<winning>>
 
+  based:
+    default:
+      sort: popularity.asc
+      limit: 200
+    imdb_search:
+      keyword.any: <<key_name>>
+      limit: <<limit>>
+      type: <<type>>
+      sort_by: <<sort>>
+    conditionals:
+      type:
+        default: bob
+        conditions:
+          - library_type: movie
+            value: movie, tv_movie
+          - library_type: show
+            value: tv_series, tv_mini_series
+
   tmdb_person:
     default:
       url_poster: https://raw.githubusercontent.com/Kometa-Team/People-Images-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
