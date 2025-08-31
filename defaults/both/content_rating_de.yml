@@ -23,7 +23,6 @@ dynamic_collections:
   DE Content Rating:
     type: content_rating
     title_format: <<key_name>> <<library_typeU>>s
-    sort_title: <<sort_prefix>><<collection_section>>_1-<<key_name>>
     other_name: Not Rated <<library_typeU>>s
     template:
       - smart_filter

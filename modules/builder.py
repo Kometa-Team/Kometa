@@ -267,6 +267,15 @@ class CollectionBuilder:
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
 
+        self.tmdb_person_id = None
+        if "tmdb_person_id" in methods:
+            logger.debug("")
+            logger.debug("Has native Tmdb id")
+            if not self.data[methods["tmdb_person_id"]]:
+                raise Failed(f"{self.Type} Error: tmdb id is blank")
+            logger.debug(f"Value: {self.data[methods['tmdb_person_id']]}")
+            self.tmdb_person_id = str(self.data[methods["tmdb_person_id"]])
+
         english = None
         translations = None
 
@@ -839,6 +848,7 @@ class CollectionBuilder:
                         # Added logic to allow names like "50 Cent" to be passed as a string rather than it passing "50" as the ID to use.
                         if tmdb_person.isdigit():
                             person = self.config.TMDb.get_person(int(tmdb_person))
+                            first_person = person.name
                         else:
                             results = self.config.TMDb.search_people(tmdb_person)
                             if not results:

@@ -17,9 +17,9 @@ from modules import util
 
 logger = util.logger
 
-import emby_client
+# import emby_client
 import unicodedata
-from emby_client.rest import ApiException
+# from emby_client.rest import ApiException
 
 # bugs: razzie + berlinale year no poster
 
@@ -183,6 +183,8 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self.missing_tmdb_ids = set()
+        self.cached_tmdb_ids = {}
         self.config = config
         self._roman_name_cache = {}  # key: tmdb_person_id(str) -> latin_name(str)|None
         self.people_cache = {}
@@ -203,6 +205,7 @@ class EmbyServer:
         self.studio_list =None
         self.media_by_resolution = {}
         self.production_countries = None
+        self._person_name_fix_cache = set()
 
         self.production_search = {}
         self.emby_server_url = server_url
@@ -1994,7 +1997,6 @@ class EmbyServer:
                 people = item.get("People", [])
                 plex_actors = []
                 # for person in people:
-                #     print(person)
                 #     # List[PlexObjectT]
                 #     if person.get('Type') == 'Actor':
                 #         new_person = PLEXOBJECTS.get("actor")()
@@ -2003,9 +2005,7 @@ class EmbyServer:
                 #         new_person.name = person.get('Name')
                 #         plex_actors.append(new_person)
 
-                # print(people)
                 # {'Id': '12917', 'Name': 'Hideko Takamine', 'PrimaryImageTag': '243089fe465d5f5402eb21462e0d915e', 'Role': 'Keiko Yashiro', 'Type': 'Actor'}
-                # print(people)
                 # Erstelle ein Datenobjekt, das der Plex-API-Struktur ähnelt
                 crit_rat = item.get("CriticRating")
                 if crit_rat: # prevent constant updates, fake plex its original value
@@ -2934,18 +2934,24 @@ class EmbyServer:
         raise Warning(f"editItemTitle not implemented for {ratingKey} - {new_title}")
 
     # ==== Session einmalig bereitstellen (falls nicht vorhanden) ====
+    # ==== HTTP-Session mit Retry/Backoff (einmalig in __init__ oder lazy) ====
     def _ensure_http_session(self):
-        if not hasattr(self, "_http_session") or self._http_session is None:
-            s = requests.Session()
-            try:
-                from requests.adapters import HTTPAdapter
-                from urllib3.util.retry import Retry
-                retry = Retry(total=3, backoff_factor=0.3, status_forcelist=(429, 500, 502, 503, 504))
-                s.mount("http://", HTTPAdapter(max_retries=retry, pool_connections=20, pool_maxsize=40))
-                s.mount("https://", HTTPAdapter(max_retries=retry, pool_connections=20, pool_maxsize=40))
-            except Exception:
-                pass
-            self._http_session = s
+        if getattr(self, "session", None):
+            return
+        import requests
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+
+        self.session = requests.Session()
+        retries = Retry(
+            total=5,
+            backoff_factor=0.5,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=frozenset(["GET", "POST", "PUT", "PATCH"])
+        )
+        adapter = HTTPAdapter(max_retries=retries, pool_connections=10, pool_maxsize=20)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
 
     # ==== Leichte Normalisierung statt DeepDiff ====
     def _normalize_people_for_compare(self, people_list):
@@ -2964,7 +2970,7 @@ class EmbyServer:
         return norm
 
     # ==== zentraler Personen-Index je Library+Rolle ====
-    def _build_people_index(self, library_id: str, role: str):
+    def _build_people_index(self, role: str):
         """
         Baut (und cached) einen Index für die Komplettriege der Personen einer Library+Rolle.
         Maps:
@@ -2975,7 +2981,7 @@ class EmbyServer:
         if not hasattr(self, "people_index"):
             self.people_index = {}  # key: f"{library_id}-{role}" -> dicts
 
-        key = f"{library_id}-{role}"
+        key = f"{role}"
         if key in self.people_index:
             return self.people_index[key]
 
@@ -2983,7 +2989,7 @@ class EmbyServer:
         self._ensure_http_session()
         base_url = self.emby_server_url + "/emby/Persons"
         params = {
-            "ParentId": library_id,
+            # "ParentId": library_id,
             "PersonTypes": role,
             "Fields": "ProviderIds,ImageTags",
             "api_key": self.api_key,
@@ -3014,17 +3020,15 @@ class EmbyServer:
         return idx
 
     # ==== get_people: nutzt Index & gezielte Suche, aber macht keine Duplikat-Requests mehr ====
-    def get_people(self, library_id: str, role: str, person_list=None):
+    def get_people(self, role: str, person_list=None):
         """
         - Ohne person_list: komplette (gecachte) Liste via Index (ein Request pro Library+Rolle).
         - Mit person_list: exakte Namensmatches aus dem Index, fällt bei Bedarf auf minimale Such-Requests zurück
           (nur wenn wirklich keine Namens-Treffer im Index existieren).
         Cached zusätzlich: self.people_lib_cache[term.lower()]
         """
-        if not hasattr(self, "people_lib_cache"):
-            self.people_lib_cache = {}
 
-        idx = self._build_people_index(library_id, role)
+        idx = self._build_people_index(role)
 
         # Vollständige Liste
         if not person_list:
@@ -3060,7 +3064,6 @@ class EmbyServer:
             self._ensure_http_session()
             base_url = self.emby_server_url + "/emby/Persons"
             params = {
-                "ParentId": library_id,
                 "PersonTypes": role,
                 "Fields": "ProviderIds,ImageTags",
                 "SearchTerm": search,
@@ -3086,7 +3089,7 @@ class EmbyServer:
         return list(results_by_id.values())
 
 
-    def get_person_info_via_library(self, library_id: str, role: str, provider: str, tmdb_id: int | str,
+    def get_person_info_via_library(self, role: str, provider: str, tmdb_id: int | str,
                                     person_name: str):
         """
         STRIKTE Disambiguierung für Massenlauf:
@@ -3116,19 +3119,21 @@ class EmbyServer:
                     out.append(it)
             return out
 
+        if str(tmdb_id) == "64796":
+            pass
+
         # schneller Pos/Neg-Cache
-        if hasattr(self, "people_cache") and cache_key in self.people_cache:
+        if cache_key in self.people_cache:
             emby_id = self.people_cache[cache_key]
             return (emby_id, False) if emby_id else (None, False)
 
         # Index für die Rolle laden
-        idx = self._build_people_index(library_id, role)
+        idx = self._build_people_index(role)
 
         # 1) Provider-First (perfekt disambiguiert)
         byprov = idx["by_provider"].get((prov_key, tmdb_id_str))
         if byprov and byprov.get("Id"):
-            if hasattr(self, "people_cache"):
-                self.people_cache[cache_key] = byprov["Id"]
+            self.people_cache[cache_key] = byprov["Id"]
             # Provider ist schon korrekt -> kein Änderungsbedarf
             return byprov["Id"], False
 
@@ -3186,41 +3191,148 @@ class EmbyServer:
             self.people_cache[cache_key] = None
         return None, False
 
+    def get_person_info_bulk(self, tmdb_ids: list, provider: str = "tmdb"):
+        """
+        Holt alle Emby-Personen-IDs für eine Liste von TMDb-IDs in einem Schwung.
+
+        Args:
+            tmdb_ids (list): Liste von TMDb-Personen-IDs (ints oder strings).
+            provider (str): Standard "tmdb".
+
+        Returns:
+            dict: Mapping von tmdb_id -> emby_id
+        """
+        if not tmdb_ids:
+            return {}
+
+        # IDs in Emby-Format bringen
+        provider_ids = ",".join([f"{provider}.{pid}" for pid in tmdb_ids])
+
+        endpoint = (
+            f"/emby/Users/{self.user_id}/Items"
+            f"?Recursive=true"
+            f"&Fields=ProviderIds"
+            f"&IncludeItemTypes=Person"
+            f"&AnyProviderIdEquals={provider_ids}"
+            f"&api_key={self.api_key}"
+        )
+        url = self.emby_server_url + endpoint
+
+        try:
+            response = requests.get(url, headers=self.headers, timeout=20)
+            response.raise_for_status()
+        except Exception as e:
+            print(f"[get_person_info_bulk] Fehler beim Request: {e}")
+            return {}
+
+        items = response.json().get("Items", [])
+
+        result = {}
+        for item in items:
+            emby_id = item.get("Id")
+            prov = item.get("ProviderIds", {})
+            tmdb_id = prov.get(provider) or prov.get(provider.capitalize())
+            if emby_id and tmdb_id:
+                result[int(tmdb_id)] = emby_id
+
+        return result
+
     # ==== build_emby_people_from_tmdb: unverändert in Logik, aber ohne unnötige Requests ====
-    def build_emby_people_from_tmdb(self, library_id: str, my_cast, my_crew, provider: str = "tmdb"):
-        if not library_id:
-            library_id = self.library_id
+    def build_emby_people_from_tmdb(self, my_cast, my_crew, provider: str = "tmdb"):
+        """
+        Baut die gewünschte Emby-Personenliste (Cast + Crew) auf Basis von TMDb-Daten.
+        Nutzt Bulk-Lookup gegen Emby (self.get_person_info_bulk) und aktualisiert einen Cache:
+            self.cached_tmdb_ids: dict[int -> str]  (tmdb_id -> emby_id)
+            self.missing_tmdb_ids: set[int]         (tmdb_ids, die in Emby nicht existieren)
+        """
+
+        # --- Job-Mapping ---
+        job_map_director = {"director"}
+        job_map_writer = {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "story", "comic book"}
+        job_map_composer = {"composer", "original music composer"}
+        job_map_movie_producer = {"producer"}
+
+        allowed_jobs = job_map_director | job_map_writer | job_map_composer | job_map_movie_producer
 
         def map_job(job: str):
             jl = (job or "").strip().lower()
-            if jl == "director":
+            if jl in job_map_director:
                 return "Director"
-            if jl in {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "story", "comic book"}:
+            if jl in job_map_writer:
                 return "Writer"
-            if jl in ["composer", "original music composer"]:
+            if jl in job_map_composer:
                 return "Composer"
-            if jl == "producer":
+            if jl in job_map_movie_producer:
                 return "Producer"
             return None
 
         def key_for(emby_id, name, etype):
+            # Dedup-Key: bevorzugt ID, sonst name (casefold)
             return (("id", str(emby_id)) if emby_id else ("name", (name or "").casefold()), etype)
 
         per_key = {}
         ordered_cast = []
         crew_buckets = {"Director": [], "Writer": [], "Composer": [], "Producer": []}
 
+        # --- Robuste Filter ---
+        cast_filtered = [
+            a for a in (my_cast or [])
+            if "uncredited" not in ((a.get("character") or "").lower())
+        ]
+        crew_filtered = [
+            m for m in (my_crew or [])
+            if (m.get("job") and (m.get("job").strip().lower() in allowed_jobs))
+        ]
+
+        # --- Alle relevanten TMDb-IDs sammeln ---
+        tmdb_ids = [c.get("person_id") for c in (cast_filtered + crew_filtered) if c.get("person_id")]
+        # Nur neue IDs gegen Emby auflösen (nicht im Cache, nicht bereits als "missing" markiert)
+        new_tmdb_ids = sorted(
+            {tid for tid in tmdb_ids if tid not in self.cached_tmdb_ids and tid not in self.missing_tmdb_ids})
+
+        # --- Bulk-Lookup gegen Emby (mit optionalem Chunking) ---
+        # Hinweis: Falls Emby-URL-Limits greifen, hier in Chunks aufsplitten (z.B. 150 IDs pro Request)
+        missing = None
+        if new_tmdb_ids:
+            CHUNK = 150
+            resolved_total = {}
+            for i in range(0, len(new_tmdb_ids), CHUNK):
+                batch = new_tmdb_ids[i:i + CHUNK]
+                try:
+                    resolved = self.get_person_info_bulk(batch, provider=provider)  # {tmdb_id:int -> emby_id:str}
+                except Exception:
+                    resolved = {}
+                if resolved:
+                    resolved_total.update(resolved)
+
+            # Cache updaten
+            if resolved_total:
+                self.cached_tmdb_ids.update(resolved_total)
+
+            # Alles, was Emby nicht zurückgegeben hat, als "missing" merken
+            missing = set(new_tmdb_ids) - set(resolved_total.keys())
+            if missing:
+                self.missing_tmdb_ids.update(missing)
+
         # --- Cast ---
-        for c in (my_cast or []):
+        for c in (cast_filtered or []):
             tmdb_id = c.get("person_id")
             name = c.get("name")
             role = c.get("character") or None
             if not tmdb_id or not name:
                 continue
 
-            emby_id, _ = self.get_person_info_via_library(library_id, "Actor", provider, tmdb_id, name)
+            emby_id = self.cached_tmdb_ids.get(tmdb_id)
+
+            if emby_id and missing and int(tmdb_id) in missing:
+                try:
+                    self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
+                except Exception:
+                    pass
+
 
             if not emby_id:
+                # Platzhalter nach Name deduplizieren
                 k_name = key_for(None, name, "Actor")
                 if k_name not in per_key:
                     entry = {"Id": name, "Name": name, "Type": "Actor"}
@@ -3233,11 +3345,6 @@ class EmbyServer:
                         per_key[k_name]["Role"] = role
                 continue
 
-            if emby_id:
-                try:
-                    self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
-                except Exception:
-                    pass
 
             k_id = key_for(emby_id, name, "Actor")
             k_name = key_for(None, name, "Actor")
@@ -3246,7 +3353,7 @@ class EmbyServer:
                 entry["Id"] = str(emby_id)
                 per_key[k_id] = entry
             elif k_id not in per_key:
-                entry = {"Id": str(emby_id), "Name": name, "Type": "Actor"}
+                entry = {"Id": str(emby_id), "Name": name, "Type": "Actor", "Tmdb": tmdb_id}
                 if role:
                     entry["Role"] = role
                 per_key[k_id] = entry
@@ -3256,25 +3363,26 @@ class EmbyServer:
                     per_key[k_id]["Role"] = role
 
         # --- Crew ---
-        for m in (my_crew or []):
+        for m in (crew_filtered or []):
             tmdb_id = m.get("person_id")
             name = m.get("name")
             etype = map_job(m.get("job"))
             if not tmdb_id or not name or not etype:
                 continue
 
-            emby_id, _ = self.get_person_info_via_library(library_id, etype, provider, tmdb_id, name)
+            emby_id = self.cached_tmdb_ids.get(tmdb_id)
 
-            if emby_id:
+            if emby_id and missing and int(tmdb_id) in missing:
                 try:
                     self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
                 except Exception:
                     pass
 
             if not emby_id:
+                continue
                 k_name = key_for(None, name, etype)
                 if k_name not in per_key:
-                    entry = {"Id": name, "Name": name, "Type": etype}
+                    entry = {"Id": name, "Name": f"{name}-{tmdb_id}", "Type": etype, "Tmdb": tmdb_id}
                     per_key[k_name] = entry
                     crew_buckets[etype].append(entry)
                 continue
@@ -3286,17 +3394,16 @@ class EmbyServer:
                 entry["Id"] = str(emby_id)
                 per_key[k_id] = entry
             elif k_id not in per_key:
-                entry = {"Id": str(emby_id), "Name": name, "Type": etype}
+                entry = {"Id": str(emby_id), "Name": name, "Type": etype, "Tmdb": tmdb_id}
                 per_key[k_id] = entry
                 crew_buckets[etype].append(entry)
 
         desired = []
         desired.extend(ordered_cast)
-        for t in ["Director", "Writer", "Producer", "Composer"]:
+        for t in ("Director", "Writer", "Producer", "Composer"):
             desired.extend(crew_buckets[t])
-        return desired
 
-    import unicodedata
+        return desired
 
     # --- Helfer: Akzente entfernen (für SortName o.ä.) ---
     def _strip_accents(self, s: str) -> str:
@@ -3340,8 +3447,6 @@ class EmbyServer:
     # --- Helfer: Person direkt korrigieren (verwendet deine update_item) ---
     def _update_person_name_if_needed(self, person_id: str, desired_name: str):
         # Optional: einmal pro Lauf fixen
-        if not hasattr(self, "_person_name_fix_cache"):
-            self._person_name_fix_cache = set()
         if person_id in self._person_name_fix_cache:
             return None
 
@@ -3354,15 +3459,113 @@ class EmbyServer:
         self._person_name_fix_cache.add(person_id)
         return resp
 
+    # ==== Bulk-Fetch: /emby/Items?Ids=...&Fields=... ====
+    def get_items_bulk(self, ids: list[str], fields: list[str] | None = None) -> dict[str, dict]:
+        """
+        Holt Emby-Items in Batches (Ids=...), gibt dict[id] -> item zurück.
+        """
+        self._ensure_http_session()
+        if not ids:
+            return {}
+
+        # Nur numerische/echte IDs abfragen (Platzhalter-Namen überspringen)
+        fetch_ids = [str(i) for i in ids if str(i).isdigit()]
+        if not fetch_ids:
+            return {}
+
+        fields = fields or []
+        fields_param = ",".join(fields) if fields else ""
+
+        CHUNK = 200  # konservativ; Emby kommt damit gut klar
+        out: dict[str, dict] = {}
+
+        for i in range(0, len(fetch_ids), CHUNK):
+            batch = fetch_ids[i:i + CHUNK]
+            # Query-String zusammenbauen
+            # Hinweis: api_key via Query, Headers nutzt du bereits global
+            params = {
+                "Ids": ",".join(batch),
+            }
+            if fields_param:
+                params["Fields"] = fields_param
+            params["api_key"] = self.api_key
+
+            # f"/emby/Users/{self.user_id}/Items"
+
+            url = f"{self.emby_server_url}/emby/Items"
+            resp = self.session.get(url, headers=self.headers, params=params, timeout=20)
+            resp.raise_for_status()
+            data = resp.json() or {}
+            items = data.get("Items") or data.get("items") or []
+            for it in items:
+                it_id = str(it.get("Id") or "")
+                if it_id:
+                    out[it_id] = it
+        return out
+
+    # ==== Provider-IDs normalisieren ====
+    def _norm_provider_ids(self, provider_ids: dict | None):
+        """Gibt (lowercased_dict, tmdb_id_str|None) zurück."""
+        d = {(k or "").lower(): v for k, v in (provider_ids or {}).items()}
+        # Manche Emby-Instanzen speichern als int; alles in str
+        tmdb_val = d.get("tmdb") or d.get("tmdbid") or d.get("themoviedb") or None
+        tmdb_str = str(tmdb_val) if tmdb_val not in (None, "", 0) else None
+        return d, tmdb_str
+
+
+
     # --- NEU: sync_people ignoriert Namensunterschiede für den Film
     def sync_people(self, library_id: str, emby_item: dict, my_cast: list, my_crew: list):
         item_edits = ""
+        person_edits = []
         current_people = emby_item.get("People", []) or []
-        desired_people = self.build_emby_people_from_tmdb(library_id, my_cast, my_crew, provider="Tmdb")
+        desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
 
         # 1) Struktureller Vergleich ohne Name
         cur_sig = self._people_signature_no_name(current_people)
         des_sig = self._people_signature_no_name(desired_people)
+
+        # if emby_item.get("Id") == "2167161":
+        pass
+
+        if False:
+            all_person_search = []
+            #todo: get emby people list, or check for HasId
+            for person in desired_people: # not working i guess
+                tmdb_id = person.get("Tmdb") or person.get("tmdb")
+                if not tmdb_id:
+                    if str(person.get("Id")).isdigit():
+                        url = f"{self.emby_server_url}/emby/Items/RemoteSearch/Apply/{person.get("Id")}?ReplaceAllImages=true&api_key={self.api_key}"
+
+                        data = {
+                            "Name": f"{person.get('Name')}",
+                        }
+
+                        response = requests.post(url, headers=self.headers, json=data)
+                        pass
+                    # print(tmdb_id)
+                    # print("No tmdb id")
+                    # print(person)
+
+            # if str(person.get("Id")).isdigit():
+            #     url = f"{self.emby_server_url}/emby/Items/RemoteSearch/Apply/{person.get("Id")}?ReplaceAllImages=true&api_key={self.api_key}"
+            #
+            #
+            #     data = {
+            #         # "Name": "Tom Holland",
+            #         "ProviderIds": {
+            #             "tmdb": f"{tmdb_id}"
+            #         }
+            #     }
+            #
+            #     response = requests.post(url, headers=self.headers, json=data)
+            #     pass
+            # try:
+            #     int(tmdb_id)
+            # except:
+            #     print(person)
+            #     pass
+
 
         if cur_sig == des_sig:
             # 2) Nur Namen weichen ab -> Personen korrigieren, Film nicht anfassen
@@ -3374,9 +3577,9 @@ class EmbyServer:
                     if r is not None:
                         fixed.append(f"'{pid}' {cur_name} → {new_name}")
                 if fixed:
-                    item_edits = f"Update People | fixed {len(fixed)} person name(s) centrally - [{", ".join(fixed)}]"
-                    return True, item_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
-            return False, item_edits  # wirklich nichts zu tun
+                    item_edits = f"Update People | fixed {len(fixed)} person name(s) in Emby - [{", ".join(fixed)}]"
+                    return True, item_edits, person_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
+            return False, item_edits,person_edits  # wirklich nichts zu tun
 
         # 3) Es gibt echte Unterschiede (Id/Type/Role oder Reihenfolge) -> Film-Item aktualisieren
         #    (Namen bleiben Teil der gewünschten Liste, aber Emby speichert sie ohnehin zentral)
@@ -3394,6 +3597,34 @@ class EmbyServer:
             n = p.get("Name") or f"#{p.get('Id')}"
             r = p.get("Role")
             return f"{n} as {r}" if r else n
+
+        def compare_people_ids(current_people: list[dict], desired_people: list[dict]) -> list[dict]:
+            """
+            Vergleicht zwei Personenlisten (current vs desired) anhand des Namens
+            und prüft, ob die IDs abweichen.
+
+            Gibt eine Liste mit Abweichungen zurück:
+            [{'Name': ..., 'Id_current': ..., 'Id_desired': ...}, ...]
+            """
+
+            # Index nur nach Name
+            index_current = {p.get("Name"): p.get("Id") for p in current_people}
+
+            diffs = []
+            for dp in desired_people:
+                name = dp.get("Name")
+                desired_id = dp.get("Id")
+                current_id = index_current.get(name)
+
+                if current_id and current_id != desired_id:
+                    diffs.append({
+                        "Name": name,
+                        "Id_current": current_id,
+                        "Id_desired": desired_id
+                    })
+
+            return diffs
+
 
         # Karten für schnellen Zugriff
         prev_map = {_pkey(p): p for p in (current_people or [])}
@@ -3414,9 +3645,9 @@ class EmbyServer:
         def _fmt_counts(cnt):
             return ", ".join(f"{t}×{cnt[t]}" for t in sorted(cnt, key=lambda t: order.get(t, 99)))
 
-        change_summary = ""
-
+        change_summary=""
         # Falls genau eine Person betroffen ist: Name zeigen
+
         total_changes = len(added_people) + len(removed_people)
         if total_changes == 1:
             if added_people:
@@ -3448,11 +3679,64 @@ class EmbyServer:
             change_summary = " / ".join(parts) if parts else "update"
 
         item_edits = f"Update People | {change_summary}"
-        self.update_item(emby_item["Id"], {"People": desired_people})
-        return True, item_edits
 
-    import re
-    import unicodedata
+        renames = compare_people_ids(current_people, desired_people)
+
+        if renames: # global renames for general usage
+            # print(renames)
+            for rename in renames:
+                my_id=f"{rename.get('Name')}-{rename.get('Id_desired')}"
+                payload = {
+                    "Id": rename.get("Id_desired"),
+                    "Name": my_id,
+                }
+                resp = self.update_item(rename.get("Id_desired"), payload)
+                for p in desired_people:
+                    if p.get("Name") == rename.get("Name"):
+                        p["Name"] = my_id
+                        person_edits.append((rename.get("Id_desired"), rename.get("Name")))
+                pass
+
+
+        self.update_item(emby_item["Id"], {"People": desired_people})
+
+        # ==== NEU: Bulk prüfen & fehlende TMDb-IDs gezielt nachziehen ====
+        # IDs aus desired_people einsammeln (nur echte numerische)
+        bulk_ids = [str(p.get("Id")) for p in desired_people if str(p.get("Id") or "").isdigit()]
+        id_to_item = self.get_items_bulk(bulk_ids, fields=["ProviderIds"])  # nutzt Session + Chunking
+
+        # Jetzt nur dort Apply, wo eine importierte TMDb-ID existiert, aber im Emby-Item fehlt
+        self._ensure_http_session()
+        for p in desired_people:
+            emby_person_id = str(p.get("Id") or "")
+            if not emby_person_id.isdigit():
+                continue
+
+            imported_tmdb_id = p.get("Tmdb") or p.get("tmdb") or None
+            if not imported_tmdb_id:
+                continue
+
+            # Vorhandene ProviderIds prüfen
+            e_item = id_to_item.get(emby_person_id) or {}
+            prov, e_tmdb = self._norm_provider_ids(e_item.get("ProviderIds"))
+            if e_tmdb:  # Schon vorhanden -> nichts zu tun
+                continue
+
+            # Fehlt TMDb -> RemoteSearch/Apply (ohne aggressives ReplaceAllImages)
+            url = f"{self.emby_server_url}/emby/Items/RemoteSearch/Apply/{emby_person_id}"
+            params = {"api_key": self.api_key}
+            data = {"ProviderIds": {"tmdb": str(imported_tmdb_id)}}
+
+            try:
+                r = self.session.post(url, headers=self.headers, params=params, json=data, timeout=20)
+                # kein raise_for_status(), Emby gibt manchmal 204 zurück
+                # optional: Logging bei r.status_code >= 400
+            except Exception as ex:
+                # optional: logger.warning(f"Apply TMDb failed for person {emby_person_id}: {ex}")
+                pass
+
+        return True, item_edits,person_edits
+
 
     # --- Zeichentests / Normalisierung ---
     def _is_latin_string(self, s: str) -> bool:

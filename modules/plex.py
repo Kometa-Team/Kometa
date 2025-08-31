@@ -1483,6 +1483,7 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster_overlay(self, item, image_temp_path, url=False):
+        # Not actually uploading anything to Emby, just saving the overlay png
         file_extension = image_temp_path.split('.')[-1]
         file_name = f"{item.ratingKey}.{file_extension}"
         # todo: config path
@@ -1745,13 +1746,15 @@ class Plex(Library):
         #  title = {str} '2020s'
         #  type = {NoneType} None
 
-        elif my_search in ["actor", "director","writer", "producer", "composer"]:
+        elif my_search in ["actor", "director", "writer", "producer", "composer"]:
 
-            emby_people = self.EmbyServer.get_people(self.Emby.get("Id"), my_search, person_list)
+            emby_people = self.EmbyServer.get_people(my_search, person_list)
 
             for person in emby_people:
                 key = person.get('Id')
                 title = person.get('Name')
+                prov_ids = person.get('ProviderIds')
+                tmdb_id = prov_ids.get('Tmdb') if prov_ids else None
 
                 # Construct the thumbnail URL
                 thumb = None

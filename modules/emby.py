@@ -1673,7 +1673,7 @@ class Emby(Library):
         #  type = {NoneType} None
 
         elif my_search in ["actor", "director","writer", "producer", "composer"]:
-            emby_people = self.EmbyServer.get_people(self.Emby.get("Id"), my_search)
+            emby_people = self.EmbyServer.get_people(my_search)
 
             for person in emby_people:
                 key = person.get('Id')

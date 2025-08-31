@@ -991,7 +991,13 @@ class MetadataFile(DataFile):
                                     # print(include)
                                     # print(include_cols)
                                     # print(auto_type)
+                                    my_emby_cast = None
                                     emby_people = item.get('People', [])
+                                    if 'tmdb_person' in dynamic["template"]:
+                                        emby_ids = [entry.get("Id") for entry in emby_people]
+                                        my_emby_cast = self.library.EmbyServer.get_items_bulk(emby_ids, ["ProviderIds"])
+                                        pass
+
                                     actors = [person for person in emby_people if
                                               person.get('Type') == 'Actor']
                                     director = [person for person in emby_people if
@@ -1018,14 +1024,28 @@ class MetadataFile(DataFile):
                                         case _:
                                             print(f"{auto_type} - Missing for People")
                                     for person in the_list[:person_depth]:
-                                        # provider_info =
-                                        if person.get('Name') in include:
-                                            if person.get('Name')  not in include_cols:
-                                                include_cols.append(person.get('Name'))
+                                        if my_emby_cast:
+                                            emby_id = person.get('Id')
+                                            e_person = my_emby_cast.get(emby_id)
+                                            e_tmdbid = e_person["ProviderIds"].get("Tmdb") or e_person["ProviderIds"].get("tmdb")
+                                            if not e_tmdbid:
+                                                continue
+                                            if e_tmdbid in include:
+                                                if e_tmdbid not in include_cols:
+                                                    include_cols.append(e_tmdbid)
+                                            else:
+                                                if int(emby_id) not in people:
+                                                    people[int(emby_id)] = {"name": person.get('Name'),"tmdb_person_id":e_tmdbid,
+                                                                                     "count": 0}
+                                                people[int(emby_id)]["count"] += 1
                                         else:
-                                            if int(person.get('Id')) not in people:
-                                                people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
-                                            people[int(person.get('Id'))]["count"] += 1
+                                            if person.get('Name') in include:
+                                                if person.get('Name')  not in include_cols:
+                                                    include_cols.append(person.get('Name'))
+                                            else:
+                                                if int(person.get('Id')) not in people:
+                                                    people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
+                                                people[int(person.get('Id'))]["count"] += 1
 
                                     # emby_actors=
 
@@ -1052,8 +1072,12 @@ class MetadataFile(DataFile):
                                 person_count += 1
                             for role in roles:
                                 if person_count < person_limit and role["count"] >= person_minimum and role["name"] not in exclude:
-                                    auto_list[role["name"]] = role["name"]
-                                    all_keys[role["name"]] = role["name"]
+                                    if my_emby_cast:
+                                        auto_list[role["tmdb_person_id"]] = role["name"]
+                                        all_keys[role["tmdb_person_id"]] = role["name"]
+                                    else:
+                                        auto_list[role["name"]] = role["name"]
+                                        all_keys[role["name"]] = role["name"]
                                     person_count += 1
                             default_template = {"plex_search": {"any": {auto_type: "<<value>>"}}}
                         elif auto_type == "imdb_awards":

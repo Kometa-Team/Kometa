@@ -469,7 +469,7 @@ class TMDb:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids
 
-    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True):
+    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True,ignore_cache =False):
         tmdb_item = None
         if tvdb_id and not tmdb_id:
             tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
@@ -479,7 +479,7 @@ class TMDb:
                 tmdb_id = _id
         if tmdb_id:
             try:
-                tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+                tmdb_item = self.get_movie(tmdb_id,ignore_cache ) if is_movie else self.get_show(tmdb_id)
             except Failed as e:
                 logger.error(str(e))
         elif tvdb_id and not is_movie:

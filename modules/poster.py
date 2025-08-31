@@ -14,7 +14,7 @@ class ImageData:
         self.is_background = image_type == "background"
         self.is_logo = image_type == "logo"
         self.is_url = is_url
-        self.compare = compare if compare else location if is_url else os.stat(location).st_size
+        self.compare = compare if compare else location if is_url else os.stat(location).st_size if os.path.exists(location) else None
         self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):

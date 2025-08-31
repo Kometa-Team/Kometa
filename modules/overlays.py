@@ -173,7 +173,9 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster = ImageData("asset_directory", emby_poster.get("Path"), is_url=False, compare=os.stat(my_overlay_path).st_size if has_overlay else "")
+                        #todo: for Emby transparent PNG, ignore existing poster files
+                        poster = ImageData("asset_directory", my_overlay_path if has_overlay else "", is_url=False)
+                        # poster = ImageData("asset_directory", emby_poster.get("Path"), is_url=False, compare=poster_compare)
                         # background = ImageData("asset_directory", emby_thumb.get("Path"), compare=emby_item.get("ImageTags").get("Thumb"))
                         item_dir = os.path.dirname(emby_poster.get("Path"))
                         name = str(item_dir).split('\\')[-1]
@@ -197,6 +199,7 @@ class Overlays:
                     changed_image = False
                     poster_compare = None
                     if poster:
+                        poster_compare = poster.compare
                         if poster.compare and str(poster.compare) != str(image_compare):
                             changed_image = True
 
