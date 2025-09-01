@@ -356,26 +356,19 @@ class Library(ABC):
     @property
     @abstractmethod
     def library_item_uid_name(self) -> str:
-        """ 
-            The attribute name for the unique ID of an item in the library
-            (e.g., 'ratingKey' for Plex, 'Id' for Jellyfin).
-        """
+        """ The attribute name for the unique ID of an item in the library """
         pass
     
     @property
     @abstractmethod
     def library_item_title_name(self) -> str:
-        """
-            Get the title of an item in the library.
-        """
+        """ Get the title of an item in the library. """
         pass
     
     @property
     @abstractmethod
     def library_external_id_name(self) -> str:
-        """
-            Get the external ID of an item in the library.
-        """
+        """ Get the external ID of an item in the library. """
         pass
 
     @abstractmethod
@@ -433,59 +426,8 @@ class Library(ABC):
             self.cached_items[self.library_item_uid_name] = (item, False)
         return items
 
-    def map_guids(self, items):
-        """ DEPRECATED: Use map_external_id instead. """
-        self.map_external_id(items)
-
-    def map_external_id(self, items):
+    @abstractmethod
+    def map_external_id(self, items:Dict):
         """ Map the external IDs (IMDB, TMDB and etc) of the items to their respective keys. """
-        for i, item in enumerate(items, 1):
-            if isinstance(item, tuple):
-                logger.ghost(f"Processing: {i}/{len(items)}")
-                key, external_id = item
-            else:
-                logger.ghost(f"Processing: {i}/{len(items)} {item[self.library_item_title_name]}")
-                key = item[self.library_item_uid_name]
-                external_id = item[self.library_external_id_name]
-            if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
-                if isinstance(item, tuple):
-                    item_type, check_id = self.config.Convert.scan_guid(external_id)
-                    id_type, main_id, imdb_id, _ = self.config.Convert.ids_from_cache(key, external_id, item_type, check_id, self)
-                else:
-                    id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
-                if main_id:
-                    if id_type == "movie":
-                        if len(main_id) > 1:
-                            for _id in main_id:
-                                try:
-                                    self.config.TMDb.get_movie(_id)
-                                    self.movie_rating_key_map[key] = _id
-                                    break
-                                except Failed:
-                                    pass
-                        else:
-                            self.movie_rating_key_map[key] = main_id[0]
-                        util.add_dict_list(main_id, key, self.movie_map)
-                    elif id_type == "show":
-                        if len(main_id) > 1:
-                            for _id in main_id:
-                                try:
-                                    self.config.Convert.tvdb_to_tmdb(_id, fail=True)
-                                    self.show_rating_key_map[key] = _id
-                                    break
-                                except Failed:
-                                    pass
-                        else:
-                            self.show_rating_key_map[key] = main_id[0]
-                        util.add_dict_list(main_id, key, self.show_map)
-                if imdb_id:
-                    self.imdb_rating_key_map[key] = imdb_id[0]
-                    util.add_dict_list(imdb_id, key, self.imdb_map)
-        self.reverse_anidb = {}
-        for k, v in self.anidb_map.items():
-            self.reverse_anidb[v] = k
-        self.reverse_mal = {}
-        for k, v in self.mal_map.items():
-            self.reverse_mal[v] = k
-        logger.info("")
-        logger.info(f"Processed {len(items)} {self.type}s")
+        pass
+        

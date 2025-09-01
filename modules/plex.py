@@ -643,6 +643,61 @@ class Plex(Library):
         if builder_level in [None, "show", "artist", "movie"]:
             self._all_items = results
         return results
+    
+    def map_external_ids(self, items):
+        self.map_guids(items)
+    
+    def map_guids(self, items):
+        for i, item in enumerate(items, 1):
+            if isinstance(item, tuple):
+                logger.ghost(f"Processing: {i}/{len(items)}")
+                key, guid = item
+            else:
+                logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
+                key = item.ratingKey
+                guid = item.guid
+            if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
+                if isinstance(item, tuple):
+                    item_type, check_id = self.config.Convert.scan_guid(guid)
+                    id_type, main_id, imdb_id, _ = self.config.Convert.ids_from_cache(key, guid, item_type, check_id, self)
+                else:
+                    id_type, main_id, imdb_id = self.config.Convert.get_id(item, self)
+                if main_id:
+                    if id_type == "movie":
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.TMDb.get_movie(_id)
+                                    self.movie_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.movie_rating_key_map[key] = main_id[0]
+                        util.add_dict_list(main_id, key, self.movie_map)
+                    elif id_type == "show":
+                        if len(main_id) > 1:
+                            for _id in main_id:
+                                try:
+                                    self.config.Convert.tvdb_to_tmdb(_id, fail=True)
+                                    self.show_rating_key_map[key] = _id
+                                    break
+                                except Failed:
+                                    pass
+                        else:
+                            self.show_rating_key_map[key] = main_id[0]
+                        util.add_dict_list(main_id, key, self.show_map)
+                if imdb_id:
+                    self.imdb_rating_key_map[key] = imdb_id[0]
+                    util.add_dict_list(imdb_id, key, self.imdb_map)
+        self.reverse_anidb = {}
+        for k, v in self.anidb_map.items():
+            self.reverse_anidb[v] = k
+        self.reverse_mal = {}
+        for k, v in self.mal_map.items():
+            self.reverse_mal[v] = k
+        logger.info("")
+        logger.info(f"Processed {len(items)} {self.type}s")
 
     def upload_theme(self, collection, url=None, filepath=None):
         key = f"/library/metadata/{collection.ratingKey}/themes"
