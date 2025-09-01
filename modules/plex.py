@@ -1542,7 +1542,7 @@ class Plex(Library):
             if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
                 return result.id
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False):
+    def get_search_choices(self, search_name, title=True, name_pairs=False, person_list = None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
@@ -1550,7 +1550,7 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            tags_iter = self.get_tags(final_search)
+            tags_iter = self.get_tags(final_search, person_list)
             for choice in tags_iter:
 
                 if choice.title not in names:
@@ -1565,7 +1565,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(60), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
-    def get_tags(self, tag):
+    def get_tags(self, tag, person_list=None):
         if isinstance(tag, str):
             match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', tag)
             if not match:
@@ -1586,6 +1586,51 @@ class Plex(Library):
         else:
              my_search = tag.filter
 
+        # tag: <FilteringFilter:/library/sections/8/:Labels>
+        # items = {MediaContainer: 10} [<FilterChoice:284998:Overlay>, <FilterChoice:310126:Kometa>, <FilterChoice:310132:National-Film-Regist>, <FilterChoice:310150...-on-a-True-Stor>, <FilterChoice:310159:🎖Veteran's-Day-Movie>, <FilterChoice:310161:Seasonal>, <FilterChoice:310165:Top-Actors>
+        #  TAG = {str} 'MediaContainer'
+        #  TYPE = {NoneType} None
+        #  allowSync = {int} 0
+        #  augmentationKey = {NoneType} None
+        #  identifier = {str} 'com.plexapp.plugins.library'
+        #  key = {NoneType} None
+        #  librarySectionID = {NoneType} None
+        #  librarySectionTitle = {NoneType} None
+        #  librarySectionUUID = {NoneType} None
+        #  mediaTagPrefix = {str} '/system/bundle/media/flags/'
+        #  mediaTagVersion = {str} '1727455477'
+        #  offset = {NoneType} None
+        #  size = {int} 10
+        #  totalSize = {NoneType} None
+        #  00 = {FilterChoice} <FilterChoice:284998:Overlay>
+        #   TAG = {str} 'Directory'
+        #   TYPE = {NoneType} None
+        #   fastKey = {str} '/library/sections/8/all?label=284998'
+        #   key = {str} '284998'
+        #   thumb = {NoneType} None
+        #   title = {str} 'Overlay'
+        #   type = {NoneType} None
+        #  01 = {FilterChoice} <FilterChoice:310126:Kometa>
+        #   TAG = {str} 'Directory'
+        #   TYPE = {NoneType} None
+        #   fastKey = {str} '/library/sections/8/all?label=310126'
+        #   key = {str} '310126'
+        #   thumb = {NoneType} None
+        #   title = {str} 'Kometa'
+        #   type = {NoneType} None
+
+
+        # my_items = self.EmbyServer.get_collections_filter_choices()
+
+        # tag = {FilteringFilter} <FilteringFilter:/library/sections/8/:Actor>
+        #  TAG = {str} 'Filter'
+        #  TYPE = {NoneType} None
+        #  filter = {str} 'actor'
+        #  filterType = {str} 'string'
+        #  key = {str} '/library/sections/8/actor'
+        #  title = {str} 'Actor'
+        #  type = {str} 'filter'
+
 
 
         emby_items = []
@@ -1601,7 +1646,7 @@ class Plex(Library):
                 filter_choice = FilterChoiceEmby(key=key, title=title)
                 emby_items.append(filter_choice)
             return emby_items
-        if my_search in ['network', 'show.network']: # todo: differentiate between studio & network?
+        elif my_search in ['network', 'show.network']: # todo: differentiate between studio & network?
             labels = self.EmbyServer.get_emby_networks(self, self.Emby.get("Id"))
 
             for label in labels:
@@ -1701,12 +1746,15 @@ class Plex(Library):
         #  title = {str} '2020s'
         #  type = {NoneType} None
 
-        elif my_search in ["actor", "director","writer", "producer", "composer"]:
-            emby_people = self.EmbyServer.get_people(my_search)
+        elif my_search in ["actor", "director", "writer", "producer", "composer"]:
+
+            emby_people = self.EmbyServer.get_people(my_search, person_list)
 
             for person in emby_people:
                 key = person.get('Id')
                 title = person.get('Name')
+                prov_ids = person.get('ProviderIds')
+                tmdb_id = prov_ids.get('Tmdb') if prov_ids else None
 
                 # Construct the thumbnail URL
                 thumb = None
@@ -1737,6 +1785,35 @@ class Plex(Library):
         # country, region + continent not working
 
         raise Failed(f"Not implemented Emby search FilterChoice {tag}")
+
+        items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
+
+        #     {
+        #       "Name": "Wolfgang Petersen",
+        #       "ServerId": "37de8e11ee0748bea8d2080a13984949",
+        #       "Id": "61041",
+        #       "Type": "Person",
+        #       "ImageTags": {
+        #         "Primary": "ca733b3b975daa618201765a10805fe7"
+        #       },
+        #       "BackdropImageTags": []
+        #     }
+
+        # items_filter = object[FilterChoice]()
+        # key: '/library/sections/8/label'
+        # Plex:
+        #         for elem in data:
+        #             if self._checkAttrs(elem, **kwargs):
+        #                 item = self._buildItemOrNone(elem, cls, initpath)
+        #                 if item is not None:
+        #                     items.append(item)
+        #         return items
+
+        if tag.key.endswith("/collection?type=4"): # no idea
+            keys = [k.key for k in items]
+            keys.extend([k.key for k in self.Plex.findItems(self.Plex._server.query(f"{tag.key[:-1]}3"), FilterChoice)])
+            items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]
+        return items
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def _query(self, key, post=False, put=False):
