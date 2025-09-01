@@ -1542,7 +1542,7 @@ class Plex(Library):
             if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
                 return result.id
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False, person_list = None):
+    def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
@@ -1550,7 +1550,7 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            tags_iter = self.get_tags(final_search, person_list)
+            tags_iter = self.get_tags(final_search)
             for choice in tags_iter:
 
                 if choice.title not in names:
