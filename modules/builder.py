@@ -2880,7 +2880,7 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False)
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, person_list=final_values)
+            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
             for fvalue in final_values:
                 if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
