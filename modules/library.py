@@ -433,6 +433,7 @@ class Library(ABC):
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):
+            logger.ghost(f"Mapping: {i}/{len(items)} {item.get('Name')}")
             if isinstance(item, tuple):
                 # logger.ghost(f"Processing: {i}/{len(items)}")
                 key, guid = item

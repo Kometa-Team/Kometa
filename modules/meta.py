@@ -975,22 +975,7 @@ class MetadataFile(DataFile):
                             include_cols = []
                             for i, item in enumerate(lib_all, 1):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.get('Name')}")
-                                # try:
-                                #     item = self.library.reload(item)
-                                #     for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                #         if person.tag in include:
-                                #             if person.tag not in include_cols:
-                                #                 include_cols.append(person.tag)
-                                #         else:
-                                #             if person.id not in people:
-                                #                 people[person.id] = {"name": person.tag, "count": 0}
-                                #             people[person.id]["count"] += 1
-                                # except Failed as e:
-                                #     logger.error(f"Plex Error: {e}")
                                 try:
-                                    # print(include)
-                                    # print(include_cols)
-                                    # print(auto_type)
                                     my_emby_cast = None
                                     emby_people = item.get('People', [])
                                     if 'tmdb_person' in dynamic["template"]:
@@ -998,37 +983,36 @@ class MetadataFile(DataFile):
                                         my_emby_cast = self.library.EmbyServer.get_items_bulk(emby_ids, ["ProviderIds"])
                                         pass
 
-                                    actors = [person for person in emby_people if
-                                              person.get('Type') == 'Actor']
-                                    director = [person for person in emby_people if
-                                              person.get('Type') == 'Director']
-                                    writers = [person for person in emby_people if
-                                              person.get('Type') == 'Writer']
-                                    producers = [person for person in emby_people if
-                                              person.get('Type') == 'Producer']
-                                    composers = [person for person in emby_people if
-                                              person.get('Type') == 'Composer']
-                                            # Director, Writer
+                                    # Director, Writer
                                     the_list = []
                                     match auto_type:
                                         case "actor":
+                                            actors = [person for person in emby_people if person.get('Type') == 'Actor']
                                             the_list = actors
                                         case "director":
+                                            director = [person for person in emby_people if
+                                                        person.get('Type') == 'Director']
                                             the_list = director
                                         case "writer":
+                                            writers = [person for person in emby_people if
+                                                       person.get('Type') == 'Writer']
                                             the_list = writers
                                         case "composer":
+                                            composers = [person for person in emby_people if
+                                                         person.get('Type') == 'Composer']
                                             the_list = composers
                                         case "producer":
+                                            producers = [person for person in emby_people if person.get('Type') == 'Producer']
                                             the_list = producers
                                         case _:
-                                            print(f"{auto_type} - Missing for People")
+                                            logger.debug(f"{auto_type} - Missing for People. Please inform the developer.")
                                     for person in the_list[:person_depth]:
                                         if my_emby_cast:
                                             emby_id = person.get('Id')
                                             e_person = my_emby_cast.get(emby_id)
                                             e_tmdbid = e_person["ProviderIds"].get("Tmdb") or e_person["ProviderIds"].get("tmdb")
                                             if not e_tmdbid:
+                                                # logger.info(f"Tmdb id missing for '{person.get("Name")}' - '{emby_id}'")# ToDo => people scraping
                                                 continue
                                             if e_tmdbid in include:
                                                 if e_tmdbid not in include_cols:
@@ -1047,16 +1031,6 @@ class MetadataFile(DataFile):
                                                     people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
                                                 people[int(person.get('Id'))]["count"] += 1
 
-                                    # emby_actors=
-
-                                    # for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                    #     if person.tag in include:
-                                    #         if person.tag not in include_cols:
-                                    #             include_cols.append(person.tag)
-                                    #     else:
-                                    #         if int(person.get('Id')) not in people:
-                                    #             people[int(person.get('Id'))] = {"name": person.get('Name'), "count": 0}
-                                    #         people[int(person.get('Id'))]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]

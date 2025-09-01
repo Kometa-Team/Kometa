@@ -480,13 +480,17 @@ class Operations:
                                 except Failed:
                                     continue
 
-                if  self.library.is_movie and tmdb_id: # mass_cast_and_crew_update
-                    try:
-                        tmdb_item = tmdb_obj()
-                    except Failed:
-                        tmdb_item = None
 
-                    def contains_non_latin(text: str, allow_greek=False, allow_cyrillic=False) -> bool:
+                if self.library.mass_genre_update or self.library.genre_mapper:
+
+                    # Title and cast updates, time consuming, parked here till proper integration
+                    if False and self.library.is_movie and tmdb_id:  # mass_cast_and_crew_update
+                        try:
+                            tmdb_item = tmdb_obj()
+                        except Failed:
+                            tmdb_item = None
+
+                        def contains_non_latin(text: str, allow_greek=False, allow_cyrillic=False) -> bool:
                             """True, wenn der Text Zeichen enthält, die nicht in lateinischen/erlaubten Blöcken liegen."""
                             import unicodedata
                             if not text:
@@ -509,51 +513,48 @@ class Operations:
                                 return True
                             return False
 
+                        if tmdb_item and emby_item is not None:
 
-                    if tmdb_item and emby_item is not None:
-
-                        tmdb_title = tmdb_item.title
-                        emby_title = emby_item.get("Name")
-
-                        all_cast_string="".join([c.get("name", "") for c in tmdb_item.cast]) if tmdb_item.cast else ""
-                        if contains_non_latin(tmdb_title) or contains_non_latin(all_cast_string):
-                        #     pass
-                        #     # ToDo: need to ensure EN title if lang from config tmdb has no translation
-                            _tmdb_obj = None
-                            tmdb_item= tmdb_obj(ignore_cache=True)
                             tmdb_title = tmdb_item.title
+                            emby_title = emby_item.get("Name")
 
+                            all_cast_string = "".join(
+                                [c.get("name", "") for c in tmdb_item.cast]) if tmdb_item.cast else ""
+                            if contains_non_latin(tmdb_title) or contains_non_latin(all_cast_string):
+                                #     pass
+                                #     # ToDo: need to ensure EN title if lang from config tmdb has no translation
+                                _tmdb_obj = None
+                                tmdb_item = tmdb_obj(ignore_cache=True)
+                                tmdb_title = tmdb_item.title
 
-                        my_cast = tmdb_item.cast
-                        my_crew = tmdb_item.crew
+                            my_cast = tmdb_item.cast
+                            my_crew = tmdb_item.crew
 
-                        # This will get the title in the language set in config -> tmdb
-                        # with foreign titles, emby will only scrape the original title;
-                        # as I don't speak Chinese, I want EN title
+                            # This will get the title in the language set in config -> tmdb
+                            # with foreign titles, emby will only scrape the original title;
+                            # as I don't speak Chinese, I want EN title
 
-
-                        if tmdb_id == "46043":
-                            pass
-
-                        if tmdb_title != emby_title:
-
-                            if contains_non_latin(emby_title) and not contains_non_latin(tmdb_title):
-                                edits= {"Name": tmdb_title}
-                                self.library.EmbyServer.update_item(emby_item.get("Id"), edits)
-                                item_edits.append(f"Changed title from '{emby_title}' to '{tmdb_title}'")
+                            if tmdb_id == "46043":
                                 pass
 
-                        # if my_cast:
-                        #     try:
-                        #         has_edits, people_edits, p_edits = self.library.EmbyServer.sync_people(self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
-                        #         if has_edits:
-                        #             item_edits.append(people_edits)
-                        #         if p_edits:
-                        #             person_edits += p_edits
-                        #     except:
-                        #         pass
+                            if tmdb_title != emby_title:
 
-                if self.library.mass_genre_update or self.library.genre_mapper:
+                                if contains_non_latin(emby_title) and not contains_non_latin(tmdb_title):
+                                    edits = {"Name": tmdb_title}
+                                    self.library.EmbyServer.update_item(emby_item.get("Id"), edits)
+                                    item_edits.append(f"Changed title from '{emby_title}' to '{tmdb_title}'")
+                                    pass
+
+                            # if my_cast:
+                            #     try:
+                            #         has_edits, people_edits, p_edits = self.library.EmbyServer.sync_people(self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
+                            #         if has_edits:
+                            #             item_edits.append(people_edits)
+                            #         if p_edits:
+                            #             person_edits += p_edits
+                            #     except:
+                            #         pass
+                    # Title and case updates end
 
                     new_genres = []
                     extra_option = None
