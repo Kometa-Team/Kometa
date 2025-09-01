@@ -131,7 +131,6 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-            person_edits = []
 
             total_items = len(items)
             for i, item in enumerate(items, 1):
@@ -547,7 +546,7 @@ class Operations:
 
                             # if my_cast:
                             #     try:
-                            #         has_edits, people_edits, p_edits = self.library.EmbyServer.sync_people(self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
+                            #         has_edits, people_edits = self.library.EmbyServer.sync_people(self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
                             #         if has_edits:
                             #             item_edits.append(people_edits)
                             #         if p_edits:
@@ -1077,13 +1076,7 @@ class Operations:
                         if len(item_edits) > 0:
                             logger.info(f"Item Edits: {"\n".join(item_edits)}")
 
-            if person_edits:
-                for id, name in person_edits:
-                    payload = {
-                        "Name": name,
-                    }
-                    resp = self.library.EmbyServer.update_item(id, payload)
-                    pass
+
 
             logger.info("")
             logger.separator("Batch Updates", space=False, border=False)

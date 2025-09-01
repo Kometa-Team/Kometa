@@ -3578,8 +3578,8 @@ class EmbyServer:
                         fixed.append(f"'{pid}' {cur_name} → {new_name}")
                 if fixed:
                     item_edits = f"Update People | fixed {len(fixed)} person name(s) in Emby - [{", ".join(fixed)}]"
-                    return True, item_edits, person_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
-            return False, item_edits,person_edits  # wirklich nichts zu tun
+                    return True, item_edits  # Es gab Änderungen (an Personen), Film blieb unverändert
+            return False, item_edits  # wirklich nichts zu tun
 
         # 3) Es gibt echte Unterschiede (Id/Type/Role oder Reihenfolge) -> Film-Item aktualisieren
         #    (Namen bleiben Teil der gewünschten Liste, aber Emby speichert sie ohnehin zentral)
@@ -3735,7 +3735,14 @@ class EmbyServer:
                 # optional: logger.warning(f"Apply TMDb failed for person {emby_person_id}: {ex}")
                 pass
 
-        return True, item_edits,person_edits
+        if person_edits:
+            for id, name in person_edits:
+                payload = {
+                    "Name": name,
+                }
+                resp = self.library.EmbyServer.update_item(id, payload)
+
+        return True, item_edits
 
 
     # --- Zeichentests / Normalisierung ---
